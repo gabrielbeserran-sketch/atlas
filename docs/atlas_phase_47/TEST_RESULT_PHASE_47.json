@@ -1,0 +1,12 @@
+{
+  "phase": 47,
+  "python_files_compiled": 74,
+  "python_syntax_errors": [],
+  "flutter_analyze_executed": false,
+  "flutter_test_executed": false,
+  "pytest_executed": false,
+  "postgresql_migrations_executed": false,
+  "trained_ml_model_included": false,
+  "engine_type": "deterministic_explainable_rules",
+  "reason": "Flutter, dependências Python e PostgreSQL não estão instalados/configurados neste ambiente de geração."
+}

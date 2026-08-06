@@ -1,0 +1,492 @@
+{
+  "backend": "FastAPI + SQLAlchemy",
+  "python_files": 25,
+  "routers": 10,
+  "tests": 7,
+  "files": [
+    {
+      "path": "app/__init__.py",
+      "lines": 1,
+      "classes": [],
+      "functions": [],
+      "imports": []
+    },
+    {
+      "path": "app/authz.py",
+      "lines": 222,
+      "classes": [
+        "Principal"
+      ],
+      "functions": [
+        "resolve_permissions",
+        "get_principal",
+        "require_permission",
+        "require_farm_scope",
+        "dependency"
+      ],
+      "imports": [
+        "database",
+        "dataclasses",
+        "fastapi",
+        "models",
+        "security",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/bootstrap.py",
+      "lines": 51,
+      "classes": [],
+      "functions": [
+        "bootstrap"
+      ],
+      "imports": [
+        "config",
+        "models",
+        "security",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/config.py",
+      "lines": 45,
+      "classes": [
+        "Settings"
+      ],
+      "functions": [
+        "get_settings",
+        "cors_origins",
+        "backup_dir"
+      ],
+      "imports": [
+        "functools",
+        "pathlib",
+        "pydantic_settings"
+      ]
+    },
+    {
+      "path": "app/database.py",
+      "lines": 39,
+      "classes": [
+        "Base"
+      ],
+      "functions": [
+        "get_db"
+      ],
+      "imports": [
+        "collections",
+        "config",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/main.py",
+      "lines": 67,
+      "classes": [],
+      "functions": [
+        "lifespan",
+        "root"
+      ],
+      "imports": [
+        "bootstrap",
+        "config",
+        "contextlib",
+        "database",
+        "fastapi",
+        "routers",
+        "services"
+      ]
+    },
+    {
+      "path": "app/models.py",
+      "lines": 204,
+      "classes": [
+        "Company",
+        "User",
+        "Membership",
+        "Farm",
+        "EntityState",
+        "SyncChange",
+        "ProcessedOperation",
+        "AuditLog"
+      ],
+      "functions": [
+        "utcnow",
+        "new_id"
+      ],
+      "imports": [
+        "__future__",
+        "database",
+        "datetime",
+        "sqlalchemy",
+        "uuid"
+      ]
+    },
+    {
+      "path": "app/routers/__init__.py",
+      "lines": 1,
+      "classes": [],
+      "functions": [],
+      "imports": []
+    },
+    {
+      "path": "app/routers/animals.py",
+      "lines": 711,
+      "classes": [],
+      "functions": [
+        "_farm_for_principal",
+        "_animal_for_principal",
+        "_response",
+        "_record_change",
+        "list_animals",
+        "_genealogy_node",
+        "animal_genealogy",
+        "animal_history",
+        "animal_timeline",
+        "get_animal",
+        "create_animal",
+        "update_animal",
+        "delete_animal",
+        "parent_of",
+        "descendant_relation",
+        "category",
+        "title"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/audit.py",
+      "lines": 46,
+      "classes": [],
+      "functions": [
+        "list_audit"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/auth.py",
+      "lines": 160,
+      "classes": [],
+      "functions": [
+        "_token_response",
+        "login",
+        "me",
+        "switch_company"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "security",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/backups.py",
+      "lines": 61,
+      "classes": [],
+      "functions": [
+        "_response",
+        "list_backups",
+        "run_backup"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "datetime",
+        "fastapi",
+        "schemas",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/companies.py",
+      "lines": 262,
+      "classes": [],
+      "functions": [
+        "_authorized_membership",
+        "_details",
+        "list_companies",
+        "get_company",
+        "create_company",
+        "update_company"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/farms.py",
+      "lines": 185,
+      "classes": [],
+      "functions": [
+        "_farm_for_principal",
+        "list_farms",
+        "get_farm",
+        "create_farm",
+        "update_farm",
+        "delete_farm"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/health.py",
+      "lines": 17,
+      "classes": [],
+      "functions": [
+        "health"
+      ],
+      "imports": [
+        "database",
+        "fastapi",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/members.py",
+      "lines": 393,
+      "classes": [],
+      "functions": [
+        "_validate_role",
+        "_validate_overrides",
+        "_validate_farms",
+        "_member_response",
+        "_get_membership",
+        "_ensure_admin_remains",
+        "permission_catalog",
+        "list_members",
+        "create_member",
+        "update_member",
+        "reset_member_password"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "security",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/sync.py",
+      "lines": 215,
+      "classes": [],
+      "functions": [
+        "push",
+        "pull"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "schemas",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/routers/system.py",
+      "lines": 13,
+      "classes": [],
+      "functions": [
+        "status",
+        "system_metrics"
+      ],
+      "imports": [
+        "authz",
+        "database",
+        "fastapi",
+        "models",
+        "services",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/schemas.py",
+      "lines": 325,
+      "classes": [
+        "LoginRequest",
+        "CompanySummary",
+        "CompanyCreateRequest",
+        "CompanyUpdateRequest",
+        "CompanyDetailsResponse",
+        "TokenResponse",
+        "SwitchCompanyRequest",
+        "FarmCreateRequest",
+        "FarmUpdateRequest",
+        "FarmResponse",
+        "SyncPushRequest",
+        "SyncPushResponse",
+        "SyncChangeResponse",
+        "AuditResponse",
+        "BackupResponse",
+        "MemberCreateRequest",
+        "MemberUpdateRequest",
+        "MemberPasswordResetRequest",
+        "MemberResponse",
+        "PermissionCatalogResponse",
+        "AnimalCreateRequest",
+        "AnimalUpdateRequest",
+        "AnimalResponse",
+        "AnimalHistoryResponse",
+        "AnimalTimelineResponse",
+        "AnimalGenealogyNodeResponse",
+        "AnimalGenealogyResponse"
+      ],
+      "functions": [],
+      "imports": [
+        "datetime",
+        "pydantic",
+        "typing"
+      ]
+    },
+    {
+      "path": "app/security.py",
+      "lines": 58,
+      "classes": [],
+      "functions": [
+        "hash_password",
+        "verify_password",
+        "create_access_token",
+        "decode_access_token"
+      ],
+      "imports": [
+        "config",
+        "datetime",
+        "fastapi",
+        "jose",
+        "passlib"
+      ]
+    },
+    {
+      "path": "app/services/__init__.py",
+      "lines": 1,
+      "classes": [],
+      "functions": [],
+      "imports": []
+    },
+    {
+      "path": "app/services/audit.py",
+      "lines": 39,
+      "classes": [],
+      "functions": [
+        "record_audit"
+      ],
+      "imports": [
+        "authz",
+        "models",
+        "sqlalchemy"
+      ]
+    },
+    {
+      "path": "app/services/backup.py",
+      "lines": 97,
+      "classes": [
+        "BackupService"
+      ],
+      "functions": [
+        "__init__",
+        "run",
+        "list_backups",
+        "cleanup",
+        "_sqlite_path",
+        "_pg_dump"
+      ],
+      "imports": [
+        "__future__",
+        "config",
+        "datetime",
+        "os",
+        "pathlib",
+        "shutil",
+        "subprocess",
+        "urllib"
+      ]
+    },
+    {
+      "path": "app/services/observability.py",
+      "lines": 19,
+      "classes": [
+        "RuntimeMetrics"
+      ],
+      "functions": [
+        "observability_middleware",
+        "__init__",
+        "record",
+        "snapshot"
+      ],
+      "imports": [
+        "collections",
+        "json",
+        "logging",
+        "threading",
+        "time",
+        "uuid"
+      ]
+    },
+    {
+      "path": "app/services/security_middleware.py",
+      "lines": 18,
+      "classes": [
+        "Limiter"
+      ],
+      "functions": [
+        "security_middleware",
+        "__init__",
+        "allow"
+      ],
+      "imports": [
+        "collections",
+        "fastapi",
+        "threading",
+        "time"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "message": "create_all ainda é usado no startup; migrações Alembic devem ser a fonte de verdade."
+    },
+    {
+      "severity": "high",
+      "message": "Existe segredo padrão de desenvolvimento; produção deve rejeitar segredos fracos."
+    }
+  ]
+}

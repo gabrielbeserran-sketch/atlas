@@ -1,0 +1,56 @@
+CORREÇÃO — NAVEGAÇÃO EM DUAS LINHAS
+
+Alteração implementada
+----------------------
+A barra horizontal com rolagem foi substituída por duas linhas fixas.
+
+Linha 1
+-------
+- Resumo
+- Timeline
+- Zootecnia
+- Manejo
+- Genealogia
+- Fotos
+
+Linha 2
+-------
+- Documentos
+- Sanidade+
+- Reprodução+
+- Pesagens+
+- Nutrição
+- Executivo
+
+Benefícios
+----------
+- todos os módulos ficam visíveis ao mesmo tempo;
+- elimina rolagem horizontal;
+- reduz cliques;
+- melhora o uso em notebook e desktop;
+- botões com a mesma largura;
+- módulo selecionado em verde com ícone e texto brancos;
+- demais módulos em fundo branco com ícone verde.
+
+Arquivo completo alterado
+-------------------------
+lib/features/animal/presentation/screens/animal_detail_screen.dart
+
+Validação
+---------
+Preserve backend/.env.
+
+Execute:
+
+flutter clean
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d windows
+
+Teste
+-----
+1. Abra a Central do Animal.
+2. Confirme a existência das duas linhas.
+3. Abra cada um dos 12 módulos.
+4. Confirme o destaque verde da opção selecionada.

@@ -1,0 +1,27 @@
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: atlas_staging
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: ${ATLAS_STAGING_DB_PASSWORD}
+    volumes:
+      - atlas_staging_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ../../backend
+    environment:
+      ATLAS_ENV: staging
+      ATLAS_DATABASE_URL: postgresql+psycopg://atlas:${ATLAS_STAGING_DB_PASSWORD}@db:5432/atlas_staging
+      ATLAS_JWT_SECRET: ${ATLAS_STAGING_JWT_SECRET}
+      ATLAS_AUTO_CREATE_SCHEMA: "false"
+      ATLAS_BOOTSTRAP_ENABLED: "false"
+    ports:
+      - "8080:8000"
+    depends_on:
+      - db
+
+volumes:
+  atlas_staging_data:

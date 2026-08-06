@@ -1,0 +1,7 @@
+{
+  "phase": 42,
+  "syntax_files_compiled": 55,
+  "syntax_errors": [],
+  "pytest_executed": false,
+  "reason": "Dependências do backend não foram instaladas neste ambiente de geração."
+}

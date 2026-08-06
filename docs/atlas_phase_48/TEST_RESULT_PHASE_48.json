@@ -1,0 +1,9 @@
+{
+  "phase": 48,
+  "python_files_compiled": 78,
+  "python_syntax_errors": [],
+  "flutter_analyze_executed": false,
+  "pytest_executed": false,
+  "websocket_runtime_test_executed": false,
+  "reason": "A validação completa deve ser executada no ambiente local do usuário."
+}

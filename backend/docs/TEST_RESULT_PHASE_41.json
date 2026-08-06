@@ -1,0 +1,7 @@
+{
+  "attempted": true,
+  "passed": false,
+  "stdout": "",
+  "stderr": "ImportError while loading conftest '/mnt/data/atlas_phase_41_packages_301_310/pacote_310/Projetos Atlas/backend/tests/conftest.py'.\ntests/conftest.py:17: in <module>\n    from app.main import app\napp/main.py:5: in <module>\n    from .bootstrap import bootstrap\napp/bootstrap.py:6: in <module>\n    from .security import hash_password\napp/security.py:4: in <module>\n    from jose import JWTError, jwt\nE   ModuleNotFoundError: No module named 'jose'\n",
+  "returncode": 4
+}

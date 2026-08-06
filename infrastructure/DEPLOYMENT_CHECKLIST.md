@@ -1,0 +1,14 @@
+# Checklist de implantação
+- [ ] Domínio configurado
+- [ ] HTTPS/TLS válido
+- [ ] Segredo JWT fora do repositório
+- [ ] Senha bootstrap trocada
+- [ ] PostgreSQL persistente
+- [ ] Backup externo e restauração testada
+- [ ] CORS restrito
+- [ ] Logs/alertas configurados
+- [ ] Isolamento multiempresa validado
+- [ ] Permissões validadas
+- [ ] Sincronização/conflitos validados
+- [ ] CI verde
+- [ ] Release tag criada

@@ -1,0 +1,10 @@
+CORRECAO CONFIRMADA: 2026-08-06
+
+enterprise_operations_models.py:
+- WorkflowDefinition -> enterprise_workflow_definitions
+- WorkflowInstance -> enterprise_workflow_instances
+
+security_compliance_models.py:
+- PrivacyRequest -> compliance_privacy_requests
+
+Este arquivo identifica a entrega correta.

@@ -1,0 +1,10 @@
+CHECKPOINT ESTÁVEL — OPENAPI E ROTAS
+
+- Rotas sanitárias duplicadas removidas de app/routers/livestock.py.
+- create_health_protocol declarado uma única vez.
+- list_health_protocols declarado uma única vez.
+- apply_health_protocol declarado uma única vez.
+- Verificador estático de rotas duplicadas adicionado.
+- Gate de qualidade atualizado para executar a verificação de rotas.
+- Warning de datetime.utcnow emitido por python-jose filtrado na suíte de testes.
+- Warnings do OpenAPI causados pelo Atlas não devem permanecer.

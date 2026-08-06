@@ -1,0 +1,15 @@
+enum AtlasReactiveTarget {
+  executiveDashboard,
+  technicalDashboard,
+  atlasBi,
+  executiveKpis,
+  executiveAlerts,
+  missionControl,
+  atlasOs,
+  executiveBrain,
+  copilot,
+  digitalTwin,
+  performanceCenter,
+  performanceIntelligence,
+  operationsIntelligence,
+}

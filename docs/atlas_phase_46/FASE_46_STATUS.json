@@ -1,0 +1,46 @@
+{
+  "phase": 46,
+  "current_package": 360,
+  "packages": {
+    "351": {
+      "name": "Data Warehouse Atlas",
+      "status": "integrado"
+    },
+    "352": {
+      "name": "Cubos Analíticos",
+      "status": "integrado"
+    },
+    "353": {
+      "name": "Dashboards Executivos",
+      "status": "integrado"
+    },
+    "354": {
+      "name": "KPIs Configuráveis",
+      "status": "integrado"
+    },
+    "355": {
+      "name": "Benchmark entre Fazendas",
+      "status": "integrado"
+    },
+    "356": {
+      "name": "Indicadores Históricos",
+      "status": "integrado"
+    },
+    "357": {
+      "name": "Comparativos Ano a Ano",
+      "status": "integrado"
+    },
+    "358": {
+      "name": "Motor de Metas",
+      "status": "integrado"
+    },
+    "359": {
+      "name": "Score Global da Fazenda",
+      "status": "integrado"
+    },
+    "360": {
+      "name": "BI Enterprise Integrado",
+      "status": "integrado"
+    }
+  }
+}

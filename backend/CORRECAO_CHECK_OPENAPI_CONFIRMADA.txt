@@ -1,0 +1,10 @@
+ATLAS - CORREÇÃO DO CHECK OPENAPI
+
+Alterações aplicadas:
+1. check_openapi.py agora adiciona automaticamente a raiz do backend ao sys.path.
+2. O script funciona por caminho direto:
+   python scripts/quality/check_openapi.py
+3. O script também funciona como módulo:
+   python -m scripts.quality.check_openapi
+4. Foram adicionados scripts/__init__.py e scripts/quality/__init__.py.
+5. A validação continua falhando quando encontra operationId duplicado.

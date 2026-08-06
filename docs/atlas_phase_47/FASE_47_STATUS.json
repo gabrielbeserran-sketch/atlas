@@ -1,0 +1,46 @@
+{
+  "phase": 47,
+  "current_package": 370,
+  "packages": {
+    "361": {
+      "name": "IA Conversacional Especialista",
+      "status": "integrado"
+    },
+    "362": {
+      "name": "Motor de Recomendações",
+      "status": "integrado"
+    },
+    "363": {
+      "name": "IA de Diagnóstico Sanitário",
+      "status": "integrado"
+    },
+    "364": {
+      "name": "IA Nutricional",
+      "status": "integrado"
+    },
+    "365": {
+      "name": "IA Reprodutiva",
+      "status": "integrado"
+    },
+    "366": {
+      "name": "IA Financeira",
+      "status": "integrado"
+    },
+    "367": {
+      "name": "IA Climática",
+      "status": "integrado"
+    },
+    "368": {
+      "name": "IA para Compra e Venda",
+      "status": "integrado"
+    },
+    "369": {
+      "name": "IA Estratégica",
+      "status": "integrado"
+    },
+    "370": {
+      "name": "Atlas Executive AI",
+      "status": "integrado"
+    }
+  }
+}

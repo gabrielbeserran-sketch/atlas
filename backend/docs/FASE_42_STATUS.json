@@ -1,0 +1,46 @@
+{
+  "phase": 42,
+  "current_package": 320,
+  "packages": {
+    "311": {
+      "name": "Cadastro Real de Usuário",
+      "status": "integrado"
+    },
+    "312": {
+      "name": "Hash Seguro de Senhas",
+      "status": "integrado"
+    },
+    "313": {
+      "name": "Confirmação de E-mail",
+      "status": "integrado"
+    },
+    "314": {
+      "name": "Login Real",
+      "status": "integrado"
+    },
+    "315": {
+      "name": "Renovação e Revogação de Sessão",
+      "status": "integrado"
+    },
+    "316": {
+      "name": "Recuperação Real de Senha",
+      "status": "integrado"
+    },
+    "317": {
+      "name": "Autenticação Multifator",
+      "status": "integrado"
+    },
+    "318": {
+      "name": "Papéis e Permissões Reais",
+      "status": "integrado"
+    },
+    "319": {
+      "name": "Proteção das Rotas",
+      "status": "integrado"
+    },
+    "320": {
+      "name": "Auditoria de Segurança",
+      "status": "integrado"
+    }
+  }
+}

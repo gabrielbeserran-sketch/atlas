@@ -1,0 +1,36 @@
+HISTÓRICO ESSENCIAL DOS PACOTES — PROJETO ATLAS
+Versão atual consolidada até o Pacote 74.
+
+OBJETIVO
+Este arquivo substitui os vários arquivos PACOTE_XX_LEIA_ME da raiz.
+Ele mantém somente o resumo essencial para reduzir poluição visual e
+facilitar a manutenção do projeto.
+
+ORIENTAÇÃO DE INSTALAÇÃO
+1. Preserve backend/.env antes de substituir o projeto.
+2. Substitua a pasta do projeto pela versão mais recente.
+3. Execute:
+   flutter clean
+   flutter pub get
+   flutter analyze
+   flutter test
+   flutter run -d windows
+
+RESUMO DOS PACOTES ANTERIORES
+
+PACOTES 71 A 74 — NEGÓCIOS RURAIS
+- Pacote 71: Crédito Rural.
+- Pacote 72: Seguro Rural.
+- Pacote 73: Contratos Digitais.
+- Pacote 74: Marketplace Pecuário.
+
+ARQUIVOS TÉCNICOS PRINCIPAIS
+- docs/: arquitetura e documentação detalhada por domínio.
+- test/: testes automatizados.
+- lib/features/: implementação dos módulos.
+- backend/: API, persistência e serviços do servidor.
+
+OBSERVAÇÃO
+Os módulos de integração financeira, oficial, contratual e comercial
+são centrais preparatórias. Operações reais dependem de autorização,
+credenciais, contratos, validação profissional e serviços homologados.

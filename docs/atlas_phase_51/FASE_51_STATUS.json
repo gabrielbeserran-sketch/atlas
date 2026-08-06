@@ -1,0 +1,46 @@
+{
+  "phase": 51,
+  "current_package": 410,
+  "packages": {
+    "401": {
+      "name": "Catálogo de Datasets",
+      "status": "integrado"
+    },
+    "402": {
+      "name": "Feature Store",
+      "status": "integrado"
+    },
+    "403": {
+      "name": "Treinamento e Experimentos",
+      "status": "integrado"
+    },
+    "404": {
+      "name": "Registro de Modelos",
+      "status": "integrado"
+    },
+    "405": {
+      "name": "Versionamento de Modelos",
+      "status": "integrado"
+    },
+    "406": {
+      "name": "Deployment de Modelos",
+      "status": "integrado"
+    },
+    "407": {
+      "name": "API de Inferência",
+      "status": "integrado"
+    },
+    "408": {
+      "name": "Explicabilidade",
+      "status": "integrado"
+    },
+    "409": {
+      "name": "Feedback e Deriva",
+      "status": "integrado"
+    },
+    "410": {
+      "name": "Plataforma ML Atlas",
+      "status": "integrado"
+    }
+  }
+}

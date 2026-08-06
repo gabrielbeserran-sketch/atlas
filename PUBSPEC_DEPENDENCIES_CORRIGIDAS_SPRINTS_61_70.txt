@@ -1,0 +1,9 @@
+No pubspec.yaml atual, mantenha as dependências existentes e confirme esta entrada:
+
+  sqflite_common_ffi: ^2.3.6
+
+Os arquivos corrigidos não usam mais path_provider, path ou sqflite_common diretamente.
+Depois execute:
+  flutter pub get
+  dart format lib/core/offline
+  flutter analyze

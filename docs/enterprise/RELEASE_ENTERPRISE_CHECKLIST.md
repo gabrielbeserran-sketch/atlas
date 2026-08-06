@@ -1,0 +1,11 @@
+# Release Enterprise
+- [ ] flutter analyze
+- [ ] flutter test
+- [ ] pytest
+- [ ] docker compose config/build
+- [ ] build Windows/Web
+- [ ] segredo JWT/senha/CORS/HTTPS
+- [ ] backup/restauração
+- [ ] isolamento multiempresa
+- [ ] monitoramento/logs/alertas
+- [ ] rollback

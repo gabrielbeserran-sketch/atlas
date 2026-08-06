@@ -1,0 +1,10 @@
+ATLAS - CORRECAO DOS TESTES LEGADOS
+
+A pasta backend/tests desta entrega nao contem arquivos nomeados por sprint, fase ou bloco.
+Os 34 contratos historicos estao arquivados em:
+  backend/test_backups/legacy_sprint_phase_contracts/
+
+Validacoes:
+  python scripts/quality/archive_legacy_tests.py
+  python scripts/quality/check_consolidated_architecture.py
+  python -m pytest -q

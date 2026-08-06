@@ -1,0 +1,46 @@
+{
+  "phase": 49,
+  "current_package": 390,
+  "packages": {
+    "381": {
+      "name": "Gateway IoT",
+      "status": "integrado"
+    },
+    "382": {
+      "name": "Sensores de Pastagem",
+      "status": "integrado"
+    },
+    "383": {
+      "name": "Sensores Climáticos",
+      "status": "integrado"
+    },
+    "384": {
+      "name": "Sensores de Água",
+      "status": "integrado"
+    },
+    "385": {
+      "name": "Coleiras Inteligentes",
+      "status": "integrado"
+    },
+    "386": {
+      "name": "Balanças Automáticas",
+      "status": "integrado"
+    },
+    "387": {
+      "name": "Cercas Inteligentes",
+      "status": "integrado"
+    },
+    "388": {
+      "name": "Integração LoRaWAN",
+      "status": "integrado"
+    },
+    "389": {
+      "name": "Edge Computing",
+      "status": "integrado"
+    },
+    "390": {
+      "name": "Plataforma IoT Atlas",
+      "status": "integrado"
+    }
+  }
+}

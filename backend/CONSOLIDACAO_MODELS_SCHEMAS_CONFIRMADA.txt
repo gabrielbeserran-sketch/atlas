@@ -1,0 +1,5 @@
+ATLAS - CONSOLIDACAO MODELS E SCHEMAS
+
+Fonte única de modelos: app/models/legacy.py, exportada por app/models/__init__.py
+Fonte única de schemas: app/schemas/legacy.py, exportada por app/schemas/__init__.py
+Os arquivos conflitantes app/models.py e app/schemas.py não fazem parte deste pacote.

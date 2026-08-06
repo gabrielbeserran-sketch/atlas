@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: atlas_hml
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [atlas_hml_data:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U atlas -d atlas_hml"], interval: 10s, timeout: 5s, retries: 10}
+  api:
+    build: ./backend
+    env_file: .env.homologacao
+    depends_on: {postgres: {condition: service_healthy}}
+    ports: ["8000:8000"]
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+volumes: {atlas_hml_data: {}}

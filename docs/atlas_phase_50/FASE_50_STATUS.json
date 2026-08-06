@@ -1,0 +1,46 @@
+{
+  "phase": 50,
+  "current_package": 400,
+  "packages": {
+    "391": {
+      "name": "CRM de Clientes",
+      "status": "integrado"
+    },
+    "392": {
+      "name": "Agenda Comercial",
+      "status": "integrado"
+    },
+    "393": {
+      "name": "Propostas",
+      "status": "integrado"
+    },
+    "394": {
+      "name": "Contratos Digitais",
+      "status": "integrado"
+    },
+    "395": {
+      "name": "Assinaturas Eletrônicas",
+      "status": "integrado"
+    },
+    "396": {
+      "name": "Cobrança Automatizada",
+      "status": "integrado"
+    },
+    "397": {
+      "name": "Planos de Assinatura",
+      "status": "integrado"
+    },
+    "398": {
+      "name": "Marketplace",
+      "status": "integrado"
+    },
+    "399": {
+      "name": "Portal do Cliente",
+      "status": "integrado"
+    },
+    "400": {
+      "name": "Plataforma Comercial Completa",
+      "status": "integrado"
+    }
+  }
+}

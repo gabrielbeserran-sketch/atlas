@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Atlas Enterprise Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <b>Atlas Enterprise</b>
+      <small>Portal Administrativo</small>
+    </div>
+
+    <div class="header-actions">
+      <span id="health">API não verificada</span>
+      <button id="refresh" class="header-button" type="button">Atualizar</button>
+      <button id="logout" class="header-button" type="button" hidden>Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <button class="active" data-v="overview">Visão geral</button>
+      <button data-v="companies">Empresas</button>
+      <button data-v="members">Usuários e permissões</button>
+      <button data-v="farms">Fazendas</button>
+      <button data-v="audit">Auditoria</button>
+      <button data-v="backups">Backups</button>
+      <button data-v="system">Sistema</button>
+    </aside>
+
+    <section class="content">
+      <div class="card connection-card">
+        <h2>Conexão</h2>
+
+        <div class="row">
+          <input
+            id="base"
+            value="http://localhost:8000/api/v1"
+            aria-label="URL base da API"
+          >
+          <input
+            id="email"
+            value="admin@atlas.local"
+            aria-label="E-mail"
+          >
+          <input
+            id="password"
+            type="password"
+            placeholder="Senha"
+            aria-label="Senha"
+          >
+          <button id="login" type="button">Entrar</button>
+        </div>
+
+        <div class="session-row">
+          <p id="session">Sem sessão.</p>
+          <p id="status-message" class="status-message"></p>
+        </div>
+      </div>
+
+      <div id="view"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

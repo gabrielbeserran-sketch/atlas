@@ -1,0 +1,46 @@
+ATLAS — FASES 2 E 3
+====================
+
+Este pacote parte da Fase 1 e implementa, respectivamente:
+
+FASE 2
+11. Alertas sanitários (base preparada pelos campos next_date, status, quarentena e carências da Fase 1).
+12. Baixa de medicamentos no estoque pela infraestrutura transacional de movimentações.
+13. Nutrição vinculada ao lote oficial.
+14. Cadastro oficial de ingredientes.
+15. Planos/formulação de dieta com composição bromatológica e custo.
+16. Consumo real versus planejado.
+17. Indicadores de ganho, conversão e custo por kg ganho.
+18. Estoque oficial com entradas, saídas, perdas, ajustes e transferências.
+19. Rastreabilidade por usuário, documento, lote do produto, saldo e referência.
+20. Alertas de estoque mínimo e validade.
+
+FASE 3
+21. Categorias e centro de custo no lançamento oficial.
+22. Todo lançamento vinculado a farm_id.
+23. Custos opcionais por animal e lote.
+24. Custos automáticos de nutrição; infraestrutura para sanidade.
+25. Contas a pagar/receber com status, vencimento e liquidação.
+26. Fluxo de caixa projetado.
+27. Centros de custo.
+28. Custos consolidados por lote.
+29. Margem, custo operacional, equilíbrio, ROI e custo por animal.
+30. Endpoint de resumo pronto para alimentar o Dashboard Executivo/Atlas Brain.
+
+APLICAÇÃO
+1. Faça backup do projeto e banco.
+2. Copie os arquivos completos deste pacote, mantendo os caminhos.
+3. Backend:
+   cd backend
+   python -m pip install -r requirements.txt
+   python -m alembic upgrade head
+   python -m pytest -q
+   python -m uvicorn app.main:app --reload
+4. Flutter:
+   flutter clean
+   flutter pub get
+   flutter analyze
+   flutter run -d windows
+
+Migrations: 20260806_0021 e 20260806_0022.
+Não execute 0022 sem 0021; o Alembic fará a ordem automaticamente.

@@ -1,0 +1,11 @@
+{
+  "phase": 51,
+  "python_files_compiled": 93,
+  "python_syntax_errors": [],
+  "flutter_analyze_executed": false,
+  "flutter_test_executed": false,
+  "pytest_executed": false,
+  "trained_model_runtime_executed": false,
+  "baseline_runtime": "atlas_baseline_explainable",
+  "reason": "A validação completa do banco, Flutter e de modelos treinados deve ser executada no ambiente local."
+}

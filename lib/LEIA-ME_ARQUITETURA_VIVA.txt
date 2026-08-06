@@ -1,0 +1,29 @@
+PROJETO ATLAS — ARQUITETURA VIVA
+
+Este pacote usa como base a pasta lib corrigida mais recente desta conversa.
+Nenhum arquivo Dart foi alterado nesta etapa.
+
+CONTEÚDO
+- lib/: código-fonte usado como linha de base.
+- docs/architecture/: inventário, matriz de módulos, dependências, duplicidades e mapa completo.
+- tools/atlas_architecture_map.py: regenera todos os relatórios.
+- tools/atlas_architecture_compare.py: compara duas versões do mapa e mostra mudanças arquiteturais.
+
+COMO REGERAR NO WINDOWS
+1. Instale Python 3, caso ainda não esteja instalado.
+2. Abra o terminal na pasta principal do projeto.
+3. Execute:
+   python tools\atlas_architecture_map.py --lib lib --out docs\architecture
+
+ANTES DE UMA ALTERAÇÃO ESTRUTURAL
+1. Guarde uma cópia do arquivo docs\architecture\atlas_architecture_map.json.
+2. Faça a alteração.
+3. Regenere o mapa.
+4. Compare a versão anterior com a nova:
+   python tools\atlas_architecture_compare.py CAMINHO_DO_MAPA_ANTERIOR.json docs\architecture\atlas_architecture_map.json --out docs\architecture\ATLAS_ARCHITECTURE_DIFF.md
+5. Revise novas duplicidades, arquivos órfãos e dependências alteradas.
+6. Execute flutter analyze.
+
+REGRA OFICIAL
+Dados dos módulos -> BI/indicadores -> Decision Engine V2 -> Executive Brain -> Plano de Ação/Alertas -> Copiloto/Painéis -> Memória.
+Painéis não criam decisões paralelas. Adaptadores convertem formatos existentes sem duplicar regras.

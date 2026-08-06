@@ -1,0 +1,46 @@
+{
+  "phase": 48,
+  "current_package": 380,
+  "packages": {
+    "371": {
+      "name": "Central de Eventos",
+      "status": "integrado"
+    },
+    "372": {
+      "name": "WebSockets",
+      "status": "integrado"
+    },
+    "373": {
+      "name": "Atualização em Tempo Real",
+      "status": "integrado"
+    },
+    "374": {
+      "name": "Alertas Instantâneos",
+      "status": "integrado"
+    },
+    "375": {
+      "name": "Centro de Notificações",
+      "status": "integrado"
+    },
+    "376": {
+      "name": "Base para Push Mobile",
+      "status": "integrado"
+    },
+    "377": {
+      "name": "Alertas Inteligentes",
+      "status": "integrado"
+    },
+    "378": {
+      "name": "Monitor Operacional",
+      "status": "integrado"
+    },
+    "379": {
+      "name": "Sala de Controle",
+      "status": "integrado"
+    },
+    "380": {
+      "name": "Operação em Tempo Real",
+      "status": "integrado"
+    }
+  }
+}

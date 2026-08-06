@@ -1,0 +1,11 @@
+{
+  "phase": 50,
+  "python_files_compiled": 88,
+  "python_syntax_errors": [],
+  "flutter_analyze_executed": false,
+  "flutter_test_executed": false,
+  "pytest_executed": false,
+  "payment_gateway_test_executed": false,
+  "digital_signature_provider_test_executed": false,
+  "reason": "A validação completa de banco, Flutter, cobrança e assinatura deve ser executada no ambiente local."
+}

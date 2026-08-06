@@ -1,0 +1,57 @@
+CORREÇÃO — NAVEGAÇÃO DOS MÓDULOS DA CENTRAL DO ANIMAL
+
+Problema corrigido
+------------------
+A quantidade de módulos ultrapassava a largura disponível da janela. Embora
+a barra permitisse rolagem horizontal, o último botão ficava parcialmente
+cortado e não havia indicação clara de como chegar aos módulos seguintes.
+
+Correção implementada
+---------------------
+1. Setas permanentes nas extremidades da barra:
+   - seta esquerda: módulos anteriores;
+   - seta direita: próximos módulos.
+
+2. Barra de rolagem horizontal visível.
+
+3. Rolagem com mouse, touchpad e setas.
+
+4. A opção selecionada é centralizada automaticamente.
+
+5. Todos os módulos permanecem acessíveis:
+   - Resumo;
+   - Timeline;
+   - Zootecnia;
+   - Manejo;
+   - Genealogia;
+   - Fotos;
+   - Documentos;
+   - Sanidade+;
+   - Reprodução+;
+   - Pesagens+;
+   - Nutrição;
+   - Executivo.
+
+6. O último botão não fica mais reduzido a um pequeno círculo.
+
+Arquivo completo corrigido
+--------------------------
+lib/features/animal/presentation/screens/animal_detail_screen.dart
+
+Validação
+---------
+Preserve backend/.env e execute:
+
+flutter clean
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d windows
+
+Teste
+-----
+1. Abra a Central do Animal.
+2. Use a seta direita depois de Reprodução+.
+3. Confirme que aparecem Pesagens+, Nutrição e Executivo.
+4. Abra cada um dos três módulos.
+5. Use a seta esquerda para retornar aos módulos iniciais.

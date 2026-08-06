@@ -1,0 +1,17 @@
+{
+  "base": "Projetos Atlas(3).zip enviado pelo usuário",
+  "packages": [
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "modules": [
+    "Sanidade Enterprise",
+    "Reprodução Enterprise",
+    "Pesagens Inteligentes",
+    "Nutrição Enterprise",
+    "Painel Executivo do Animal"
+  ]
+}

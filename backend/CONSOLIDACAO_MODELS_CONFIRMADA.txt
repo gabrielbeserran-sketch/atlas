@@ -1,0 +1,7 @@
+ATLAS - CONSOLIDACAO DO PACOTE app.models
+
+- app/models.py foi movido para app/models/legacy.py.
+- app/models/__init__.py reexporta os modelos oficiais.
+- O contrato `from app.models import Company, User, ...` foi preservado.
+- 108 classes/funcoes de dominio foram identificadas.
+- Todos os imports estaticos de app.models foram validados.

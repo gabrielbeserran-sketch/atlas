@@ -1,0 +1,27 @@
+ATLAS - BACKEND COMPLETO CORRIGIDO
+
+Este ZIP já contém a pasta backend diretamente na raiz.
+
+COMO INSTALAR
+1. Feche o servidor do backend, se estiver aberto.
+2. Na pasta C:\Projetos\Projetos Atlas, mantenha backend_backup como segurança.
+3. Extraia este ZIP diretamente em C:\Projetos\Projetos Atlas.
+4. Confirme que existe:
+   C:\Projetos\Projetos Atlas\backend\app
+   C:\Projetos\Projetos Atlas\backend\alembic
+   C:\Projetos\Projetos Atlas\backend\.env
+5. Abra o PowerShell na pasta do projeto e execute:
+
+   cd .\backend
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   python -m alembic upgrade head
+   python -m pytest -q
+   python -m uvicorn app.main:app --reload
+
+OBSERVACOES
+- O .env da pasta backend_backup enviada foi preservado nesta entrega.
+- A pasta .venv nao foi incluida. Ela deve ser recriada no seu computador.
+- Caches e backups temporarios foram removidos.

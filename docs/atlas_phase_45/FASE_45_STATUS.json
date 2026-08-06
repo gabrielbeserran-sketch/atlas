@@ -1,0 +1,46 @@
+{
+  "phase": 45,
+  "current_package": 350,
+  "packages": {
+    "341": {
+      "name": "Resolução Efetiva de Conflitos",
+      "status": "integrado"
+    },
+    "342": {
+      "name": "Linha do Tempo Automática",
+      "status": "integrado"
+    },
+    "343": {
+      "name": "Alertas Calculados",
+      "status": "integrado"
+    },
+    "344": {
+      "name": "Tarefas Originadas por Eventos",
+      "status": "integrado"
+    },
+    "345": {
+      "name": "Indicadores Rastreáveis",
+      "status": "integrado"
+    },
+    "346": {
+      "name": "Relatórios PDF",
+      "status": "integrado"
+    },
+    "347": {
+      "name": "Exportação CSV e Planilhas",
+      "status": "integrado"
+    },
+    "348": {
+      "name": "Suíte Automatizada de Testes",
+      "status": "integrado"
+    },
+    "349": {
+      "name": "Homologação Operacional",
+      "status": "integrado"
+    },
+    "350": {
+      "name": "Piloto Atlas Operacional",
+      "status": "integrado"
+    }
+  }
+}

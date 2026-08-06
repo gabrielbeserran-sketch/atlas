@@ -1,0 +1,46 @@
+{
+  "phase": 44,
+  "current_package": 340,
+  "packages": {
+    "331": {
+      "name": "Cliente HTTP Centralizado",
+      "status": "integrado"
+    },
+    "332": {
+      "name": "Sessão Segura no Aplicativo",
+      "status": "integrado"
+    },
+    "333": {
+      "name": "Login Conectado ao Backend",
+      "status": "integrado"
+    },
+    "334": {
+      "name": "Seleção de Empresa e Fazenda",
+      "status": "integrado"
+    },
+    "335": {
+      "name": "Rebanho Conectado à API",
+      "status": "integrado"
+    },
+    "336": {
+      "name": "Reprodução Conectada à API",
+      "status": "integrado"
+    },
+    "337": {
+      "name": "Sanidade Conectada à API",
+      "status": "integrado"
+    },
+    "338": {
+      "name": "Nutrição, Financeiro e Estoque Conectados",
+      "status": "integrado"
+    },
+    "339": {
+      "name": "Banco Offline Estruturado",
+      "status": "integrado"
+    },
+    "340": {
+      "name": "Sincronização Bidirecional Real",
+      "status": "integrado"
+    }
+  }
+}

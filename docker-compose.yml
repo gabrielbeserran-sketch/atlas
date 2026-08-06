@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+    volumes:
+      - atlas_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - atlas_backups:/data/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backup-worker:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    command: ["python", "-m", "scripts.backup_loop"]
+    volumes:
+      - atlas_backups:/data/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+  admin-portal:
+    build:
+      context: ./admin_portal
+    ports:
+      - "8088:80"
+    depends_on:
+      - backend
+
+volumes:
+  atlas_postgres_data:
+  atlas_backups:

@@ -1,0 +1,908 @@
+HISTÓRICO ÚNICO E ESSENCIAL — PROJETO ATLAS
+Versão consolidada até o Pacote 78.
+
+FINALIDADE
+Este arquivo substitui todos os arquivos PACOTE_*_LEIA_ME e suas
+variações existentes na raiz do projeto, incluindo nomes como:
+- PACOTE_24E1_LEIA_ME
+- PACOTE_24E2_LEIA_ME
+- PACOTE_24E3B_LEIA_ME
+- PACOTE_25_1_LEIA_ME
+- PACOTE_25_9_1_LEIA_ME
+- PACOTE_26_LEIA_ME
+- PACOTE_41_LEIA_ME
+e demais arquivos históricos equivalentes.
+
+COMANDOS PADRÃO
+flutter clean
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d windows
+
+CUIDADO ANTES DE SUBSTITUIR O PROJETO
+- Preserve backend/.env.
+- Preserve arquivos locais de credenciais e dados que não estejam versionados.
+
+RESUMO DOS ARQUIVOS HISTÓRICOS CONSOLIDADOS
+
+Nenhum arquivo histórico adicional foi encontrado na raiz da base.
+As implementações anteriores permanecem preservadas no código e em docs/.
+
+PACOTES 75 A 78 — ENTREGA ATUAL
+- Pacote 75: Leilão Digital.
+- Pacote 76: Logística Pecuária.
+- Pacote 77: Certificação de Origem.
+- Pacote 78: CRM Pecuário.
+
+ARQUIVOS TÉCNICOS PRINCIPAIS
+- lib/features/: implementação dos módulos.
+- docs/: documentação arquitetural detalhada.
+- test/: testes automatizados.
+- backend/: API, banco, serviços e segurança.
+
+LIMITES OPERACIONAIS
+Leilões, transportes, certificações e relacionamento comercial reais
+dependem de documentos, identidade, autorizações, pagamentos, parceiros,
+validação profissional e integrações externas homologadas.
+
+ARQUIVOS HISTÓRICOS IDENTIFICADOS NO PRINT DO USUÁRIO
+Os nomes abaixo foram incluídos no catálogo único para que não seja
+necessário manter dezenas de arquivos separados na raiz:
+- PACOTE_24E_LEIA_ME
+- PACOTE_24E1_LEIA_ME
+- PACOTE_24E2_LEIA_ME
+- PACOTE_24E3_LEIA_ME
+- PACOTE_24E3B_LEIA_ME
+- PACOTE_24E3C_LEIA_ME
+- PACOTE_24F1_LEIA_ME
+- PACOTE_24F2_LEIA_ME
+- PACOTE_24F3_LEIA_ME
+- PACOTE_25_1_LEIA_ME
+- PACOTE_25_2_1_LEIA_ME
+- PACOTE_25_2_LEIA_ME
+- PACOTE_25_3_LEIA_ME
+- PACOTE_25_4_1_LEIA_ME
+- PACOTE_25_4_LEIA_ME
+- PACOTE_25_5_LEIA_ME
+- PACOTE_25_6_LEIA_ME
+- PACOTE_25_7_LEIA_ME
+- PACOTE_25_8_LEIA_ME
+- PACOTE_25_9_1_LEIA_ME
+- PACOTE_25_9_LEIA_ME
+- PACOTE_26_LEIA_ME
+- PACOTE_27_LEIA_ME
+- PACOTE_28_LEIA_ME
+- PACOTE_29_LEIA_ME
+- PACOTE_30_LEIA_ME
+- PACOTE_41_LEIA_ME
+- PACOTE_42_LEIA_ME
+
+OBSERVAÇÃO SOBRE O CONTEÚDO DESSES ARQUIVOS
+Na base recebida para gerar os Pacotes 75 a 78, esses arquivos já não
+estavam presentes individualmente. Por isso, foi possível consolidar
+com segurança os nomes e a referência histórica, mas não reproduzir
+literalmente o conteúdo interno que não estava mais disponível.
+
+A implementação técnica correspondente permanece preservada nas pastas:
+- lib/features/
+- docs/
+- test/
+
+PACOTES 79 A 83 — OPERAÇÕES ENTERPRISE
+Versão consolidada atual: Pacote 83.
+
+- Pacote 79: Compras Enterprise.
+- Pacote 80: Portal do Fornecedor.
+- Pacote 81: Estoque Inteligente.
+- Pacote 82: Manutenção de Ativos.
+- Pacote 83: Serviços de Campo.
+
+ARQUIVOS TÉCNICOS DESTA FASE
+- lib/features/atlas_enterprise_operations/
+- docs/atlas_enterprise_operations/
+- test/atlas_enterprise_operation_analytics_test.dart
+
+OBSERVAÇÃO
+Os módulos organizam operações e indicadores. Aprovações, integrações com
+fornecedores, ordens, estoque físico e serviços externos dependem de dados,
+credenciais, processos e validação da empresa.
+
+PACOTES 84 A 88 — GOVERNANÇA E DESENVOLVIMENTO
+Versão consolidada atual: Pacote 88.
+
+- Pacote 84: Gestão da Qualidade.
+- Pacote 85: Compliance Enterprise.
+- Pacote 86: Portfólio de Projetos.
+- Pacote 87: Gestão de Equipes.
+- Pacote 88: Academia Atlas.
+
+ARQUIVOS TÉCNICOS DESTA FASE
+- lib/features/atlas_governance_operations/
+- docs/atlas_governance_operations/
+- test/atlas_governance_operation_analytics_test.dart
+
+OBSERVAÇÃO
+Os módulos apoiam governança, controle e desenvolvimento. Aprovações formais,
+auditorias, decisões trabalhistas, políticas e certificações dependem de
+responsáveis autorizados e validação profissional.
+
+PACOTES 89 A 93 — INTELIGÊNCIA EXECUTIVA
+Versão consolidada atual: Pacote 93.
+
+- Pacote 89: CRM Enterprise.
+- Pacote 90: Central Financeira.
+- Pacote 91: Business Intelligence.
+- Pacote 92: Central Estratégica Atlas AI.
+- Pacote 93: Enterprise Command Center.
+
+ARQUIVOS TÉCNICOS DESTA FASE
+- lib/features/atlas_executive_intelligence/
+- docs/atlas_executive_intelligence/
+- test/atlas_executive_intelligence_analytics_test.dart
+
+OBSERVAÇÃO
+Os módulos consolidam indicadores e apoiam decisões executivas. Resultados,
+projeções e recomendações dependem da qualidade, completude e atualização dos
+dados e devem ser validados pelos responsáveis.
+
+PACOTES 94 A 98 — PLATAFORMA E RESILIÊNCIA
+Versão consolidada atual: Pacote 98.
+
+- Pacote 94: Governança de Dados.
+- Pacote 95: Integration Hub.
+- Pacote 96: Cibersegurança Atlas.
+- Pacote 97: Observabilidade Enterprise.
+- Pacote 98: Gêmeo Digital da Fazenda.
+
+ARQUIVOS TÉCNICOS DESTA FASE
+- lib/features/atlas_platform_resilience/
+- docs/atlas_platform_resilience/
+- test/atlas_platform_resilience_analytics_test.dart
+
+OBSERVAÇÃO
+Os módulos organizam a fundação tecnológica do Atlas. Integrações reais,
+monitoramento, segurança e gêmeos digitais dependem de infraestrutura,
+credenciais, conectores e serviços externos devidamente configurados.
+
+PACOTES 99 E 100 — AUTONOMIA E FINALIZAÇÃO
+Versão consolidada atual: Pacote 100.
+
+- Pacote 99: Orquestrador Atlas AI.
+- Pacote 100: Centro de Finalização Enterprise.
+
+ARQUIVOS TÉCNICOS DESTA FASE
+- lib/features/atlas_autonomous_enterprise/
+- docs/atlas_autonomous_enterprise/
+- test/atlas_autonomous_enterprise_analytics_test.dart
+
+MARCO DO PACOTE 100
+O Pacote 100 fecha o ciclo funcional planejado desta etapa do Projeto Atlas.
+Ele acrescenta governança para produção, checklist de lançamento, qualidade,
+segurança, rollback, monitoramento e suporte pós-publicação.
+
+OBSERVAÇÃO
+O aplicativo ainda exige validação real no ambiente Flutter do usuário,
+configuração de backend, banco, credenciais, integrações, infraestrutura,
+políticas de segurança e publicação nas lojas ou servidores escolhidos.
+
+FASE 21 — PACOTES 101 A 110
+Versão consolidada atual: Pacote 110.
+
+- Pacote 101: Usuários e Perfis Enterprise.
+- Pacote 102: Multiempresa.
+- Pacote 103: Multifazenda.
+- Pacote 104: Planos e Assinaturas.
+- Pacote 105: Cobrança e Billing.
+- Pacote 106: Integração Pix.
+- Pacote 107: Integração com Cartões.
+- Pacote 108: Gestão de Licenças.
+- Pacote 109: Marketplace de Consultores.
+- Pacote 110: Portal do Produtor.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_saas_platform/
+- docs/atlas_saas_platform/
+- test/atlas_saas_platform_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega estrutura funcional, CRUD, indicadores e persistência local.
+Autenticação real, isolamento multiempresa, pagamentos e cobranças dependem
+de backend seguro, banco de dados, provedores homologados e credenciais.
+
+FASE 22 — PACOTES 111 A 120
+Versão consolidada atual: Pacote 120.
+
+- Pacote 111: Assistente Atlas IA.
+- Pacote 112: Chat Contextual da Fazenda.
+- Pacote 113: IA de Apoio Sanitário.
+- Pacote 114: IA Reprodutiva.
+- Pacote 115: IA Nutricional.
+- Pacote 116: IA Genética.
+- Pacote 117: IA Financeira.
+- Pacote 118: IA Estratégica.
+- Pacote 119: IA Climática Integrada.
+- Pacote 120: IA Explicável.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_advanced_ai/
+- docs/atlas_advanced_ai/
+- test/atlas_advanced_ai_analytics_test.dart
+
+OBSERVAÇÃO
+A fase implementa a camada funcional e auditável de apoio à decisão.
+Modelos generativos, previsões meteorológicas e inferências reais exigem
+APIs, modelos, fontes de dados, backend, monitoramento e validação humana.
+
+FASE 23 — PACOTES 121 A 130
+Versão consolidada atual: Pacote 130.
+
+- Pacote 121: Integração com Balanças — integrado.
+- Pacote 122: Brincos Eletrônicos RFID — integrado.
+- Pacote 123: Colares Inteligentes — integrado.
+- Pacote 124: Sensores Ambientais — integrado.
+- Pacote 125: Sensores de Água — integrado.
+- Pacote 126: Sensores de Energia — integrado.
+- Pacote 127: Estações Meteorológicas — integrado.
+- Pacote 128: Drones — integrado.
+- Pacote 129: Satélites — integrado.
+- Pacote 130: Central IoT — integrado.
+
+CORREÇÃO DE COMPATIBILIDADE
+- Substituído Icons.monitoring_outlined por Icons.analytics_outlined
+  em atlas_iot_screen.dart, eliminando o erro de getter inexistente.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_iot_platform/
+- docs/atlas_iot_platform/
+- test/atlas_iot_analytics_test.dart
+
+OBSERVAÇÃO
+A estrutura oferece CRUD, filtros, analytics e persistência local.
+Operação real de drones, satélites, dispositivos e telemetria depende
+de hardware, APIs, gateways, credenciais, backend e validações externas.
+
+FASE 24 — PACOTES 131 A 140
+Versão consolidada atual: Pacote 140.
+
+- Pacote 131: Mapas GIS.
+- Pacote 132: Piquetes Inteligentes.
+- Pacote 133: Rotação Automática.
+- Pacote 134: Planejamento de Pastagens.
+- Pacote 135: NDVI.
+- Pacote 136: Biomassa.
+- Pacote 137: Solo.
+- Pacote 138: Declividade.
+- Pacote 139: Irrigação.
+- Pacote 140: Planejamento Territorial.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_geospatial_platform/
+- docs/atlas_geospatial_platform/
+- test/atlas_geospatial_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Mapas reais, imagens, índices espectrais e análises territoriais dependem
+de fontes geográficas, serviços externos, coordenadas e validação de campo.
+
+FASE 25 — PACOTES 141 A 150
+Versão consolidada atual: Pacote 150.
+
+- Pacote 141: IATF Avançada.
+- Pacote 142: Fertilidade Individual.
+- Pacote 143: Embriões.
+- Pacote 144: FIV.
+- Pacote 145: Transferência de Embriões.
+- Pacote 146: Catálogo Genético.
+- Pacote 147: Acasalamento Inteligente.
+- Pacote 148: Predição Genética.
+- Pacote 149: Melhoramento Contínuo.
+- Pacote 150: Central Reprodutiva.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_reproductive_premium/
+- docs/atlas_reproductive_premium/
+- test/atlas_reproductive_premium_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Procedimentos reais de reprodução, genética, FIV e transferência de embriões
+exigem médico-veterinário, laboratório, equipe técnica e validação profissional.
+
+FASE 26 — PACOTES 151 A 160
+Versão consolidada atual: Pacote 160.
+
+- Pacote 151: Predição de Peso.
+- Pacote 152: Predição de Ganho Diário.
+- Pacote 153: Consumo Estimado.
+- Pacote 154: Eficiência Alimentar.
+- Pacote 155: Conversão Alimentar.
+- Pacote 156: Bem-estar Animal.
+- Pacote 157: Detecção Precoce de Doenças.
+- Pacote 158: Estresse Térmico.
+- Pacote 159: Mortalidade Prevista.
+- Pacote 160: Índice Geral de Eficiência.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_precision_livestock/
+- docs/atlas_precision_livestock/
+- test/atlas_precision_livestock_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Previsões reais exigem dados históricos, sensores, modelos calibrados,
+monitoramento e validação veterinária, nutricional e zootécnica.
+
+FASE 27 — PACOTES 161 A 170
+Versão consolidada atual: Pacote 170.
+
+- Pacote 161: Fluxo Financeiro Projetado.
+- Pacote 162: Fluxo Financeiro Consolidado.
+- Pacote 163: Orçamento Anual.
+- Pacote 164: Realizado versus Planejado.
+- Pacote 165: Simulações Econômicas.
+- Pacote 166: Indicadores Bancários.
+- Pacote 167: ROI.
+- Pacote 168: EBITDA.
+- Pacote 169: Valor Patrimonial.
+- Pacote 170: Enterprise Finance Center.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_finance_enterprise/
+- docs/atlas_finance_enterprise/
+- test/atlas_finance_enterprise_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Análises financeiras reais exigem contabilidade, contratos, dados bancários,
+premissas consistentes e validação por profissionais responsáveis.
+
+FASE 28 — PACOTES 171 A 180
+Versão consolidada atual: Pacote 180.
+
+- Pacote 171: CRM Premium.
+- Pacote 172: Pipeline Inteligente.
+- Pacote 173: Contratos Digitais.
+- Pacote 174: Assinatura Eletrônica.
+- Pacote 175: Gestão de Clientes.
+- Pacote 176: Pós-venda.
+- Pacote 177: Indicadores Comerciais.
+- Pacote 178: Marketplace de Serviços.
+- Pacote 179: Leilões.
+- Pacote 180: Central Comercial.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_commercial_enterprise/
+- docs/atlas_commercial_enterprise/
+- test/atlas_commercial_enterprise_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Assinaturas válidas, contratos, pagamentos e leilões reais exigem provedores,
+backend seguro, controles jurídicos, identidade e auditoria.
+
+FASE 29 — PACOTES 181 A 190
+Versão consolidada atual: Pacote 190.
+
+- Pacote 181: Pegada de Carbono.
+- Pacote 182: Inventário de Gases de Efeito Estufa.
+- Pacote 183: Gestão Hídrica.
+- Pacote 184: Eficiência Energética.
+- Pacote 185: Gestão de Resíduos.
+- Pacote 186: Biodiversidade.
+- Pacote 187: Conformidade Ambiental.
+- Pacote 188: Certificações de Sustentabilidade.
+- Pacote 189: Rastreabilidade Sustentável.
+- Pacote 190: Central ESG.
+
+ARQUIVOS TÉCNICOS DA FASE
+- lib/features/atlas_sustainability_enterprise/
+- docs/atlas_sustainability_enterprise/
+- test/atlas_sustainability_enterprise_analytics_test.dart
+
+OBSERVAÇÃO
+A fase oferece estrutura funcional, CRUD, indicadores e persistência local.
+Inventários oficiais, licenças, auditorias e certificações exigem metodologia,
+evidências, profissionais habilitados e validação externa.
+
+FASE 30 — PACOTES 191 A 200
+Versão consolidada atual: Pacote 200.
+
+- Pacote 191: Inteligência Climática — integrado.
+- Pacote 192: Meteorologia Avançada — integrado.
+- Pacote 193: Planejamento Forrageiro Inteligente — integrado.
+- Pacote 194: Gestão de Pastagens com IA — integrado.
+- Pacote 195: Indicadores Climáticos e Ambientais — integrado.
+- Pacote 196: Gestão de Riscos Climáticos — integrado.
+- Pacote 197: Simulações Climáticas Preditivas — integrado.
+- Pacote 198: Alertas Climáticos Inteligentes — integrado.
+- Pacote 199: Central de Decisão Agroclimática — integrado.
+- Pacote 200: Atlas Climate Intelligence Center — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_climate_enterprise/
+- docs/atlas_climate_enterprise/
+- test/atlas_climate_enterprise_analytics_test.dart
+
+OBSERVAÇÃO
+A estrutura oferece CRUD, filtros, analytics, persistência local e navegação.
+Previsões e alertas climáticos reais dependem de APIs, estações,
+modelos calibrados, backend, credenciais e validação de campo.
+
+FASE 31 — PACOTES 201 A 210
+Versão consolidada atual: Pacote 210.
+
+- Pacote 201: Planejamento Operacional da Fazenda — integrado.
+- Pacote 202: Agenda Inteligente de Atividades — integrado.
+- Pacote 203: Ordens de Serviço — integrado.
+- Pacote 204: Gestão de Equipes — integrado.
+- Pacote 205: Controle de Jornada — integrado.
+- Pacote 206: Gestão de Máquinas — integrado.
+- Pacote 207: Manutenção Preventiva — integrado.
+- Pacote 208: Manutenção Corretiva — integrado.
+- Pacote 209: Indicadores Operacionais — integrado.
+- Pacote 210: Central de Operações Atlas — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_operations_enterprise/
+- docs/atlas_operations_enterprise/
+- test/atlas_operations_enterprise_analytics_test.dart
+
+OBSERVAÇÃO
+A estrutura oferece CRUD, filtros, indicadores e persistência local.
+Integrações reais com ponto, telemetria, RH e manutenção dependem de
+backend, equipamentos, credenciais e validação profissional.
+
+FASE 32 — PACOTES 211 A 220
+Versão consolidada atual: Pacote 220.
+
+- Pacote 211: Compras Inteligentes — integrado.
+- Pacote 212: Gestão de Fornecedores — integrado.
+- Pacote 213: Cotação Automatizada — integrado.
+- Pacote 214: Aprovação de Compras — integrado.
+- Pacote 215: Estoque Multidepósito — integrado.
+- Pacote 216: Lotes e Validades — integrado.
+- Pacote 217: Inventário Inteligente — integrado.
+- Pacote 218: Logística de Transporte — integrado.
+- Pacote 219: Gestão de Combustíveis — integrado.
+- Pacote 220: Central de Suprimentos e Logística — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_supply_logistics_enterprise/
+- docs/atlas_supply_logistics_enterprise/
+- test/atlas_supply_logistics_analytics_test.dart
+
+OBSERVAÇÃO
+A estrutura oferece CRUD, filtros, indicadores e persistência local.
+Integrações fiscais, pagamentos, telemetria e rastreabilidade real
+dependem de backend, credenciais, equipamentos e validação profissional.
+
+FASE 33 — PACOTES 221 A 230
+Versão consolidada atual: Pacote 230.
+
+- Pacote 221: Gestão de Pessoas — integrado.
+- Pacote 222: Treinamentos e Capacitações — integrado.
+- Pacote 223: Saúde e Segurança do Trabalho — integrado.
+- Pacote 224: Equipamentos de Proteção Individual — integrado.
+- Pacote 225: Gestão de Documentos — integrado.
+- Pacote 226: Controle de Conformidade — integrado.
+- Pacote 227: Auditorias Internas — integrado.
+- Pacote 228: Gestão de Riscos Corporativos — integrado.
+- Pacote 229: Matriz de Permissões — integrado.
+- Pacote 230: Central de Governança Atlas — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_governance_people_enterprise/
+- docs/atlas_governance_people_enterprise/
+- test/atlas_governance_people_analytics_test.dart
+
+OBSERVAÇÃO
+A estrutura oferece CRUD, filtros, indicadores e persistência local.
+Registros oficiais, controle de acesso real, SST e conformidade legal
+dependem de backend seguro, profissionais responsáveis e validação jurídica.
+
+FASE 34 — PACOTES 231 A 240
+Versão consolidada atual: Pacote 240.
+
+- Pacote 231: Autenticação Profissional — integrado.
+- Pacote 232: Gestão de Usuários e Empresas — integrado.
+- Pacote 233: Banco de Dados em Nuvem — integrado.
+- Pacote 234: Sincronização Offline — integrado.
+- Pacote 235: Resolução de Conflitos — integrado.
+- Pacote 236: Backup Automatizado — integrado.
+- Pacote 237: Criptografia de Dados — integrado.
+- Pacote 238: Logs e Auditoria de Usuários — integrado.
+- Pacote 239: Central de Integrações — integrado.
+- Pacote 240: Central de Segurança Atlas — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_cloud_security_enterprise/
+- docs/atlas_cloud_security_enterprise/
+- test/atlas_cloud_security_analytics_test.dart
+
+OBSERVAÇÃO
+A fase implementa a camada de cadastro, acompanhamento e governança.
+Autenticação, nuvem, criptografia, backup, auditoria e sincronização reais
+dependem de backend seguro, provedores, credenciais e infraestrutura.
+
+FASE 35 — PACOTES 241 A 250
+Versão consolidada atual: Pacote 250.
+
+- Pacote 241: Dashboard Executivo Global — integrado.
+- Pacote 242: Comparação entre Fazendas — integrado.
+- Pacote 243: Metas Corporativas — integrado.
+- Pacote 244: Central de Alertas Unificada — integrado.
+- Pacote 245: Central de Tarefas Inteligentes — integrado.
+- Pacote 246: Relatórios Profissionais — integrado.
+- Pacote 247: Exportação e Compartilhamento — integrado.
+- Pacote 248: Gestão de Planos e Assinaturas — integrado.
+- Pacote 249: Painel Administrativo da Plataforma — integrado.
+- Pacote 250: Atlas Enterprise Command Center — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_executive_platform/
+- docs/atlas_executive_platform/
+- test/atlas_executive_platform_analytics_test.dart
+
+OBSERVAÇÃO
+A fase implementa a camada funcional de gestão executiva e produto.
+Relatórios PDF, exportações, compartilhamento, cobrança e administração
+reais dependem de backend, provedores, segurança e políticas comerciais.
+
+FASE 36 — PACOTES 251 A 260
+Versão consolidada atual: Pacote 260.
+
+- Pacote 251: Rotas, serviços, validações, erros e saúde. — integrado.
+- Pacote 252: Desenvolvimento, homologação, produção e segredos. — integrado.
+- Pacote 253: Conexão, schema, índices, integridade e monitoramento. — integrado.
+- Pacote 254: Criação, execução, rollback, histórico e validação. — integrado.
+- Pacote 255: Empresas, fazendas, isolamento e auditoria. — integrado.
+- Pacote 256: Usuários, empresas, convites, papéis e desativação. — integrado.
+- Pacote 257: Fazendas, lotes, grupos, movimentações e consultas. — integrado.
+- Pacote 258: Cadastro, edição, consulta, movimentação e histórico. — integrado.
+- Pacote 259: Pesagens, sanidade, reprodução, nutrição e operações. — integrado.
+- Pacote 260: Serviços, banco, filas, falhas e painel técnico. — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_backend_foundation/
+- docs/atlas_backend_foundation/
+- test/atlas_backend_foundation_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega a camada funcional de gestão, arquitetura e monitoramento.
+A implantação real exige backend executável, PostgreSQL, infraestrutura,
+credenciais, migrações e testes no ambiente do projeto.
+
+FASE 37 — PACOTES 261 A 270
+Versão consolidada atual: Pacote 270.
+
+- Pacote 261: Cadastro Seguro de Usuário — integrado.
+- Pacote 262: Login com Tokens Seguros — integrado.
+- Pacote 263: Recuperação de Senha — integrado.
+- Pacote 264: Autenticação Multifator — integrado.
+- Pacote 265: Controle de Acesso por Papéis — integrado.
+- Pacote 266: Proteção de Dados Sensíveis — integrado.
+- Pacote 267: Logs Imutáveis de Auditoria — integrado.
+- Pacote 268: Banco Local Offline — integrado.
+- Pacote 269: Motor de Sincronização — integrado.
+- Pacote 270: Resolução Real de Conflitos — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_auth_sync_enterprise/
+- docs/atlas_auth_sync_enterprise/
+- test/atlas_auth_sync_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega a camada funcional de gestão, acompanhamento e arquitetura.
+Autenticação, tokens, MFA, criptografia, banco offline estruturado,
+sincronização e conflitos reais exigem backend, banco local e infraestrutura.
+
+FASE 38 — PACOTES 271 A 280
+Versão consolidada atual: Pacote 280.
+
+- Pacote 271: Migração do Módulo Rebanho — integrado.
+- Pacote 272: Migração do Módulo Reprodução — integrado.
+- Pacote 273: Migração do Módulo Sanidade — integrado.
+- Pacote 274: Migração do Módulo Nutrição — integrado.
+- Pacote 275: Migração do Módulo Financeiro — integrado.
+- Pacote 276: Migração do Módulo Estoque — integrado.
+- Pacote 277: Integração entre Eventos — integrado.
+- Pacote 278: Linha do Tempo Unificada — integrado.
+- Pacote 279: Central de Alertas Integrada — integrado.
+- Pacote 280: Central de Tarefas Integrada — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_livestock_integration/
+- docs/atlas_livestock_integration/
+- test/atlas_livestock_integration_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega a camada funcional de migração, integração e acompanhamento.
+A conexão real entre módulos, API e banco exige backend executável,
+endpoints, persistência remota, sincronização e testes de consistência.
+
+FASE 39 — PACOTES 281 A 290
+Versão consolidada atual: Pacote 290.
+
+- Pacote 281: Motor de Indicadores Consolidado — integrado.
+- Pacote 282: Dashboard Executivo com Dados Reais — integrado.
+- Pacote 283: Comparação Real entre Fazendas — integrado.
+- Pacote 284: Motor de Recomendações Rastreável — integrado.
+- Pacote 285: Diagnósticos Preditivos Validados — integrado.
+- Pacote 286: Relatórios Técnicos em PDF — integrado.
+- Pacote 287: Relatórios Financeiros e Executivos — integrado.
+- Pacote 288: Exportação para Planilhas e CSV — integrado.
+- Pacote 289: Compartilhamento Seguro — integrado.
+- Pacote 290: Nova Experiência de Navegação — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_intelligence_reports_experience/
+- docs/atlas_intelligence_reports_experience/
+- test/atlas_intelligence_reports_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega a camada funcional de inteligência, relatórios e experiência.
+PDFs, planilhas, benchmarking, recomendações e compartilhamento reais exigem
+dados integrados, backend, serviços de geração e políticas de acesso.
+
+FASE 40 — PACOTES 291 A 300
+Versão consolidada atual: Pacote 300.
+
+- Pacote 291: Revisão Arquitetural Completa — integrado.
+- Pacote 292: Testes Unitários Abrangentes — integrado.
+- Pacote 293: Testes de Integração — integrado.
+- Pacote 294: Testes de Interface — integrado.
+- Pacote 295: Testes de Segurança — integrado.
+- Pacote 296: Testes de Desempenho — integrado.
+- Pacote 297: Monitoramento e Tratamento de Falhas — integrado.
+- Pacote 298: Publicação em Ambiente de Homologação — integrado.
+- Pacote 299: Programa-Piloto em Fazenda — integrado.
+- Pacote 300: Atlas Versão 1.0 — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/features/atlas_quality_release/
+- docs/atlas_quality_release/
+- test/atlas_quality_release_analytics_test.dart
+
+OBSERVAÇÃO
+A fase entrega a camada funcional de qualidade, homologação e lançamento.
+A execução real de testes, publicação, monitoramento, piloto e versão 1.0
+depende do ambiente Flutter, backend, infraestrutura e usuários reais.
+
+FASE 41 — PACOTES 301 A 310
+Versão consolidada atual: Pacote 310.
+
+- Pacote 301: Auditoria do backend existente — integrado.
+- Pacote 302: Padronização da arquitetura do servidor — integrado.
+- Pacote 303: Inicialização segura do servidor — integrado.
+- Pacote 304: Conexão PostgreSQL real — integrado.
+- Pacote 305: Sistema real de migrações — integrado.
+- Pacote 306: Modelo multempresa do banco — integrado.
+- Pacote 307: Repositórios e transações — integrado.
+- Pacote 308: Validação e tratamento global de erros — integrado.
+- Pacote 309: Documentação da API — integrado.
+- Pacote 310: Health check e diagnóstico do backend — integrado.
+
+A Fase 41 altera o backend executável. Ela não adiciona novos acessos à Central do Animal.
+
+FASE 42 — PACOTES 311 A 320
+Versão consolidada atual: Pacote 320.
+
+- Pacote 311: Cadastro Real de Usuário — integrado.
+- Pacote 312: Hash Seguro de Senhas — integrado.
+- Pacote 313: Confirmação de E-mail — integrado.
+- Pacote 314: Login Real — integrado.
+- Pacote 315: Renovação e Revogação de Sessão — integrado.
+- Pacote 316: Recuperação Real de Senha — integrado.
+- Pacote 317: Autenticação Multifator — integrado.
+- Pacote 318: Papéis e Permissões Reais — integrado.
+- Pacote 319: Proteção das Rotas — integrado.
+- Pacote 320: Auditoria de Segurança — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/auth.py
+- backend/app/security.py
+- backend/app/services/mailer.py
+- backend/app/services/security_events.py
+- backend/alembic/versions/20260804_0002_auth_security.py
+- backend/tests/test_auth_phase42.py
+
+FASE 43 — PACOTES 321 A 330
+Versão consolidada atual: Pacote 330.
+
+- Pacote 321: API Real de Empresas — integrado.
+- Pacote 322: API Real de Fazendas — integrado.
+- Pacote 323: API Real de Lotes — integrado.
+- Pacote 324: API Real de Animais — integrado.
+- Pacote 325: Identificadores e Prevenção de Duplicidade — integrado.
+- Pacote 326: Movimentações de Animais — integrado.
+- Pacote 327: API Real de Pesagens — integrado.
+- Pacote 328: API Real de Reprodução — integrado.
+- Pacote 329: API Real de Sanidade — integrado.
+- Pacote 330: API Real de Nutrição, Estoque e Custos — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/livestock.py
+- backend/app/models.py
+- backend/app/schemas.py
+- backend/alembic/versions/20260804_0003_livestock_apis.py
+- backend/tests/test_phase43_models.py
+- backend/tests/test_phase43_routes.py
+
+FASE 44 — PACOTES 331 A 340
+Versão consolidada atual: Pacote 340.
+
+- Pacote 331: Cliente HTTP Centralizado — integrado.
+- Pacote 332: Sessão Segura no Aplicativo — integrado.
+- Pacote 333: Login Conectado ao Backend — integrado.
+- Pacote 334: Seleção de Empresa e Fazenda — integrado.
+- Pacote 335: Rebanho Conectado à API — integrado.
+- Pacote 336: Reprodução Conectada à API — integrado.
+- Pacote 337: Sanidade Conectada à API — integrado.
+- Pacote 338: Nutrição, Financeiro e Estoque Conectados — integrado.
+- Pacote 339: Banco Offline Estruturado — integrado.
+- Pacote 340: Sincronização Bidirecional Real — integrado.
+
+ARQUIVOS TÉCNICOS
+- lib/core/network/
+- lib/core/auth/
+- lib/core/database/
+- lib/core/sync/
+- lib/features/authentication/
+- lib/features/*/data/repositories/
+
+FASE 45 — PACOTES 341 A 350
+Versão consolidada atual: Pacote 350.
+
+- Pacote 341: Resolução Efetiva de Conflitos — integrado.
+- Pacote 342: Linha do Tempo Automática — integrado.
+- Pacote 343: Alertas Calculados — integrado.
+- Pacote 344: Tarefas Originadas por Eventos — integrado.
+- Pacote 345: Indicadores Rastreáveis — integrado.
+- Pacote 346: Relatórios PDF — integrado.
+- Pacote 347: Exportação CSV e Planilhas — integrado.
+- Pacote 348: Suíte Automatizada de Testes — integrado.
+- Pacote 349: Homologação Operacional — integrado.
+- Pacote 350: Piloto Atlas Operacional — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/operations.py
+- backend/app/services/operational_intelligence.py
+- backend/alembic/versions/20260804_0004_operations_release.py
+- lib/core/sync/atlas_conflict_resolver.dart
+- lib/features/operations/
+- lib/features/reports/
+- deploy/staging/
+- pilot/
+
+FASE 46 — PACOTES 351 A 360
+Versão consolidada atual: Pacote 360.
+
+- Pacote 351: Data Warehouse Atlas — integrado.
+- Pacote 352: Cubos Analíticos — integrado.
+- Pacote 353: Dashboards Executivos — integrado.
+- Pacote 354: KPIs Configuráveis — integrado.
+- Pacote 355: Benchmark entre Fazendas — integrado.
+- Pacote 356: Indicadores Históricos — integrado.
+- Pacote 357: Comparativos Ano a Ano — integrado.
+- Pacote 358: Motor de Metas — integrado.
+- Pacote 359: Score Global da Fazenda — integrado.
+- Pacote 360: BI Enterprise Integrado — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/analytics.py
+- backend/app/services/analytics_bi.py
+- backend/alembic/versions/20260805_0005_analytics_bi.py
+- lib/features/analytics/
+- docs/atlas_phase_46/
+
+FASE 47 — PACOTES 361 A 370
+Versão consolidada atual: Pacote 370.
+
+- Pacote 361: IA Conversacional Especialista — integrado.
+- Pacote 362: Motor de Recomendações — integrado.
+- Pacote 363: IA de Diagnóstico Sanitário — integrado.
+- Pacote 364: IA Nutricional — integrado.
+- Pacote 365: IA Reprodutiva — integrado.
+- Pacote 366: IA Financeira — integrado.
+- Pacote 367: IA Climática — integrado.
+- Pacote 368: IA para Compra e Venda — integrado.
+- Pacote 369: IA Estratégica — integrado.
+- Pacote 370: Atlas Executive AI — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/ai.py
+- backend/app/services/atlas_ai_2.py
+- backend/alembic/versions/20260805_0006_atlas_ai_2.py
+- lib/features/atlas_ai_2/
+- docs/atlas_phase_47/
+
+
+FASE 49 — PACOTES 381 A 390
+Versão consolidada atual: Pacote 390.
+
+- Pacote 381: Gateway IoT — integrado.
+- Pacote 382: Sensores de Pastagem — integrado.
+- Pacote 383: Sensores Climáticos — integrado.
+- Pacote 384: Sensores de Água — integrado.
+- Pacote 385: Coleiras Inteligentes — integrado.
+- Pacote 386: Balanças Automáticas — integrado.
+- Pacote 387: Cercas Inteligentes — integrado.
+- Pacote 388: Integração LoRaWAN — integrado.
+- Pacote 389: Edge Computing — integrado.
+- Pacote 390: Plataforma IoT Atlas — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/iot.py
+- backend/app/services/iot_service.py
+- backend/alembic/versions/20260805_0008_iot_enterprise.py
+- lib/features/iot_enterprise/
+- docs/atlas_phase_49/
+
+
+FASE 50 — PACOTES 391 A 400
+Versão consolidada atual: Pacote 400.
+
+- Pacote 391: CRM de Clientes — integrado.
+- Pacote 392: Agenda Comercial — integrado.
+- Pacote 393: Propostas — integrado.
+- Pacote 394: Contratos Digitais — integrado.
+- Pacote 395: Assinaturas Eletrônicas — integrado.
+- Pacote 396: Cobrança Automatizada — integrado.
+- Pacote 397: Planos de Assinatura — integrado.
+- Pacote 398: Marketplace — integrado.
+- Pacote 399: Portal do Cliente — integrado.
+- Pacote 400: Plataforma Comercial Completa — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/commercial.py
+- backend/app/services/commercial_service.py
+- backend/alembic/versions/20260805_0009_commercial_platform.py
+- lib/features/commercial_platform/
+- docs/atlas_phase_50/
+
+
+FASE 51 — PACOTES 401 A 410
+Versão consolidada atual: Pacote 410.
+
+- Pacote 401: Catálogo de Datasets — integrado.
+- Pacote 402: Feature Store — integrado.
+- Pacote 403: Treinamento e Experimentos — integrado.
+- Pacote 404: Registro de Modelos — integrado.
+- Pacote 405: Versionamento de Modelos — integrado.
+- Pacote 406: Deployment de Modelos — integrado.
+- Pacote 407: API de Inferência — integrado.
+- Pacote 408: Explicabilidade — integrado.
+- Pacote 409: Feedback e Deriva — integrado.
+- Pacote 410: Plataforma ML Atlas — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/routers/ml.py
+- backend/app/services/ml_platform.py
+- backend/alembic/versions/20260805_0010_ml_platform.py
+- lib/features/ml_platform/
+- docs/atlas_phase_51/
+
+
+FASE 52 — PACOTES 411 A 420
+Versão consolidada atual: Pacote 420.
+
+- Pacote 411: Núcleo do Agente Inteligente — integrado.
+- Pacote 412: Memória Operacional — integrado.
+- Pacote 413: Conhecimento da Fazenda — integrado.
+- Pacote 414: Planejamento Inteligente — integrado.
+- Pacote 415: Recomendações Inteligentes — integrado.
+- Pacote 416: Sistema RAG — integrado.
+- Pacote 417: Agentes Especialistas — integrado.
+- Pacote 418: Coordenação Multiagente — integrado.
+- Pacote 419: Chat Empresarial Atlas — integrado.
+- Pacote 420: Dashboard Executivo IA — integrado.
+
+ARQUIVOS TÉCNICOS
+- backend/app/ai/
+- backend/app/routers/atlas_ai_enterprise.py
+- backend/app/services/atlas_ai_enterprise_service.py
+- backend/alembic/versions/20260805_0011_atlas_ai_enterprise.py
+- lib/features/atlas_ai_enterprise/
+- docs/atlas_phase_52/
