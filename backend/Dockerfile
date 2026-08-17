@@ -16,8 +16,9 @@ COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 COPY tests ./tests
 
-RUN mkdir -p /data/backups /data/attachments
+RUN mkdir -p /data/backups /data/attachments \
+    && chmod +x /app/scripts/render_start.sh
 
-EXPOSE 8000
+EXPOSE 10000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/scripts/render_start.sh"]
