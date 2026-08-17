@@ -54,14 +54,11 @@ class _AtlasOperationalMemoryScreenState
 
     eventSubscription = AtlasEventBus.instance.stream.listen((event) {
       refreshDebounce?.cancel();
-      refreshDebounce = Timer(
-        const Duration(milliseconds: 250),
-        () {
-          if (mounted) {
-            setState(() {});
-          }
-        },
-      );
+      refreshDebounce = Timer(const Duration(milliseconds: 250), () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     });
 
     if (!mounted) {
@@ -85,10 +82,7 @@ class _AtlasOperationalMemoryScreenState
   }
 
   List<AtlasEventCorrelation> get correlations {
-    return correlationService.build(
-      entries: entries,
-      maxItems: 20,
-    );
+    return correlationService.build(entries: entries, maxItems: 20);
   }
 
   @override
@@ -113,11 +107,7 @@ class _AtlasOperationalMemoryScreenState
                 showCorrelations = !showCorrelations;
               });
             },
-            icon: Icon(
-              showCorrelations
-                  ? Icons.hub_outlined
-                  : Icons.hub,
-            ),
+            icon: Icon(showCorrelations ? Icons.hub_outlined : Icons.hub),
           ),
           IconButton(
             tooltip: 'Atualizar',
@@ -142,8 +132,7 @@ class _AtlasOperationalMemoryScreenState
                         totalEvents: currentEntries.length,
                         totalCorrelations: currentCorrelations.length,
                         criticalEvents: currentEntries.where((item) {
-                          return item.priority ==
-                              AtlasEventPriority.critical;
+                          return item.priority == AtlasEventPriority.critical;
                         }).length,
                       ),
                       const SizedBox(height: 16),
@@ -198,8 +187,8 @@ class _AtlasOperationalMemoryScreenState
   Widget _buildFilters() {
     final farms = AtlasOperationalMemoryService.instance.availableFarms();
     final modules = AtlasOperationalMemoryService.instance.availableModules();
-    final entityTypes =
-        AtlasOperationalMemoryService.instance.availableEntityTypes();
+    final entityTypes = AtlasOperationalMemoryService.instance
+        .availableEntityTypes();
 
     return Card(
       elevation: 0,
@@ -336,10 +325,7 @@ class _HeaderCard extends StatelessWidget {
           children: [
             const Text(
               'Memória viva da operação',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -445,10 +431,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _TimelineCard extends StatelessWidget {
-  const _TimelineCard({
-    required this.item,
-    required this.onOpen,
-  });
+  const _TimelineCard({required this.item, required this.onOpen});
 
   final AtlasOperationalMemoryEntry item;
   final VoidCallback onOpen;
@@ -460,9 +443,7 @@ class _TimelineCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         onTap: onOpen,
-        leading: CircleAvatar(
-          child: Icon(_priorityIcon(item.priority)),
-        ),
+        leading: CircleAvatar(child: Icon(_priorityIcon(item.priority))),
         title: Text(
           item.title,
           style: const TextStyle(fontWeight: FontWeight.w700),
@@ -520,8 +501,16 @@ class _CorrelationCard extends StatelessWidget {
                     runSpacing: 8,
                     children: [
                       Chip(label: Text(item.farmName)),
-                      Chip(label: Text('${item.confidencePercent.toStringAsFixed(0)}% de confiança')),
-                      Chip(label: Text('${item.hoursBetweenEvents} h entre eventos')),
+                      Chip(
+                        label: Text(
+                          '${item.confidencePercent.toStringAsFixed(0)}% de confiança',
+                        ),
+                      ),
+                      Chip(
+                        label: Text(
+                          '${item.hoursBetweenEvents} h entre eventos',
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -562,17 +551,11 @@ class _FilterDropdown<T> extends StatelessWidget {
           border: const OutlineInputBorder(),
         ),
         items: [
-          DropdownMenuItem<T?>(
-            value: null,
-            child: Text('Todos'),
-          ),
+          DropdownMenuItem<T?>(value: null, child: Text('Todos')),
           ...items.map(
             (item) => DropdownMenuItem<T?>(
               value: item,
-              child: Text(
-                itemLabel(item),
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(itemLabel(item), overflow: TextOverflow.ellipsis),
             ),
           ),
         ],

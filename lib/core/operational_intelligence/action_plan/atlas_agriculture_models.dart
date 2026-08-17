@@ -99,31 +99,27 @@ class AtlasCropField {
   final String? farmName;
   final String notes;
 
-  double get productivityAchievementPercent =>
-      targetProductivityKgHa <= 0
-          ? 0
-          : actualProductivityKgHa /
-              targetProductivityKgHa *
-              100;
+  double get productivityAchievementPercent => targetProductivityKgHa <= 0
+      ? 0
+      : actualProductivityKgHa / targetProductivityKgHa * 100;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'crop': crop,
-        'variety': variety,
-        'areaHectares': areaHectares,
-        'status': status.name,
-        'plantingAt': plantingAt?.toIso8601String(),
-        'expectedHarvestAt':
-            expectedHarvestAt?.toIso8601String(),
-        'targetProductivityKgHa': targetProductivityKgHa,
-        'actualProductivityKgHa': actualProductivityKgHa,
-        'latitude': latitude,
-        'longitude': longitude,
-        'integratedLivestock': integratedLivestock,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'name': name,
+    'crop': crop,
+    'variety': variety,
+    'areaHectares': areaHectares,
+    'status': status.name,
+    'plantingAt': plantingAt?.toIso8601String(),
+    'expectedHarvestAt': expectedHarvestAt?.toIso8601String(),
+    'targetProductivityKgHa': targetProductivityKgHa,
+    'actualProductivityKgHa': actualProductivityKgHa,
+    'latitude': latitude,
+    'longitude': longitude,
+    'integratedLivestock': integratedLivestock,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
   factory AtlasCropField.fromMap(Map<String, dynamic> map) {
     return AtlasCropField(
@@ -131,32 +127,22 @@ class AtlasCropField {
       name: map['name']?.toString() ?? '',
       crop: map['crop']?.toString() ?? '',
       variety: map['variety']?.toString() ?? '',
-      areaHectares:
-          (map['areaHectares'] as num?)?.toDouble() ?? 0,
+      areaHectares: (map['areaHectares'] as num?)?.toDouble() ?? 0,
       status: AtlasCropStatus.values.firstWhere(
         (value) => value.name == map['status']?.toString(),
         orElse: () => AtlasCropStatus.planned,
       ),
-      plantingAt: DateTime.tryParse(
-        map['plantingAt']?.toString() ?? '',
-      ),
+      plantingAt: DateTime.tryParse(map['plantingAt']?.toString() ?? ''),
       expectedHarvestAt: DateTime.tryParse(
         map['expectedHarvestAt']?.toString() ?? '',
       ),
       targetProductivityKgHa:
-          (map['targetProductivityKgHa'] as num?)
-                  ?.toDouble() ??
-              0,
+          (map['targetProductivityKgHa'] as num?)?.toDouble() ?? 0,
       actualProductivityKgHa:
-          (map['actualProductivityKgHa'] as num?)
-                  ?.toDouble() ??
-              0,
-      latitude:
-          (map['latitude'] as num?)?.toDouble() ?? 0,
-      longitude:
-          (map['longitude'] as num?)?.toDouble() ?? 0,
-      integratedLivestock:
-          map['integratedLivestock'] == true,
+          (map['actualProductivityKgHa'] as num?)?.toDouble() ?? 0,
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 0,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 0,
+      integratedLivestock: map['integratedLivestock'] == true,
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );
@@ -205,38 +191,35 @@ class AtlasSoilSample {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'fieldId': fieldId,
-        'sampledAt': sampledAt.toIso8601String(),
-        'depthCm': depthCm,
-        'ph': ph,
-        'organicMatterPercent': organicMatterPercent,
-        'phosphorusMgDm3': phosphorusMgDm3,
-        'potassiumMgDm3': potassiumMgDm3,
-        'baseSaturationPercent': baseSaturationPercent,
-        'clayPercent': clayPercent,
-        'laboratory': laboratory,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'fieldId': fieldId,
+    'sampledAt': sampledAt.toIso8601String(),
+    'depthCm': depthCm,
+    'ph': ph,
+    'organicMatterPercent': organicMatterPercent,
+    'phosphorusMgDm3': phosphorusMgDm3,
+    'potassiumMgDm3': potassiumMgDm3,
+    'baseSaturationPercent': baseSaturationPercent,
+    'clayPercent': clayPercent,
+    'laboratory': laboratory,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
   factory AtlasSoilSample.fromMap(Map<String, dynamic> map) {
-    double value(String key) =>
-        (map[key] as num?)?.toDouble() ?? 0;
+    double value(String key) => (map[key] as num?)?.toDouble() ?? 0;
     return AtlasSoilSample(
       id: map['id']?.toString() ?? '',
       fieldId: map['fieldId']?.toString() ?? '',
-      sampledAt: DateTime.tryParse(
-            map['sampledAt']?.toString() ?? '',
-          ) ??
+      sampledAt:
+          DateTime.tryParse(map['sampledAt']?.toString() ?? '') ??
           DateTime.now(),
       depthCm: value('depthCm'),
       ph: value('ph'),
       organicMatterPercent: value('organicMatterPercent'),
       phosphorusMgDm3: value('phosphorusMgDm3'),
       potassiumMgDm3: value('potassiumMgDm3'),
-      baseSaturationPercent:
-          value('baseSaturationPercent'),
+      baseSaturationPercent: value('baseSaturationPercent'),
       clayPercent: value('clayPercent'),
       laboratory: map['laboratory']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
@@ -275,27 +258,24 @@ class AtlasAgriculturalOperation {
   final String notes;
 
   bool get isCompleted => completedAt != null;
-  bool get isOverdue =>
-      !isCompleted && scheduledAt.isBefore(DateTime.now());
+  bool get isOverdue => !isCompleted && scheduledAt.isBefore(DateTime.now());
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'fieldId': fieldId,
-        'type': type.name,
-        'scheduledAt': scheduledAt.toIso8601String(),
-        'completedAt': completedAt?.toIso8601String(),
-        'product': product,
-        'dose': dose,
-        'areaHectares': areaHectares,
-        'cost': cost,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'fieldId': fieldId,
+    'type': type.name,
+    'scheduledAt': scheduledAt.toIso8601String(),
+    'completedAt': completedAt?.toIso8601String(),
+    'product': product,
+    'dose': dose,
+    'areaHectares': areaHectares,
+    'cost': cost,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasAgriculturalOperation.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasAgriculturalOperation.fromMap(Map<String, dynamic> map) {
     return AtlasAgriculturalOperation(
       id: map['id']?.toString() ?? '',
       fieldId: map['fieldId']?.toString() ?? '',
@@ -303,20 +283,15 @@ class AtlasAgriculturalOperation {
         (value) => value.name == map['type']?.toString(),
         orElse: () => AtlasAgriculturalOperationType.other,
       ),
-      scheduledAt: DateTime.tryParse(
-            map['scheduledAt']?.toString() ?? '',
-          ) ??
+      scheduledAt:
+          DateTime.tryParse(map['scheduledAt']?.toString() ?? '') ??
           DateTime.now(),
-      completedAt: DateTime.tryParse(
-        map['completedAt']?.toString() ?? '',
-      ),
+      completedAt: DateTime.tryParse(map['completedAt']?.toString() ?? ''),
       product: map['product']?.toString() ?? '',
       dose: map['dose']?.toString() ?? '',
-      areaHectares:
-          (map['areaHectares'] as num?)?.toDouble() ?? 0,
+      areaHectares: (map['areaHectares'] as num?)?.toDouble() ?? 0,
       cost: (map['cost'] as num?)?.toDouble() ?? 0,
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

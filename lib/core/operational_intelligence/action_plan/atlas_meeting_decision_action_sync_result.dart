@@ -15,6 +15,5 @@ class AtlasMeetingDecisionActionSyncResult {
   final int repairedLinks;
   final DateTime syncedAt;
 
-  bool get hasChanges =>
-      updatedDecisions > 0 || updatedActions > 0;
+  bool get hasChanges => updatedDecisions > 0 || updatedActions > 0;
 }

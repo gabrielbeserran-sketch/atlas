@@ -17,10 +17,8 @@ class AtlasTeamMemberSelector extends StatefulWidget {
       _AtlasTeamMemberSelectorState();
 }
 
-class _AtlasTeamMemberSelectorState
-    extends State<AtlasTeamMemberSelector> {
-  final AtlasTeamMemberService service =
-      AtlasTeamMemberService.instance;
+class _AtlasTeamMemberSelectorState extends State<AtlasTeamMemberSelector> {
+  final AtlasTeamMemberService service = AtlasTeamMemberService.instance;
 
   List<AtlasTeamMember> members = <AtlasTeamMember>[];
   String search = '';
@@ -32,9 +30,7 @@ class _AtlasTeamMemberSelectorState
   }
 
   Future<void> _load() async {
-    members = await service.load(
-      farmName: widget.farmName,
-    );
+    members = await service.load(farmName: widget.farmName);
 
     if (mounted) {
       setState(() {});
@@ -47,15 +43,11 @@ class _AtlasTeamMemberSelectorState
     final visible = members.where((member) {
       return query.isEmpty ||
           member.name.toLowerCase().contains(query) ||
-          atlasTeamMemberRoleLabel(member.role)
-              .toLowerCase()
-              .contains(query);
+          atlasTeamMemberRoleLabel(member.role).toLowerCase().contains(query);
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Selecionar responsável'),
-      ),
+      appBar: AppBar(title: const Text('Selecionar responsável')),
       body: Column(
         children: [
           Padding(
@@ -72,31 +64,21 @@ class _AtlasTeamMemberSelectorState
             ),
           ),
           ListTile(
-            leading: const CircleAvatar(
-              child: Icon(Icons.person_off_outlined),
-            ),
+            leading: const CircleAvatar(child: Icon(Icons.person_off_outlined)),
             title: const Text('Sem responsável'),
-            onTap: () =>
-                Navigator.of(context).pop<AtlasTeamMember?>(
-              null,
-            ),
+            onTap: () => Navigator.of(context).pop<AtlasTeamMember?>(null),
           ),
           const Divider(height: 1),
           Expanded(
             child: visible.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Nenhuma pessoa cadastrada.',
-                    ),
-                  )
+                ? const Center(child: Text('Nenhuma pessoa cadastrada.'))
                 : ListView.builder(
                     itemCount: visible.length,
                     itemBuilder: (context, index) {
                       final member = visible[index];
 
                       return ListTile(
-                        selected:
-                            member.id == widget.selectedMemberId,
+                        selected: member.id == widget.selectedMemberId,
                         leading: CircleAvatar(
                           child: Text(
                             member.name.isEmpty
@@ -105,20 +87,12 @@ class _AtlasTeamMemberSelectorState
                           ),
                         ),
                         title: Text(member.name),
-                        subtitle: Text(
-                          atlasTeamMemberRoleLabel(
-                            member.role,
-                          ),
-                        ),
-                        trailing:
-                            member.id == widget.selectedMemberId
-                                ? const Icon(Icons.check)
-                                : null,
+                        subtitle: Text(atlasTeamMemberRoleLabel(member.role)),
+                        trailing: member.id == widget.selectedMemberId
+                            ? const Icon(Icons.check)
+                            : null,
                         onTap: () =>
-                            Navigator.of(context)
-                                .pop<AtlasTeamMember>(
-                          member,
-                        ),
+                            Navigator.of(context).pop<AtlasTeamMember>(member),
                       );
                     },
                   ),

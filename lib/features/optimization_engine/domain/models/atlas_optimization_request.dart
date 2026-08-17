@@ -33,15 +33,9 @@ enum AtlasOptimizationObjective {
   improveOperations,
 }
 
-enum AtlasOptimizationRiskTolerance {
-  low,
-  moderate,
-  high,
-}
+enum AtlasOptimizationRiskTolerance { low, moderate, high }
 
-String atlasOptimizationObjectiveLabel(
-  AtlasOptimizationObjective objective,
-) {
+String atlasOptimizationObjectiveLabel(AtlasOptimizationObjective objective) {
   switch (objective) {
     case AtlasOptimizationObjective.balancedGrowth:
       return 'Crescimento equilibrado';

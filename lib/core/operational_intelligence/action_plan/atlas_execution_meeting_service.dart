@@ -12,34 +12,26 @@ class AtlasExecutionMeetingService {
   static final AtlasExecutionMeetingService instance =
       AtlasExecutionMeetingService._();
 
-  static const String _storageKey =
-      'atlas_execution_meetings_v1';
+  static const String _storageKey = 'atlas_execution_meetings_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   final AtlasExecutionAuditService _auditService =
       AtlasExecutionAuditService.instance;
 
-  Future<List<AtlasExecutionMeeting>> load({
-    String? farmName,
-  }) async {
+  Future<List<AtlasExecutionMeeting>> load({String? farmName}) async {
     final all = await _loadAll();
-    final normalizedFarm =
-        farmName?.trim().toLowerCase();
+    final normalizedFarm = farmName?.trim().toLowerCase();
 
-    final filtered = all.where((meeting) {
-      if (normalizedFarm == null ||
-          normalizedFarm.isEmpty) {
-        return true;
-      }
+    final filtered =
+        all.where((meeting) {
+          if (normalizedFarm == null || normalizedFarm.isEmpty) {
+            return true;
+          }
 
-      return meeting.farmName?.trim().toLowerCase() ==
-          normalizedFarm;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.meetingAt.compareTo(first.meetingAt),
-      );
+          return meeting.farmName?.trim().toLowerCase() == normalizedFarm;
+        }).toList()..sort(
+          (first, second) => second.meetingAt.compareTo(first.meetingAt),
+        );
 
     return filtered;
   }
@@ -49,9 +41,7 @@ class AtlasExecutionMeetingService {
     String source = 'reunião de execução',
   }) async {
     final all = await _loadAll();
-    final index = all.indexWhere(
-      (item) => item.id == meeting.id,
-    );
+    final index = all.indexWhere((item) => item.id == meeting.id);
     final previous = index == -1 ? null : all[index];
 
     if (index == -1) {
@@ -72,7 +62,8 @@ class AtlasExecutionMeetingService {
 
     await AtlasEventBus.instance.publish(
       AtlasEvent(
-        id: 'execution_meeting_${meeting.id}_'
+        id:
+            'execution_meeting_${meeting.id}_'
             '${DateTime.now().microsecondsSinceEpoch}',
         type: AtlasEventType.systemUpdated,
         sourceModule: 'command_center_action_plan',
@@ -93,8 +84,7 @@ class AtlasExecutionMeetingService {
           'meetingAt': meeting.meetingAt.toIso8601String(),
           'participants': meeting.participants,
           'decisionCount': meeting.decisions.length,
-          'pendingDecisionCount':
-              meeting.pendingDecisionCount,
+          'pendingDecisionCount': meeting.pendingDecisionCount,
           'closed': meeting.closed,
         },
         tags: const <String>[
@@ -106,15 +96,13 @@ class AtlasExecutionMeetingService {
     );
   }
 
-
   Future<void> _auditMeetingChanges({
     required AtlasExecutionMeeting previous,
     required AtlasExecutionMeeting current,
     required String source,
   }) async {
     final previousById = {
-      for (final decision in previous.decisions)
-        decision.id: decision,
+      for (final decision in previous.decisions) decision.id: decision,
     };
 
     for (final decision in current.decisions) {
@@ -137,16 +125,10 @@ class AtlasExecutionMeetingService {
       final changes = <String, List<Object?>>{
         'Título': [old.title, decision.title],
         'Descrição': [old.description, decision.description],
-        'Responsável': [
-          old.responsibleName,
-          decision.responsibleName,
-        ],
+        'Responsável': [old.responsibleName, decision.responsibleName],
         'Prazo': [old.dueAt, decision.dueAt],
         'Conclusão': [old.completed, decision.completed],
-        'Ação vinculada': [
-          old.linkedActionId,
-          decision.linkedActionId,
-        ],
+        'Ação vinculada': [old.linkedActionId, decision.linkedActionId],
       };
 
       for (final change in changes.entries) {
@@ -172,8 +154,7 @@ class AtlasExecutionMeetingService {
   }
 
   Future<List<AtlasExecutionMeeting>> _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasExecutionMeeting>[];
@@ -194,14 +175,10 @@ class AtlasExecutionMeetingService {
     }
   }
 
-  Future<void> _saveAll(
-    List<AtlasExecutionMeeting> meetings,
-  ) async {
+  Future<void> _saveAll(List<AtlasExecutionMeeting> meetings) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        meetings.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(meetings.map((item) => item.toMap()).toList()),
     );
   }
 }

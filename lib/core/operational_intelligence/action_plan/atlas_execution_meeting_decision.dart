@@ -35,8 +35,7 @@ class AtlasExecutionMeetingDecision {
       id: id,
       title: title ?? this.title,
       description: description ?? this.description,
-      responsibleName:
-          responsibleName ?? this.responsibleName,
+      responsibleName: responsibleName ?? this.responsibleName,
       responsibleId: clearResponsibleId
           ? null
           : responsibleId ?? this.responsibleId,
@@ -61,22 +60,16 @@ class AtlasExecutionMeetingDecision {
     };
   }
 
-  factory AtlasExecutionMeetingDecision.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutionMeetingDecision.fromMap(Map<String, dynamic> map) {
     return AtlasExecutionMeetingDecision(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       responsibleId: map['responsibleId']?.toString(),
-      dueAt: DateTime.tryParse(
-        map['dueAt']?.toString() ?? '',
-      ),
+      dueAt: DateTime.tryParse(map['dueAt']?.toString() ?? ''),
       completed: map['completed'] == true,
-      linkedActionId:
-          map['linkedActionId']?.toString(),
+      linkedActionId: map['linkedActionId']?.toString(),
     );
   }
 }

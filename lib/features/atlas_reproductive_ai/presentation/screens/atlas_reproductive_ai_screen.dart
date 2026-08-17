@@ -24,12 +24,10 @@ class AtlasReproductiveAiScreen extends StatefulWidget {
       _AtlasReproductiveAiScreenState();
 }
 
-class _AtlasReproductiveAiScreenState
-    extends State<AtlasReproductiveAiScreen> {
+class _AtlasReproductiveAiScreenState extends State<AtlasReproductiveAiScreen> {
   final AtlasReproductivePredictionStorageService storage =
       AtlasReproductivePredictionStorageService();
-  final AtlasReproductiveAiEngine engine =
-      const AtlasReproductiveAiEngine();
+  final AtlasReproductiveAiEngine engine = const AtlasReproductiveAiEngine();
 
   List<AtlasReproductivePredictionCase> cases = [];
   bool loading = true;
@@ -72,22 +70,15 @@ class _AtlasReproductiveAiScreenState
     );
   }
 
-  Future<void> openForm([
-    AtlasReproductivePredictionCase? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasReproductivePredictionCase>(
+  Future<void> openForm([AtlasReproductivePredictionCase? current]) async {
+    final result = await showDialog<AtlasReproductivePredictionCase>(
       context: context,
-      builder: (context) => _ReproductivePredictionForm(
-        current: current,
-      ),
+      builder: (context) => _ReproductivePredictionForm(current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = cases.indexWhere(
-      (item) => item.id == result.id,
-    );
+    final index = cases.indexWhere((item) => item.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -101,9 +92,7 @@ class _AtlasReproductiveAiScreenState
     await load();
   }
 
-  Future<void> deleteCase(
-    AtlasReproductivePredictionCase item,
-  ) async {
+  Future<void> deleteCase(AtlasReproductivePredictionCase item) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -111,13 +100,11 @@ class _AtlasReproductiveAiScreenState
         content: Text('Deseja excluir "${item.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -160,12 +147,9 @@ class _AtlasReproductiveAiScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1220),
+            constraints: const BoxConstraints(maxWidth: 1220),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -180,9 +164,7 @@ class _AtlasReproductiveAiScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Predições de apoio técnico',
-                          ),
+                          title: Text('Predições de apoio técnico'),
                           subtitle: Text(
                             'Os percentuais são estimativas explicáveis e não substituem exame, protocolo, diagnóstico ou decisão do médico-veterinário.',
                           ),
@@ -202,8 +184,7 @@ class _AtlasReproductiveAiScreenState
                           EnterpriseMetricCard(
                             title: 'Alta prioridade',
                             value: '$highPriorityCount',
-                            subtitle:
-                                'Cenários com menor probabilidade',
+                            subtitle: 'Cenários com menor probabilidade',
                             icon: Icons.priority_high_outlined,
                             warning: highPriorityCount > 0,
                           ),
@@ -218,31 +199,24 @@ class _AtlasReproductiveAiScreenState
                       if (cases.isEmpty)
                         const Card(
                           child: ListTile(
-                            leading:
-                                Icon(Icons.favorite_outline),
-                            title: Text(
-                              'Nenhuma previsão cadastrada.',
-                            ),
+                            leading: Icon(Icons.favorite_outline),
+                            title: Text('Nenhuma previsão cadastrada.'),
                             subtitle: Text(
                               'Cadastre condição corporal, pós-parto, ciclo e protocolo.',
                             ),
                           ),
                         )
                       else
-                        ...cases.map(
-                          (item) {
-                            final prediction =
-                                engine.predict(item);
+                        ...cases.map((item) {
+                          final prediction = engine.predict(item);
 
-                            return _PredictionCard(
-                              item: item,
-                              prediction: prediction,
-                              onEdit: () => openForm(item),
-                              onDelete: () =>
-                                  deleteCase(item),
-                            );
-                          },
-                        ),
+                          return _PredictionCard(
+                            item: item,
+                            prediction: prediction,
+                            onEdit: () => openForm(item),
+                            onDelete: () => deleteCase(item),
+                          );
+                        }),
                       const SizedBox(height: 90),
                     ],
                   ),
@@ -277,12 +251,8 @@ class _PredictionCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            Icons.favorite_outline,
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(Icons.favorite_outline, color: color),
         ),
         title: Text(item.title),
         subtitle: Text(
@@ -295,18 +265,11 @@ class _PredictionCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
           Wrap(
             spacing: 12,
@@ -314,22 +277,19 @@ class _PredictionCard extends StatelessWidget {
             children: [
               EnterpriseMetricCard(
                 title: 'Probabilidade de cio',
-                value:
-                    '${prediction.heatProbabilityPercent}%',
+                value: '${prediction.heatProbabilityPercent}%',
                 subtitle: 'Estimativa atual',
                 icon: Icons.monitor_heart_outlined,
               ),
               EnterpriseMetricCard(
                 title: 'Probabilidade de prenhez',
-                value:
-                    '${prediction.pregnancyProbabilityPercent}%',
+                value: '${prediction.pregnancyProbabilityPercent}%',
                 subtitle: 'Estimativa atual',
                 icon: Icons.pregnant_woman_outlined,
               ),
               EnterpriseMetricCard(
                 title: 'Sucesso da IATF',
-                value:
-                    '${prediction.iatfSuccessProbabilityPercent}%',
+                value: '${prediction.iatfSuccessProbabilityPercent}%',
                 subtitle: 'Estimativa do protocolo',
                 icon: Icons.science_outlined,
               ),
@@ -374,9 +334,7 @@ class _PredictionCard extends StatelessWidget {
 }
 
 class _ReproductivePredictionForm extends StatefulWidget {
-  const _ReproductivePredictionForm({
-    this.current,
-  });
+  const _ReproductivePredictionForm({this.current});
 
   final AtlasReproductivePredictionCase? current;
 
@@ -414,16 +372,12 @@ class _ReproductivePredictionFormState
 
     final current = widget.current;
 
-    title = TextEditingController(
-      text: current?.title ?? '',
-    );
+    title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasReproductiveDate(DateTime.now()),
+      text: current?.date ?? formatAtlasReproductiveDate(DateTime.now()),
     );
     bodyCondition = TextEditingController(
-      text: current == null ||
-              current.bodyConditionScore == 0
+      text: current == null || current.bodyConditionScore == 0
           ? ''
           : current.bodyConditionScore.toString(),
     );
@@ -433,35 +387,25 @@ class _ReproductivePredictionFormState
           : current.daysPostpartum.toString(),
     );
     daysSinceService = TextEditingController(
-      text: current == null
-          ? ''
-          : current.daysSinceLastService.toString(),
+      text: current == null ? '' : current.daysSinceLastService.toString(),
     );
     serviceCount = TextEditingController(
       text: current == null || current.serviceCount == 0
           ? ''
           : current.serviceCount.toString(),
     );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
+    notes = TextEditingController(text: current?.notes ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
 
     status = current?.status ?? 'Em avaliação';
     category = current?.category ?? 'Matriz';
-    protocolType =
-        current?.protocolType ?? 'Não informado';
-    semenQuality =
-        current?.semenQuality ?? 'Não informado';
-    technicianExperience =
-        current?.technicianExperience ?? 'Intermediária';
+    protocolType = current?.protocolType ?? 'Não informado';
+    semenQuality = current?.semenQuality ?? 'Não informado';
+    technicianExperience = current?.technicianExperience ?? 'Intermediária';
     healthRisk = current?.healthRisk ?? 'Baixo';
     cycleRegular = current?.cycleRegular ?? false;
     heatSigns = current?.heatSigns ?? false;
-    previousPregnancyLoss =
-        current?.previousPregnancyLoss ?? false;
+    previousPregnancyLoss = current?.previousPregnancyLoss ?? false;
   }
 
   @override
@@ -478,10 +422,7 @@ class _ReproductivePredictionFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   int integer(TextEditingController controller) {
@@ -493,12 +434,9 @@ class _ReproductivePredictionFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -517,8 +455,7 @@ class _ReproductivePredictionFormState
     Navigator.pop(
       context,
       AtlasReproductivePredictionCase(
-        id: current?.id ??
-            'repro_ai_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'repro_ai_${DateTime.now().microsecondsSinceEpoch}',
         date: date.text.trim(),
         title: title.text.trim(),
         status: status,
@@ -559,12 +496,9 @@ class _ReproductivePredictionFormState
               children: [
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -576,31 +510,28 @@ class _ReproductivePredictionFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data do registro/serviço',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Em avaliação',
-                    'Servida',
-                    'Aguardando diagnóstico',
-                    'Prenhe',
-                    'Vazia',
-                    'Concluído',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Em avaliação',
+                            'Servida',
+                            'Aguardando diagnóstico',
+                            'Prenhe',
+                            'Vazia',
+                            'Concluído',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -609,23 +540,22 @@ class _ReproductivePredictionFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: category,
-                  decoration: const InputDecoration(
-                    labelText: 'Categoria',
-                  ),
-                  items: const [
-                    'Novilha',
-                    'Matriz',
-                    'Primípara',
-                    'Doadora',
-                    'Receptora',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Categoria'),
+                  items:
+                      const [
+                            'Novilha',
+                            'Matriz',
+                            'Primípara',
+                            'Doadora',
+                            'Receptora',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => category = value);
@@ -634,8 +564,7 @@ class _ReproductivePredictionFormState
                 ),
                 TextFormField(
                   controller: bodyCondition,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -681,35 +610,30 @@ class _ReproductivePredictionFormState
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
-                    'Histórico de perda gestacional',
-                  ),
+                  title: const Text('Histórico de perda gestacional'),
                   value: previousPregnancyLoss,
                   onChanged: (value) {
-                    setState(
-                      () => previousPregnancyLoss = value,
-                    );
+                    setState(() => previousPregnancyLoss = value);
                   },
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: protocolType,
-                  decoration: const InputDecoration(
-                    labelText: 'Protocolo',
-                  ),
-                  items: const [
-                    'Não informado',
-                    'IATF',
-                    'IA convencional',
-                    'Monta natural',
-                    'Transferência de embrião',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Protocolo'),
+                  items:
+                      const [
+                            'Não informado',
+                            'IATF',
+                            'IA convencional',
+                            'Monta natural',
+                            'Transferência de embrião',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => protocolType = value);
@@ -721,17 +645,10 @@ class _ReproductivePredictionFormState
                   decoration: const InputDecoration(
                     labelText: 'Qualidade do sêmen',
                   ),
-                  items: const [
-                    'Não informado',
-                    'Alta',
-                    'Média',
-                    'Baixa',
-                  ]
+                  items: const ['Não informado', 'Alta', 'Média', 'Baixa']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -745,23 +662,15 @@ class _ReproductivePredictionFormState
                   decoration: const InputDecoration(
                     labelText: 'Experiência técnica',
                   ),
-                  items: const [
-                    'Alta',
-                    'Intermediária',
-                    'Baixa',
-                  ]
+                  items: const ['Alta', 'Intermediária', 'Baixa']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
-                      setState(
-                        () => technicianExperience = value,
-                      );
+                      setState(() => technicianExperience = value);
                     }
                   },
                 ),
@@ -770,16 +679,10 @@ class _ReproductivePredictionFormState
                   decoration: const InputDecoration(
                     labelText: 'Risco sanitário',
                   ),
-                  items: const [
-                    'Baixo',
-                    'Moderado',
-                    'Alto',
-                  ]
+                  items: const ['Baixo', 'Moderado', 'Alto']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -790,17 +693,13 @@ class _ReproductivePredictionFormState
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -812,10 +711,7 @@ class _ReproductivePredictionFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Calcular previsão'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Calcular previsão')),
       ],
     );
   }

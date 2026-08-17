@@ -5,7 +5,6 @@ import 'package:projeto_atlas/features/diagnostics/presentation/screens/atlas_di
 import 'package:projeto_atlas/features/atlas_ai/domain/models/atlas_ai_farm_context.dart';
 import 'package:projeto_atlas/features/atlas_ai/domain/services/atlas_ai_context_service.dart';
 import 'package:projeto_atlas/features/atlas_ai/presentation/screens/atlas_ai_screen.dart';
-import 'package:projeto_atlas/features/predictive/data/services/atlas_predictive_scenario_storage_service.dart';
 import 'package:projeto_atlas/features/predictive/domain/services/atlas_predictive_service.dart';
 import 'package:projeto_atlas/features/predictive/presentation/screens/atlas_predictive_screen.dart';
 import 'package:projeto_atlas/features/copilot/presentation/screens/atlas_copilot_screen.dart';
@@ -32,6 +31,7 @@ import 'package:projeto_atlas/features/herd/presentation/screens/herd_list_scree
 import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_service.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_list_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class FarmDetailScreen extends StatefulWidget {
   const FarmDetailScreen({required this.farm, super.key});
@@ -67,9 +67,6 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
   final AtlasPredictiveService predictiveService =
       const AtlasPredictiveService();
 
-  final AtlasPredictiveScenarioStorageService predictiveStorage =
-      const AtlasPredictiveScenarioStorageService();
-
   final AtlasAiContextService aiContextService = const AtlasAiContextService();
 
   List<HerdGroupData> groups = [];
@@ -84,6 +81,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
   AtlasAiFarmContext? aiContextData;
 
   bool isLoading = true;
+  String? dashboardWarning;
 
   FarmData get farm => widget.farm;
 
@@ -290,105 +288,149 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
     return availableTasks.take(3).toList();
   }
 
+  Future<List<T>> _loadSafely<T>({
+    required String label,
+    required Future<List<T>> Function() loader,
+    required List<String> warnings,
+  }) async {
+    try {
+      return await loader();
+    } catch (_) {
+      warnings.add(label);
+      return <T>[];
+    }
+  }
+
   Future<void> loadDashboard() async {
     if (mounted) {
       setState(() {
         isLoading = true;
+        dashboardWarning = null;
       });
     }
 
-    final results = await Future.wait<dynamic>([
-      herdStorage.loadGroups(farm.name),
-      paddockStorage.loadPaddocks(farm.name),
-      financeStorage.loadRecords(farm.name),
-      inventoryStorage.loadItems(farm.name),
-      agendaStorage.loadTasks(farm.name),
-    ]);
+    final warnings = <String>[];
 
-    final loadedGroups = results[0] as List<HerdGroupData>;
+    try {
+      final results = await Future.wait<dynamic>([
+        _loadSafely<HerdGroupData>(
+          label: 'lotes',
+          loader: () => herdStorage.loadGroups(farm.name),
+          warnings: warnings,
+        ),
+        _loadSafely<PaddockData>(
+          label: 'piquetes',
+          loader: () => paddockStorage.loadPaddocks(farm.id ?? ''),
+          warnings: warnings,
+        ),
+        _loadSafely<FarmFinanceData>(
+          label: 'financeiro',
+          loader: () => financeStorage.loadRecords(farm.name),
+          warnings: warnings,
+        ),
+        _loadSafely<FarmInventoryData>(
+          label: 'estoque',
+          loader: () => inventoryStorage.loadItems(farm.name),
+          warnings: warnings,
+        ),
+        _loadSafely<FarmAgendaData>(
+          label: 'agenda',
+          loader: () => agendaStorage.loadTasks(farm.name),
+          warnings: warnings,
+        ),
+      ]);
 
-    final loadedPaddocks = results[1] as List<PaddockData>;
+      final loadedGroups = results[0] as List<HerdGroupData>;
+      final loadedPaddocks = results[1] as List<PaddockData>;
+      final loadedFinanceRecords = results[2] as List<FarmFinanceData>;
+      final loadedInventoryItems = results[3] as List<FarmInventoryData>;
+      final loadedAgendaTasks = results[4] as List<FarmAgendaData>;
 
-    final loadedFinanceRecords = results[2] as List<FarmFinanceData>;
+      loadedAgendaTasks.sort(compareAgendaTasks);
 
-    final loadedInventoryItems = results[3] as List<FarmInventoryData>;
+      final loadedAnimals = <AnimalData>[];
+      for (final group in loadedGroups) {
+        try {
+          final groupAnimals = await animalStorage.loadAnimals(
+            farmName: farm.name,
+            groupName: group.name,
+          );
+          loadedAnimals.addAll(groupAnimals);
+        } catch (_) {
+          if (!warnings.contains('animais')) {
+            warnings.add('animais');
+          }
+        }
+      }
 
-    final loadedAgendaTasks = results[4] as List<FarmAgendaData>;
+      AtlasFarmIntelligenceData? farmIntelligence;
+      AtlasDiagnosticData? farmDiagnostic;
+      AtlasAiFarmContext? farmAiContext;
 
-    loadedAgendaTasks.sort(compareAgendaTasks);
-
-    final animalLists = await Future.wait(
-      loadedGroups.map((group) {
-        return animalStorage.loadAnimals(
-          farmName: farm.name,
-          groupName: group.name,
+      try {
+        farmIntelligence = intelligenceService.analyze(
+          farm: farm,
+          animals: loadedAnimals,
+          groups: loadedGroups,
+          paddocks: loadedPaddocks,
+          financeRecords: loadedFinanceRecords,
+          inventoryItems: loadedInventoryItems,
+          agendaTasks: loadedAgendaTasks,
         );
-      }),
-    );
 
-    final loadedAnimals = animalLists
-        .expand((groupAnimals) => groupAnimals)
-        .toList();
-
-    if (!mounted) {
-      return;
-    }
-
-    final farmIntelligence = intelligenceService.analyze(
-      farm: farm,
-      animals: loadedAnimals,
-      groups: loadedGroups,
-      paddocks: loadedPaddocks,
-      financeRecords: loadedFinanceRecords,
-      inventoryItems: loadedInventoryItems,
-      agendaTasks: loadedAgendaTasks,
-    );
-
-    final farmDiagnostic = diagnosticService.buildFarmDiagnostic(
-      farm: farmIntelligence,
-    );
-
-    final savedPredictiveScenarios = await predictiveStorage.load(
-      farmName: farm.name,
-    );
-
-    final recommendedPredictiveScenarios = predictiveService
-        .buildRecommendedScenarios(
-          diagnostic: farmDiagnostic,
+        farmDiagnostic = diagnosticService.buildFarmDiagnostic(
           farm: farmIntelligence,
         );
 
-    final predictiveRanking = predictiveService.compareScenarios(
-      diagnostic: farmDiagnostic,
-      farm: farmIntelligence,
-      requests: [
-        ...recommendedPredictiveScenarios,
-        ...savedPredictiveScenarios,
-      ],
-    );
+        final recommendedPredictiveScenarios = predictiveService
+            .buildRecommendedScenarios(
+              diagnostic: farmDiagnostic,
+              farm: farmIntelligence,
+            );
 
-    final farmAiContext = aiContextService.buildFarmContext(
-      intelligence: farmIntelligence,
-      diagnostic: farmDiagnostic,
-      predictiveRanking: predictiveRanking,
-    );
+        final predictiveRanking = predictiveService.compareScenarios(
+          diagnostic: farmDiagnostic,
+          farm: farmIntelligence,
+          requests: recommendedPredictiveScenarios,
+        );
 
-    if (!mounted) {
-      return;
+        farmAiContext = aiContextService.buildFarmContext(
+          intelligence: farmIntelligence,
+          diagnostic: farmDiagnostic,
+          predictiveRanking: predictiveRanking,
+        );
+      } catch (_) {
+        warnings.add('inteligência da fazenda');
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        groups = loadedGroups;
+        paddocks = loadedPaddocks;
+        animals = loadedAnimals;
+        financeRecords = loadedFinanceRecords;
+        inventoryItems = loadedInventoryItems;
+        agendaTasks = loadedAgendaTasks;
+        intelligenceData = farmIntelligence;
+        diagnosticData = farmDiagnostic;
+        aiContextData = farmAiContext;
+        dashboardWarning = warnings.isEmpty
+            ? null
+            : 'A fazenda foi aberta, mas alguns dados não responderam: '
+                  '${warnings.toSet().join(', ')}. Use Atualizar para tentar novamente.';
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        dashboardWarning =
+            'A fazenda foi aberta com dados parciais. Falha ao atualizar o painel: $error';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
-
-    setState(() {
-      groups = loadedGroups;
-      paddocks = loadedPaddocks;
-      animals = loadedAnimals;
-      financeRecords = loadedFinanceRecords;
-      inventoryItems = loadedInventoryItems;
-      agendaTasks = loadedAgendaTasks;
-      intelligenceData = farmIntelligence;
-      diagnosticData = farmDiagnostic;
-      aiContextData = farmAiContext;
-      isLoading = false;
-    });
   }
 
   Future<void> openPaddocks() async {
@@ -849,6 +891,33 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(24),
                       children: [
+                        if (dashboardWarning != null) ...[
+                          Card(
+                            color: const Color(0xFFFFF8E1),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline,
+                                    color: Color(0xFF8A6D1D),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      dashboardWarning!,
+                                      style: const TextStyle(
+                                        color: Color(0xFF5D4A12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         FarmDashboardHeader(
                           farm: farm,
                           totalAnimals: totalAnimals,
@@ -903,7 +972,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
                                   ? 'Nenhum animal individual'
                                   : 'Distribuídos em '
                                         '${groups.length} lotes',
-                              icon: Icons.pets_outlined,
+                              icon: AtlasLivestockIcons.cow,
                             ),
                             DashboardMetricCard(
                               title: 'Animais ativos',
@@ -1006,7 +1075,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
                                   ? '—'
                                   : formatCurrency(expensePerAnimal),
                               subtitle: 'Custo médio cadastrado',
-                              icon: Icons.pets_outlined,
+                              icon: AtlasLivestockIcons.cow,
                               color: const Color(0xFFEF6C00),
                             ),
                             ColoredMetricCard(
@@ -1194,7 +1263,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
                                   subtitle:
                                       '$totalAnimals animais em '
                                       '${groups.length} lotes',
-                                  icon: Icons.pets_outlined,
+                                  icon: AtlasLivestockIcons.cow,
                                   onTap: openHerd,
                                 ),
                                 FarmModuleCard(
@@ -2160,71 +2229,118 @@ class FarmDashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
-        ),
-        borderRadius: BorderRadius.circular(22),
+    final metrics = <Widget>[
+      HeaderMetric(value: totalAnimals.toString(), label: 'animais'),
+      HeaderMetric(value: totalGroups.toString(), label: 'lotes'),
+      HeaderMetric(
+        value: formatCompactCurrency(financialBalance),
+        label: 'saldo',
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 78,
-            height: 78,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.home_work_outlined,
-              color: Colors.white,
-              size: 42,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  farm.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${farm.city} - ${farm.state}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  '${formatNumber(farm.area.toDouble())} hectares',
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              HeaderMetric(value: totalAnimals.toString(), label: 'animais'),
-              HeaderMetric(value: totalGroups.toString(), label: 'lotes'),
-              HeaderMetric(
-                value: formatCompactCurrency(financialBalance),
-                label: 'saldo',
+      HeaderMetric(value: todayTasks.toString(), label: 'hoje'),
+      HeaderMetric(value: totalAlerts.toString(), label: 'alertas'),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+        final identity = Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: compact ? 58 : 78,
+              height: compact ? 58 : 78,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(compact ? 16 : 20),
               ),
-              HeaderMetric(value: todayTasks.toString(), label: 'hoje'),
-              HeaderMetric(value: totalAlerts.toString(), label: 'alertas'),
-            ],
+              child: Icon(
+                Icons.home_work_outlined,
+                color: Colors.white,
+                size: compact ? 32 : 42,
+              ),
+            ),
+            SizedBox(width: compact ? 14 : 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    farm.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: compact ? 22 : 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${farm.city} - ${farm.state}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: compact ? 14 : 16,
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    '${formatNumber(farm.area.toDouble())} hectares',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 18 : 24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+            ),
+            borderRadius: BorderRadius.circular(22),
           ),
-        ],
-      ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    identity,
+                    const SizedBox(height: 18),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: metrics
+                          .map(
+                            (metric) => SizedBox(
+                              width: (constraints.maxWidth - 56) / 2,
+                              child: metric,
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: identity),
+                    const SizedBox(width: 24),
+                    Flexible(
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: metrics,
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 }

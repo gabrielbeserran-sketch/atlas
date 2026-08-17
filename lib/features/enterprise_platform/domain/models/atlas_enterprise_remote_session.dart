@@ -13,9 +13,7 @@ class AtlasRemoteCompanySession {
   final String document;
   final String role;
 
-  factory AtlasRemoteCompanySession.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasRemoteCompanySession.fromMap(Map<String, dynamic> map) {
     return AtlasRemoteCompanySession(
       id: map['id']?.toString() ?? '',
       tenantId: map['tenant_id']?.toString() ?? '',
@@ -26,12 +24,12 @@ class AtlasRemoteCompanySession {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'tenant_id': tenantId,
-        'name': name,
-        'document': document,
-        'role': role,
-      };
+    'id': id,
+    'tenant_id': tenantId,
+    'name': name,
+    'document': document,
+    'role': role,
+  };
 }
 
 class AtlasRemoteSession {
@@ -69,8 +67,21 @@ class AtlasRemoteSession {
   final bool mfaRequired;
   final String challengeToken;
 
-  bool allows(String permissionKey) =>
-      effectivePermissions.contains(permissionKey);
+  bool get hasUnrestrictedFarmAccess => const <String>{
+    'owner',
+    'admin',
+    'companyAdministrator',
+    'superAdministrator',
+  }.contains(role);
+
+  bool allows(String permissionKey) {
+    if (hasUnrestrictedFarmAccess) {
+      return true;
+    }
+    if (effectivePermissions.contains(permissionKey)) return true;
+    final namespace = permissionKey.split('.').first;
+    return effectivePermissions.contains('$namespace.*');
+  }
 
   bool get hasUsableAccessToken =>
       accessToken.isNotEmpty &&
@@ -109,8 +120,7 @@ class AtlasRemoteSession {
       tenantId: tenantId ?? this.tenantId,
       role: role ?? this.role,
       companies: companies ?? this.companies,
-      effectivePermissions:
-          effectivePermissions ?? this.effectivePermissions,
+      effectivePermissions: effectivePermissions ?? this.effectivePermissions,
       farmIds: farmIds ?? this.farmIds,
       savedAt: savedAt ?? this.savedAt,
       mfaRequired: mfaRequired ?? this.mfaRequired,
@@ -119,91 +129,71 @@ class AtlasRemoteSession {
   }
 
   Map<String, dynamic> toMap() => {
-        'accessToken': accessToken,
-        'refreshToken': refreshToken,
-        'expiresInSeconds': expiresInSeconds,
-        'userId': userId,
-        'userName': userName,
-        'email': email,
-        'companyId': companyId,
-        'tenantId': tenantId,
-        'role': role,
-        'companies':
-            companies.map((item) => item.toMap()).toList(),
-        'effectivePermissions':
-            effectivePermissions.toList()..sort(),
-        'farmIds': farmIds,
-        'savedAt': savedAt.toIso8601String(),
-        'mfaRequired': mfaRequired,
-        'challengeToken': challengeToken,
-      };
+    'accessToken': accessToken,
+    'refreshToken': refreshToken,
+    'expiresInSeconds': expiresInSeconds,
+    'userId': userId,
+    'userName': userName,
+    'email': email,
+    'companyId': companyId,
+    'tenantId': tenantId,
+    'role': role,
+    'companies': companies.map((item) => item.toMap()).toList(),
+    'effectivePermissions': effectivePermissions.toList()..sort(),
+    'farmIds': farmIds,
+    'savedAt': savedAt.toIso8601String(),
+    'mfaRequired': mfaRequired,
+    'challengeToken': challengeToken,
+  };
 
-  factory AtlasRemoteSession.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasRemoteSession.fromMap(Map<String, dynamic> map) {
     final permissions =
         (map['effectivePermissions'] as List?) ??
-            (map['effective_permissions'] as List?) ??
-            const <dynamic>[];
+        (map['effective_permissions'] as List?) ??
+        const <dynamic>[];
     final farms =
         (map['farmIds'] as List?) ??
-            (map['farm_ids'] as List?) ??
-            const <dynamic>[];
+        (map['farm_ids'] as List?) ??
+        const <dynamic>[];
 
     return AtlasRemoteSession(
       accessToken:
           map['accessToken']?.toString() ??
-              map['access_token']?.toString() ??
-              '',
+          map['access_token']?.toString() ??
+          '',
       refreshToken:
           map['refreshToken']?.toString() ??
-              map['refresh_token']?.toString() ??
-              '',
+          map['refresh_token']?.toString() ??
+          '',
       expiresInSeconds:
           (map['expiresInSeconds'] as num?)?.toInt() ??
-              (map['expires_in_seconds'] as num?)?.toInt() ??
-              3600,
-      userId:
-          map['userId']?.toString() ??
-              map['user_id']?.toString() ??
-              '',
+          (map['expires_in_seconds'] as num?)?.toInt() ??
+          3600,
+      userId: map['userId']?.toString() ?? map['user_id']?.toString() ?? '',
       userName:
-          map['userName']?.toString() ??
-              map['user_name']?.toString() ??
-              '',
+          map['userName']?.toString() ?? map['user_name']?.toString() ?? '',
       email: map['email']?.toString() ?? '',
       companyId:
-          map['companyId']?.toString() ??
-              map['company_id']?.toString() ??
-              '',
+          map['companyId']?.toString() ?? map['company_id']?.toString() ?? '',
       tenantId:
-          map['tenantId']?.toString() ??
-              map['tenant_id']?.toString() ??
-              '',
+          map['tenantId']?.toString() ?? map['tenant_id']?.toString() ?? '',
       role: map['role']?.toString() ?? '',
-      companies:
-          ((map['companies'] as List?) ?? const <dynamic>[])
-              .map(
-                (item) => AtlasRemoteCompanySession.fromMap(
-                  Map<String, dynamic>.from(item as Map),
-                ),
-              )
-              .toList(),
-      effectivePermissions:
-          permissions.map((item) => item.toString()).toSet(),
-      farmIds:
-          farms.map((item) => item.toString()).toList(),
-      savedAt: DateTime.tryParse(
-            map['savedAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      mfaRequired:
-          map['mfaRequired'] == true ||
-              map['mfa_required'] == true,
+      companies: ((map['companies'] as List?) ?? const <dynamic>[])
+          .map(
+            (item) => AtlasRemoteCompanySession.fromMap(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList(),
+      effectivePermissions: permissions.map((item) => item.toString()).toSet(),
+      farmIds: farms.map((item) => item.toString()).toList(),
+      savedAt:
+          DateTime.tryParse(map['savedAt']?.toString() ?? '') ?? DateTime.now(),
+      mfaRequired: map['mfaRequired'] == true || map['mfa_required'] == true,
       challengeToken:
           map['challengeToken']?.toString() ??
-              map['challenge_token']?.toString() ??
-              '',
+          map['challenge_token']?.toString() ??
+          '',
     );
   }
 }

@@ -4,23 +4,20 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ex
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_execution_weekly_review_builder.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_execution_weekly_review_service.dart';
 
-class AtlasExecutionWeeklyReviewController
-    extends ChangeNotifier {
+class AtlasExecutionWeeklyReviewController extends ChangeNotifier {
   AtlasExecutionWeeklyReviewController({
     required this.actionController,
     AtlasExecutionWeeklyReviewBuilder builder =
         const AtlasExecutionWeeklyReviewBuilder(),
     AtlasExecutionWeeklyReviewService? service,
-  })  : _builder = builder,
-        _service = service ??
-            AtlasExecutionWeeklyReviewService.instance;
+  }) : _builder = builder,
+       _service = service ?? AtlasExecutionWeeklyReviewService.instance;
 
   final AtlasCommandCenterActionController actionController;
   final AtlasExecutionWeeklyReviewBuilder _builder;
   final AtlasExecutionWeeklyReviewService _service;
 
-  List<AtlasExecutionWeeklyReview> _reviews =
-      <AtlasExecutionWeeklyReview>[];
+  List<AtlasExecutionWeeklyReview> _reviews = <AtlasExecutionWeeklyReview>[];
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -39,9 +36,7 @@ class AtlasExecutionWeeklyReviewController
     notifyListeners();
 
     try {
-      _reviews = await _service.load(
-        farmName: actionController.farmName,
-      );
+      _reviews = await _service.load(farmName: actionController.farmName);
     } catch (error) {
       _errorMessage = error.toString();
     } finally {
@@ -53,8 +48,7 @@ class AtlasExecutionWeeklyReviewController
   Future<AtlasExecutionWeeklyReview> generate() async {
     final review = _builder.build(
       actions: actionController.actions,
-      latestUpdateDates:
-          actionController.latestUpdateDates,
+      latestUpdateDates: actionController.latestUpdateDates,
       farmName: actionController.farmName,
     );
 
@@ -63,9 +57,7 @@ class AtlasExecutionWeeklyReviewController
     return review;
   }
 
-  Future<void> delete(
-    AtlasExecutionWeeklyReview review,
-  ) async {
+  Future<void> delete(AtlasExecutionWeeklyReview review) async {
     await _service.delete(review.id);
     await load();
   }

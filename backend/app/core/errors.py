@@ -1,8 +1,11 @@
+import logging
 from dataclasses import dataclass
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
+logger = logging.getLogger("atlas.errors")
 
 
 @dataclass
@@ -28,3 +31,17 @@ def install_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(SQLAlchemyError)
     async def database_handler(request: Request, exc: SQLAlchemyError):
         return JSONResponse(503, {"error": "database_error", "message": "Banco indisponível", "request_id": getattr(request.state, "request_id", "")})
+
+
+    @app.exception_handler(Exception)
+    async def unhandled_handler(request: Request, exc: Exception):
+        request_id = getattr(request.state, "request_id", "")
+        logger.exception("Unhandled Atlas error request_id=%s", request_id, exc_info=exc)
+        return JSONResponse(
+            500,
+            {
+                "error": "internal_error",
+                "message": "Erro interno do servidor.",
+                "request_id": request_id,
+            },
+        )

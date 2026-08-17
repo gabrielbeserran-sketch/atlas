@@ -10,13 +10,10 @@ class AtlasEnterprisePermissionRepository {
   static final AtlasEnterprisePermissionRepository instance =
       AtlasEnterprisePermissionRepository._();
 
-  static const String _rolesKey =
-      'atlas_enterprise_24b_custom_roles_v1';
-  static const String _policiesKey =
-      'atlas_enterprise_24b_user_policies_v1';
+  static const String _rolesKey = 'atlas_enterprise_24b_custom_roles_v1';
+  static const String _policiesKey = 'atlas_enterprise_24b_user_policies_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasCustomEnterpriseRole>> loadCustomRoles({
     String? companyId,
@@ -29,26 +26,18 @@ class AtlasEnterprisePermissionRepository {
       return values;
     }
     return values
-        .where(
-          (item) =>
-              item.companyId == companyId && item.active,
-        )
+        .where((item) => item.companyId == companyId && item.active)
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
 
-  Future<void> saveCustomRole(
-    AtlasCustomEnterpriseRole role,
-  ) async {
+  Future<void> saveCustomRole(AtlasCustomEnterpriseRole role) async {
     final values = await _decodeList(
       _rolesKey,
       AtlasCustomEnterpriseRole.fromMap,
     );
     _upsert(values, role, (item) => item.id);
-    await _saveList(
-      _rolesKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_rolesKey, values.map((item) => item.toMap()).toList());
   }
 
   Future<List<AtlasUserPermissionPolicy>> loadPolicies({
@@ -61,9 +50,7 @@ class AtlasEnterprisePermissionRepository {
     if (companyId == null || companyId.trim().isEmpty) {
       return values;
     }
-    return values
-        .where((item) => item.companyId == companyId)
-        .toList();
+    return values.where((item) => item.companyId == companyId).toList();
   }
 
   Future<AtlasUserPermissionPolicy?> findPolicy({
@@ -77,27 +64,21 @@ class AtlasEnterprisePermissionRepository {
     return null;
   }
 
-  Future<void> savePolicy(
-    AtlasUserPermissionPolicy policy,
-  ) async {
+  Future<void> savePolicy(AtlasUserPermissionPolicy policy) async {
     final values = await _decodeList(
       _policiesKey,
       AtlasUserPermissionPolicy.fromMap,
     );
     final existingIndex = values.indexWhere(
       (item) =>
-          item.companyId == policy.companyId &&
-          item.userId == policy.userId,
+          item.companyId == policy.companyId && item.userId == policy.userId,
     );
     if (existingIndex == -1) {
       values.add(policy);
     } else {
       values[existingIndex] = policy;
     }
-    await _saveList(
-      _policiesKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_policiesKey, values.map((item) => item.toMap()).toList());
   }
 
   Future<List<T>> _decodeList<T>(
@@ -109,32 +90,19 @@ class AtlasEnterprisePermissionRepository {
 
     try {
       return (jsonDecode(raw) as List<dynamic>)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {

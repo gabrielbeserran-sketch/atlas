@@ -11,48 +11,36 @@ class AtlasExecutionWeeklyReviewService {
   static final AtlasExecutionWeeklyReviewService instance =
       AtlasExecutionWeeklyReviewService._();
 
-  static const String _storageKey =
-      'atlas_execution_weekly_reviews_v1';
+  static const String _storageKey = 'atlas_execution_weekly_reviews_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasExecutionWeeklyReview>> load({
-    String? farmName,
-  }) async {
+  Future<List<AtlasExecutionWeeklyReview>> load({String? farmName}) async {
     final all = await _loadAll();
-    final normalizedFarm =
-        farmName?.trim().toLowerCase();
+    final normalizedFarm = farmName?.trim().toLowerCase();
 
-    final filtered = all.where((review) {
-      if (normalizedFarm == null ||
-          normalizedFarm.isEmpty) {
-        return true;
-      }
+    final filtered =
+        all.where((review) {
+          if (normalizedFarm == null || normalizedFarm.isEmpty) {
+            return true;
+          }
 
-      return review.farmName?.trim().toLowerCase() ==
-          normalizedFarm;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.generatedAt.compareTo(first.generatedAt),
-      );
+          return review.farmName?.trim().toLowerCase() == normalizedFarm;
+        }).toList()..sort(
+          (first, second) => second.generatedAt.compareTo(first.generatedAt),
+        );
 
     return filtered;
   }
 
-  Future<void> save(
-    AtlasExecutionWeeklyReview review,
-  ) async {
+  Future<void> save(AtlasExecutionWeeklyReview review) async {
     final all = await _loadAll();
     all.removeWhere((item) => item.id == review.id);
     all.add(review);
 
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
 
     await AtlasEventBus.instance.publish(
@@ -66,8 +54,7 @@ class AtlasExecutionWeeklyReviewService {
             '${review.completedInPeriod} conclusão(ões) e '
             '${review.overdueActions} atraso(s).',
         occurredAt: review.generatedAt,
-        priority: review.overdueActions > 0 ||
-                review.blockedActions > 0
+        priority: review.overdueActions > 0 || review.blockedActions > 0
             ? AtlasEventPriority.high
             : AtlasEventPriority.normal,
         farmName: review.farmName,
@@ -76,18 +63,12 @@ class AtlasExecutionWeeklyReviewService {
         payload: <String, dynamic>{
           'totalActions': review.totalActions,
           'openActions': review.openActions,
-          'completedInPeriod':
-              review.completedInPeriod,
+          'completedInPeriod': review.completedInPeriod,
           'overdueActions': review.overdueActions,
           'blockedActions': review.blockedActions,
-          'executionHealthPercent':
-              review.executionHealthPercent,
+          'executionHealthPercent': review.executionHealthPercent,
         },
-        tags: const <String>[
-          'command_center',
-          'action_plan',
-          'weekly_review',
-        ],
+        tags: const <String>['command_center', 'action_plan', 'weekly_review'],
       ),
     );
   }
@@ -98,16 +79,12 @@ class AtlasExecutionWeeklyReviewService {
 
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
   }
 
-  Future<List<AtlasExecutionWeeklyReview>>
-      _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasExecutionWeeklyReview>> _loadAll() async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasExecutionWeeklyReview>[];
@@ -118,8 +95,7 @@ class AtlasExecutionWeeklyReviewService {
 
       return decoded
           .map(
-            (item) =>
-                AtlasExecutionWeeklyReview.fromMap(
+            (item) => AtlasExecutionWeeklyReview.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )

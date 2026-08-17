@@ -9,25 +9,17 @@ class AtlasCopilotImprovementService {
     required AtlasCopilotFeedbackAnalytics analytics,
     DateTime? now,
   }) {
-    final priorities =
-        <AtlasCopilotImprovementPriority>[];
+    final priorities = <AtlasCopilotImprovementPriority>[];
 
-    for (final metric
-        in analytics.intentMetrics) {
+    for (final metric in analytics.intentMetrics) {
       if (metric.total < 2) {
         continue;
       }
 
-      final level = _levelFromRate(
-        metric.approvalRate,
-      );
+      final level = _levelFromRate(metric.approvalRate);
 
-      if (level ==
-              AtlasCopilotImprovementLevel
-                  .excellent ||
-          level ==
-              AtlasCopilotImprovementLevel
-                  .stable) {
+      if (level == AtlasCopilotImprovementLevel.excellent ||
+          level == AtlasCopilotImprovementLevel.stable) {
         continue;
       }
 
@@ -39,15 +31,13 @@ class AtlasCopilotImprovementService {
           description:
               'O assunto possui ${metric.total} avaliações e taxa de aprovação de '
               '${metric.approvalRate.toStringAsFixed(0)}%.',
-          recommendation:
-              _intentRecommendation(
+          recommendation: _intentRecommendation(
             metric.intent,
             metric.approvalRate,
           ),
           level: level,
           score: _priorityScore(
-            approvalRate:
-                metric.approvalRate,
+            approvalRate: metric.approvalRate,
             total: metric.total,
           ),
           intent: metric.intent,
@@ -56,134 +46,91 @@ class AtlasCopilotImprovementService {
       );
     }
 
-    for (final metric
-        in analytics.contextMetrics) {
-      if (metric.total < 2 ||
-          metric.approvalRate >= 70) {
+    for (final metric in analytics.contextMetrics) {
+      if (metric.total < 2 || metric.approvalRate >= 70) {
         continue;
       }
 
       priorities.add(
         AtlasCopilotImprovementPriority(
           position: 0,
-          title:
-              'Melhorar respostas em ${metric.contextLabel}',
+          title: 'Melhorar respostas em ${metric.contextLabel}',
           description:
               'Este contexto possui ${metric.total} avaliações e taxa de aprovação de '
               '${metric.approvalRate.toStringAsFixed(0)}%.',
           recommendation:
               'Revise se os dados desse contexto estão completos e se as respostas estão usando os indicadores corretos.',
-          level: _levelFromRate(
-            metric.approvalRate,
-          ),
+          level: _levelFromRate(metric.approvalRate),
           score: _priorityScore(
-            approvalRate:
-                metric.approvalRate,
+            approvalRate: metric.approvalRate,
             total: metric.total,
           ),
           intent: null,
-          contextLabel:
-              metric.contextLabel,
+          contextLabel: metric.contextLabel,
         ),
       );
     }
 
-    priorities.sort(
-      (first, second) =>
-          second.score.compareTo(
-        first.score,
-      ),
-    );
+    priorities.sort((first, second) => second.score.compareTo(first.score));
 
-    final orderedPriorities =
-        List.generate(
-      priorities.length,
-      (index) {
-        final item = priorities[index];
+    final orderedPriorities = List.generate(priorities.length, (index) {
+      final item = priorities[index];
 
-        return AtlasCopilotImprovementPriority(
-          position: index + 1,
-          title: item.title,
-          description: item.description,
-          recommendation:
-              item.recommendation,
-          level: item.level,
-          score: item.score,
-          intent: item.intent,
-          contextLabel:
-              item.contextLabel,
-        );
-      },
-    );
+      return AtlasCopilotImprovementPriority(
+        position: index + 1,
+        title: item.title,
+        description: item.description,
+        recommendation: item.recommendation,
+        level: item.level,
+        score: item.score,
+        intent: item.intent,
+        contextLabel: item.contextLabel,
+      );
+    });
 
-    final strengths =
-        _buildStrengths(analytics);
+    final strengths = _buildStrengths(analytics);
 
-    final overallLevel = _levelFromRate(
-      analytics.approvalRate,
-    );
+    final overallLevel = _levelFromRate(analytics.approvalRate);
 
     return AtlasCopilotImprovementPlan(
       generatedAt: now ?? DateTime.now(),
-      overallScore:
-          analytics.approvalRate,
+      overallScore: analytics.approvalRate,
       overallLevel: overallLevel,
-      summary: _buildSummary(
-        analytics,
-        orderedPriorities,
-      ),
+      summary: _buildSummary(analytics, orderedPriorities),
       priorities: orderedPriorities,
       strengths: strengths,
-      recommendedActions:
-          _buildRecommendedActions(
+      recommendedActions: _buildRecommendedActions(
         analytics,
         orderedPriorities,
       ),
     );
   }
 
-  AtlasCopilotImprovementLevel
-      _levelFromRate(
-    double rate,
-  ) {
+  AtlasCopilotImprovementLevel _levelFromRate(double rate) {
     if (rate >= 85) {
-      return AtlasCopilotImprovementLevel
-          .excellent;
+      return AtlasCopilotImprovementLevel.excellent;
     }
 
     if (rate >= 70) {
-      return AtlasCopilotImprovementLevel
-          .stable;
+      return AtlasCopilotImprovementLevel.stable;
     }
 
     if (rate >= 50) {
-      return AtlasCopilotImprovementLevel
-          .attention;
+      return AtlasCopilotImprovementLevel.attention;
     }
 
-    return AtlasCopilotImprovementLevel
-        .critical;
+    return AtlasCopilotImprovementLevel.critical;
   }
 
-  double _priorityScore({
-    required double approvalRate,
-    required int total,
-  }) {
-    final dissatisfaction =
-        100 - approvalRate;
+  double _priorityScore({required double approvalRate, required int total}) {
+    final dissatisfaction = 100 - approvalRate;
 
-    final volumeWeight =
-        (total * 3).clamp(0, 30);
+    final volumeWeight = (total * 3).clamp(0, 30);
 
-    return (dissatisfaction * 0.75 +
-            volumeWeight)
-        .clamp(0.0, 100.0);
+    return (dissatisfaction * 0.75 + volumeWeight).clamp(0.0, 100.0);
   }
 
-  String _intentRecommendation(
-    AtlasCopilotIntent intent,
-    double approvalRate,
-  ) {
+  String _intentRecommendation(AtlasCopilotIntent intent, double approvalRate) {
     switch (intent) {
       case AtlasCopilotIntent.finance:
         return 'Aumente a explicação sobre receitas, despesas, saldo, margem e causa provável do resultado. Sempre apresente números e uma ação prática.';
@@ -227,17 +174,13 @@ class AtlasCopilotImprovementService {
     }
   }
 
-  List<AtlasCopilotImprovementStrength>
-      _buildStrengths(
+  List<AtlasCopilotImprovementStrength> _buildStrengths(
     AtlasCopilotFeedbackAnalytics analytics,
   ) {
-    final strengths =
-        <AtlasCopilotImprovementStrength>[];
+    final strengths = <AtlasCopilotImprovementStrength>[];
 
-    for (final metric
-        in analytics.intentMetrics) {
-      if (metric.total >= 2 &&
-          metric.approvalRate >= 80) {
+    for (final metric in analytics.intentMetrics) {
+      if (metric.total >= 2 && metric.approvalRate >= 80) {
         strengths.add(
           AtlasCopilotImprovementStrength(
             title:
@@ -250,24 +193,16 @@ class AtlasCopilotImprovementService {
       }
     }
 
-    strengths.sort(
-      (first, second) =>
-          second.score.compareTo(
-        first.score,
-      ),
-    );
+    strengths.sort((first, second) => second.score.compareTo(first.score));
 
-    if (strengths.isEmpty &&
-        analytics.approvalRate >= 70) {
+    if (strengths.isEmpty && analytics.approvalRate >= 70) {
       strengths.add(
         AtlasCopilotImprovementStrength(
-          title:
-              'Boa aceitação geral',
+          title: 'Boa aceitação geral',
           description:
               'A taxa geral de aprovação é de '
               '${analytics.approvalRate.toStringAsFixed(0)}%.',
-          score:
-              analytics.approvalRate,
+          score: analytics.approvalRate,
         ),
       );
     }
@@ -277,8 +212,7 @@ class AtlasCopilotImprovementService {
 
   String _buildSummary(
     AtlasCopilotFeedbackAnalytics analytics,
-    List<AtlasCopilotImprovementPriority>
-        priorities,
+    List<AtlasCopilotImprovementPriority> priorities,
   ) {
     if (!analytics.hasFeedback) {
       return 'Ainda não existem avaliações suficientes para gerar um plano de melhoria.';
@@ -299,8 +233,7 @@ class AtlasCopilotImprovementService {
 
   List<String> _buildRecommendedActions(
     AtlasCopilotFeedbackAnalytics analytics,
-    List<AtlasCopilotImprovementPriority>
-        priorities,
+    List<AtlasCopilotImprovementPriority> priorities,
   ) {
     final actions = <String>[];
 

@@ -133,45 +133,17 @@ class AtlasDecisionV2Simulation {
   final String recommendation;
 }
 
-enum AtlasDecisionEngineV2Status {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasDecisionEngineV2Status { excellent, adequate, attention, critical }
 
-enum AtlasDecisionV2Horizon {
-  today,
-  week,
-  month,
-}
+enum AtlasDecisionV2Horizon { today, week, month }
 
-enum AtlasDecisionV2Priority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasDecisionV2Priority { low, medium, high, critical }
 
-enum AtlasDecisionV2Urgency {
-  low,
-  medium,
-  high,
-  immediate,
-}
+enum AtlasDecisionV2Urgency { low, medium, high, immediate }
 
-enum AtlasDecisionV2Risk {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasDecisionV2Risk { low, medium, high, critical }
 
-enum AtlasDecisionV2Effort {
-  low,
-  medium,
-  high,
-}
+enum AtlasDecisionV2Effort { low, medium, high }
 
 enum AtlasDecisionV2SimulationType {
   executeNow,
@@ -180,9 +152,7 @@ enum AtlasDecisionV2SimulationType {
   reduceInvestment,
 }
 
-String atlasDecisionEngineV2StatusLabel(
-  AtlasDecisionEngineV2Status status,
-) {
+String atlasDecisionEngineV2StatusLabel(AtlasDecisionEngineV2Status status) {
   switch (status) {
     case AtlasDecisionEngineV2Status.excellent:
       return 'Excelente';
@@ -198,9 +168,7 @@ String atlasDecisionEngineV2StatusLabel(
   }
 }
 
-String atlasDecisionV2HorizonLabel(
-  AtlasDecisionV2Horizon horizon,
-) {
+String atlasDecisionV2HorizonLabel(AtlasDecisionV2Horizon horizon) {
   switch (horizon) {
     case AtlasDecisionV2Horizon.today:
       return 'Hoje';
@@ -213,9 +181,7 @@ String atlasDecisionV2HorizonLabel(
   }
 }
 
-String atlasDecisionV2PriorityLabel(
-  AtlasDecisionV2Priority priority,
-) {
+String atlasDecisionV2PriorityLabel(AtlasDecisionV2Priority priority) {
   switch (priority) {
     case AtlasDecisionV2Priority.low:
       return 'Baixa';
@@ -231,9 +197,7 @@ String atlasDecisionV2PriorityLabel(
   }
 }
 
-String atlasDecisionV2UrgencyLabel(
-  AtlasDecisionV2Urgency urgency,
-) {
+String atlasDecisionV2UrgencyLabel(AtlasDecisionV2Urgency urgency) {
   switch (urgency) {
     case AtlasDecisionV2Urgency.low:
       return 'Baixa';
@@ -249,9 +213,7 @@ String atlasDecisionV2UrgencyLabel(
   }
 }
 
-String atlasDecisionV2RiskLabel(
-  AtlasDecisionV2Risk risk,
-) {
+String atlasDecisionV2RiskLabel(AtlasDecisionV2Risk risk) {
   switch (risk) {
     case AtlasDecisionV2Risk.low:
       return 'Baixo';
@@ -267,9 +229,7 @@ String atlasDecisionV2RiskLabel(
   }
 }
 
-String atlasDecisionV2EffortLabel(
-  AtlasDecisionV2Effort effort,
-) {
+String atlasDecisionV2EffortLabel(AtlasDecisionV2Effort effort) {
   switch (effort) {
     case AtlasDecisionV2Effort.low:
       return 'Baixo';
@@ -282,9 +242,7 @@ String atlasDecisionV2EffortLabel(
   }
 }
 
-String atlasDecisionV2SimulationTypeLabel(
-  AtlasDecisionV2SimulationType type,
-) {
+String atlasDecisionV2SimulationTypeLabel(AtlasDecisionV2SimulationType type) {
   switch (type) {
     case AtlasDecisionV2SimulationType.executeNow:
       return 'Executar agora';

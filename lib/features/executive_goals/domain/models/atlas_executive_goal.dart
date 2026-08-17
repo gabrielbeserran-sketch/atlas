@@ -54,36 +54,29 @@ class AtlasExecutiveGoal {
       return 100;
     }
 
-    final totalDistance =
-        (targetValue - startValue).abs();
+    final totalDistance = (targetValue - startValue).abs();
 
     if (totalDistance == 0) {
       return currentValue == targetValue ? 100 : 0;
     }
 
-    final travelledDistance =
-        (currentValue - startValue).abs();
+    final travelledDistance = (currentValue - startValue).abs();
 
-    final raw =
-        travelledDistance / totalDistance * 100;
+    final raw = travelledDistance / totalDistance * 100;
 
     return raw.clamp(0.0, 100.0).toDouble();
   }
 
   int get remainingDays {
-    return deadline
-        .difference(DateTime.now())
-        .inDays;
+    return deadline.difference(DateTime.now()).inDays;
   }
 
   bool get isCompleted {
-    return status ==
-        AtlasExecutiveGoalStatus.completed;
+    return status == AtlasExecutiveGoalStatus.completed;
   }
 
   bool get isOverdue {
-    return !isCompleted &&
-        deadline.isBefore(DateTime.now());
+    return !isCompleted && deadline.isBefore(DateTime.now());
   }
 
   bool get targetReached {
@@ -126,23 +119,18 @@ class AtlasExecutiveGoal {
       kpiId: kpiId ?? this.kpiId,
       kpiTitle: kpiTitle ?? this.kpiTitle,
       category: category ?? this.category,
-      currentValue:
-          currentValue ?? this.currentValue,
-      targetValue:
-          targetValue ?? this.targetValue,
+      currentValue: currentValue ?? this.currentValue,
+      targetValue: targetValue ?? this.targetValue,
       startValue: startValue ?? this.startValue,
       unit: unit ?? this.unit,
       direction: direction ?? this.direction,
       createdAt: createdAt ?? this.createdAt,
       deadline: deadline ?? this.deadline,
       updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: clearCompletedAt
-          ? null
-          : completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : completedAt ?? this.completedAt,
       status: status ?? this.status,
       priority: priority ?? this.priority,
-      responsibleName:
-          responsibleName ?? this.responsibleName,
+      responsibleName: responsibleName ?? this.responsibleName,
       notes: notes ?? this.notes,
     );
   }
@@ -162,8 +150,7 @@ class AtlasExecutiveGoal {
       'createdAt': createdAt.toIso8601String(),
       'deadline': deadline.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      'completedAt':
-          completedAt?.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
       'status': status.name,
       'priority': priority.name,
       'responsibleName': responsibleName,
@@ -171,92 +158,61 @@ class AtlasExecutiveGoal {
     };
   }
 
-  factory AtlasExecutiveGoal.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final categoryName =
-        json['category']?.toString() ?? '';
+  factory AtlasExecutiveGoal.fromJson(Map<String, dynamic> json) {
+    final categoryName = json['category']?.toString() ?? '';
 
-    final directionName =
-        json['direction']?.toString() ?? '';
+    final directionName = json['direction']?.toString() ?? '';
 
-    final statusName =
-        json['status']?.toString() ?? '';
+    final statusName = json['status']?.toString() ?? '';
 
-    final priorityName =
-        json['priority']?.toString() ?? '';
+    final priorityName = json['priority']?.toString() ?? '';
 
     return AtlasExecutiveGoal(
       id: json['id']?.toString() ?? '',
-      farmName:
-          json['farmName']?.toString() ?? '',
+      farmName: json['farmName']?.toString() ?? '',
       kpiId: json['kpiId']?.toString() ?? '',
-      kpiTitle:
-          json['kpiTitle']?.toString() ?? '',
-      category:
-          AtlasExecutiveKpiCategory.values.firstWhere(
+      kpiTitle: json['kpiTitle']?.toString() ?? '',
+      category: AtlasExecutiveKpiCategory.values.firstWhere(
         (item) => item.name == categoryName,
-        orElse: () =>
-            AtlasExecutiveKpiCategory.intelligence,
+        orElse: () => AtlasExecutiveKpiCategory.intelligence,
       ),
-      currentValue:
-          _readDouble(json['currentValue']),
-      targetValue:
-          _readDouble(json['targetValue']),
-      startValue:
-          _readDouble(json['startValue']),
+      currentValue: _readDouble(json['currentValue']),
+      targetValue: _readDouble(json['targetValue']),
+      startValue: _readDouble(json['startValue']),
       unit: json['unit']?.toString() ?? '',
-      direction:
-          AtlasExecutiveKpiDirection.values.firstWhere(
+      direction: AtlasExecutiveKpiDirection.values.firstWhere(
         (item) => item.name == directionName,
-        orElse: () =>
-            AtlasExecutiveKpiDirection
-                .higherIsBetter,
+        orElse: () => AtlasExecutiveKpiDirection.higherIsBetter,
       ),
-      createdAt: DateTime.tryParse(
-            json['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      deadline: DateTime.tryParse(
-            json['deadline']?.toString() ?? '',
-          ) ??
+      deadline:
+          DateTime.tryParse(json['deadline']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            json['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
-      completedAt: DateTime.tryParse(
-        json['completedAt']?.toString() ?? '',
-      ),
-      status:
-          AtlasExecutiveGoalStatus.values.firstWhere(
+      completedAt: DateTime.tryParse(json['completedAt']?.toString() ?? ''),
+      status: AtlasExecutiveGoalStatus.values.firstWhere(
         (item) => item.name == statusName,
-        orElse: () =>
-            AtlasExecutiveGoalStatus.active,
+        orElse: () => AtlasExecutiveGoalStatus.active,
       ),
-      priority:
-          AtlasExecutiveGoalPriority.values.firstWhere(
+      priority: AtlasExecutiveGoalPriority.values.firstWhere(
         (item) => item.name == priorityName,
-        orElse: () =>
-            AtlasExecutiveGoalPriority.medium,
+        orElse: () => AtlasExecutiveGoalPriority.medium,
       ),
-      responsibleName:
-          json['responsibleName']?.toString() ?? '',
+      responsibleName: json['responsibleName']?.toString() ?? '',
       notes: json['notes']?.toString() ?? '',
     );
   }
 
-  static double _readDouble(
-    dynamic value,
-  ) {
+  static double _readDouble(dynamic value) {
     if (value is num) {
       return value.toDouble();
     }
 
-    return double.tryParse(
-          value?.toString() ?? '',
-        ) ??
-        0;
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 }
 
@@ -335,24 +291,11 @@ class AtlasExecutiveFarmGoalSummary {
   final String? mainGoalTitle;
 }
 
-enum AtlasExecutiveGoalStatus {
-  active,
-  atRisk,
-  overdue,
-  completed,
-  cancelled,
-}
+enum AtlasExecutiveGoalStatus { active, atRisk, overdue, completed, cancelled }
 
-enum AtlasExecutiveGoalPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveGoalPriority { low, medium, high, critical }
 
-String atlasExecutiveGoalStatusLabel(
-  AtlasExecutiveGoalStatus status,
-) {
+String atlasExecutiveGoalStatusLabel(AtlasExecutiveGoalStatus status) {
   switch (status) {
     case AtlasExecutiveGoalStatus.active:
       return 'No prazo';
@@ -371,9 +314,7 @@ String atlasExecutiveGoalStatusLabel(
   }
 }
 
-String atlasExecutiveGoalPriorityLabel(
-  AtlasExecutiveGoalPriority priority,
-) {
+String atlasExecutiveGoalPriorityLabel(AtlasExecutiveGoalPriority priority) {
   switch (priority) {
     case AtlasExecutiveGoalPriority.low:
       return 'Baixa';

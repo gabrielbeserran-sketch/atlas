@@ -24,12 +24,10 @@ class AtlasGlobalPlatformScreen extends StatefulWidget {
       _AtlasGlobalPlatformScreenState();
 }
 
-class _AtlasGlobalPlatformScreenState
-    extends State<AtlasGlobalPlatformScreen> {
+class _AtlasGlobalPlatformScreenState extends State<AtlasGlobalPlatformScreen> {
   final AtlasGlobalPlatformStorageService storage =
       AtlasGlobalPlatformStorageService();
-  final AtlasGlobalPlatformAnalyticsService
-      analyticsService =
+  final AtlasGlobalPlatformAnalyticsService analyticsService =
       const AtlasGlobalPlatformAnalyticsService();
 
   List<AtlasGlobalPlatformRecord> records = [];
@@ -78,29 +76,20 @@ class _AtlasGlobalPlatformScreenState
     if (selectedFeature == null) return records;
 
     return records
-        .where(
-          (record) => record.feature == selectedFeature,
-        )
+        .where((record) => record.feature == selectedFeature)
         .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasGlobalPlatformRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasGlobalPlatformRecord>(
+  Future<void> openForm([AtlasGlobalPlatformRecord? current]) async {
+    final result = await showDialog<AtlasGlobalPlatformRecord>(
       context: context,
-      builder: (context) => _GlobalRecordForm(
-        record: current,
-        initialFeature: selectedFeature,
-      ),
+      builder: (context) =>
+          _GlobalRecordForm(record: current, initialFeature: selectedFeature),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -114,25 +103,19 @@ class _AtlasGlobalPlatformScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasGlobalPlatformRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasGlobalPlatformRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir registro'),
-        content: Text(
-          'Deseja excluir "${record.title}"?',
-        ),
+        content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -142,31 +125,19 @@ class _AtlasGlobalPlatformScreenState
     if (confirmed != true || !mounted) return;
 
     setState(() {
-      records.removeWhere(
-        (item) => item.id == record.id,
-      );
+      records.removeWhere((item) => item.id == record.id);
     });
 
     await persist();
   }
 
-  int featureCount(
-    AtlasGlobalPlatformFeature feature,
-  ) {
-    return records
-        .where((record) => record.feature == feature)
-        .length;
+  int featureCount(AtlasGlobalPlatformFeature feature) {
+    return records.where((record) => record.feature == feature).length;
   }
 
-  int featureAlerts(
-    AtlasGlobalPlatformFeature feature,
-  ) {
+  int featureAlerts(AtlasGlobalPlatformFeature feature) {
     return records
-        .where(
-          (record) =>
-              record.feature == feature &&
-              record.isCritical,
-        )
+        .where((record) => record.feature == feature && record.isCritical)
         .length;
   }
 
@@ -193,12 +164,9 @@ class _AtlasGlobalPlatformScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -218,8 +186,7 @@ class _AtlasGlobalPlatformScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades implantadas',
+                            subtitle: 'Funcionalidades implantadas',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -234,36 +201,28 @@ class _AtlasGlobalPlatformScreenState
                           EnterpriseMetricCard(
                             title: 'Registros',
                             value: '${analytics.recordCount}',
-                            subtitle:
-                                'Componentes cadastrados',
+                            subtitle: 'Componentes cadastrados',
                             icon: Icons.fact_check_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Operacionais',
-                            value:
-                                '${analytics.operationalCount}',
-                            subtitle:
-                                'Ativos, conectados ou homologados',
+                            value: '${analytics.operationalCount}',
+                            subtitle: 'Ativos, conectados ou homologados',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Crítico, atenção, bloqueado ou offline',
-                            icon:
-                                Icons.warning_amber_outlined,
-                            warning:
-                                analytics.alertCount > 0,
+                            subtitle: 'Crítico, atenção, bloqueado ou offline',
+                            icon: Icons.warning_amber_outlined,
+                            warning: analytics.alertCount > 0,
                           ),
                           EnterpriseMetricCard(
                             title: 'Média principal',
-                            value: analytics
-                                .averagePrimaryValue
+                            value: analytics.averagePrimaryValue
                                 .toStringAsFixed(2)
                                 .replaceAll('.', ','),
-                            subtitle:
-                                'Indicador configurável',
+                            subtitle: 'Indicador configurável',
                             icon: Icons.calculate_outlined,
                           ),
                         ],
@@ -280,10 +239,9 @@ class _AtlasGlobalPlatformScreenState
                         selectedFeature: selectedFeature,
                         onSelected: (feature) {
                           setState(() {
-                            selectedFeature =
-                                selectedFeature == feature
-                                    ? null
-                                    : feature;
+                            selectedFeature = selectedFeature == feature
+                                ? null
+                                : feature;
                           });
                         },
                         featureCount: featureCount,
@@ -291,8 +249,7 @@ class _AtlasGlobalPlatformScreenState
                       ),
                       const SizedBox(height: 22),
                       EnterpriseInsightCard(
-                        title:
-                            'Recomendações de plataforma',
+                        title: 'Recomendações de plataforma',
                         items: analytics.recommendations,
                       ),
                       const SizedBox(height: 22),
@@ -314,12 +271,8 @@ class _AtlasGlobalPlatformScreenState
                       if (visibleRecords.isEmpty)
                         const Card(
                           child: ListTile(
-                            leading: Icon(
-                              Icons.public_outlined,
-                            ),
-                            title: Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(Icons.public_outlined),
+                            title: Text('Nenhum registro encontrado.'),
                             subtitle: Text(
                               'Cadastre o primeiro componente '
                               'do Pacote 50.',
@@ -331,8 +284,7 @@ class _AtlasGlobalPlatformScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -356,12 +308,9 @@ class _CommandCenterGrid extends StatelessWidget {
 
   final List<AtlasGlobalPlatformRecord> records;
   final AtlasGlobalPlatformFeature? selectedFeature;
-  final ValueChanged<AtlasGlobalPlatformFeature>
-      onSelected;
-  final int Function(AtlasGlobalPlatformFeature)
-      featureCount;
-  final int Function(AtlasGlobalPlatformFeature)
-      featureAlerts;
+  final ValueChanged<AtlasGlobalPlatformFeature> onSelected;
+  final int Function(AtlasGlobalPlatformFeature) featureCount;
+  final int Function(AtlasGlobalPlatformFeature) featureAlerts;
 
   @override
   Widget build(BuildContext context) {
@@ -370,89 +319,74 @@ class _CommandCenterGrid extends StatelessWidget {
         final columns = constraints.maxWidth >= 1000
             ? 5
             : constraints.maxWidth >= 650
-                ? 3
-                : 1;
+            ? 3
+            : 1;
 
-        final width = (
-          constraints.maxWidth - (columns - 1) * 12
-        ) / columns;
+        final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
 
         return Wrap(
           spacing: 12,
           runSpacing: 12,
-          children:
-              AtlasGlobalPlatformFeature.values.map(
-            (feature) {
-              final selected =
-                  feature == selectedFeature;
-              final alerts = featureAlerts(feature);
+          children: AtlasGlobalPlatformFeature.values
+              .map((feature) {
+                final selected = feature == selectedFeature;
+                final alerts = featureAlerts(feature);
 
-              return SizedBox(
-                width: width,
-                child: Card(
-                  color: selected
-                      ? const Color(0xFFE4F0E0)
-                      : null,
-                  child: InkWell(
-                    borderRadius:
-                        BorderRadius.circular(12),
-                    onTap: () => onSelected(feature),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                child: Icon(
-                                  _featureIcon(feature),
+                return SizedBox(
+                  width: width,
+                  child: Card(
+                    color: selected ? const Color(0xFFE4F0E0) : null,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => onSelected(feature),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  child: Icon(_featureIcon(feature)),
                                 ),
-                              ),
-                              const Spacer(),
-                              if (alerts > 0)
-                                Badge(
-                                  label: Text('$alerts'),
-                                  child: const Icon(
-                                    Icons.warning_amber,
+                                const Spacer(),
+                                if (alerts > 0)
+                                  Badge(
+                                    label: Text('$alerts'),
+                                    child: const Icon(Icons.warning_amber),
                                   ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            feature.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            feature.description,
-                            maxLines: 3,
-                            overflow:
-                                TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.black54,
+                            const SizedBox(height: 14),
+                            Text(
+                              feature.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '${featureCount(feature)} registro(s)',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(height: 6),
+                            Text(
+                              feature.description,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.black54),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            Text(
+                              '${featureCount(feature)} registro(s)',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         );
       },
     );
@@ -460,14 +394,10 @@ class _CommandCenterGrid extends StatelessWidget {
 }
 
 class _FeatureFilter extends StatelessWidget {
-  const _FeatureFilter({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _FeatureFilter({required this.selected, required this.onSelected});
 
   final AtlasGlobalPlatformFeature? selected;
-  final ValueChanged<AtlasGlobalPlatformFeature?>
-      onSelected;
+  final ValueChanged<AtlasGlobalPlatformFeature?> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -482,10 +412,7 @@ class _FeatureFilter extends StatelessWidget {
         ),
         ...AtlasGlobalPlatformFeature.values.map(
           (feature) => ChoiceChip(
-            avatar: Icon(
-              _featureIcon(feature),
-              size: 18,
-            ),
+            avatar: Icon(_featureIcon(feature), size: 18),
             label: Text(feature.title),
             selected: selected == feature,
             onSelected: (_) => onSelected(feature),
@@ -510,24 +437,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Offline' =>
-        Colors.red.shade700,
+      'Crítico' || 'Bloqueado' || 'Offline' => Colors.red.shade700,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Conectado' || 'Homologado' ||
-      'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Conectado' ||
+      'Homologado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _featureIcon(record.feature),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_featureIcon(record.feature), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -543,14 +466,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -559,21 +476,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _GlobalRecordForm extends StatefulWidget {
-  const _GlobalRecordForm({
-    this.record,
-    this.initialFeature,
-  });
+  const _GlobalRecordForm({this.record, this.initialFeature});
 
   final AtlasGlobalPlatformRecord? record;
   final AtlasGlobalPlatformFeature? initialFeature;
 
   @override
-  State<_GlobalRecordForm> createState() =>
-      _GlobalRecordFormState();
+  State<_GlobalRecordForm> createState() => _GlobalRecordFormState();
 }
 
-class _GlobalRecordFormState
-    extends State<_GlobalRecordForm> {
+class _GlobalRecordFormState extends State<_GlobalRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late AtlasGlobalPlatformFeature feature;
@@ -595,44 +507,30 @@ class _GlobalRecordFormState
 
     final record = widget.record;
 
-    feature = record?.feature ??
+    feature =
+        record?.feature ??
         widget.initialFeature ??
         AtlasGlobalPlatformFeature.multiCompany;
 
     status = record?.status ?? 'Planejado';
 
-    title = TextEditingController(
-      text: record?.title ?? '',
-    );
+    title = TextEditingController(text: record?.title ?? '');
     date = TextEditingController(
-      text: record?.date ??
-          formatAtlasGlobalDate(DateTime.now()),
+      text: record?.date ?? formatAtlasGlobalDate(DateTime.now()),
     );
-    entityName = TextEditingController(
-      text: record?.entityName ?? '',
-    );
-    roleOrScope = TextEditingController(
-      text: record?.roleOrScope ?? '',
-    );
+    entityName = TextEditingController(text: record?.entityName ?? '');
+    roleOrScope = TextEditingController(text: record?.roleOrScope ?? '');
     primaryValue = TextEditingController(
-      text: record == null
-          ? ''
-          : record.primaryValue.toString(),
+      text: record == null ? '' : record.primaryValue.toString(),
     );
     secondaryValue = TextEditingController(
-      text: record == null
-          ? ''
-          : record.secondaryValue.toString(),
+      text: record == null ? '' : record.secondaryValue.toString(),
     );
-    unit = TextEditingController(
-      text: record?.unit ?? '',
-    );
+    unit = TextEditingController(text: record?.unit ?? '');
     endpointOrReference = TextEditingController(
       text: record?.endpointOrReference ?? '',
     );
-    notes = TextEditingController(
-      text: record?.notes ?? '',
-    );
+    notes = TextEditingController(text: record?.notes ?? '');
   }
 
   @override
@@ -650,10 +548,7 @@ class _GlobalRecordFormState
   }
 
   double number(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   Future<void> chooseDate() async {
@@ -661,12 +556,9 @@ class _GlobalRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -685,8 +577,7 @@ class _GlobalRecordFormState
     Navigator.pop(
       context,
       AtlasGlobalPlatformRecord(
-        id: current?.id ??
-            'global_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'global_${DateTime.now().microsecondsSinceEpoch}',
         feature: feature,
         title: title.text.trim(),
         date: date.text.trim(),
@@ -696,8 +587,7 @@ class _GlobalRecordFormState
         primaryValue: number(primaryValue),
         secondaryValue: number(secondaryValue),
         unit: unit.text.trim(),
-        endpointOrReference:
-            endpointOrReference.text.trim(),
+        endpointOrReference: endpointOrReference.text.trim(),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -720,21 +610,19 @@ class _GlobalRecordFormState
           child: SingleChildScrollView(
             child: Column(
               children: [
-                DropdownButtonFormField<
-                    AtlasGlobalPlatformFeature>(
+                DropdownButtonFormField<AtlasGlobalPlatformFeature>(
                   initialValue: feature,
                   decoration: const InputDecoration(
                     labelText: 'Funcionalidade',
                   ),
-                  items:
-                      AtlasGlobalPlatformFeature.values
-                          .map(
-                    (item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(item.title),
-                    ),
-                  )
-                          .toList(growable: false),
+                  items: AtlasGlobalPlatformFeature.values
+                      .map(
+                        (item) => DropdownMenuItem(
+                          value: item,
+                          child: Text(item.title),
+                        ),
+                      )
+                      .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => feature = value);
@@ -743,12 +631,9 @@ class _GlobalRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -760,35 +645,32 @@ class _GlobalRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em implantação',
-                    'Ativo',
-                    'Conectado',
-                    'Homologado',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                    'Bloqueado',
-                    'Offline',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em implantação',
+                            'Ativo',
+                            'Conectado',
+                            'Homologado',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                            'Bloqueado',
+                            'Offline',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -798,21 +680,18 @@ class _GlobalRecordFormState
                 TextFormField(
                   controller: entityName,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Empresa, usuário, parceiro ou integração',
+                    labelText: 'Empresa, usuário, parceiro ou integração',
                   ),
                 ),
                 TextFormField(
                   controller: roleOrScope,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Perfil, permissão, escopo ou finalidade',
+                    labelText: 'Perfil, permissão, escopo ou finalidade',
                   ),
                 ),
                 TextFormField(
                   controller: primaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -821,8 +700,7 @@ class _GlobalRecordFormState
                 ),
                 TextFormField(
                   controller: secondaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -840,17 +718,14 @@ class _GlobalRecordFormState
                 TextFormField(
                   controller: endpointOrReference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Endpoint, identificador ou referência',
+                    labelText: 'Endpoint, identificador ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -862,27 +737,19 @@ class _GlobalRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _featureIcon(
-  AtlasGlobalPlatformFeature feature,
-) {
+IconData _featureIcon(AtlasGlobalPlatformFeature feature) {
   return switch (feature) {
-    AtlasGlobalPlatformFeature.multiCompany =>
-      Icons.domain_outlined,
-    AtlasGlobalPlatformFeature.advancedMultiUser =>
-      Icons.people_outline,
+    AtlasGlobalPlatformFeature.multiCompany => Icons.domain_outlined,
+    AtlasGlobalPlatformFeature.advancedMultiUser => Icons.people_outline,
     AtlasGlobalPlatformFeature.integrationMarketplace =>
       Icons.extension_outlined,
-    AtlasGlobalPlatformFeature.publicApi =>
-      Icons.api_outlined,
+    AtlasGlobalPlatformFeature.publicApi => Icons.api_outlined,
     AtlasGlobalPlatformFeature.commandCenter =>
       Icons.dashboard_customize_outlined,
   };

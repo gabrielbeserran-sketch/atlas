@@ -5,23 +5,18 @@ import 'package:projeto_atlas/features/copilot/domain/models/atlas_copilot_messa
 import 'package:projeto_atlas/features/copilot/presentation/screens/atlas_copilot_improvement_screen.dart';
 import 'package:projeto_atlas/features/dashboard/domain/services/atlas_copilot_service.dart';
 
-class AtlasCopilotFeedbackAnalyticsScreen
-    extends StatefulWidget {
-  const AtlasCopilotFeedbackAnalyticsScreen({
-    super.key,
-  });
+class AtlasCopilotFeedbackAnalyticsScreen extends StatefulWidget {
+  const AtlasCopilotFeedbackAnalyticsScreen({super.key});
 
   @override
-  State<AtlasCopilotFeedbackAnalyticsScreen>
-      createState() {
+  State<AtlasCopilotFeedbackAnalyticsScreen> createState() {
     return _AtlasCopilotFeedbackAnalyticsScreenState();
   }
 }
 
 class _AtlasCopilotFeedbackAnalyticsScreenState
     extends State<AtlasCopilotFeedbackAnalyticsScreen> {
-  final AtlasCopilotFeedbackAnalyticsService
-      service =
+  final AtlasCopilotFeedbackAnalyticsService service =
       const AtlasCopilotFeedbackAnalyticsService();
 
   bool isLoading = true;
@@ -42,8 +37,7 @@ class _AtlasCopilotFeedbackAnalyticsScreenState
     });
 
     try {
-      final result =
-          await service.buildAnalytics();
+      final result = await service.buildAnalytics();
 
       if (!mounted) {
         return;
@@ -59,8 +53,7 @@ class _AtlasCopilotFeedbackAnalyticsScreenState
       }
 
       setState(() {
-        errorMessage =
-            'Não foi possível carregar os dados de qualidade.';
+        errorMessage = 'Não foi possível carregar os dados de qualidade.';
         isLoading = false;
       });
     }
@@ -83,122 +76,70 @@ class _AtlasCopilotFeedbackAnalyticsScreenState
     final data = analytics;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text(
           'Qualidade do Copiloto',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
             tooltip: 'Plano de melhoria',
-            onPressed:
-                isLoading || data == null
-                    ? null
-                    : openImprovementPlan,
-            icon: const Icon(
-              Icons.build_circle_outlined,
-            ),
+            onPressed: isLoading || data == null ? null : openImprovementPlan,
+            icon: const Icon(Icons.build_circle_outlined),
           ),
           IconButton(
             tooltip: 'Atualizar',
-            onPressed:
-                isLoading ? null : loadAnalytics,
-            icon: const Icon(
-              Icons.refresh,
-            ),
+            onPressed: isLoading ? null : loadAnalytics,
+            icon: const Icon(Icons.refresh),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
-              ? _ErrorView(
-                  message: errorMessage!,
-                  onRetry: loadAnalytics,
-                )
-              : data == null || !data.hasFeedback
-                  ? const _EmptyFeedbackView()
-                  : RefreshIndicator(
-                      onRefresh: loadAnalytics,
-                      child: ListView(
-                        padding:
-                            const EdgeInsets.all(
-                          18,
-                        ),
-                        children: [
-                          _QualityHero(
-                            analytics: data,
-                            onOpenImprovement:
-                                openImprovementPlan,
-                          ),
-                          const SizedBox(
-                            height: 18,
-                          ),
-                          _SummaryGrid(
-                            analytics: data,
-                          ),
-                          const SizedBox(
-                            height: 26,
-                          ),
-                          const _SectionTitle(
-                            title:
-                                'Desempenho por assunto',
-                            subtitle:
-                                'Assuntos com maior índice de respostas não úteis aparecem primeiro.',
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          _IntentMetricsCard(
-                            metrics:
-                                data.intentMetrics,
-                          ),
-                          const SizedBox(
-                            height: 26,
-                          ),
-                          const _SectionTitle(
-                            title:
-                                'Desempenho por contexto',
-                            subtitle:
-                                'Comparação entre operação consolidada e fazendas.',
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          _ContextMetricsCard(
-                            metrics:
-                                data.contextMetrics,
-                          ),
-                          const SizedBox(
-                            height: 26,
-                          ),
-                          const _SectionTitle(
-                            title:
-                                'Avaliações recentes',
-                            subtitle:
-                                'Respostas avaliadas mais recentemente.',
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          _RecentFeedbackList(
-                            items:
-                                data.recentFeedback,
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                        ],
-                      ),
-                    ),
+          ? _ErrorView(message: errorMessage!, onRetry: loadAnalytics)
+          : data == null || !data.hasFeedback
+          ? const _EmptyFeedbackView()
+          : RefreshIndicator(
+              onRefresh: loadAnalytics,
+              child: ListView(
+                padding: const EdgeInsets.all(18),
+                children: [
+                  _QualityHero(
+                    analytics: data,
+                    onOpenImprovement: openImprovementPlan,
+                  ),
+                  const SizedBox(height: 18),
+                  _SummaryGrid(analytics: data),
+                  const SizedBox(height: 26),
+                  const _SectionTitle(
+                    title: 'Desempenho por assunto',
+                    subtitle:
+                        'Assuntos com maior índice de respostas não úteis aparecem primeiro.',
+                  ),
+                  const SizedBox(height: 12),
+                  _IntentMetricsCard(metrics: data.intentMetrics),
+                  const SizedBox(height: 26),
+                  const _SectionTitle(
+                    title: 'Desempenho por contexto',
+                    subtitle:
+                        'Comparação entre operação consolidada e fazendas.',
+                  ),
+                  const SizedBox(height: 12),
+                  _ContextMetricsCard(metrics: data.contextMetrics),
+                  const SizedBox(height: 26),
+                  const _SectionTitle(
+                    title: 'Avaliações recentes',
+                    subtitle: 'Respostas avaliadas mais recentemente.',
+                  ),
+                  const SizedBox(height: 12),
+                  _RecentFeedbackList(items: data.recentFeedback),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
     );
   }
 }
@@ -214,31 +155,23 @@ class _QualityHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _qualityColor(
-      analytics.approvalRate,
-    );
+    final color = _qualityColor(analytics.approvalRate);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(23),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF263238),
-            Color(0xFF37474F),
-          ],
+          colors: [Color(0xFF263238), Color(0xFF37474F)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact =
-              constraints.maxWidth < 700;
+          final compact = constraints.maxWidth < 700;
 
           final text = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
@@ -254,8 +187,7 @@ class _QualityHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 21,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -263,33 +195,20 @@ class _QualityHero extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                _qualityMessage(
-                  analytics.approvalRate,
-                ),
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.45,
-                ),
+                _qualityMessage(analytics.approvalRate),
+                style: const TextStyle(color: Colors.white70, height: 1.45),
               ),
               const SizedBox(height: 15),
               FilledButton.icon(
                 onPressed: onOpenImprovement,
-                style:
-                    FilledButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xFFC8A951),
-                  foregroundColor:
-                      const Color(0xFF263238),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFC8A951),
+                  foregroundColor: const Color(0xFF263238),
                 ),
-                icon: const Icon(
-                  Icons.build_outlined,
-                ),
+                icon: const Icon(Icons.build_outlined),
                 label: const Text(
                   'Abrir plano de melhoria',
-                  style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -299,36 +218,24 @@ class _QualityHero extends StatelessWidget {
             width: 180,
             padding: const EdgeInsets.all(17),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
-              border: Border.all(
-                color: color.withValues(
-                  alpha: 0.42,
-                ),
-              ),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: color.withValues(alpha: 0.42)),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${analytics.approvalRate.toStringAsFixed(0)}%',
                   style: TextStyle(
                     color: color,
                     fontSize: 36,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Text(
                   'Taxa de aprovação',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),
@@ -336,13 +243,8 @@ class _QualityHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                text,
-                const SizedBox(height: 18),
-                score,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [text, const SizedBox(height: 18), score],
             );
           }
 
@@ -358,9 +260,7 @@ class _QualityHero extends StatelessWidget {
     );
   }
 
-  static String _qualityMessage(
-    double rate,
-  ) {
+  static String _qualityMessage(double rate) {
     if (rate >= 85) {
       return 'O Copiloto apresenta excelente aceitação. Mantenha as regras atuais e continue coletando feedback.';
     }
@@ -378,9 +278,7 @@ class _QualityHero extends StatelessWidget {
 }
 
 class _SummaryGrid extends StatelessWidget {
-  const _SummaryGrid({
-    required this.analytics,
-  });
+  const _SummaryGrid({required this.analytics});
 
   final AtlasCopilotFeedbackAnalytics analytics;
 
@@ -389,51 +287,35 @@ class _SummaryGrid extends StatelessWidget {
     final items = [
       _SummaryItem(
         label: 'Avaliadas',
-        value:
-            analytics.evaluatedResponses,
-        icon:
-            Icons.fact_check_outlined,
-        color:
-            const Color(0xFF1565C0),
+        value: analytics.evaluatedResponses,
+        icon: Icons.fact_check_outlined,
+        color: const Color(0xFF1565C0),
       ),
       _SummaryItem(
         label: 'Úteis',
         value: analytics.usefulResponses,
-        icon:
-            Icons.thumb_up_outlined,
-        color:
-            const Color(0xFF1B5E20),
+        icon: Icons.thumb_up_outlined,
+        color: const Color(0xFF1B5E20),
       ),
       _SummaryItem(
         label: 'Não úteis',
-        value:
-            analytics.notUsefulResponses,
-        icon:
-            Icons.thumb_down_outlined,
-        color:
-            const Color(0xFFC62828),
+        value: analytics.notUsefulResponses,
+        icon: Icons.thumb_down_outlined,
+        color: const Color(0xFFC62828),
       ),
       _SummaryItem(
         label: 'Conversas',
-        value:
-            analytics.totalConversations,
-        icon:
-            Icons.forum_outlined,
-        color:
-            const Color(0xFF6A1B9A),
+        value: analytics.totalConversations,
+        icon: Icons.forum_outlined,
+        color: const Color(0xFF6A1B9A),
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width =
-            constraints.maxWidth >= 760
-                ? (constraints.maxWidth -
-                        36) /
-                    4
-                : (constraints.maxWidth -
-                        12) /
-                    2;
+        final width = constraints.maxWidth >= 760
+            ? (constraints.maxWidth - 36) / 4
+            : (constraints.maxWidth - 12) / 2;
 
         return Wrap(
           spacing: 12,
@@ -443,43 +325,27 @@ class _SummaryGrid extends StatelessWidget {
               width: width,
               child: Card(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.all(
-                    16,
-                  ),
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
-                      Icon(
-                        item.icon,
-                        color: item.color,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      Icon(item.icon, color: item.color),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.value
-                                  .toString(),
+                              item.value.toString(),
                               style: TextStyle(
-                                color:
-                                    item.color,
+                                color: item.color,
                                 fontSize: 21,
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               item.label,
-                              style:
-                                  const TextStyle(
-                                color:
-                                    Colors.black54,
+                              style: const TextStyle(
+                                color: Colors.black54,
                                 fontSize: 10,
                               ),
                             ),
@@ -513,10 +379,7 @@ class _SummaryItem {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -524,36 +387,23 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
-class _IntentMetricsCard
-    extends StatelessWidget {
-  const _IntentMetricsCard({
-    required this.metrics,
-  });
+class _IntentMetricsCard extends StatelessWidget {
+  const _IntentMetricsCard({required this.metrics});
 
-  final List<AtlasCopilotIntentFeedbackMetric>
-      metrics;
+  final List<AtlasCopilotIntentFeedbackMetric> metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -563,44 +413,32 @@ class _IntentMetricsCard
 
     return Card(
       child: Column(
-        children: List.generate(
-          metrics.length,
-          (index) {
-            final item = metrics[index];
+        children: List.generate(metrics.length, (index) {
+          final item = metrics[index];
 
-            return Column(
-              children: [
-                if (index > 0)
-                  const Divider(height: 1),
-                _MetricTile(
-                  title:
-                      atlasCopilotIntentLabel(
-                    item.intent,
-                  ),
-                  subtitle:
-                      '${item.total} avaliações · '
-                      '${item.useful} úteis · '
-                      '${item.notUseful} não úteis',
-                  approvalRate:
-                      item.approvalRate,
-                ),
-              ],
-            );
-          },
-        ),
+          return Column(
+            children: [
+              if (index > 0) const Divider(height: 1),
+              _MetricTile(
+                title: atlasCopilotIntentLabel(item.intent),
+                subtitle:
+                    '${item.total} avaliações · '
+                    '${item.useful} úteis · '
+                    '${item.notUseful} não úteis',
+                approvalRate: item.approvalRate,
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
 }
 
-class _ContextMetricsCard
-    extends StatelessWidget {
-  const _ContextMetricsCard({
-    required this.metrics,
-  });
+class _ContextMetricsCard extends StatelessWidget {
+  const _ContextMetricsCard({required this.metrics});
 
-  final List<AtlasCopilotContextFeedbackMetric>
-      metrics;
+  final List<AtlasCopilotContextFeedbackMetric> metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -610,33 +448,26 @@ class _ContextMetricsCard
 
     return Card(
       child: Column(
-        children: List.generate(
-          metrics.length,
-          (index) {
-            final item = metrics[index];
+        children: List.generate(metrics.length, (index) {
+          final item = metrics[index];
 
-            return Column(
-              children: [
-                if (index > 0)
-                  const Divider(height: 1),
-                _MetricTile(
-                  title: item.contextLabel,
-                  subtitle:
-                      '${item.total} avaliações · '
-                      '${item.useful} úteis · '
-                      '${item.notUseful} não úteis',
-                  approvalRate:
-                      item.approvalRate,
-                  icon: item.isFarmContext
-                      ? Icons
-                          .agriculture_outlined
-                      : Icons
-                          .business_outlined,
-                ),
-              ],
-            );
-          },
-        ),
+          return Column(
+            children: [
+              if (index > 0) const Divider(height: 1),
+              _MetricTile(
+                title: item.contextLabel,
+                subtitle:
+                    '${item.total} avaliações · '
+                    '${item.useful} úteis · '
+                    '${item.notUseful} não úteis',
+                approvalRate: item.approvalRate,
+                icon: item.isFarmContext
+                    ? Icons.agriculture_outlined
+                    : Icons.business_outlined,
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -657,39 +488,28 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _qualityColor(approvalRate);
+    final color = _qualityColor(approvalRate);
 
     return Padding(
       padding: const EdgeInsets.all(17),
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(
-              icon,
-              color: color,
-            ),
+            Icon(icon, color: color),
             const SizedBox(width: 11),
           ],
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Colors.black45,
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(color: Colors.black45, fontSize: 10),
                 ),
               ],
             ),
@@ -708,14 +528,10 @@ class _MetricTile extends StatelessWidget {
   }
 }
 
-class _RecentFeedbackList
-    extends StatelessWidget {
-  const _RecentFeedbackList({
-    required this.items,
-  });
+class _RecentFeedbackList extends StatelessWidget {
+  const _RecentFeedbackList({required this.items});
 
-  final List<AtlasCopilotRecentFeedbackItem>
-      items;
+  final List<AtlasCopilotRecentFeedbackItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -725,45 +541,33 @@ class _RecentFeedbackList
 
     return Card(
       child: Column(
-        children: List.generate(
-          items.length,
-          (index) {
-            final item = items[index];
-            final useful = item.feedback ==
-                AtlasCopilotMessageFeedback.useful;
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final useful = item.feedback == AtlasCopilotMessageFeedback.useful;
 
-            return Column(
-              children: [
-                if (index > 0)
-                  const Divider(height: 1),
-                ListTile(
-                  leading: Icon(
-                    useful
-                        ? Icons.thumb_up
-                        : Icons.thumb_down,
-                    color: useful
-                        ? const Color(
-                            0xFF1B5E20,
-                          )
-                        : const Color(
-                            0xFFC62828,
-                          ),
-                  ),
-                  title: Text(
-                    item.messageText,
-                    maxLines: 2,
-                    overflow:
-                        TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    '${item.contextLabel} · '
-                    '${item.intent == null ? 'Sem assunto' : atlasCopilotIntentLabel(item.intent!)}',
-                  ),
+          return Column(
+            children: [
+              if (index > 0) const Divider(height: 1),
+              ListTile(
+                leading: Icon(
+                  useful ? Icons.thumb_up : Icons.thumb_down,
+                  color: useful
+                      ? const Color(0xFF1B5E20)
+                      : const Color(0xFFC62828),
                 ),
-              ],
-            );
-          },
-        ),
+                title: Text(
+                  item.messageText,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  '${item.contextLabel} · '
+                  '${item.intent == null ? 'Sem assunto' : atlasCopilotIntentLabel(item.intent!)}',
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -780,9 +584,7 @@ class _NoDataCard extends StatelessWidget {
         child: Center(
           child: Text(
             'Ainda não há dados suficientes.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -790,25 +592,17 @@ class _NoDataCard extends StatelessWidget {
   }
 }
 
-class _EmptyFeedbackView
-    extends StatelessWidget {
+class _EmptyFeedbackView extends StatelessWidget {
   const _EmptyFeedbackView();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Nenhuma resposta avaliada.',
-      ),
-    );
+    return const Center(child: Text('Nenhuma resposta avaliada.'));
   }
 }
 
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorView({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -818,18 +612,14 @@ class _ErrorView extends StatelessWidget {
     return Center(
       child: FilledButton.icon(
         onPressed: onRetry,
-        icon: const Icon(
-          Icons.refresh,
-        ),
+        icon: const Icon(Icons.refresh),
         label: Text(message),
       ),
     );
   }
 }
 
-Color _qualityColor(
-  double rate,
-) {
+Color _qualityColor(double rate) {
   if (rate >= 85) {
     return const Color(0xFF1B5E20);
   }

@@ -50,13 +50,10 @@ class AtlasExecutionCycleReport {
       'completedActions': completedActions,
       'overdueActions': overdueActions,
       'actionsWithOutcome': actionsWithOutcome,
-      'expectedFinancialImpact':
-          expectedFinancialImpact,
-      'realizedFinancialImpact':
-          realizedFinancialImpact,
+      'expectedFinancialImpact': expectedFinancialImpact,
+      'realizedFinancialImpact': realizedFinancialImpact,
       'executionCost': executionCost,
-      'totalNetFinancialResult':
-          totalNetFinancialResult,
+      'totalNetFinancialResult': totalNetFinancialResult,
       'averageRoiPercent': averageRoiPercent,
       'executiveSummary': executiveSummary,
       'highlights': highlights,
@@ -65,9 +62,7 @@ class AtlasExecutionCycleReport {
     };
   }
 
-  factory AtlasExecutionCycleReport.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutionCycleReport.fromMap(Map<String, dynamic> map) {
     return AtlasExecutionCycleReport(
       id: map['id']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
@@ -75,27 +70,18 @@ class AtlasExecutionCycleReport {
       periodStart: _readDate(map['periodStart']),
       periodEnd: _readDate(map['periodEnd']),
       totalActions: _readInt(map['totalActions']),
-      completedActions:
-          _readInt(map['completedActions']),
+      completedActions: _readInt(map['completedActions']),
       overdueActions: _readInt(map['overdueActions']),
-      actionsWithOutcome:
-          _readInt(map['actionsWithOutcome']),
-      expectedFinancialImpact:
-          _readDouble(map['expectedFinancialImpact']),
-      realizedFinancialImpact:
-          _readDouble(map['realizedFinancialImpact']),
+      actionsWithOutcome: _readInt(map['actionsWithOutcome']),
+      expectedFinancialImpact: _readDouble(map['expectedFinancialImpact']),
+      realizedFinancialImpact: _readDouble(map['realizedFinancialImpact']),
       executionCost: _readDouble(map['executionCost']),
-      totalNetFinancialResult:
-          _readDouble(map['totalNetFinancialResult']),
-      averageRoiPercent:
-          _readDouble(map['averageRoiPercent']),
-      executiveSummary:
-          map['executiveSummary']?.toString() ?? '',
+      totalNetFinancialResult: _readDouble(map['totalNetFinancialResult']),
+      averageRoiPercent: _readDouble(map['averageRoiPercent']),
+      executiveSummary: map['executiveSummary']?.toString() ?? '',
       highlights: _readStrings(map['highlights']),
-      attentionPoints:
-          _readStrings(map['attentionPoints']),
-      lessonsLearned:
-          _readStrings(map['lessonsLearned']),
+      attentionPoints: _readStrings(map['attentionPoints']),
+      lessonsLearned: _readStrings(map['lessonsLearned']),
     );
   }
 
@@ -116,8 +102,7 @@ class AtlasExecutionCycleReport {
   }
 
   static DateTime _readDate(dynamic value) {
-    return DateTime.tryParse(value?.toString() ?? '') ??
-        DateTime.now();
+    return DateTime.tryParse(value?.toString() ?? '') ?? DateTime.now();
   }
 
   static List<String> _readStrings(dynamic value) {
@@ -125,8 +110,6 @@ class AtlasExecutionCycleReport {
       return <String>[];
     }
 
-    return value
-        .map((item) => item.toString())
-        .toList(growable: false);
+    return value.map((item) => item.toString()).toList(growable: false);
   }
 }

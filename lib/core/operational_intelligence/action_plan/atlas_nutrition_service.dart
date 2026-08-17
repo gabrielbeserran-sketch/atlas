@@ -63,8 +63,10 @@ class AtlasNutritionService {
     final raw = await _prefs.getString(_consumptionKey);
     if (raw == null || raw.isEmpty) return [];
     final list = (jsonDecode(raw) as List)
-        .map((e) => AtlasFeedConsumptionRecord.fromMap(
-              Map<String, dynamic>.from(e)))
+        .map(
+          (e) =>
+              AtlasFeedConsumptionRecord.fromMap(Map<String, dynamic>.from(e)),
+        )
         .toList();
     final result = _farm(list, farmName, (e) => e.farmName);
     result.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
@@ -85,10 +87,7 @@ class AtlasNutritionService {
     );
   }
 
-  double dietCost(
-    AtlasDietPlan diet,
-    List<AtlasFeedIngredient> ingredients,
-  ) {
+  double dietCost(AtlasDietPlan diet, List<AtlasFeedIngredient> ingredients) {
     final map = {for (final e in ingredients) e.id: e};
     return diet.ingredients.fold(
       0,

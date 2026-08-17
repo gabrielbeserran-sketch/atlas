@@ -3,7 +3,7 @@ import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 
 class HerdEnterpriseService {
   HerdEnterpriseService({AtlasEnterpriseApiClient? api})
-      : _api = api ?? AtlasEnterpriseApiClient.instance;
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 
@@ -13,9 +13,7 @@ class HerdEnterpriseService {
       '/livestock/lots',
       queryParameters: {'farm_id': farmId, 'active_only': 'true'},
     );
-    return response
-        .map(HerdGroupData.fromRemoteMap)
-        .toList(growable: false);
+    return response.map(HerdGroupData.fromRemoteMap).toList(growable: false);
   }
 
   Future<HerdGroupData> createGroup({

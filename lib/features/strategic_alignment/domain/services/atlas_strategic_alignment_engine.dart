@@ -10,54 +10,44 @@ class AtlasStrategicAlignmentEngine {
   }) {
     final objectives = _defaultObjectives(plans);
 
-    final items = plans.map((plan) {
-      final objective = _bestObjective(
-        plan: plan,
-        objectives: objectives,
-      );
+    final items =
+        plans.map((plan) {
+          final objective = _bestObjective(plan: plan, objectives: objectives);
 
-      final alignmentScore = objective == null
-          ? 0.0
-          : _alignmentScore(
+          final alignmentScore = objective == null
+              ? 0.0
+              : _alignmentScore(plan: plan, objective: objective);
+
+          final contributionScore = objective == null
+              ? 0.0
+              : _contributionScore(plan: plan, objective: objective);
+
+          final executionConfidence =
+              (plan.confidence * 0.55 +
+                      plan.progressPercent * 0.30 +
+                      _statusScore(plan.status) * 0.15)
+                  .clamp(0.0, 100.0)
+                  .toDouble();
+
+          final status = _status(alignmentScore);
+
+          return AtlasStrategyAlignmentItem(
+            plan: plan,
+            objective: objective,
+            alignmentScore: alignmentScore,
+            contributionScore: contributionScore,
+            executionConfidence: executionConfidence,
+            status: status,
+            recommendation: _recommendation(
+              status: status,
               plan: plan,
               objective: objective,
-            );
-
-      final contributionScore = objective == null
-          ? 0.0
-          : _contributionScore(
-              plan: plan,
-              objective: objective,
-            );
-
-      final executionConfidence = (
-        plan.confidence * 0.55 +
-        plan.progressPercent * 0.30 +
-        _statusScore(plan.status) * 0.15
-      ).clamp(0.0, 100.0).toDouble();
-
-      final status = _status(alignmentScore);
-
-      return AtlasStrategyAlignmentItem(
-        plan: plan,
-        objective: objective,
-        alignmentScore: alignmentScore,
-        contributionScore: contributionScore,
-        executionConfidence: executionConfidence,
-        status: status,
-        recommendation: _recommendation(
-          status: status,
-          plan: plan,
-          objective: objective,
-        ),
-      );
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.alignmentScore.compareTo(
-          first.alignmentScore,
-        ),
-      );
+            ),
+          );
+        }).toList()..sort(
+          (first, second) =>
+              second.alignmentScore.compareTo(first.alignmentScore),
+        );
 
     return AtlasStrategicAlignmentAssessment(
       generatedAt: DateTime.now(),
@@ -76,27 +66,18 @@ class AtlasStrategicAlignmentEngine {
 
     final averageProgress = plans.isEmpty
         ? 0.0
-        : plans.fold<double>(
-              0,
-              (sum, item) => sum + item.progressPercent,
-            ) /
-            plans.length;
+        : plans.fold<double>(0, (sum, item) => sum + item.progressPercent) /
+              plans.length;
 
     final reproductionPlans = plans
-        .where(
-          (item) =>
-              item.area ==
-              AtlasFarmAuditArea.reproduction,
-        )
+        .where((item) => item.area == AtlasFarmAuditArea.reproduction)
         .length;
 
     final sanitaryPlans = plans
         .where(
           (item) =>
-              item.area ==
-                  AtlasFarmAuditArea.sanitary ||
-              item.area ==
-                  AtlasFarmAuditArea.biosecurity,
+              item.area == AtlasFarmAuditArea.sanitary ||
+              item.area == AtlasFarmAuditArea.biosecurity,
         )
         .length;
 
@@ -113,8 +94,7 @@ class AtlasStrategicAlignmentEngine {
             id: 'kr_expected_value',
             title: 'Valor econômico projetado',
             currentValue: expectedGain,
-            targetValue:
-                expectedGain <= 0 ? 100000 : expectedGain * 1.20,
+            targetValue: expectedGain <= 0 ? 100000 : expectedGain * 1.20,
             unit: 'R\$',
           ),
           AtlasKeyResult(
@@ -140,18 +120,11 @@ class AtlasStrategicAlignmentEngine {
             currentValue: plans
                 .where(
                   (item) =>
-                      item.area ==
-                          AtlasFarmAuditArea.operational ||
-                      item.area ==
-                          AtlasFarmAuditArea.nutrition ||
-                      item.area ==
-                          AtlasFarmAuditArea.pastures,
+                      item.area == AtlasFarmAuditArea.operational ||
+                      item.area == AtlasFarmAuditArea.nutrition ||
+                      item.area == AtlasFarmAuditArea.pastures,
                 )
-                .fold<double>(
-                  0,
-                  (sum, item) =>
-                      sum + item.progressPercent,
-                ),
+                .fold<double>(0, (sum, item) => sum + item.progressPercent),
             targetValue: 240,
             unit: 'pontos',
           ),
@@ -168,10 +141,10 @@ class AtlasStrategicAlignmentEngine {
           AtlasKeyResult(
             id: 'kr_reproduction_plans',
             title: 'Estratégias reprodutivas ativas',
-            currentValue:
-                reproductionPlans.toDouble(),
-            targetValue:
-                reproductionPlans <= 0 ? 1 : reproductionPlans.toDouble(),
+            currentValue: reproductionPlans.toDouble(),
+            targetValue: reproductionPlans <= 0
+                ? 1
+                : reproductionPlans.toDouble(),
             unit: 'estratégias',
           ),
         ],
@@ -188,8 +161,7 @@ class AtlasStrategicAlignmentEngine {
             id: 'kr_risk_plans',
             title: 'Iniciativas de proteção e risco',
             currentValue: sanitaryPlans.toDouble(),
-            targetValue:
-                sanitaryPlans <= 0 ? 1 : sanitaryPlans.toDouble(),
+            targetValue: sanitaryPlans <= 0 ? 1 : sanitaryPlans.toDouble(),
             unit: 'estratégias',
           ),
         ],
@@ -212,9 +184,7 @@ class AtlasStrategicAlignmentEngine {
     return objectives.isEmpty ? null : objectives.first;
   }
 
-  String _objectiveForArea(
-    AtlasFarmAuditArea area,
-  ) {
+  String _objectiveForArea(AtlasFarmAuditArea area) {
     switch (area) {
       case AtlasFarmAuditArea.financial:
       case AtlasFarmAuditArea.inventory:
@@ -239,45 +209,36 @@ class AtlasStrategicAlignmentEngine {
     required AtlasStrategyExecutionPlan plan,
     required AtlasStrategicObjective objective,
   }) {
-    final areaFit =
-        _objectiveForArea(plan.area) == objective.id
-            ? 100.0
-            : 35.0;
+    final areaFit = _objectiveForArea(plan.area) == objective.id ? 100.0 : 35.0;
 
-    final valueFit = (
-      plan.expectedRoi * 0.55 +
-      plan.confidence * 0.45
-    ).clamp(0.0, 100.0).toDouble();
+    final valueFit = (plan.expectedRoi * 0.55 + plan.confidence * 0.45)
+        .clamp(0.0, 100.0)
+        .toDouble();
 
-    return (
-      areaFit * 0.55 +
-      valueFit * 0.30 +
-      _statusScore(plan.status) * 0.15
-    ).clamp(0.0, 100.0).toDouble();
+    return (areaFit * 0.55 + valueFit * 0.30 + _statusScore(plan.status) * 0.15)
+        .clamp(0.0, 100.0)
+        .toDouble();
   }
 
   double _contributionScore({
     required AtlasStrategyExecutionPlan plan,
     required AtlasStrategicObjective objective,
   }) {
-    final economicContribution = (
-      plan.expectedNetGain / 10000
-    ).clamp(0.0, 100.0).toDouble();
+    final economicContribution = (plan.expectedNetGain / 10000)
+        .clamp(0.0, 100.0)
+        .toDouble();
 
-    final deliveryContribution = (
-      plan.progressPercent * 0.60 +
-      plan.confidence * 0.40
-    ).clamp(0.0, 100.0).toDouble();
+    final deliveryContribution =
+        (plan.progressPercent * 0.60 + plan.confidence * 0.40)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
-    return (
-      economicContribution * 0.45 +
-      deliveryContribution * 0.55
-    ).clamp(0.0, 100.0).toDouble();
+    return (economicContribution * 0.45 + deliveryContribution * 0.55)
+        .clamp(0.0, 100.0)
+        .toDouble();
   }
 
-  double _statusScore(
-    AtlasStrategyExecutionStatus status,
-  ) {
+  double _statusScore(AtlasStrategyExecutionStatus status) {
     switch (status) {
       case AtlasStrategyExecutionStatus.planned:
         return 55;
@@ -292,9 +253,7 @@ class AtlasStrategicAlignmentEngine {
     }
   }
 
-  AtlasAlignmentStatus _status(
-    double score,
-  ) {
+  AtlasAlignmentStatus _status(double score) {
     if (score >= 82) {
       return AtlasAlignmentStatus.strong;
     }

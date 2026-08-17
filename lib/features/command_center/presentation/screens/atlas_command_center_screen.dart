@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/command_center/data/services/atlas_command_repository.dart';
 import 'package:projeto_atlas/features/command_center/domain/models/atlas_command_center_data.dart';
 import 'package:projeto_atlas/features/command_center/domain/services/atlas_command_engine.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasCommandCenterScreen extends StatefulWidget {
   const AtlasCommandCenterScreen({super.key});
@@ -11,8 +12,7 @@ class AtlasCommandCenterScreen extends StatefulWidget {
       _AtlasCommandCenterScreenState();
 }
 
-class _AtlasCommandCenterScreenState
-    extends State<AtlasCommandCenterScreen> {
+class _AtlasCommandCenterScreenState extends State<AtlasCommandCenterScreen> {
   final AtlasCommandRepository _repository = AtlasCommandRepository();
   final AtlasCommandEngine _engine = AtlasCommandEngine();
 
@@ -49,8 +49,9 @@ class _AtlasCommandCenterScreenState
 
     final List<AtlasCommandItem> updatedItems = currentState.items
         .map(
-          (AtlasCommandItem current) =>
-              current.id == item.id ? current.copyWith(status: status) : current,
+          (AtlasCommandItem current) => current.id == item.id
+              ? current.copyWith(status: status)
+              : current,
         )
         .toList();
     final AtlasCommandCenterState updatedState = currentState.copyWith(
@@ -111,8 +112,8 @@ class _AtlasCommandCenterScreenState
               final int columns = constraints.maxWidth >= 900
                   ? 4
                   : constraints.maxWidth >= 560
-                      ? 2
-                      : 1;
+                  ? 2
+                  : 1;
               return GridView.count(
                 crossAxisCount: columns,
                 shrinkWrap: true,
@@ -163,9 +164,9 @@ class _AtlasCommandCenterScreenState
           const SizedBox(height: 16),
           Text(
             'Fila inteligente (${items.length})',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           if (items.isEmpty)
@@ -236,8 +237,8 @@ class _BriefCard extends StatelessWidget {
                       Text(
                         'Briefing executivo do dia',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -292,8 +293,8 @@ class _MetricCard extends StatelessWidget {
                   Text(
                     value,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(label),
                 ],
@@ -345,9 +346,9 @@ class _FilterCard extends StatelessWidget {
                   ...AtlasCommandCategory.values.map(
                     (AtlasCommandCategory category) =>
                         DropdownMenuItem<AtlasCommandCategory?>(
-                      value: category,
-                      child: Text(_categoryLabel(category)),
-                    ),
+                          value: category,
+                          child: Text(_categoryLabel(category)),
+                        ),
                   ),
                 ],
                 onChanged: onCategoryChanged,
@@ -366,10 +367,7 @@ class _FilterCard extends StatelessWidget {
 }
 
 class _CommandItemCard extends StatelessWidget {
-  const _CommandItemCard({
-    required this.item,
-    required this.onStatusChanged,
-  });
+  const _CommandItemCard({required this.item, required this.onStatusChanged});
 
   final AtlasCommandItem item;
   final ValueChanged<AtlasCommandItemStatus> onStatusChanged;
@@ -385,9 +383,7 @@ class _CommandItemCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                CircleAvatar(
-                  child: Icon(_categoryIcon(item.category)),
-                ),
+                CircleAvatar(child: Icon(_categoryIcon(item.category))),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -395,9 +391,8 @@ class _CommandItemCard extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         item.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(item.description),
@@ -425,9 +420,7 @@ class _CommandItemCard extends StatelessWidget {
                     size: 16,
                   ),
                   label: Text(
-                    item.isOverdue
-                        ? 'Vencido'
-                        : _statusLabel(item.status),
+                    item.isOverdue ? 'Vencido' : _statusLabel(item.status),
                   ),
                 ),
                 if (item.actionLabel != null)
@@ -443,17 +436,15 @@ class _CommandItemCard extends StatelessWidget {
               children: <Widget>[
                 if (item.status != AtlasCommandItemStatus.completed)
                   TextButton.icon(
-                    onPressed: () => onStatusChanged(
-                      AtlasCommandItemStatus.completed,
-                    ),
+                    onPressed: () =>
+                        onStatusChanged(AtlasCommandItemStatus.completed),
                     icon: const Icon(Icons.check_circle_outline_rounded),
                     label: const Text('Concluir'),
                   ),
                 if (item.status == AtlasCommandItemStatus.completed)
                   TextButton.icon(
-                    onPressed: () => onStatusChanged(
-                      AtlasCommandItemStatus.inProgress,
-                    ),
+                    onPressed: () =>
+                        onStatusChanged(AtlasCommandItemStatus.inProgress),
                     icon: const Icon(Icons.replay_rounded),
                     label: const Text('Reabrir'),
                   ),
@@ -463,19 +454,19 @@ class _CommandItemCard extends StatelessWidget {
                     onSelected: onStatusChanged,
                     itemBuilder: (BuildContext context) =>
                         const <PopupMenuEntry<AtlasCommandItemStatus>>[
-                      PopupMenuItem<AtlasCommandItemStatus>(
-                        value: AtlasCommandItemStatus.newItem,
-                        child: Text('Novo'),
-                      ),
-                      PopupMenuItem<AtlasCommandItemStatus>(
-                        value: AtlasCommandItemStatus.inProgress,
-                        child: Text('Em andamento'),
-                      ),
-                      PopupMenuItem<AtlasCommandItemStatus>(
-                        value: AtlasCommandItemStatus.dismissed,
-                        child: Text('Dispensar'),
-                      ),
-                    ],
+                          PopupMenuItem<AtlasCommandItemStatus>(
+                            value: AtlasCommandItemStatus.newItem,
+                            child: Text('Novo'),
+                          ),
+                          PopupMenuItem<AtlasCommandItemStatus>(
+                            value: AtlasCommandItemStatus.inProgress,
+                            child: Text('Em andamento'),
+                          ),
+                          PopupMenuItem<AtlasCommandItemStatus>(
+                            value: AtlasCommandItemStatus.dismissed,
+                            child: Text('Dispensar'),
+                          ),
+                        ],
                   ),
               ],
             ),
@@ -559,7 +550,7 @@ IconData _categoryIcon(AtlasCommandCategory category) {
     case AtlasCommandCategory.operational:
       return Icons.precision_manufacturing_outlined;
     case AtlasCommandCategory.reproductive:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     case AtlasCommandCategory.strategic:
       return Icons.track_changes_rounded;
     case AtlasCommandCategory.agenda:

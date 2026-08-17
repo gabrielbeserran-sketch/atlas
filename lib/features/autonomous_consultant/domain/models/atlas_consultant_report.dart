@@ -30,21 +30,13 @@ class AtlasConsultantReport {
 
   int get criticalActions {
     return actions
-        .where(
-          (item) =>
-              item.priority ==
-              AtlasConsultantPriority.critical,
-        )
+        .where((item) => item.priority == AtlasConsultantPriority.critical)
         .length;
   }
 
   int get highPriorityActions {
     return actions
-        .where(
-          (item) =>
-              item.priority ==
-              AtlasConsultantPriority.high,
-        )
+        .where((item) => item.priority == AtlasConsultantPriority.high)
         .length;
   }
 }
@@ -79,16 +71,9 @@ class AtlasConsultantAction {
   final List<String> steps;
 }
 
-enum AtlasConsultantPriority {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasConsultantPriority { low, moderate, high, critical }
 
-String atlasConsultantPriorityLabel(
-  AtlasConsultantPriority priority,
-) {
+String atlasConsultantPriorityLabel(AtlasConsultantPriority priority) {
   switch (priority) {
     case AtlasConsultantPriority.low:
       return 'Baixa';

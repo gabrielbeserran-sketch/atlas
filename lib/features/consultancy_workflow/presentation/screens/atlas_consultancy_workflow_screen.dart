@@ -107,11 +107,13 @@ class _AtlasConsultancyWorkflowScreenState
     }
     setState(() {
       _cases = _cases
-          .map((current) => current.id == item.id
-              ? current.copyWith(
-                  stage: AtlasConsultancyStage.values[index + 1],
-                )
-              : current)
+          .map(
+            (current) => current.id == item.id
+                ? current.copyWith(
+                    stage: AtlasConsultancyStage.values[index + 1],
+                  )
+                : current,
+          )
           .toList();
     });
     await _save();
@@ -122,15 +124,19 @@ class _AtlasConsultancyWorkflowScreenState
     AtlasConsultancyAction action,
   ) async {
     final List<AtlasConsultancyAction> updatedActions = caseItem.actions
-        .map((item) => item.id == action.id
-            ? item.copyWith(completed: !item.completed)
-            : item)
+        .map(
+          (item) => item.id == action.id
+              ? item.copyWith(completed: !item.completed)
+              : item,
+        )
         .toList();
     setState(() {
       _cases = _cases
-          .map((item) => item.id == caseItem.id
-              ? item.copyWith(actions: updatedActions)
-              : item)
+          .map(
+            (item) => item.id == caseItem.id
+                ? item.copyWith(actions: updatedActions)
+                : item,
+          )
           .toList();
     });
     await _save();
@@ -139,9 +145,7 @@ class _AtlasConsultancyWorkflowScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Fluxo de Consultoria Veterinária'),
-      ),
+      appBar: AppBar(title: const Text('Fluxo de Consultoria Veterinária')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createCase,
         icon: const Icon(Icons.add),
@@ -221,9 +225,10 @@ class _AtlasConsultancyWorkflowScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 2),
             Text(label),
           ],
@@ -233,14 +238,19 @@ class _AtlasConsultancyWorkflowScreenState
   }
 
   Widget _buildCaseCard(AtlasConsultancyCase item) {
-    final int completed = item.actions.where((action) => action.completed).length;
-    final double progress =
-        item.actions.isEmpty ? 0 : completed / item.actions.length;
+    final int completed = item.actions
+        .where((action) => action.completed)
+        .length;
+    final double progress = item.actions.isEmpty
+        ? 0
+        : completed / item.actions.length;
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
       child: ExpansionTile(
         leading: CircleAvatar(
-          child: Text('${AtlasConsultancyStage.values.indexOf(item.stage) + 1}'),
+          child: Text(
+            '${AtlasConsultancyStage.values.indexOf(item.stage) + 1}',
+          ),
         ),
         title: Text(item.farmName),
         subtitle: Text('${item.clientName} • ${item.stage.label}'),

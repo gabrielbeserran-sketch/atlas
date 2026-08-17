@@ -1,7 +1,11 @@
 import 'atlas_execution_plan.dart';
 
 class AtlasExecutionAlert {
-  const AtlasExecutionAlert({required this.title, required this.message, required this.severity});
+  const AtlasExecutionAlert({
+    required this.title,
+    required this.message,
+    required this.severity,
+  });
   final String title;
   final String message;
   final AtlasExecutionPriority severity;
@@ -9,10 +13,16 @@ class AtlasExecutionAlert {
 
 class AtlasExecutionAnalysis {
   const AtlasExecutionAnalysis({
-    required this.progress, required this.spi, required this.cpi,
-    required this.plannedCost, required this.actualCost,
-    required this.completed, required this.delayed, required this.blocked,
-    required this.criticalPath, required this.alerts,
+    required this.progress,
+    required this.spi,
+    required this.cpi,
+    required this.plannedCost,
+    required this.actualCost,
+    required this.completed,
+    required this.delayed,
+    required this.blocked,
+    required this.criticalPath,
+    required this.alerts,
   });
   final double progress;
   final double spi;

@@ -50,9 +50,7 @@ class AtlasKeyResult {
       return currentValue > 0 ? 100 : 0;
     }
 
-    return (currentValue / targetValue * 100)
-        .clamp(0.0, 150.0)
-        .toDouble();
+    return (currentValue / targetValue * 100).clamp(0.0, 150.0).toDouble();
   }
 }
 
@@ -92,10 +90,7 @@ class AtlasStrategicAlignmentAssessment {
       return 0;
     }
 
-    return items.fold<double>(
-          0,
-          (sum, item) => sum + item.alignmentScore,
-        ) /
+    return items.fold<double>(0, (sum, item) => sum + item.alignmentScore) /
         items.length;
   }
 
@@ -115,51 +110,29 @@ class AtlasStrategicAlignmentAssessment {
 
     return objectives.fold<double>(
           0,
-          (sum, item) =>
-              sum +
-              item.progressPercent *
-                  item.weightPercent,
+          (sum, item) => sum + item.progressPercent * item.weightPercent,
         ) /
         totalWeight;
   }
 
   int get unalignedStrategies {
     return items
-        .where(
-          (item) =>
-              item.status ==
-              AtlasAlignmentStatus.unaligned,
-        )
+        .where((item) => item.status == AtlasAlignmentStatus.unaligned)
         .length;
   }
 
   int get weakStrategies {
     return items
-        .where(
-          (item) =>
-              item.status ==
-              AtlasAlignmentStatus.weak,
-        )
+        .where((item) => item.status == AtlasAlignmentStatus.weak)
         .length;
   }
 }
 
-enum AtlasStrategicHorizon {
-  shortTerm,
-  mediumTerm,
-  longTerm,
-}
+enum AtlasStrategicHorizon { shortTerm, mediumTerm, longTerm }
 
-enum AtlasAlignmentStatus {
-  strong,
-  acceptable,
-  weak,
-  unaligned,
-}
+enum AtlasAlignmentStatus { strong, acceptable, weak, unaligned }
 
-String atlasStrategicHorizonLabel(
-  AtlasStrategicHorizon horizon,
-) {
+String atlasStrategicHorizonLabel(AtlasStrategicHorizon horizon) {
   switch (horizon) {
     case AtlasStrategicHorizon.shortTerm:
       return 'Curto prazo';
@@ -170,9 +143,7 @@ String atlasStrategicHorizonLabel(
   }
 }
 
-String atlasAlignmentStatusLabel(
-  AtlasAlignmentStatus status,
-) {
+String atlasAlignmentStatusLabel(AtlasAlignmentStatus status) {
   switch (status) {
     case AtlasAlignmentStatus.strong:
       return 'Forte';

@@ -39,11 +39,7 @@ extension TechnicalDashboardPeriodX on TechnicalDashboardPeriod {
   }
 
   DateTime endDate(DateTime referenceDate) {
-    return DateTime(
-      referenceDate.year,
-      referenceDate.month,
-      referenceDate.day,
-    );
+    return DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
   }
 
   ({DateTime start, DateTime end})? previousRange(DateTime referenceDate) {

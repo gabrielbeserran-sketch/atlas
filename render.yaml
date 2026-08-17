@@ -1,0 +1,62 @@
+services:
+  - type: keyvalue
+    name: atlas-rate-limit
+    plan: free
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+    persistenceMode: off
+
+  - type: web
+    name: atlas-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerCommand: sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"
+    healthCheckPath: /api/v1/health/ready
+    envVars:
+      - key: ATLAS_ENV
+        value: production
+      - key: ATLAS_DATABASE_URL
+        sync: false
+      - key: ATLAS_REDIS_URL
+        fromService:
+          type: keyvalue
+          name: atlas-rate-limit
+          property: connectionString
+      - key: ATLAS_JWT_SECRET
+        generateValue: true
+      - key: ATLAS_MFA_ENCRYPTION_KEY
+        generateValue: true
+      - key: ATLAS_IOT_INGEST_KEY
+        generateValue: true
+      - key: ATLAS_PUBLIC_BASE_URL
+        sync: false
+      - key: ATLAS_EMAIL_SENDER
+        value: no-reply@projetoatlas.app
+      - key: ATLAS_CORS_ORIGINS
+        sync: false
+      - key: ATLAS_BOOTSTRAP_ENABLED
+        value: "false"
+      - key: ATLAS_AUTO_CREATE_SCHEMA
+        value: "false"
+      - key: ATLAS_DOCS_ENABLED
+        value: "false"
+      - key: ATLAS_TRUST_PROXY_HEADERS
+        value: "false"
+      - key: ATLAS_DB_CONNECT_TIMEOUT_SECONDS
+        value: "20"
+      - key: ATLAS_DB_POOL_SIZE
+        value: "5"
+      - key: ATLAS_DB_MAX_OVERFLOW
+        value: "5"
+      - key: ATLAS_ATTACHMENT_BACKEND
+        value: supabase
+      - key: ATLAS_ATTACHMENT_MAX_MB
+        value: "25"
+      - key: ATLAS_SUPABASE_URL
+        sync: false
+      - key: ATLAS_SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ATLAS_SUPABASE_STORAGE_BUCKET
+        value: atlas-animal-media

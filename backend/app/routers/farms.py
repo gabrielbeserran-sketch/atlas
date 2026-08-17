@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_farm_scope, require_permission
@@ -45,6 +46,7 @@ def list_farms(
         Farm.active.is_(True),
     )
 
+    query = query.order_by(Farm.name)
     farms = list(db.scalars(query).all())
 
     allowed = principal.membership.farm_ids or []
@@ -76,6 +78,8 @@ def create_farm(
         name=request.name.strip(),
         city=request.city.strip(),
         state=request.state.strip().upper(),
+        animals=request.animals,
+        area=request.area,
         active=True,
     )
 
@@ -94,10 +98,29 @@ def create_farm(
             "name": farm.name,
             "city": farm.city,
             "state": farm.state,
+            "animals": farm.animals,
+            "area": farm.area,
         },
     )
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Já existe uma fazenda com esse nome na empresa ativa.",
+        ) from exc
+
+    # Lista vazia significa acesso irrestrito. Quando a carteira já é
+    # restrita, a nova fazenda passa a fazer parte dela imediatamente.
+    if principal.membership.farm_ids:
+        farm_ids = list(principal.membership.farm_ids)
+        if farm.id not in farm_ids:
+            farm_ids.append(farm.id)
+            principal.membership.farm_ids = farm_ids
+            db.commit()
+
     db.refresh(farm)
     return farm
 
@@ -115,6 +138,8 @@ def update_farm(
         "name": farm.name,
         "city": farm.city,
         "state": farm.state,
+        "animals": farm.animals,
+        "area": farm.area,
         "active": farm.active,
     }
 
@@ -124,6 +149,10 @@ def update_farm(
         farm.city = request.city.strip()
     if request.state is not None:
         farm.state = request.state.strip().upper()
+    if request.animals is not None:
+        farm.animals = request.animals
+    if request.area is not None:
+        farm.area = request.area
     if request.active is not None:
         farm.active = request.active
 
@@ -141,11 +170,20 @@ def update_farm(
             "name": farm.name,
             "city": farm.city,
             "state": farm.state,
+            "animals": farm.animals,
+            "area": farm.area,
             "active": farm.active,
         },
     )
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Já existe uma fazenda com esse nome na empresa ativa.",
+        ) from exc
     db.refresh(farm)
     return farm
 
@@ -162,6 +200,8 @@ def delete_farm(
         "name": farm.name,
         "city": farm.city,
         "state": farm.state,
+        "animals": farm.animals,
+        "area": farm.area,
         "active": farm.active,
     }
 

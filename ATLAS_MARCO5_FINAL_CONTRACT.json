@@ -1,0 +1,19 @@
+{
+  "status": "OK",
+  "checks": {
+    "inventory_row_lock": true,
+    "reference_advisory_lock": true,
+    "inventory_reference_idempotency": true,
+    "finance_reference_idempotency": true,
+    "distributed_rate_limiter": true,
+    "redis_required_production": true,
+    "redis_compose_service": true,
+    "backup_includes_database_and_attachments": true,
+    "restore_isolated_verification": true
+  },
+  "errors": [],
+  "production_blockers_expected_after_marco5": [],
+  "deferred_to_marco6": [
+    "ATT-003 experiência nativa Android para anexos"
+  ]
+}

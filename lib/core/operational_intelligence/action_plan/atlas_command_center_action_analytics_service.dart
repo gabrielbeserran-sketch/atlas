@@ -27,12 +27,9 @@ class AtlasCommandCenterActionAnalyticsService {
     var expectedFinancialImpact = 0.0;
 
     for (final action in actions) {
-      byPriority[action.priority] =
-          (byPriority[action.priority] ?? 0) + 1;
-      byStatus[action.status] =
-          (byStatus[action.status] ?? 0) + 1;
-      byModule[action.sourceModule] =
-          (byModule[action.sourceModule] ?? 0) + 1;
+      byPriority[action.priority] = (byPriority[action.priority] ?? 0) + 1;
+      byStatus[action.status] = (byStatus[action.status] ?? 0) + 1;
+      byModule[action.sourceModule] = (byModule[action.sourceModule] ?? 0) + 1;
 
       if (action.hasResponsible) withResponsible += 1;
       progressTotal += action.progressPercent;
@@ -65,24 +62,22 @@ class AtlasCommandCenterActionAnalyticsService {
 
     final total = actions.length;
     final open = actions.where((action) => action.isOpen).length;
-    final completionRate =
-        total == 0 ? 0.0 : (completed / total) * 100;
+    final completionRate = total == 0 ? 0.0 : (completed / total) * 100;
     final averageCompletionHours = completionSamples == 0
         ? 0.0
         : totalCompletionHours / completionSamples;
 
-    final averageProgressPercent =
-        total == 0 ? 0.0 : progressTotal / total;
-    final responsibleCoverage =
-        total == 0 ? 0.0 : (withResponsible / total) * 100;
-    final overduePenalty =
-        total == 0 ? 0.0 : (overdue / total) * 100;
-    final executionHealthPercent = (
-      completionRate * 0.4 +
-      averageProgressPercent * 0.3 +
-      responsibleCoverage * 0.3 -
-      overduePenalty * 0.35
-    ).clamp(0.0, 100.0);
+    final averageProgressPercent = total == 0 ? 0.0 : progressTotal / total;
+    final responsibleCoverage = total == 0
+        ? 0.0
+        : (withResponsible / total) * 100;
+    final overduePenalty = total == 0 ? 0.0 : (overdue / total) * 100;
+    final executionHealthPercent =
+        (completionRate * 0.4 +
+                averageProgressPercent * 0.3 +
+                responsibleCoverage * 0.3 -
+                overduePenalty * 0.35)
+            .clamp(0.0, 100.0);
 
     return AtlasCommandCenterActionAnalytics(
       generatedAt: DateTime.now(),
@@ -94,10 +89,8 @@ class AtlasCommandCenterActionAnalyticsService {
       overdue: overdue,
       completionRatePercent: completionRate,
       averageCompletionHours: averageCompletionHours,
-      byPriority:
-          Map<AtlasCanonicalPriority, int>.unmodifiable(byPriority),
-      byStatus:
-          Map<AtlasCanonicalStatus, int>.unmodifiable(byStatus),
+      byPriority: Map<AtlasCanonicalPriority, int>.unmodifiable(byPriority),
+      byStatus: Map<AtlasCanonicalStatus, int>.unmodifiable(byStatus),
       byModule: Map<String, int>.unmodifiable(byModule),
       withResponsible: withResponsible,
       averageProgressPercent: averageProgressPercent,

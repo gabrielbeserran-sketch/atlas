@@ -41,10 +41,7 @@ void main() {
   test('produces favorable reproductive prediction', () {
     final result = engine.predict(buildCase());
 
-    expect(
-      result.iatfSuccessProbabilityPercent,
-      greaterThanOrEqualTo(60),
-    );
+    expect(result.iatfSuccessProbabilityPercent, greaterThanOrEqualTo(60));
     expect(result.expectedCalvingDate, isNotNull);
     expect(result.confidencePercent, inInclusiveRange(0, 100));
   });

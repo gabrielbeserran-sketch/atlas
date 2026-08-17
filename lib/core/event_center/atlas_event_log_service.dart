@@ -11,14 +11,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasEventLogService {
   AtlasEventLogService._();
 
-  static final AtlasEventLogService instance =
-      AtlasEventLogService._();
+  static final AtlasEventLogService instance = AtlasEventLogService._();
 
-  static const String _storageKey =
-      'atlas_event_center_log_v1';
+  static const String _storageKey = 'atlas_event_center_log_v1';
 
-  final List<AtlasEventLogEntry> _entries =
-      <AtlasEventLogEntry>[];
+  final List<AtlasEventLogEntry> _entries = <AtlasEventLogEntry>[];
 
   String? _subscriptionId;
   bool _loaded = false;
@@ -26,15 +23,12 @@ class AtlasEventLogService {
 
   int maxItems = 1000;
 
-  bool get isStarted =>
-      _subscriptionId != null;
+  bool get isStarted => _subscriptionId != null;
 
   bool get isLoaded => _loaded;
 
   List<AtlasEventLogEntry> get entries {
-    return List<AtlasEventLogEntry>.unmodifiable(
-      _entries.reversed,
-    );
+    return List<AtlasEventLogEntry>.unmodifiable(_entries.reversed);
   }
 
   Future<void> start() async {
@@ -44,8 +38,7 @@ class AtlasEventLogService {
       return;
     }
 
-    _subscriptionId =
-        AtlasEventBus.instance.subscribe(
+    _subscriptionId = AtlasEventBus.instance.subscribe(
       owner: 'atlas_event_center',
       filter: const AtlasEventFilter(),
       listener: _recordEvent,
@@ -80,42 +73,30 @@ class AtlasEventLogService {
   }
 
   Future<void> _loadInternal() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final stored =
-        preferences.getString(_storageKey);
+    final stored = preferences.getString(_storageKey);
 
     _entries.clear();
 
-    if (stored != null &&
-        stored.trim().isNotEmpty) {
+    if (stored != null && stored.trim().isNotEmpty) {
       try {
         final decoded = jsonDecode(stored);
 
         if (decoded is List) {
-          final loaded = decoded
-              .whereType<Map>()
-              .map((item) {
+          final loaded =
+              decoded.whereType<Map>().map((item) {
                 return AtlasEventLogEntry.fromJson(
-                  Map<String, dynamic>.from(
-                    item,
-                  ),
+                  Map<String, dynamic>.from(item),
                 );
-              })
-              .toList()
-            ..sort(
-              (first, second) =>
-                  first.recordedAt.compareTo(
-                second.recordedAt,
-              ),
-            );
+              }).toList()..sort(
+                (first, second) =>
+                    first.recordedAt.compareTo(second.recordedAt),
+              );
 
           _entries.addAll(
             loaded.length > maxItems
-                ? loaded.sublist(
-                    loaded.length - maxItems,
-                  )
+                ? loaded.sublist(loaded.length - maxItems)
                 : loaded,
           );
         }
@@ -128,44 +109,29 @@ class AtlasEventLogService {
     _loadingFuture = null;
   }
 
-  Future<void> _recordEvent(
-    AtlasEvent event,
-  ) async {
-    final duplicate = _entries.any(
-      (item) =>
-          item.eventId == event.id,
-    );
+  Future<void> _recordEvent(AtlasEvent event) async {
+    final duplicate = _entries.any((item) => item.eventId == event.id);
 
     if (duplicate) {
       return;
     }
 
-    _entries.add(
-      AtlasEventLogEntry.fromEvent(
-        event,
-      ),
-    );
+    _entries.add(AtlasEventLogEntry.fromEvent(event));
 
     if (_entries.length > maxItems) {
-      _entries.removeRange(
-        0,
-        _entries.length - maxItems,
-      );
+      _entries.removeRange(0, _entries.length - maxItems);
     }
 
     await _save();
   }
 
   List<AtlasEventLogEntry> query({
-    AtlasEventLogFilter filter =
-        const AtlasEventLogFilter(),
+    AtlasEventLogFilter filter = const AtlasEventLogFilter(),
     int? limit,
   }) {
-    Iterable<AtlasEventLogEntry> result =
-        entries.where(filter.matches);
+    Iterable<AtlasEventLogEntry> result = entries.where(filter.matches);
 
-    if (limit != null &&
-        limit >= 0) {
+    if (limit != null && limit >= 0) {
       result = result.take(limit);
     }
 
@@ -175,17 +141,13 @@ class AtlasEventLogService {
   Future<void> clear() async {
     _entries.clear();
 
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    await preferences.remove(
-      _storageKey,
-    );
+    await preferences.remove(_storageKey);
   }
 
   Future<void> _save() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.setString(
       _storageKey,

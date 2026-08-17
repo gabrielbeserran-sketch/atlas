@@ -17,9 +17,7 @@ class AtlasOsScreen extends StatefulWidget {
   final AtlasOsData data;
   final AtlasExecutiveBrainData? executiveBrainData;
 
-  final Future<void> Function(
-    AtlasReactiveUpdate update,
-  )? onReactiveRefresh;
+  final Future<void> Function(AtlasReactiveUpdate update)? onReactiveRefresh;
 
   final VoidCallback? onOpenExecutiveBrain;
   final ValueChanged<String>? onOpenFarm;
@@ -51,22 +49,17 @@ class _AtlasOsScreenState extends State<AtlasOsScreen> {
   }
 
   @override
-  void didUpdateWidget(
-    covariant AtlasOsScreen oldWidget,
-  ) {
+  void didUpdateWidget(covariant AtlasOsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (!identical(oldWidget.data, widget.data)) {
       final completedById = <String, bool>{
-        for (final item in commands)
-          item.id: item.completed,
+        for (final item in commands) item.id: item.completed,
       };
 
       commands = widget.data.commands.map((item) {
         return item.copyWith(
-          completed:
-              completedById[item.id] ??
-                  item.completed,
+          completed: completedById[item.id] ?? item.completed,
         );
       }).toList();
     }
@@ -74,19 +67,12 @@ class _AtlasOsScreenState extends State<AtlasOsScreen> {
 
   @override
   void dispose() {
-    reactiveCoordinator.unregisterHandler(
-      AtlasReactiveTarget.atlasOs,
-    );
+    reactiveCoordinator.unregisterHandler(AtlasReactiveTarget.atlasOs);
     super.dispose();
   }
 
-  Future<void> _handleReactiveUpdate(
-    AtlasReactiveUpdate update,
-  ) async {
-    if (!mounted ||
-        !update.targets.contains(
-          AtlasReactiveTarget.atlasOs,
-        )) {
+  Future<void> _handleReactiveUpdate(AtlasReactiveUpdate update) async {
+    if (!mounted || !update.targets.contains(AtlasReactiveTarget.atlasOs)) {
       return;
     }
 

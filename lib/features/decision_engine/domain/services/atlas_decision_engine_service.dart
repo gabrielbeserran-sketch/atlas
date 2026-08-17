@@ -22,100 +22,53 @@ class AtlasDecisionEngineService {
   }) {
     final candidates = <_DecisionCandidate>[];
 
-    candidates.addAll(
-      _fromAdvisor(
-        advisor,
-        bi,
-      ),
-    );
+    candidates.addAll(_fromAdvisor(advisor, bi));
 
-    candidates.addAll(
-      _fromIntelligence(
-        intelligence,
-        bi,
-      ),
-    );
+    candidates.addAll(_fromIntelligence(intelligence, bi));
 
-    candidates.addAll(
-      _fromAnalytics(
-        analytics,
-        bi,
-      ),
-    );
+    candidates.addAll(_fromAnalytics(analytics, bi));
 
-    candidates.addAll(
-      _fromForecast(
-        forecast,
-        bi,
-      ),
-    );
+    candidates.addAll(_fromForecast(forecast, bi));
 
-    candidates.addAll(
-      _fromBenchmark(
-        benchmark,
-        bi,
-      ),
-    );
+    candidates.addAll(_fromBenchmark(benchmark, bi));
 
     final merged = _mergeCandidates(candidates)
-      ..sort(
-        (first, second) =>
-            second.score.compareTo(
-          first.score,
+      ..sort((first, second) => second.score.compareTo(first.score));
+
+    final decisions = List.generate(math.min(merged.length, 15), (index) {
+      final item = merged[index];
+
+      return AtlasDecisionRecommendation(
+        position: index + 1,
+        id: item.id,
+        farmName: item.farmName,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        priority: _priorityFromScore(item.score),
+        urgency: _urgencyFromCandidate(item),
+        risk: item.risk,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
+        roiPercent: item.roiPercent,
+        paybackDays: item.paybackDays,
+        deadlineDays: item.deadlineDays,
+        expectedResult: item.expectedResult,
+        reasoningSummary: item.reasoningSummary,
+        executionPlan: _executionPlan(item),
+        monitoringIndicators: _monitoringIndicators(
+          item: item,
+          indicators: bi.indicators,
         ),
+        status: AtlasDecisionStatus.recommended,
       );
+    });
 
-    final decisions = List.generate(
-      math.min(merged.length, 15),
-      (index) {
-        final item = merged[index];
+    final score = _engineScore(decisions);
 
-        return AtlasDecisionRecommendation(
-          position: index + 1,
-          id: item.id,
-          farmName: item.farmName,
-          title: item.title,
-          description: item.description,
-          category: item.category,
-          priority:
-              _priorityFromScore(item.score),
-          urgency:
-              _urgencyFromCandidate(item),
-          risk: item.risk,
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              item.expectedFinancialImpact,
-          investmentValue:
-              item.investmentValue,
-          expectedReturnValue:
-              item.expectedReturnValue,
-          roiPercent: item.roiPercent,
-          paybackDays: item.paybackDays,
-          deadlineDays: item.deadlineDays,
-          expectedResult:
-              item.expectedResult,
-          reasoningSummary:
-              item.reasoningSummary,
-          executionPlan:
-              _executionPlan(item),
-          monitoringIndicators:
-              _monitoringIndicators(
-            item: item,
-            indicators: bi.indicators,
-          ),
-          status:
-              AtlasDecisionStatus.recommended,
-        );
-      },
-    );
-
-    final score = _engineScore(
-      decisions,
-    );
-
-    final confidence =
-        _engineConfidence(decisions);
+    final confidence = _engineConfidence(decisions);
 
     final status = _statusFromScore(score);
 
@@ -131,8 +84,7 @@ class AtlasDecisionEngineService {
       confidencePercent: confidence,
       status: status,
       decisions: decisions,
-      mainDecision:
-          decisions.isEmpty ? null : decisions.first,
+      mainDecision: decisions.isEmpty ? null : decisions.first,
     );
   }
 
@@ -151,38 +103,25 @@ class AtlasDecisionEngineService {
 
       result.add(
         _DecisionCandidate(
-          id:
-              'advisor_week_${item.farmName}_${item.position}',
+          id: 'advisor_week_${item.farmName}_${item.position}',
           farmName: item.farmName,
           title: item.title,
           description: item.description,
           category: item.category,
           score:
-              _priorityWeightFromAdvisor(
-                    item.priority,
-                  ) *
-                      18 +
-                  item.confidencePercent * 0.40,
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              _financialImpactFromText(
+              _priorityWeightFromAdvisor(item.priority) * 18 +
+              item.confidencePercent * 0.40,
+          confidencePercent: item.confidencePercent,
+          expectedFinancialImpact: _financialImpactFromText(
             item.expectedImpact,
           ),
           investmentValue: 0,
-          expectedReturnValue:
-              _financialImpactFromText(
-            item.expectedImpact,
-          ),
+          expectedReturnValue: _financialImpactFromText(item.expectedImpact),
           roiPercent: 0,
           paybackDays: null,
           deadlineDays: item.deadlineDays,
-          risk:
-              _riskFromAdvisorPriority(
-            item.priority,
-          ),
-          expectedResult:
-              item.expectedImpact,
+          risk: _riskFromAdvisorPriority(item.priority),
+          expectedResult: item.expectedImpact,
           reasoningSummary:
               'A prioridade foi selecionada pelo Advisor para execução imediata.',
           indicator: indicator,
@@ -190,8 +129,7 @@ class AtlasDecisionEngineService {
       );
     }
 
-    for (final item
-        in advisor.financialOpportunities) {
+    for (final item in advisor.financialOpportunities) {
       final indicator = _findIndicator(
         farmName: item.farmName,
         category: item.category,
@@ -200,32 +138,25 @@ class AtlasDecisionEngineService {
 
       result.add(
         _DecisionCandidate(
-          id:
-              'advisor_finance_${item.farmName}_${item.position}',
+          id: 'advisor_finance_${item.farmName}_${item.position}',
           farmName: item.farmName,
           title: item.title,
           description: item.description,
           category: item.category,
           score:
-              item.roiPercent.clamp(0.0, 150.0) *
-                      0.35 +
-                  item.confidencePercent * 0.35 +
-                  25,
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              item.expectedReturnValue,
-          investmentValue:
-              item.investmentValue,
-          expectedReturnValue:
-              item.expectedReturnValue,
+              item.roiPercent.clamp(0.0, 150.0) * 0.35 +
+              item.confidencePercent * 0.35 +
+              25,
+          confidencePercent: item.confidencePercent,
+          expectedFinancialImpact: item.expectedReturnValue,
+          investmentValue: item.investmentValue,
+          expectedReturnValue: item.expectedReturnValue,
           roiPercent: item.roiPercent,
           paybackDays: item.paybackDays,
           deadlineDays: 30,
-          risk:
-              item.confidencePercent >= 75
-                  ? AtlasDecisionRisk.medium
-                  : AtlasDecisionRisk.high,
+          risk: item.confidencePercent >= 75
+              ? AtlasDecisionRisk.medium
+              : AtlasDecisionRisk.high,
           expectedResult:
               'Capturar retorno esperado de '
               'R\$ ${item.expectedReturnValue.toStringAsFixed(2)}.',
@@ -251,29 +182,20 @@ class AtlasDecisionEngineService {
       );
 
       return _DecisionCandidate(
-        id:
-            'intelligence_${item.farmName}_${item.position}',
+        id: 'intelligence_${item.farmName}_${item.position}',
         farmName: item.farmName,
         title: item.title,
         description: item.description,
         category: item.category,
-        score:
-            item.priorityScore * 0.60 +
-                item.confidencePercent * 0.40,
-        confidencePercent:
-            item.confidencePercent,
-        expectedFinancialImpact:
-            item.expectedFinancialImpact,
+        score: item.priorityScore * 0.60 + item.confidencePercent * 0.40,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
         investmentValue: 0,
-        expectedReturnValue:
-            item.expectedFinancialImpact,
+        expectedReturnValue: item.expectedFinancialImpact,
         roiPercent: 0,
         paybackDays: null,
         deadlineDays: item.deadlineDays,
-        risk:
-            _riskFromIntelligenceSeverity(
-          item.severity,
-        ),
+        risk: _riskFromIntelligenceSeverity(item.severity),
         expectedResult:
             'Capturar impacto estimado de '
             'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.',
@@ -303,34 +225,24 @@ class AtlasDecisionEngineService {
         category: item.category,
         score:
             item.impactScore * 0.55 +
-                item.confidencePercent * 0.25 +
-                item.roiPercent
-                    .clamp(0.0, 150.0) *
-                    0.20,
-        confidencePercent:
-            item.confidencePercent,
-        expectedFinancialImpact:
-            item.expectedReturnValue,
-        investmentValue:
-            item.investmentValue,
-        expectedReturnValue:
-            item.expectedReturnValue,
+            item.confidencePercent * 0.25 +
+            item.roiPercent.clamp(0.0, 150.0) * 0.20,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedReturnValue,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
         roiPercent: item.roiPercent,
         paybackDays: item.paybackDays,
-        deadlineDays:
-            item.effort ==
-                    AtlasBiAnalyticsEffort.high
-                ? 90
-                : item.effort ==
-                        AtlasBiAnalyticsEffort.medium
-                    ? 60
-                    : 30,
-        risk:
-            item.confidencePercent >= 80
-                ? AtlasDecisionRisk.low
-                : item.confidencePercent >= 60
-                    ? AtlasDecisionRisk.medium
-                    : AtlasDecisionRisk.high,
+        deadlineDays: item.effort == AtlasBiAnalyticsEffort.high
+            ? 90
+            : item.effort == AtlasBiAnalyticsEffort.medium
+            ? 60
+            : 30,
+        risk: item.confidencePercent >= 80
+            ? AtlasDecisionRisk.low
+            : item.confidencePercent >= 60
+            ? AtlasDecisionRisk.medium
+            : AtlasDecisionRisk.high,
         expectedResult:
             'Gerar retorno esperado de '
             'R\$ ${item.expectedReturnValue.toStringAsFixed(2)}.',
@@ -347,10 +259,8 @@ class AtlasDecisionEngineService {
   ) {
     return forecast.forecasts
         .where((item) {
-          return item.risk ==
-                  AtlasBiForecastRisk.critical ||
-              item.risk ==
-                  AtlasBiForecastRisk.high;
+          return item.risk == AtlasBiForecastRisk.critical ||
+              item.risk == AtlasBiForecastRisk.high;
         })
         .map((item) {
           final indicator = _findIndicatorById(
@@ -359,41 +269,26 @@ class AtlasDecisionEngineService {
             indicators: bi.indicators,
           );
 
-          final impact =
-              item.projectedVariationPercent.abs() *
-                  1000;
+          final impact = item.projectedVariationPercent.abs() * 1000;
 
           return _DecisionCandidate(
-            id:
-                'forecast_${item.farmName}_${item.indicatorId}',
+            id: 'forecast_${item.farmName}_${item.indicatorId}',
             farmName: item.farmName,
-            title:
-                'Intervir em ${item.title}',
-            description:
-                item.recommendation,
+            title: 'Intervir em ${item.title}',
+            description: item.recommendation,
             category: item.category,
             score:
-                (100 -
-                            item
-                                .targetProbabilityPercent) *
-                        0.50 +
-                    item.confidencePercent * 0.25 +
-                    _forecastRiskWeight(item.risk) *
-                        6.25,
-            confidencePercent:
-                item.confidencePercent,
+                (100 - item.targetProbabilityPercent) * 0.50 +
+                item.confidencePercent * 0.25 +
+                _forecastRiskWeight(item.risk) * 6.25,
+            confidencePercent: item.confidencePercent,
             expectedFinancialImpact: impact,
             investmentValue: 0,
             expectedReturnValue: impact,
             roiPercent: 0,
             paybackDays: null,
-            deadlineDays:
-                item.risk ==
-                        AtlasBiForecastRisk.critical
-                    ? 7
-                    : 14,
-            risk:
-                _riskFromForecast(item.risk),
+            deadlineDays: item.risk == AtlasBiForecastRisk.critical ? 7 : 14,
+            risk: _riskFromForecast(item.risk),
             expectedResult:
                 'Elevar a probabilidade de atingir a meta acima de 70%.',
             reasoningSummary:
@@ -419,21 +314,17 @@ class AtlasDecisionEngineService {
         indicators: bi.indicators,
       );
 
-      final impact =
-          farm.distanceFromLeader * 1500;
+      final impact = farm.distanceFromLeader * 1500;
 
       return _DecisionCandidate(
-        id:
-            'benchmark_${farm.farmName}',
+        id: 'benchmark_${farm.farmName}',
         farmName: farm.farmName,
         title:
             'Reduzir distância para ${benchmark.leadingFarmName ?? 'a fazenda líder'}',
         description:
             'A fazenda está ${farm.distanceFromLeader.toStringAsFixed(1)} pontos abaixo da referência interna.',
         category: AtlasBiCategory.management,
-        score:
-            farm.distanceFromLeader * 2.2 +
-                25,
+        score: farm.distanceFromLeader * 2.2 + 25,
         confidencePercent: 82,
         expectedFinancialImpact: impact,
         investmentValue: 0,
@@ -441,10 +332,9 @@ class AtlasDecisionEngineService {
         roiPercent: 0,
         paybackDays: null,
         deadlineDays: 60,
-        risk:
-            farm.distanceFromLeader >= 25
-                ? AtlasDecisionRisk.high
-                : AtlasDecisionRisk.medium,
+        risk: farm.distanceFromLeader >= 25
+            ? AtlasDecisionRisk.high
+            : AtlasDecisionRisk.medium,
         expectedResult:
             'Melhorar o score comparativo e reduzir a diferença para a líder.',
         reasoningSummary:
@@ -457,8 +347,7 @@ class AtlasDecisionEngineService {
   List<_DecisionCandidate> _mergeCandidates(
     List<_DecisionCandidate> candidates,
   ) {
-    final merged =
-        <String, _DecisionCandidate>{};
+    final merged = <String, _DecisionCandidate>{};
 
     for (final item in candidates) {
       final key =
@@ -472,146 +361,97 @@ class AtlasDecisionEngineService {
       }
 
       merged[key] = existing.copyWith(
-        score: math.max(
-          existing.score,
-          item.score,
-        ),
-        confidencePercent:
-            math.max(
+        score: math.max(existing.score, item.score),
+        confidencePercent: math.max(
           existing.confidencePercent,
           item.confidencePercent,
         ),
-        expectedFinancialImpact:
-            math.max(
+        expectedFinancialImpact: math.max(
           existing.expectedFinancialImpact,
           item.expectedFinancialImpact,
         ),
-        investmentValue:
-            existing.investmentValue > 0
-                ? existing.investmentValue
-                : item.investmentValue,
-        expectedReturnValue:
-            math.max(
+        investmentValue: existing.investmentValue > 0
+            ? existing.investmentValue
+            : item.investmentValue,
+        expectedReturnValue: math.max(
           existing.expectedReturnValue,
           item.expectedReturnValue,
         ),
-        roiPercent:
-            math.max(
-          existing.roiPercent,
-          item.roiPercent,
-        ),
-        paybackDays:
-            existing.paybackDays ??
-                item.paybackDays,
-        deadlineDays:
-            math.min(
-          existing.deadlineDays,
-          item.deadlineDays,
-        ),
-        risk:
-            _higherRisk(
-          existing.risk,
-          item.risk,
-        ),
+        roiPercent: math.max(existing.roiPercent, item.roiPercent),
+        paybackDays: existing.paybackDays ?? item.paybackDays,
+        deadlineDays: math.min(existing.deadlineDays, item.deadlineDays),
+        risk: _higherRisk(existing.risk, item.risk),
         reasoningSummary:
             '${existing.reasoningSummary} '
             '${item.reasoningSummary}',
-        indicator:
-            existing.indicator ??
-                item.indicator,
+        indicator: existing.indicator ?? item.indicator,
       );
     }
 
     return merged.values.toList();
   }
 
-  List<AtlasDecisionExecutionStep>
-      _executionPlan(
-    _DecisionCandidate item,
-  ) {
+  List<AtlasDecisionExecutionStep> _executionPlan(_DecisionCandidate item) {
     final deadline = item.deadlineDays;
 
     return [
       AtlasDecisionExecutionStep(
         position: 1,
-        title:
-            'Validar diagnóstico',
+        title: 'Validar diagnóstico',
         description:
             'Confirmar em campo os dados, causas e restrições relacionadas à decisão.',
-        deadlineDays: math.max(
-          1,
-          math.min(3, deadline),
-        ),
-        expectedResult:
-            'Hipótese validada e escopo definido.',
+        deadlineDays: math.max(1, math.min(3, deadline)),
+        expectedResult: 'Hipótese validada e escopo definido.',
       ),
       AtlasDecisionExecutionStep(
         position: 2,
-        title:
-            'Definir responsável e recursos',
+        title: 'Definir responsável e recursos',
         description:
             'Nomear responsável, recursos necessários e critérios de sucesso.',
-        deadlineDays: math.max(
-          2,
-          math.min(7, deadline),
-        ),
-        expectedResult:
-            'Plano autorizado e equipe alinhada.',
+        deadlineDays: math.max(2, math.min(7, deadline)),
+        expectedResult: 'Plano autorizado e equipe alinhada.',
       ),
       AtlasDecisionExecutionStep(
         position: 3,
-        title:
-            'Executar intervenção',
-        description:
-            item.description,
+        title: 'Executar intervenção',
+        description: item.description,
         deadlineDays: deadline,
-        expectedResult:
-            item.expectedResult,
+        expectedResult: item.expectedResult,
       ),
       AtlasDecisionExecutionStep(
         position: 4,
-        title:
-            'Medir resultado',
+        title: 'Medir resultado',
         description:
             'Comparar o indicador após a intervenção com o valor inicial e a meta.',
         deadlineDays: deadline + 7,
-        expectedResult:
-            'Resultado mensurado e decisão reavaliada.',
+        expectedResult: 'Resultado mensurado e decisão reavaliada.',
       ),
     ];
   }
 
-  List<AtlasDecisionMonitoringIndicator>
-      _monitoringIndicators({
+  List<AtlasDecisionMonitoringIndicator> _monitoringIndicators({
     required _DecisionCandidate item,
     required List<AtlasBiIndicator> indicators,
   }) {
-    final result =
-        <AtlasDecisionMonitoringIndicator>[];
+    final result = <AtlasDecisionMonitoringIndicator>[];
 
     if (item.indicator != null) {
       result.add(
         AtlasDecisionMonitoringIndicator(
           title: item.indicator!.title,
-          currentValue:
-              item.indicator!.currentValue,
-          targetValue:
-              item.indicator!.targetValue,
+          currentValue: item.indicator!.currentValue,
+          targetValue: item.indicator!.targetValue,
           unit: item.indicator!.unit,
-          measurementFrequencyDays:
-              item.deadlineDays <= 14 ? 7 : 30,
+          measurementFrequencyDays: item.deadlineDays <= 14 ? 7 : 30,
         ),
       );
     }
 
     final related = indicators
         .where((indicator) {
-          return indicator.farmName ==
-                  item.farmName &&
-              indicator.category ==
-                  item.category &&
-              indicator.id !=
-                  item.indicator?.id;
+          return indicator.farmName == item.farmName &&
+              indicator.category == item.category &&
+              indicator.id != item.indicator?.id;
         })
         .take(2);
 
@@ -619,13 +459,10 @@ class AtlasDecisionEngineService {
       result.add(
         AtlasDecisionMonitoringIndicator(
           title: indicator.title,
-          currentValue:
-              indicator.currentValue,
-          targetValue:
-              indicator.targetValue,
+          currentValue: indicator.currentValue,
+          targetValue: indicator.targetValue,
           unit: indicator.unit,
-          measurementFrequencyDays:
-              item.deadlineDays <= 14 ? 7 : 30,
+          measurementFrequencyDays: item.deadlineDays <= 14 ? 7 : 30,
         ),
       );
     }
@@ -639,8 +476,7 @@ class AtlasDecisionEngineService {
     required List<AtlasBiIndicator> indicators,
   }) {
     for (final indicator in indicators) {
-      if (indicator.farmName == farmName &&
-          indicator.category == category) {
+      if (indicator.farmName == farmName && indicator.category == category) {
         return indicator;
       }
     }
@@ -654,8 +490,7 @@ class AtlasDecisionEngineService {
     required List<AtlasBiIndicator> indicators,
   }) {
     for (final indicator in indicators) {
-      if (indicator.farmName == farmName &&
-          indicator.id == indicatorId) {
+      if (indicator.farmName == farmName && indicator.id == indicatorId) {
         return indicator;
       }
     }
@@ -663,9 +498,7 @@ class AtlasDecisionEngineService {
     return null;
   }
 
-  AtlasDecisionPriority _priorityFromScore(
-    double score,
-  ) {
+  AtlasDecisionPriority _priorityFromScore(double score) {
     if (score >= 85) {
       return AtlasDecisionPriority.critical;
     }
@@ -681,16 +514,12 @@ class AtlasDecisionEngineService {
     return AtlasDecisionPriority.low;
   }
 
-  AtlasDecisionUrgency _urgencyFromCandidate(
-    _DecisionCandidate item,
-  ) {
-    if (item.deadlineDays <= 7 ||
-        item.risk == AtlasDecisionRisk.critical) {
+  AtlasDecisionUrgency _urgencyFromCandidate(_DecisionCandidate item) {
+    if (item.deadlineDays <= 7 || item.risk == AtlasDecisionRisk.critical) {
       return AtlasDecisionUrgency.immediate;
     }
 
-    if (item.deadlineDays <= 14 ||
-        item.risk == AtlasDecisionRisk.high) {
+    if (item.deadlineDays <= 14 || item.risk == AtlasDecisionRisk.high) {
       return AtlasDecisionUrgency.high;
     }
 
@@ -737,9 +566,7 @@ class AtlasDecisionEngineService {
     }
   }
 
-  AtlasDecisionRisk _riskFromForecast(
-    AtlasBiForecastRisk risk,
-  ) {
+  AtlasDecisionRisk _riskFromForecast(AtlasBiForecastRisk risk) {
     switch (risk) {
       case AtlasBiForecastRisk.low:
         return AtlasDecisionRisk.low;
@@ -759,15 +586,10 @@ class AtlasDecisionEngineService {
     AtlasDecisionRisk first,
     AtlasDecisionRisk second,
   ) {
-    return _riskWeight(first) >=
-            _riskWeight(second)
-        ? first
-        : second;
+    return _riskWeight(first) >= _riskWeight(second) ? first : second;
   }
 
-  int _riskWeight(
-    AtlasDecisionRisk risk,
-  ) {
+  int _riskWeight(AtlasDecisionRisk risk) {
     switch (risk) {
       case AtlasDecisionRisk.low:
         return 1;
@@ -783,9 +605,7 @@ class AtlasDecisionEngineService {
     }
   }
 
-  int _forecastRiskWeight(
-    AtlasBiForecastRisk risk,
-  ) {
+  int _forecastRiskWeight(AtlasBiForecastRisk risk) {
     switch (risk) {
       case AtlasBiForecastRisk.low:
         return 1;
@@ -801,9 +621,7 @@ class AtlasDecisionEngineService {
     }
   }
 
-  int _priorityWeightFromAdvisor(
-    AtlasExecutiveAdvisorPriorityLevel priority,
-  ) {
+  int _priorityWeightFromAdvisor(AtlasExecutiveAdvisorPriorityLevel priority) {
     switch (priority) {
       case AtlasExecutiveAdvisorPriorityLevel.low:
         return 1;
@@ -819,12 +637,8 @@ class AtlasDecisionEngineService {
     }
   }
 
-  double _financialImpactFromText(
-    String value,
-  ) {
-    final match = RegExp(
-      r'R\$\s*([0-9.,]+)',
-    ).firstMatch(value);
+  double _financialImpactFromText(String value) {
+    final match = RegExp(r'R\$\s*([0-9.,]+)').firstMatch(value);
 
     if (match == null) {
       return 0;
@@ -836,16 +650,12 @@ class AtlasDecisionEngineService {
       return 0;
     }
 
-    final normalized = raw
-        .replaceAll('.', '')
-        .replaceAll(',', '.');
+    final normalized = raw.replaceAll('.', '').replaceAll(',', '.');
 
     return double.tryParse(normalized) ?? 0;
   }
 
-  String _normalizedTitle(
-    String title,
-  ) {
+  String _normalizedTitle(String title) {
     return title
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9áàâãéêíóôõúç ]'), '')
@@ -853,56 +663,38 @@ class AtlasDecisionEngineService {
         .trim();
   }
 
-  double _engineScore(
-    List<AtlasDecisionRecommendation> decisions,
-  ) {
+  double _engineScore(List<AtlasDecisionRecommendation> decisions) {
     if (decisions.isEmpty) {
       return 0;
     }
 
-    final top = decisions.take(
-      math.min(decisions.length, 5),
-    );
+    final top = decisions.take(math.min(decisions.length, 5));
 
-    final average = top.fold<double>(
+    final average =
+        top.fold<double>(
           0,
-          (sum, item) =>
-              sum +
-              _priorityScore(item.priority),
+          (sum, item) => sum + _priorityScore(item.priority),
         ) /
         top.length;
 
-    return average
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return average.clamp(0.0, 100.0).toDouble();
   }
 
-  double _engineConfidence(
-    List<AtlasDecisionRecommendation> decisions,
-  ) {
+  double _engineConfidence(List<AtlasDecisionRecommendation> decisions) {
     if (decisions.isEmpty) {
       return 0;
     }
 
-    final top = decisions.take(
-      math.min(decisions.length, 8),
-    );
+    final top = decisions.take(math.min(decisions.length, 8));
 
-    final average = top.fold<double>(
-          0,
-          (sum, item) =>
-              sum + item.confidencePercent,
-        ) /
+    final average =
+        top.fold<double>(0, (sum, item) => sum + item.confidencePercent) /
         top.length;
 
-    return average
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return average.clamp(0.0, 100.0).toDouble();
   }
 
-  double _priorityScore(
-    AtlasDecisionPriority priority,
-  ) {
+  double _priorityScore(AtlasDecisionPriority priority) {
     switch (priority) {
       case AtlasDecisionPriority.low:
         return 35;
@@ -918,9 +710,7 @@ class AtlasDecisionEngineService {
     }
   }
 
-  AtlasDecisionEngineStatus _statusFromScore(
-    double score,
-  ) {
+  AtlasDecisionEngineStatus _statusFromScore(double score) {
     if (score >= 85) {
       return AtlasDecisionEngineStatus.critical;
     }
@@ -1021,31 +811,18 @@ class _DecisionCandidate {
       description: description,
       category: category,
       score: score ?? this.score,
-      confidencePercent:
-          confidencePercent ??
-              this.confidencePercent,
+      confidencePercent: confidencePercent ?? this.confidencePercent,
       expectedFinancialImpact:
-          expectedFinancialImpact ??
-              this.expectedFinancialImpact,
-      investmentValue:
-          investmentValue ??
-              this.investmentValue,
-      expectedReturnValue:
-          expectedReturnValue ??
-              this.expectedReturnValue,
-      roiPercent:
-          roiPercent ?? this.roiPercent,
-      paybackDays:
-          paybackDays ?? this.paybackDays,
-      deadlineDays:
-          deadlineDays ?? this.deadlineDays,
+          expectedFinancialImpact ?? this.expectedFinancialImpact,
+      investmentValue: investmentValue ?? this.investmentValue,
+      expectedReturnValue: expectedReturnValue ?? this.expectedReturnValue,
+      roiPercent: roiPercent ?? this.roiPercent,
+      paybackDays: paybackDays ?? this.paybackDays,
+      deadlineDays: deadlineDays ?? this.deadlineDays,
       risk: risk ?? this.risk,
       expectedResult: expectedResult,
-      reasoningSummary:
-          reasoningSummary ??
-              this.reasoningSummary,
-      indicator:
-          indicator ?? this.indicator,
+      reasoningSummary: reasoningSummary ?? this.reasoningSummary,
+      indicator: indicator ?? this.indicator,
     );
   }
 }

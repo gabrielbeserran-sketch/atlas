@@ -49,43 +49,32 @@ class AtlasScenarioEngine {
       ),
     );
 
-    final simulatedScore =
-        scoreService.calculateOverall(simulatedHealth);
+    final simulatedScore = scoreService.calculateOverall(simulatedHealth);
 
-    final scoreVariation =
-        simulatedScore - currentTwin.overallScore;
+    final scoreVariation = simulatedScore - currentTwin.overallScore;
 
     final projectedRevenueChange =
-        changes.expectedMonthlyRevenueChange *
-        simulation.horizonMonths;
+        changes.expectedMonthlyRevenueChange * simulation.horizonMonths;
 
     final projectedCostChange =
-        changes.expectedMonthlyCostChange *
-        simulation.horizonMonths +
+        changes.expectedMonthlyCostChange * simulation.horizonMonths +
         changes.initialInvestment;
 
-    final projectedNetResult =
-        projectedRevenueChange - projectedCostChange;
+    final projectedNetResult = projectedRevenueChange - projectedCostChange;
 
-    final double roiPercent =
-        changes.initialInvestment > 0
-            ? projectedNetResult /
-                changes.initialInvestment *
-                100.0
-            : projectedNetResult > 0
-                ? 100.0
-                : 0.0;
+    final double roiPercent = changes.initialInvestment > 0
+        ? projectedNetResult / changes.initialInvestment * 100.0
+        : projectedNetResult > 0
+        ? 100.0
+        : 0.0;
 
     final monthlyMargin =
         changes.expectedMonthlyRevenueChange -
         changes.expectedMonthlyCostChange;
 
-    final paybackMonths =
-        changes.initialInvestment > 0 &&
-                monthlyMargin > 0
-            ? changes.initialInvestment /
-                monthlyMargin
-            : null;
+    final paybackMonths = changes.initialInvestment > 0 && monthlyMargin > 0
+        ? changes.initialInvestment / monthlyMargin
+        : null;
 
     final riskLevel = _calculateRisk(
       currentTwin: currentTwin,
@@ -129,8 +118,7 @@ class AtlasScenarioEngine {
     );
 
     return AtlasSimulationResult(
-      id:
-          'simulation_result_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'simulation_result_${DateTime.now().microsecondsSinceEpoch}',
       simulation: simulation,
       executedAt: DateTime.now(),
       currentTwin: currentTwin,
@@ -174,8 +162,7 @@ class AtlasScenarioEngine {
       points += 35;
     }
 
-    if (investment > 0 &&
-        projectedNetResult < investment * 0.15) {
+    if (investment > 0 && projectedNetResult < investment * 0.15) {
       points += 15;
     }
 
@@ -201,8 +188,7 @@ class AtlasScenarioEngine {
     }
 
     if (currentTwin.risks.any(
-      (risk) =>
-          risk.level == AtlasFarmRiskLevel.critical,
+      (risk) => risk.level == AtlasFarmRiskLevel.critical,
     )) {
       points += 10;
     }
@@ -227,8 +213,7 @@ class AtlasScenarioEngine {
     required AtlasFarmHealth health,
     required AtlasSimulationChanges changes,
   }) {
-    final result =
-        List<AtlasFarmRisk>.from(currentRisks);
+    final result = List<AtlasFarmRisk>.from(currentRisks);
 
     void upsert({
       required String id,
@@ -247,8 +232,7 @@ class AtlasScenarioEngine {
           id: id,
           area: area,
           title: title,
-          description:
-              'Risco projetado pelo simulador de cenários.',
+          description: 'Risco projetado pelo simulador de cenários.',
           score: score.clamp(0.0, 100.0).toDouble(),
           level: _farmRiskLevel(score),
           updatedAt: DateTime.now(),
@@ -290,24 +274,16 @@ class AtlasScenarioEngine {
         id: 'scenario_herd_expansion_risk',
         area: AtlasDigitalTwinArea.operational,
         title: 'Expansão acelerada do rebanho',
-        score:
-            (45 + changes.herdSizeChange / 4)
-                .clamp(0, 100)
-                .toDouble(),
+        score: (45 + changes.herdSizeChange / 4).clamp(0, 100).toDouble(),
       );
     }
 
-    result.sort(
-      (first, second) =>
-          second.score.compareTo(first.score),
-    );
+    result.sort((first, second) => second.score.compareTo(first.score));
 
     return result.take(25).toList();
   }
 
-  AtlasFarmRiskLevel _farmRiskLevel(
-    double score,
-  ) {
+  AtlasFarmRiskLevel _farmRiskLevel(double score) {
     if (score >= 80) {
       return AtlasFarmRiskLevel.critical;
     }
@@ -332,49 +308,33 @@ class AtlasScenarioEngine {
     final items = <String>[];
 
     if (scoreVariation >= 3) {
-      items.add(
-        'Elevação relevante do Atlas Farm Index.',
-      );
+      items.add('Elevação relevante do Atlas Farm Index.');
     } else if (scoreVariation > 0) {
-      items.add(
-        'Melhora gradual do índice geral da fazenda.',
-      );
+      items.add('Melhora gradual do índice geral da fazenda.');
     }
 
     if (netResult > 0) {
-      items.add(
-        'Resultado financeiro projetado positivo.',
-      );
+      items.add('Resultado financeiro projetado positivo.');
     }
 
     if (roiPercent >= 20) {
-      items.add(
-        'Retorno projetado atrativo sobre o investimento.',
-      );
+      items.add('Retorno projetado atrativo sobre o investimento.');
     }
 
     if (changes.sanitaryScoreChange > 0) {
-      items.add(
-        'Fortalecimento da segurança sanitária.',
-      );
+      items.add('Fortalecimento da segurança sanitária.');
     }
 
     if (changes.reproductiveScoreChange > 0) {
-      items.add(
-        'Melhora esperada no desempenho reprodutivo.',
-      );
+      items.add('Melhora esperada no desempenho reprodutivo.');
     }
 
     if (changes.operationalScoreChange > 0) {
-      items.add(
-        'Ganho de eficiência operacional.',
-      );
+      items.add('Ganho de eficiência operacional.');
     }
 
     if (items.isEmpty) {
-      items.add(
-        'Cenário preserva a estabilidade da operação.',
-      );
+      items.add('Cenário preserva a estabilidade da operação.');
     }
 
     return items;
@@ -390,48 +350,35 @@ class AtlasScenarioEngine {
     final items = <String>[];
 
     if (netResult < 0) {
-      items.add(
-        'O resultado líquido projetado é negativo.',
-      );
+      items.add('O resultado líquido projetado é negativo.');
     }
 
-    if (paybackMonths != null &&
-        paybackMonths > horizonMonths) {
-      items.add(
-        'O retorno do investimento ultrapassa o horizonte analisado.',
-      );
+    if (paybackMonths != null && paybackMonths > horizonMonths) {
+      items.add('O retorno do investimento ultrapassa o horizonte analisado.');
     }
 
-    if (changes.herdSizeChange > 0 &&
-        changes.inventoryScoreChange <= 0) {
+    if (changes.herdSizeChange > 0 && changes.inventoryScoreChange <= 0) {
       items.add(
         'A expansão do rebanho não foi acompanhada por reforço de estoque.',
       );
     }
 
-    if (changes.herdSizeChange > 0 &&
-        changes.operationalScoreChange <= 0) {
+    if (changes.herdSizeChange > 0 && changes.operationalScoreChange <= 0) {
       items.add(
         'A expansão do rebanho pode pressionar a capacidade operacional.',
       );
     }
 
     if (health.sanitary < 55) {
-      items.add(
-        'O score sanitário projetado permanece em faixa de atenção.',
-      );
+      items.add('O score sanitário projetado permanece em faixa de atenção.');
     }
 
     if (health.financial < 55) {
-      items.add(
-        'O score financeiro projetado permanece em faixa de atenção.',
-      );
+      items.add('O score financeiro projetado permanece em faixa de atenção.');
     }
 
     if (items.isEmpty) {
-      items.add(
-        'Nenhum ponto crítico adicional foi identificado.',
-      );
+      items.add('Nenhum ponto crítico adicional foi identificado.');
     }
 
     return items;
@@ -454,18 +401,15 @@ class AtlasScenarioEngine {
 
     if (scoreVariation > 0 &&
         projectedNetResult > 0 &&
-        (paybackMonths == null ||
-            paybackMonths <= horizonMonths)) {
+        (paybackMonths == null || paybackMonths <= horizonMonths)) {
       return 'Cenário favorável. Recomenda-se avançar para um plano piloto, definir metas e acompanhar os indicadores antes da expansão completa.';
     }
 
-    if (scoreVariation > 0 &&
-        projectedNetResult <= 0) {
+    if (scoreVariation > 0 && projectedNetResult <= 0) {
       return 'O cenário melhora o desempenho estratégico, mas precisa de ajuste financeiro para evitar destruição de valor.';
     }
 
-    if (scoreVariation <= 0 &&
-        projectedNetResult > 0) {
+    if (scoreVariation <= 0 && projectedNetResult > 0) {
       return 'O cenário gera retorno financeiro, porém reduz o equilíbrio operacional. Avalie medidas compensatórias antes da execução.';
     }
 

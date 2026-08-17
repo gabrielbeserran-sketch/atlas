@@ -222,38 +222,15 @@ class AtlasExecutiveMemoryRecord {
   final List<String> relatedEntityIds;
 }
 
-enum AtlasExecutiveCoreStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasExecutiveCoreStatus { excellent, adequate, attention, critical }
 
-enum AtlasExecutiveCorePriorityLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveCorePriorityLevel { low, medium, high, critical }
 
-enum AtlasExecutiveCoreSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveCoreSeverity { low, medium, high, critical }
 
-enum AtlasExecutiveMemoryType {
-  decision,
-  risk,
-  opportunity,
-  pattern,
-  mission,
-}
+enum AtlasExecutiveMemoryType { decision, risk, opportunity, pattern, mission }
 
-String atlasExecutiveCoreStatusLabel(
-  AtlasExecutiveCoreStatus status,
-) {
+String atlasExecutiveCoreStatusLabel(AtlasExecutiveCoreStatus status) {
   switch (status) {
     case AtlasExecutiveCoreStatus.excellent:
       return 'Excelente';
@@ -287,9 +264,7 @@ String atlasExecutiveCorePriorityLabel(
   }
 }
 
-String atlasExecutiveCoreSeverityLabel(
-  AtlasExecutiveCoreSeverity severity,
-) {
+String atlasExecutiveCoreSeverityLabel(AtlasExecutiveCoreSeverity severity) {
   switch (severity) {
     case AtlasExecutiveCoreSeverity.low:
       return 'Baixa';
@@ -305,9 +280,7 @@ String atlasExecutiveCoreSeverityLabel(
   }
 }
 
-String atlasExecutiveMemoryTypeLabel(
-  AtlasExecutiveMemoryType type,
-) {
+String atlasExecutiveMemoryTypeLabel(AtlasExecutiveMemoryType type) {
   switch (type) {
     case AtlasExecutiveMemoryType.decision:
       return 'Decisão';

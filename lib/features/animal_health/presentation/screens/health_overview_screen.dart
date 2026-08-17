@@ -8,12 +8,10 @@ import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.d
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class HealthOverviewScreen extends StatefulWidget {
-  const HealthOverviewScreen({
-    this.farm,
-    super.key,
-  });
+  const HealthOverviewScreen({this.farm, super.key});
 
   final FarmData? farm;
 
@@ -25,8 +23,7 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
   final FarmStorageService farmStorage = FarmStorageService();
   final HerdStorageService herdStorage = HerdStorageService();
   final AnimalStorageService animalStorage = AnimalStorageService();
-  final AnimalHealthStorageService healthStorage =
-      AnimalHealthStorageService();
+  final AnimalHealthStorageService healthStorage = AnimalHealthStorageService();
 
   List<HealthAnimalContext> animals = [];
   bool isLoading = true;
@@ -37,33 +34,34 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
   int get animalsWithRecords =>
       animals.where((context) => context.records.isNotEmpty).length;
 
-  int get totalRecords => animals.fold(
-        0,
-        (total, context) => total + context.records.length,
-      );
+  int get totalRecords =>
+      animals.fold(0, (total, context) => total + context.records.length);
 
   int get clinicalOccurrences => animals.fold(
-        0,
-        (total, context) =>
-            total +
-            context.records
-                .where((record) => record.type == 'Ocorrência clínica')
-                .length,
-      );
+    0,
+    (total, context) =>
+        total +
+        context.records
+            .where((record) => record.type == 'Ocorrência clínica')
+            .length,
+  );
 
   int get scheduledReturns => animals.fold(
-        0,
-        (total, context) => total + context.records.where((record) => record.hasScheduledReturn).length,
-      );
+    0,
+    (total, context) =>
+        total +
+        context.records.where((record) => record.hasScheduledReturn).length,
+  );
 
-  int get quarantineAnimals => animals.where(
-        (context) => context.records.any((record) => record.isQuarantine),
-      ).length;
+  int get quarantineAnimals => animals
+      .where((context) => context.records.any((record) => record.isQuarantine))
+      .length;
 
   int get mortalities => animals.fold(
-        0,
-        (total, context) => total + context.records.where((record) => record.isMortality).length,
-      );
+    0,
+    (total, context) =>
+        total + context.records.where((record) => record.isMortality).length,
+  );
 
   List<HealthAnimalContext> get filteredAnimals {
     final normalizedSearch = search.trim().toLowerCase();
@@ -73,9 +71,9 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
     }
 
     return animals.where((context) {
-      return context.animal.displayName
-              .toLowerCase()
-              .contains(normalizedSearch) ||
+      return context.animal.displayName.toLowerCase().contains(
+            normalizedSearch,
+          ) ||
           context.animal.tag.toLowerCase().contains(normalizedSearch) ||
           context.farm.name.toLowerCase().contains(normalizedSearch) ||
           context.group.name.toLowerCase().contains(normalizedSearch);
@@ -163,15 +161,68 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
     await loadData();
   }
 
+  Future<void> openNewEvent() async {
+    if (animals.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Cadastre um animal compatível antes de criar o evento.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    HealthAnimalContext? selected;
+    if (animals.length == 1) {
+      selected = animals.first;
+    } else {
+      selected = await showDialog<HealthAnimalContext>(
+        context: context,
+        builder: (dialogContext) => SimpleDialog(
+          title: const Text('Selecione o animal'),
+          children: animals
+              .map(
+                (item) => SimpleDialogOption(
+                  onPressed: () => Navigator.pop(dialogContext, item),
+                  child: Text(
+                    '${item.animal.displayName} • ${item.animal.tag}',
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
+
+    if (selected == null || !mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AnimalHealthListScreen(
+          animal: selected!.animal,
+          farm: selected.farm,
+          group: selected.group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+    await loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: isLoading ? null : openNewEvent,
+        backgroundColor: const Color(0xFF1B5E20),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Novo evento sanitário'),
+      ),
       appBar: AppBar(
         title: Text(
-          widget.farm == null
-              ? 'Sanidade'
-              : 'Sanidade — ${widget.farm!.name}',
+          widget.farm == null ? 'Sanidade' : 'Sanidade — ${widget.farm!.name}',
         ),
         actions: [
           IconButton(
@@ -205,8 +256,9 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
                                 _IndicatorCard(
                                   title: 'Animais',
                                   value: totalAnimals.toString(),
-                                  subtitle: 'Animais disponíveis para acompanhamento',
-                                  icon: Icons.pets_outlined,
+                                  subtitle:
+                                      'Animais disponíveis para acompanhamento',
+                                  icon: AtlasLivestockIcons.cow,
                                 ),
                                 _IndicatorCard(
                                   title: 'Com histórico',
@@ -432,10 +484,7 @@ class _IndicatorCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 5),
               Text(
                 subtitle,
@@ -470,7 +519,7 @@ class _AnimalCard extends StatelessWidget {
               const CircleAvatar(
                 radius: 24,
                 backgroundColor: Color(0xFFE8F5E9),
-                child: Icon(Icons.pets_outlined, color: Color(0xFF1B5E20)),
+                child: Icon(AtlasLivestockIcons.cow, color: Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -541,7 +590,7 @@ class _EmptyHealth extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.pets_outlined, size: 48, color: Colors.black38),
+              Icon(AtlasLivestockIcons.cow, size: 48, color: Colors.black38),
               SizedBox(height: 12),
               Text(
                 'Nenhum animal cadastrado',

@@ -5,10 +5,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_he
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_health_strategy_service.dart';
 
 class AtlasHealthStrategyScreen extends StatefulWidget {
-  const AtlasHealthStrategyScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasHealthStrategyScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
@@ -17,8 +14,7 @@ class AtlasHealthStrategyScreen extends StatefulWidget {
       _AtlasHealthStrategyScreenState();
 }
 
-class _AtlasHealthStrategyScreenState
-    extends State<AtlasHealthStrategyScreen> {
+class _AtlasHealthStrategyScreenState extends State<AtlasHealthStrategyScreen> {
   final service = AtlasHealthStrategyService.instance;
 
   AtlasHealthExecutiveSnapshot? snapshot;
@@ -41,9 +37,7 @@ class _AtlasHealthStrategyScreenState
     clusters = await service.buildClusters(
       farmName: widget.actionController.farmName,
     );
-    plans = await service.loadPlans(
-      farmName: widget.actionController.farmName,
-    );
+    plans = await service.loadPlans(farmName: widget.actionController.farmName);
     recommendations = await service.buildRecommendations(
       farmName: widget.actionController.farmName,
       snapshot: snapshot!,
@@ -99,10 +93,7 @@ class _AtlasHealthStrategyScreenState
                 const SizedBox(height: 10),
                 _number(budget, 'Orçamento'),
                 const SizedBox(height: 10),
-                _number(
-                  coverage,
-                  'Meta de cobertura (%)',
-                ),
+                _number(coverage, 'Meta de cobertura (%)'),
                 const SizedBox(height: 10),
                 TextField(
                   controller: responsible,
@@ -126,8 +117,7 @@ class _AtlasHealthStrategyScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancelar'),
           ),
           FilledButton(
@@ -135,18 +125,16 @@ class _AtlasHealthStrategyScreenState
               final now = DateTime.now();
               Navigator.of(dialogContext).pop(
                 AtlasHealthAnnualPlan(
-                  id: 'health_plan_'
+                  id:
+                      'health_plan_'
                       '${now.microsecondsSinceEpoch}',
                   title: title.text.trim(),
                   year: year,
                   targetGroup: target.text.trim(),
                   budget: _double(budget.text),
-                  targetCoveragePercent:
-                      _double(coverage.text),
-                  responsibleName:
-                      responsible.text.trim(),
-                  farmName:
-                      widget.actionController.farmName,
+                  targetCoveragePercent: _double(coverage.text),
+                  responsibleName: responsible.text.trim(),
+                  farmName: widget.actionController.farmName,
                   notes: notes.text.trim(),
                 ),
               );
@@ -209,16 +197,13 @@ class _AtlasHealthStrategyScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addPlan,
           icon: const Icon(Icons.add),
           label: const Text('Novo plano'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _Dashboard(snapshot: current),
@@ -241,9 +226,7 @@ class _AtlasHealthStrategyScreenState
                     onOpen: _openOperational,
                   ),
                   _Clusters(clusters: clusters),
-                  _Recommendations(
-                    recommendations: recommendations,
-                  ),
+                  _Recommendations(recommendations: recommendations),
                   _Indicators(snapshot: current),
                   _Plans(plans: plans, onAdd: _addPlan),
                 ],
@@ -252,16 +235,10 @@ class _AtlasHealthStrategyScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -272,9 +249,7 @@ class _AtlasHealthStrategyScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -365,9 +340,7 @@ class _Clusters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (clusters.isEmpty) {
-      return const Center(
-        child: Text('Sem agrupamentos epidemiológicos.'),
-      );
+      return const Center(child: Text('Sem agrupamentos epidemiológicos.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -384,9 +357,7 @@ class _Clusters extends StatelessWidget {
             ),
             trailing: Text(
               'Risco ${item.riskScore.toStringAsFixed(1)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -396,9 +367,7 @@ class _Clusters extends StatelessWidget {
 }
 
 class _Recommendations extends StatelessWidget {
-  const _Recommendations({
-    required this.recommendations,
-  });
+  const _Recommendations({required this.recommendations});
 
   final List<String> recommendations;
 
@@ -435,11 +404,7 @@ class _Indicators extends StatelessWidget {
         _metric('Custo sanitário', item.totalCost, 'R\$'),
         _metric('Morbidade', item.morbidityRatePercent, '%'),
         _metric('Mortalidade', item.mortalityRatePercent, '%'),
-        _metric(
-          'Cobertura de protocolos',
-          item.protocolCoveragePercent,
-          '%',
-        ),
+        _metric('Cobertura de protocolos', item.protocolCoveragePercent, '%'),
         _metric('Score sanitário', item.healthScore, '/100'),
       ],
     );
@@ -447,10 +412,7 @@ class _Indicators extends StatelessWidget {
 }
 
 class _Plans extends StatelessWidget {
-  const _Plans({
-    required this.plans,
-    required this.onAdd,
-  });
+  const _Plans({required this.plans, required this.onAdd});
 
   final List<AtlasHealthAnnualPlan> plans;
   final VoidCallback onAdd;
@@ -472,35 +434,21 @@ class _Plans extends StatelessWidget {
         ),
         Expanded(
           child: plans.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum planejamento sanitário.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum planejamento sanitário.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: plans.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = plans[index];
                     return Card(
                       child: ListTile(
-                        title: Text(
-                          '${item.title} — ${item.year}',
-                        ),
+                        title: Text('${item.title} — ${item.year}'),
                         subtitle: Text(
                           '${item.targetGroup} • '
                           'meta ${item.targetCoveragePercent.toStringAsFixed(1)}%',
                         ),
-                        trailing: Text(
-                          'R\$ ${item.budget.toStringAsFixed(2)}',
-                        ),
+                        trailing: Text('R\$ ${item.budget.toStringAsFixed(2)}'),
                       ),
                     );
                   },
@@ -524,11 +472,12 @@ Widget _card(String title, double value, String unit) {
             const SizedBox(height: 8),
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
-              '${unit == '%' ? '%' : unit == '/100' ? '/100' : ''}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              '${unit == '%'
+                  ? '%'
+                  : unit == '/100'
+                  ? '/100'
+                  : ''}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -544,11 +493,12 @@ Widget _metric(String title, double value, String unit) {
       trailing: Text(
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(2)}'
-        '${unit == '%' ? '%' : unit == '/100' ? '/100' : ''}',
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-        ),
+        '${unit == '%'
+            ? '%'
+            : unit == '/100'
+            ? '/100'
+            : ''}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
       ),
     ),
   );

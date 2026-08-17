@@ -1,10 +1,8 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasReleaseEngineeringRepository {
-  AtlasReleaseEngineeringRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasReleaseEngineeringRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
@@ -25,10 +23,7 @@ class AtlasReleaseEngineeringRepository {
   }
 
   Future<List<Map<String, dynamic>>> builds() async {
-    final response = await _client.send(
-      'GET',
-      '/release-engineering/builds',
-    );
+    final response = await _client.send('GET', '/release-engineering/builds');
     return response.asMapList();
   }
 

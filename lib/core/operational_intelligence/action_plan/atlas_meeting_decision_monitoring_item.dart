@@ -27,16 +27,13 @@ class AtlasMeetingDecisionMonitoringItem {
 
   bool get isCompleted => decision.completed;
 
-  bool get isOverdue => statuses.contains(
-        AtlasMeetingDecisionMonitoringStatus.overdue,
-      );
+  bool get isOverdue =>
+      statuses.contains(AtlasMeetingDecisionMonitoringStatus.overdue);
 
-  bool get isDueSoon => statuses.contains(
-        AtlasMeetingDecisionMonitoringStatus.dueSoon,
-      );
+  bool get isDueSoon =>
+      statuses.contains(AtlasMeetingDecisionMonitoringStatus.dueSoon);
 
-  bool get hasResponsible =>
-      decision.responsibleName.trim().isNotEmpty;
+  bool get hasResponsible => decision.responsibleName.trim().isNotEmpty;
 
   bool get hasLinkedAction =>
       decision.linkedActionId?.trim().isNotEmpty == true;

@@ -4,8 +4,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_co
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_financial_models.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_financial_service.dart';
 
-class AtlasFinancialManagementScreen
-    extends StatefulWidget {
+class AtlasFinancialManagementScreen extends StatefulWidget {
   const AtlasFinancialManagementScreen({
     required this.actionController,
     super.key,
@@ -20,19 +19,14 @@ class AtlasFinancialManagementScreen
 
 class _AtlasFinancialManagementScreenState
     extends State<AtlasFinancialManagementScreen> {
-  final AtlasFinancialService service =
-      AtlasFinancialService.instance;
+  final AtlasFinancialService service = AtlasFinancialService.instance;
 
-  List<AtlasFinancialAccount> accounts =
-      <AtlasFinancialAccount>[];
-  List<AtlasFinancialTransaction> transactions =
-      <AtlasFinancialTransaction>[];
-  List<AtlasCostCenter> costCenters =
-      <AtlasCostCenter>[];
+  List<AtlasFinancialAccount> accounts = <AtlasFinancialAccount>[];
+  List<AtlasFinancialTransaction> transactions = <AtlasFinancialTransaction>[];
+  List<AtlasCostCenter> costCenters = <AtlasCostCenter>[];
   bool isLoading = false;
 
-  AtlasFinancialSummary get summary =>
-      service.buildSummary(transactions);
+  AtlasFinancialSummary get summary => service.buildSummary(transactions);
 
   @override
   void initState() {
@@ -64,43 +58,32 @@ class _AtlasFinancialManagementScreenState
       text: transaction?.description ?? '',
     );
     final amount = TextEditingController(
-      text: transaction == null
-          ? ''
-          : transaction.amount.toStringAsFixed(2),
+      text: transaction == null ? '' : transaction.amount.toStringAsFixed(2),
     );
     final counterparty = TextEditingController(
       text: transaction?.counterparty ?? '',
     );
-    final lot = TextEditingController(
-      text: transaction?.lotName ?? '',
-    );
-    final animal = TextEditingController(
-      text: transaction?.animalId ?? '',
-    );
-    final notes = TextEditingController(
-      text: transaction?.notes ?? '',
-    );
+    final lot = TextEditingController(text: transaction?.lotName ?? '');
+    final animal = TextEditingController(text: transaction?.animalId ?? '');
+    final notes = TextEditingController(text: transaction?.notes ?? '');
 
-    var type = transaction?.type ??
+    var type =
+        transaction?.type ??
         initialType ??
         AtlasFinancialTransactionType.expense;
-    var status = transaction?.status ??
-        AtlasFinancialTransactionStatus.pending;
+    var status = transaction?.status ?? AtlasFinancialTransactionStatus.pending;
     var dueAt = transaction?.dueAt ?? DateTime.now();
     var accountId = transaction?.accountId;
     var costCenterId = transaction?.costCenterId;
 
-    final result =
-        await showDialog<AtlasFinancialTransaction>(
+    final result = await showDialog<AtlasFinancialTransaction>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                transaction == null
-                    ? 'Novo lançamento'
-                    : 'Editar lançamento',
+                transaction == null ? 'Novo lançamento' : 'Editar lançamento',
               ),
               content: SizedBox(
                 width: 600,
@@ -121,81 +104,67 @@ class _AtlasFinancialManagementScreenState
                           Expanded(
                             child:
                                 DropdownButtonFormField<
-                                    AtlasFinancialTransactionType>(
-                              initialValue: type,
-                              decoration:
-                                  const InputDecoration(
-                                labelText: 'Tipo',
-                                border:
-                                    OutlineInputBorder(),
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value:
-                                      AtlasFinancialTransactionType
-                                          .income,
-                                  child: Text('Receita'),
+                                  AtlasFinancialTransactionType
+                                >(
+                                  initialValue: type,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Tipo',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value:
+                                          AtlasFinancialTransactionType.income,
+                                      child: Text('Receita'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value:
+                                          AtlasFinancialTransactionType.expense,
+                                      child: Text('Despesa'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setDialogState(() => type = value);
+                                    }
+                                  },
                                 ),
-                                DropdownMenuItem(
-                                  value:
-                                      AtlasFinancialTransactionType
-                                          .expense,
-                                  child: Text('Despesa'),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setDialogState(
-                                    () => type = value,
-                                  );
-                                }
-                              },
-                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: TextField(
                               controller: amount,
                               keyboardType:
-                                  const TextInputType
-                                      .numberWithOptions(
-                                decimal: true,
-                              ),
-                              decoration:
-                                  const InputDecoration(
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: const InputDecoration(
                                 labelText: 'Valor',
                                 prefixText: 'R\$ ',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      DropdownButtonFormField<
-                          AtlasFinancialTransactionStatus>(
+                      DropdownButtonFormField<AtlasFinancialTransactionStatus>(
                         initialValue: status,
                         decoration: const InputDecoration(
                           labelText: 'Situação',
                           border: OutlineInputBorder(),
                         ),
-                        items:
-                            AtlasFinancialTransactionStatus
-                                .values
-                                .map(
-                                  (value) =>
-                                      DropdownMenuItem(
-                                    value: value,
-                                    child: Text(value.name),
-                                  ),
-                                )
-                                .toList(growable: false),
+                        items: AtlasFinancialTransactionStatus.values
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value.name),
+                              ),
+                            )
+                            .toList(growable: false),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => status = value,
-                            );
+                            setDialogState(() => status = value);
                           }
                         },
                       ),
@@ -212,19 +181,14 @@ class _AtlasFinancialManagementScreenState
                             child: Text('Sem conta'),
                           ),
                           ...accounts.map(
-                            (account) =>
-                                DropdownMenuItem<String?>(
+                            (account) => DropdownMenuItem<String?>(
                               value: account.id,
-                              child: Text(
-                                '${account.code} — ${account.name}',
-                              ),
+                              child: Text('${account.code} — ${account.name}'),
                             ),
                           ),
                         ],
                         onChanged: (value) {
-                          setDialogState(
-                            () => accountId = value,
-                          );
+                          setDialogState(() => accountId = value);
                         },
                       ),
                       const SizedBox(height: 10),
@@ -240,32 +204,24 @@ class _AtlasFinancialManagementScreenState
                             child: Text('Sem centro'),
                           ),
                           ...costCenters.map(
-                            (center) =>
-                                DropdownMenuItem<String?>(
+                            (center) => DropdownMenuItem<String?>(
                               value: center.id,
                               child: Text(center.name),
                             ),
                           ),
                         ],
                         onChanged: (value) {
-                          setDialogState(
-                            () => costCenterId = value,
-                          );
+                          setDialogState(() => costCenterId = value);
                         },
                       ),
                       const SizedBox(height: 10),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Vencimento'),
-                        subtitle: Text(
-                          DateFormat('dd/MM/yyyy')
-                              .format(dueAt),
-                        ),
-                        trailing:
-                            const Icon(Icons.calendar_month),
+                        subtitle: Text(DateFormat('dd/MM/yyyy').format(dueAt)),
+                        trailing: const Icon(Icons.calendar_month),
                         onTap: () async {
-                          final selected =
-                              await showDatePicker(
+                          final selected = await showDatePicker(
                             context: dialogContext,
                             initialDate: dueAt,
                             firstDate: DateTime(2020),
@@ -273,17 +229,14 @@ class _AtlasFinancialManagementScreenState
                           );
 
                           if (selected != null) {
-                            setDialogState(
-                              () => dueAt = selected,
-                            );
+                            setDialogState(() => dueAt = selected);
                           }
                         },
                       ),
                       TextField(
                         controller: counterparty,
                         decoration: const InputDecoration(
-                          labelText:
-                              'Cliente, fornecedor ou contraparte',
+                          labelText: 'Cliente, fornecedor ou contraparte',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -293,11 +246,9 @@ class _AtlasFinancialManagementScreenState
                           Expanded(
                             child: TextField(
                               controller: lot,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Lote',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -305,11 +256,9 @@ class _AtlasFinancialManagementScreenState
                           Expanded(
                             child: TextField(
                               controller: animal,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Animal',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -330,8 +279,7 @@ class _AtlasFinancialManagementScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -341,39 +289,32 @@ class _AtlasFinancialManagementScreenState
                     }
 
                     final now = DateTime.now();
-                    final paidAt = status ==
-                                AtlasFinancialTransactionStatus
-                                    .paid ||
-                            status ==
-                                AtlasFinancialTransactionStatus
-                                    .received
+                    final paidAt =
+                        status == AtlasFinancialTransactionStatus.paid ||
+                            status == AtlasFinancialTransactionStatus.received
                         ? now
                         : null;
 
                     Navigator.of(dialogContext).pop(
                       AtlasFinancialTransaction(
-                        id: transaction?.id ??
+                        id:
+                            transaction?.id ??
                             'financial_transaction_'
                                 '${now.microsecondsSinceEpoch}',
-                        description:
-                            description.text.trim(),
+                        description: description.text.trim(),
                         type: type,
                         status: status,
-                        amount:
-                            _parseMoney(amount.text),
+                        amount: _parseMoney(amount.text),
                         dueAt: dueAt,
                         paidAt: paidAt,
                         accountId: accountId,
                         costCenterId: costCenterId,
                         lotName: lot.text.trim(),
                         animalId: animal.text.trim(),
-                        counterparty:
-                            counterparty.text.trim(),
-                        farmName: widget
-                            .actionController.farmName,
+                        counterparty: counterparty.text.trim(),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
-                        createdAt:
-                            transaction?.createdAt ?? now,
+                        createdAt: transaction?.createdAt ?? now,
                       ),
                     );
                   },
@@ -401,30 +342,18 @@ class _AtlasFinancialManagementScreenState
     await _load();
   }
 
-  Future<void> _editAccount({
-    AtlasFinancialAccount? account,
-  }) async {
-    final code = TextEditingController(
-      text: account?.code ?? '',
-    );
-    final name = TextEditingController(
-      text: account?.name ?? '',
-    );
-    var type = account?.type ??
-        AtlasFinancialAccountType.expense;
+  Future<void> _editAccount({AtlasFinancialAccount? account}) async {
+    final code = TextEditingController(text: account?.code ?? '');
+    final name = TextEditingController(text: account?.name ?? '');
+    var type = account?.type ?? AtlasFinancialAccountType.expense;
 
-    final result =
-        await showDialog<AtlasFinancialAccount>(
+    final result = await showDialog<AtlasFinancialAccount>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(
-                account == null
-                    ? 'Nova conta'
-                    : 'Editar conta',
-              ),
+              title: Text(account == null ? 'Nova conta' : 'Editar conta'),
               content: SizedBox(
                 width: 480,
                 child: Column(
@@ -446,8 +375,7 @@ class _AtlasFinancialManagementScreenState
                       ),
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<
-                        AtlasFinancialAccountType>(
+                    DropdownButtonFormField<AtlasFinancialAccountType>(
                       initialValue: type,
                       decoration: const InputDecoration(
                         labelText: 'Tipo',
@@ -458,18 +386,14 @@ class _AtlasFinancialManagementScreenState
                             (value) => DropdownMenuItem(
                               value: value,
                               child: Text(
-                                atlasFinancialAccountTypeLabel(
-                                  value,
-                                ),
+                                atlasFinancialAccountTypeLabel(value),
                               ),
                             ),
                           )
                           .toList(growable: false),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => type = value,
-                          );
+                          setDialogState(() => type = value);
                         }
                       },
                     ),
@@ -478,8 +402,7 @@ class _AtlasFinancialManagementScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -490,7 +413,8 @@ class _AtlasFinancialManagementScreenState
 
                     Navigator.of(dialogContext).pop(
                       AtlasFinancialAccount(
-                        id: account?.id ??
+                        id:
+                            account?.id ??
                             'account_'
                                 '${DateTime.now().microsecondsSinceEpoch}',
                         code: code.text.trim(),
@@ -519,15 +443,9 @@ class _AtlasFinancialManagementScreenState
     }
   }
 
-  Future<void> _editCostCenter({
-    AtlasCostCenter? center,
-  }) async {
-    final name = TextEditingController(
-      text: center?.name ?? '',
-    );
-    final description = TextEditingController(
-      text: center?.description ?? '',
-    );
+  Future<void> _editCostCenter({AtlasCostCenter? center}) async {
+    final name = TextEditingController(text: center?.name ?? '');
+    final description = TextEditingController(text: center?.description ?? '');
 
     final result = await showDialog<AtlasCostCenter>(
       context: context,
@@ -564,8 +482,7 @@ class _AtlasFinancialManagementScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             FilledButton(
@@ -576,14 +493,13 @@ class _AtlasFinancialManagementScreenState
 
                 Navigator.of(dialogContext).pop(
                   AtlasCostCenter(
-                    id: center?.id ??
+                    id:
+                        center?.id ??
                         'cost_center_'
                             '${DateTime.now().microsecondsSinceEpoch}',
                     name: name.text.trim(),
-                    description:
-                        description.text.trim(),
-                    farmName:
-                        widget.actionController.farmName,
+                    description: description.text.trim(),
+                    farmName: widget.actionController.farmName,
                     active: true,
                   ),
                 );
@@ -631,39 +547,29 @@ class _AtlasFinancialManagementScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _editTransaction(),
           icon: const Icon(Icons.add),
           label: const Text('Novo lançamento'),
         ),
-        body: isLoading &&
-                accounts.isEmpty &&
-                transactions.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+        body: isLoading && accounts.isEmpty && transactions.isEmpty
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _FinancialSummaryTab(summary: summary),
                   _AccountsTab(
                     accounts: accounts,
                     onAdd: () => _editAccount(),
-                    onEdit: (account) =>
-                        _editAccount(account: account),
+                    onEdit: (account) => _editAccount(account: account),
                     onDelete: (account) async {
-                      await service.deleteAccount(
-                        account.id,
-                      );
+                      await service.deleteAccount(account.id);
                       await _load();
                     },
                   ),
                   _CashFlowTab(
                     transactions: transactions,
                     onEdit: (transaction) =>
-                        _editTransaction(
-                      transaction: transaction,
-                    ),
+                        _editTransaction(transaction: transaction),
                   ),
                   _TransactionsTab(
                     title: 'Contas a pagar',
@@ -671,56 +577,38 @@ class _AtlasFinancialManagementScreenState
                         .where(
                           (item) =>
                               item.type ==
-                              AtlasFinancialTransactionType
-                                  .expense,
+                              AtlasFinancialTransactionType.expense,
                         )
                         .toList(growable: false),
                     onAdd: () => _editTransaction(
-                      initialType:
-                          AtlasFinancialTransactionType
-                              .expense,
+                      initialType: AtlasFinancialTransactionType.expense,
                     ),
                     onEdit: (transaction) =>
-                        _editTransaction(
-                      transaction: transaction,
-                    ),
+                        _editTransaction(transaction: transaction),
                   ),
                   _TransactionsTab(
                     title: 'Contas a receber',
                     transactions: transactions
                         .where(
                           (item) =>
-                              item.type ==
-                              AtlasFinancialTransactionType
-                                  .income,
+                              item.type == AtlasFinancialTransactionType.income,
                         )
                         .toList(growable: false),
                     onAdd: () => _editTransaction(
-                      initialType:
-                          AtlasFinancialTransactionType
-                              .income,
+                      initialType: AtlasFinancialTransactionType.income,
                     ),
                     onEdit: (transaction) =>
-                        _editTransaction(
-                      transaction: transaction,
-                    ),
+                        _editTransaction(transaction: transaction),
                   ),
                   _CostsTab(
                     costCenters: costCenters,
-                    byLot:
-                        service.buildCostByLot(transactions),
-                    byAnimal:
-                        service.buildCostByAnimal(
-                      transactions,
-                    ),
+                    byLot: service.buildCostByLot(transactions),
+                    byAnimal: service.buildCostByAnimal(transactions),
                     onAddCenter: () => _editCostCenter(),
-                    onEditCenter: (center) =>
-                        _editCostCenter(center: center),
+                    onEditCenter: (center) => _editCostCenter(center: center),
                   ),
                   _IncomeStatementTab(
-                    lines: service.buildIncomeStatement(
-                      transactions,
-                    ),
+                    lines: service.buildIncomeStatement(transactions),
                   ),
                 ],
               ),
@@ -732,9 +620,7 @@ class _AtlasFinancialManagementScreenState
     var normalized = value.trim();
 
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
 
     return double.tryParse(normalized) ?? 0;
@@ -742,9 +628,7 @@ class _AtlasFinancialManagementScreenState
 }
 
 class _FinancialSummaryTab extends StatelessWidget {
-  const _FinancialSummaryTab({
-    required this.summary,
-  });
+  const _FinancialSummaryTab({required this.summary});
 
   final AtlasFinancialSummary summary;
 
@@ -757,10 +641,7 @@ class _FinancialSummaryTab extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _FinancialCard(
-              title: 'Saldo de caixa',
-              value: summary.cashBalance,
-            ),
+            _FinancialCard(title: 'Saldo de caixa', value: summary.cashBalance),
             _FinancialCard(
               title: 'Contas a pagar',
               value: summary.accountsPayable,
@@ -769,22 +650,13 @@ class _FinancialSummaryTab extends StatelessWidget {
               title: 'Contas a receber',
               value: summary.accountsReceivable,
             ),
-            _FinancialCard(
-              title: 'Receitas',
-              value: summary.totalRevenue,
-            ),
-            _FinancialCard(
-              title: 'Despesas',
-              value: summary.totalExpense,
-            ),
+            _FinancialCard(title: 'Receitas', value: summary.totalRevenue),
+            _FinancialCard(title: 'Despesas', value: summary.totalExpense),
             _FinancialCard(
               title: 'Margem de contribuição',
               value: summary.contributionMargin,
             ),
-            _FinancialCard(
-              title: 'Lucro líquido',
-              value: summary.netProfit,
-            ),
+            _FinancialCard(title: 'Lucro líquido', value: summary.netProfit),
           ],
         ),
       ],
@@ -822,28 +694,16 @@ class _AccountsTab extends StatelessWidget {
         ),
         Expanded(
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              0,
-              16,
-              24,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             itemCount: accounts.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(height: 8),
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final account = accounts[index];
 
               return Card(
                 child: ListTile(
-                  title: Text(
-                    '${account.code} — ${account.name}',
-                  ),
-                  subtitle: Text(
-                    atlasFinancialAccountTypeLabel(
-                      account.type,
-                    ),
-                  ),
+                  title: Text('${account.code} — ${account.name}'),
+                  subtitle: Text(atlasFinancialAccountTypeLabel(account.type)),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) {
                       if (value == 'edit') {
@@ -853,14 +713,8 @@ class _AccountsTab extends StatelessWidget {
                       }
                     },
                     itemBuilder: (_) => const [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text('Editar'),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Excluir'),
-                      ),
+                      PopupMenuItem(value: 'edit', child: Text('Editar')),
+                      PopupMenuItem(value: 'delete', child: Text('Excluir')),
                     ],
                   ),
                 ),
@@ -874,10 +728,7 @@ class _AccountsTab extends StatelessWidget {
 }
 
 class _CashFlowTab extends StatelessWidget {
-  const _CashFlowTab({
-    required this.transactions,
-    required this.onEdit,
-  });
+  const _CashFlowTab({required this.transactions, required this.onEdit});
 
   final List<AtlasFinancialTransaction> transactions;
   final ValueChanged<AtlasFinancialTransaction> onEdit;
@@ -885,16 +736,13 @@ class _CashFlowTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
-      return const Center(
-        child: Text('Nenhum lançamento financeiro.'),
-      );
+      return const Center(child: Text('Nenhum lançamento financeiro.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: transactions.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = transactions[index];
 
@@ -903,9 +751,7 @@ class _CashFlowTab extends StatelessWidget {
             onTap: () => onEdit(item),
             leading: CircleAvatar(
               child: Icon(
-                item.type ==
-                        AtlasFinancialTransactionType
-                            .income
+                item.type == AtlasFinancialTransactionType.income
                     ? Icons.arrow_downward
                     : Icons.arrow_upward,
               ),
@@ -919,9 +765,7 @@ class _CashFlowTab extends StatelessWidget {
             trailing: Text(
               '${item.type == AtlasFinancialTransactionType.expense ? '-' : '+'}'
               'R\$ ${item.amount.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -950,10 +794,7 @@ class _TransactionsTab extends StatelessWidget {
         ListTile(
           title: Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 17,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
           ),
           trailing: FilledButton.icon(
             onPressed: onAdd,
@@ -963,21 +804,11 @@ class _TransactionsTab extends StatelessWidget {
         ),
         Expanded(
           child: transactions.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum lançamento nesta categoria.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum lançamento nesta categoria.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: transactions.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = transactions[index];
 
@@ -991,9 +822,7 @@ class _TransactionsTab extends StatelessWidget {
                         ),
                         trailing: Text(
                           'R\$ ${item.amount.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ),
                     );
@@ -1030,10 +859,7 @@ class _CostsTab extends StatelessWidget {
             const Expanded(
               child: Text(
                 'Centros de custos',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
               ),
             ),
             FilledButton.icon(
@@ -1056,38 +882,28 @@ class _CostsTab extends StatelessWidget {
         const SizedBox(height: 16),
         const Text(
           'Custos por lote',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
         ),
         const SizedBox(height: 8),
         ...byLot.entries.map(
           (entry) => Card(
             child: ListTile(
               title: Text(entry.key),
-              trailing: Text(
-                'R\$ ${entry.value.toStringAsFixed(2)}',
-              ),
+              trailing: Text('R\$ ${entry.value.toStringAsFixed(2)}'),
             ),
           ),
         ),
         const SizedBox(height: 16),
         const Text(
           'Custos por animal',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
         ),
         const SizedBox(height: 8),
         ...byAnimal.entries.map(
           (entry) => Card(
             child: ListTile(
               title: Text(entry.key),
-              trailing: Text(
-                'R\$ ${entry.value.toStringAsFixed(2)}',
-              ),
+              trailing: Text('R\$ ${entry.value.toStringAsFixed(2)}'),
             ),
           ),
         ),
@@ -1097,9 +913,7 @@ class _CostsTab extends StatelessWidget {
 }
 
 class _IncomeStatementTab extends StatelessWidget {
-  const _IncomeStatementTab({
-    required this.lines,
-  });
+  const _IncomeStatementTab({required this.lines});
 
   final List<AtlasIncomeStatementLine> lines;
 
@@ -1108,8 +922,7 @@ class _IncomeStatementTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: lines.length,
-      separatorBuilder: (_, __) =>
-          const Divider(height: 1),
+      separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final line = lines[index];
 
@@ -1117,17 +930,13 @@ class _IncomeStatementTab extends StatelessWidget {
           title: Text(
             line.label,
             style: TextStyle(
-              fontWeight: line.highlight
-                  ? FontWeight.w900
-                  : FontWeight.normal,
+              fontWeight: line.highlight ? FontWeight.w900 : FontWeight.normal,
             ),
           ),
           trailing: Text(
             'R\$ ${line.value.toStringAsFixed(2)}',
             style: TextStyle(
-              fontWeight: line.highlight
-                  ? FontWeight.w900
-                  : FontWeight.normal,
+              fontWeight: line.highlight ? FontWeight.w900 : FontWeight.normal,
               fontSize: line.highlight ? 17 : 14,
             ),
           ),
@@ -1138,10 +947,7 @@ class _IncomeStatementTab extends StatelessWidget {
 }
 
 class _FinancialCard extends StatelessWidget {
-  const _FinancialCard({
-    required this.title,
-    required this.value,
-  });
+  const _FinancialCard({required this.title, required this.value});
 
   final String title;
   final double value;
@@ -1154,8 +960,7 @@ class _FinancialCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title),
               const SizedBox(height: 8),

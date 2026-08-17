@@ -50,13 +50,11 @@ class AtlasAiMemory {
       'farmName': farmName,
       'messageCount': messageCount,
       'userQuestionCount': userQuestionCount,
-      'assistantResponseCount':
-          assistantResponseCount,
+      'assistantResponseCount': assistantResponseCount,
       'summary': summary,
       'lastQuestion': lastQuestion,
       'lastAnswer': lastAnswer,
-      'mostFrequentIntents':
-          mostFrequentIntents.map((item) {
+      'mostFrequentIntents': mostFrequentIntents.map((item) {
         return item.toJson();
       }).toList(),
       'frequentAreas': frequentAreas.map((item) {
@@ -83,11 +81,7 @@ class AtlasAiMemoryIntent {
   final String label;
 
   Map<String, dynamic> toJson() {
-    return {
-      'intent': intent.name,
-      'count': count,
-      'label': label,
-    };
+    return {'intent': intent.name, 'count': count, 'label': label};
   }
 }
 
@@ -103,11 +97,7 @@ class AtlasAiMemoryArea {
   final String label;
 
   Map<String, dynamic> toJson() {
-    return {
-      'area': area.name,
-      'count': count,
-      'label': label,
-    };
+    return {'area': area.name, 'count': count, 'label': label};
   }
 }
 

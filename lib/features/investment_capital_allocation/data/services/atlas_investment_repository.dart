@@ -64,7 +64,8 @@ class AtlasInvestmentRepository {
         id: 'investment_pasture',
         farmId: '',
         name: 'Recuperação de pastagens',
-        description: 'Correção, adubação, divisão de piquetes e manejo rotacionado.',
+        description:
+            'Correção, adubação, divisão de piquetes e manejo rotacionado.',
         category: AtlasInvestmentCategory.pasture,
         initialInvestment: 420000,
         workingCapital: 80000,
@@ -100,7 +101,8 @@ class AtlasInvestmentRepository {
         id: 'investment_solar',
         farmId: '',
         name: 'Energia solar',
-        description: 'Geração distribuída para reduzir o custo energético da operação.',
+        description:
+            'Geração distribuída para reduzir o custo energético da operação.',
         category: AtlasInvestmentCategory.sustainability,
         initialInvestment: 310000,
         workingCapital: 20000,
@@ -118,7 +120,8 @@ class AtlasInvestmentRepository {
         id: 'investment_confinement',
         farmId: '',
         name: 'Confinamento modular',
-        description: 'Estrutura modular para terminação intensiva e giro de estoque.',
+        description:
+            'Estrutura modular para terminação intensiva e giro de estoque.',
         category: AtlasInvestmentCategory.infrastructure,
         initialInvestment: 850000,
         workingCapital: 420000,

@@ -28,8 +28,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
   }
 
   Future<void> _load() async {
-    final List<AtlasReport> reports =
-        await _repository.load(farmId: widget.farmId);
+    final List<AtlasReport> reports = await _repository.load(
+      farmId: widget.farmId,
+    );
     if (!mounted) {
       return;
     }
@@ -93,16 +94,21 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
   }
 
   Future<void> _edit([AtlasReport? current]) async {
-    final TextEditingController titleController =
-        TextEditingController(text: current?.title ?? '');
-    final TextEditingController propertyController =
-        TextEditingController(text: current?.propertyName ?? '');
-    final TextEditingController clientController =
-        TextEditingController(text: current?.clientName ?? '');
-    final TextEditingController periodController =
-        TextEditingController(text: current?.periodLabel ?? 'Últimos 30 dias');
-    final TextEditingController summaryController =
-        TextEditingController(text: current?.executiveSummary ?? '');
+    final TextEditingController titleController = TextEditingController(
+      text: current?.title ?? '',
+    );
+    final TextEditingController propertyController = TextEditingController(
+      text: current?.propertyName ?? '',
+    );
+    final TextEditingController clientController = TextEditingController(
+      text: current?.clientName ?? '',
+    );
+    final TextEditingController periodController = TextEditingController(
+      text: current?.periodLabel ?? 'Últimos 30 dias',
+    );
+    final TextEditingController summaryController = TextEditingController(
+      text: current?.executiveSummary ?? '',
+    );
     final TextEditingController recommendationsController =
         TextEditingController(text: current?.recommendations.join('\n') ?? '');
 
@@ -115,7 +121,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setLocalState) {
             return AlertDialog(
-              title: Text(current == null ? 'Novo relatório' : 'Editar relatório'),
+              title: Text(
+                current == null ? 'Novo relatório' : 'Editar relatório',
+              ),
               content: SizedBox(
                 width: 620,
                 child: SingleChildScrollView(
@@ -129,8 +137,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: propertyController,
-                        decoration:
-                            const InputDecoration(labelText: 'Propriedade'),
+                        decoration: const InputDecoration(
+                          labelText: 'Propriedade',
+                        ),
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -140,15 +149,16 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<AtlasReportType>(
                         initialValue: type,
-                        decoration:
-                            const InputDecoration(labelText: 'Tipo de relatório'),
+                        decoration: const InputDecoration(
+                          labelText: 'Tipo de relatório',
+                        ),
                         items: AtlasReportType.values
                             .map(
                               (AtlasReportType item) =>
                                   DropdownMenuItem<AtlasReportType>(
-                                value: item,
-                                child: Text(_typeLabel(item)),
-                              ),
+                                    value: item,
+                                    child: Text(_typeLabel(item)),
+                                  ),
                             )
                             .toList(),
                         onChanged: (AtlasReportType? value) {
@@ -167,9 +177,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                             .map(
                               (AtlasReportStatus item) =>
                                   DropdownMenuItem<AtlasReportStatus>(
-                                value: item,
-                                child: Text(_statusLabel(item)),
-                              ),
+                                    value: item,
+                                    child: Text(_statusLabel(item)),
+                                  ),
                             )
                             .toList(),
                         onChanged: (AtlasReportStatus? value) {
@@ -190,8 +200,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                         controller: summaryController,
                         minLines: 3,
                         maxLines: 6,
-                        decoration:
-                            const InputDecoration(labelText: 'Resumo executivo'),
+                        decoration: const InputDecoration(
+                          labelText: 'Resumo executivo',
+                        ),
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -222,7 +233,8 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                     final DateTime now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasReport(
-                        id: current?.id ??
+                        id:
+                            current?.id ??
                             now.microsecondsSinceEpoch.toString(),
                         farmId: widget.farmId,
                         title: titleController.text.trim(),
@@ -265,8 +277,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
     }
 
     setState(() {
-      final int index =
-          _reports.indexWhere((AtlasReport item) => item.id == result.id);
+      final int index = _reports.indexWhere(
+        (AtlasReport item) => item.id == result.id,
+      );
       if (index < 0) {
         _reports = <AtlasReport>[result, ..._reports];
       } else {
@@ -349,7 +362,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Conteúdo do relatório copiado para a área de transferência.'),
+        content: Text(
+          'Conteúdo do relatório copiado para a área de transferência.',
+        ),
       ),
     );
   }
@@ -470,8 +485,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                                   Chip(
                                     label: Text(_statusLabel(report.status)),
                                     side: BorderSide.none,
-                                    backgroundColor: _statusColor(report.status)
-                                        .withValues(alpha: 0.12),
+                                    backgroundColor: _statusColor(
+                                      report.status,
+                                    ).withValues(alpha: 0.12),
                                     labelStyle: TextStyle(
                                       color: _statusColor(report.status),
                                       fontWeight: FontWeight.w600,
@@ -487,15 +503,15 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                                     },
                                     itemBuilder: (BuildContext context) =>
                                         const <PopupMenuEntry<String>>[
-                                      PopupMenuItem<String>(
-                                        value: 'edit',
-                                        child: Text('Editar'),
-                                      ),
-                                      PopupMenuItem<String>(
-                                        value: 'delete',
-                                        child: Text('Excluir'),
-                                      ),
-                                    ],
+                                          PopupMenuItem<String>(
+                                            value: 'edit',
+                                            child: Text('Editar'),
+                                          ),
+                                          PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: Text('Excluir'),
+                                          ),
+                                        ],
                                   ),
                                 ],
                               ),
@@ -505,8 +521,12 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                                 runSpacing: 8,
                                 children: <Widget>[
                                   Text('Período: ${report.periodLabel}'),
-                                  Text('Atualizado em ${_date(report.updatedAt)}'),
-                                  Text('${report.recommendations.length} recomendações'),
+                                  Text(
+                                    'Atualizado em ${_date(report.updatedAt)}',
+                                  ),
+                                  Text(
+                                    '${report.recommendations.length} recomendações',
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 14),
@@ -526,7 +546,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                                   ),
                                   FilledButton.icon(
                                     onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
                                             'Documento preparado. A geração real em PDF será conectada na próxima etapa.',
@@ -534,7 +556,9 @@ class _AtlasReportsDashboardState extends State<AtlasReportsDashboard> {
                                         ),
                                       );
                                     },
-                                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                                    icon: const Icon(
+                                      Icons.picture_as_pdf_outlined,
+                                    ),
                                     label: const Text('Preparar PDF'),
                                   ),
                                 ],
@@ -616,7 +640,9 @@ class _ReportPreview extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text('Propriedade: ${report.propertyName}'),
-        Text('Cliente: ${report.clientName.isEmpty ? 'Não informado' : report.clientName}'),
+        Text(
+          'Cliente: ${report.clientName.isEmpty ? 'Não informado' : report.clientName}',
+        ),
         Text('Período: ${report.periodLabel}'),
         const SizedBox(height: 24),
         const Text(

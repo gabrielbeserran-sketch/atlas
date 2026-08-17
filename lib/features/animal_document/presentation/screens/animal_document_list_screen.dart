@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/platform/atlas_external_open_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_document/data/services/animal_document_storage_service.dart';
 import 'package:projeto_atlas/features/animal_document/domain/models/animal_document_data.dart';
@@ -26,12 +25,9 @@ class AnimalDocumentListScreen extends StatefulWidget {
   }
 }
 
-class _AnimalDocumentListScreenState
-    extends State<AnimalDocumentListScreen> {
-  final AnimalDocumentStorageService storage =
-      AnimalDocumentStorageService();
-  final TextEditingController searchController =
-      TextEditingController();
+class _AnimalDocumentListScreenState extends State<AnimalDocumentListScreen> {
+  final AnimalDocumentStorageService storage = AnimalDocumentStorageService();
+  final TextEditingController searchController = TextEditingController();
 
   List<AnimalDocumentData> documents = [];
   bool isLoading = true;
@@ -91,7 +87,8 @@ class _AnimalDocumentListScreenState
     final query = searchController.text.trim().toLowerCase();
 
     final result = documents.where((document) {
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           document.title.toLowerCase().contains(query) ||
           document.type.toLowerCase().contains(query) ||
           document.category.toLowerCase().contains(query) ||
@@ -99,13 +96,12 @@ class _AnimalDocumentListScreenState
           document.reference.toLowerCase().contains(query) ||
           document.notes.toLowerCase().contains(query);
 
-      final matchesCategory = selectedCategory == 'Todos' ||
-          document.category == selectedCategory;
+      final matchesCategory =
+          selectedCategory == 'Todos' || document.category == selectedCategory;
 
       final matchesStatus = switch (selectedStatus) {
         'Favoritos' => document.isFavorite,
-        'Válidos' =>
-          !document.isExpired && !document.expiresSoon,
+        'Válidos' => !document.isExpired && !document.expiresSoon,
         'Próximos do vencimento' => document.expiresSoon,
         'Vencidos' => document.isExpired,
         'Sem vencimento' => !document.hasExpiration,
@@ -128,8 +124,7 @@ class _AnimalDocumentListScreenState
         return first.expiresSoon ? -1 : 1;
       }
 
-      return documentDate(second.date)
-          .compareTo(documentDate(first.date));
+      return documentDate(second.date).compareTo(documentDate(first.date));
     });
 
     return result;
@@ -159,9 +154,7 @@ class _AnimalDocumentListScreenState
     );
   }
 
-  Future<void> openDocumentForm({
-    AnimalDocumentData? document,
-  }) async {
+  Future<void> openDocumentForm({AnimalDocumentData? document}) async {
     final result = await Navigator.push<AnimalDocumentData>(
       context,
       MaterialPageRoute<AnimalDocumentData>(
@@ -174,9 +167,7 @@ class _AnimalDocumentListScreenState
     if (result == null || !mounted) return;
 
     setState(() {
-      final index = documents.indexWhere(
-        (item) => item.id == result.id,
-      );
+      final index = documents.indexWhere((item) => item.id == result.id);
 
       if (index == -1) {
         documents.add(result);
@@ -186,6 +177,7 @@ class _AnimalDocumentListScreenState
     });
 
     await saveDocuments();
+    await loadDocuments();
 
     if (!mounted) return;
 
@@ -200,12 +192,8 @@ class _AnimalDocumentListScreenState
     );
   }
 
-  Future<void> toggleFavorite(
-    AnimalDocumentData document,
-  ) async {
-    final index = documents.indexWhere(
-      (item) => item.id == document.id,
-    );
+  Future<void> toggleFavorite(AnimalDocumentData document) async {
+    final index = documents.indexWhere((item) => item.id == document.id);
     if (index == -1) return;
 
     setState(() {
@@ -216,28 +204,23 @@ class _AnimalDocumentListScreenState
     });
 
     await saveDocuments();
+    await loadDocuments();
   }
 
-  Future<void> deleteDocument(
-    AnimalDocumentData document,
-  ) async {
+  Future<void> deleteDocument(AnimalDocumentData document) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Excluir documento'),
-          content: Text(
-            'Deseja excluir "${document.title}"?',
-          ),
+          content: Text('Deseja excluir "${document.title}"?'),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.red.shade700,
               ),
@@ -251,88 +234,38 @@ class _AnimalDocumentListScreenState
     if (confirmed != true || !mounted) return;
 
     setState(() {
-      documents.removeWhere(
-        (item) => item.id == document.id,
-      );
+      documents.removeWhere((item) => item.id == document.id);
     });
 
     await saveDocuments();
+    await loadDocuments();
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Documento excluído.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Documento excluído.')));
   }
 
-  Future<void> openAttachment(
-    AnimalDocumentData document,
-  ) async {
+  Future<void> openAttachment(AnimalDocumentData document) async {
     final reference = document.reference.trim();
 
     if (reference.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Este documento não possui arquivo ou link.',
-          ),
+          content: Text('Este documento não possui arquivo ou link.'),
         ),
       );
       return;
     }
 
-    final uri = Uri.tryParse(reference);
-
     try {
-      if (uri != null &&
-          (uri.scheme == 'http' || uri.scheme == 'https')) {
-        await Process.start(
-          'cmd',
-          ['/c', 'start', '', reference],
-          runInShell: true,
-        );
-        return;
-      }
-
-      final directory = Directory(reference);
-
-      if (directory.existsSync()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'O caminho informado é uma pasta. Edite o documento e selecione o arquivo correto.',
-            ),
-          ),
-        );
-        return;
-      }
-
-      final file = File(reference);
-
-      if (!file.existsSync()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'O arquivo foi movido, renomeado ou excluído: $reference',
-            ),
-          ),
-        );
-        return;
-      }
-
-      await Process.start(
-        'cmd',
-        ['/c', 'start', '', file.path],
-        runInShell: true,
-      );
+      await AtlasExternalOpenService.open(reference);
     } catch (error) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'O Windows não conseguiu abrir o documento: $error',
-          ),
+          content: Text('Não foi possível abrir o documento: $error'),
         ),
       );
     }
@@ -354,9 +287,7 @@ class _AnimalDocumentListScreenState
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading
-            ? null
-            : () => openDocumentForm(),
+        onPressed: isLoading ? null : () => openDocumentForm(),
         icon: const Icon(Icons.add),
         label: const Text('Novo documento'),
       ),
@@ -365,9 +296,7 @@ class _AnimalDocumentListScreenState
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1180),
             child: isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -435,9 +364,7 @@ class _AnimalDocumentListScreenState
                           ),
                           Text(
                             '${visible.length} resultado(s)',
-                            style: const TextStyle(
-                              color: Colors.black54,
-                            ),
+                            style: const TextStyle(color: Colors.black54),
                           ),
                         ],
                       ),
@@ -447,20 +374,14 @@ class _AnimalDocumentListScreenState
                       else
                         ...visible.map(
                           (document) => Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.only(bottom: 14),
                             child: DocumentCard(
                               document: document,
-                              onOpen: () =>
-                                  openAttachment(document),
-                              onFavorite: () =>
-                                  toggleFavorite(document),
+                              onOpen: () => openAttachment(document),
+                              onFavorite: () => toggleFavorite(document),
                               onEdit: () =>
-                                  openDocumentForm(
-                                document: document,
-                              ),
-                              onDelete: () =>
-                                  deleteDocument(document),
+                                  openDocumentForm(document: document),
+                              onDelete: () => deleteDocument(document),
                             ),
                           ),
                         ),
@@ -497,8 +418,7 @@ class _DocumentHeader extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundColor:
-                  const Color(0xFF1B5E20).withValues(alpha: 0.10),
+              backgroundColor: const Color(0xFF1B5E20).withValues(alpha: 0.10),
               child: const Icon(
                 Icons.folder_copy_outlined,
                 color: Color(0xFF1B5E20),
@@ -519,9 +439,7 @@ class _DocumentHeader extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Brinco ${animal.tag} • ${farm.name} • ${group.name}',
-                    style: const TextStyle(
-                      color: Colors.black54,
-                    ),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                 ],
               ),
@@ -585,10 +503,7 @@ class _DocumentFilters extends StatelessWidget {
               ),
               items: categories
                   .map(
-                    (item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(item),
-                    ),
+                    (item) => DropdownMenuItem(value: item, child: Text(item)),
                   )
                   .toList(growable: false),
               onChanged: (value) {
@@ -604,10 +519,7 @@ class _DocumentFilters extends StatelessWidget {
               ),
               items: statuses
                   .map(
-                    (item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(item),
-                    ),
+                    (item) => DropdownMenuItem(value: item, child: Text(item)),
                   )
                   .toList(growable: false),
               onChanged: (value) {
@@ -665,12 +577,10 @@ class DocumentSummaryCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    const Color(0xFF1B5E20).withValues(alpha: 0.10),
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF1B5E20),
-                ),
+                backgroundColor: const Color(
+                  0xFF1B5E20,
+                ).withValues(alpha: 0.10),
+                child: Icon(icon, color: const Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 13),
               Expanded(
@@ -684,12 +594,7 @@ class DocumentSummaryCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                      ),
-                    ),
+                    Text(title, style: const TextStyle(color: Colors.black54)),
                   ],
                 ),
               ),
@@ -722,8 +627,8 @@ class DocumentCard extends StatelessWidget {
     final statusColor = document.isExpired
         ? Colors.red.shade700
         : document.expiresSoon
-            ? Colors.orange.shade800
-            : const Color(0xFF1B5E20);
+        ? Colors.orange.shade800
+        : const Color(0xFF1B5E20);
 
     return Card(
       child: InkWell(
@@ -766,10 +671,7 @@ class DocumentCard extends StatelessWidget {
                         if (document.isFavorite)
                           const Padding(
                             padding: EdgeInsets.only(left: 8),
-                            child: Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                            ),
+                            child: Icon(Icons.star, color: Colors.amber),
                           ),
                       ],
                     ),
@@ -791,8 +693,8 @@ class DocumentCard extends StatelessWidget {
                           icon: document.isExpired
                               ? Icons.error_outline
                               : document.expiresSoon
-                                  ? Icons.schedule_outlined
-                                  : Icons.verified_outlined,
+                              ? Icons.schedule_outlined
+                              : Icons.verified_outlined,
                           color: statusColor,
                         ),
                       ],
@@ -824,9 +726,7 @@ class DocumentCard extends StatelessWidget {
                         document.notes,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.black54,
-                        ),
+                        style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                   ],
@@ -854,14 +754,8 @@ class DocumentCard extends StatelessWidget {
                           : 'Adicionar aos favoritos',
                     ),
                   ),
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Editar'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Excluir'),
-                  ),
+                  const PopupMenuItem(value: 'edit', child: Text('Editar')),
+                  const PopupMenuItem(value: 'delete', child: Text('Excluir')),
                 ],
               ),
             ],
@@ -886,10 +780,7 @@ class _DocumentChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
@@ -962,10 +853,7 @@ class EmptyDocumentsMessage extends StatelessWidget {
             SizedBox(height: 12),
             Text(
               'Nenhum documento encontrado',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 5),
             Text(

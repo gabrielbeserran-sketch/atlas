@@ -35,8 +35,7 @@ class AtlasDecisionActionAutoSyncService {
     synchronizeNow();
   }
 
-  Future<AtlasMeetingDecisionActionSyncResult?>
-      synchronizeNow() async {
+  Future<AtlasMeetingDecisionActionSyncResult?> synchronizeNow() async {
     if (_isRunning) {
       return null;
     }

@@ -58,18 +58,18 @@ class AtlasEnterpriseRecord {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'packageId': packageId,
-        'stepId': stepId,
-        'title': title,
-        'date': date,
-        'quantity': quantity,
-        'unitValue': unitValue,
-        'status': status,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'packageId': packageId,
+    'stepId': stepId,
+    'title': title,
+    'date': date,
+    'quantity': quantity,
+    'unitValue': unitValue,
+    'status': status,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
   factory AtlasEnterpriseRecord.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseRecord(

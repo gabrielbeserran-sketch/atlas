@@ -29,9 +29,7 @@ class AtlasReproductivePrediction {
 class AtlasReproductiveAiEngine {
   const AtlasReproductiveAiEngine();
 
-  AtlasReproductivePrediction predict(
-    AtlasReproductivePredictionCase data,
-  ) {
+  AtlasReproductivePrediction predict(AtlasReproductivePredictionCase data) {
     final risks = <String>[];
     final positives = <String>[];
 
@@ -39,15 +37,13 @@ class AtlasReproductiveAiEngine {
     var pregnancy = 45;
     var iatf = 45;
 
-    if (data.bodyConditionScore >= 3 &&
-        data.bodyConditionScore <= 3.75) {
+    if (data.bodyConditionScore >= 3 && data.bodyConditionScore <= 3.75) {
       heat += 15;
       pregnancy += 15;
       iatf += 12;
       positives.add('Escore corporal em faixa favorável.');
     } else if (data.bodyConditionScore > 0 &&
-        (data.bodyConditionScore < 2.5 ||
-            data.bodyConditionScore > 4.25)) {
+        (data.bodyConditionScore < 2.5 || data.bodyConditionScore > 4.25)) {
       heat -= 18;
       pregnancy -= 20;
       iatf -= 18;
@@ -137,29 +133,23 @@ class AtlasReproductiveAiEngine {
     if (data.daysSinceLastService >= 0 &&
         serviceDate.year > 1900 &&
         data.status == 'Servida') {
-      expectedCalvingDate =
-          serviceDate.add(const Duration(days: 283));
+      expectedCalvingDate = serviceDate.add(const Duration(days: 283));
     }
 
-    final priority = switch (math.min(
-      heat,
-      math.min(pregnancy, iatf),
-    )) {
+    final priority = switch (math.min(heat, math.min(pregnancy, iatf))) {
       < 35 => 'Alta',
       < 60 => 'Média',
       _ => 'Baixa',
     };
 
     final recommendations = <String>[
-      if (data.bodyConditionScore < 2.5 &&
-          data.bodyConditionScore > 0)
+      if (data.bodyConditionScore < 2.5 && data.bodyConditionScore > 0)
         'Priorizar recuperação do escore corporal antes de novo serviço.',
       if (data.bodyConditionScore > 4.25)
         'Reavaliar condição corporal e estratégia nutricional.',
       if (!data.cycleRegular)
         'Confirmar atividade ovariana e condição uterina com avaliação veterinária.',
-      if (data.daysPostpartum > 0 &&
-          data.daysPostpartum < 45)
+      if (data.daysPostpartum > 0 && data.daysPostpartum < 45)
         'Respeitar o período de recuperação pós-parto e reavaliar posteriormente.',
       if (data.serviceCount >= 3)
         'Investigar repetição de serviço, sanidade uterina, sêmen e execução.',

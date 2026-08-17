@@ -16,14 +16,11 @@ class AtlasEnterprise24AScreen extends StatefulWidget {
       _AtlasEnterprise24AScreenState();
 }
 
-class _AtlasEnterprise24AScreenState
-    extends State<AtlasEnterprise24AScreen> {
+class _AtlasEnterprise24AScreenState extends State<AtlasEnterprise24AScreen> {
   final repository = AtlasEnterprise24ARepository.instance;
   final session = AtlasEnterpriseSessionService.instance;
-  final migration =
-      const AtlasEnterprise24AMigrationService();
-  final authorization =
-      AtlasEnterpriseAuthorizationService.instance;
+  final migration = const AtlasEnterprise24AMigrationService();
+  final authorization = AtlasEnterpriseAuthorizationService.instance;
   final audit = AtlasEnterpriseAuditService.instance;
 
   AtlasEnterprise24ASnapshot? snapshot;
@@ -94,15 +91,12 @@ class _AtlasEnterprise24AScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop(
-                name.text.trim().isNotEmpty,
-              );
+              Navigator.of(dialogContext).pop(name.text.trim().isNotEmpty);
             },
             child: const Text('Criar'),
           ),
@@ -111,9 +105,7 @@ class _AtlasEnterprise24AScreenState
     );
 
     if (create == true) {
-      await authorization.require(
-        'enterprise.companies.manage',
-      );
+      await authorization.require('enterprise.companies.manage');
       final userId = session.currentUserId ?? 'user_admin';
       final company = await repository.createCompany(
         name: name.text,
@@ -145,9 +137,9 @@ class _AtlasEnterprise24AScreenState
       await _reload();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     }
   }
 
@@ -157,9 +149,9 @@ class _AtlasEnterprise24AScreenState
       await _reload();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     }
   }
 
@@ -206,9 +198,7 @@ class _AtlasEnterprise24AScreenState
                   value: lead,
                   title: const Text('Consultor principal'),
                   onChanged: (value) {
-                    setDialogState(
-                      () => lead = value == true,
-                    );
+                    setDialogState(() => lead = value == true);
                   },
                 ),
                 const Divider(),
@@ -239,15 +229,13 @@ class _AtlasEnterprise24AScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(
-                  name.text.trim().isNotEmpty &&
-                      email.text.trim().isNotEmpty,
+                  name.text.trim().isNotEmpty && email.text.trim().isNotEmpty,
                 );
               },
               child: const Text('Vincular'),
@@ -258,11 +246,8 @@ class _AtlasEnterprise24AScreenState
     );
 
     if (save == true) {
-      await authorization.require(
-        'enterprise.users.invite',
-      );
-      final normalizedEmail =
-          email.text.trim().toLowerCase();
+      await authorization.require('enterprise.users.invite');
+      final normalizedEmail = email.text.trim().toLowerCase();
       final userId =
           'consultant_${normalizedEmail.replaceAll(RegExp(r'[^a-z0-9]+'), '_')}';
 
@@ -288,8 +273,7 @@ class _AtlasEnterprise24AScreenState
         module: 'enterprise',
         entityType: 'consultant_link',
         entityId: link.id,
-        description:
-            'Consultor "${link.consultantName}" vinculado.',
+        description: 'Consultor "${link.consultantName}" vinculado.',
         companyId: current,
         userId: session.currentUserId ?? 'user_admin',
         after: link.toMap(),
@@ -310,10 +294,8 @@ class _AtlasEnterprise24AScreenState
     final companyId = session.currentCompanyId;
     if (userId == null || companyId == null) return;
 
-    final companies =
-        await repository.companiesForUser(userId);
-    final allowedFarms =
-        await repository.farmsAllowedForUser(
+    final companies = await repository.companiesForUser(userId);
+    final allowedFarms = await repository.farmsAllowedForUser(
       companyId: companyId,
       userId: userId,
     );
@@ -334,22 +316,19 @@ class _AtlasEnterprise24AScreenState
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          leakFound
-              ? 'Falha no teste de isolamento'
-              : 'Isolamento validado',
+          leakFound ? 'Falha no teste de isolamento' : 'Isolamento validado',
         ),
         content: Text(
           leakFound
               ? 'Uma fazenda de outra empresa apareceu na carteira autorizada.'
               : 'Usuário: $userId\n'
-                  'Empresas autorizadas: ${companies.length}\n'
-                  'Fazendas visíveis na empresa atual: ${allowedFarms.length}\n\n'
-                  'Nenhuma fazenda de outra empresa foi exposta pelo repositório 24A.',
+                    'Empresas autorizadas: ${companies.length}\n'
+                    'Fazendas visíveis na empresa atual: ${allowedFarms.length}\n\n'
+                    'Nenhuma fazenda de outra empresa foi exposta pelo repositório 24A.',
         ),
         actions: [
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Fechar'),
           ),
         ],
@@ -359,9 +338,7 @@ class _AtlasEnterprise24AScreenState
 
   Future<void> _open24B() {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const AtlasEnterprise24BScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const AtlasEnterprise24BScreen()),
     );
   }
 
@@ -402,15 +379,12 @@ class _AtlasEnterprise24AScreenState
           ),
         ),
         body: loading || value == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _CompaniesTab(
                     snapshot: value,
-                    currentCompanyId:
-                        session.currentCompanyId,
+                    currentCompanyId: session.currentCompanyId,
                     onCreate: _createCompany,
                     onSwitch: _switchCompany,
                   ),
@@ -418,8 +392,7 @@ class _AtlasEnterprise24AScreenState
                     farms: value.farms
                         .where(
                           (item) =>
-                              item.scope.companyId ==
-                              session.currentCompanyId,
+                              item.scope.companyId == session.currentCompanyId,
                         )
                         .toList(),
                     currentFarmId: session.currentFarmId,
@@ -475,17 +448,14 @@ class _CompaniesTab extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             itemCount: snapshot.companies.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(height: 8),
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final item = snapshot.companies[index];
               final selected = item.id == currentCompanyId;
               return Card(
                 child: ListTile(
                   leading: Icon(
-                    selected
-                        ? Icons.business
-                        : Icons.business_outlined,
+                    selected ? Icons.business : Icons.business_outlined,
                   ),
                   title: Text(item.name),
                   subtitle: Text(
@@ -523,16 +493,13 @@ class _PortfolioTab extends StatelessWidget {
   Widget build(BuildContext context) {
     if (farms.isEmpty) {
       return const Center(
-        child: Text(
-          'Nenhuma fazenda migrada para a empresa atual.',
-        ),
+        child: Text('Nenhuma fazenda migrada para a empresa atual.'),
       );
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: farms.length + 1,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         if (index == 0) {
           return Card(
@@ -581,10 +548,7 @@ class _ConsultantsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final links = snapshot.consultantLinks
-        .where(
-          (item) =>
-              item.companyId == companyId && item.active,
-        )
+        .where((item) => item.companyId == companyId && item.active)
         .toList();
 
     return Column(
@@ -603,20 +567,12 @@ class _ConsultantsTab extends StatelessWidget {
         Expanded(
           child: links.isEmpty
               ? const Center(
-                  child: Text(
-                    'Nenhum consultor vinculado à empresa atual.',
-                  ),
+                  child: Text('Nenhum consultor vinculado à empresa atual.'),
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: links.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = links[index];
                     final farms = item.farmIds.isEmpty
@@ -624,14 +580,11 @@ class _ConsultantsTab extends StatelessWidget {
                         : '${item.farmIds.length} fazenda(s)';
                     return Card(
                       child: ListTile(
-                        leading:
-                            const Icon(Icons.support_agent),
+                        leading: const Icon(Icons.support_agent),
                         title: Text(item.consultantName),
                         subtitle: Text(farms),
                         trailing: item.isLeadConsultant
-                            ? const Chip(
-                                label: Text('Principal'),
-                              )
+                            ? const Chip(label: Text('Principal'))
                             : null,
                       ),
                     );
@@ -665,12 +618,8 @@ class _MigrationTab extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.system_update_alt),
             title: const Text('Migração 24A'),
-            subtitle: Text(
-              'Versão aplicada: ${snapshot.migrationVersion}',
-            ),
-            trailing: const Icon(
-              Icons.check_circle_outline,
-            ),
+            subtitle: Text('Versão aplicada: ${snapshot.migrationVersion}'),
+            trailing: const Icon(Icons.check_circle_outline),
           ),
         ),
         Card(
@@ -684,36 +633,27 @@ class _MigrationTab extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.business_outlined),
             title: const Text('companyId / tenantId ativo'),
-            subtitle: Text(
-              session?.companyId ?? 'Não definido',
-            ),
+            subtitle: Text(session?.companyId ?? 'Não definido'),
           ),
         ),
         Card(
           child: ListTile(
             leading: const Icon(Icons.landscape_outlined),
             title: const Text('farmId ativo'),
-            subtitle: Text(
-              session?.farmId ?? 'Todas as autorizadas',
-            ),
+            subtitle: Text(session?.farmId ?? 'Todas as autorizadas'),
           ),
         ),
         const SizedBox(height: 8),
         FilledButton.icon(
           onPressed: onTest,
           icon: const Icon(Icons.security),
-          label: const Text(
-            'Executar teste de isolamento multiempresa',
-          ),
+          label: const Text('Executar teste de isolamento multiempresa'),
         ),
         if (report != null) ...[
           const SizedBox(height: 16),
           const Text(
             'Relatório da migração',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           ...report!.messages.map(

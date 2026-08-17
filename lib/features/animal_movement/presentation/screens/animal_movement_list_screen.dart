@@ -51,9 +51,8 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
       records.where((record) => record.type == 'Mudança de lote').length;
   int get paddockChanges =>
       records.where((record) => record.type == 'Mudança de piquete').length;
-  int get exits => records
-      .where((record) => record.type == 'Saída da propriedade')
-      .length;
+  int get exits =>
+      records.where((record) => record.type == 'Saída da propriedade').length;
 
   String get currentLocation {
     for (final record in records) {
@@ -85,10 +84,7 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
       );
       usingRemote = true;
     } on AtlasEnterpriseApiException catch (error) {
-      groups = await herdLocal.loadGroups(
-        widget.farm.name,
-        farmId: farmId,
-      );
+      groups = await herdLocal.loadGroups(widget.farm.name, farmId: farmId);
       records = await localStorage.loadRecords(
         farmName: widget.farm.name,
         groupName: widget.group.name,
@@ -97,10 +93,7 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
       usingRemote = false;
       errorMessage = 'Modo local: ${error.message}';
     } catch (_) {
-      groups = await herdLocal.loadGroups(
-        widget.farm.name,
-        farmId: farmId,
-      );
+      groups = await herdLocal.loadGroups(widget.farm.name, farmId: farmId);
       records = await localStorage.loadRecords(
         farmName: widget.farm.name,
         groupName: widget.group.name,
@@ -118,8 +111,10 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
   }
 
   void sortRecords() {
-    records.sort((first, second) =>
-        parseDate(second.date).compareTo(parseDate(first.date)));
+    records.sort(
+      (first, second) =>
+          parseDate(second.date).compareTo(parseDate(first.date)),
+    );
   }
 
   DateTime parseDate(String value) {
@@ -198,9 +193,9 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -243,9 +238,7 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
     if (record.isRemote) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Movimentações sincronizadas não podem ser excluídas.',
-          ),
+          content: Text('Movimentações sincronizadas não podem ser excluídas.'),
         ),
       );
       return;
@@ -317,10 +310,19 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _SummaryCard(label: 'Mudanças de lote', value: lotChanges),
-                      _SummaryCard(label: 'Mudanças de piquete', value: paddockChanges),
+                      _SummaryCard(
+                        label: 'Mudanças de lote',
+                        value: lotChanges,
+                      ),
+                      _SummaryCard(
+                        label: 'Mudanças de piquete',
+                        value: paddockChanges,
+                      ),
                       _SummaryCard(label: 'Saídas', value: exits),
-                      _SummaryCard(label: 'Local atual', textValue: currentLocation),
+                      _SummaryCard(
+                        label: 'Local atual',
+                        textValue: currentLocation,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -356,8 +358,14 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
                               if (value == 'delete') deleteLocalRecord(record);
                             },
                             itemBuilder: (_) => const [
-                              PopupMenuItem(value: 'edit', child: Text('Editar')),
-                              PopupMenuItem(value: 'delete', child: Text('Excluir')),
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Editar'),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Excluir'),
+                              ),
                             ],
                           ),
                         ),
@@ -372,11 +380,7 @@ class _AnimalMovementListScreenState extends State<AnimalMovementListScreen> {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.label,
-    this.value,
-    this.textValue,
-  });
+  const _SummaryCard({required this.label, this.value, this.textValue});
 
   final String label;
   final int? value;
@@ -396,7 +400,10 @@ class _SummaryCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 textValue ?? value.toString(),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

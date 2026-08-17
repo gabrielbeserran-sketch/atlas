@@ -5,10 +5,7 @@ import 'package:projeto_atlas/features/strategic_alignment/domain/services/atlas
 import 'package:projeto_atlas/features/strategy_execution/data/services/atlas_strategy_execution_repository.dart';
 
 class AtlasStrategicAlignmentScreen extends StatefulWidget {
-  const AtlasStrategicAlignmentScreen({
-    super.key,
-    this.farmId,
-  });
+  const AtlasStrategicAlignmentScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -30,20 +27,13 @@ class _AtlasStrategicAlignmentScreenState
   }
 
   Future<void> _load() async {
-    final plans =
-        await AtlasStrategyExecutionRepository.instance
-            .loadAll();
+    final plans = await AtlasStrategyExecutionRepository.instance.loadAll();
 
     final filtered = widget.farmId == null
         ? plans
-        : plans
-            .where(
-              (item) => item.farmId == widget.farmId,
-            )
-            .toList();
+        : plans.where((item) => item.farmId == widget.farmId).toList();
 
-    final generated =
-        const AtlasStrategicAlignmentEngine().assess(
+    final generated = const AtlasStrategicAlignmentEngine().assess(
       plans: filtered,
     );
 
@@ -66,9 +56,7 @@ class _AtlasStrategicAlignmentScreenState
       appBar: AppBar(
         title: const Text(
           'Strategic Alignment & OKR',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -84,9 +72,7 @@ class _AtlasStrategicAlignmentScreenState
                 ),
               );
             },
-            icon: const Icon(
-              Icons.auto_graph_outlined,
-            ),
+            icon: const Icon(Icons.auto_graph_outlined),
           ),
           IconButton(
             tooltip: 'Atualizar alinhamento',
@@ -97,58 +83,45 @@ class _AtlasStrategicAlignmentScreenState
         ],
       ),
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : current == null ||
-                  current.items.isEmpty
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1240),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(assessment: current),
-                        const SizedBox(height: 22),
-                        const _SectionTitle(
-                          title: 'Objetivos estratégicos',
-                          subtitle:
-                              'OKRs consolidados da propriedade e progresso dos resultados-chave.',
-                        ),
-                        const SizedBox(height: 12),
-                        ...current.objectives.map(
-                          (objective) => _ObjectiveCard(
-                            objective: objective,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        const _SectionTitle(
-                          title:
-                              'Alinhamento das estratégias',
-                          subtitle:
-                              'Contribuição de cada plano para os objetivos prioritários da fazenda.',
-                        ),
-                        const SizedBox(height: 12),
-                        ...current.items.map(
-                          (item) => _AlignmentCard(
-                            item: item,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const Center(child: CircularProgressIndicator())
+          : current == null || current.items.isEmpty
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(assessment: current),
+                    const SizedBox(height: 22),
+                    const _SectionTitle(
+                      title: 'Objetivos estratégicos',
+                      subtitle:
+                          'OKRs consolidados da propriedade e progresso dos resultados-chave.',
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    ...current.objectives.map(
+                      (objective) => _ObjectiveCard(objective: objective),
+                    ),
+                    const SizedBox(height: 22),
+                    const _SectionTitle(
+                      title: 'Alinhamento das estratégias',
+                      subtitle:
+                          'Contribuição de cada plano para os objetivos prioritários da fazenda.',
+                    ),
+                    const SizedBox(height: 12),
+                    ...current.items.map((item) => _AlignmentCard(item: item)),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.assessment,
-  });
+  const _Hero({required this.assessment});
 
   final AtlasStrategicAlignmentAssessment assessment;
 
@@ -167,14 +140,11 @@ class _Hero extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Estratégia conectada à execução',
-            style: TextStyle(
-              color: Colors.white70,
-            ),
+            style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 5),
           const Text(
@@ -192,28 +162,23 @@ class _Hero extends StatelessWidget {
             children: [
               _HeroMetric(
                 label: 'Alinhamento geral',
-                value:
-                    '${assessment.overallAlignment.toStringAsFixed(1)}%',
+                value: '${assessment.overallAlignment.toStringAsFixed(1)}%',
               ),
               _HeroMetric(
                 label: 'Progresso dos objetivos',
-                value:
-                    '${assessment.objectiveProgress.toStringAsFixed(1)}%',
+                value: '${assessment.objectiveProgress.toStringAsFixed(1)}%',
               ),
               _HeroMetric(
                 label: 'Objetivos',
-                value:
-                    '${assessment.objectives.length}',
+                value: '${assessment.objectives.length}',
               ),
               _HeroMetric(
                 label: 'Estratégias sem alinhamento',
-                value:
-                    '${assessment.unalignedStrategies}',
+                value: '${assessment.unalignedStrategies}',
               ),
               _HeroMetric(
                 label: 'Alinhamento fraco',
-                value:
-                    '${assessment.weakStrategies}',
+                value: '${assessment.weakStrategies}',
               ),
             ],
           ),
@@ -224,9 +189,7 @@ class _Hero extends StatelessWidget {
 }
 
 class _ObjectiveCard extends StatelessWidget {
-  const _ObjectiveCard({
-    required this.objective,
-  });
+  const _ObjectiveCard({required this.objective});
 
   final AtlasStrategicObjective objective;
 
@@ -234,22 +197,17 @@ class _ObjectiveCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ExpansionTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.flag_outlined),
-        ),
+        leading: const CircleAvatar(child: Icon(Icons.flag_outlined)),
         title: Text(
           objective.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${atlasStrategicHorizonLabel(objective.horizon)} · '
           'peso ${objective.weightPercent.toStringAsFixed(0)}% · '
           'progresso ${objective.progressPercent.toStringAsFixed(1)}%',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Align(
             alignment: Alignment.centerLeft,
@@ -257,8 +215,7 @@ class _ObjectiveCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           LinearProgressIndicator(
-            value: (objective.progressPercent / 100)
-                .clamp(0.0, 1.0),
+            value: (objective.progressPercent / 100).clamp(0.0, 1.0),
             minHeight: 8,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -266,9 +223,7 @@ class _ObjectiveCard extends StatelessWidget {
           ...objective.keyResults.map(
             (result) => ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(
-                Icons.track_changes_outlined,
-              ),
+              leading: const Icon(Icons.track_changes_outlined),
               title: Text(result.title),
               subtitle: Text(
                 '${result.currentValue.toStringAsFixed(1)} '
@@ -278,9 +233,7 @@ class _ObjectiveCard extends StatelessWidget {
               ),
               trailing: Text(
                 '${result.progressPercent.toStringAsFixed(1)}%',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -291,9 +244,7 @@ class _ObjectiveCard extends StatelessWidget {
 }
 
 class _AlignmentCard extends StatelessWidget {
-  const _AlignmentCard({
-    required this.item,
-  });
+  const _AlignmentCard({required this.item});
 
   final AtlasStrategyAlignmentItem item;
 
@@ -304,26 +255,19 @@ class _AlignmentCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            Icons.align_horizontal_left_outlined,
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(Icons.align_horizontal_left_outlined, color: color),
         ),
         title: Text(
           item.plan.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${atlasAlignmentStatusLabel(item.status)} · '
           '${item.alignmentScore.toStringAsFixed(1)}% · '
           '${item.objective?.title ?? 'Sem objetivo'}',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Wrap(
             spacing: 12,
@@ -331,23 +275,19 @@ class _AlignmentCard extends StatelessWidget {
             children: [
               _Metric(
                 label: 'Alinhamento',
-                value:
-                    '${item.alignmentScore.toStringAsFixed(1)}%',
+                value: '${item.alignmentScore.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Contribuição',
-                value:
-                    '${item.contributionScore.toStringAsFixed(1)}%',
+                value: '${item.contributionScore.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Confiança de execução',
-                value:
-                    '${item.executionConfidence.toStringAsFixed(1)}%',
+                value: '${item.executionConfidence.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Progresso do plano',
-                value:
-                    '${item.plan.progressPercent.toStringAsFixed(1)}%',
+                value: '${item.plan.progressPercent.toStringAsFixed(1)}%',
               ),
             ],
           ),
@@ -366,10 +306,7 @@ class _AlignmentCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -377,30 +314,18 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 165),
+      constraints: const BoxConstraints(minWidth: 165),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F6F8),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -408,10 +333,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -419,24 +341,16 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 160),
+      constraints: const BoxConstraints(minWidth: 160),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color:
-            Colors.white.withValues(alpha: 0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -453,10 +367,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -464,23 +375,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -497,25 +399,17 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.flag_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.flag_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existem estratégias para alinhar.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Crie planos de execução antes de avaliar objetivos e OKRs.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -524,9 +418,7 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-Color _statusColor(
-  AtlasAlignmentStatus status,
-) {
+Color _statusColor(AtlasAlignmentStatus status) {
   switch (status) {
     case AtlasAlignmentStatus.strong:
       return const Color(0xFF2E7D32);

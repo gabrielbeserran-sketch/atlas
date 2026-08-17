@@ -10,9 +10,7 @@ enum AtlasHealthEventType {
   biosecurity,
 }
 
-String atlasHealthEventTypeLabel(
-  AtlasHealthEventType type,
-) {
+String atlasHealthEventTypeLabel(AtlasHealthEventType type) {
   switch (type) {
     case AtlasHealthEventType.vaccination:
       return 'Vacinação';
@@ -57,28 +55,25 @@ class AtlasHealthProtocol {
   final String? farmName;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'description': description,
-        'targetGroup': targetGroup,
-        'frequencyDays': frequencyDays,
-        'nextDueAt': nextDueAt.toIso8601String(),
-        'active': active,
-        'farmName': farmName,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'targetGroup': targetGroup,
+    'frequencyDays': frequencyDays,
+    'nextDueAt': nextDueAt.toIso8601String(),
+    'active': active,
+    'farmName': farmName,
+  };
 
-  factory AtlasHealthProtocol.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasHealthProtocol.fromMap(Map<String, dynamic> map) {
     return AtlasHealthProtocol(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       targetGroup: map['targetGroup']?.toString() ?? '',
       frequencyDays: _int(map['frequencyDays']),
-      nextDueAt: DateTime.tryParse(
-            map['nextDueAt']?.toString() ?? '',
-          ) ??
+      nextDueAt:
+          DateTime.tryParse(map['nextDueAt']?.toString() ?? '') ??
           DateTime.now(),
       active: map['active'] != false,
       farmName: map['farmName']?.toString(),
@@ -116,37 +111,31 @@ class AtlasMedication {
   final int withdrawalDays;
   final String? farmName;
 
-  bool get isExpired =>
-      expirationAt.isBefore(DateTime.now());
+  bool get isExpired => expirationAt.isBefore(DateTime.now());
 
   bool get expiresSoon =>
-      !isExpired &&
-      expirationAt.difference(DateTime.now()).inDays <= 30;
+      !isExpired && expirationAt.difference(DateTime.now()).inDays <= 30;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'activeIngredient': activeIngredient,
-        'batch': batch,
-        'expirationAt': expirationAt.toIso8601String(),
-        'quantity': quantity,
-        'unit': unit,
-        'withdrawalDays': withdrawalDays,
-        'farmName': farmName,
-      };
+    'id': id,
+    'name': name,
+    'activeIngredient': activeIngredient,
+    'batch': batch,
+    'expirationAt': expirationAt.toIso8601String(),
+    'quantity': quantity,
+    'unit': unit,
+    'withdrawalDays': withdrawalDays,
+    'farmName': farmName,
+  };
 
-  factory AtlasMedication.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasMedication.fromMap(Map<String, dynamic> map) {
     return AtlasMedication(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
-      activeIngredient:
-          map['activeIngredient']?.toString() ?? '',
+      activeIngredient: map['activeIngredient']?.toString() ?? '',
       batch: map['batch']?.toString() ?? '',
-      expirationAt: DateTime.tryParse(
-            map['expirationAt']?.toString() ?? '',
-          ) ??
+      expirationAt:
+          DateTime.tryParse(map['expirationAt']?.toString() ?? '') ??
           DateTime.now(),
       quantity: _double(map['quantity']),
       unit: map['unit']?.toString() ?? '',
@@ -208,27 +197,25 @@ class AtlasHealthEvent {
   final String? farmName;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'animalId': animalId,
-        'animalName': animalName,
-        'lotName': lotName,
-        'paddockName': paddockName,
-        'type': type.name,
-        'occurredAt': occurredAt.toIso8601String(),
-        'diagnosis': diagnosis,
-        'symptoms': symptoms,
-        'medicationId': medicationId,
-        'dose': dose,
-        'professional': professional,
-        'outcome': outcome,
-        'cost': cost,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'animalId': animalId,
+    'animalName': animalName,
+    'lotName': lotName,
+    'paddockName': paddockName,
+    'type': type.name,
+    'occurredAt': occurredAt.toIso8601String(),
+    'diagnosis': diagnosis,
+    'symptoms': symptoms,
+    'medicationId': medicationId,
+    'dose': dose,
+    'professional': professional,
+    'outcome': outcome,
+    'cost': cost,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasHealthEvent.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasHealthEvent.fromMap(Map<String, dynamic> map) {
     return AtlasHealthEvent(
       id: map['id']?.toString() ?? '',
       animalId: map['animalId']?.toString() ?? '',
@@ -239,9 +226,8 @@ class AtlasHealthEvent {
         (value) => value.name == map['type']?.toString(),
         orElse: () => AtlasHealthEventType.examination,
       ),
-      occurredAt: DateTime.tryParse(
-            map['occurredAt']?.toString() ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
           DateTime.now(),
       diagnosis: map['diagnosis']?.toString() ?? '',
       symptoms: map['symptoms']?.toString() ?? '',

@@ -59,32 +59,23 @@ class AtlasPrecisionLivestockAnalyticsService {
     final alerts = moduleRecords.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasPrecisionLivestockRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasPrecisionLivestockRecord) selector) {
       if (moduleRecords.isEmpty) return 0.0;
 
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
-    final averageConfidence =
-        averageOf((record) => record.confidencePercent);
-    final averageRisk =
-        averageOf((record) => record.riskPercent);
-    final averageCurrent =
-        averageOf((record) => record.currentValue);
-    final averageProjected =
-        averageOf((record) => record.projectedValue);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
+    final averageConfidence = averageOf((record) => record.confidencePercent);
+    final averageRisk = averageOf((record) => record.riskPercent);
+    final averageCurrent = averageOf((record) => record.currentValue);
+    final averageProjected = averageOf((record) => record.projectedValue);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
 
     final totalFinancialImpact = moduleRecords.fold<double>(
       0.0,
@@ -142,56 +133,52 @@ class AtlasPrecisionLivestockAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasPrecisionLivestockModule.weightPrediction => const [
-            'Calibre a projeção com pesagens confiáveis e intervalos regulares.',
-            'Exiba horizonte, confiança e desvio esperado junto ao peso projetado.',
-          ],
-        AtlasPrecisionLivestockModule.dailyGainPrediction => const [
-            'Compare ganho observado, projetado e meta por categoria.',
-            'Investigue quedas persistentes de GMD antes de ajustar o manejo.',
-          ],
-        AtlasPrecisionLivestockModule.estimatedIntake => const [
-            'Considere peso vivo, dieta, clima, categoria e disponibilidade.',
-            'Valide estimativas com medições reais sempre que possível.',
-          ],
-        AtlasPrecisionLivestockModule.feedEfficiency => const [
-            'Compare indivíduos somente em condições de manejo equivalentes.',
-            'Separe eficiência biológica de resultado econômico.',
-          ],
-        AtlasPrecisionLivestockModule.feedConversion => const [
-            'Relacione consumo, ganho e custo no mesmo período.',
-            'Revise animais ou lotes persistentemente ineficientes.',
-          ],
-        AtlasPrecisionLivestockModule.animalWelfare => const [
-            'Combine comportamento, locomoção, conforto e interação social.',
-            'Transforme alertas em inspeção e ação de manejo.',
-          ],
-        AtlasPrecisionLivestockModule.earlyDiseaseDetection => const [
-            'Use o módulo como apoio de triagem, não como diagnóstico definitivo.',
-            'Encaminhe sinais relevantes para avaliação médico-veterinária.',
-          ],
-        AtlasPrecisionLivestockModule.heatStress => const [
-            'Associe clima, comportamento, consumo e disponibilidade de sombra e água.',
-            'Aja preventivamente antes dos períodos de maior risco.',
-          ],
-        AtlasPrecisionLivestockModule.mortalityRisk => const [
-            'Documente fatores, horizonte e incerteza da estimativa.',
-            'Priorize intervenções clínicas e de manejo em animais de alto risco.',
-          ],
-        AtlasPrecisionLivestockModule.generalEfficiencyIndex => const [
-            'Mostre pesos e limites de cada componente do índice.',
-            'Evite decisão automática sem análise humana dos indicadores.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasPrecisionLivestockModule.weightPrediction => const [
+        'Calibre a projeção com pesagens confiáveis e intervalos regulares.',
+        'Exiba horizonte, confiança e desvio esperado junto ao peso projetado.',
+      ],
+      AtlasPrecisionLivestockModule.dailyGainPrediction => const [
+        'Compare ganho observado, projetado e meta por categoria.',
+        'Investigue quedas persistentes de GMD antes de ajustar o manejo.',
+      ],
+      AtlasPrecisionLivestockModule.estimatedIntake => const [
+        'Considere peso vivo, dieta, clima, categoria e disponibilidade.',
+        'Valide estimativas com medições reais sempre que possível.',
+      ],
+      AtlasPrecisionLivestockModule.feedEfficiency => const [
+        'Compare indivíduos somente em condições de manejo equivalentes.',
+        'Separe eficiência biológica de resultado econômico.',
+      ],
+      AtlasPrecisionLivestockModule.feedConversion => const [
+        'Relacione consumo, ganho e custo no mesmo período.',
+        'Revise animais ou lotes persistentemente ineficientes.',
+      ],
+      AtlasPrecisionLivestockModule.animalWelfare => const [
+        'Combine comportamento, locomoção, conforto e interação social.',
+        'Transforme alertas em inspeção e ação de manejo.',
+      ],
+      AtlasPrecisionLivestockModule.earlyDiseaseDetection => const [
+        'Use o módulo como apoio de triagem, não como diagnóstico definitivo.',
+        'Encaminhe sinais relevantes para avaliação médico-veterinária.',
+      ],
+      AtlasPrecisionLivestockModule.heatStress => const [
+        'Associe clima, comportamento, consumo e disponibilidade de sombra e água.',
+        'Aja preventivamente antes dos períodos de maior risco.',
+      ],
+      AtlasPrecisionLivestockModule.mortalityRisk => const [
+        'Documente fatores, horizonte e incerteza da estimativa.',
+        'Priorize intervenções clínicas e de manejo em animais de alto risco.',
+      ],
+      AtlasPrecisionLivestockModule.generalEfficiencyIndex => const [
+        'Mostre pesos e limites de cada componente do índice.',
+        'Evite decisão automática sem análise humana dos indicadores.',
+      ],
+    });
 
     return items;
   }

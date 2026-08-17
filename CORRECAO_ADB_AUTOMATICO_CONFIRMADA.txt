@@ -1,0 +1,13 @@
+ATLAS ANDROID 1.0 - CORRECAO ADB AUTOMATICO
+
+O Atlas agora procura o adb.exe automaticamente em:
+- PATH
+- ANDROID_SDK_ROOT
+- ANDROID_HOME
+- android/local.properties
+- %LOCALAPPDATA%/Android/Sdk/platform-tools/adb.exe
+
+Scripts atualizados:
+- scripts/android/atlas_android_common.ps1
+- scripts/android/03_check_android_device.ps1
+- scripts/android/07_install_android_apk.ps1

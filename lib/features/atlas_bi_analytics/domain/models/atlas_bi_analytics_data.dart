@@ -36,8 +36,7 @@ class AtlasBiAnalyticsData {
     return bottlenecks.first;
   }
 
-  AtlasBiInvestmentOpportunity?
-      get bestInvestment {
+  AtlasBiInvestmentOpportunity? get bestInvestment {
     if (investments.isEmpty) {
       return null;
     }
@@ -200,35 +199,15 @@ class AtlasBiAnalyticsInput {
   final double defaultInvestmentValue;
 }
 
-enum AtlasBiAnalyticsSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasBiAnalyticsSeverity { low, medium, high, critical }
 
-enum AtlasBiAnalyticsEffort {
-  low,
-  medium,
-  high,
-}
+enum AtlasBiAnalyticsEffort { low, medium, high }
 
-enum AtlasBiCorrelationStrength {
-  weak,
-  moderate,
-  strong,
-  veryStrong,
-}
+enum AtlasBiCorrelationStrength { weak, moderate, strong, veryStrong }
 
-enum AtlasBiCorrelationDirection {
-  positive,
-  negative,
-  neutral,
-}
+enum AtlasBiCorrelationDirection { positive, negative, neutral }
 
-String atlasBiAnalyticsSeverityLabel(
-  AtlasBiAnalyticsSeverity severity,
-) {
+String atlasBiAnalyticsSeverityLabel(AtlasBiAnalyticsSeverity severity) {
   switch (severity) {
     case AtlasBiAnalyticsSeverity.low:
       return 'Baixa';
@@ -244,9 +223,7 @@ String atlasBiAnalyticsSeverityLabel(
   }
 }
 
-String atlasBiAnalyticsEffortLabel(
-  AtlasBiAnalyticsEffort effort,
-) {
+String atlasBiAnalyticsEffortLabel(AtlasBiAnalyticsEffort effort) {
   switch (effort) {
     case AtlasBiAnalyticsEffort.low:
       return 'Baixo';
@@ -259,9 +236,7 @@ String atlasBiAnalyticsEffortLabel(
   }
 }
 
-String atlasBiCorrelationStrengthLabel(
-  AtlasBiCorrelationStrength strength,
-) {
+String atlasBiCorrelationStrengthLabel(AtlasBiCorrelationStrength strength) {
   switch (strength) {
     case AtlasBiCorrelationStrength.weak:
       return 'Fraca';
@@ -277,9 +252,7 @@ String atlasBiCorrelationStrengthLabel(
   }
 }
 
-String atlasBiCorrelationDirectionLabel(
-  AtlasBiCorrelationDirection direction,
-) {
+String atlasBiCorrelationDirectionLabel(AtlasBiCorrelationDirection direction) {
   switch (direction) {
     case AtlasBiCorrelationDirection.positive:
       return 'Positiva';

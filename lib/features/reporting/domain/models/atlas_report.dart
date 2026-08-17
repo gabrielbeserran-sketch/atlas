@@ -111,9 +111,11 @@ class AtlasReport {
         (AtlasReportStatus item) => item.name == map['status'],
         orElse: () => AtlasReportStatus.draft,
       ),
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(map['updatedAt'] as String? ?? '') ??
+      updatedAt:
+          DateTime.tryParse(map['updatedAt'] as String? ?? '') ??
           DateTime.now(),
       periodLabel: map['periodLabel'] as String? ?? '',
       executiveSummary: map['executiveSummary'] as String? ?? '',
@@ -121,8 +123,10 @@ class AtlasReport {
           .map((dynamic item) => item.toString())
           .toList(),
       kpis: (map['kpis'] as Map<String, dynamic>? ?? const <String, dynamic>{})
-          .map((String key, dynamic value) =>
-              MapEntry<String, double>(key, (value as num).toDouble())),
+          .map(
+            (String key, dynamic value) =>
+                MapEntry<String, double>(key, (value as num).toDouble()),
+          ),
       authorName:
           map['authorName'] as String? ?? 'Beserra Consultoria Veterinária',
     );

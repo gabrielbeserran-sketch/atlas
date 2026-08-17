@@ -9,12 +9,10 @@ class AtlasFarmAuditHistoryService {
   static final AtlasFarmAuditHistoryService instance =
       AtlasFarmAuditHistoryService._();
 
-  static const String _storageKey =
-      'atlas_farm_audit_history_v1';
+  static const String _storageKey = 'atlas_farm_audit_history_v1';
 
   Future<List<AtlasFarmAudit>> loadAll() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     final raw = preferences.getString(_storageKey);
 
@@ -32,15 +30,12 @@ class AtlasFarmAuditHistoryService {
       final audits = decoded
           .whereType<Map>()
           .map(
-            (item) => AtlasFarmAudit.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => AtlasFarmAudit.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
 
       audits.sort(
-        (first, second) =>
-            second.generatedAt.compareTo(first.generatedAt),
+        (first, second) => second.generatedAt.compareTo(first.generatedAt),
       );
 
       return audits;
@@ -49,19 +44,14 @@ class AtlasFarmAuditHistoryService {
     }
   }
 
-  Future<List<AtlasFarmAudit>> byFarmId(
-    String farmId,
-  ) async {
+  Future<List<AtlasFarmAudit>> byFarmId(String farmId) async {
     final all = await loadAll();
 
-    return all
-        .where((item) => item.farmId == farmId)
-        .toList();
+    return all.where((item) => item.farmId == farmId).toList();
   }
 
   Future<void> save(AtlasFarmAudit audit) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     final current = await loadAll();
 
@@ -72,15 +62,12 @@ class AtlasFarmAuditHistoryService {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        limited.map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(limited.map((item) => item.toJson()).toList()),
     );
   }
 
   Future<void> delete(String auditId) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     final current = await loadAll();
 
@@ -88,9 +75,7 @@ class AtlasFarmAuditHistoryService {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        current.map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(current.map((item) => item.toJson()).toList()),
     );
   }
 }

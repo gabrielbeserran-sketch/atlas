@@ -61,10 +61,7 @@ class AtlasDecisionEngineV2ContractAdapter {
     );
   }
 
-  String _resolveFarmId({
-    required String? farmId,
-    required String farmName,
-  }) {
+  String _resolveFarmId({required String? farmId, required String farmName}) {
     final explicitId = farmId?.trim();
     if (explicitId != null && explicitId.isNotEmpty) {
       return explicitId;

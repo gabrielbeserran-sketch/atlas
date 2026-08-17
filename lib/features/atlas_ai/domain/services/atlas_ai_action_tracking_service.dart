@@ -8,8 +8,7 @@ class AtlasAiActionTrackingService {
   List<AtlasAiTrackedAction> importFromMemory({
     required String farmName,
     required AtlasAiMemory memory,
-    required List<AtlasAiTrackedAction>
-        existingActions,
+    required List<AtlasAiTrackedAction> existingActions,
     DateTime? now,
   }) {
     final result = [...existingActions];
@@ -39,17 +38,13 @@ class AtlasAiActionTrackingService {
           farmName: farmName,
           title: action.title,
           description: action.description,
-          expectedResult:
-              action.expectedResult,
+          expectedResult: action.expectedResult,
           area: action.area,
-          deadlineDays:
-              action.deadlineDays,
+          deadlineDays: action.deadlineDays,
           createdAt: currentTime,
           updatedAt: currentTime,
-          status:
-              AtlasAiTrackedActionStatus.pending,
-          sourceQuestion:
-              action.sourceQuestion,
+          status: AtlasAiTrackedActionStatus.pending,
+          sourceQuestion: action.sourceQuestion,
         ),
       );
     }
@@ -60,8 +55,7 @@ class AtlasAiActionTrackingService {
   List<AtlasAiTrackedAction> importFromResponse({
     required String farmName,
     required AtlasAiResponse response,
-    required List<AtlasAiTrackedAction>
-        existingActions,
+    required List<AtlasAiTrackedAction> existingActions,
     DateTime? now,
   }) {
     final result = [...existingActions];
@@ -91,17 +85,13 @@ class AtlasAiActionTrackingService {
           farmName: farmName,
           title: action.title,
           description: action.description,
-          expectedResult:
-              action.expectedResult,
+          expectedResult: action.expectedResult,
           area: action.area,
-          deadlineDays:
-              action.deadlineDays,
+          deadlineDays: action.deadlineDays,
           createdAt: currentTime,
           updatedAt: currentTime,
-          status:
-              AtlasAiTrackedActionStatus.pending,
-          sourceQuestion:
-              response.question,
+          status: AtlasAiTrackedActionStatus.pending,
+          sourceQuestion: response.question,
         ),
       );
     }
@@ -111,8 +101,7 @@ class AtlasAiActionTrackingService {
 
   AtlasAiTrackedAction updateStatus({
     required AtlasAiTrackedAction action,
-    required AtlasAiTrackedActionStatus
-        status,
+    required AtlasAiTrackedActionStatus status,
     String? notes,
     DateTime? now,
   }) {
@@ -122,15 +111,10 @@ class AtlasAiActionTrackingService {
       status: status,
       notes: notes,
       updatedAt: currentTime,
-      completedAt:
-          status ==
-                  AtlasAiTrackedActionStatus
-                      .completed
-              ? currentTime
-              : null,
-      clearCompletedAt:
-          status !=
-              AtlasAiTrackedActionStatus.completed,
+      completedAt: status == AtlasAiTrackedActionStatus.completed
+          ? currentTime
+          : null,
+      clearCompletedAt: status != AtlasAiTrackedActionStatus.completed,
     );
   }
 
@@ -145,40 +129,32 @@ class AtlasAiActionTrackingService {
     );
   }
 
-  AtlasAiActionProgress calculateProgress(
-    List<AtlasAiTrackedAction> actions,
-  ) {
+  AtlasAiActionProgress calculateProgress(List<AtlasAiTrackedAction> actions) {
     final pending = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.pending;
+      return item.status == AtlasAiTrackedActionStatus.pending;
     }).length;
 
     final inProgress = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.inProgress;
+      return item.status == AtlasAiTrackedActionStatus.inProgress;
     }).length;
 
     final completed = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.completed;
+      return item.status == AtlasAiTrackedActionStatus.completed;
     }).length;
 
     final cancelled = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.cancelled;
+      return item.status == AtlasAiTrackedActionStatus.cancelled;
     }).length;
 
     final overdue = actions.where((item) {
       return item.isOverdue;
     }).length;
 
-    final validTotal =
-        actions.length - cancelled;
+    final validTotal = actions.length - cancelled;
 
-    final completionPercent =
-        validTotal <= 0
-            ? 0.0
-            : completed / validTotal * 100;
+    final completionPercent = validTotal <= 0
+        ? 0.0
+        : completed / validTotal * 100;
 
     return AtlasAiActionProgress(
       total: actions.length,
@@ -187,21 +163,15 @@ class AtlasAiActionTrackingService {
       completed: completed,
       cancelled: cancelled,
       overdue: overdue,
-      completionPercent:
-          completionPercent.clamp(
-        0.0,
-        100.0,
-      ),
+      completionPercent: completionPercent.clamp(0.0, 100.0),
     );
   }
 
   String buildProgressSummary({
     required String farmName,
-    required List<AtlasAiTrackedAction>
-        actions,
+    required List<AtlasAiTrackedAction> actions,
   }) {
-    final progress =
-        calculateProgress(actions);
+    final progress = calculateProgress(actions);
 
     if (!progress.hasActions) {
       return 'Ainda não existem ações acompanhadas para a $farmName.';
@@ -250,8 +220,7 @@ class AtlasAiActionTrackingService {
     String secondTitle,
     String secondArea,
   ) {
-    return _normalize(firstTitle) ==
-            _normalize(secondTitle) &&
+    return _normalize(firstTitle) == _normalize(secondTitle) &&
         firstArea == secondArea;
   }
 
@@ -265,9 +234,7 @@ class AtlasAiActionTrackingService {
         '${createdAt.microsecondsSinceEpoch}';
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     return value
         .trim()
         .toLowerCase()
@@ -283,13 +250,7 @@ class AtlasAiActionTrackingService {
         .replaceAll('õ', 'o')
         .replaceAll('ú', 'u')
         .replaceAll('ç', 'c')
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        )
-        .replaceAll(
-          RegExp(r'_+'),
-          '_',
-        );
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/automation_strategy/data/atlas_automation_repository.dart';
 
@@ -58,72 +57,87 @@ class _AtlasAutomationStrategyScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Automação e Estratégia'),
-        actions: [
-          IconButton(onPressed: load, icon: const Icon(Icons.refresh)),
-        ],
+        actions: [IconButton(onPressed: load, icon: const Icon(Icons.refresh))],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-              ? Center(child: Text(error!))
-              : ListView(
-                  padding: const EdgeInsets.all(20),
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _Metric('Regras ativas',
-                            '${dashboard['active_rules'] ?? 0}'),
-                        _Metric('Workflows',
-                            '${dashboard['running_workflows'] ?? 0}'),
-                        _Metric('Objetivos ativos',
-                            '${dashboard['active_objectives'] ?? 0}'),
-                        _Metric('Progresso médio',
-                            '${dashboard['average_objective_progress'] ?? 0}%'),
-                      ],
+                    _Metric(
+                      'Regras ativas',
+                      '${dashboard['active_rules'] ?? 0}',
                     ),
-                    const SizedBox(height: 24),
-                    Text('Regras', style: Theme.of(context).textTheme.titleLarge),
-                    ...rules.take(6).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(Icons.auto_awesome_motion),
-                              title: Text(item['name']?.toString() ?? ''),
-                              subtitle: Text(item['event_type']?.toString() ?? ''),
-                              trailing: Text('${item['priority'] ?? 0}'),
-                            ),
-                          ),
-                        ),
-                    const SizedBox(height: 18),
-                    Text('Agenda', style: Theme.of(context).textTheme.titleLarge),
-                    ...events.take(6).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(Icons.calendar_month),
-                              title: Text(item['title']?.toString() ?? ''),
-                              subtitle: Text(item['category']?.toString() ?? ''),
-                            ),
-                          ),
-                        ),
-                    const SizedBox(height: 18),
-                    Text('Objetivos',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    ...objectives.take(6).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(Icons.flag_outlined),
-                              title: Text(item['title']?.toString() ?? ''),
-                              subtitle: LinearProgressIndicator(
-                                value: ((item['progress_percent'] ?? 0) as num)
-                                        .toDouble() /
-                                    100,
-                              ),
-                            ),
-                          ),
-                        ),
+                    _Metric(
+                      'Workflows',
+                      '${dashboard['running_workflows'] ?? 0}',
+                    ),
+                    _Metric(
+                      'Objetivos ativos',
+                      '${dashboard['active_objectives'] ?? 0}',
+                    ),
+                    _Metric(
+                      'Progresso médio',
+                      '${dashboard['average_objective_progress'] ?? 0}%',
+                    ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                Text('Regras', style: Theme.of(context).textTheme.titleLarge),
+                ...rules
+                    .take(6)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.auto_awesome_motion),
+                          title: Text(item['name']?.toString() ?? ''),
+                          subtitle: Text(item['event_type']?.toString() ?? ''),
+                          trailing: Text('${item['priority'] ?? 0}'),
+                        ),
+                      ),
+                    ),
+                const SizedBox(height: 18),
+                Text('Agenda', style: Theme.of(context).textTheme.titleLarge),
+                ...events
+                    .take(6)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.calendar_month),
+                          title: Text(item['title']?.toString() ?? ''),
+                          subtitle: Text(item['category']?.toString() ?? ''),
+                        ),
+                      ),
+                    ),
+                const SizedBox(height: 18),
+                Text(
+                  'Objetivos',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                ...objectives
+                    .take(6)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.flag_outlined),
+                          title: Text(item['title']?.toString() ?? ''),
+                          subtitle: LinearProgressIndicator(
+                            value:
+                                ((item['progress_percent'] ?? 0) as num)
+                                    .toDouble() /
+                                100,
+                          ),
+                        ),
+                      ),
+                    ),
+              ],
+            ),
     );
   }
 }

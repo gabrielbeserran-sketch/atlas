@@ -29,19 +29,15 @@ class AtlasDecisionTrackingData {
 
   List<AtlasDecisionExecution> get activeExecutions {
     return executions.where((item) {
-      return item.status ==
-              AtlasDecisionExecutionStatus.approved ||
-          item.status ==
-              AtlasDecisionExecutionStatus.inProgress ||
-          item.status ==
-              AtlasDecisionExecutionStatus.delayed;
+      return item.status == AtlasDecisionExecutionStatus.approved ||
+          item.status == AtlasDecisionExecutionStatus.inProgress ||
+          item.status == AtlasDecisionExecutionStatus.delayed;
     }).toList();
   }
 
   List<AtlasDecisionExecution> get completedExecutions {
     return executions.where((item) {
-      return item.status ==
-          AtlasDecisionExecutionStatus.completed;
+      return item.status == AtlasDecisionExecutionStatus.completed;
     }).toList();
   }
 }
@@ -100,10 +96,8 @@ class AtlasDecisionExecution {
   final String notes;
 
   bool get isOverdue {
-    if (status ==
-            AtlasDecisionExecutionStatus.completed ||
-        status ==
-            AtlasDecisionExecutionStatus.cancelled) {
+    if (status == AtlasDecisionExecutionStatus.completed ||
+        status == AtlasDecisionExecutionStatus.cancelled) {
       return false;
     }
 
@@ -115,9 +109,7 @@ class AtlasDecisionExecution {
       return 0;
     }
 
-    return (realizedFinancialImpact /
-            expectedFinancialImpact *
-            100)
+    return (realizedFinancialImpact / expectedFinancialImpact * 100)
         .clamp(0.0, 200.0)
         .toDouble();
   }
@@ -146,19 +138,14 @@ class AtlasDecisionExecution {
       startedAt: startedAt ?? this.startedAt,
       deadline: deadline,
       completedAt: completedAt ?? this.completedAt,
-      progressPercent:
-          progressPercent ?? this.progressPercent,
-      expectedFinancialImpact:
-          expectedFinancialImpact,
+      progressPercent: progressPercent ?? this.progressPercent,
+      expectedFinancialImpact: expectedFinancialImpact,
       realizedFinancialImpact:
-          realizedFinancialImpact ??
-              this.realizedFinancialImpact,
+          realizedFinancialImpact ?? this.realizedFinancialImpact,
       expectedResult: expectedResult,
-      resultSummary:
-          resultSummary ?? this.resultSummary,
+      resultSummary: resultSummary ?? this.resultSummary,
       steps: steps ?? this.steps,
-      measurements:
-          measurements ?? this.measurements,
+      measurements: measurements ?? this.measurements,
       notes: notes ?? this.notes,
     );
   }
@@ -202,8 +189,7 @@ class AtlasDecisionExecutionStepState {
       expectedResult: expectedResult,
       completed: completed ?? this.completed,
       completedAt: completedAt ?? this.completedAt,
-      responsibleName:
-          responsibleName ?? this.responsibleName,
+      responsibleName: responsibleName ?? this.responsibleName,
     );
   }
 }
@@ -239,9 +225,7 @@ enum AtlasDecisionExecutionStatus {
   cancelled,
 }
 
-String atlasDecisionExecutionStatusLabel(
-  AtlasDecisionExecutionStatus status,
-) {
+String atlasDecisionExecutionStatusLabel(AtlasDecisionExecutionStatus status) {
   switch (status) {
     case AtlasDecisionExecutionStatus.approved:
       return 'Aprovada';

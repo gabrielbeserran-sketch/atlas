@@ -4,11 +4,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ex
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_execution_audit_service.dart';
 
 class AtlasExecutionAuditScreen extends StatefulWidget {
-  const AtlasExecutionAuditScreen({
-    this.entityId,
-    this.farmName,
-    super.key,
-  });
+  const AtlasExecutionAuditScreen({this.entityId, this.farmName, super.key});
 
   final String? entityId;
   final String? farmName;
@@ -18,13 +14,11 @@ class AtlasExecutionAuditScreen extends StatefulWidget {
       _AtlasExecutionAuditScreenState();
 }
 
-class _AtlasExecutionAuditScreenState
-    extends State<AtlasExecutionAuditScreen> {
+class _AtlasExecutionAuditScreenState extends State<AtlasExecutionAuditScreen> {
   final AtlasExecutionAuditService service =
       AtlasExecutionAuditService.instance;
 
-  List<AtlasExecutionAuditEntry> entries =
-      <AtlasExecutionAuditEntry>[];
+  List<AtlasExecutionAuditEntry> entries = <AtlasExecutionAuditEntry>[];
   bool isLoading = false;
 
   @override
@@ -60,52 +54,45 @@ class _AtlasExecutionAuditScreenState
         ],
       ),
       body: isLoading && entries.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : entries.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Nenhuma alteração auditada foi registrada.',
-                      textAlign: TextAlign.center,
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Nenhuma alteração auditada foi registrada.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: entries.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final entry = entries[index];
+
+                return Card(
+                  child: ListTile(
+                    leading: const CircleAvatar(child: Icon(Icons.history)),
+                    title: Text(
+                      '${entry.entityTitle} — '
+                      '${entry.fieldName}',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        'De: ${entry.oldValue}\n'
+                        'Para: ${entry.newValue}\n'
+                        '${entry.changedBy} • ${entry.source} • '
+                        '${DateFormat('dd/MM/yyyy HH:mm').format(entry.changedAt)}',
+                      ),
                     ),
                   ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: entries.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final entry = entries[index];
-
-                    return Card(
-                      child: ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.history),
-                        ),
-                        title: Text(
-                          '${entry.entityTitle} — '
-                          '${entry.fieldName}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            'De: ${entry.oldValue}\n'
-                            'Para: ${entry.newValue}\n'
-                            '${entry.changedBy} • ${entry.source} • '
-                            '${DateFormat('dd/MM/yyyy HH:mm').format(entry.changedAt)}',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                );
+              },
+            ),
     );
   }
 }

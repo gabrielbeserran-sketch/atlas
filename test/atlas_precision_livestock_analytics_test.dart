@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_precision_livestock/domain/models/a
 import 'package:projeto_atlas/features/atlas_precision_livestock/domain/services/atlas_precision_livestock_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasPrecisionLivestockAnalyticsService();
+  const service = AtlasPrecisionLivestockAnalyticsService();
 
   test('calculates precision livestock analytics', () {
     final records = [
       AtlasPrecisionLivestockRecord(
         id: '1',
-        module:
-            AtlasPrecisionLivestockModule.weightPrediction,
+        module: AtlasPrecisionLivestockModule.weightPrediction,
         feature: 'Peso projetado',
         title: 'Projeção 90 dias',
         date: '04/08/2026',
@@ -36,8 +34,7 @@ void main() {
       ),
       AtlasPrecisionLivestockRecord(
         id: '2',
-        module:
-            AtlasPrecisionLivestockModule.weightPrediction,
+        module: AtlasPrecisionLivestockModule.weightPrediction,
         feature: 'Desvio e confiança',
         title: 'Revisão pendente',
         date: '04/08/2026',
@@ -63,8 +60,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasPrecisionLivestockModule.weightPrediction,
+      module: AtlasPrecisionLivestockModule.weightPrediction,
       records: records,
     );
 

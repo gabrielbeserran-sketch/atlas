@@ -210,18 +210,9 @@ enum AtlasExecutiveIntelligenceMaturity {
   autonomous,
 }
 
-enum AtlasExecutiveIntelligenceSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveIntelligenceSeverity { low, medium, high, critical }
 
-enum AtlasExecutiveCascadeDirection {
-  positive,
-  negative,
-  neutral,
-}
+enum AtlasExecutiveCascadeDirection { positive, negative, neutral }
 
 enum AtlasExecutiveInsightType {
   rootCause,
@@ -233,12 +224,7 @@ enum AtlasExecutiveInsightType {
   strategic,
 }
 
-enum AtlasExecutiveInsightPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveInsightPriority { low, medium, high, critical }
 
 String atlasExecutiveIntelligenceMaturityLabel(
   AtlasExecutiveIntelligenceMaturity maturity,
@@ -294,9 +280,7 @@ String atlasExecutiveCascadeDirectionLabel(
   }
 }
 
-String atlasExecutiveInsightTypeLabel(
-  AtlasExecutiveInsightType type,
-) {
+String atlasExecutiveInsightTypeLabel(AtlasExecutiveInsightType type) {
   switch (type) {
     case AtlasExecutiveInsightType.rootCause:
       return 'Causa-raiz';

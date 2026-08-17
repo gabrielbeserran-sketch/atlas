@@ -13,127 +13,116 @@ enum AtlasIotModule {
 
 extension AtlasIotModuleX on AtlasIotModule {
   String get code => switch (this) {
-        AtlasIotModule.smartScales => 'smart_scales',
-        AtlasIotModule.rfidTags => 'rfid_tags',
-        AtlasIotModule.smartCollars => 'smart_collars',
-        AtlasIotModule.environmentalSensors =>
-          'environmental_sensors',
-        AtlasIotModule.waterSensors => 'water_sensors',
-        AtlasIotModule.energySensors => 'energy_sensors',
-        AtlasIotModule.weatherStations => 'weather_stations',
-        AtlasIotModule.drones => 'drones',
-        AtlasIotModule.satellites => 'satellites',
-        AtlasIotModule.iotCommandCenter => 'iot_command_center',
-      };
+    AtlasIotModule.smartScales => 'smart_scales',
+    AtlasIotModule.rfidTags => 'rfid_tags',
+    AtlasIotModule.smartCollars => 'smart_collars',
+    AtlasIotModule.environmentalSensors => 'environmental_sensors',
+    AtlasIotModule.waterSensors => 'water_sensors',
+    AtlasIotModule.energySensors => 'energy_sensors',
+    AtlasIotModule.weatherStations => 'weather_stations',
+    AtlasIotModule.drones => 'drones',
+    AtlasIotModule.satellites => 'satellites',
+    AtlasIotModule.iotCommandCenter => 'iot_command_center',
+  };
 
   String get title => switch (this) {
-        AtlasIotModule.smartScales =>
-          'Integração com Balanças',
-        AtlasIotModule.rfidTags =>
-          'Brincos Eletrônicos RFID',
-        AtlasIotModule.smartCollars =>
-          'Colares Inteligentes',
-        AtlasIotModule.environmentalSensors =>
-          'Sensores Ambientais',
-        AtlasIotModule.waterSensors =>
-          'Sensores de Água',
-        AtlasIotModule.energySensors =>
-          'Sensores de Energia',
-        AtlasIotModule.weatherStations =>
-          'Estações Meteorológicas',
-        AtlasIotModule.drones =>
-          'Integração com Drones',
-        AtlasIotModule.satellites =>
-          'Integração com Satélites',
-        AtlasIotModule.iotCommandCenter =>
-          'Central IoT',
-      };
+    AtlasIotModule.smartScales => 'Integração com Balanças',
+    AtlasIotModule.rfidTags => 'Brincos Eletrônicos RFID',
+    AtlasIotModule.smartCollars => 'Colares Inteligentes',
+    AtlasIotModule.environmentalSensors => 'Sensores Ambientais',
+    AtlasIotModule.waterSensors => 'Sensores de Água',
+    AtlasIotModule.energySensors => 'Sensores de Energia',
+    AtlasIotModule.weatherStations => 'Estações Meteorológicas',
+    AtlasIotModule.drones => 'Integração com Drones',
+    AtlasIotModule.satellites => 'Integração com Satélites',
+    AtlasIotModule.iotCommandCenter => 'Central IoT',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasIotModule.smartScales => 'Pacote 121',
-        AtlasIotModule.rfidTags => 'Pacote 122',
-        AtlasIotModule.smartCollars => 'Pacote 123',
-        AtlasIotModule.environmentalSensors => 'Pacote 124',
-        AtlasIotModule.waterSensors => 'Pacote 125',
-        AtlasIotModule.energySensors => 'Pacote 126',
-        AtlasIotModule.weatherStations => 'Pacote 127',
-        AtlasIotModule.drones => 'Pacote 128',
-        AtlasIotModule.satellites => 'Pacote 129',
-        AtlasIotModule.iotCommandCenter => 'Pacote 130',
-      };
+    AtlasIotModule.smartScales => 'Pacote 121',
+    AtlasIotModule.rfidTags => 'Pacote 122',
+    AtlasIotModule.smartCollars => 'Pacote 123',
+    AtlasIotModule.environmentalSensors => 'Pacote 124',
+    AtlasIotModule.waterSensors => 'Pacote 125',
+    AtlasIotModule.energySensors => 'Pacote 126',
+    AtlasIotModule.weatherStations => 'Pacote 127',
+    AtlasIotModule.drones => 'Pacote 128',
+    AtlasIotModule.satellites => 'Pacote 129',
+    AtlasIotModule.iotCommandCenter => 'Pacote 130',
+  };
 
   List<String> get features => switch (this) {
-        AtlasIotModule.smartScales => const [
-            'Cadastro de balanças',
-            'Leituras de peso',
-            'Calibração',
-            'Sincronização',
-            'Alertas de inconsistência',
-          ],
-        AtlasIotModule.rfidTags => const [
-            'Cadastro de brincos',
-            'Associação com animais',
-            'Leituras RFID',
-            'Movimentações',
-            'Perdas e substituições',
-          ],
-        AtlasIotModule.smartCollars => const [
-            'Cadastro de colares',
-            'Atividade animal',
-            'Ruminação',
-            'Localização',
-            'Alertas comportamentais',
-          ],
-        AtlasIotModule.environmentalSensors => const [
-            'Temperatura',
-            'Umidade',
-            'Qualidade do ar',
-            'Conforto térmico',
-            'Alertas ambientais',
-          ],
-        AtlasIotModule.waterSensors => const [
-            'Nível de reservatórios',
-            'Vazão',
-            'Qualidade da água',
-            'Consumo',
-            'Alertas de abastecimento',
-          ],
-        AtlasIotModule.energySensors => const [
-            'Consumo de energia',
-            'Demanda',
-            'Picos e anomalias',
-            'Disponibilidade',
-            'Alertas elétricos',
-          ],
-        AtlasIotModule.weatherStations => const [
-            'Temperatura e umidade',
-            'Chuva',
-            'Vento',
-            'Pressão',
-            'Sincronização meteorológica',
-          ],
-        AtlasIotModule.drones => const [
-            'Cadastro de aeronaves',
-            'Planos de voo',
-            'Imagens e vídeos',
-            'Inspeções',
-            'Alertas operacionais',
-          ],
-        AtlasIotModule.satellites => const [
-            'Fontes de imagem',
-            'Cobertura',
-            'Índices espectrais',
-            'Atualizações',
-            'Alertas de mudança',
-          ],
-        AtlasIotModule.iotCommandCenter => const [
-            'Dispositivos conectados',
-            'Status em tempo real',
-            'Eventos e alertas',
-            'Saúde da rede',
-            'Painel consolidado',
-          ],
-      };
+    AtlasIotModule.smartScales => const [
+      'Cadastro de balanças',
+      'Leituras de peso',
+      'Calibração',
+      'Sincronização',
+      'Alertas de inconsistência',
+    ],
+    AtlasIotModule.rfidTags => const [
+      'Cadastro de brincos',
+      'Associação com animais',
+      'Leituras RFID',
+      'Movimentações',
+      'Perdas e substituições',
+    ],
+    AtlasIotModule.smartCollars => const [
+      'Cadastro de colares',
+      'Atividade animal',
+      'Ruminação',
+      'Localização',
+      'Alertas comportamentais',
+    ],
+    AtlasIotModule.environmentalSensors => const [
+      'Temperatura',
+      'Umidade',
+      'Qualidade do ar',
+      'Conforto térmico',
+      'Alertas ambientais',
+    ],
+    AtlasIotModule.waterSensors => const [
+      'Nível de reservatórios',
+      'Vazão',
+      'Qualidade da água',
+      'Consumo',
+      'Alertas de abastecimento',
+    ],
+    AtlasIotModule.energySensors => const [
+      'Consumo de energia',
+      'Demanda',
+      'Picos e anomalias',
+      'Disponibilidade',
+      'Alertas elétricos',
+    ],
+    AtlasIotModule.weatherStations => const [
+      'Temperatura e umidade',
+      'Chuva',
+      'Vento',
+      'Pressão',
+      'Sincronização meteorológica',
+    ],
+    AtlasIotModule.drones => const [
+      'Cadastro de aeronaves',
+      'Planos de voo',
+      'Imagens e vídeos',
+      'Inspeções',
+      'Alertas operacionais',
+    ],
+    AtlasIotModule.satellites => const [
+      'Fontes de imagem',
+      'Cobertura',
+      'Índices espectrais',
+      'Atualizações',
+      'Alertas de mudança',
+    ],
+    AtlasIotModule.iotCommandCenter => const [
+      'Dispositivos conectados',
+      'Status em tempo real',
+      'Eventos e alertas',
+      'Saúde da rede',
+      'Painel consolidado',
+    ],
+  };
 }
 
 class AtlasIotRecord {
@@ -229,15 +218,11 @@ class AtlasIotRecord {
       deviceId: map['deviceId']?.toString() ?? '',
       location: map['location']?.toString() ?? '',
       metricName: map['metricName']?.toString() ?? '',
-      metricValue:
-          (map['metricValue'] as num?)?.toDouble() ?? 0.0,
+      metricValue: (map['metricValue'] as num?)?.toDouble() ?? 0.0,
       unit: map['unit']?.toString() ?? '',
-      signalPercent:
-          (map['signalPercent'] as num?)?.toDouble() ?? 0.0,
-      batteryPercent:
-          (map['batteryPercent'] as num?)?.toDouble() ?? 0.0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      signalPercent: (map['signalPercent'] as num?)?.toDouble() ?? 0.0,
+      batteryPercent: (map['batteryPercent'] as num?)?.toDouble() ?? 0.0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       lastSync: map['lastSync']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

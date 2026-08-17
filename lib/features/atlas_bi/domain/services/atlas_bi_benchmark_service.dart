@@ -4,17 +4,11 @@ import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_data.dart
 class AtlasBiBenchmarkService {
   const AtlasBiBenchmarkService();
 
-  AtlasBiBenchmarkData build({
-    required AtlasBiData data,
-    DateTime? now,
-  }) {
+  AtlasBiBenchmarkData build({required AtlasBiData data, DateTime? now}) {
     final grouped = <String, List<AtlasBiIndicator>>{};
 
     for (final indicator in data.indicators) {
-      grouped.putIfAbsent(
-        indicator.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(indicator.farmName, () => []);
 
       grouped[indicator.farmName]!.add(indicator);
     }
@@ -25,128 +19,88 @@ class AtlasBiBenchmarkService {
       final score = indicators.isEmpty
           ? 0.0
           : indicators.fold<double>(
-                0,
-                (sum, item) =>
-                    sum +
-                    item.targetAchievementPercent,
-              ) /
-              indicators.length;
+                  0,
+                  (sum, item) => sum + item.targetAchievementPercent,
+                ) /
+                indicators.length;
 
       final orderedByPerformance = [...indicators]
         ..sort(
-          (first, second) =>
-              second.targetAchievementPercent
-                  .compareTo(
+          (first, second) => second.targetAchievementPercent.compareTo(
             first.targetAchievementPercent,
           ),
         );
 
       final strong = indicators.where((item) {
-        return item.status ==
-                AtlasBiStatus.excellent ||
-            item.status ==
-                AtlasBiStatus.adequate;
+        return item.status == AtlasBiStatus.excellent ||
+            item.status == AtlasBiStatus.adequate;
       }).length;
 
       final attention = indicators.where((item) {
-        return item.status ==
-            AtlasBiStatus.attention;
+        return item.status == AtlasBiStatus.attention;
       }).length;
 
       final critical = indicators.where((item) {
-        return item.status ==
-            AtlasBiStatus.critical;
+        return item.status == AtlasBiStatus.critical;
       }).length;
 
       return _TemporaryFarm(
         farmName: entry.key,
-        score: score
-            .clamp(0.0, 100.0)
-            .toDouble(),
+        score: score.clamp(0.0, 100.0).toDouble(),
         strongIndicators: strong,
         attentionIndicators: attention,
         criticalIndicators: critical,
-        bestIndicatorTitle:
-            orderedByPerformance.isEmpty
-                ? null
-                : orderedByPerformance.first.title,
-        mainGapTitle:
-            orderedByPerformance.isEmpty
-                ? null
-                : orderedByPerformance.last.title,
+        bestIndicatorTitle: orderedByPerformance.isEmpty
+            ? null
+            : orderedByPerformance.first.title,
+        mainGapTitle: orderedByPerformance.isEmpty
+            ? null
+            : orderedByPerformance.last.title,
       );
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.score.compareTo(
-          first.score,
-        ),
+    }).toList()..sort((first, second) => second.score.compareTo(first.score));
+
+    final leaderScore = temporary.isEmpty ? 0.0 : temporary.first.score;
+
+    final farms = List.generate(temporary.length, (index) {
+      final item = temporary[index];
+
+      return AtlasBiBenchmarkFarm(
+        position: index + 1,
+        farmName: item.farmName,
+        score: item.score,
+        distanceFromLeader: (leaderScore - item.score)
+            .clamp(0.0, 100.0)
+            .toDouble(),
+        status: _statusFromScore(item.score),
+        strongIndicators: item.strongIndicators,
+        attentionIndicators: item.attentionIndicators,
+        criticalIndicators: item.criticalIndicators,
+        bestIndicatorTitle: item.bestIndicatorTitle,
+        mainGapTitle: item.mainGapTitle,
       );
+    });
 
-    final leaderScore =
-        temporary.isEmpty ? 0.0 : temporary.first.score;
-
-    final farms = List.generate(
-      temporary.length,
-      (index) {
-        final item = temporary[index];
-
-        return AtlasBiBenchmarkFarm(
-          position: index + 1,
-          farmName: item.farmName,
-          score: item.score,
-          distanceFromLeader:
-              (leaderScore - item.score)
-                  .clamp(0.0, 100.0)
-                  .toDouble(),
-          status: _statusFromScore(item.score),
-          strongIndicators:
-              item.strongIndicators,
-          attentionIndicators:
-              item.attentionIndicators,
-          criticalIndicators:
-              item.criticalIndicators,
-          bestIndicatorTitle:
-              item.bestIndicatorTitle,
-          mainGapTitle: item.mainGapTitle,
-        );
-      },
-    );
-
-    final benchmarkIndicators =
-        _buildIndicatorBenchmarks(
-      data.indicators,
-    );
+    final benchmarkIndicators = _buildIndicatorBenchmarks(data.indicators);
 
     final averageScore = farms.isEmpty
         ? 0.0
-        : farms.fold<double>(
-              0,
-              (sum, item) => sum + item.score,
-            ) /
-            farms.length;
+        : farms.fold<double>(0, (sum, item) => sum + item.score) / farms.length;
 
     return AtlasBiBenchmarkData(
       generatedAt: now ?? DateTime.now(),
-      summary: _buildSummary(
-        farms: farms,
-        averageScore: averageScore,
-      ),
+      summary: _buildSummary(farms: farms, averageScore: averageScore),
       farms: farms,
       indicators: benchmarkIndicators,
-      leadingFarmName:
-          farms.isEmpty ? null : farms.first.farmName,
+      leadingFarmName: farms.isEmpty ? null : farms.first.farmName,
       averageScore: averageScore,
     );
   }
 
-  List<AtlasBiBenchmarkOpportunity>
-      buildOpportunities({
+  List<AtlasBiBenchmarkOpportunity> buildOpportunities({
     required AtlasBiBenchmarkData benchmark,
     int limit = 20,
   }) {
-    final opportunities =
-        <AtlasBiBenchmarkOpportunity>[];
+    final opportunities = <AtlasBiBenchmarkOpportunity>[];
 
     for (final indicator in benchmark.indicators) {
       for (final result in indicator.farmResults) {
@@ -160,11 +114,9 @@ class AtlasBiBenchmarkService {
             indicatorTitle: indicator.title,
             category: indicator.category,
             currentValue: result.currentValue,
-            referenceValue:
-                indicator.referenceValue,
+            referenceValue: indicator.referenceValue,
             unit: indicator.unit,
-            gapPercent:
-                result.distanceFromReferencePercent,
+            gapPercent: result.distanceFromReferencePercent,
             recommendation:
                 'Comparar práticas com ${indicator.bestFarmName ?? 'a fazenda de referência'}, '
                 'identificar diferenças operacionais e criar um plano para reduzir a distância.',
@@ -174,36 +126,26 @@ class AtlasBiBenchmarkService {
     }
 
     opportunities.sort(
-      (first, second) =>
-          second.gapPercent.compareTo(
-        first.gapPercent,
-      ),
+      (first, second) => second.gapPercent.compareTo(first.gapPercent),
     );
 
     return opportunities.take(limit).toList();
   }
 
-  List<AtlasBiBenchmarkIndicator>
-      _buildIndicatorBenchmarks(
+  List<AtlasBiBenchmarkIndicator> _buildIndicatorBenchmarks(
     List<AtlasBiIndicator> indicators,
   ) {
-    final grouped =
-        <String, List<AtlasBiIndicator>>{};
+    final grouped = <String, List<AtlasBiIndicator>>{};
 
     for (final indicator in indicators) {
-      final key =
-          '${indicator.title}::${indicator.category.name}';
+      final key = '${indicator.title}::${indicator.category.name}';
 
-      grouped.putIfAbsent(
-        key,
-        () => [],
-      );
+      grouped.putIfAbsent(key, () => []);
 
       grouped[key]!.add(indicator);
     }
 
-    final result =
-        <AtlasBiBenchmarkIndicator>[];
+    final result = <AtlasBiBenchmarkIndicator>[];
 
     for (final entry in grouped.entries) {
       final values = entry.value;
@@ -214,9 +156,7 @@ class AtlasBiBenchmarkService {
 
       final ordered = [...values]
         ..sort(
-          (first, second) =>
-              second.targetAchievementPercent
-                  .compareTo(
+          (first, second) => second.targetAchievementPercent.compareTo(
             first.targetAchievementPercent,
           ),
         );
@@ -225,37 +165,29 @@ class AtlasBiBenchmarkService {
       final worst = ordered.last;
 
       final averageValue =
-          values.fold<double>(
-                0,
-                (sum, item) =>
-                    sum + item.currentValue,
-              ) /
-              values.length;
+          values.fold<double>(0, (sum, item) => sum + item.currentValue) /
+          values.length;
 
-      final farmResults = values.map((item) {
-        final distance =
-            reference.targetAchievementPercent -
+      final farmResults =
+          values.map((item) {
+            final distance =
+                reference.targetAchievementPercent -
                 item.targetAchievementPercent;
 
-        return AtlasBiBenchmarkFarmResult(
-          farmName: item.farmName,
-          currentValue: item.currentValue,
-          targetAchievementPercent:
-              item.targetAchievementPercent,
-          distanceFromReferencePercent:
-              distance
+            return AtlasBiBenchmarkFarmResult(
+              farmName: item.farmName,
+              currentValue: item.currentValue,
+              targetAchievementPercent: item.targetAchievementPercent,
+              distanceFromReferencePercent: distance
                   .clamp(0.0, 120.0)
                   .toDouble(),
-          status: item.status,
-        );
-      }).toList()
-        ..sort(
-          (first, second) => second
-              .targetAchievementPercent
-              .compareTo(
-            first.targetAchievementPercent,
-          ),
-        );
+              status: item.status,
+            );
+          }).toList()..sort(
+            (first, second) => second.targetAchievementPercent.compareTo(
+              first.targetAchievementPercent,
+            ),
+          );
 
       result.add(
         AtlasBiBenchmarkIndicator(
@@ -263,28 +195,21 @@ class AtlasBiBenchmarkService {
           title: reference.title,
           category: reference.category,
           unit: reference.unit,
-          referenceValue:
-              reference.currentValue,
+          referenceValue: reference.currentValue,
           averageValue: averageValue,
-          bestFarmName:
-              reference.farmName,
+          bestFarmName: reference.farmName,
           worstFarmName: worst.farmName,
           farmResults: farmResults,
         ),
       );
     }
 
-    result.sort(
-      (first, second) =>
-          first.title.compareTo(second.title),
-    );
+    result.sort((first, second) => first.title.compareTo(second.title));
 
     return result;
   }
 
-  AtlasBiStatus _statusFromScore(
-    double score,
-  ) {
+  AtlasBiStatus _statusFromScore(double score) {
     if (score >= 90) {
       return AtlasBiStatus.excellent;
     }

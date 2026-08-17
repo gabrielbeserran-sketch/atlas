@@ -9,6 +9,8 @@ class FarmAgendaData {
     required this.priority,
     required this.status,
     required this.notes,
+    this.sourceType = '',
+    this.sourceId = '',
   });
 
   final String id;
@@ -20,46 +22,41 @@ class FarmAgendaData {
   final String priority;
   final String status;
   final String notes;
+  final String sourceType;
+  final String sourceId;
 
-  bool get isCompleted {
-    return status == 'Concluída';
-  }
+  bool get isCompleted => status == 'Concluída';
+  bool get isPending => status == 'Pendente';
+  bool get isCancelled => status == 'Cancelada';
+  bool get isIntegrated => sourceId.trim().isNotEmpty;
 
-  bool get isPending {
-    return status == 'Pendente';
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'title': title,
+    'category': category,
+    'date': date,
+    'time': time,
+    'responsible': responsible,
+    'priority': priority,
+    'status': status,
+    'notes': notes,
+    'sourceType': sourceType,
+    'sourceId': sourceId,
+  };
 
-  bool get isCancelled {
-    return status == 'Cancelada';
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'category': category,
-      'date': date,
-      'time': time,
-      'responsible': responsible,
-      'priority': priority,
-      'status': status,
-      'notes': notes,
-    };
-  }
-
-  factory FarmAgendaData.fromMap(Map<String, dynamic> map) {
-    return FarmAgendaData(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      category: map['category'] as String? ?? 'Outro',
-      date: map['date'] as String,
-      time: map['time'] as String? ?? '',
-      responsible: map['responsible'] as String? ?? '',
-      priority: map['priority'] as String? ?? 'Normal',
-      status: map['status'] as String? ?? 'Pendente',
-      notes: map['notes'] as String? ?? '',
-    );
-  }
+  factory FarmAgendaData.fromMap(Map<String, dynamic> map) => FarmAgendaData(
+    id: map['id'] as String,
+    title: map['title'] as String,
+    category: map['category'] as String? ?? 'Outro',
+    date: map['date'] as String,
+    time: map['time'] as String? ?? '',
+    responsible: map['responsible'] as String? ?? '',
+    priority: map['priority'] as String? ?? 'Normal',
+    status: map['status'] as String? ?? 'Pendente',
+    notes: map['notes'] as String? ?? '',
+    sourceType: map['sourceType'] as String? ?? '',
+    sourceId: map['sourceId'] as String? ?? '',
+  );
 
   FarmAgendaData copyWith({
     String? id,
@@ -71,17 +68,19 @@ class FarmAgendaData {
     String? priority,
     String? status,
     String? notes,
-  }) {
-    return FarmAgendaData(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      category: category ?? this.category,
-      date: date ?? this.date,
-      time: time ?? this.time,
-      responsible: responsible ?? this.responsible,
-      priority: priority ?? this.priority,
-      status: status ?? this.status,
-      notes: notes ?? this.notes,
-    );
-  }
+    String? sourceType,
+    String? sourceId,
+  }) => FarmAgendaData(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    category: category ?? this.category,
+    date: date ?? this.date,
+    time: time ?? this.time,
+    responsible: responsible ?? this.responsible,
+    priority: priority ?? this.priority,
+    status: status ?? this.status,
+    notes: notes ?? this.notes,
+    sourceType: sourceType ?? this.sourceType,
+    sourceId: sourceId ?? this.sourceId,
+  );
 }

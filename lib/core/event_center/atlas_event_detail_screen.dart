@@ -3,10 +3,7 @@ import 'package:projeto_atlas/core/event_center/atlas_event_log_entry.dart';
 import 'package:projeto_atlas/core/events/atlas_event.dart';
 
 class AtlasEventDetailScreen extends StatelessWidget {
-  const AtlasEventDetailScreen({
-    required this.item,
-    super.key,
-  });
+  const AtlasEventDetailScreen({required this.item, super.key});
 
   final AtlasEventLogEntry item;
 
@@ -33,14 +30,12 @@ class AtlasEventDetailScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor:
-                                  color.withValues(alpha: 0.12),
+                              backgroundColor: color.withValues(alpha: 0.12),
                               child: Icon(
                                 Icons.event_note_outlined,
                                 color: color,
@@ -49,8 +44,7 @@ class AtlasEventDetailScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     item.title,
@@ -95,18 +89,9 @@ class AtlasEventDetailScreen extends StatelessWidget {
                 _DetailSection(
                   title: 'Identificação',
                   children: [
-                    _DetailRow(
-                      label: 'ID do registro',
-                      value: item.id,
-                    ),
-                    _DetailRow(
-                      label: 'ID do evento',
-                      value: item.eventId,
-                    ),
-                    _DetailRow(
-                      label: 'Módulo',
-                      value: item.sourceModule,
-                    ),
+                    _DetailRow(label: 'ID do registro', value: item.id),
+                    _DetailRow(label: 'ID do evento', value: item.eventId),
+                    _DetailRow(label: 'Módulo', value: item.sourceModule),
                     _DetailRow(
                       label: 'Fazenda',
                       value: item.farmName ?? 'Operação',
@@ -150,9 +135,7 @@ class AtlasEventDetailScreen extends StatelessWidget {
                               ),
                             ]
                           : item.tags.map((tag) {
-                              return Chip(
-                                label: Text(tag),
-                              );
+                              return Chip(label: Text(tag));
                             }).toList(),
                     ),
                   ],
@@ -184,10 +167,7 @@ class AtlasEventDetailScreen extends StatelessWidget {
 }
 
 class _DetailSection extends StatelessWidget {
-  const _DetailSection({
-    required this.title,
-    required this.children,
-  });
+  const _DetailSection({required this.title, required this.children});
 
   final String title;
   final List<Widget> children;
@@ -202,10 +182,7 @@ class _DetailSection extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ...children,
@@ -217,10 +194,7 @@ class _DetailSection extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-  });
+  const _DetailRow({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -242,18 +216,14 @@ class _DetailRow extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: SelectableText(value),
-          ),
+          Expanded(child: SelectableText(value)),
         ],
       ),
     );
   }
 }
 
-Color _priorityColor(
-  AtlasEventPriority priority,
-) {
+Color _priorityColor(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return const Color(0xFF2E7D32);

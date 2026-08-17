@@ -9,18 +9,13 @@ import 'package:projeto_atlas/features/knowledge_learning/data/services/atlas_kn
 import 'package:projeto_atlas/features/recommendation_intelligence/domain/models/atlas_intelligent_recommendation.dart';
 import 'package:projeto_atlas/features/recommendation_intelligence/domain/services/atlas_recommendation_intelligence_engine.dart';
 
-class AtlasDecisionIntelligenceLabScreen
-    extends StatefulWidget {
-  const AtlasDecisionIntelligenceLabScreen({
-    super.key,
-    this.farmId,
-  });
+class AtlasDecisionIntelligenceLabScreen extends StatefulWidget {
+  const AtlasDecisionIntelligenceLabScreen({super.key, this.farmId});
 
   final String? farmId;
 
   @override
-  State<AtlasDecisionIntelligenceLabScreen>
-      createState() {
+  State<AtlasDecisionIntelligenceLabScreen> createState() {
     return _AtlasDecisionIntelligenceLabScreenState();
   }
 }
@@ -33,18 +28,14 @@ class _AtlasDecisionIntelligenceLabScreenState
     text: 'Novo cenário estratégico',
   );
   final descriptionController = TextEditingController();
-  final investmentController =
-      TextEditingController(text: '50000');
-  final revenueController =
-      TextEditingController(text: '10000');
-  final costController =
-      TextEditingController(text: '2500');
+  final investmentController = TextEditingController(text: '50000');
+  final revenueController = TextEditingController(text: '10000');
+  final costController = TextEditingController(text: '2500');
 
   bool loading = true;
   AtlasFarmAudit? audit;
   AtlasRecommendationPortfolio? recommendations;
-  AtlasFarmAuditArea selectedArea =
-      AtlasFarmAuditArea.reproduction;
+  AtlasFarmAuditArea selectedArea = AtlasFarmAuditArea.reproduction;
   int horizonMonths = 12;
   double complexity = 45;
   double readiness = 70;
@@ -69,16 +60,11 @@ class _AtlasDecisionIntelligenceLabScreenState
   }
 
   Future<void> _load() async {
-    final audits =
-        await AtlasFarmAuditHistoryService.instance.loadAll();
+    final audits = await AtlasFarmAuditHistoryService.instance.loadAll();
 
     final filtered = widget.farmId == null
         ? audits
-        : audits
-            .where(
-              (item) => item.farmId == widget.farmId,
-            )
-            .toList();
+        : audits.where((item) => item.farmId == widget.farmId).toList();
 
     if (filtered.isEmpty) {
       if (!mounted) {
@@ -93,12 +79,9 @@ class _AtlasDecisionIntelligenceLabScreenState
     }
 
     final currentAudit = filtered.first;
-    final cases =
-        await AtlasKnowledgeRepository.instance.loadCases();
+    final cases = await AtlasKnowledgeRepository.instance.loadCases();
 
-    final portfolio =
-        const AtlasRecommendationIntelligenceEngine()
-            .generate(
+    final portfolio = const AtlasRecommendationIntelligenceEngine().generate(
       audit: currentAudit,
       knowledgeCases: cases,
     );
@@ -110,10 +93,9 @@ class _AtlasDecisionIntelligenceLabScreenState
     setState(() {
       audit = currentAudit;
       recommendations = portfolio;
-      selectedArea =
-          portfolio.recommendations.isEmpty
-              ? AtlasFarmAuditArea.reproduction
-              : portfolio.recommendations.first.area;
+      selectedArea = portfolio.recommendations.isEmpty
+          ? AtlasFarmAuditArea.reproduction
+          : portfolio.recommendations.first.area;
       loading = false;
     });
 
@@ -179,20 +161,13 @@ class _AtlasDecisionIntelligenceLabScreenState
     }
 
     final scenario = AtlasDecisionScenarioInput(
-      id:
-          'scenario_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'scenario_${DateTime.now().microsecondsSinceEpoch}',
       title: titleController.text.trim(),
       description: descriptionController.text.trim(),
       area: selectedArea,
-      investment: _parseDouble(
-        investmentController.text,
-      ),
-      monthlyRevenueGain: _parseDouble(
-        revenueController.text,
-      ),
-      monthlyCostChange: _parseDouble(
-        costController.text,
-      ),
+      investment: _parseDouble(investmentController.text),
+      monthlyRevenueGain: _parseDouble(revenueController.text),
+      monthlyCostChange: _parseDouble(costController.text),
       horizonMonths: horizonMonths,
       operationalComplexity: complexity,
       executionReadiness: readiness,
@@ -204,11 +179,7 @@ class _AtlasDecisionIntelligenceLabScreenState
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Cenário adicionado à comparação.',
-        ),
-      ),
+      const SnackBar(content: Text('Cenário adicionado à comparação.')),
     );
   }
 
@@ -230,8 +201,7 @@ class _AtlasDecisionIntelligenceLabScreenState
       return;
     }
 
-    comparison =
-        const AtlasDecisionIntelligenceEngine().compare(
+    comparison = const AtlasDecisionIntelligenceEngine().compare(
       audit: currentAudit,
       recommendations: currentRecommendations,
       scenarios: scenarios,
@@ -248,9 +218,7 @@ class _AtlasDecisionIntelligenceLabScreenState
       appBar: AppBar(
         title: const Text(
           'Decision Intelligence Lab',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -266,113 +234,98 @@ class _AtlasDecisionIntelligenceLabScreenState
         ],
       ),
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : currentAudit == null
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1240),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(
-                          farmName: currentAudit.farmName,
-                          comparison: currentComparison,
-                        ),
-                        const SizedBox(height: 20),
-                        _ScenarioForm(
-                          formKey: formKey,
-                          titleController: titleController,
-                          descriptionController:
-                              descriptionController,
-                          investmentController:
-                              investmentController,
-                          revenueController:
-                              revenueController,
-                          costController: costController,
-                          selectedArea: selectedArea,
-                          horizonMonths: horizonMonths,
-                          complexity: complexity,
-                          readiness: readiness,
-                          onAreaChanged: (value) {
-                            setState(() {
-                              selectedArea = value;
-                            });
-                          },
-                          onHorizonChanged: (value) {
-                            setState(() {
-                              horizonMonths = value;
-                            });
-                          },
-                          onComplexityChanged: (value) {
-                            setState(() {
-                              complexity = value;
-                            });
-                          },
-                          onReadinessChanged: (value) {
-                            setState(() {
-                              readiness = value;
-                            });
-                          },
-                          onAdd: _addScenario,
-                        ),
-                        const SizedBox(height: 24),
-                        const _SectionTitle(
-                          title: 'Comparação de cenários',
-                          subtitle:
-                              'Ordenação por retorno, prazo, probabilidade, confiança e risco.',
-                        ),
-                        const SizedBox(height: 12),
-                        if (currentComparison == null)
-                          const _NoScenarios()
-                        else
-                          ..._ordered(
-                            currentComparison.results,
-                          ).asMap().entries.map(
-                                (entry) =>
-                                    _ScenarioResultCard(
-                                  position: entry.key + 1,
-                                  result: entry.value,
-                                  recommended:
-                                      currentComparison
-                                              .recommended
-                                              ?.id ==
-                                          entry.value.id,
-                                  onExecute: () async {
-                                    await Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (context) {
-                                          return AtlasStrategyExecutionScreen(
-                                            scenario: entry.value,
-                                            farmId: entry.value.farmId,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                  onRemove: () =>
-                                      _removeScenario(
-                                    entry.value.input.id,
-                                  ),
-                                ),
-                              ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(
+                      farmName: currentAudit.farmName,
+                      comparison: currentComparison,
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    _ScenarioForm(
+                      formKey: formKey,
+                      titleController: titleController,
+                      descriptionController: descriptionController,
+                      investmentController: investmentController,
+                      revenueController: revenueController,
+                      costController: costController,
+                      selectedArea: selectedArea,
+                      horizonMonths: horizonMonths,
+                      complexity: complexity,
+                      readiness: readiness,
+                      onAreaChanged: (value) {
+                        setState(() {
+                          selectedArea = value;
+                        });
+                      },
+                      onHorizonChanged: (value) {
+                        setState(() {
+                          horizonMonths = value;
+                        });
+                      },
+                      onComplexityChanged: (value) {
+                        setState(() {
+                          complexity = value;
+                        });
+                      },
+                      onReadinessChanged: (value) {
+                        setState(() {
+                          readiness = value;
+                        });
+                      },
+                      onAdd: _addScenario,
+                    ),
+                    const SizedBox(height: 24),
+                    const _SectionTitle(
+                      title: 'Comparação de cenários',
+                      subtitle:
+                          'Ordenação por retorno, prazo, probabilidade, confiança e risco.',
+                    ),
+                    const SizedBox(height: 12),
+                    if (currentComparison == null)
+                      const _NoScenarios()
+                    else
+                      ..._ordered(
+                        currentComparison.results,
+                      ).asMap().entries.map(
+                        (entry) => _ScenarioResultCard(
+                          position: entry.key + 1,
+                          result: entry.value,
+                          recommended:
+                              currentComparison.recommended?.id ==
+                              entry.value.id,
+                          onExecute: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (context) {
+                                  return AtlasStrategyExecutionScreen(
+                                    scenario: entry.value,
+                                    farmId: entry.value.farmId,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          onRemove: () => _removeScenario(entry.value.input.id),
+                        ),
+                      ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.farmName,
-    required this.comparison,
-  });
+  const _Hero({required this.farmName, required this.comparison});
 
   final String farmName;
   final AtlasDecisionComparison? comparison;
@@ -394,14 +347,11 @@ class _Hero extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Laboratório virtual de decisões',
-            style: TextStyle(
-              color: Colors.white70,
-            ),
+            style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 5),
           Text(
@@ -430,24 +380,19 @@ class _Hero extends StatelessWidget {
               children: [
                 _HeroMetric(
                   label: 'Score estratégico',
-                  value:
-                      recommended.score.toStringAsFixed(1),
+                  value: recommended.score.toStringAsFixed(1),
                 ),
                 _HeroMetric(
                   label: 'ROI esperado',
-                  value:
-                      '${recommended.roiPercent.toStringAsFixed(1)}%',
+                  value: '${recommended.roiPercent.toStringAsFixed(1)}%',
                 ),
                 _HeroMetric(
                   label: 'Risco',
-                  value: atlasDecisionRiskLabel(
-                    recommended.risk,
-                  ),
+                  value: atlasDecisionRiskLabel(recommended.risk),
                 ),
                 _HeroMetric(
                   label: 'Confiança',
-                  value:
-                      '${recommended.confidence.toStringAsFixed(1)}%',
+                  value: '${recommended.confidence.toStringAsFixed(1)}%',
                 ),
               ],
             ),
@@ -501,15 +446,11 @@ class _ScenarioForm extends StatelessWidget {
         child: Form(
           key: formKey,
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'Criar novo cenário',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -519,8 +460,7 @@ class _ScenarioForm extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value == null ||
-                      value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Informe o nome do cenário.';
                   }
 
@@ -547,9 +487,7 @@ class _ScenarioForm extends StatelessWidget {
                     .map(
                       (area) => DropdownMenuItem(
                         value: area,
-                        child: Text(
-                          atlasFarmAuditAreaLabel(area),
-                        ),
+                        child: Text(atlasFarmAuditAreaLabel(area)),
                       ),
                     )
                     .toList(),
@@ -582,10 +520,7 @@ class _ScenarioForm extends StatelessWidget {
                       children: fields
                           .map(
                             (item) => Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                bottom: 12,
-                              ),
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: item,
                             ),
                           )
@@ -644,9 +579,7 @@ class _ScenarioForm extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onAdd,
                   icon: const Icon(Icons.add),
-                  label: const Text(
-                    'Adicionar à comparação',
-                  ),
+                  label: const Text('Adicionar à comparação'),
                 ),
               ),
             ],
@@ -658,10 +591,7 @@ class _ScenarioForm extends StatelessWidget {
 }
 
 class _MoneyField extends StatelessWidget {
-  const _MoneyField({
-    required this.controller,
-    required this.label,
-  });
+  const _MoneyField({required this.controller, required this.label});
 
   final TextEditingController controller;
   final String label;
@@ -675,15 +605,8 @@ class _MoneyField extends StatelessWidget {
         prefixText: 'R\$ ',
         border: const OutlineInputBorder(),
       ),
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(
-          RegExp(r'[0-9,.-]'),
-        ),
-      ],
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.-]'))],
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return 'Informe o valor.';
@@ -709,8 +632,7 @@ class _SliderField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
         Slider(
@@ -747,14 +669,10 @@ class _ScenarioResultCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
+          backgroundColor: color.withValues(alpha: 0.12),
           child: Text(
             '$position',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
           ),
         ),
         title: Row(
@@ -762,17 +680,12 @@ class _ScenarioResultCard extends StatelessWidget {
             Expanded(
               child: Text(
                 result.input.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             if (recommended)
               const Chip(
-                avatar: Icon(
-                  Icons.emoji_events_outlined,
-                  size: 18,
-                ),
+                avatar: Icon(Icons.emoji_events_outlined, size: 18),
                 label: Text('Recomendado'),
               ),
           ],
@@ -787,8 +700,7 @@ class _ScenarioResultCard extends StatelessWidget {
           onPressed: onRemove,
           icon: const Icon(Icons.delete_outline),
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Align(
             alignment: Alignment.centerLeft,
@@ -804,20 +716,15 @@ class _ScenarioResultCard extends StatelessWidget {
             children: [
               _Metric(
                 label: 'Investimento',
-                value: _currency(
-                  result.input.investment,
-                ),
+                value: _currency(result.input.investment),
               ),
               _Metric(
                 label: 'Ganho líquido projetado',
-                value: _currency(
-                  result.expectedNetGain,
-                ),
+                value: _currency(result.expectedNetGain),
               ),
               _Metric(
                 label: 'ROI',
-                value:
-                    '${result.roiPercent.toStringAsFixed(1)}%',
+                value: '${result.roiPercent.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Payback',
@@ -827,13 +734,11 @@ class _ScenarioResultCard extends StatelessWidget {
               ),
               _Metric(
                 label: 'Sucesso',
-                value:
-                    '${result.successProbability.toStringAsFixed(1)}%',
+                value: '${result.successProbability.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Confiança',
-                value:
-                    '${result.confidence.toStringAsFixed(1)}%',
+                value: '${result.confidence.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Indicador',
@@ -842,20 +747,13 @@ class _ScenarioResultCard extends StatelessWidget {
               ),
               _Metric(
                 label: 'Resultado esperado',
-                value:
-                    '${result.expectedResultMonths} meses',
+                value: '${result.expectedResultMonths} meses',
               ),
             ],
           ),
           const SizedBox(height: 18),
-          _ListBlock(
-            title: 'Principais vantagens',
-            items: result.advantages,
-          ),
-          _ListBlock(
-            title: 'Principais riscos',
-            items: result.risks,
-          ),
+          _ListBlock(title: 'Principais vantagens', items: result.advantages),
+          _ListBlock(title: 'Principais riscos', items: result.risks),
           _ListBlock(
             title: 'Plano de implementação',
             items: result.implementationPlan,
@@ -865,9 +763,7 @@ class _ScenarioResultCard extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: onExecute,
               icon: const Icon(Icons.rocket_launch_outlined),
-              label: const Text(
-                'Transformar em plano de execução',
-              ),
+              label: const Text('Transformar em plano de execução'),
             ),
           ),
         ],
@@ -877,10 +773,7 @@ class _ScenarioResultCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -888,30 +781,18 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 170),
+      constraints: const BoxConstraints(minWidth: 170),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F6F8),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -919,10 +800,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -930,23 +808,16 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 150),
+      constraints: const BoxConstraints(minWidth: 150),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -963,10 +834,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _ListBlock extends StatelessWidget {
-  const _ListBlock({
-    required this.title,
-    required this.items,
-  });
+  const _ListBlock({required this.title, required this.items});
 
   final String title;
   final List<String> items;
@@ -978,20 +846,13 @@ class _ListBlock extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             ...items.map(
               (item) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Text('• $item'),
               ),
             ),
@@ -1003,10 +864,7 @@ class _ListBlock extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -1014,23 +872,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -1073,12 +922,8 @@ class _NoScenarios extends StatelessWidget {
 List<AtlasDecisionScenarioResult> _ordered(
   List<AtlasDecisionScenarioResult> results,
 ) {
-  return List<AtlasDecisionScenarioResult>.from(
-    results,
-  )..sort(
-      (first, second) =>
-          second.score.compareTo(first.score),
-    );
+  return List<AtlasDecisionScenarioResult>.from(results)
+    ..sort((first, second) => second.score.compareTo(first.score));
 }
 
 Color _riskColor(AtlasDecisionRisk risk) {
@@ -1095,10 +940,7 @@ Color _riskColor(AtlasDecisionRisk risk) {
 }
 
 double _parseDouble(String value) {
-  final normalized = value
-      .trim()
-      .replaceAll('.', '')
-      .replaceAll(',', '.');
+  final normalized = value.trim().replaceAll('.', '').replaceAll(',', '.');
 
   return double.tryParse(normalized) ?? 0;
 }

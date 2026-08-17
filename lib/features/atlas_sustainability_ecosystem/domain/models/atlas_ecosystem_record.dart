@@ -1,53 +1,47 @@
-enum AtlasEcosystemModule {
-  sustainability,
-  iot,
-  consultancy,
-}
+enum AtlasEcosystemModule { sustainability, iot, consultancy }
 
 extension AtlasEcosystemModuleX on AtlasEcosystemModule {
   String get code => switch (this) {
-        AtlasEcosystemModule.sustainability => 'sustainability',
-        AtlasEcosystemModule.iot => 'iot',
-        AtlasEcosystemModule.consultancy => 'consultancy',
-      };
+    AtlasEcosystemModule.sustainability => 'sustainability',
+    AtlasEcosystemModule.iot => 'iot',
+    AtlasEcosystemModule.consultancy => 'consultancy',
+  };
 
   String get title => switch (this) {
-        AtlasEcosystemModule.sustainability =>
-          'Sustentabilidade Enterprise',
-        AtlasEcosystemModule.iot => 'IoT e Automação',
-        AtlasEcosystemModule.consultancy =>
-          'Ecossistema de Consultoria',
-      };
+    AtlasEcosystemModule.sustainability => 'Sustentabilidade Enterprise',
+    AtlasEcosystemModule.iot => 'IoT e Automação',
+    AtlasEcosystemModule.consultancy => 'Ecossistema de Consultoria',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasEcosystemModule.sustainability => 'Pacote 47',
-        AtlasEcosystemModule.iot => 'Pacote 48',
-        AtlasEcosystemModule.consultancy => 'Pacote 49',
-      };
+    AtlasEcosystemModule.sustainability => 'Pacote 47',
+    AtlasEcosystemModule.iot => 'Pacote 48',
+    AtlasEcosystemModule.consultancy => 'Pacote 49',
+  };
 
   List<String> get features => switch (this) {
-        AtlasEcosystemModule.sustainability => const [
-            'Pegada de carbono',
-            'Uso da água',
-            'Indicadores ESG',
-            'Recuperação de pastagens',
-            'Relatórios ambientais',
-          ],
-        AtlasEcosystemModule.iot => const [
-            'Integração com balanças eletrônicas',
-            'Integração com brincos eletrônicos (RFID)',
-            'Sensores de temperatura e umidade',
-            'Coleta automática de dados',
-            'Central de dispositivos conectados',
-          ],
-        AtlasEcosystemModule.consultancy => const [
-            'Gestão de clientes da consultoria',
-            'Agenda de visitas técnicas',
-            'Relatórios por cliente',
-            'Indicadores comparativos entre clientes',
-            'Portal do cliente',
-          ],
-      };
+    AtlasEcosystemModule.sustainability => const [
+      'Pegada de carbono',
+      'Uso da água',
+      'Indicadores ESG',
+      'Recuperação de pastagens',
+      'Relatórios ambientais',
+    ],
+    AtlasEcosystemModule.iot => const [
+      'Integração com balanças eletrônicas',
+      'Integração com brincos eletrônicos (RFID)',
+      'Sensores de temperatura e umidade',
+      'Coleta automática de dados',
+      'Central de dispositivos conectados',
+    ],
+    AtlasEcosystemModule.consultancy => const [
+      'Gestão de clientes da consultoria',
+      'Agenda de visitas técnicas',
+      'Relatórios por cliente',
+      'Indicadores comparativos entre clientes',
+      'Portal do cliente',
+    ],
+  };
 }
 
 class AtlasEcosystemRecord {
@@ -84,14 +78,10 @@ class AtlasEcosystemRecord {
   final String updatedAt;
 
   bool get isCritical =>
-      status == 'Crítico' ||
-      status == 'Atenção' ||
-      status == 'Desconectado';
+      status == 'Crítico' || status == 'Atenção' || status == 'Desconectado';
 
   bool get isCompleted =>
-      status == 'Concluído' ||
-      status == 'Ativo' ||
-      status == 'Conectado';
+      status == 'Concluído' || status == 'Ativo' || status == 'Conectado';
 
   Map<String, dynamic> toMap() {
     return {
@@ -112,9 +102,7 @@ class AtlasEcosystemRecord {
     };
   }
 
-  factory AtlasEcosystemRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEcosystemRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasEcosystemModule.values.firstWhere(
@@ -129,10 +117,8 @@ class AtlasEcosystemRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',

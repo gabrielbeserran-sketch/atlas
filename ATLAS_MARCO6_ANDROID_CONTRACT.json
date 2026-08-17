@@ -1,0 +1,38 @@
+{
+  "status": "OK",
+  "package_id": "br.com.projetoatlas.app",
+  "version": "1.0.0+6",
+  "compile_sdk": 36,
+  "target_sdk": 36,
+  "min_sdk": 24,
+  "checks": {
+    "final_package_id": true,
+    "target_api_36": true,
+    "min_sdk_24": true,
+    "java_17": true,
+    "release_key_required": true,
+    "cleartext_forbidden_release": true,
+    "no_broad_storage_permission": true,
+    "photo_picker_camera": true,
+    "native_document_picker": true,
+    "fileprovider_open": true,
+    "document_screen_not_windows_only": true,
+    "external_url_launcher": true,
+    "production_api_locked_https": true,
+    "branding_launcher": true,
+    "branding_splash": true,
+    "old_main_activity_removed": true,
+    "public_tls_gateway": true,
+    "production_migrations_before_api": true,
+    "aab_release": true,
+    "upload_key_script": true,
+    "physical_and_play_gate": true
+  },
+  "errors": [],
+  "external_completion_requirements": [
+    "servidor + domínio DNS",
+    "upload key local",
+    "Android físico",
+    "Play Console/faixa de teste"
+  ]
+}

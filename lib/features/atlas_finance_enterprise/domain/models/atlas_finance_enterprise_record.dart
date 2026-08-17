@@ -11,149 +11,124 @@ enum AtlasFinanceEnterpriseModule {
   enterpriseFinanceCenter,
 }
 
-extension AtlasFinanceEnterpriseModuleX
-    on AtlasFinanceEnterpriseModule {
+extension AtlasFinanceEnterpriseModuleX on AtlasFinanceEnterpriseModule {
   String get code => switch (this) {
-        AtlasFinanceEnterpriseModule.projectedCashFlow =>
-          'projected_cash_flow',
-        AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
-          'consolidated_cash_flow',
-        AtlasFinanceEnterpriseModule.annualBudget =>
-          'annual_budget',
-        AtlasFinanceEnterpriseModule.actualVsPlanned =>
-          'actual_vs_planned',
-        AtlasFinanceEnterpriseModule.economicSimulations =>
-          'economic_simulations',
-        AtlasFinanceEnterpriseModule.bankingIndicators =>
-          'banking_indicators',
-        AtlasFinanceEnterpriseModule.roi =>
-          'roi',
-        AtlasFinanceEnterpriseModule.ebitda =>
-          'ebitda',
-        AtlasFinanceEnterpriseModule.assetValuation =>
-          'asset_valuation',
-        AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
-          'enterprise_finance_center',
-      };
+    AtlasFinanceEnterpriseModule.projectedCashFlow => 'projected_cash_flow',
+    AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
+      'consolidated_cash_flow',
+    AtlasFinanceEnterpriseModule.annualBudget => 'annual_budget',
+    AtlasFinanceEnterpriseModule.actualVsPlanned => 'actual_vs_planned',
+    AtlasFinanceEnterpriseModule.economicSimulations => 'economic_simulations',
+    AtlasFinanceEnterpriseModule.bankingIndicators => 'banking_indicators',
+    AtlasFinanceEnterpriseModule.roi => 'roi',
+    AtlasFinanceEnterpriseModule.ebitda => 'ebitda',
+    AtlasFinanceEnterpriseModule.assetValuation => 'asset_valuation',
+    AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
+      'enterprise_finance_center',
+  };
 
   String get title => switch (this) {
-        AtlasFinanceEnterpriseModule.projectedCashFlow =>
-          'Fluxo Financeiro Projetado',
-        AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
-          'Fluxo Financeiro Consolidado',
-        AtlasFinanceEnterpriseModule.annualBudget =>
-          'Orçamento Anual',
-        AtlasFinanceEnterpriseModule.actualVsPlanned =>
-          'Realizado versus Planejado',
-        AtlasFinanceEnterpriseModule.economicSimulations =>
-          'Simulações Econômicas',
-        AtlasFinanceEnterpriseModule.bankingIndicators =>
-          'Indicadores Bancários',
-        AtlasFinanceEnterpriseModule.roi =>
-          'Retorno sobre Investimento',
-        AtlasFinanceEnterpriseModule.ebitda =>
-          'EBITDA',
-        AtlasFinanceEnterpriseModule.assetValuation =>
-          'Valor Patrimonial',
-        AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
-          'Enterprise Finance Center',
-      };
+    AtlasFinanceEnterpriseModule.projectedCashFlow =>
+      'Fluxo Financeiro Projetado',
+    AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
+      'Fluxo Financeiro Consolidado',
+    AtlasFinanceEnterpriseModule.annualBudget => 'Orçamento Anual',
+    AtlasFinanceEnterpriseModule.actualVsPlanned =>
+      'Realizado versus Planejado',
+    AtlasFinanceEnterpriseModule.economicSimulations => 'Simulações Econômicas',
+    AtlasFinanceEnterpriseModule.bankingIndicators => 'Indicadores Bancários',
+    AtlasFinanceEnterpriseModule.roi => 'Retorno sobre Investimento',
+    AtlasFinanceEnterpriseModule.ebitda => 'EBITDA',
+    AtlasFinanceEnterpriseModule.assetValuation => 'Valor Patrimonial',
+    AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
+      'Enterprise Finance Center',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasFinanceEnterpriseModule.projectedCashFlow =>
-          'Pacote 161',
-        AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
-          'Pacote 162',
-        AtlasFinanceEnterpriseModule.annualBudget =>
-          'Pacote 163',
-        AtlasFinanceEnterpriseModule.actualVsPlanned =>
-          'Pacote 164',
-        AtlasFinanceEnterpriseModule.economicSimulations =>
-          'Pacote 165',
-        AtlasFinanceEnterpriseModule.bankingIndicators =>
-          'Pacote 166',
-        AtlasFinanceEnterpriseModule.roi =>
-          'Pacote 167',
-        AtlasFinanceEnterpriseModule.ebitda =>
-          'Pacote 168',
-        AtlasFinanceEnterpriseModule.assetValuation =>
-          'Pacote 169',
-        AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
-          'Pacote 170',
-      };
+    AtlasFinanceEnterpriseModule.projectedCashFlow => 'Pacote 161',
+    AtlasFinanceEnterpriseModule.consolidatedCashFlow => 'Pacote 162',
+    AtlasFinanceEnterpriseModule.annualBudget => 'Pacote 163',
+    AtlasFinanceEnterpriseModule.actualVsPlanned => 'Pacote 164',
+    AtlasFinanceEnterpriseModule.economicSimulations => 'Pacote 165',
+    AtlasFinanceEnterpriseModule.bankingIndicators => 'Pacote 166',
+    AtlasFinanceEnterpriseModule.roi => 'Pacote 167',
+    AtlasFinanceEnterpriseModule.ebitda => 'Pacote 168',
+    AtlasFinanceEnterpriseModule.assetValuation => 'Pacote 169',
+    AtlasFinanceEnterpriseModule.enterpriseFinanceCenter => 'Pacote 170',
+  };
 
   List<String> get features => switch (this) {
-        AtlasFinanceEnterpriseModule.projectedCashFlow => const [
-            'Receitas projetadas',
-            'Despesas projetadas',
-            'Saldo por período',
-            'Necessidade de caixa',
-            'Alertas de liquidez',
-          ],
-        AtlasFinanceEnterpriseModule.consolidatedCashFlow => const [
-            'Consolidação por empresa',
-            'Consolidação por fazenda',
-            'Entradas e saídas',
-            'Saldo acumulado',
-            'Análise de liquidez',
-          ],
-        AtlasFinanceEnterpriseModule.annualBudget => const [
-            'Premissas orçamentárias',
-            'Receitas anuais',
-            'Custos e despesas',
-            'Investimentos',
-            'Revisões de orçamento',
-          ],
-        AtlasFinanceEnterpriseModule.actualVsPlanned => const [
-            'Realizado',
-            'Planejado',
-            'Desvio absoluto',
-            'Desvio percentual',
-            'Plano corretivo',
-          ],
-        AtlasFinanceEnterpriseModule.economicSimulations => const [
-            'Cenário base',
-            'Cenário otimista',
-            'Cenário pessimista',
-            'Sensibilidade',
-            'Ponto de equilíbrio',
-          ],
-        AtlasFinanceEnterpriseModule.bankingIndicators => const [
-            'Endividamento',
-            'Capacidade de pagamento',
-            'Cobertura do serviço da dívida',
-            'Garantias',
-            'Relacionamento bancário',
-          ],
-        AtlasFinanceEnterpriseModule.roi => const [
-            'Investimento inicial',
-            'Retorno acumulado',
-            'Prazo de retorno',
-            'ROI percentual',
-            'Comparação de alternativas',
-          ],
-        AtlasFinanceEnterpriseModule.ebitda => const [
-            'Receita operacional',
-            'Custos operacionais',
-            'Despesas operacionais',
-            'EBITDA ajustado',
-            'Margem EBITDA',
-          ],
-        AtlasFinanceEnterpriseModule.assetValuation => const [
-            'Terra e benfeitorias',
-            'Rebanho',
-            'Máquinas e equipamentos',
-            'Estoques',
-            'Patrimônio líquido estimado',
-          ],
-        AtlasFinanceEnterpriseModule.enterpriseFinanceCenter => const [
-            'Indicadores consolidados',
-            'Alertas financeiros',
-            'Prioridades',
-            'Cenários',
-            'Painel executivo',
-          ],
-      };
+    AtlasFinanceEnterpriseModule.projectedCashFlow => const [
+      'Receitas projetadas',
+      'Despesas projetadas',
+      'Saldo por período',
+      'Necessidade de caixa',
+      'Alertas de liquidez',
+    ],
+    AtlasFinanceEnterpriseModule.consolidatedCashFlow => const [
+      'Consolidação por empresa',
+      'Consolidação por fazenda',
+      'Entradas e saídas',
+      'Saldo acumulado',
+      'Análise de liquidez',
+    ],
+    AtlasFinanceEnterpriseModule.annualBudget => const [
+      'Premissas orçamentárias',
+      'Receitas anuais',
+      'Custos e despesas',
+      'Investimentos',
+      'Revisões de orçamento',
+    ],
+    AtlasFinanceEnterpriseModule.actualVsPlanned => const [
+      'Realizado',
+      'Planejado',
+      'Desvio absoluto',
+      'Desvio percentual',
+      'Plano corretivo',
+    ],
+    AtlasFinanceEnterpriseModule.economicSimulations => const [
+      'Cenário base',
+      'Cenário otimista',
+      'Cenário pessimista',
+      'Sensibilidade',
+      'Ponto de equilíbrio',
+    ],
+    AtlasFinanceEnterpriseModule.bankingIndicators => const [
+      'Endividamento',
+      'Capacidade de pagamento',
+      'Cobertura do serviço da dívida',
+      'Garantias',
+      'Relacionamento bancário',
+    ],
+    AtlasFinanceEnterpriseModule.roi => const [
+      'Investimento inicial',
+      'Retorno acumulado',
+      'Prazo de retorno',
+      'ROI percentual',
+      'Comparação de alternativas',
+    ],
+    AtlasFinanceEnterpriseModule.ebitda => const [
+      'Receita operacional',
+      'Custos operacionais',
+      'Despesas operacionais',
+      'EBITDA ajustado',
+      'Margem EBITDA',
+    ],
+    AtlasFinanceEnterpriseModule.assetValuation => const [
+      'Terra e benfeitorias',
+      'Rebanho',
+      'Máquinas e equipamentos',
+      'Estoques',
+      'Patrimônio líquido estimado',
+    ],
+    AtlasFinanceEnterpriseModule.enterpriseFinanceCenter => const [
+      'Indicadores consolidados',
+      'Alertas financeiros',
+      'Prioridades',
+      'Cenários',
+      'Painel executivo',
+    ],
+  };
 }
 
 class AtlasFinanceEnterpriseRecord {
@@ -251,16 +226,12 @@ class AtlasFinanceEnterpriseRecord {
     };
   }
 
-  factory AtlasFinanceEnterpriseRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasFinanceEnterpriseRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasFinanceEnterpriseModule.values.firstWhere(
+    final module = AtlasFinanceEnterpriseModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasFinanceEnterpriseModule.projectedCashFlow,
+      orElse: () => AtlasFinanceEnterpriseModule.projectedCashFlow,
     );
 
     return AtlasFinanceEnterpriseRecord(
@@ -273,23 +244,14 @@ class AtlasFinanceEnterpriseRecord {
       companyName: map['companyName']?.toString() ?? '',
       farmName: map['farmName']?.toString() ?? '',
       category: map['category']?.toString() ?? '',
-      plannedValue:
-          (map['plannedValue'] as num?)?.toDouble() ?? 0.0,
-      actualValue:
-          (map['actualValue'] as num?)?.toDouble() ?? 0.0,
-      projectedValue:
-          (map['projectedValue'] as num?)?.toDouble() ?? 0.0,
-      referenceValue:
-          (map['referenceValue'] as num?)?.toDouble() ?? 0.0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ??
-              0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      plannedValue: (map['plannedValue'] as num?)?.toDouble() ?? 0.0,
+      actualValue: (map['actualValue'] as num?)?.toDouble() ?? 0.0,
+      projectedValue: (map['projectedValue'] as num?)?.toDouble() ?? 0.0,
+      referenceValue: (map['referenceValue'] as num?)?.toDouble() ?? 0.0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       periodLabel: map['periodLabel']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

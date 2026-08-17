@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_reproductive_premium/domain/models/
 import 'package:projeto_atlas/features/atlas_reproductive_premium/domain/services/atlas_reproductive_premium_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasReproductivePremiumAnalyticsService();
+  const service = AtlasReproductivePremiumAnalyticsService();
 
   test('calculates reproductive premium analytics', () {
     final records = [
       AtlasReproductivePremiumRecord(
         id: '1',
-        module:
-            AtlasReproductivePremiumModule.advancedIatf,
+        module: AtlasReproductivePremiumModule.advancedIatf,
         feature: 'Inseminações',
         title: 'Lote IATF 01',
         date: '04/08/2026',
@@ -34,8 +32,7 @@ void main() {
       ),
       AtlasReproductivePremiumRecord(
         id: '2',
-        module:
-            AtlasReproductivePremiumModule.advancedIatf,
+        module: AtlasReproductivePremiumModule.advancedIatf,
         feature: 'Resultados e auditoria',
         title: 'Revisão pendente',
         date: '04/08/2026',
@@ -59,8 +56,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasReproductivePremiumModule.advancedIatf,
+      module: AtlasReproductivePremiumModule.advancedIatf,
       records: records,
     );
 

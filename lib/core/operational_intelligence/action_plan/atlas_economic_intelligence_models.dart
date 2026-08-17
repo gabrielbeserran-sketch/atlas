@@ -27,15 +27,9 @@ String atlasEconomicActivityLabel(AtlasEconomicActivity value) {
   }
 }
 
-enum AtlasEconomicScenarioType {
-  conservative,
-  base,
-  optimistic,
-}
+enum AtlasEconomicScenarioType { conservative, base, optimistic }
 
-String atlasEconomicScenarioTypeLabel(
-  AtlasEconomicScenarioType value,
-) {
+String atlasEconomicScenarioTypeLabel(AtlasEconomicScenarioType value) {
   switch (value) {
     case AtlasEconomicScenarioType.conservative:
       return 'Conservador';
@@ -83,10 +77,8 @@ class AtlasEconomicProductionMetric {
   double get operatingResult => revenue - totalCost;
   double get marginPercent =>
       revenue <= 0 ? 0 : operatingResult / revenue * 100;
-  double get costPerHectare =>
-      hectares <= 0 ? 0 : totalCost / hectares;
-  double get costPerAnimal =>
-      animalCount <= 0 ? 0 : totalCost / animalCount;
+  double get costPerHectare => hectares <= 0 ? 0 : totalCost / hectares;
+  double get costPerAnimal => animalCount <= 0 ? 0 : totalCost / animalCount;
   double get costPerArroba =>
       arrobasProduced <= 0 ? 0 : totalCost / arrobasProduced;
   double get costPerLiter =>
@@ -95,45 +87,40 @@ class AtlasEconomicProductionMetric {
       kilogramsProduced <= 0 ? 0 : totalCost / kilogramsProduced;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'activity': activity.name,
-        'periodStart': periodStart.toIso8601String(),
-        'periodEnd': periodEnd.toIso8601String(),
-        'hectares': hectares,
-        'animalCount': animalCount,
-        'arrobasProduced': arrobasProduced,
-        'litersProduced': litersProduced,
-        'kilogramsProduced': kilogramsProduced,
-        'revenue': revenue,
-        'variableCost': variableCost,
-        'fixedCost': fixedCost,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'activity': activity.name,
+    'periodStart': periodStart.toIso8601String(),
+    'periodEnd': periodEnd.toIso8601String(),
+    'hectares': hectares,
+    'animalCount': animalCount,
+    'arrobasProduced': arrobasProduced,
+    'litersProduced': litersProduced,
+    'kilogramsProduced': kilogramsProduced,
+    'revenue': revenue,
+    'variableCost': variableCost,
+    'fixedCost': fixedCost,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasEconomicProductionMetric.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEconomicProductionMetric.fromMap(Map<String, dynamic> map) {
     return AtlasEconomicProductionMetric(
       id: map['id']?.toString() ?? '',
       activity: AtlasEconomicActivity.values.firstWhere(
         (value) => value.name == map['activity']?.toString(),
         orElse: () => AtlasEconomicActivity.other,
       ),
-      periodStart: DateTime.tryParse(
-            map['periodStart']?.toString() ?? '',
-          ) ??
+      periodStart:
+          DateTime.tryParse(map['periodStart']?.toString() ?? '') ??
           DateTime.now(),
-      periodEnd: DateTime.tryParse(
-            map['periodEnd']?.toString() ?? '',
-          ) ??
+      periodEnd:
+          DateTime.tryParse(map['periodEnd']?.toString() ?? '') ??
           DateTime.now(),
       hectares: _readDouble(map['hectares']),
       animalCount: _readInt(map['animalCount']),
       arrobasProduced: _readDouble(map['arrobasProduced']),
       litersProduced: _readDouble(map['litersProduced']),
-      kilogramsProduced:
-          _readDouble(map['kilogramsProduced']),
+      kilogramsProduced: _readDouble(map['kilogramsProduced']),
       revenue: _readDouble(map['revenue']),
       variableCost: _readDouble(map['variableCost']),
       fixedCost: _readDouble(map['fixedCost']),
@@ -182,15 +169,13 @@ class AtlasEconomicInvestmentScenario {
   final String? farmName;
   final String notes;
 
-  double get monthlyNetBenefit =>
-      monthlyRevenueIncrease - monthlyCostIncrease;
+  double get monthlyNetBenefit => monthlyRevenueIncrease - monthlyCostIncrease;
 
   double get projectedNetResult =>
       monthlyNetBenefit * horizonMonths - initialInvestment;
 
-  double get roiPercent => initialInvestment <= 0
-      ? 0
-      : projectedNetResult / initialInvestment * 100;
+  double get roiPercent =>
+      initialInvestment <= 0 ? 0 : projectedNetResult / initialInvestment * 100;
 
   double? get paybackMonths {
     if (monthlyNetBenefit <= 0) {
@@ -203,8 +188,7 @@ class AtlasEconomicInvestmentScenario {
     final monthlyRate = discountRatePercent / 100 / 12;
     var result = -initialInvestment;
     for (var month = 1; month <= horizonMonths; month++) {
-      result += monthlyNetBenefit /
-          _pow(1 + monthlyRate, month);
+      result += monthlyNetBenefit / _pow(1 + monthlyRate, month);
     }
     return result;
   }
@@ -218,21 +202,19 @@ class AtlasEconomicInvestmentScenario {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'type': type.name,
-        'initialInvestment': initialInvestment,
-        'monthlyRevenueIncrease': monthlyRevenueIncrease,
-        'monthlyCostIncrease': monthlyCostIncrease,
-        'horizonMonths': horizonMonths,
-        'discountRatePercent': discountRatePercent,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'title': title,
+    'type': type.name,
+    'initialInvestment': initialInvestment,
+    'monthlyRevenueIncrease': monthlyRevenueIncrease,
+    'monthlyCostIncrease': monthlyCostIncrease,
+    'horizonMonths': horizonMonths,
+    'discountRatePercent': discountRatePercent,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasEconomicInvestmentScenario.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEconomicInvestmentScenario.fromMap(Map<String, dynamic> map) {
     return AtlasEconomicInvestmentScenario(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
@@ -240,15 +222,11 @@ class AtlasEconomicInvestmentScenario {
         (value) => value.name == map['type']?.toString(),
         orElse: () => AtlasEconomicScenarioType.base,
       ),
-      initialInvestment:
-          _readDouble(map['initialInvestment']),
-      monthlyRevenueIncrease:
-          _readDouble(map['monthlyRevenueIncrease']),
-      monthlyCostIncrease:
-          _readDouble(map['monthlyCostIncrease']),
+      initialInvestment: _readDouble(map['initialInvestment']),
+      monthlyRevenueIncrease: _readDouble(map['monthlyRevenueIncrease']),
+      monthlyCostIncrease: _readDouble(map['monthlyCostIncrease']),
       horizonMonths: _readInt(map['horizonMonths']),
-      discountRatePercent:
-          _readDouble(map['discountRatePercent']),
+      discountRatePercent: _readDouble(map['discountRatePercent']),
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

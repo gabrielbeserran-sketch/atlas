@@ -3,7 +3,6 @@ import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
 import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
 import 'package:projeto_atlas/features/animal_health/domain/services/animal_health_event_service.dart';
-import 'package:projeto_atlas/features/animal_health/domain/services/animal_health_inventory_service.dart';
 import 'package:projeto_atlas/features/farm_inventory/data/services/farm_inventory_storage_service.dart';
 import 'package:projeto_atlas/features/animal_health/presentation/screens/animal_health_form_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -14,12 +13,14 @@ class AnimalHealthListScreen extends StatefulWidget {
     required this.animal,
     required this.farm,
     required this.group,
+    this.autoOpenCreate = false,
     super.key,
   });
 
   final AnimalData animal;
   final FarmData farm;
   final HerdGroupData group;
+  final bool autoOpenCreate;
 
   @override
   State<AnimalHealthListScreen> createState() => _AnimalHealthListScreenState();
@@ -30,8 +31,6 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
 
   final AnimalHealthEventService eventService =
       const AnimalHealthEventService();
-  final AnimalHealthInventoryService inventoryIntegration =
-      AnimalHealthInventoryService();
   final FarmInventoryStorageService inventoryStorage =
       FarmInventoryStorageService();
 
@@ -42,6 +41,11 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
   void initState() {
     super.initState();
     loadRecords();
+    if (widget.autoOpenCreate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) await openHealthForm();
+      });
+    }
   }
 
   int get vaccinationCount {
@@ -58,9 +62,11 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
         .length;
   }
 
-  int get scheduledCount => records.where((record) => record.hasScheduledReturn).length;
+  int get scheduledCount =>
+      records.where((record) => record.hasScheduledReturn).length;
 
-  int get quarantineCount => records.where((record) => record.isQuarantine).length;
+  int get quarantineCount =>
+      records.where((record) => record.isQuarantine).length;
 
   Future<void> loadRecords() async {
     final savedRecords = await storage.loadRecords(
@@ -90,7 +96,12 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
       lotId: widget.group.id,
       records: records,
     );
-    if (mounted) setState(() { records = saved; sortRecords(); });
+    if (mounted) {
+      setState(() {
+        records = saved;
+        sortRecords();
+      });
+    }
   }
 
   void sortRecords() {
@@ -114,8 +125,13 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
   }
 
   Future<void> openHealthForm() async {
-    final inventoryItems = await inventoryStorage.loadItems(widget.farm.name);
-    if (!mounted) return;
+    final inventoryItems = await inventoryStorage.loadItems(
+      widget.farm.name,
+      farmId: widget.farm.id?.trim() ?? '',
+    );
+    if (!mounted) {
+      return;
+    }
 
     final newRecord = await Navigator.push<AnimalHealthData>(
       context,
@@ -126,20 +142,29 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
       ),
     );
 
-    if (newRecord == null || !mounted) return;
+    if (newRecord == null || !mounted) {
+      return;
+    }
 
-    final integrationResult = await inventoryIntegration.deductForHealthRecord(
+    final farmId = widget.farm.id?.trim() ?? '';
+    if (farmId.isEmpty) {
+      throw StateError('A Fazenda ativa não possui ID remoto válido.');
+    }
+    final savedRecord = await storage.createRecord(
       farmName: widget.farm.name,
-      animalName: widget.animal.displayName,
+      groupName: widget.group.name,
+      farmId: farmId,
+      animalId: widget.animal.id,
+      lotId: widget.group.id,
       record: newRecord,
     );
-    final savedRecord = integrationResult.record;
 
+    if (!mounted) return;
     setState(() {
+      records.removeWhere((item) => item.id == savedRecord.id);
       records.add(savedRecord);
       sortRecords();
     });
-    await saveRecords();
 
     await eventService.publishHealthRecordCreated(
       farmName: widget.farm.name,
@@ -148,15 +173,16 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
       record: savedRecord,
     );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          integrationResult.message.isEmpty
-              ? 'Registro sanitário salvo com sucesso.'
-              : integrationResult.message,
+          savedRecord.inventoryDeducted
+              ? 'Registro sanitário salvo; estoque e financeiro foram integrados no servidor.'
+              : 'Registro sanitário salvo com sucesso.',
         ),
-        backgroundColor: integrationResult.success ? null : Colors.orange.shade800,
       ),
     );
   }
@@ -186,12 +212,23 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id?.trim() ?? '';
+    if (farmId.isEmpty) {
+      throw StateError('A Fazenda ativa não possui ID remoto válido.');
+    }
+    final savedRecord = await storage.updateRecord(
+      farmName: widget.farm.name,
+      groupName: widget.group.name,
+      farmId: farmId,
+      animalId: widget.animal.id,
+      record: editedRecord,
+    );
+
+    if (!mounted) return;
     setState(() {
-      records[recordIndex] = editedRecord;
+      records[recordIndex] = savedRecord;
       sortRecords();
     });
-
-    await saveRecords();
 
     if (!mounted) {
       return;
@@ -237,11 +274,22 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id?.trim() ?? '';
+    if (farmId.isEmpty) {
+      throw StateError('A Fazenda ativa não possui ID remoto válido.');
+    }
+    await storage.deleteRecord(
+      farmName: widget.farm.name,
+      groupName: widget.group.name,
+      farmId: farmId,
+      animalId: widget.animal.id,
+      recordId: healthRecord.id,
+    );
+
+    if (!mounted) return;
     setState(() {
       records.removeWhere((item) => item.id == healthRecord.id);
     });
-
-    await saveRecords();
 
     if (!mounted) {
       return;
@@ -519,7 +567,9 @@ class HealthRecordCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ],
-                    if (record.isQuarantine || record.isMortality || record.severity != 'Não informada') ...[
+                    if (record.isQuarantine ||
+                        record.isMortality ||
+                        record.severity != 'Não informada') ...[
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,

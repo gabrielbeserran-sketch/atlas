@@ -7,10 +7,7 @@ import 'package:projeto_atlas/features/strategy_execution/data/services/atlas_st
 import 'package:projeto_atlas/features/value_governance/data/services/atlas_value_governance_repository.dart';
 
 class AtlasPortfolioManagementScreen extends StatefulWidget {
-  const AtlasPortfolioManagementScreen({
-    super.key,
-    this.farmId,
-  });
+  const AtlasPortfolioManagementScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -35,21 +32,16 @@ class _AtlasPortfolioManagementScreenState
   }
 
   Future<void> _load() async {
-    final plans =
-        await AtlasStrategyExecutionRepository.instance.loadAll();
-    final realizations =
-        await AtlasBenefitsRealizationRepository.instance.loadAll();
-    final decisions =
-        await AtlasValueGovernanceRepository.instance.loadAll();
+    final plans = await AtlasStrategyExecutionRepository.instance.loadAll();
+    final realizations = await AtlasBenefitsRealizationRepository.instance
+        .loadAll();
+    final decisions = await AtlasValueGovernanceRepository.instance.loadAll();
 
     final filteredPlans = widget.farmId == null
         ? plans
-        : plans
-            .where((item) => item.farmId == widget.farmId)
-            .toList();
+        : plans.where((item) => item.farmId == widget.farmId).toList();
 
-    final planIds =
-        filteredPlans.map((item) => item.id).toSet();
+    final planIds = filteredPlans.map((item) => item.id).toSet();
 
     final filteredRealizations = realizations
         .where((item) => planIds.contains(item.strategyPlanId))
@@ -59,8 +51,7 @@ class _AtlasPortfolioManagementScreenState
         .where((item) => planIds.contains(item.strategyPlanId))
         .toList();
 
-    final generated =
-        const AtlasPortfolioManagementEngine().build(
+    final generated = const AtlasPortfolioManagementEngine().build(
       plans: filteredPlans,
       realizations: filteredRealizations,
       decisions: filteredDecisions,
@@ -92,9 +83,7 @@ class _AtlasPortfolioManagementScreenState
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) {
-                    return AtlasStrategicCapacityScreen(
-                      farmId: widget.farmId,
-                    );
+                    return AtlasStrategicCapacityScreen(farmId: widget.farmId);
                   },
                 ),
               );
@@ -112,40 +101,39 @@ class _AtlasPortfolioManagementScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : summary.items.isEmpty
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1240),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(summary: summary),
-                        const SizedBox(height: 22),
-                        const Text(
-                          'Prioridades do portfólio',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Estratégias ordenadas por impacto, urgência, saúde e valor em risco.',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 14),
-                        ...summary.items.asMap().entries.map(
-                              (entry) => _PortfolioCard(
-                                position: entry.key + 1,
-                                item: entry.value,
-                              ),
-                            ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(summary: summary),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Prioridades do portfólio',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Estratégias ordenadas por impacto, urgência, saúde e valor em risco.',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 14),
+                    ...summary.items.asMap().entries.map(
+                      (entry) => _PortfolioCard(
+                        position: entry.key + 1,
+                        item: entry.value,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
@@ -204,9 +192,7 @@ class _Hero extends StatelessWidget {
               ),
               _HeroMetric(
                 label: 'Investimento',
-                value: _currency(
-                  summary.committedInvestment,
-                ),
+                value: _currency(summary.committedInvestment),
               ),
               _HeroMetric(
                 label: 'Valor esperado',
@@ -222,13 +208,11 @@ class _Hero extends StatelessWidget {
               ),
               _HeroMetric(
                 label: 'Saúde média',
-                value:
-                    '${summary.averageHealth.toStringAsFixed(1)}%',
+                value: '${summary.averageHealth.toStringAsFixed(1)}%',
               ),
               _HeroMetric(
                 label: 'Progresso médio',
-                value:
-                    '${summary.averageProgress.toStringAsFixed(1)}%',
+                value: '${summary.averageProgress.toStringAsFixed(1)}%',
               ),
             ],
           ),
@@ -239,10 +223,7 @@ class _Hero extends StatelessWidget {
 }
 
 class _PortfolioCard extends StatelessWidget {
-  const _PortfolioCard({
-    required this.position,
-    required this.item,
-  });
+  const _PortfolioCard({required this.position, required this.item});
 
   final int position;
   final AtlasPortfolioItem item;
@@ -252,8 +233,8 @@ class _PortfolioCard extends StatelessWidget {
     final color = item.isCritical
         ? const Color(0xFFC62828)
         : item.healthScore >= 80
-            ? const Color(0xFF2E7D32)
-            : const Color(0xFFEF6C00);
+        ? const Color(0xFF2E7D32)
+        : const Color(0xFFEF6C00);
 
     return Card(
       child: ExpansionTile(
@@ -261,10 +242,7 @@ class _PortfolioCard extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.12),
           child: Text(
             '$position',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(
@@ -276,8 +254,7 @@ class _PortfolioCard extends StatelessWidget {
           '${item.priorityScore.toStringAsFixed(1)} · saúde '
           '${item.healthScore.toStringAsFixed(1)}',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           LinearProgressIndicator(
             value: item.plan.progressPercent / 100,
@@ -291,23 +268,19 @@ class _PortfolioCard extends StatelessWidget {
             children: [
               _Metric(
                 label: 'Prioridade',
-                value:
-                    item.priorityScore.toStringAsFixed(1),
+                value: item.priorityScore.toStringAsFixed(1),
               ),
               _Metric(
                 label: 'Saúde',
-                value:
-                    '${item.healthScore.toStringAsFixed(1)}%',
+                value: '${item.healthScore.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Progresso',
-                value:
-                    '${item.plan.progressPercent.toStringAsFixed(1)}%',
+                value: '${item.plan.progressPercent.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Carga de recursos',
-                value:
-                    '${item.resourceLoad.toStringAsFixed(1)}%',
+                value: '${item.resourceLoad.toStringAsFixed(1)}%',
               ),
               _Metric(
                 label: 'Valor em risco',
@@ -315,8 +288,7 @@ class _PortfolioCard extends StatelessWidget {
               ),
               _Metric(
                 label: 'ROI esperado',
-                value:
-                    '${item.plan.expectedRoi.toStringAsFixed(1)}%',
+                value: '${item.plan.expectedRoi.toStringAsFixed(1)}%',
               ),
             ],
           ),
@@ -335,10 +307,7 @@ class _PortfolioCard extends StatelessWidget {
               child: Text(
                 'Governança atual: '
                 '${item.governance!.executiveSummary}',
-                style: const TextStyle(
-                  color: Colors.black54,
-                  height: 1.4,
-                ),
+                style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
             ),
           ],
@@ -349,10 +318,7 @@ class _PortfolioCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -369,15 +335,9 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.black54),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -385,10 +345,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -405,10 +362,7 @@ class _HeroMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -435,11 +389,7 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.workspaces_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.workspaces_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existem estratégias no portfólio.',

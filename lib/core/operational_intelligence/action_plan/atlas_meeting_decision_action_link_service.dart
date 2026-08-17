@@ -9,15 +9,12 @@ class AtlasMeetingDecisionActionLinkService {
   static final AtlasMeetingDecisionActionLinkService instance =
       AtlasMeetingDecisionActionLinkService._();
 
-  static const String _storageKey =
-      'atlas_meeting_decision_action_links_v1';
+  static const String _storageKey = 'atlas_meeting_decision_action_links_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasMeetingDecisionActionLink>> loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasMeetingDecisionActionLink>[];
@@ -28,8 +25,7 @@ class AtlasMeetingDecisionActionLinkService {
 
       return decoded
           .map(
-            (item) =>
-                AtlasMeetingDecisionActionLink.fromMap(
+            (item) => AtlasMeetingDecisionActionLink.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -53,34 +49,24 @@ class AtlasMeetingDecisionActionLinkService {
     return null;
   }
 
-  Future<void> save(
-    AtlasMeetingDecisionActionLink link,
-  ) async {
+  Future<void> save(AtlasMeetingDecisionActionLink link) async {
     final all = await loadAll()
-      ..removeWhere(
-        (item) => item.decisionId == link.decisionId,
-      )
+      ..removeWhere((item) => item.decisionId == link.decisionId)
       ..add(link);
 
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
   }
 
   Future<void> removeByMeeting(String meetingId) async {
     final all = await loadAll()
-      ..removeWhere(
-        (item) => item.meetingId == meetingId,
-      );
+      ..removeWhere((item) => item.meetingId == meetingId);
 
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
   }
 }

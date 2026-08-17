@@ -4,13 +4,11 @@ import 'package:projeto_atlas/features/executive_kpis/domain/models/atlas_execut
 class AtlasExecutiveKpiHistoryService {
   const AtlasExecutiveKpiHistoryService();
 
-  List<AtlasExecutiveKpiHistoryPoint>
-      createSnapshot({
+  List<AtlasExecutiveKpiHistoryPoint> createSnapshot({
     required List<AtlasExecutiveKpi> kpis,
     DateTime? recordedAt,
   }) {
-    final currentTime =
-        recordedAt ?? DateTime.now();
+    final currentTime = recordedAt ?? DateTime.now();
 
     return kpis.map((kpi) {
       return AtlasExecutiveKpiHistoryPoint(
@@ -27,28 +25,18 @@ class AtlasExecutiveKpiHistoryService {
     }).toList();
   }
 
-  List<AtlasExecutiveKpiHistoryPoint>
-      mergeSnapshot({
-    required List<AtlasExecutiveKpiHistoryPoint>
-        existingPoints,
-    required List<AtlasExecutiveKpiHistoryPoint>
-        snapshot,
+  List<AtlasExecutiveKpiHistoryPoint> mergeSnapshot({
+    required List<AtlasExecutiveKpiHistoryPoint> existingPoints,
+    required List<AtlasExecutiveKpiHistoryPoint> snapshot,
   }) {
     final result = [...existingPoints];
 
     for (final newPoint in snapshot) {
-      final sameDayIndex = result.indexWhere(
-        (existing) {
-          return existing.kpiId ==
-                  newPoint.kpiId &&
-              existing.farmName ==
-                  newPoint.farmName &&
-              _isSameDay(
-                existing.recordedAt,
-                newPoint.recordedAt,
-              );
-        },
-      );
+      final sameDayIndex = result.indexWhere((existing) {
+        return existing.kpiId == newPoint.kpiId &&
+            existing.farmName == newPoint.farmName &&
+            _isSameDay(existing.recordedAt, newPoint.recordedAt);
+      });
 
       if (sameDayIndex >= 0) {
         result[sameDayIndex] = newPoint;
@@ -58,46 +46,32 @@ class AtlasExecutiveKpiHistoryService {
     }
 
     result.sort(
-      (first, second) =>
-          first.recordedAt.compareTo(
-        second.recordedAt,
-      ),
+      (first, second) => first.recordedAt.compareTo(second.recordedAt),
     );
 
     return result;
   }
 
   AtlasExecutiveKpiHistorySummary buildSummary({
-    required List<AtlasExecutiveKpiHistoryPoint>
-        points,
+    required List<AtlasExecutiveKpiHistoryPoint> points,
     DateTime? now,
   }) {
-    final grouped = <
-        String,
-        List<AtlasExecutiveKpiHistoryPoint>>{};
+    final grouped = <String, List<AtlasExecutiveKpiHistoryPoint>>{};
 
     for (final point in points) {
-      final key =
-          '${point.farmName}::${point.kpiId}';
+      final key = '${point.farmName}::${point.kpiId}';
 
-      grouped.putIfAbsent(
-        key,
-        () => [],
-      );
+      grouped.putIfAbsent(key, () => []);
 
       grouped[key]!.add(point);
     }
 
-    final series =
-        <AtlasExecutiveKpiHistorySeries>[];
+    final series = <AtlasExecutiveKpiHistorySeries>[];
 
     for (final entry in grouped.entries) {
       final items = entry.value
         ..sort(
-          (first, second) =>
-              first.recordedAt.compareTo(
-            second.recordedAt,
-          ),
+          (first, second) => first.recordedAt.compareTo(second.recordedAt),
         );
 
       if (items.isEmpty) {
@@ -106,13 +80,9 @@ class AtlasExecutiveKpiHistoryService {
 
       final current = items.last;
 
-      final previous =
-          items.length >= 2
-              ? items[items.length - 2]
-              : null;
+      final previous = items.length >= 2 ? items[items.length - 2] : null;
 
-      final variationPercent =
-          _variationPercent(
+      final variationPercent = _variationPercent(
         currentValue: current.value,
         previousValue: previous?.value,
       );
@@ -127,52 +97,35 @@ class AtlasExecutiveKpiHistoryService {
           points: List.unmodifiable(items),
           currentValue: current.value,
           previousValue: previous?.value,
-          variationPercent:
-              variationPercent,
+          variationPercent: variationPercent,
           trend: _trend(
-            variationPercent:
-                variationPercent,
-            hasPrevious:
-                previous != null,
+            variationPercent: variationPercent,
+            hasPrevious: previous != null,
           ),
         ),
       );
     }
 
-    series.sort(
-      (first, second) {
-        final firstAbsolute =
-            first.variationPercent.abs();
+    series.sort((first, second) {
+      final firstAbsolute = first.variationPercent.abs();
 
-        final secondAbsolute =
-            second.variationPercent.abs();
+      final secondAbsolute = second.variationPercent.abs();
 
-        return secondAbsolute.compareTo(
-          firstAbsolute,
-        );
-      },
-    );
+      return secondAbsolute.compareTo(firstAbsolute);
+    });
 
-    final improvingCount =
-        series.where((item) {
-      return item.trend ==
-              AtlasExecutiveKpiTrend.up ||
-          item.trend ==
-              AtlasExecutiveKpiTrend.strongUp;
+    final improvingCount = series.where((item) {
+      return item.trend == AtlasExecutiveKpiTrend.up ||
+          item.trend == AtlasExecutiveKpiTrend.strongUp;
     }).length;
 
-    final stableCount =
-        series.where((item) {
-      return item.trend ==
-              AtlasExecutiveKpiTrend.stable;
+    final stableCount = series.where((item) {
+      return item.trend == AtlasExecutiveKpiTrend.stable;
     }).length;
 
-    final worseningCount =
-        series.where((item) {
-      return item.trend ==
-              AtlasExecutiveKpiTrend.down ||
-          item.trend ==
-              AtlasExecutiveKpiTrend.strongDown;
+    final worseningCount = series.where((item) {
+      return item.trend == AtlasExecutiveKpiTrend.down ||
+          item.trend == AtlasExecutiveKpiTrend.strongDown;
     }).length;
 
     return AtlasExecutiveKpiHistorySummary(
@@ -190,21 +143,17 @@ class AtlasExecutiveKpiHistoryService {
     );
   }
 
-  List<AtlasExecutiveKpiHistorySeries>
-      filterSeries({
-    required AtlasExecutiveKpiHistorySummary
-        summary,
+  List<AtlasExecutiveKpiHistorySeries> filterSeries({
+    required AtlasExecutiveKpiHistorySummary summary,
     String? farmName,
     AtlasExecutiveKpiCategory? category,
   }) {
     return summary.series.where((series) {
-      if (farmName != null &&
-          series.farmName != farmName) {
+      if (farmName != null && series.farmName != farmName) {
         return false;
       }
 
-      if (category != null &&
-          series.category != category) {
+      if (category != null && series.category != category) {
         return false;
       }
 
@@ -216,14 +165,11 @@ class AtlasExecutiveKpiHistoryService {
     required double currentValue,
     required double? previousValue,
   }) {
-    if (previousValue == null ||
-        previousValue == 0) {
+    if (previousValue == null || previousValue == 0) {
       return 0;
     }
 
-    return ((currentValue - previousValue) /
-            previousValue.abs() *
-            100)
+    return ((currentValue - previousValue) / previousValue.abs() * 100)
         .toDouble();
   }
 
@@ -254,10 +200,7 @@ class AtlasExecutiveKpiHistoryService {
     return AtlasExecutiveKpiTrend.stable;
   }
 
-  bool _isSameDay(
-    DateTime first,
-    DateTime second,
-  ) {
+  bool _isSameDay(DateTime first, DateTime second) {
     return first.year == second.year &&
         first.month == second.month &&
         first.day == second.day;

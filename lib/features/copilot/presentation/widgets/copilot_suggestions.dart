@@ -20,21 +20,13 @@ class CopilotSuggestions extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 10,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       child: Row(
         children: suggestions.map((suggestion) {
           return Padding(
-            padding: const EdgeInsets.only(
-              right: 8,
-            ),
+            padding: const EdgeInsets.only(right: 8),
             child: ActionChip(
-              avatar: const Icon(
-                Icons.auto_awesome_outlined,
-                size: 16,
-              ),
+              avatar: const Icon(Icons.auto_awesome_outlined, size: 16),
               label: Text(suggestion),
               onPressed: enabled
                   ? () {

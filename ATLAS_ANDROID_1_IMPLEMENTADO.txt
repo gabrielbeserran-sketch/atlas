@@ -1,0 +1,12 @@
+ATLAS ANDROID 1.0 — PRIMEIRO DISPOSITIVO REAL
+
+- URL de API configurável por --dart-define
+- prioridade da URL de build sobre preferências antigas
+- INTERNET habilitada no Android release
+- rede local HTTP habilitada para o primeiro teste privado
+- applicationId definido como br.com.projetoatlas.app
+- scripts de validação, execução, build, instalação e aceite
+- teste de normalização do endpoint Android
+- versão 1.0.0+2
+
+A aprovação final exige execução no celular real.

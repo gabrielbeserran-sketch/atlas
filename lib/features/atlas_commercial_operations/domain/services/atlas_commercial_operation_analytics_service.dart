@@ -52,8 +52,9 @@ class AtlasCommercialOperationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -91,9 +92,9 @@ class AtlasCommercialOperationAnalyticsService {
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -144,33 +145,26 @@ class AtlasCommercialOperationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasCommercialOperationModule.digitalAuction =>
-            const [
-              'Valide lote, comissão, condição de pagamento e documentação antes da publicação.',
-              'Registre lance vencedor, aceite, pagamento e entrega com trilha de auditoria.',
-            ],
-          AtlasCommercialOperationModule.livestockLogistics =>
-            const [
-              'Confirme veículo, lotação, rota, motorista, documentação e plano de contingência.',
-              'Monitore tempo, paradas, temperatura, bem-estar e comprovante de entrega.',
-            ],
-          AtlasCommercialOperationModule.originCertification =>
-            const [
-              'Mantenha evidências da propriedade, lote, manejo, sanidade e cadeia de custódia.',
-              'Controle validade, auditoria, não conformidades e renovação dos certificados.',
-            ],
-          AtlasCommercialOperationModule.ruralCrm => const [
-              'Registre origem do lead, próxima atividade, responsável e probabilidade de fechamento.',
-              'Acompanhe relacionamento, recompra, satisfação e oportunidades de pós-venda.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasCommercialOperationModule.digitalAuction => const [
+          'Valide lote, comissão, condição de pagamento e documentação antes da publicação.',
+          'Registre lance vencedor, aceite, pagamento e entrega com trilha de auditoria.',
+        ],
+        AtlasCommercialOperationModule.livestockLogistics => const [
+          'Confirme veículo, lotação, rota, motorista, documentação e plano de contingência.',
+          'Monitore tempo, paradas, temperatura, bem-estar e comprovante de entrega.',
+        ],
+        AtlasCommercialOperationModule.originCertification => const [
+          'Mantenha evidências da propriedade, lote, manejo, sanidade e cadeia de custódia.',
+          'Controle validade, auditoria, não conformidades e renovação dos certificados.',
+        ],
+        AtlasCommercialOperationModule.ruralCrm => const [
+          'Registre origem do lead, próxima atividade, responsável e probabilidade de fechamento.',
+          'Acompanhe relacionamento, recompra, satisfação e oportunidades de pós-venda.',
+        ],
+      });
     }
 
     return items;

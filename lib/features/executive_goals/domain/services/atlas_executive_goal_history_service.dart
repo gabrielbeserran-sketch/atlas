@@ -44,27 +44,13 @@ class AtlasExecutiveGoalHistoryService {
 
     for (final goal in goals) {
       final goalEvents = grouped[goal.id] ?? [];
-      goalEvents.sort(
-        (a, b) => a.recordedAt.compareTo(b.recordedAt),
-      );
+      goalEvents.sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
 
-      final average = _averageDailyProgress(
-        goal,
-        goalEvents,
-        currentTime,
-      );
+      final average = _averageDailyProgress(goal, goalEvents, currentTime);
 
-      final projected = _projectedDate(
-        goal,
-        average,
-        currentTime,
-      );
+      final projected = _projectedDate(goal, average, currentTime);
 
-      final risk = _risk(
-        goal,
-        projected,
-        currentTime,
-      );
+      final risk = _risk(goal, projected, currentTime);
 
       series.add(
         AtlasExecutiveGoalHistorySeries(
@@ -82,39 +68,26 @@ class AtlasExecutiveGoalHistoryService {
     }
 
     series.sort(
-      (a, b) => _riskWeight(b.riskLevel)
-          .compareTo(_riskWeight(a.riskLevel)),
+      (a, b) => _riskWeight(b.riskLevel).compareTo(_riskWeight(a.riskLevel)),
     );
 
     final onTrack = series
-        .where(
-          (item) =>
-              item.riskLevel ==
-              AtlasExecutiveGoalRiskLevel.onTrack,
-        )
+        .where((item) => item.riskLevel == AtlasExecutiveGoalRiskLevel.onTrack)
         .length;
 
     final atRisk = series
         .where(
-          (item) =>
-              item.riskLevel ==
-              AtlasExecutiveGoalRiskLevel.attention,
+          (item) => item.riskLevel == AtlasExecutiveGoalRiskLevel.attention,
         )
         .length;
 
     final highRisk = series
-        .where(
-          (item) =>
-              item.riskLevel ==
-              AtlasExecutiveGoalRiskLevel.high,
-        )
+        .where((item) => item.riskLevel == AtlasExecutiveGoalRiskLevel.high)
         .length;
 
     final completed = series
         .where(
-          (item) =>
-              item.riskLevel ==
-              AtlasExecutiveGoalRiskLevel.completed,
+          (item) => item.riskLevel == AtlasExecutiveGoalRiskLevel.completed,
         )
         .length;
 
@@ -123,10 +96,10 @@ class AtlasExecutiveGoalHistoryService {
       summary: series.isEmpty
           ? 'Ainda não existem metas com histórico registrado.'
           : 'O histórico acompanha ${series.length} metas: '
-              '$onTrack no ritmo esperado, '
-              '$atRisk em atenção, '
-              '$highRisk em alto risco e '
-              '$completed concluídas.',
+                '$onTrack no ritmo esperado, '
+                '$atRisk em atenção, '
+                '$highRisk em alto risco e '
+                '$completed concluídas.',
       series: series,
       onTrack: onTrack,
       atRisk: atRisk,
@@ -148,16 +121,10 @@ class AtlasExecutiveGoalHistoryService {
           .inDays
           .clamp(1, 100000);
 
-      return ((last.progressPercent -
-                  first.progressPercent) /
-              days)
-          .toDouble();
+      return ((last.progressPercent - first.progressPercent) / days).toDouble();
     }
 
-    final days = now
-        .difference(goal.createdAt)
-        .inDays
-        .clamp(1, 100000);
+    final days = now.difference(goal.createdAt).inDays.clamp(1, 100000);
 
     return (goal.progressPercent / days).toDouble();
   }
@@ -173,14 +140,12 @@ class AtlasExecutiveGoalHistoryService {
 
     if (average <= 0) return null;
 
-    final remainingDays =
-        ((100 - goal.progressPercent) / average)
-            .ceil()
-            .clamp(0, 36500);
-
-    return now.add(
-      Duration(days: remainingDays),
+    final remainingDays = ((100 - goal.progressPercent) / average).ceil().clamp(
+      0,
+      36500,
     );
+
+    return now.add(Duration(days: remainingDays));
   }
 
   AtlasExecutiveGoalRiskLevel _risk(
@@ -198,20 +163,14 @@ class AtlasExecutiveGoalHistoryService {
       return AtlasExecutiveGoalRiskLevel.high;
     }
 
-    if (projected.isAfter(
-      goal.deadline.subtract(
-        const Duration(days: 7),
-      ),
-    )) {
+    if (projected.isAfter(goal.deadline.subtract(const Duration(days: 7)))) {
       return AtlasExecutiveGoalRiskLevel.attention;
     }
 
     return AtlasExecutiveGoalRiskLevel.onTrack;
   }
 
-  int _riskWeight(
-    AtlasExecutiveGoalRiskLevel level,
-  ) {
+  int _riskWeight(AtlasExecutiveGoalRiskLevel level) {
     switch (level) {
       case AtlasExecutiveGoalRiskLevel.high:
         return 4;

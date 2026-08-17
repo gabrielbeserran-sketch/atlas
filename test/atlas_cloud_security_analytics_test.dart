@@ -9,8 +9,7 @@ void main() {
     final records = [
       AtlasCloudSecurityRecord(
         id: '1',
-        module:
-            AtlasCloudSecurityModule.professionalAuthentication,
+        module: AtlasCloudSecurityModule.professionalAuthentication,
         feature: 'Login seguro',
         title: 'Autenticação principal',
         date: '04/08/2026',
@@ -34,8 +33,7 @@ void main() {
       ),
       AtlasCloudSecurityRecord(
         id: '2',
-        module:
-            AtlasCloudSecurityModule.professionalAuthentication,
+        module: AtlasCloudSecurityModule.professionalAuthentication,
         feature: 'Autenticação multifator',
         title: 'MFA pendente',
         date: '04/08/2026',
@@ -60,8 +58,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasCloudSecurityModule.professionalAuthentication,
+      module: AtlasCloudSecurityModule.professionalAuthentication,
       records: records,
     );
 

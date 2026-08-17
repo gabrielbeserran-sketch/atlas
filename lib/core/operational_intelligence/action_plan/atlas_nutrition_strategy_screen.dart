@@ -41,9 +41,7 @@ class _AtlasNutritionStrategyScreenState
     projections = await service.buildProjections(
       farmName: widget.actionController.farmName,
     );
-    plans = await service.loadPlans(
-      farmName: widget.actionController.farmName,
-    );
+    plans = await service.loadPlans(farmName: widget.actionController.farmName);
     recommendations = await service.buildRecommendations(
       farmName: widget.actionController.farmName,
       snapshot: snapshot!,
@@ -73,8 +71,7 @@ class _AtlasNutritionStrategyScreenState
     final notes = TextEditingController();
     final year = DateTime.now().year;
 
-    final result =
-        await showDialog<AtlasNutritionAnnualPlan>(
+    final result = await showDialog<AtlasNutritionAnnualPlan>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Planejamento nutricional anual'),
@@ -101,10 +98,7 @@ class _AtlasNutritionStrategyScreenState
                 const SizedBox(height: 10),
                 _number(gain, 'GMD-alvo (kg)'),
                 const SizedBox(height: 10),
-                _number(
-                  conversion,
-                  'Conversão alimentar-alvo',
-                ),
+                _number(conversion, 'Conversão alimentar-alvo'),
                 const SizedBox(height: 10),
                 _number(budget, 'Orçamento'),
                 const SizedBox(height: 10),
@@ -130,8 +124,7 @@ class _AtlasNutritionStrategyScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancelar'),
           ),
           FilledButton(
@@ -139,19 +132,17 @@ class _AtlasNutritionStrategyScreenState
               final now = DateTime.now();
               Navigator.of(dialogContext).pop(
                 AtlasNutritionAnnualPlan(
-                  id: 'nutrition_plan_'
+                  id:
+                      'nutrition_plan_'
                       '${now.microsecondsSinceEpoch}',
                   title: title.text.trim(),
                   year: year,
                   targetLot: lot.text.trim(),
                   targetDailyGainKg: _double(gain.text),
-                  targetFeedConversion:
-                      _double(conversion.text),
+                  targetFeedConversion: _double(conversion.text),
                   budget: _double(budget.text),
-                  responsibleName:
-                      responsible.text.trim(),
-                  farmName:
-                      widget.actionController.farmName,
+                  responsibleName: responsible.text.trim(),
+                  farmName: widget.actionController.farmName,
                   notes: notes.text.trim(),
                 ),
               );
@@ -215,16 +206,13 @@ class _AtlasNutritionStrategyScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addPlan,
           icon: const Icon(Icons.add),
           label: const Text('Novo plano'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _Dashboard(snapshot: current),
@@ -242,9 +230,7 @@ class _AtlasNutritionStrategyScreenState
                   ),
                   _Indicators(snapshot: current),
                   _Projections(projections: projections),
-                  _Recommendations(
-                    recommendations: recommendations,
-                  ),
+                  _Recommendations(recommendations: recommendations),
                   _Costs(snapshot: current),
                   _Plans(plans: plans, onAdd: _addPlan),
                 ],
@@ -253,16 +239,10 @@ class _AtlasNutritionStrategyScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -273,9 +253,7 @@ class _AtlasNutritionStrategyScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -373,16 +351,8 @@ class _Indicators extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _metric('GMD médio', item.averageDailyGainKg, 'kg'),
-        _metric(
-          'Conversão alimentar',
-          item.averageFeedConversion,
-          '',
-        ),
-        _metric(
-          'Consumo médio',
-          item.averageConsumptionKg,
-          'kg',
-        ),
+        _metric('Conversão alimentar', item.averageFeedConversion, ''),
+        _metric('Consumo médio', item.averageConsumptionKg, 'kg'),
         _metric('Desperdício', item.wastePercent, '%'),
         _metric('Score nutricional', item.nutritionScore, '/100'),
       ],
@@ -398,9 +368,7 @@ class _Projections extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (projections.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma projeção disponível.'),
-      );
+      return const Center(child: Text('Nenhuma projeção disponível.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -422,11 +390,7 @@ class _Projections extends StatelessWidget {
                 item.projectedConsumption30DaysKg,
                 'kg',
               ),
-              _metric(
-                'Custo em 30 dias',
-                item.projectedCost30Days,
-                'R\$',
-              ),
+              _metric('Custo em 30 dias', item.projectedCost30Days, 'R\$'),
               _metric(
                 'Ganho projetado em 30 dias',
                 item.projectedWeightGain30DaysKg,
@@ -441,9 +405,7 @@ class _Projections extends StatelessWidget {
 }
 
 class _Recommendations extends StatelessWidget {
-  const _Recommendations({
-    required this.recommendations,
-  });
+  const _Recommendations({required this.recommendations});
 
   final List<String> recommendations;
 
@@ -490,10 +452,7 @@ class _Costs extends StatelessWidget {
 }
 
 class _Plans extends StatelessWidget {
-  const _Plans({
-    required this.plans,
-    required this.onAdd,
-  });
+  const _Plans({required this.plans, required this.onAdd});
 
   final List<AtlasNutritionAnnualPlan> plans;
   final VoidCallback onAdd;
@@ -515,36 +474,22 @@ class _Plans extends StatelessWidget {
         ),
         Expanded(
           child: plans.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum planejamento nutricional.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum planejamento nutricional.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: plans.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = plans[index];
                     return Card(
                       child: ListTile(
-                        title: Text(
-                          '${item.title} — ${item.year}',
-                        ),
+                        title: Text('${item.title} — ${item.year}'),
                         subtitle: Text(
                           '${item.targetLot} • '
                           'GMD ${item.targetDailyGainKg.toStringAsFixed(2)} kg • '
                           'CA ${item.targetFeedConversion.toStringAsFixed(2)}',
                         ),
-                        trailing: Text(
-                          'R\$ ${item.budget.toStringAsFixed(2)}',
-                        ),
+                        trailing: Text('R\$ ${item.budget.toStringAsFixed(2)}'),
                       ),
                     );
                   },
@@ -568,11 +513,14 @@ Widget _card(String title, double value, String unit) {
             const SizedBox(height: 8),
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
-              '${unit == '%' ? '%' : unit == '/100' ? '/100' : unit == 'kg' ? ' kg' : ''}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              '${unit == '%'
+                  ? '%'
+                  : unit == '/100'
+                  ? '/100'
+                  : unit == 'kg'
+                  ? ' kg'
+                  : ''}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -588,11 +536,14 @@ Widget _metric(String title, double value, String unit) {
       trailing: Text(
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(2)}'
-        '${unit == '%' ? '%' : unit == '/100' ? '/100' : unit == 'kg' ? ' kg' : ''}',
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-        ),
+        '${unit == '%'
+            ? '%'
+            : unit == '/100'
+            ? '/100'
+            : unit == 'kg'
+            ? ' kg'
+            : ''}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
       ),
     ),
   );

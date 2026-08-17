@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/release_engineering/data/atlas_release_engineering_repository.dart';
 
@@ -63,8 +62,7 @@ class _AtlasReleaseEngineeringScreenState
 
   @override
   Widget build(BuildContext context) {
-    final readiness =
-        dashboard['readiness'] as Map<String, dynamic>? ?? {};
+    final readiness = dashboard['readiness'] as Map<String, dynamic>? ?? {};
 
     return Scaffold(
       appBar: AppBar(
@@ -79,173 +77,151 @@ class _AtlasReleaseEngineeringScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-              ? Center(child: Text(error!))
-              : ListView(
-                  padding: const EdgeInsets.all(20),
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _MetricCard(
-                          title: 'Builds',
-                          value: '${dashboard['builds'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Builds aprovados',
-                          value:
-                              '${dashboard['successful_builds'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Deployments',
-                          value:
-                              '${dashboard['deployments'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Deployments concluídos',
-                          value:
-                              '${dashboard['successful_deployments'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Aprovações pendentes',
-                          value:
-                              '${dashboard['pending_approvals'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Pronto para produção',
-                          value:
-                              readiness['ready'] == true ? 'Sim' : 'Não',
-                        ),
-                      ],
+                    _MetricCard(
+                      title: 'Builds',
+                      value: '${dashboard['builds'] ?? 0}',
                     ),
-                    const SizedBox(height: 24),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(
-                          Icons.fact_check_outlined,
+                    _MetricCard(
+                      title: 'Builds aprovados',
+                      value: '${dashboard['successful_builds'] ?? 0}',
+                    ),
+                    _MetricCard(
+                      title: 'Deployments',
+                      value: '${dashboard['deployments'] ?? 0}',
+                    ),
+                    _MetricCard(
+                      title: 'Deployments concluídos',
+                      value: '${dashboard['successful_deployments'] ?? 0}',
+                    ),
+                    _MetricCard(
+                      title: 'Aprovações pendentes',
+                      value: '${dashboard['pending_approvals'] ?? 0}',
+                    ),
+                    _MetricCard(
+                      title: 'Pronto para produção',
+                      value: readiness['ready'] == true ? 'Sim' : 'Não',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.fact_check_outlined),
+                    title: const Text('Prontidão para produção'),
+                    subtitle: Text(
+                      'Checks obrigatórios: '
+                      '${readiness['required_checks'] ?? 0} • '
+                      'Aprovados: '
+                      '${readiness['required_passed'] ?? 0} • '
+                      'Bloqueios: ${readiness['blockers'] ?? 0}',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Builds recentes',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                if (builds.isEmpty)
+                  const Card(
+                    child: ListTile(title: Text('Nenhum build registrado.')),
+                  )
+                else
+                  ...builds
+                      .take(8)
+                      .map(
+                        (item) => Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.build_circle_outlined),
+                            title: Text('Versão ${item['version'] ?? ''}'),
+                            subtitle: Text(
+                              '${item['branch'] ?? ''} • '
+                              '${item['status'] ?? ''}',
+                            ),
+                          ),
                         ),
-                        title: const Text(
-                          'Prontidão para produção',
-                        ),
-                        subtitle: Text(
-                          'Checks obrigatórios: '
-                          '${readiness['required_checks'] ?? 0} • '
-                          'Aprovados: '
-                          '${readiness['required_passed'] ?? 0} • '
-                          'Bloqueios: ${readiness['blockers'] ?? 0}',
+                      ),
+                const SizedBox(height: 24),
+                Text(
+                  'Deployments',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                ...deployments
+                    .take(8)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.rocket_launch_outlined),
+                          title: Text(item['strategy']?.toString() ?? ''),
+                          subtitle: Text(
+                            '${item['status'] ?? ''} • '
+                            'Aprovação: '
+                            '${item['approval_status'] ?? ''}',
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Builds recentes',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    if (builds.isEmpty)
-                      const Card(
-                        child: ListTile(
-                          title: Text('Nenhum build registrado.'),
-                        ),
-                      )
-                    else
-                      ...builds.take(8).map(
-                            (item) => Card(
-                              child: ListTile(
-                                leading: const Icon(
-                                  Icons.build_circle_outlined,
-                                ),
-                                title: Text(
-                                  'Versão ${item['version'] ?? ''}',
-                                ),
-                                subtitle: Text(
-                                  '${item['branch'] ?? ''} • '
-                                  '${item['status'] ?? ''}',
-                                ),
-                              ),
-                            ),
-                          ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Deployments',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    ...deployments.take(8).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.rocket_launch_outlined,
-                              ),
-                              title: Text(
-                                item['strategy']?.toString() ?? '',
-                              ),
-                              subtitle: Text(
-                                '${item['status'] ?? ''} • '
-                                'Aprovação: '
-                                '${item['approval_status'] ?? ''}',
-                              ),
-                            ),
-                          ),
-                        ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Ambientes',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    ...environments.take(6).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.cloud_outlined,
-                              ),
-                              title: Text(
-                                item['name']?.toString() ?? '',
-                              ),
-                              subtitle: Text(
-                                '${item['environment_type'] ?? ''} • '
-                                '${item['base_url'] ?? ''}',
-                              ),
-                              trailing: item['protected'] == true
-                                  ? const Icon(Icons.lock_outline)
-                                  : null,
-                            ),
-                          ),
-                        ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Aprovações',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    ...approvals.take(6).map(
-                          (item) => Card(
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.approval_outlined,
-                              ),
-                              title: Text(
-                                item['title']?.toString() ?? '',
-                              ),
-                              subtitle: Text(
-                                '${item['risk_level'] ?? ''} • '
-                                '${item['status'] ?? ''}',
-                              ),
-                            ),
-                          ),
-                        ),
-                  ],
+                const SizedBox(height: 24),
+                Text(
+                  'Ambientes',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
+                const SizedBox(height: 8),
+                ...environments
+                    .take(6)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.cloud_outlined),
+                          title: Text(item['name']?.toString() ?? ''),
+                          subtitle: Text(
+                            '${item['environment_type'] ?? ''} • '
+                            '${item['base_url'] ?? ''}',
+                          ),
+                          trailing: item['protected'] == true
+                              ? const Icon(Icons.lock_outline)
+                              : null,
+                        ),
+                      ),
+                    ),
+                const SizedBox(height: 24),
+                Text(
+                  'Aprovações',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                ...approvals
+                    .take(6)
+                    .map(
+                      (item) => Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.approval_outlined),
+                          title: Text(item['title']?.toString() ?? ''),
+                          subtitle: Text(
+                            '${item['risk_level'] ?? ''} • '
+                            '${item['status'] ?? ''}',
+                          ),
+                        ),
+                      ),
+                    ),
+              ],
+            ),
     );
   }
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.title,
-    required this.value,
-  });
+  const _MetricCard({required this.title, required this.value});
 
   final String title;
   final String value;
@@ -262,10 +238,7 @@ class _MetricCard extends StatelessWidget {
             children: [
               Text(title),
               const SizedBox(height: 8),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(value, style: Theme.of(context).textTheme.headlineSmall),
             ],
           ),
         ),

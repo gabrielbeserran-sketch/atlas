@@ -6,43 +6,45 @@ import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas
 class CompanySelectionScreen extends StatefulWidget {
   const CompanySelectionScreen({
     required this.session,
+    this.onSelected,
     super.key,
   });
 
   final AtlasRemoteSession session;
+  final Future<void> Function(AtlasRemoteSession session)? onSelected;
 
   @override
-  State<CompanySelectionScreen> createState() =>
-      _CompanySelectionScreenState();
+  State<CompanySelectionScreen> createState() => _CompanySelectionScreenState();
 }
 
-class _CompanySelectionScreenState
-    extends State<CompanySelectionScreen> {
+class _CompanySelectionScreenState extends State<CompanySelectionScreen> {
   String? loadingId;
 
-  Future<void> selectCompany(
-    AtlasRemoteCompanySession company,
-  ) async {
+  Future<void> selectCompany(AtlasRemoteCompanySession company) async {
     setState(() => loadingId = company.id);
 
     try {
-      await AtlasEnterpriseApiClient.instance
-          .switchCompany(company.id);
+      final session = await AtlasEnterpriseApiClient.instance.switchCompany(
+        company.id,
+      );
+
+      if (widget.onSelected != null) {
+        await widget.onSelected!(session);
+        return;
+      }
 
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute<void>(
-          builder: (_) => const DashboardScreen(),
-        ),
+        MaterialPageRoute<void>(builder: (_) => const DashboardScreen()),
         (_) => false,
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => loadingId = null);
     }
@@ -51,22 +53,17 @@ class _CompanySelectionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Selecionar empresa'),
-      ),
+      appBar: AppBar(title: const Text('Selecionar empresa')),
       body: ListView.separated(
         padding: const EdgeInsets.all(24),
         itemCount: widget.session.companies.length,
-        separatorBuilder: (_, _) =>
-            const SizedBox(height: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final company = widget.session.companies[index];
 
           return Card(
             child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.business_outlined),
-              ),
+              leading: const CircleAvatar(child: Icon(Icons.business_outlined)),
               title: Text(company.name),
               subtitle: Text(
                 '${company.role} • ${company.document.isEmpty ? 'Sem documento' : company.document}',
@@ -74,9 +71,7 @@ class _CompanySelectionScreenState
               trailing: loadingId == company.id
                   ? const CircularProgressIndicator()
                   : const Icon(Icons.chevron_right),
-              onTap: loadingId == null
-                  ? () => selectCompany(company)
-                  : null,
+              onTap: loadingId == null ? () => selectCompany(company) : null,
             ),
           );
         },

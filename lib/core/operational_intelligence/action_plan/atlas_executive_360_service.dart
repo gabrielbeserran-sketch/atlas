@@ -6,16 +6,13 @@ import 'package:projeto_atlas/features/digital_twin/domain/services/atlas_digita
 class AtlasExecutive360Service {
   const AtlasExecutive360Service();
 
-  Future<AtlasExecutive360Snapshot> build({
-    required String? farmName,
-  }) async {
+  Future<AtlasExecutive360Snapshot> build({required String? farmName}) async {
     await AtlasDigitalTwinService.instance.load();
     await AtlasDigitalTwinService.instance.start();
 
     final twin = _resolveTwin(farmName);
     final economicService = AtlasEconomicIntelligenceService.instance;
-    final metrics =
-        await economicService.loadMetrics(farmName: farmName);
+    final metrics = await economicService.loadMetrics(farmName: farmName);
     final economic = await economicService.buildSnapshot(
       farmName: farmName,
       metrics: metrics,
@@ -33,30 +30,20 @@ class AtlasExecutive360Service {
 
     final overall = areas.isEmpty
         ? 0.0
-        : areas.fold<double>(
-              0,
-              (total, item) => total + item.score,
-            ) /
-            areas.length;
+        : areas.fold<double>(0, (total, item) => total + item.score) /
+              areas.length;
 
     final riskFromTwin = twin.risks.isEmpty
         ? 0.0
-        : twin.risks.fold<double>(
-              0,
-              (total, item) => total + item.score,
-            ) /
-            twin.risks.length;
+        : twin.risks.fold<double>(0, (total, item) => total + item.score) /
+              twin.risks.length;
 
-    final riskScore =
-        (100 - overall + riskFromTwin * 0.35)
-            .clamp(0, 100)
-            .toDouble();
+    final riskScore = (100 - overall + riskFromTwin * 0.35)
+        .clamp(0, 100)
+        .toDouble();
 
     final productivityScore =
-        ((health.animal +
-                    health.reproductive +
-                    health.operational) /
-                3)
+        ((health.animal + health.reproductive + health.operational) / 3)
             .clamp(0, 100)
             .toDouble();
 
@@ -90,10 +77,7 @@ class AtlasExecutive360Service {
                   'Trate o risco no Plano de Ação e defina responsável e prazo.',
             ),
           ),
-    ]..sort(
-        (first, second) =>
-            second.severity.compareTo(first.severity),
-      );
+    ]..sort((first, second) => second.severity.compareTo(first.severity));
 
     return AtlasExecutive360Snapshot(
       farmName: farmName?.trim().isNotEmpty == true
@@ -132,20 +116,17 @@ class AtlasExecutive360Service {
         );
   }
 
-  AtlasExecutive360AreaScore _area(
-    String area,
-    double score,
-  ) {
+  AtlasExecutive360AreaScore _area(String area, double score) {
     return AtlasExecutive360AreaScore(
       area: area,
       score: score.clamp(0, 100),
       status: score >= 80
           ? 'Saudável'
           : score >= 65
-              ? 'Atenção'
-              : score >= 45
-                  ? 'Alto risco'
-                  : 'Crítico',
+          ? 'Atenção'
+          : score >= 45
+          ? 'Alto risco'
+          : 'Crítico',
     );
   }
 

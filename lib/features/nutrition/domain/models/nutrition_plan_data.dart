@@ -24,16 +24,16 @@ class NutritionIngredientData {
   double get dailyCostPerAnimal => inclusionKg * costPerKg;
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'type': type,
-        'inclusionKg': inclusionKg,
-        'dryMatterPercent': dryMatterPercent,
-        'crudeProteinPercent': crudeProteinPercent,
-        'ndfPercent': ndfPercent,
-        'adfPercent': adfPercent,
-        'tdnPercent': tdnPercent,
-        'costPerKg': costPerKg,
-      };
+    'name': name,
+    'type': type,
+    'inclusionKg': inclusionKg,
+    'dryMatterPercent': dryMatterPercent,
+    'crudeProteinPercent': crudeProteinPercent,
+    'ndfPercent': ndfPercent,
+    'adfPercent': adfPercent,
+    'tdnPercent': tdnPercent,
+    'costPerKg': costPerKg,
+  };
 
   factory NutritionIngredientData.fromMap(Map<String, dynamic> map) {
     return NutritionIngredientData(
@@ -119,7 +119,10 @@ class NutritionPlanData {
       : dryMatterIntakeKg / averageBodyWeightKg * 100;
   double get effectiveCostPerKg {
     if (ingredients.isEmpty) return costPerKg;
-    final totalKg = ingredients.fold<double>(0, (sum, i) => sum + i.inclusionKg);
+    final totalKg = ingredients.fold<double>(
+      0,
+      (sum, i) => sum + i.inclusionKg,
+    );
     if (totalKg <= 0) return costPerKg;
     final totalCost = ingredients.fold<double>(
       0,
@@ -135,34 +138,34 @@ class NutritionPlanData {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'farmName': farmName,
-        'groupName': groupName,
-        'dietName': dietName,
-        'category': category,
-        'dailyAmountKg': dailyAmountKg,
-        'animalCount': animalCount,
-        'costPerKg': costPerKg,
-        'startDate': startDate,
-        'notes': notes,
-        'averageBodyWeightKg': averageBodyWeightKg,
-        'targetDailyGainKg': targetDailyGainKg,
-        'observedDailyGainKg': observedDailyGainKg,
-        'feedConversion': feedConversion,
-        'pastureType': pastureType,
-        'silageType': silageType,
-        'concentrateType': concentrateType,
-        'mineralSupplement': mineralSupplement,
-        'dryMatterPercent': dryMatterPercent,
-        'crudeProteinPercent': crudeProteinPercent,
-        'ndfPercent': ndfPercent,
-        'adfPercent': adfPercent,
-        'tdnPercent': tdnPercent,
-        'stockIntegrationEnabled': stockIntegrationEnabled,
-        'inventoryDeducted': inventoryDeducted,
-        'inventoryDeductionCost': inventoryDeductionCost,
-        'ingredients': ingredients.map((item) => item.toMap()).toList(),
-      };
+    'id': id,
+    'farmName': farmName,
+    'groupName': groupName,
+    'dietName': dietName,
+    'category': category,
+    'dailyAmountKg': dailyAmountKg,
+    'animalCount': animalCount,
+    'costPerKg': costPerKg,
+    'startDate': startDate,
+    'notes': notes,
+    'averageBodyWeightKg': averageBodyWeightKg,
+    'targetDailyGainKg': targetDailyGainKg,
+    'observedDailyGainKg': observedDailyGainKg,
+    'feedConversion': feedConversion,
+    'pastureType': pastureType,
+    'silageType': silageType,
+    'concentrateType': concentrateType,
+    'mineralSupplement': mineralSupplement,
+    'dryMatterPercent': dryMatterPercent,
+    'crudeProteinPercent': crudeProteinPercent,
+    'ndfPercent': ndfPercent,
+    'adfPercent': adfPercent,
+    'tdnPercent': tdnPercent,
+    'stockIntegrationEnabled': stockIntegrationEnabled,
+    'inventoryDeducted': inventoryDeducted,
+    'inventoryDeductionCost': inventoryDeductionCost,
+    'ingredients': ingredients.map((item) => item.toMap()).toList(),
+  };
 
   factory NutritionPlanData.fromMap(Map<String, dynamic> map) {
     final ingredientMaps = (map['ingredients'] as List<dynamic>?) ?? const [];
@@ -179,8 +182,7 @@ class NutritionPlanData {
       notes: map['notes'] as String? ?? '',
       averageBodyWeightKg:
           (map['averageBodyWeightKg'] as num?)?.toDouble() ?? 0,
-      targetDailyGainKg:
-          (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
+      targetDailyGainKg: (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
       observedDailyGainKg:
           (map['observedDailyGainKg'] as num?)?.toDouble() ?? 0,
       feedConversion: (map['feedConversion'] as num?)?.toDouble() ?? 0,
@@ -194,8 +196,7 @@ class NutritionPlanData {
       ndfPercent: (map['ndfPercent'] as num?)?.toDouble() ?? 0,
       adfPercent: (map['adfPercent'] as num?)?.toDouble() ?? 0,
       tdnPercent: (map['tdnPercent'] as num?)?.toDouble() ?? 0,
-      stockIntegrationEnabled:
-          map['stockIntegrationEnabled'] as bool? ?? false,
+      stockIntegrationEnabled: map['stockIntegrationEnabled'] as bool? ?? false,
       inventoryDeducted: map['inventoryDeducted'] as bool? ?? false,
       inventoryDeductionCost:
           (map['inventoryDeductionCost'] as num?)?.toDouble() ?? 0,
@@ -214,20 +215,34 @@ class NutritionPlanData {
     double? inventoryDeductionCost,
   }) {
     return NutritionPlanData(
-      id: id, farmName: farmName, groupName: groupName, dietName: dietName,
-      category: category, dailyAmountKg: dailyAmountKg, animalCount: animalCount,
-      costPerKg: costPerKg, startDate: startDate, notes: notes,
-      averageBodyWeightKg: averageBodyWeightKg, targetDailyGainKg: targetDailyGainKg,
-      observedDailyGainKg: observedDailyGainKg, feedConversion: feedConversion,
-      pastureType: pastureType, silageType: silageType,
-      concentrateType: concentrateType, mineralSupplement: mineralSupplement,
-      dryMatterPercent: dryMatterPercent, crudeProteinPercent: crudeProteinPercent,
-      ndfPercent: ndfPercent, adfPercent: adfPercent, tdnPercent: tdnPercent,
+      id: id,
+      farmName: farmName,
+      groupName: groupName,
+      dietName: dietName,
+      category: category,
+      dailyAmountKg: dailyAmountKg,
+      animalCount: animalCount,
+      costPerKg: costPerKg,
+      startDate: startDate,
+      notes: notes,
+      averageBodyWeightKg: averageBodyWeightKg,
+      targetDailyGainKg: targetDailyGainKg,
+      observedDailyGainKg: observedDailyGainKg,
+      feedConversion: feedConversion,
+      pastureType: pastureType,
+      silageType: silageType,
+      concentrateType: concentrateType,
+      mineralSupplement: mineralSupplement,
+      dryMatterPercent: dryMatterPercent,
+      crudeProteinPercent: crudeProteinPercent,
+      ndfPercent: ndfPercent,
+      adfPercent: adfPercent,
+      tdnPercent: tdnPercent,
       stockIntegrationEnabled: stockIntegrationEnabled,
       inventoryDeducted: inventoryDeducted ?? this.inventoryDeducted,
-      inventoryDeductionCost: inventoryDeductionCost ?? this.inventoryDeductionCost,
+      inventoryDeductionCost:
+          inventoryDeductionCost ?? this.inventoryDeductionCost,
       ingredients: ingredients,
     );
   }
-
 }

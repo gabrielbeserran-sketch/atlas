@@ -16,9 +16,7 @@ class AtlasExecutionMeetingBuilder {
           return first.isOverdue ? -1 : 1;
         }
 
-        return second.priority.index.compareTo(
-          first.priority.index,
-        );
+        return second.priority.index.compareTo(first.priority.index);
       });
 
     final agenda = <String>[
@@ -29,10 +27,7 @@ class AtlasExecutionMeetingBuilder {
         'Definir responsáveis para ações abertas.',
       if (open.any((item) => item.progressPercent == 0))
         'Iniciar ações ainda sem progresso.',
-      ...open.take(5).map(
-            (item) =>
-                'Acompanhar: ${item.title}',
-          ),
+      ...open.take(5).map((item) => 'Acompanhar: ${item.title}'),
     ];
 
     return AtlasExecutionMeeting(

@@ -19,20 +19,24 @@ class AtlasActionPlanCanonicalAdapter {
     DateTime? generatedAt,
   }) {
     final now = generatedAt ?? DateTime.now();
-    final farmDecisions = decisions
-        .where((decision) =>
-            decision.farmId == farmId ||
-            (decision.farmId.isEmpty && decision.farmName == farmName))
-        .toList()
-      ..sort((a, b) {
-        final byPriority =
-            _priorityWeight(b.priority).compareTo(_priorityWeight(a.priority));
-        if (byPriority != 0) {
-          return byPriority;
-        }
-        final byScore = b.decisionScore.compareTo(a.decisionScore);
-        return byScore != 0 ? byScore : a.deadline.compareTo(b.deadline);
-      });
+    final farmDecisions =
+        decisions
+            .where(
+              (decision) =>
+                  decision.farmId == farmId ||
+                  (decision.farmId.isEmpty && decision.farmName == farmName),
+            )
+            .toList()
+          ..sort((a, b) {
+            final byPriority = _priorityWeight(
+              b.priority,
+            ).compareTo(_priorityWeight(a.priority));
+            if (byPriority != 0) {
+              return byPriority;
+            }
+            final byScore = b.decisionScore.compareTo(a.decisionScore);
+            return byScore != 0 ? byScore : a.deadline.compareTo(b.deadline);
+          });
 
     return AtlasActionPlan(
       id: 'canonical_action_plan_${farmId}_${now.microsecondsSinceEpoch}',

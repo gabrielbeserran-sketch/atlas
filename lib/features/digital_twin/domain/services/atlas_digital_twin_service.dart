@@ -11,46 +11,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasDigitalTwinService {
   AtlasDigitalTwinService._();
 
-  static final AtlasDigitalTwinService instance =
-      AtlasDigitalTwinService._();
+  static final AtlasDigitalTwinService instance = AtlasDigitalTwinService._();
 
-  static const String _storageKey =
-      'atlas_digital_twin_v1';
+  static const String _storageKey = 'atlas_digital_twin_v1';
 
   final AtlasDigitalTwinEventReducer reducer =
       const AtlasDigitalTwinEventReducer();
 
-  final Map<String, AtlasDigitalTwin> _twins =
-      <String, AtlasDigitalTwin>{};
+  final Map<String, AtlasDigitalTwin> _twins = <String, AtlasDigitalTwin>{};
 
-  final StreamController<AtlasDigitalTwin>
-      _changesController =
+  final StreamController<AtlasDigitalTwin> _changesController =
       StreamController<AtlasDigitalTwin>.broadcast();
 
   String? _subscriptionId;
   bool _loaded = false;
   Future<void>? _loadingFuture;
 
-  Stream<AtlasDigitalTwin> get changes =>
-      _changesController.stream;
+  Stream<AtlasDigitalTwin> get changes => _changesController.stream;
 
   List<AtlasDigitalTwin> get twins {
     final result = _twins.values.toList()
-      ..sort(
-        (first, second) =>
-            second.updatedAt.compareTo(
-          first.updatedAt,
-        ),
-      );
+      ..sort((first, second) => second.updatedAt.compareTo(first.updatedAt));
 
-    return List<AtlasDigitalTwin>.unmodifiable(
-      result,
-    );
+    return List<AtlasDigitalTwin>.unmodifiable(result);
   }
 
-  AtlasDigitalTwin? byFarmId(
-    String farmId,
-  ) {
+  AtlasDigitalTwin? byFarmId(String farmId) {
     return _twins[farmId];
   }
 
@@ -62,8 +48,7 @@ class AtlasDigitalTwinService {
     return twins.first;
   }
 
-  bool get isStarted =>
-      _subscriptionId != null;
+  bool get isStarted => _subscriptionId != null;
 
   Future<void> start() async {
     await load();
@@ -72,8 +57,7 @@ class AtlasDigitalTwinService {
       return;
     }
 
-    _subscriptionId =
-        AtlasEventBus.instance.subscribe(
+    _subscriptionId = AtlasEventBus.instance.subscribe(
       owner: 'atlas_digital_twin',
       filter: const AtlasEventFilter(),
       listener: _handleEvent,
@@ -108,23 +92,19 @@ class AtlasDigitalTwinService {
   }
 
   Future<void> _loadInternal() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final stored =
-        preferences.getString(_storageKey);
+    final stored = preferences.getString(_storageKey);
 
     _twins.clear();
 
-    if (stored != null &&
-        stored.trim().isNotEmpty) {
+    if (stored != null && stored.trim().isNotEmpty) {
       try {
         final decoded = jsonDecode(stored);
 
         if (decoded is List) {
           for (final raw in decoded.whereType<Map>()) {
-            final twin =
-                AtlasDigitalTwin.fromJson(
+            final twin = AtlasDigitalTwin.fromJson(
               Map<String, dynamic>.from(raw),
             );
 
@@ -140,30 +120,20 @@ class AtlasDigitalTwinService {
     _loadingFuture = null;
   }
 
-  Future<void> _handleEvent(
-    AtlasEvent event,
-  ) async {
-    final farmId =
-        event.farmId?.trim().isNotEmpty == true
-            ? event.farmId!
-            : 'global';
+  Future<void> _handleEvent(AtlasEvent event) async {
+    final farmId = event.farmId?.trim().isNotEmpty == true
+        ? event.farmId!
+        : 'global';
 
-    final farmName =
-        event.farmName?.trim().isNotEmpty == true
-            ? event.farmName!
-            : 'Operação';
+    final farmName = event.farmName?.trim().isNotEmpty == true
+        ? event.farmName!
+        : 'Operação';
 
     final current =
         _twins[farmId] ??
-        AtlasDigitalTwin.initial(
-          farmId: farmId,
-          farmName: farmName,
-        );
+        AtlasDigitalTwin.initial(farmId: farmId, farmName: farmName);
 
-    final updated = reducer.reduce(
-      current: current,
-      event: event,
-    );
+    final updated = reducer.reduce(current: current, event: event);
 
     if (identical(current, updated)) {
       return;
@@ -178,9 +148,7 @@ class AtlasDigitalTwinService {
     }
   }
 
-  Future<void> resetFarm(
-    String farmId,
-  ) async {
+  Future<void> resetFarm(String farmId) async {
     _twins.remove(farmId);
     await _save();
   }
@@ -188,23 +156,17 @@ class AtlasDigitalTwinService {
   Future<void> clear() async {
     _twins.clear();
 
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.remove(_storageKey);
   }
 
   Future<void> _save() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        _twins.values
-            .map((item) => item.toJson())
-            .toList(),
-      ),
+      jsonEncode(_twins.values.map((item) => item.toJson()).toList()),
     );
   }
 }

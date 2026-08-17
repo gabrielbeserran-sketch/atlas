@@ -12,44 +12,48 @@ class AtlasCapitalAllocationEngine {
     required List<AtlasInvestmentProject> projects,
     required AtlasCapitalConstraint constraint,
   }) {
-    final analyses = projects.map((project) {
-      final npv = _npv(project, constraint.discountRate);
-      final roi = project.totalCapital <= 0
-          ? 0.0
-          : ((project.annualNetCashFlow * project.horizonYears +
-                      project.residualValue -
-                      project.totalCapital) /
-                  project.totalCapital) *
-              100;
-      final payback = project.annualNetCashFlow <= 0
-          ? 99.0
-          : project.totalCapital / project.annualNetCashFlow;
-      final irr = _irr(project);
-      final score = _priority(project, npv, roi, payback);
-      final decision = _decision(project, npv, roi, payback, score);
-      return AtlasInvestmentProjectAnalysis(
-        project: project,
-        npv: npv,
-        roi: roi,
-        irr: irr,
-        paybackYears: payback,
-        priorityScore: score,
-        decision: decision,
-        reason: _reason(project, npv, roi, payback, decision),
-      );
-    }).toList()
-      ..sort((a, b) {
-        if (a.project.mandatory != b.project.mandatory) {
-          return a.project.mandatory ? -1 : 1;
-        }
-        return b.priorityScore.compareTo(a.priorityScore);
-      });
+    final analyses =
+        projects.map((project) {
+          final npv = _npv(project, constraint.discountRate);
+          final roi = project.totalCapital <= 0
+              ? 0.0
+              : ((project.annualNetCashFlow * project.horizonYears +
+                            project.residualValue -
+                            project.totalCapital) /
+                        project.totalCapital) *
+                    100;
+          final payback = project.annualNetCashFlow <= 0
+              ? 99.0
+              : project.totalCapital / project.annualNetCashFlow;
+          final irr = _irr(project);
+          final score = _priority(project, npv, roi, payback);
+          final decision = _decision(project, npv, roi, payback, score);
+          return AtlasInvestmentProjectAnalysis(
+            project: project,
+            npv: npv,
+            roi: roi,
+            irr: irr,
+            paybackYears: payback,
+            priorityScore: score,
+            decision: decision,
+            reason: _reason(project, npv, roi, payback, decision),
+          );
+        }).toList()..sort((a, b) {
+          if (a.project.mandatory != b.project.mandatory) {
+            return a.project.mandatory ? -1 : 1;
+          }
+          return b.priorityScore.compareTo(a.priorityScore);
+        });
 
     final selected = <AtlasInvestmentProjectAnalysis>[];
     var allocated = 0.0;
-    final limit = math.min(constraint.totalCapitalLimit, constraint.annualBudget);
+    final limit = math.min(
+      constraint.totalCapitalLimit,
+      constraint.annualBudget,
+    );
     for (final item in analyses) {
-      final acceptable = item.decision == AtlasInvestmentDecision.approve ||
+      final acceptable =
+          item.decision == AtlasInvestmentDecision.approve ||
           item.decision == AtlasInvestmentDecision.phase ||
           item.project.mandatory;
       if (acceptable && allocated + item.project.totalCapital <= limit) {
@@ -84,12 +88,15 @@ class AtlasCapitalAllocationEngine {
         : selectedProfit / selectedCapital * 100;
     final averageRisk = selected.isEmpty
         ? 0.0
-        : selected.fold<double>(0, (sum, item) => sum + item.project.riskScore) /
-            selected.length;
+        : selected.fold<double>(
+                0,
+                (sum, item) => sum + item.project.riskScore,
+              ) /
+              selected.length;
     final averagePayback = selected.isEmpty
         ? 0.0
         : selected.fold<double>(0, (sum, item) => sum + item.paybackYears) /
-            selected.length;
+              selected.length;
 
     return AtlasInvestmentPortfolio(
       items: analyses,
@@ -128,8 +135,10 @@ class AtlasCapitalAllocationEngine {
     final rate = annualRate / 100 / 12;
     final payment = rate == 0
         ? amount / months
-        : amount * rate * math.pow(1 + rate, months) /
-            (math.pow(1 + rate, months) - 1);
+        : amount *
+              rate *
+              math.pow(1 + rate, months) /
+              (math.pow(1 + rate, months) - 1);
     final total = payment * months;
     return AtlasFinancingSimulation(
       financedAmount: amount,

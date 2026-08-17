@@ -1,10 +1,8 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasOperationsRepository {
-  AtlasOperationsRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasOperationsRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
@@ -23,9 +21,7 @@ class AtlasOperationsRepository {
     return response.asMapList();
   }
 
-  Future<List<Map<String, dynamic>>> alerts({
-    String? farmId,
-  }) async {
+  Future<List<Map<String, dynamic>>> alerts({String? farmId}) async {
     final response = await _client.send(
       'GET',
       '/operations/alerts',
@@ -37,22 +33,16 @@ class AtlasOperationsRepository {
     return response.asMapList();
   }
 
-  Future<List<Map<String, dynamic>>> generateAlerts({
-    String? farmId,
-  }) async {
+  Future<List<Map<String, dynamic>>> generateAlerts({String? farmId}) async {
     final response = await _client.send(
       'POST',
       '/operations/alerts/generate',
-      queryParameters: {
-        if (farmId != null) 'farm_id': farmId,
-      },
+      queryParameters: {if (farmId != null) 'farm_id': farmId},
     );
     return response.asMapList();
   }
 
-  Future<Map<String, dynamic>> alertToTask(
-    String alertId,
-  ) async {
+  Future<Map<String, dynamic>> alertToTask(String alertId) async {
     final response = await _client.send(
       'POST',
       '/operations/alerts/$alertId/task',
@@ -60,9 +50,7 @@ class AtlasOperationsRepository {
     return response.asMap();
   }
 
-  Future<List<Map<String, dynamic>>> tasks({
-    String? farmId,
-  }) async {
+  Future<List<Map<String, dynamic>>> tasks({String? farmId}) async {
     final response = await _client.send(
       'GET',
       '/operations/tasks',
@@ -80,16 +68,12 @@ class AtlasOperationsRepository {
     final response = await _client.send(
       'POST',
       '/operations/indicators/generate',
-      queryParameters: {
-        if (farmId != null) 'farm_id': farmId,
-      },
+      queryParameters: {if (farmId != null) 'farm_id': farmId},
     );
     return response.asMapList();
   }
 
-  Future<Map<String, dynamic>> executiveReportData(
-    String farmId,
-  ) async {
+  Future<Map<String, dynamic>> executiveReportData(String farmId) async {
     final response = await _client.send(
       'GET',
       '/operations/reports/executive',

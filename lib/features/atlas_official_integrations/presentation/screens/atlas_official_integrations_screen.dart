@@ -30,8 +30,7 @@ class _AtlasOfficialIntegrationsScreenState
     extends State<AtlasOfficialIntegrationsScreen> {
   final AtlasOfficialIntegrationStorageService storage =
       AtlasOfficialIntegrationStorageService();
-  final AtlasOfficialIntegrationAnalyticsService
-      analyticsService =
+  final AtlasOfficialIntegrationAnalyticsService analyticsService =
       const AtlasOfficialIntegrationAnalyticsService();
 
   late AtlasOfficialIntegrationModule selectedModule;
@@ -79,31 +78,26 @@ class _AtlasOfficialIntegrationsScreenState
   }
 
   List<AtlasOfficialIntegrationRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasOfficialIntegrationRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasOfficialIntegrationRecord>(
+  Future<void> openForm([AtlasOfficialIntegrationRecord? current]) async {
+    final result = await showDialog<AtlasOfficialIntegrationRecord>(
       context: context,
-      builder: (context) => _OfficialIntegrationForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _OfficialIntegrationForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -117,9 +111,7 @@ class _AtlasOfficialIntegrationsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasOfficialIntegrationRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasOfficialIntegrationRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -127,13 +119,11 @@ class _AtlasOfficialIntegrationsScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -175,12 +165,9 @@ class _AtlasOfficialIntegrationsScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -197,9 +184,7 @@ class _AtlasOfficialIntegrationsScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Central de preparação e conformidade',
-                          ),
+                          title: Text('Central de preparação e conformidade'),
                           subtitle: Text(
                             'A entrega organiza dados, documentos, pendências e auditoria. '
                             'Transmissões oficiais exigem APIs, credenciais, autorização e validação humana.',
@@ -225,8 +210,7 @@ class _AtlasOfficialIntegrationsScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -247,8 +231,7 @@ class _AtlasOfficialIntegrationsScreenState
                           EnterpriseMetricCard(
                             title: 'Operacionais',
                             value: '${analytics.operationalCount}',
-                            subtitle:
-                                'Autorizados, válidos ou concluídos',
+                            subtitle: 'Autorizados, válidos ou concluídos',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -260,8 +243,7 @@ class _AtlasOfficialIntegrationsScreenState
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Vencimentos, rejeições ou bloqueios',
+                            subtitle: 'Vencimentos, rejeições ou bloqueios',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -296,12 +278,8 @@ class _AtlasOfficialIntegrationsScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro processo, documento ou pendência.',
                             ),
@@ -312,8 +290,7 @@ class _AtlasOfficialIntegrationsScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -327,14 +304,10 @@ class _AtlasOfficialIntegrationsScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasOfficialIntegrationModule selected;
-  final ValueChanged<AtlasOfficialIntegrationModule>
-      onSelected;
+  final ValueChanged<AtlasOfficialIntegrationModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -342,36 +315,33 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children:
-              AtlasOfficialIntegrationModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasOfficialIntegrationModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: module ==
-                            AtlasOfficialIntegrationModule
-                                .values.last
-                        ? 0
-                        : 8,
-                  ),
-                  child: FilledButton.tonalIcon(
-                    onPressed: () => onSelected(module),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: active
-                          ? const Color(0xFF1B5E20)
-                          : null,
-                      foregroundColor:
-                          active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right:
+                          module == AtlasOfficialIntegrationModule.values.last
+                          ? 0
+                          : 8,
                     ),
-                    icon: Icon(_moduleIcon(module)),
-                    label: Text(module.packageLabel),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                ),
-              );
-            },
-          ).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -396,13 +366,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -421,24 +393,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Rejeitado' || 'Vencido' || 'Bloqueado' =>
-        Colors.red.shade800,
+      'Rejeitado' || 'Vencido' || 'Bloqueado' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Transmitido' || 'Autorizado' || 'Concluído' ||
-      'Válido' =>
-        Colors.green.shade800,
+      'Transmitido' ||
+      'Autorizado' ||
+      'Concluído' ||
+      'Válido' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -454,14 +422,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -470,10 +432,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _OfficialIntegrationForm extends StatefulWidget {
-  const _OfficialIntegrationForm({
-    required this.module,
-    this.current,
-  });
+  const _OfficialIntegrationForm({required this.module, this.current});
 
   final AtlasOfficialIntegrationModule module;
   final AtlasOfficialIntegrationRecord? current;
@@ -483,8 +442,7 @@ class _OfficialIntegrationForm extends StatefulWidget {
       _OfficialIntegrationFormState();
 }
 
-class _OfficialIntegrationFormState
-    extends State<_OfficialIntegrationForm> {
+class _OfficialIntegrationFormState extends State<_OfficialIntegrationForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -514,45 +472,28 @@ class _OfficialIntegrationFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasOfficialDate(DateTime.now()),
+      text: current?.date ?? formatAtlasOfficialDate(DateTime.now()),
     );
-    externalId = TextEditingController(
-      text: current?.externalId ?? '',
-    );
-    origin = TextEditingController(
-      text: current?.origin ?? '',
-    );
-    destination = TextEditingController(
-      text: current?.destination ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
+    externalId = TextEditingController(text: current?.externalId ?? '');
+    origin = TextEditingController(text: current?.origin ?? '');
+    destination = TextEditingController(text: current?.destination ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     quantity = TextEditingController(
       text: current == null || current.quantity == 0
           ? ''
           : current.quantity.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    expirationDate = TextEditingController(
-      text: current?.expirationDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    expirationDate = TextEditingController(text: current?.expirationDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -576,19 +517,14 @@ class _OfficialIntegrationFormState
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasOfficialDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -607,8 +543,7 @@ class _OfficialIntegrationFormState
     Navigator.pop(
       context,
       AtlasOfficialIntegrationRecord(
-        id: current?.id ??
-            'official_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'official_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -619,8 +554,7 @@ class _OfficialIntegrationFormState
         destination: destination.text.trim(),
         responsible: responsible.text.trim(),
         quantity: _maxZero(integer(quantity)),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         expirationDate: expirationDate.text.trim(),
         reference: reference.text.trim(),
@@ -636,11 +570,7 @@ class _OfficialIntegrationFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -655,10 +585,8 @@ class _OfficialIntegrationFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -669,12 +597,9 @@ class _OfficialIntegrationFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -686,36 +611,33 @@ class _OfficialIntegrationFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Rascunho',
-                    'Em conferência',
-                    'Pronto para envio',
-                    'Transmitido',
-                    'Autorizado',
-                    'Válido',
-                    'Concluído',
-                    'Atenção',
-                    'Rejeitado',
-                    'Vencido',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Rascunho',
+                            'Em conferência',
+                            'Pronto para envio',
+                            'Transmitido',
+                            'Autorizado',
+                            'Válido',
+                            'Concluído',
+                            'Atenção',
+                            'Rejeitado',
+                            'Vencido',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -725,8 +647,7 @@ class _OfficialIntegrationFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Número, protocolo ou identificação externa',
+                    labelText: 'Número, protocolo ou identificação externa',
                   ),
                 ),
                 TextFormField(
@@ -743,16 +664,13 @@ class _OfficialIntegrationFormState
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Quantidade de animais, pessoas ou eventos',
+                    labelText: 'Quantidade de animais, pessoas ou eventos',
                   ),
                 ),
                 TextFormField(
@@ -775,25 +693,20 @@ class _OfficialIntegrationFormState
                   onTap: () => chooseDate(expirationDate),
                   decoration: const InputDecoration(
                     labelText: 'Data de vencimento',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, arquivo, endpoint ou referência',
+                    labelText: 'Documento, arquivo, endpoint ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -805,26 +718,17 @@ class _OfficialIntegrationFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasOfficialIntegrationModule module,
-) {
+IconData _moduleIcon(AtlasOfficialIntegrationModule module) {
   return switch (module) {
-    AtlasOfficialIntegrationModule.sisbov =>
-      Icons.qr_code_2_outlined,
-    AtlasOfficialIntegrationModule.gta =>
-      Icons.local_shipping_outlined,
-    AtlasOfficialIntegrationModule.mapa =>
-      Icons.account_balance_outlined,
-    AtlasOfficialIntegrationModule.esocialRural =>
-      Icons.badge_outlined,
+    AtlasOfficialIntegrationModule.sisbov => Icons.qr_code_2_outlined,
+    AtlasOfficialIntegrationModule.gta => Icons.local_shipping_outlined,
+    AtlasOfficialIntegrationModule.mapa => Icons.account_balance_outlined,
+    AtlasOfficialIntegrationModule.esocialRural => Icons.badge_outlined,
   };
 }

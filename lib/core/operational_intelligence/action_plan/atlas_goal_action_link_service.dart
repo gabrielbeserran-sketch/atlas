@@ -10,15 +10,12 @@ class AtlasGoalActionLinkService {
   static final AtlasGoalActionLinkService instance =
       AtlasGoalActionLinkService._();
 
-  static const String _storageKey =
-      'atlas_goal_action_links_v1';
+  static const String _storageKey = 'atlas_goal_action_links_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasGoalActionLink>> loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasGoalActionLink>[];
@@ -39,14 +36,10 @@ class AtlasGoalActionLinkService {
     }
   }
 
-  Future<List<AtlasGoalActionLink>> loadByGoal(
-    String goalId,
-  ) async {
+  Future<List<AtlasGoalActionLink>> loadByGoal(String goalId) async {
     final all = await loadAll();
 
-    return all
-        .where((link) => link.goalId == goalId)
-        .toList(growable: false);
+    return all.where((link) => link.goalId == goalId).toList(growable: false);
   }
 
   Future<void> replaceGoalLinks({
@@ -80,14 +73,10 @@ class AtlasGoalActionLinkService {
     await _saveAll(all);
   }
 
-  Future<void> _saveAll(
-    List<AtlasGoalActionLink> links,
-  ) async {
+  Future<void> _saveAll(List<AtlasGoalActionLink> links) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        links.map((link) => link.toMap()).toList(),
-      ),
+      jsonEncode(links.map((link) => link.toMap()).toList()),
     );
   }
 }

@@ -52,7 +52,9 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
       return;
     }
     selectedType = record.type;
-    selectedRoute = record.applicationRoute.isEmpty ? 'Não informada' : record.applicationRoute;
+    selectedRoute = record.applicationRoute.isEmpty
+        ? 'Não informada'
+        : record.applicationRoute;
     selectedSeverity = record.severity;
     selectedStatus = record.status;
     isQuarantine = record.isQuarantine;
@@ -78,10 +80,19 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
   @override
   void dispose() {
     for (final controller in [
-      dateController, productController, doseController, responsibleController,
-      notesController, protocolController, productBatchController,
-      frequencyController, diagnosisController, nextDateController,
-      withdrawalEndDateController, necropsyController, inventoryQuantityController,
+      dateController,
+      productController,
+      doseController,
+      responsibleController,
+      notesController,
+      protocolController,
+      productBatchController,
+      frequencyController,
+      diagnosisController,
+      nextDateController,
+      withdrawalEndDateController,
+      necropsyController,
+      inventoryQuantityController,
     ]) {
       controller.dispose();
     }
@@ -89,9 +100,14 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
   }
 
   String? requiredValidator(String? value) =>
-      value == null || value.trim().isEmpty ? 'Este campo é obrigatório.' : null;
+      value == null || value.trim().isEmpty
+      ? 'Este campo é obrigatório.'
+      : null;
 
-  Future<void> selectDate(TextEditingController controller, {bool futureOnly = false}) async {
+  Future<void> selectDate(
+    TextEditingController controller, {
+    bool futureOnly = false,
+  }) async {
     final now = DateTime.now();
     final selected = await showDatePicker(
       context: context,
@@ -111,7 +127,9 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
     Navigator.pop<AnimalHealthData>(
       context,
       AnimalHealthData(
-        id: widget.healthRecord?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
+        id:
+            widget.healthRecord?.id ??
+            DateTime.now().microsecondsSinceEpoch.toString(),
         type: selectedType,
         date: dateController.text.trim(),
         product: productController.text.trim(),
@@ -152,29 +170,46 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
 
   String get productLabel {
     switch (selectedType) {
-      case 'Vacinação': return 'Vacina';
-      case 'Vermifugação': return 'Vermífugo';
-      case 'Controle de ectoparasitas': return 'Produto utilizado';
-      case 'Tratamento': return 'Medicamento';
-      case 'Exame': return 'Exame realizado';
-      case 'Necropsia': return 'Procedimento';
-      default: return 'Produto ou procedimento';
+      case 'Vacinação':
+        return 'Vacina';
+      case 'Vermifugação':
+        return 'Vermífugo';
+      case 'Controle de ectoparasitas':
+        return 'Produto utilizado';
+      case 'Tratamento':
+        return 'Medicamento';
+      case 'Exame':
+        return 'Exame realizado';
+      case 'Necropsia':
+        return 'Procedimento';
+      default:
+        return 'Produto ou procedimento';
     }
   }
 
   Widget sectionTitle(String title, String subtitle) => Padding(
     padding: const EdgeInsets.only(top: 10, bottom: 14),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 3),
-      Text(subtitle, style: const TextStyle(color: Colors.black54)),
-    ]),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 3),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
+      ],
+    ),
   );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Editar registro sanitário' : 'Novo registro sanitário')),
+      appBar: AppBar(
+        title: Text(
+          isEditing ? 'Editar registro sanitário' : 'Novo registro sanitário',
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -183,170 +218,388 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
               constraints: const BoxConstraints(maxWidth: 760),
               child: Form(
                 key: formKey,
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text(isEditing ? 'Atualizar registro' : 'Manejo sanitário profissional',
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  const Text('Registre prevenção, diagnóstico, tratamento, quarentena, carência e acompanhamento.',
-                    style: TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 24),
-                  sectionTitle('Identificação do evento', 'Dados principais do manejo ou ocorrência.'),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedType,
-                    decoration: const InputDecoration(labelText: 'Tipo de registro', prefixIcon: Icon(Icons.medical_services_outlined)),
-                    items: const [
-                      'Vacinação','Vermifugação','Controle de ectoparasitas','Tratamento','Exame','Cirurgia',
-                      'Ocorrência clínica','Protocolo sanitário','Quarentena','Necropsia','Mortalidade','Outro'
-                    ].map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                    onChanged: (value) => setState(() => selectedType = value ?? selectedType),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: dateController, validator: requiredValidator, readOnly: true,
-                    onTap: () => selectDate(dateController),
-                    decoration: const InputDecoration(labelText: 'Data', prefixIcon: Icon(Icons.calendar_month_outlined))),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: productController, validator: requiredValidator,
-                    decoration: InputDecoration(labelText: productLabel, prefixIcon: const Icon(Icons.medication_outlined))),
-                  const SizedBox(height: 16),
-                  if (!isEditing) ...[
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedInventoryItemId,
-                      decoration: const InputDecoration(
-                        labelText: 'Produto vinculado ao estoque',
-                        prefixIcon: Icon(Icons.inventory_2_outlined),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      isEditing
+                          ? 'Atualizar registro'
+                          : 'Manejo sanitário profissional',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
                       ),
-                      items: <DropdownMenuItem<String>>[
-                        const DropdownMenuItem<String>(
-                          value: '',
-                          child: Text('Não realizar baixa automática'),
-                        ),
-                        ...widget.inventoryItems.map(
-                          (item) => DropdownMenuItem<String>(
-                            value: item.id,
-                            child: Text('${item.name} — ${item.quantity.toStringAsFixed(2)} ${item.unit}'),
-                          ),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          selectedInventoryItemId = value ?? '';
-                          final selected = widget.inventoryItems.where((item) => item.id == selectedInventoryItemId);
-                          if (selected.isNotEmpty) {
-                            productController.text = selected.first.name;
-                            productBatchController.text = selected.first.batch;
-                          }
-                        });
-                      },
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Registre prevenção, diagnóstico, tratamento, quarentena, carência e acompanhamento.',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 24),
+                    sectionTitle(
+                      'Identificação do evento',
+                      'Dados principais do manejo ou ocorrência.',
+                    ),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedType,
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de registro',
+                        prefixIcon: Icon(Icons.medical_services_outlined),
+                      ),
+                      items:
+                          const [
+                                'Vacinação',
+                                'Vermifugação',
+                                'Controle de ectoparasitas',
+                                'Tratamento',
+                                'Exame',
+                                'Cirurgia',
+                                'Ocorrência clínica',
+                                'Protocolo sanitário',
+                                'Quarentena',
+                                'Necropsia',
+                                'Mortalidade',
+                                'Outro',
+                              ]
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (value) =>
+                          setState(() => selectedType = value ?? selectedType),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      controller: inventoryQuantityController,
-                      enabled: selectedInventoryItemId.isNotEmpty,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      controller: dateController,
+                      validator: requiredValidator,
+                      readOnly: true,
+                      onTap: () => selectDate(dateController),
                       decoration: const InputDecoration(
-                        labelText: 'Quantidade total a retirar do estoque',
-                        hintText: 'Ex.: 5,00',
-                        prefixIcon: Icon(Icons.remove_circle_outline),
+                        labelText: 'Data',
+                        prefixIcon: Icon(Icons.calendar_month_outlined),
                       ),
-                      validator: (value) {
-                        if (selectedInventoryItemId.isEmpty) return null;
-                        return parseDecimal(value ?? '') > 0
-                            ? null
-                            : 'Informe uma quantidade maior que zero.';
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'A baixa será realizada somente ao criar o registro. Edições posteriores não duplicam a movimentação.',
-                      style: TextStyle(color: Colors.black54, fontSize: 12),
                     ),
                     const SizedBox(height: 16),
+                    TextFormField(
+                      controller: productController,
+                      validator: requiredValidator,
+                      decoration: InputDecoration(
+                        labelText: productLabel,
+                        prefixIcon: const Icon(Icons.medication_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (!isEditing) ...[
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedInventoryItemId,
+                        decoration: const InputDecoration(
+                          labelText: 'Produto vinculado ao estoque',
+                          prefixIcon: Icon(Icons.inventory_2_outlined),
+                        ),
+                        items: <DropdownMenuItem<String>>[
+                          const DropdownMenuItem<String>(
+                            value: '',
+                            child: Text('Não realizar baixa automática'),
+                          ),
+                          ...widget.inventoryItems.map(
+                            (item) => DropdownMenuItem<String>(
+                              value: item.id,
+                              child: Text(
+                                '${item.name} — ${item.quantity.toStringAsFixed(2)} ${item.unit}',
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedInventoryItemId = value ?? '';
+                            final selected = widget.inventoryItems.where(
+                              (item) => item.id == selectedInventoryItemId,
+                            );
+                            if (selected.isNotEmpty) {
+                              productController.text = selected.first.name;
+                              productBatchController.text =
+                                  selected.first.batch;
+                            }
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: inventoryQuantityController,
+                        enabled: selectedInventoryItemId.isNotEmpty,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'Quantidade total a retirar do estoque',
+                          hintText: 'Ex.: 5,00',
+                          prefixIcon: Icon(Icons.remove_circle_outline),
+                        ),
+                        validator: (value) {
+                          if (selectedInventoryItemId.isEmpty) return null;
+                          return parseDecimal(value ?? '') > 0
+                              ? null
+                              : 'Informe uma quantidade maior que zero.';
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'A baixa será realizada somente ao criar o registro. Edições posteriores não duplicam a movimentação.',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    TextFormField(
+                      controller: protocolController,
+                      decoration: const InputDecoration(
+                        labelText: 'Protocolo sanitário',
+                        hintText: 'Ex.: protocolo anual de vacinação',
+                        prefixIcon: Icon(Icons.fact_check_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: doseController,
+                            decoration: const InputDecoration(
+                              labelText: 'Dose ou quantidade',
+                              hintText: 'Ex.: 5 mL',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: productBatchController,
+                            decoration: const InputDecoration(
+                              labelText: 'Lote do produto',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedRoute,
+                      decoration: const InputDecoration(
+                        labelText: 'Via de aplicação',
+                        prefixIcon: Icon(Icons.vaccines_outlined),
+                      ),
+                      items:
+                          const [
+                                'Não informada',
+                                'Subcutânea',
+                                'Intramuscular',
+                                'Intravenosa',
+                                'Oral',
+                                'Tópica',
+                                'Pour-on',
+                                'Intraruminal',
+                                'Outra',
+                              ]
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value),
+                                ),
+                              )
+                              .toList(),
+                      onChanged: (value) => setState(
+                        () => selectedRoute = value ?? selectedRoute,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: frequencyController,
+                      decoration: const InputDecoration(
+                        labelText: 'Frequência ou duração',
+                        hintText: 'Ex.: 1 vez ao dia por 3 dias',
+                        prefixIcon: Icon(Icons.repeat_outlined),
+                      ),
+                    ),
+                    sectionTitle(
+                      'Avaliação clínica',
+                      'Diagnóstico, gravidade e situação atual.',
+                    ),
+                    TextFormField(
+                      controller: diagnosisController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Diagnóstico ou suspeita clínica',
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(Icons.biotech_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedSeverity,
+                            decoration: const InputDecoration(
+                              labelText: 'Gravidade',
+                            ),
+                            items:
+                                const [
+                                      'Não informada',
+                                      'Leve',
+                                      'Moderada',
+                                      'Grave',
+                                      'Crítica',
+                                    ]
+                                    .map(
+                                      (value) => DropdownMenuItem(
+                                        value: value,
+                                        child: Text(value),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (value) => setState(
+                              () =>
+                                  selectedSeverity = value ?? selectedSeverity,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedStatus,
+                            decoration: const InputDecoration(
+                              labelText: 'Status',
+                            ),
+                            items:
+                                const [
+                                      'Planejado',
+                                      'Em andamento',
+                                      'Concluído',
+                                      'Em observação',
+                                      'Sem resposta',
+                                      'Óbito',
+                                    ]
+                                    .map(
+                                      (value) => DropdownMenuItem(
+                                        value: value,
+                                        child: Text(value),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: (value) => setState(
+                              () => selectedStatus = value ?? selectedStatus,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SwitchListTile.adaptive(
+                      value: isQuarantine,
+                      onChanged: (value) =>
+                          setState(() => isQuarantine = value),
+                      title: const Text('Animal em quarentena'),
+                      subtitle: const Text(
+                        'Marque quando houver isolamento sanitário.',
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    SwitchListTile.adaptive(
+                      value: isMortality,
+                      onChanged: (value) => setState(() => isMortality = value),
+                      title: const Text('Registro de mortalidade'),
+                      subtitle: const Text(
+                        'Identifica o evento nos indicadores sanitários.',
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    if (isMortality ||
+                        selectedType == 'Necropsia' ||
+                        selectedType == 'Mortalidade') ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: necropsyController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Resultado da necropsia ou causa provável',
+                          alignLabelWithHint: true,
+                          prefixIcon: Icon(Icons.search_outlined),
+                        ),
+                      ),
+                    ],
+                    sectionTitle(
+                      'Acompanhamento e carência',
+                      'Programe retorno e controle de resíduos.',
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: nextDateController,
+                            readOnly: true,
+                            onTap: () => selectDate(
+                              nextDateController,
+                              futureOnly: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Próxima aplicação ou retorno',
+                              prefixIcon: Icon(Icons.event_repeat_outlined),
+                              suffixIcon: Icon(Icons.arrow_drop_down),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: withdrawalEndDateController,
+                            readOnly: true,
+                            onTap: () => selectDate(
+                              withdrawalEndDateController,
+                              futureOnly: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Fim da carência',
+                              prefixIcon: Icon(Icons.no_food_outlined),
+                              suffixIcon: Icon(Icons.arrow_drop_down),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: responsibleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Responsável técnico ou executor',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: notesController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: 'Observações técnicas',
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(Icons.notes_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        onPressed: isSaving ? null : saveRecord,
+                        icon: const Icon(Icons.save_outlined),
+                        label: Text(
+                          isEditing ? 'Salvar alterações' : 'Salvar registro',
+                        ),
+                      ),
+                    ),
                   ],
-                  TextFormField(controller: protocolController,
-                    decoration: const InputDecoration(labelText: 'Protocolo sanitário', hintText: 'Ex.: protocolo anual de vacinação', prefixIcon: Icon(Icons.fact_check_outlined))),
-                  const SizedBox(height: 16),
-                  Row(children: [
-                    Expanded(child: TextFormField(controller: doseController,
-                      decoration: const InputDecoration(labelText: 'Dose ou quantidade', hintText: 'Ex.: 5 mL'))),
-                    const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: productBatchController,
-                      decoration: const InputDecoration(labelText: 'Lote do produto'))),
-                  ]),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedRoute,
-                    decoration: const InputDecoration(labelText: 'Via de aplicação', prefixIcon: Icon(Icons.vaccines_outlined)),
-                    items: const ['Não informada','Subcutânea','Intramuscular','Intravenosa','Oral','Tópica','Pour-on','Intraruminal','Outra']
-                      .map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                    onChanged: (value) => setState(() => selectedRoute = value ?? selectedRoute),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: frequencyController,
-                    decoration: const InputDecoration(labelText: 'Frequência ou duração', hintText: 'Ex.: 1 vez ao dia por 3 dias', prefixIcon: Icon(Icons.repeat_outlined))),
-                  sectionTitle('Avaliação clínica', 'Diagnóstico, gravidade e situação atual.'),
-                  TextFormField(controller: diagnosisController, maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'Diagnóstico ou suspeita clínica', alignLabelWithHint: true, prefixIcon: Icon(Icons.biotech_outlined))),
-                  const SizedBox(height: 16),
-                  Row(children: [
-                    Expanded(child: DropdownButtonFormField<String>(
-                      initialValue: selectedSeverity,
-                      decoration: const InputDecoration(labelText: 'Gravidade'),
-                      items: const ['Não informada','Leve','Moderada','Grave','Crítica']
-                        .map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                      onChanged: (value) => setState(() => selectedSeverity = value ?? selectedSeverity),
-                    )),
-                    const SizedBox(width: 12),
-                    Expanded(child: DropdownButtonFormField<String>(
-                      initialValue: selectedStatus,
-                      decoration: const InputDecoration(labelText: 'Status'),
-                      items: const ['Planejado','Em andamento','Concluído','Em observação','Sem resposta','Óbito']
-                        .map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
-                      onChanged: (value) => setState(() => selectedStatus = value ?? selectedStatus),
-                    )),
-                  ]),
-                  const SizedBox(height: 12),
-                  SwitchListTile.adaptive(
-                    value: isQuarantine,
-                    onChanged: (value) => setState(() => isQuarantine = value),
-                    title: const Text('Animal em quarentena'),
-                    subtitle: const Text('Marque quando houver isolamento sanitário.'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SwitchListTile.adaptive(
-                    value: isMortality,
-                    onChanged: (value) => setState(() => isMortality = value),
-                    title: const Text('Registro de mortalidade'),
-                    subtitle: const Text('Identifica o evento nos indicadores sanitários.'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  if (isMortality || selectedType == 'Necropsia' || selectedType == 'Mortalidade') ...[
-                    const SizedBox(height: 8),
-                    TextFormField(controller: necropsyController, maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Resultado da necropsia ou causa provável', alignLabelWithHint: true, prefixIcon: Icon(Icons.search_outlined))),
-                  ],
-                  sectionTitle('Acompanhamento e carência', 'Programe retorno e controle de resíduos.'),
-                  Row(children: [
-                    Expanded(child: TextFormField(controller: nextDateController, readOnly: true,
-                      onTap: () => selectDate(nextDateController, futureOnly: true),
-                      decoration: const InputDecoration(labelText: 'Próxima aplicação ou retorno', prefixIcon: Icon(Icons.event_repeat_outlined), suffixIcon: Icon(Icons.arrow_drop_down)))),
-                    const SizedBox(width: 12),
-                    Expanded(child: TextFormField(controller: withdrawalEndDateController, readOnly: true,
-                      onTap: () => selectDate(withdrawalEndDateController, futureOnly: true),
-                      decoration: const InputDecoration(labelText: 'Fim da carência', prefixIcon: Icon(Icons.no_food_outlined), suffixIcon: Icon(Icons.arrow_drop_down)))),
-                  ]),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: responsibleController,
-                    decoration: const InputDecoration(labelText: 'Responsável técnico ou executor', prefixIcon: Icon(Icons.person_outline))),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: notesController, maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'Observações técnicas', alignLabelWithHint: true, prefixIcon: Icon(Icons.notes_outlined))),
-                  const SizedBox(height: 28),
-                  SizedBox(height: 54, child: ElevatedButton.icon(
-                    onPressed: isSaving ? null : saveRecord,
-                    icon: const Icon(Icons.save_outlined),
-                    label: Text(isEditing ? 'Salvar alterações' : 'Salvar registro'),
-                  )),
-                ]),
+                ),
               ),
             ),
           ),

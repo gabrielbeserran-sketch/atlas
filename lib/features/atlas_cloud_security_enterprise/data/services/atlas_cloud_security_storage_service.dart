@@ -4,20 +4,13 @@ import 'package:projeto_atlas/features/atlas_cloud_security_enterprise/domain/mo
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtlasCloudSecurityStorageService {
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_cloud_security_'
         '${_normalize(farmName)}_'
         '${_normalize(animalId)}';

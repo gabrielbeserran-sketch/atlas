@@ -1,4 +1,3 @@
-
 enum AtlasIntelligenceReportsModule {
   consolidatedIndicatorEngine,
   realDataExecutiveDashboard,
@@ -12,149 +11,139 @@ enum AtlasIntelligenceReportsModule {
   professionalNavigationExperience,
 }
 
-extension AtlasIntelligenceReportsModuleX
-    on AtlasIntelligenceReportsModule {
+extension AtlasIntelligenceReportsModuleX on AtlasIntelligenceReportsModule {
   String get code => switch (this) {
-        AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
-          'consolidated_indicator_engine',
-        AtlasIntelligenceReportsModule.realDataExecutiveDashboard =>
-          'real_data_executive_dashboard',
-        AtlasIntelligenceReportsModule.realFarmBenchmarking =>
-          'real_farm_benchmarking',
-        AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
-          'traceable_recommendation_engine',
-        AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
-          'validated_predictive_diagnostics',
-        AtlasIntelligenceReportsModule.technicalPdfReports =>
-          'technical_pdf_reports',
-        AtlasIntelligenceReportsModule.financialExecutiveReports =>
-          'financial_executive_reports',
-        AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
-          'spreadsheet_csv_export',
-        AtlasIntelligenceReportsModule.secureSharing =>
-          'secure_sharing',
-        AtlasIntelligenceReportsModule.professionalNavigationExperience =>
-          'professional_navigation_experience',
-      };
+    AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
+      'consolidated_indicator_engine',
+    AtlasIntelligenceReportsModule.realDataExecutiveDashboard =>
+      'real_data_executive_dashboard',
+    AtlasIntelligenceReportsModule.realFarmBenchmarking =>
+      'real_farm_benchmarking',
+    AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
+      'traceable_recommendation_engine',
+    AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
+      'validated_predictive_diagnostics',
+    AtlasIntelligenceReportsModule.technicalPdfReports =>
+      'technical_pdf_reports',
+    AtlasIntelligenceReportsModule.financialExecutiveReports =>
+      'financial_executive_reports',
+    AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
+      'spreadsheet_csv_export',
+    AtlasIntelligenceReportsModule.secureSharing => 'secure_sharing',
+    AtlasIntelligenceReportsModule.professionalNavigationExperience =>
+      'professional_navigation_experience',
+  };
 
   String get title => switch (this) {
-        AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
-          'Motor de Indicadores Consolidado',
-        AtlasIntelligenceReportsModule.realDataExecutiveDashboard =>
-          'Dashboard Executivo com Dados Reais',
-        AtlasIntelligenceReportsModule.realFarmBenchmarking =>
-          'Comparação Real entre Fazendas',
-        AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
-          'Motor de Recomendações Rastreável',
-        AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
-          'Diagnósticos Preditivos Validados',
-        AtlasIntelligenceReportsModule.technicalPdfReports =>
-          'Relatórios Técnicos em PDF',
-        AtlasIntelligenceReportsModule.financialExecutiveReports =>
-          'Relatórios Financeiros e Executivos',
-        AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
-          'Exportação para Planilhas e CSV',
-        AtlasIntelligenceReportsModule.secureSharing =>
-          'Compartilhamento Seguro',
-        AtlasIntelligenceReportsModule.professionalNavigationExperience =>
-          'Nova Experiência de Navegação',
-      };
+    AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
+      'Motor de Indicadores Consolidado',
+    AtlasIntelligenceReportsModule.realDataExecutiveDashboard =>
+      'Dashboard Executivo com Dados Reais',
+    AtlasIntelligenceReportsModule.realFarmBenchmarking =>
+      'Comparação Real entre Fazendas',
+    AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
+      'Motor de Recomendações Rastreável',
+    AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
+      'Diagnósticos Preditivos Validados',
+    AtlasIntelligenceReportsModule.technicalPdfReports =>
+      'Relatórios Técnicos em PDF',
+    AtlasIntelligenceReportsModule.financialExecutiveReports =>
+      'Relatórios Financeiros e Executivos',
+    AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
+      'Exportação para Planilhas e CSV',
+    AtlasIntelligenceReportsModule.secureSharing => 'Compartilhamento Seguro',
+    AtlasIntelligenceReportsModule.professionalNavigationExperience =>
+      'Nova Experiência de Navegação',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
-          'Pacote 281',
-        AtlasIntelligenceReportsModule.realDataExecutiveDashboard =>
-          'Pacote 282',
-        AtlasIntelligenceReportsModule.realFarmBenchmarking =>
-          'Pacote 283',
-        AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
-          'Pacote 284',
-        AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
-          'Pacote 285',
-        AtlasIntelligenceReportsModule.technicalPdfReports =>
-          'Pacote 286',
-        AtlasIntelligenceReportsModule.financialExecutiveReports =>
-          'Pacote 287',
-        AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
-          'Pacote 288',
-        AtlasIntelligenceReportsModule.secureSharing =>
-          'Pacote 289',
-        AtlasIntelligenceReportsModule.professionalNavigationExperience =>
-          'Pacote 290',
-      };
+    AtlasIntelligenceReportsModule.consolidatedIndicatorEngine => 'Pacote 281',
+    AtlasIntelligenceReportsModule.realDataExecutiveDashboard => 'Pacote 282',
+    AtlasIntelligenceReportsModule.realFarmBenchmarking => 'Pacote 283',
+    AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
+      'Pacote 284',
+    AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
+      'Pacote 285',
+    AtlasIntelligenceReportsModule.technicalPdfReports => 'Pacote 286',
+    AtlasIntelligenceReportsModule.financialExecutiveReports => 'Pacote 287',
+    AtlasIntelligenceReportsModule.spreadsheetCsvExport => 'Pacote 288',
+    AtlasIntelligenceReportsModule.secureSharing => 'Pacote 289',
+    AtlasIntelligenceReportsModule.professionalNavigationExperience =>
+      'Pacote 290',
+  };
 
   List<String> get features => switch (this) {
-        AtlasIntelligenceReportsModule.consolidatedIndicatorEngine => const [
-            'Fórmula',
-            'Período',
-            'Fonte',
-            'Unidade',
-            'Regra de cálculo',
-          ],
-        AtlasIntelligenceReportsModule.realDataExecutiveDashboard => const [
-            'Dados consolidados',
-            'Atualização automática',
-            'Riscos',
-            'Metas',
-            'Decisões',
-          ],
-        AtlasIntelligenceReportsModule.realFarmBenchmarking => const [
-            'Sistema produtivo',
-            'Escala',
-            'Categoria animal',
-            'Período',
-            'Referência comparável',
-          ],
-        AtlasIntelligenceReportsModule.traceableRecommendationEngine => const [
-            'Dados de origem',
-            'Regras usadas',
-            'Confiança',
-            'Justificativa',
-            'Histórico',
-          ],
-        AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics => const [
-            'Premissas',
-            'Cenários',
-            'Intervalo de confiança',
-            'Limites técnicos',
-            'Validação',
-          ],
-        AtlasIntelligenceReportsModule.technicalPdfReports => const [
-            'Identificação',
-            'Tabelas',
-            'Gráficos',
-            'Conclusões',
-            'Assinatura',
-          ],
-        AtlasIntelligenceReportsModule.financialExecutiveReports => const [
-            'Custos',
-            'Rentabilidade',
-            'Fluxo de caixa',
-            'Indicadores',
-            'Resumo executivo',
-          ],
-        AtlasIntelligenceReportsModule.spreadsheetCsvExport => const [
-            'Animais',
-            'Eventos',
-            'Estoque',
-            'Finanças',
-            'Indicadores',
-          ],
-        AtlasIntelligenceReportsModule.secureSharing => const [
-            'Links temporários',
-            'Proteção',
-            'Permissões',
-            'Expiração',
-            'Registro de acesso',
-          ],
-        AtlasIntelligenceReportsModule.professionalNavigationExperience => const [
-            'Menus por área',
-            'Pesquisa global',
-            'Favoritos',
-            'Atalhos',
-            'Personalização',
-          ],
-      };
+    AtlasIntelligenceReportsModule.consolidatedIndicatorEngine => const [
+      'Fórmula',
+      'Período',
+      'Fonte',
+      'Unidade',
+      'Regra de cálculo',
+    ],
+    AtlasIntelligenceReportsModule.realDataExecutiveDashboard => const [
+      'Dados consolidados',
+      'Atualização automática',
+      'Riscos',
+      'Metas',
+      'Decisões',
+    ],
+    AtlasIntelligenceReportsModule.realFarmBenchmarking => const [
+      'Sistema produtivo',
+      'Escala',
+      'Categoria animal',
+      'Período',
+      'Referência comparável',
+    ],
+    AtlasIntelligenceReportsModule.traceableRecommendationEngine => const [
+      'Dados de origem',
+      'Regras usadas',
+      'Confiança',
+      'Justificativa',
+      'Histórico',
+    ],
+    AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics => const [
+      'Premissas',
+      'Cenários',
+      'Intervalo de confiança',
+      'Limites técnicos',
+      'Validação',
+    ],
+    AtlasIntelligenceReportsModule.technicalPdfReports => const [
+      'Identificação',
+      'Tabelas',
+      'Gráficos',
+      'Conclusões',
+      'Assinatura',
+    ],
+    AtlasIntelligenceReportsModule.financialExecutiveReports => const [
+      'Custos',
+      'Rentabilidade',
+      'Fluxo de caixa',
+      'Indicadores',
+      'Resumo executivo',
+    ],
+    AtlasIntelligenceReportsModule.spreadsheetCsvExport => const [
+      'Animais',
+      'Eventos',
+      'Estoque',
+      'Finanças',
+      'Indicadores',
+    ],
+    AtlasIntelligenceReportsModule.secureSharing => const [
+      'Links temporários',
+      'Proteção',
+      'Permissões',
+      'Expiração',
+      'Registro de acesso',
+    ],
+    AtlasIntelligenceReportsModule.professionalNavigationExperience => const [
+      'Menus por área',
+      'Pesquisa global',
+      'Favoritos',
+      'Atalhos',
+      'Personalização',
+    ],
+  };
 }
 
 class AtlasIntelligenceReportsRecord {
@@ -219,38 +208,34 @@ class AtlasIntelligenceReportsRecord {
   double get gap => currentValue - targetValue;
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'status': status,
-        'priority': priority,
-        'farmName': farmName,
-        'indicatorName': indicatorName,
-        'dataSource': dataSource,
-        'periodLabel': periodLabel,
-        'responsible': responsible,
-        'currentValue': currentValue,
-        'targetValue': targetValue,
-        'confidencePercent': confidencePercent,
-        'riskPercent': riskPercent,
-        'progressPercent': progressPercent,
-        'alertCount': alertCount,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'status': status,
+    'priority': priority,
+    'farmName': farmName,
+    'indicatorName': indicatorName,
+    'dataSource': dataSource,
+    'periodLabel': periodLabel,
+    'responsible': responsible,
+    'currentValue': currentValue,
+    'targetValue': targetValue,
+    'confidencePercent': confidencePercent,
+    'riskPercent': riskPercent,
+    'progressPercent': progressPercent,
+    'alertCount': alertCount,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasIntelligenceReportsRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasIntelligenceReportsRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
-    final module =
-        AtlasIntelligenceReportsModule.values.firstWhere(
+    final module = AtlasIntelligenceReportsModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
+      orElse: () => AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
     );
 
     return AtlasIntelligenceReportsRecord(
@@ -266,18 +251,12 @@ class AtlasIntelligenceReportsRecord {
       dataSource: map['dataSource']?.toString() ?? '',
       periodLabel: map['periodLabel']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
-      currentValue:
-          (map['currentValue'] as num?)?.toDouble() ?? 0,
-      targetValue:
-          (map['targetValue'] as num?)?.toDouble() ?? 0,
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ?? 0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      currentValue: (map['currentValue'] as num?)?.toDouble() ?? 0,
+      targetValue: (map['targetValue'] as num?)?.toDouble() ?? 0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

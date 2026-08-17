@@ -47,8 +47,7 @@ class AtlasEnterpriseSessionService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<AtlasEnterpriseCompany>>
-      availableCompanies() async {
+  Future<List<AtlasEnterpriseCompany>> availableCompanies() async {
     await ensureInitialized();
     final userId = currentUserId;
     if (userId == null) return <AtlasEnterpriseCompany>[];
@@ -80,9 +79,7 @@ class AtlasEnterpriseSessionService extends ChangeNotifier {
       companyId: companyId,
     );
     if (!allowed) {
-      throw StateError(
-        'O usuário atual não possui acesso a esta empresa.',
-      );
+      throw StateError('O usuário atual não possui acesso a esta empresa.');
     }
 
     final next = AtlasEnterpriseSession(
@@ -101,12 +98,8 @@ class AtlasEnterpriseSessionService extends ChangeNotifier {
       description: 'Empresa ativa alterada.',
       companyId: companyId,
       userId: next.userId,
-      before: <String, dynamic>{
-        'companyId': previousCompanyId,
-      },
-      after: <String, dynamic>{
-        'companyId': companyId,
-      },
+      before: <String, dynamic>{'companyId': previousCompanyId},
+      after: <String, dynamic>{'companyId': companyId},
     );
     await reload();
   }
@@ -125,18 +118,13 @@ class AtlasEnterpriseSessionService extends ChangeNotifier {
         farmId: farmId,
       );
       if (!allowed) {
-        throw StateError(
-          'O usuário atual não possui acesso a esta fazenda.',
-        );
+        throw StateError('O usuário atual não possui acesso a esta fazenda.');
       }
     }
 
     final previousFarmId = current.farmId;
     await _repository.saveSession(
-      current.copyWith(
-        farmId: farmId,
-        replaceFarmId: true,
-      ),
+      current.copyWith(farmId: farmId, replaceFarmId: true),
     );
     await AtlasEnterpriseAuditService.instance.record(
       action: 'switch_farm',
@@ -147,12 +135,8 @@ class AtlasEnterpriseSessionService extends ChangeNotifier {
       companyId: current.companyId,
       farmId: farmId,
       userId: current.userId,
-      before: <String, dynamic>{
-        'farmId': previousFarmId,
-      },
-      after: <String, dynamic>{
-        'farmId': farmId,
-      },
+      before: <String, dynamic>{'farmId': previousFarmId},
+      after: <String, dynamic>{'farmId': farmId},
     );
     await reload();
   }

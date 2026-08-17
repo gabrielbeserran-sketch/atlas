@@ -19,6 +19,7 @@ import 'package:projeto_atlas/features/animal_intelligence_360/data/services/ani
 import 'package:projeto_atlas/features/animal_intelligence_360/domain/services/animal_intelligence_engine.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 /// Os seis grupos abaixo materializam, em ordem, os 20 passos estratégicos.
 enum AnimalIntelligence360View {
@@ -51,20 +52,16 @@ class AnimalIntelligence360Screen extends StatefulWidget {
 
 class _AnimalIntelligence360ScreenState
     extends State<AnimalIntelligence360Screen> {
-  final AnimalWeightStorageService weightStorage =
-      AnimalWeightStorageService();
-  final AnimalHealthStorageService healthStorage =
-      AnimalHealthStorageService();
+  final AnimalWeightStorageService weightStorage = AnimalWeightStorageService();
+  final AnimalHealthStorageService healthStorage = AnimalHealthStorageService();
   final AnimalReproductionStorageService reproductionStorage =
       AnimalReproductionStorageService();
   final AnimalMovementStorageService movementStorage =
       AnimalMovementStorageService();
   final AnimalDocumentStorageService documentStorage =
       AnimalDocumentStorageService();
-  final AnimalPhotoStorageService photoStorage =
-      AnimalPhotoStorageService();
-  final AnimalEventStorageService eventStorage =
-      AnimalEventStorageService();
+  final AnimalPhotoStorageService photoStorage = AnimalPhotoStorageService();
+  final AnimalEventStorageService eventStorage = AnimalEventStorageService();
   final AnimalNutritionStorageService nutritionStorage =
       AnimalNutritionStorageService();
   final AnimalOperationalTaskStorageService taskStorage =
@@ -235,37 +232,36 @@ class _AnimalIntelligence360ScreenState
   }
 
   int get score => AnimalIntelligenceEngine.score360(
-        weightCount: weights.length,
-        healthCount: healthCount,
-        reproductionCount: reproductionCount,
-        nutritionCount: nutritionCount,
-        documentCount: documents.length,
-        photoCount: photoCount,
-        movementCount: movementCount,
-        gmd: gmd,
-        bodyConditionScore: widget.animal.bodyConditionScore,
-        criticalAlerts: criticalAlerts,
-      );
+    weightCount: weights.length,
+    healthCount: healthCount,
+    reproductionCount: reproductionCount,
+    nutritionCount: nutritionCount,
+    documentCount: documents.length,
+    photoCount: photoCount,
+    movementCount: movementCount,
+    gmd: gmd,
+    bodyConditionScore: widget.animal.bodyConditionScore,
+    criticalAlerts: criticalAlerts,
+  );
 
-  List<String> get recommendations =>
-      AnimalIntelligenceEngine.recommendations(
-        weightCount: weights.length,
-        healthCount: healthCount,
-        reproductionCount: reproductionCount,
-        nutritionCount: nutritionCount,
-        documentCount: documents.length,
-        gmd: gmd,
-        bodyConditionScore: widget.animal.bodyConditionScore,
-        female: widget.animal.sex.toLowerCase().contains('f'),
-        expiredDocuments: expiredDocuments,
-        openTasks: openTasks,
-      );
+  List<String> get recommendations => AnimalIntelligenceEngine.recommendations(
+    weightCount: weights.length,
+    healthCount: healthCount,
+    reproductionCount: reproductionCount,
+    nutritionCount: nutritionCount,
+    documentCount: documents.length,
+    gmd: gmd,
+    bodyConditionScore: widget.animal.bodyConditionScore,
+    female: widget.animal.sex.toLowerCase().contains('f'),
+    expiredDocuments: expiredDocuments,
+    openTasks: openTasks,
+  );
 
   String get diagnosis => AnimalIntelligenceEngine.diagnosis(
-        score: score,
-        gmd: gmd,
-        criticalAlerts: criticalAlerts,
-      );
+    score: score,
+    gmd: gmd,
+    criticalAlerts: criticalAlerts,
+  );
 
   double get farmAverageWeight {
     if (farmAnimals.isEmpty) return widget.animal.weight;
@@ -277,46 +273,40 @@ class _AnimalIntelligence360ScreenState
   }
 
   Map<String, dynamic> get snapshot => {
-        'Animal': widget.animal.displayName,
-        'Brinco': widget.animal.tag,
-        'Fazenda': widget.farm.name,
-        'Lote': widget.group.name,
-        'Score Atlas 360': score,
-        'Peso atual (kg)': _decimal(currentWeight, 1),
-        'GMD (kg/dia)': gmd == null ? 'Dados insuficientes' : _decimal(gmd!, 3),
-        'Média da fazenda (kg)': _decimal(farmAverageWeight, 1),
-        'Registros sanitários': healthCount,
-        'Registros reprodutivos': reproductionCount,
-        'Planos nutricionais': nutritionCount,
-        'Pesagens': weights.length,
-        'Documentos': documents.length,
-        'Fotos': photoCount,
-        'Movimentações': movementCount,
-        'Eventos manuais': eventCount,
-        'Auditorias Enterprise': auditCount,
-        'Tarefas abertas': openTasks,
-        'Alertas críticos': criticalAlerts,
-        'Status da API': backendStatus,
-        'Diagnóstico': diagnosis,
-      };
+    'Animal': widget.animal.displayName,
+    'Brinco': widget.animal.tag,
+    'Fazenda': widget.farm.name,
+    'Lote': widget.group.name,
+    'Score Atlas 360': score,
+    'Peso atual (kg)': _decimal(currentWeight, 1),
+    'GMD (kg/dia)': gmd == null ? 'Dados insuficientes' : _decimal(gmd!, 3),
+    'Média da fazenda (kg)': _decimal(farmAverageWeight, 1),
+    'Registros sanitários': healthCount,
+    'Registros reprodutivos': reproductionCount,
+    'Planos nutricionais': nutritionCount,
+    'Pesagens': weights.length,
+    'Documentos': documents.length,
+    'Fotos': photoCount,
+    'Movimentações': movementCount,
+    'Eventos manuais': eventCount,
+    'Auditorias Enterprise': auditCount,
+    'Tarefas abertas': openTasks,
+    'Alertas críticos': criticalAlerts,
+    'Status da API': backendStatus,
+    'Diagnóstico': diagnosis,
+  };
 
   Map<String, dynamic> get backupPayload => {
-        'generated_at': DateTime.now().toIso8601String(),
-        'animal': widget.animal.toMap(),
-        'farm': widget.farm.toMap(),
-        'group': widget.group.toMap(),
-        'snapshot': snapshot,
-        'weights': weights
-            .map((item) => item.toMap())
-            .toList(growable: false),
-        'documents': documents
-            .map((item) => item.toMap())
-            .toList(growable: false),
-        'tasks': tasks
-            .map((item) => item.toMap())
-            .toList(growable: false),
-        'recommendations': recommendations,
-      };
+    'generated_at': DateTime.now().toIso8601String(),
+    'animal': widget.animal.toMap(),
+    'farm': widget.farm.toMap(),
+    'group': widget.group.toMap(),
+    'snapshot': snapshot,
+    'weights': weights.map((item) => item.toMap()).toList(growable: false),
+    'documents': documents.map((item) => item.toMap()).toList(growable: false),
+    'tasks': tasks.map((item) => item.toMap()).toList(growable: false),
+    'recommendations': recommendations,
+  };
 
   Future<void> exportPdf() async {
     try {
@@ -357,9 +347,7 @@ class _AnimalIntelligence360ScreenState
 
   void _message(String value) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(value)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value)));
   }
 
   @override
@@ -385,7 +373,8 @@ class _AnimalIntelligence360ScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title: 'Inteligência 360 — ${widget.animal.displayName}',
+                        title:
+                            'Inteligência 360 — ${widget.animal.displayName}',
                         subtitle:
                             'Vinte capacidades integradas em análise, operação, relatórios, governança e plataforma.',
                         icon: Icons.hub_outlined,
@@ -510,25 +499,25 @@ class _AnimalIntelligence360ScreenState
               '$expiringDocuments documento(s) vencendo em breve.',
             if (gmd != null && gmd! < 0)
               'A série de pesagens indica perda de peso.',
-            if (openTasks > 0)
-              '$openTasks tarefa(s) aberta(s) na agenda.',
-            if (criticalAlerts == 0)
-              'Nenhum alerta crítico foi identificado.',
+            if (openTasks > 0) '$openTasks tarefa(s) aberta(s) na agenda.',
+            if (criticalAlerts == 0) 'Nenhum alerta crítico foi identificado.',
           ],
         ),
         const SizedBox(height: 22),
         _StepTitle(number: 4, title: 'Timeline Enterprise Completa'),
-        _CountGrid(items: [
-          ('Pesagens', weights.length),
-          ('Sanidade', healthCount),
-          ('Reprodução', reproductionCount),
-          ('Nutrição', nutritionCount),
-          ('Fotos', photoCount),
-          ('Documentos', documents.length),
-          ('Movimentações', movementCount),
-          ('Eventos', eventCount),
-          ('Auditoria', auditCount),
-        ]),
+        _CountGrid(
+          items: [
+            ('Pesagens', weights.length),
+            ('Sanidade', healthCount),
+            ('Reprodução', reproductionCount),
+            ('Nutrição', nutritionCount),
+            ('Fotos', photoCount),
+            ('Documentos', documents.length),
+            ('Movimentações', movementCount),
+            ('Eventos', eventCount),
+            ('Auditoria', auditCount),
+          ],
+        ),
         const SizedBox(height: 22),
         _StepTitle(number: 5, title: 'Comparador Inteligente'),
         Card(
@@ -557,7 +546,13 @@ class _AnimalIntelligence360ScreenState
                 LinearProgressIndicator(value: score / 100, minHeight: 14),
                 const SizedBox(height: 10),
                 Text(
-                  '$score pontos — ${score >= 80 ? 'Excelente' : score >= 60 ? 'Bom' : score >= 40 ? 'Atenção' : 'Crítico'}',
+                  '$score pontos — ${score >= 80
+                      ? 'Excelente'
+                      : score >= 60
+                      ? 'Bom'
+                      : score >= 40
+                      ? 'Atenção'
+                      : 'Crítico'}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -578,9 +573,7 @@ class _AnimalIntelligence360ScreenState
         _StepTitle(number: 8, title: 'Diagnóstico Automático'),
         Card(
           child: ListTile(
-            leading: const CircleAvatar(
-              child: Icon(Icons.biotech_outlined),
-            ),
+            leading: const CircleAvatar(child: Icon(Icons.biotech_outlined)),
             title: const Text('Diagnóstico consolidado'),
             subtitle: Text(diagnosis),
           ),
@@ -628,7 +621,9 @@ class _AnimalIntelligence360ScreenState
             ),
           )
         else
-          ...open.take(12).map(
+          ...open
+              .take(12)
+              .map(
                 (task) => Card(
                   child: ListTile(
                     leading: const CircleAvatar(
@@ -715,7 +710,8 @@ class _AnimalIntelligence360ScreenState
   }
 
   Widget _platform() {
-    final localRecords = weights.length +
+    final localRecords =
+        weights.length +
         healthCount +
         reproductionCount +
         nutritionCount +
@@ -731,7 +727,8 @@ class _AnimalIntelligence360ScreenState
         EnterpriseMetricCard(
           title: 'Base local disponível',
           value: '$localRecords registros',
-          subtitle: 'SharedPreferences e arquivos continuam disponíveis sem internet.',
+          subtitle:
+              'SharedPreferences e arquivos continuam disponíveis sem internet.',
           icon: Icons.offline_bolt_outlined,
         ),
         const SizedBox(height: 22),
@@ -752,7 +749,8 @@ class _AnimalIntelligence360ScreenState
         _ActionCard(
           icon: Icons.backup_outlined,
           title: 'Gerar backup completo do animal',
-          subtitle: 'Cadastro, indicadores, pesagens, documentos, tarefas e recomendações em JSON.',
+          subtitle:
+              'Cadastro, indicadores, pesagens, documentos, tarefas e recomendações em JSON.',
           button: 'Criar backup',
           onPressed: createBackup,
         ),
@@ -761,7 +759,9 @@ class _AnimalIntelligence360ScreenState
   }
 
   Widget _farmExecutive() {
-    final animalCount = farmAnimals.isEmpty ? widget.farm.animals : farmAnimals.length;
+    final animalCount = farmAnimals.isEmpty
+        ? widget.farm.animals
+        : farmAnimals.length;
     final activeCount = farmAnimals.isEmpty
         ? (_active(widget.animal) ? 1 : 0)
         : farmAnimals.where(_active).length;
@@ -777,8 +777,10 @@ class _AnimalIntelligence360ScreenState
             EnterpriseMetricCard(
               title: 'Animais',
               value: '$animalCount',
-              subtitle: backendAvailable ? 'Carteira Enterprise' : 'Cadastro da fazenda',
-              icon: Icons.pets_outlined,
+              subtitle: backendAvailable
+                  ? 'Carteira Enterprise'
+                  : 'Cadastro da fazenda',
+              icon: AtlasLivestockIcons.cow,
             ),
             EnterpriseMetricCard(
               title: 'Ativos',
@@ -842,10 +844,7 @@ class _AnimalIntelligence360ScreenState
 }
 
 class _SectionSelector extends StatelessWidget {
-  const _SectionSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _SectionSelector({required this.selected, required this.onSelected});
 
   final AnimalIntelligence360View selected;
   final ValueChanged<AnimalIntelligence360View> onSelected;
@@ -865,26 +864,30 @@ class _SectionSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: items.map((item) {
-            final active = item.view == selected;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: item == items.last ? 0 : 8),
-                child: FilledButton.tonal(
-                  onPressed: () => onSelected(item.view),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
-                    foregroundColor: active ? Colors.white : null,
+          children: items
+              .map((item) {
+                final active = item.view == selected;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: item == items.last ? 0 : 8),
+                    child: FilledButton.tonal(
+                      onPressed: () => onSelected(item.view),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -912,10 +915,7 @@ class _StepTitle extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
         ],

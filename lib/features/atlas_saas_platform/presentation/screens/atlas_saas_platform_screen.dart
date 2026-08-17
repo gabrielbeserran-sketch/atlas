@@ -26,8 +26,7 @@ class AtlasSaasPlatformScreen extends StatefulWidget {
       _AtlasSaasPlatformScreenState();
 }
 
-class _AtlasSaasPlatformScreenState
-    extends State<AtlasSaasPlatformScreen> {
+class _AtlasSaasPlatformScreenState extends State<AtlasSaasPlatformScreen> {
   final AtlasSaasPlatformStorageService storage =
       AtlasSaasPlatformStorageService();
   final AtlasSaasPlatformAnalyticsService analyticsService =
@@ -76,31 +75,26 @@ class _AtlasSaasPlatformScreenState
   }
 
   List<AtlasSaasPlatformRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasSaasPlatformRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasSaasPlatformRecord>(
+  Future<void> openForm([AtlasSaasPlatformRecord? current]) async {
+    final result = await showDialog<AtlasSaasPlatformRecord>(
       context: context,
-      builder: (context) => _SaasPlatformForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _SaasPlatformForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -114,9 +108,7 @@ class _AtlasSaasPlatformScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasSaasPlatformRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasSaasPlatformRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -124,13 +116,11 @@ class _AtlasSaasPlatformScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -172,12 +162,9 @@ class _AtlasSaasPlatformScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -194,9 +181,7 @@ class _AtlasSaasPlatformScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 21 — Plataforma Comercial SaaS',
-                          ),
+                          title: Text('Fase 21 — Plataforma Comercial SaaS'),
                           subtitle: Text(
                             'A entrega organiza cadastros, planos, cobrança e portais. '
                             'Integrações financeiras reais exigem provedores homologados, backend e credenciais.',
@@ -310,12 +295,8 @@ class _AtlasSaasPlatformScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro registro.',
                             ),
@@ -326,8 +307,7 @@ class _AtlasSaasPlatformScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -341,10 +321,7 @@ class _AtlasSaasPlatformScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasSaasPlatformModule selected;
   final ValueChanged<AtlasSaasPlatformModule> onSelected;
@@ -357,23 +334,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasSaasPlatformModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasSaasPlatformModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -396,15 +371,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -423,25 +398,24 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Bloqueado' || 'Falhou' || 'Vencido' ||
-      'Inadimplente' =>
-        Colors.red.shade800,
+      'Bloqueado' ||
+      'Falhou' ||
+      'Vencido' ||
+      'Inadimplente' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Aprovado' || 'Pago' ||
-      'Concluído' || 'Publicado' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Aprovado' ||
+      'Pago' ||
+      'Concluído' ||
+      'Publicado' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -458,14 +432,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -474,21 +442,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _SaasPlatformForm extends StatefulWidget {
-  const _SaasPlatformForm({
-    required this.module,
-    this.current,
-  });
+  const _SaasPlatformForm({required this.module, this.current});
 
   final AtlasSaasPlatformModule module;
   final AtlasSaasPlatformRecord? current;
 
   @override
-  State<_SaasPlatformForm> createState() =>
-      _SaasPlatformFormState();
+  State<_SaasPlatformForm> createState() => _SaasPlatformFormState();
 }
 
-class _SaasPlatformFormState
-    extends State<_SaasPlatformForm> {
+class _SaasPlatformFormState extends State<_SaasPlatformForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -518,25 +481,14 @@ class _SaasPlatformFormState
     feature = current?.feature ?? widget.module.features.first;
     status = current?.status ?? 'Planejado';
 
-    title = TextEditingController(
-      text: current?.title ?? '',
-    );
+    title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasSaasDate(DateTime.now()),
+      text: current?.date ?? formatAtlasSaasDate(DateTime.now()),
     );
-    owner = TextEditingController(
-      text: current?.owner ?? '',
-    );
-    externalId = TextEditingController(
-      text: current?.externalId ?? '',
-    );
-    companyName = TextEditingController(
-      text: current?.companyName ?? '',
-    );
-    farmName = TextEditingController(
-      text: current?.farmName ?? '',
-    );
+    owner = TextEditingController(text: current?.owner ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    farmName = TextEditingController(text: current?.farmName ?? '');
     amount = TextEditingController(
       text: current == null || current.amount == 0
           ? ''
@@ -553,24 +505,16 @@ class _SaasPlatformFormState
           : current.usagePercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -593,10 +537,7 @@ class _SaasPlatformFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -612,19 +553,14 @@ class _SaasPlatformFormState
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasSaasDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -643,8 +579,7 @@ class _SaasPlatformFormState
     Navigator.pop(
       context,
       AtlasSaasPlatformRecord(
-        id: current?.id ??
-            'saas_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'saas_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -657,8 +592,7 @@ class _SaasPlatformFormState
         amount: decimal(amount),
         quantity: nonNegative(quantity),
         usagePercent: percent(usagePercent),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -672,11 +606,7 @@ class _SaasPlatformFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -691,10 +621,8 @@ class _SaasPlatformFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -705,12 +633,9 @@ class _SaasPlatformFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -722,38 +647,35 @@ class _SaasPlatformFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Aprovado',
-                    'Publicado',
-                    'Pago',
-                    'Concluído',
-                    'Atenção',
-                    'Inadimplente',
-                    'Vencido',
-                    'Bloqueado',
-                    'Falhou',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Aprovado',
+                            'Publicado',
+                            'Pago',
+                            'Concluído',
+                            'Atenção',
+                            'Inadimplente',
+                            'Vencido',
+                            'Bloqueado',
+                            'Falhou',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -762,50 +684,37 @@ class _SaasPlatformFormState
                 ),
                 TextFormField(
                   controller: owner,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Usuário, empresa, assinatura ou transação',
+                    labelText: 'Usuário, empresa, assinatura ou transação',
                   ),
                 ),
                 TextFormField(
                   controller: companyName,
-                  decoration: const InputDecoration(
-                    labelText: 'Empresa',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Empresa'),
                 ),
                 TextFormField(
                   controller: farmName,
-                  decoration: const InputDecoration(
-                    labelText: 'Fazenda',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Fazenda'),
                 ),
                 TextFormField(
                   controller: amount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Valor (R\$)',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Valor (R\$)'),
                 ),
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Quantidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Quantidade'),
                 ),
                 TextFormField(
                   controller: usagePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -832,25 +741,20 @@ class _SaasPlatformFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou vencimento',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, token, link ou referência',
+                    labelText: 'Documento, token, link ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -862,10 +766,7 @@ class _SaasPlatformFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -875,23 +776,14 @@ IconData _moduleIcon(AtlasSaasPlatformModule module) {
   return switch (module) {
     AtlasSaasPlatformModule.accessControl =>
       Icons.admin_panel_settings_outlined,
-    AtlasSaasPlatformModule.multiCompany =>
-      Icons.apartment_outlined,
-    AtlasSaasPlatformModule.multiFarm =>
-      Icons.agriculture_outlined,
-    AtlasSaasPlatformModule.subscriptions =>
-      Icons.workspace_premium_outlined,
-    AtlasSaasPlatformModule.billing =>
-      Icons.receipt_long_outlined,
-    AtlasSaasPlatformModule.pixPayments =>
-      Icons.qr_code_scanner_outlined,
-    AtlasSaasPlatformModule.cardPayments =>
-      Icons.credit_card_outlined,
-    AtlasSaasPlatformModule.licensing =>
-      Icons.key_outlined,
-    AtlasSaasPlatformModule.consultantMarketplace =>
-      Icons.storefront_outlined,
-    AtlasSaasPlatformModule.producerPortal =>
-      Icons.dashboard_outlined,
+    AtlasSaasPlatformModule.multiCompany => Icons.apartment_outlined,
+    AtlasSaasPlatformModule.multiFarm => Icons.agriculture_outlined,
+    AtlasSaasPlatformModule.subscriptions => Icons.workspace_premium_outlined,
+    AtlasSaasPlatformModule.billing => Icons.receipt_long_outlined,
+    AtlasSaasPlatformModule.pixPayments => Icons.qr_code_scanner_outlined,
+    AtlasSaasPlatformModule.cardPayments => Icons.credit_card_outlined,
+    AtlasSaasPlatformModule.licensing => Icons.key_outlined,
+    AtlasSaasPlatformModule.consultantMarketplace => Icons.storefront_outlined,
+    AtlasSaasPlatformModule.producerPortal => Icons.dashboard_outlined,
   };
 }

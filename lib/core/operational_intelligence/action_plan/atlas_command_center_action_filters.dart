@@ -1,17 +1,9 @@
 import 'package:projeto_atlas/core/contracts/atlas_canonical_types.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action.dart';
 
-enum AtlasCommandCenterActionView {
-  all,
-  open,
-  overdue,
-  completed,
-  blocked,
-}
+enum AtlasCommandCenterActionView { all, open, overdue, completed, blocked }
 
-String atlasCommandCenterActionViewLabel(
-  AtlasCommandCenterActionView view,
-) {
+String atlasCommandCenterActionViewLabel(AtlasCommandCenterActionView view) {
   switch (view) {
     case AtlasCommandCenterActionView.all:
       return 'Todas';
@@ -44,8 +36,7 @@ List<AtlasCommandCenterAction> filterCommandCenterActions({
         action.status == AtlasCanonicalStatus.blocked,
     };
 
-    final matchesPriority =
-        priority == null || action.priority == priority;
+    final matchesPriority = priority == null || action.priority == priority;
 
     final searchable = <String>[
       action.title,
@@ -56,8 +47,7 @@ List<AtlasCommandCenterAction> filterCommandCenterActions({
       action.farmName ?? '',
     ].join(' ').toLowerCase();
 
-    final matchesSearch =
-        query.isEmpty || searchable.contains(query);
+    final matchesSearch = query.isEmpty || searchable.contains(query);
 
     return matchesView && matchesPriority && matchesSearch;
   }).toList();

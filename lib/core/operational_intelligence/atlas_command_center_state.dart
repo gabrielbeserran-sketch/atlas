@@ -11,9 +11,7 @@ class AtlasCommandCenterState {
     required this.errorMessage,
   });
 
-  factory AtlasCommandCenterState.initial({
-    String? farmName,
-  }) {
+  factory AtlasCommandCenterState.initial({String? farmName}) {
     return AtlasCommandCenterState(
       farmName: farmName,
       snapshot: null,
@@ -32,8 +30,7 @@ class AtlasCommandCenterState {
   final String? errorMessage;
 
   bool get hasData => snapshot != null;
-  bool get hasError =>
-      errorMessage != null && errorMessage!.trim().isNotEmpty;
+  bool get hasError => errorMessage != null && errorMessage!.trim().isNotEmpty;
 
   AtlasCommandCenterState copyWith({
     String? farmName,
@@ -54,9 +51,7 @@ class AtlasCommandCenterState {
       version: clearVersion ? null : version ?? this.version,
       isLoading: isLoading ?? this.isLoading,
       updatedAt: clearUpdatedAt ? null : updatedAt ?? this.updatedAt,
-      errorMessage: clearError
-          ? null
-          : errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
 }

@@ -1,0 +1,1 @@
+﻿param([Parameter(Mandatory=$true)][string]$ImageTag); $ErrorActionPreference='Stop'; Write-Host "Rollback supervisionado para $ImageTag"; Write-Host '1. Confirmar backup; 2. parar tráfego; 3. restaurar imagem; 4. validar healthcheck; 5. registrar incidente.'; throw 'Script deliberadamente não executa rollback automático. Use o runbook e aprovação humana.' 

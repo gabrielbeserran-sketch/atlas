@@ -3,8 +3,7 @@ import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_benchmark
 import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_data.dart';
 import 'package:projeto_atlas/features/atlas_bi/domain/services/atlas_bi_benchmark_service.dart';
 
-class AtlasBiBenchmarkScreen
-    extends StatefulWidget {
+class AtlasBiBenchmarkScreen extends StatefulWidget {
   const AtlasBiBenchmarkScreen({
     required this.data,
     this.onOpenFarm,
@@ -20,10 +19,8 @@ class AtlasBiBenchmarkScreen
   }
 }
 
-class _AtlasBiBenchmarkScreenState
-    extends State<AtlasBiBenchmarkScreen> {
-  final AtlasBiBenchmarkService service =
-      const AtlasBiBenchmarkService();
+class _AtlasBiBenchmarkScreenState extends State<AtlasBiBenchmarkScreen> {
+  final AtlasBiBenchmarkService service = const AtlasBiBenchmarkService();
 
   String? selectedFarm;
   AtlasBiCategory? selectedCategory;
@@ -32,26 +29,18 @@ class _AtlasBiBenchmarkScreenState
     return widget.data;
   }
 
-  List<AtlasBiBenchmarkOpportunity>
-      get opportunities {
-    return service.buildOpportunities(
-      benchmark: data,
-    );
+  List<AtlasBiBenchmarkOpportunity> get opportunities {
+    return service.buildOpportunities(benchmark: data);
   }
 
-  List<AtlasBiBenchmarkIndicator>
-      get filteredIndicators {
+  List<AtlasBiBenchmarkIndicator> get filteredIndicators {
     return data.indicators.where((item) {
-      if (selectedCategory != null &&
-          item.category != selectedCategory) {
+      if (selectedCategory != null && item.category != selectedCategory) {
         return false;
       }
 
       if (selectedFarm != null &&
-          !item.farmResults.any(
-            (result) =>
-                result.farmName == selectedFarm,
-          )) {
+          !item.farmResults.any((result) => result.farmName == selectedFarm)) {
         return false;
       }
 
@@ -62,70 +51,52 @@ class _AtlasBiBenchmarkScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text(
           'Benchmarking Atlas BI',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: data.hasData
                 ? ListView(
-                    padding:
-                        const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(22),
                     children: [
                       _BenchmarkHero(data: data),
                       const SizedBox(height: 22),
                       _BenchmarkFilters(
-                        farms: data.farms
-                            .map(
-                              (item) =>
-                                  item.farmName,
-                            )
-                            .toList(),
-                        selectedFarm:
-                            selectedFarm,
-                        selectedCategory:
-                            selectedCategory,
+                        farms: data.farms.map((item) => item.farmName).toList(),
+                        selectedFarm: selectedFarm,
+                        selectedCategory: selectedCategory,
                         onFarmChanged: (value) {
                           setState(() {
                             selectedFarm = value;
                           });
                         },
-                        onCategoryChanged:
-                            (value) {
+                        onCategoryChanged: (value) {
                           setState(() {
-                            selectedCategory =
-                                value;
+                            selectedCategory = value;
                           });
                         },
                       ),
                       const SizedBox(height: 26),
                       const _SectionTitle(
-                        title:
-                            'Ranking comparativo',
+                        title: 'Ranking comparativo',
                         subtitle:
                             'Posição, score e distância em relação à fazenda líder.',
                       ),
                       const SizedBox(height: 13),
                       _FarmRanking(
                         farms: data.farms,
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 26),
                       const _SectionTitle(
-                        title:
-                            'Comparação por indicador',
+                        title: 'Comparação por indicador',
                         subtitle:
                             'Referência interna, média e resultados de cada fazenda.',
                       ),
@@ -133,33 +104,24 @@ class _AtlasBiBenchmarkScreenState
                       if (filteredIndicators.isEmpty)
                         const _EmptySection()
                       else
-                        ...filteredIndicators.map(
-                          (indicator) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                bottom: 12,
-                              ),
-                              child:
-                                  _IndicatorBenchmarkCard(
-                                indicator: indicator,
-                              ),
-                            );
-                          },
-                        ),
+                        ...filteredIndicators.map((indicator) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _IndicatorBenchmarkCard(
+                              indicator: indicator,
+                            ),
+                          );
+                        }),
                       const SizedBox(height: 26),
                       const _SectionTitle(
-                        title:
-                            'Oportunidades de melhoria',
+                        title: 'Oportunidades de melhoria',
                         subtitle:
                             'Maiores distâncias em relação às referências internas.',
                       ),
                       const SizedBox(height: 13),
                       _OpportunityList(
-                        opportunities:
-                            opportunities,
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        opportunities: opportunities,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 32),
                     ],
@@ -173,9 +135,7 @@ class _AtlasBiBenchmarkScreenState
 }
 
 class _BenchmarkHero extends StatelessWidget {
-  const _BenchmarkHero({
-    required this.data,
-  });
+  const _BenchmarkHero({required this.data});
 
   final AtlasBiBenchmarkData data;
 
@@ -185,26 +145,16 @@ class _BenchmarkHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF102027),
-            Color(0xFF234E52),
-            Color(0xFF3A7378),
-          ],
+          colors: [Color(0xFF102027), Color(0xFF234E52), Color(0xFF3A7378)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
@@ -220,8 +170,7 @@ class _BenchmarkHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -230,30 +179,19 @@ class _BenchmarkHero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 data.summary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.45,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.45),
               ),
               const SizedBox(height: 15),
               Wrap(
                 spacing: 9,
                 runSpacing: 9,
                 children: [
-                  _HeroMetric(
-                    label: 'Fazendas',
-                    value: data.farms.length,
-                  ),
+                  _HeroMetric(label: 'Fazendas', value: data.farms.length),
                   _HeroMetric(
                     label: 'Indicadores',
-                    value:
-                        data.indicators.length,
+                    value: data.indicators.length,
                   ),
-                  _HeroMetric(
-                    label: 'Média',
-                    value:
-                        data.averageScore.round(),
-                  ),
+                  _HeroMetric(label: 'Média', value: data.averageScore.round()),
                 ],
               ),
             ],
@@ -263,22 +201,15 @@ class _BenchmarkHero extends StatelessWidget {
             width: 225,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Líder',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -286,8 +217,7 @@ class _BenchmarkHero extends StatelessWidget {
                   style: const TextStyle(
                     color: Color(0xFFB2DFDB),
                     fontSize: 20,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -296,16 +226,12 @@ class _BenchmarkHero extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 30,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Text(
                   'Média geral',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),
@@ -313,19 +239,13 @@ class _BenchmarkHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                information,
-                const SizedBox(height: 20),
-                side,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [information, const SizedBox(height: 20), side],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: information),
               const SizedBox(width: 24),
@@ -338,8 +258,7 @@ class _BenchmarkHero extends StatelessWidget {
   }
 }
 
-class _BenchmarkFilters
-    extends StatelessWidget {
+class _BenchmarkFilters extends StatelessWidget {
   const _BenchmarkFilters({
     required this.farms,
     required this.selectedFarm,
@@ -350,14 +269,11 @@ class _BenchmarkFilters
 
   final List<String> farms;
   final String? selectedFarm;
-  final AtlasBiCategory?
-      selectedCategory;
+  final AtlasBiCategory? selectedCategory;
 
-  final ValueChanged<String?>
-      onFarmChanged;
+  final ValueChanged<String?> onFarmChanged;
 
-  final ValueChanged<AtlasBiCategory?>
-      onCategoryChanged;
+  final ValueChanged<AtlasBiCategory?> onCategoryChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -370,25 +286,16 @@ class _BenchmarkFilters
           children: [
             SizedBox(
               width: 260,
-              child: DropdownButtonFormField<
-                  String?>(
+              child: DropdownButtonFormField<String?>(
                 initialValue: selectedFarm,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Fazenda',
-                ),
+                decoration: const InputDecoration(labelText: 'Fazenda'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as fazendas',
-                    ),
+                    child: Text('Todas as fazendas'),
                   ),
                   ...farms.map((farm) {
-                    return DropdownMenuItem(
-                      value: farm,
-                      child: Text(farm),
-                    );
+                    return DropdownMenuItem(value: farm, child: Text(farm));
                   }),
                 ],
                 onChanged: onFarmChanged,
@@ -396,35 +303,22 @@ class _BenchmarkFilters
             ),
             SizedBox(
               width: 240,
-              child: DropdownButtonFormField<
-                  AtlasBiCategory?>(
-                initialValue:
-                    selectedCategory,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Categoria',
-                ),
+              child: DropdownButtonFormField<AtlasBiCategory?>(
+                initialValue: selectedCategory,
+                decoration: const InputDecoration(labelText: 'Categoria'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as categorias',
-                    ),
+                    child: Text('Todas as categorias'),
                   ),
-                  ...AtlasBiCategory.values
-                      .map((category) {
+                  ...AtlasBiCategory.values.map((category) {
                     return DropdownMenuItem(
                       value: category,
-                      child: Text(
-                        atlasBiCategoryLabel(
-                          category,
-                        ),
-                      ),
+                      child: Text(atlasBiCategoryLabel(category)),
                     );
                   }),
                 ],
-                onChanged:
-                    onCategoryChanged,
+                onChanged: onCategoryChanged,
               ),
             ),
           ],
@@ -435,10 +329,7 @@ class _BenchmarkFilters
 }
 
 class _FarmRanking extends StatelessWidget {
-  const _FarmRanking({
-    required this.farms,
-    required this.onOpenFarm,
-  });
+  const _FarmRanking({required this.farms, required this.onOpenFarm});
 
   final List<AtlasBiBenchmarkFarm> farms;
   final ValueChanged<String>? onOpenFarm;
@@ -447,29 +338,20 @@ class _FarmRanking extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: farms.map((farm) {
-        final color =
-            _statusColor(farm.status);
+        final color = _statusColor(farm.status);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 '${farm.position}',
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
               farm.farmName,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               farm.isLeader
@@ -496,11 +378,8 @@ class _FarmRanking extends StatelessWidget {
   }
 }
 
-class _IndicatorBenchmarkCard
-    extends StatelessWidget {
-  const _IndicatorBenchmarkCard({
-    required this.indicator,
-  });
+class _IndicatorBenchmarkCard extends StatelessWidget {
+  const _IndicatorBenchmarkCard({required this.indicator});
 
   final AtlasBiBenchmarkIndicator indicator;
 
@@ -510,8 +389,7 @@ class _IndicatorBenchmarkCard
       child: Padding(
         padding: const EdgeInsets.all(17),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -523,15 +401,11 @@ class _IndicatorBenchmarkCard
                 Expanded(
                   child: Text(
                     indicator.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 Text(
-                  atlasBiCategoryLabel(
-                    indicator.category,
-                  ),
+                  atlasBiCategoryLabel(indicator.category),
                   style: const TextStyle(
                     color: Color(0xFF234E52),
                     fontWeight: FontWeight.w700,
@@ -552,68 +426,43 @@ class _IndicatorBenchmarkCard
             const SizedBox(height: 4),
             Text(
               'Média: ${_formatValue(indicator.averageValue, indicator.unit)}',
-              style: const TextStyle(
-                color: Colors.black54,
-              ),
+              style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 13),
-            ...indicator.farmResults.map(
-              (result) {
-                final color =
-                    _statusColor(result.status);
+            ...indicator.farmResults.map((result) {
+              final color = _statusColor(result.status);
 
-                return Padding(
-                  padding:
-                      const EdgeInsets.only(
-                    bottom: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          result.farmName,
-                          style: const TextStyle(
-                            fontWeight:
-                                FontWeight.w600,
-                          ),
-                        ),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        result.farmName,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      Text(
-                        _formatValue(
-                          result.currentValue,
-                          indicator.unit,
-                        ),
-                        style: TextStyle(
-                          color: color,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
+                    ),
+                    Text(
+                      _formatValue(result.currentValue, indicator.unit),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 95,
-                        child:
-                            LinearProgressIndicator(
-                          minHeight: 7,
-                          value: result
-                                  .targetAchievementPercent /
-                              120,
-                          backgroundColor:
-                              color.withValues(
-                            alpha: 0.10,
-                          ),
-                          valueColor:
-                              AlwaysStoppedAnimation<
-                                  Color>(
-                            color,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 95,
+                      child: LinearProgressIndicator(
+                        minHeight: 7,
+                        value: result.targetAchievementPercent / 120,
+                        backgroundColor: color.withValues(alpha: 0.10),
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -621,15 +470,13 @@ class _IndicatorBenchmarkCard
   }
 }
 
-class _OpportunityList
-    extends StatelessWidget {
+class _OpportunityList extends StatelessWidget {
   const _OpportunityList({
     required this.opportunities,
     required this.onOpenFarm,
   });
 
-  final List<AtlasBiBenchmarkOpportunity>
-      opportunities;
+  final List<AtlasBiBenchmarkOpportunity> opportunities;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -649,9 +496,7 @@ class _OpportunityList
             ),
             title: Text(
               item.indicatorTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.farmName} · distância de '
@@ -660,10 +505,7 @@ class _OpportunityList
             ),
             isThreeLine: true,
             trailing: Text(
-              _formatValue(
-                item.referenceValue,
-                item.unit,
-              ),
+              _formatValue(item.referenceValue, item.unit),
               style: const TextStyle(
                 color: Color(0xFF1B5E20),
                 fontWeight: FontWeight.bold,
@@ -682,10 +524,7 @@ class _OpportunityList
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -693,17 +532,10 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
@@ -718,10 +550,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -729,23 +558,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -762,9 +582,7 @@ class _EmptySection extends StatelessWidget {
         child: Center(
           child: Text(
             'Nenhum dado encontrado com os filtros atuais.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -772,8 +590,7 @@ class _EmptySection extends StatelessWidget {
   }
 }
 
-class _EmptyBenchmarkView
-    extends StatelessWidget {
+class _EmptyBenchmarkView extends StatelessWidget {
   const _EmptyBenchmarkView();
 
   @override
@@ -782,32 +599,19 @@ class _EmptyBenchmarkView
       child: Padding(
         padding: EdgeInsets.all(28),
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.leaderboard_outlined,
-              size: 58,
-              color: Colors.black38,
-            ),
+            Icon(Icons.leaderboard_outlined, size: 58, color: Colors.black38),
             SizedBox(height: 14),
             Text(
               'Benchmarking indisponível',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 7),
             Text(
               'Cadastre indicadores em mais fazendas para gerar comparações.',
-              textAlign:
-                  TextAlign.center,
-              style: TextStyle(
-                color:
-                    Colors.black54,
-              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -816,9 +620,7 @@ class _EmptyBenchmarkView
   }
 }
 
-Color _statusColor(
-  AtlasBiStatus status,
-) {
+Color _statusColor(AtlasBiStatus status) {
   switch (status) {
     case AtlasBiStatus.excellent:
       return const Color(0xFF1B5E20);
@@ -834,14 +636,8 @@ Color _statusColor(
   }
 }
 
-String _formatValue(
-  double value,
-  String unit,
-) {
-  final decimals =
-      value == value.roundToDouble()
-          ? 0
-          : 1;
+String _formatValue(double value, String unit) {
+  final decimals = value == value.roundToDouble() ? 0 : 1;
 
   if (unit == 'R\$') {
     return 'R\$ ${value.toStringAsFixed(2)}';

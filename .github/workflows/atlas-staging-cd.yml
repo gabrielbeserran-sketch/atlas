@@ -1,0 +1,15 @@
+name: Atlas Staging CD
+on:
+  workflow_dispatch:
+    inputs:
+      version: {description: 'Versão', required: true}
+      confirm: {description: 'Digite DEPLOY', required: true}
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'DEPLOY'
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.staging.yml config
+      - run: echo "Artefato ${{ github.event.inputs.version }} validado para implantação supervisionada."

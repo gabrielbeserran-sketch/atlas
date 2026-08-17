@@ -6,24 +6,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasReproductiveService {
   AtlasReproductiveService._();
 
-  static final AtlasReproductiveService instance =
-      AtlasReproductiveService._();
+  static final AtlasReproductiveService instance = AtlasReproductiveService._();
 
-  static const String _protocolsKey =
-      'atlas_reproductive_protocols_v1';
-  static const String _eventsKey =
-      'atlas_reproductive_events_v1';
-  static const String _geneticsKey =
-      'atlas_genetic_animals_v1';
+  static const String _protocolsKey = 'atlas_reproductive_protocols_v1';
+  static const String _eventsKey = 'atlas_reproductive_events_v1';
+  static const String _geneticsKey = 'atlas_genetic_animals_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasReproductiveProtocol>> loadProtocols({
     String? farmName,
   }) async {
-    final encoded =
-        await _preferences.getString(_protocolsKey);
+    final encoded = await _preferences.getString(_protocolsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasReproductiveProtocol>[];
     }
@@ -32,8 +26,7 @@ class AtlasReproductiveService {
       return _filterFarm(
         decoded
             .map(
-              (item) =>
-                  AtlasReproductiveProtocol.fromMap(
+              (item) => AtlasReproductiveProtocol.fromMap(
                 Map<String, dynamic>.from(item as Map),
               ),
             )
@@ -46,12 +39,9 @@ class AtlasReproductiveService {
     }
   }
 
-  Future<void> saveProtocol(
-    AtlasReproductiveProtocol protocol,
-  ) async {
+  Future<void> saveProtocol(AtlasReproductiveProtocol protocol) async {
     final all = await _loadAllProtocols();
-    final index =
-        all.indexWhere((item) => item.id == protocol.id);
+    final index = all.indexWhere((item) => item.id == protocol.id);
     if (index == -1) {
       all.add(protocol);
     } else {
@@ -72,11 +62,8 @@ class AtlasReproductiveService {
     );
   }
 
-  Future<List<AtlasReproductiveEvent>> loadEvents({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_eventsKey);
+  Future<List<AtlasReproductiveEvent>> loadEvents({String? farmName}) async {
+    final encoded = await _preferences.getString(_eventsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasReproductiveEvent>[];
     }
@@ -89,26 +76,17 @@ class AtlasReproductiveService {
             ),
           )
           .toList();
-      final filtered = _filterFarm(
-        items,
-        farmName,
-        (item) => item.farmName,
-      );
-      filtered.sort(
-        (a, b) => b.occurredAt.compareTo(a.occurredAt),
-      );
+      final filtered = _filterFarm(items, farmName, (item) => item.farmName);
+      filtered.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
       return filtered;
     } catch (_) {
       return <AtlasReproductiveEvent>[];
     }
   }
 
-  Future<void> saveEvent(
-    AtlasReproductiveEvent event,
-  ) async {
+  Future<void> saveEvent(AtlasReproductiveEvent event) async {
     final all = await _loadAllEvents();
-    final index =
-        all.indexWhere((item) => item.id == event.id);
+    final index = all.indexWhere((item) => item.id == event.id);
     if (index == -1) {
       all.add(event);
     } else {
@@ -129,11 +107,8 @@ class AtlasReproductiveService {
     );
   }
 
-  Future<List<AtlasGeneticAnimal>> loadGenetics({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_geneticsKey);
+  Future<List<AtlasGeneticAnimal>> loadGenetics({String? farmName}) async {
+    final encoded = await _preferences.getString(_geneticsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasGeneticAnimal>[];
     }
@@ -146,26 +121,17 @@ class AtlasReproductiveService {
             ),
           )
           .toList();
-      final filtered = _filterFarm(
-        items,
-        farmName,
-        (item) => item.farmName,
-      );
-      filtered.sort(
-        (a, b) => b.rankingScore.compareTo(a.rankingScore),
-      );
+      final filtered = _filterFarm(items, farmName, (item) => item.farmName);
+      filtered.sort((a, b) => b.rankingScore.compareTo(a.rankingScore));
       return filtered;
     } catch (_) {
       return <AtlasGeneticAnimal>[];
     }
   }
 
-  Future<void> saveGeneticAnimal(
-    AtlasGeneticAnimal animal,
-  ) async {
+  Future<void> saveGeneticAnimal(AtlasGeneticAnimal animal) async {
     final all = await _loadAllGenetics();
-    final index =
-        all.indexWhere((item) => item.id == animal.id);
+    final index = all.indexWhere((item) => item.id == animal.id);
     if (index == -1) {
       all.add(animal);
     } else {
@@ -177,51 +143,30 @@ class AtlasReproductiveService {
     );
   }
 
-  AtlasReproductiveSummary buildSummary(
-    List<AtlasReproductiveEvent> events,
-  ) {
+  AtlasReproductiveSummary buildSummary(List<AtlasReproductiveEvent> events) {
     final services = events.where((event) {
-      return event.type ==
-              AtlasReproductiveEventType.insemination ||
-          event.type ==
-              AtlasReproductiveEventType.fixedTimeAi ||
-          event.type ==
-              AtlasReproductiveEventType.naturalMating ||
-          event.type ==
-              AtlasReproductiveEventType.embryoTransfer;
+      return event.type == AtlasReproductiveEventType.insemination ||
+          event.type == AtlasReproductiveEventType.fixedTimeAi ||
+          event.type == AtlasReproductiveEventType.naturalMating ||
+          event.type == AtlasReproductiveEventType.embryoTransfer;
     }).length;
     final diagnoses = events
         .where(
           (event) =>
-              event.type ==
-              AtlasReproductiveEventType
-                  .pregnancyDiagnosis,
+              event.type == AtlasReproductiveEventType.pregnancyDiagnosis,
         )
         .length;
-    final positives =
-        events.where((event) => event.isPositivePregnancy).length;
-    final negatives =
-        events.where((event) => event.isNegativePregnancy).length;
+    final positives = events.where((event) => event.isPositivePregnancy).length;
+    final negatives = events.where((event) => event.isNegativePregnancy).length;
     final calvings = events
-        .where(
-          (event) =>
-              event.type ==
-              AtlasReproductiveEventType.calving,
-        )
+        .where((event) => event.type == AtlasReproductiveEventType.calving)
         .length;
     final abortions = events
-        .where(
-          (event) =>
-              event.type ==
-              AtlasReproductiveEventType.abortion,
-        )
+        .where((event) => event.type == AtlasReproductiveEventType.abortion)
         .length;
-    final pregnancyRate =
-        diagnoses == 0 ? 0.0 : positives / diagnoses * 100;
-    final conceptionRate =
-        services == 0 ? 0.0 : positives / services * 100;
-    final repeatRate =
-        services == 0 ? 0.0 : negatives / services * 100;
+    final pregnancyRate = diagnoses == 0 ? 0.0 : positives / diagnoses * 100;
+    final conceptionRate = services == 0 ? 0.0 : positives / services * 100;
+    final repeatRate = services == 0 ? 0.0 : negatives / services * 100;
 
     return AtlasReproductiveSummary(
       totalServices: services,
@@ -237,29 +182,21 @@ class AtlasReproductiveService {
     );
   }
 
-  List<DateTime> projectedCalvingDates(
-    List<AtlasReproductiveEvent> events,
-  ) {
+  List<DateTime> projectedCalvingDates(List<AtlasReproductiveEvent> events) {
     return events
         .where((event) => event.isPositivePregnancy)
-        .map(
-          (event) =>
-              event.occurredAt.add(const Duration(days: 285)),
-        )
+        .map((event) => event.occurredAt.add(const Duration(days: 285)))
         .toList()
       ..sort();
   }
 
-  List<String> buildAlerts(
-    List<AtlasReproductiveEvent> events,
-  ) {
+  List<String> buildAlerts(List<AtlasReproductiveEvent> events) {
     final alerts = <String>[];
     final now = DateTime.now();
 
     for (final event in events) {
       if (event.isPositivePregnancy) {
-        final projected =
-            event.occurredAt.add(const Duration(days: 285));
+        final projected = event.occurredAt.add(const Duration(days: 285));
         final days = projected.difference(now).inDays;
         if (days >= 0 && days <= 30) {
           alerts.add(
@@ -277,17 +214,13 @@ class AtlasReproductiveService {
     }
 
     if (alerts.isEmpty) {
-      alerts.add(
-        'Nenhum alerta reprodutivo crítico no momento.',
-      );
+      alerts.add('Nenhum alerta reprodutivo crítico no momento.');
     }
     return alerts;
   }
 
-  Future<List<AtlasReproductiveProtocol>>
-      _loadAllProtocols() async {
-    final encoded =
-        await _preferences.getString(_protocolsKey);
+  Future<List<AtlasReproductiveProtocol>> _loadAllProtocols() async {
+    final encoded = await _preferences.getString(_protocolsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasReproductiveProtocol>[];
     }
@@ -295,8 +228,7 @@ class AtlasReproductiveService {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
           .map(
-            (item) =>
-                AtlasReproductiveProtocol.fromMap(
+            (item) => AtlasReproductiveProtocol.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -306,10 +238,8 @@ class AtlasReproductiveService {
     }
   }
 
-  Future<List<AtlasReproductiveEvent>>
-      _loadAllEvents() async {
-    final encoded =
-        await _preferences.getString(_eventsKey);
+  Future<List<AtlasReproductiveEvent>> _loadAllEvents() async {
+    final encoded = await _preferences.getString(_eventsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasReproductiveEvent>[];
     }
@@ -327,10 +257,8 @@ class AtlasReproductiveService {
     }
   }
 
-  Future<List<AtlasGeneticAnimal>>
-      _loadAllGenetics() async {
-    final encoded =
-        await _preferences.getString(_geneticsKey);
+  Future<List<AtlasGeneticAnimal>> _loadAllGenetics() async {
+    final encoded = await _preferences.getString(_geneticsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasGeneticAnimal>[];
     }
@@ -358,8 +286,7 @@ class AtlasReproductiveService {
       return items;
     }
     return items.where((item) {
-      return readFarm(item)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(item)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

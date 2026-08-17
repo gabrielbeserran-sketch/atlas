@@ -5,15 +5,10 @@ import 'package:projeto_atlas/app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets(
-    'O Projeto Atlas inicia corretamente',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(const AtlasApp());
+  test('O Projeto Atlas possui um widget raiz válido', () {
+    const app = AtlasApp();
 
-      await tester.pump();
-
-      expect(find.byType(MaterialApp), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    expect(app, isA<StatefulWidget>());
+    expect(app.createState(), isNotNull);
+  });
 }

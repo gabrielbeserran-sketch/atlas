@@ -9,8 +9,7 @@ class AtlasValueGovernanceRepository {
   static final AtlasValueGovernanceRepository instance =
       AtlasValueGovernanceRepository._();
 
-  static const String _key =
-      'atlas_value_governance_decisions_v1';
+  static const String _key = 'atlas_value_governance_decisions_v1';
 
   Future<List<AtlasValueGovernanceDecision>> loadAll() async {
     final preferences = await SharedPreferences.getInstance();
@@ -40,13 +39,10 @@ class AtlasValueGovernanceRepository {
     }
   }
 
-  Future<void> save(
-    AtlasValueGovernanceDecision decision,
-  ) async {
+  Future<void> save(AtlasValueGovernanceDecision decision) async {
     final current = await loadAll();
     final index = current.indexWhere(
-      (item) =>
-          item.strategyPlanId == decision.strategyPlanId,
+      (item) => item.strategyPlanId == decision.strategyPlanId,
     );
 
     if (index >= 0) {
@@ -59,9 +55,7 @@ class AtlasValueGovernanceRepository {
 
     await preferences.setString(
       _key,
-      jsonEncode(
-        current.map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(current.map((item) => item.toJson()).toList()),
     );
   }
 }

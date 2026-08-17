@@ -24,12 +24,10 @@ class AtlasVeterinaryAiScreen extends StatefulWidget {
       _AtlasVeterinaryAiScreenState();
 }
 
-class _AtlasVeterinaryAiScreenState
-    extends State<AtlasVeterinaryAiScreen> {
+class _AtlasVeterinaryAiScreenState extends State<AtlasVeterinaryAiScreen> {
   final AtlasVeterinaryCaseStorageService storage =
       AtlasVeterinaryCaseStorageService();
-  final AtlasVeterinaryAiEngine engine =
-      const AtlasVeterinaryAiEngine();
+  final AtlasVeterinaryAiEngine engine = const AtlasVeterinaryAiEngine();
 
   List<AtlasVeterinaryCase> cases = [];
   bool loading = true;
@@ -72,21 +70,15 @@ class _AtlasVeterinaryAiScreenState
     );
   }
 
-  Future<void> openForm([
-    AtlasVeterinaryCase? current,
-  ]) async {
+  Future<void> openForm([AtlasVeterinaryCase? current]) async {
     final result = await showDialog<AtlasVeterinaryCase>(
       context: context,
-      builder: (context) => _VeterinaryCaseForm(
-        current: current,
-      ),
+      builder: (context) => _VeterinaryCaseForm(current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = cases.indexWhere(
-      (item) => item.id == result.id,
-    );
+    final index = cases.indexWhere((item) => item.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -100,25 +92,19 @@ class _AtlasVeterinaryAiScreenState
     await load();
   }
 
-  Future<void> deleteCase(
-    AtlasVeterinaryCase clinicalCase,
-  ) async {
+  Future<void> deleteCase(AtlasVeterinaryCase clinicalCase) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir avaliação'),
-        content: Text(
-          'Deseja excluir "${clinicalCase.title}"?',
-        ),
+        content: Text('Deseja excluir "${clinicalCase.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -128,9 +114,7 @@ class _AtlasVeterinaryAiScreenState
     if (confirmed != true || !mounted) return;
 
     setState(() {
-      cases.removeWhere(
-        (item) => item.id == clinicalCase.id,
-      );
+      cases.removeWhere((item) => item.id == clinicalCase.id);
     });
 
     await persist();
@@ -170,12 +154,9 @@ class _AtlasVeterinaryAiScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1220),
+            constraints: const BoxConstraints(maxWidth: 1220),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -189,9 +170,7 @@ class _AtlasVeterinaryAiScreenState
                       Card(
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
-                          leading: Icon(
-                            Icons.info_outline,
-                          ),
+                          leading: Icon(Icons.info_outline),
                           title: Text(
                             'Ferramenta de apoio, não de diagnóstico',
                           ),
@@ -237,33 +216,24 @@ class _AtlasVeterinaryAiScreenState
                       if (cases.isEmpty)
                         const Card(
                           child: ListTile(
-                            leading: Icon(
-                              Icons.medical_information_outlined,
-                            ),
-                            title: Text(
-                              'Nenhuma avaliação cadastrada.',
-                            ),
+                            leading: Icon(Icons.medical_information_outlined),
+                            title: Text('Nenhuma avaliação cadastrada.'),
                             subtitle: Text(
                               'Registre sinais e exame físico para iniciar a triagem assistida.',
                             ),
                           ),
                         )
                       else
-                        ...cases.map(
-                          (clinicalCase) {
-                            final assessment =
-                                engine.assess(clinicalCase);
+                        ...cases.map((clinicalCase) {
+                          final assessment = engine.assess(clinicalCase);
 
-                            return _AssessmentCard(
-                              clinicalCase: clinicalCase,
-                              assessment: assessment,
-                              onEdit: () =>
-                                  openForm(clinicalCase),
-                              onDelete: () =>
-                                  deleteCase(clinicalCase),
-                            );
-                          },
-                        ),
+                          return _AssessmentCard(
+                            clinicalCase: clinicalCase,
+                            assessment: assessment,
+                            onEdit: () => openForm(clinicalCase),
+                            onDelete: () => deleteCase(clinicalCase),
+                          );
+                        }),
                       const SizedBox(height: 90),
                     ],
                   ),
@@ -299,12 +269,8 @@ class _AssessmentCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            Icons.monitor_heart_outlined,
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(Icons.monitor_heart_outlined, color: color),
         ),
         title: Text(clinicalCase.title),
         subtitle: Text(
@@ -319,22 +285,11 @@ class _AssessmentCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
-        childrenPadding: const EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          20,
-        ),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
           Align(
             alignment: Alignment.centerLeft,
@@ -358,9 +313,7 @@ class _AssessmentCard extends StatelessWidget {
           if (assessment.hypotheses.isEmpty)
             const ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Não há evidências suficientes para hipóteses.',
-              ),
+              title: Text('Não há evidências suficientes para hipóteses.'),
               subtitle: Text(
                 'Complete o exame físico e solicite avaliação veterinária.',
               ),
@@ -386,19 +339,15 @@ class _AssessmentCard extends StatelessWidget {
 }
 
 class _VeterinaryCaseForm extends StatefulWidget {
-  const _VeterinaryCaseForm({
-    this.current,
-  });
+  const _VeterinaryCaseForm({this.current});
 
   final AtlasVeterinaryCase? current;
 
   @override
-  State<_VeterinaryCaseForm> createState() =>
-      _VeterinaryCaseFormState();
+  State<_VeterinaryCaseForm> createState() => _VeterinaryCaseFormState();
 }
 
-class _VeterinaryCaseFormState
-    extends State<_VeterinaryCaseForm> {
+class _VeterinaryCaseFormState extends State<_VeterinaryCaseForm> {
   static const availableSymptoms = [
     'Apatia',
     'Tosse',
@@ -438,16 +387,12 @@ class _VeterinaryCaseFormState
 
     final current = widget.current;
 
-    title = TextEditingController(
-      text: current?.title ?? '',
-    );
+    title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasVeterinaryDate(DateTime.now()),
+      text: current?.date ?? formatAtlasVeterinaryDate(DateTime.now()),
     );
     temperature = TextEditingController(
-      text: current == null ||
-              current.temperatureCelsius == 0
+      text: current == null || current.temperatureCelsius == 0
           ? ''
           : current.temperatureCelsius.toString(),
     );
@@ -457,8 +402,7 @@ class _VeterinaryCaseFormState
           : current.heartRateBpm.toString(),
     );
     respiratoryRate = TextEditingController(
-      text: current == null ||
-              current.respiratoryRateBpm == 0
+      text: current == null || current.respiratoryRateBpm == 0
           ? ''
           : current.respiratoryRateBpm.toString(),
     );
@@ -467,12 +411,8 @@ class _VeterinaryCaseFormState
           ? ''
           : current.durationHours.toString(),
     );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
+    notes = TextEditingController(text: current?.notes ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
 
     status = current?.status ?? 'Em avaliação';
     appetite = current?.appetite ?? 'Normal';
@@ -495,10 +435,7 @@ class _VeterinaryCaseFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   int integer(TextEditingController controller) {
@@ -510,12 +447,9 @@ class _VeterinaryCaseFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -534,8 +468,7 @@ class _VeterinaryCaseFormState
     Navigator.pop(
       context,
       AtlasVeterinaryCase(
-        id: current?.id ??
-            'vet_ai_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'vet_ai_${DateTime.now().microsecondsSinceEpoch}',
         date: date.text.trim(),
         title: title.text.trim(),
         status: status,
@@ -577,8 +510,7 @@ class _VeterinaryCaseFormState
                     labelText: 'Título da avaliação',
                   ),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -590,29 +522,26 @@ class _VeterinaryCaseFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Em avaliação',
-                    'Aguardando veterinário',
-                    'Em acompanhamento',
-                    'Concluído',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Em avaliação',
+                            'Aguardando veterinário',
+                            'Em acompanhamento',
+                            'Concluído',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -622,37 +551,35 @@ class _VeterinaryCaseFormState
                 const SizedBox(height: 14),
                 const Text(
                   'Sinais observados',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: availableSymptoms.map((symptom) {
-                    final selected =
-                        symptoms.contains(symptom);
-                    return FilterChip(
-                      label: Text(symptom),
-                      selected: selected,
-                      onSelected: (value) {
-                        setState(() {
-                          if (value) {
-                            symptoms.add(symptom);
-                          } else {
-                            symptoms.remove(symptom);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(growable: false),
+                  children: availableSymptoms
+                      .map((symptom) {
+                        final selected = symptoms.contains(symptom);
+                        return FilterChip(
+                          label: Text(symptom),
+                          selected: selected,
+                          onSelected: (value) {
+                            setState(() {
+                              if (value) {
+                                symptoms.add(symptom);
+                              } else {
+                                symptoms.remove(symptom);
+                              }
+                            });
+                          },
+                        );
+                      })
+                      .toList(growable: false),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: temperature,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -663,41 +590,30 @@ class _VeterinaryCaseFormState
                   controller: heartRate,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Frequência cardíaca (bpm)',
+                    labelText: 'Frequência cardíaca (bpm)',
                   ),
                 ),
                 TextFormField(
                   controller: respiratoryRate,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Frequência respiratória (mov/min)',
+                    labelText: 'Frequência respiratória (mov/min)',
                   ),
                 ),
                 TextFormField(
                   controller: durationHours,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Duração aproximada dos sinais (horas)',
+                    labelText: 'Duração aproximada dos sinais (horas)',
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: appetite,
-                  decoration: const InputDecoration(
-                    labelText: 'Apetite',
-                  ),
-                  items: const [
-                    'Normal',
-                    'Reduzido',
-                    'Ausente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Apetite'),
+                  items: const ['Normal', 'Reduzido', 'Ausente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -708,20 +624,11 @@ class _VeterinaryCaseFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: hydration,
-                  decoration: const InputDecoration(
-                    labelText: 'Hidratação',
-                  ),
-                  items: const [
-                    'Normal',
-                    'Leve',
-                    'Moderada',
-                    'Grave',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Hidratação'),
+                  items: const ['Normal', 'Leve', 'Moderada', 'Grave']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -732,21 +639,20 @@ class _VeterinaryCaseFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: locomotion,
-                  decoration: const InputDecoration(
-                    labelText: 'Locomoção',
-                  ),
-                  items: const [
-                    'Normal',
-                    'Dificuldade',
-                    'Não consegue ficar em pé',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Locomoção'),
+                  items:
+                      const [
+                            'Normal',
+                            'Dificuldade',
+                            'Não consegue ficar em pé',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => locomotion = value);
@@ -764,8 +670,7 @@ class _VeterinaryCaseFormState
                   minLines: 3,
                   maxLines: 6,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Histórico, observações e contexto',
+                    labelText: 'Histórico, observações e contexto',
                   ),
                 ),
               ],
@@ -778,10 +683,7 @@ class _VeterinaryCaseFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Avaliar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Avaliar')),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class PaddockFormScreen extends StatefulWidget {
   const PaddockFormScreen({this.paddock, super.key});
@@ -198,7 +199,7 @@ class _PaddockFormScreenState extends State<PaddockFormScreen> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: 'Quantidade de animais',
-                        prefixIcon: Icon(Icons.pets_outlined),
+                        prefixIcon: Icon(AtlasLivestockIcons.cow),
                       ),
                     ),
                     const SizedBox(height: 28),

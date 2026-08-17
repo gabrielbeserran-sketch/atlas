@@ -14,6 +14,7 @@ import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_remote_authorization_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalListScreen extends StatefulWidget {
   const AnimalListScreen({required this.farm, required this.group, super.key});
@@ -228,9 +229,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
           usingOfflineCache = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
         return;
       }
 
@@ -282,9 +283,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     } on AtlasRemoteAuthorizationException catch (error) {
       if (!mounted) return;
       setState(() => canCreate = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
       return;
     }
 
@@ -360,9 +361,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       if (error.statusCode == 403) {
         setState(() => canCreate = false);
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -376,9 +377,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     } on AtlasRemoteAuthorizationException catch (error) {
       if (!mounted) return;
       setState(() => canUpdate = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
       return;
     }
 
@@ -399,9 +400,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
         animal: draft,
       );
 
-      final animalIndex = animals.indexWhere(
-        (item) => item.id == animal.id,
-      );
+      final animalIndex = animals.indexWhere((item) => item.id == animal.id);
 
       if (animalIndex == -1 || !mounted) return;
 
@@ -436,9 +435,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       if (error.statusCode == 403) {
         setState(() => canUpdate = false);
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -452,9 +451,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
     } on AtlasRemoteAuthorizationException catch (error) {
       if (!mounted) return;
       setState(() => canDelete = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
       return;
     }
 
@@ -517,9 +516,9 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
       if (error.statusCode == 403) {
         setState(() => canDelete = false);
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -607,7 +606,7 @@ class _AnimalListScreenState extends State<AnimalListScreen> {
                           AnimalSummaryCard(
                             title: 'Cadastrados',
                             value: animals.length.toString(),
-                            icon: Icons.pets_outlined,
+                            icon: AtlasLivestockIcons.cow,
                           ),
                           AnimalSummaryCard(
                             title: 'Ativos',
@@ -875,7 +874,7 @@ class AnimalCard extends StatelessWidget {
                   0xFF1B5E20,
                 ).withValues(alpha: 0.10),
                 child: const Icon(
-                  Icons.pets_outlined,
+                  AtlasLivestockIcons.cow,
                   color: Color(0xFF1B5E20),
                 ),
               ),
@@ -983,10 +982,7 @@ class AnimalCard extends StatelessWidget {
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
+                              Icon(Icons.delete_outline, color: Colors.red),
                               SizedBox(width: 10),
                               Text('Excluir animal'),
                             ],
@@ -1040,7 +1036,7 @@ class EmptyAnimalsMessage extends StatelessWidget {
         padding: EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(Icons.pets_outlined, size: 56, color: Color(0xFF1B5E20)),
+            Icon(AtlasLivestockIcons.cow, size: 56, color: Color(0xFF1B5E20)),
             SizedBox(height: 16),
             Text(
               'Nenhum animal cadastrado neste lote.',

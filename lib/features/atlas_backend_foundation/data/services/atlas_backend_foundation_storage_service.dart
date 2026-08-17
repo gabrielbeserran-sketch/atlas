@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projeto_atlas/features/atlas_backend_foundation/domain/models/atlas_backend_foundation_record.dart';
@@ -16,11 +15,17 @@ class AtlasBackendFoundationStorageService {
     required String farmName,
     required String animalId,
   }) async {
-    final raw = await _preferences.getString(_key(farmName: farmName, animalId: animalId));
+    final raw = await _preferences.getString(
+      _key(farmName: farmName, animalId: animalId),
+    );
     if (raw == null || raw.trim().isEmpty) return [];
     try {
       return (jsonDecode(raw) as List<dynamic>)
-          .map((e) => AtlasBackendFoundationRecord.fromMap(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => AtlasBackendFoundationRecord.fromMap(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
           .toList();
     } catch (_) {
       return [];

@@ -62,8 +62,11 @@ class _AtlasObservabilityDashboardState
       return;
     }
     final List<AtlasSystemLog> logs = current.logs
-        .map((AtlasSystemLog item) =>
-            item.id == log.id ? item.copyWith(resolved: !item.resolved) : item)
+        .map(
+          (AtlasSystemLog item) => item.id == log.id
+              ? item.copyWith(resolved: !item.resolved)
+              : item,
+        )
         .toList();
     final AtlasObservabilityData updated = AtlasObservabilityData(
       healthChecks: current.healthChecks,
@@ -83,7 +86,9 @@ class _AtlasObservabilityDashboardState
     }
     final AtlasObservabilityData updated = AtlasObservabilityData(
       healthChecks: current.healthChecks,
-      logs: current.logs.where((AtlasSystemLog item) => !item.resolved).toList(),
+      logs: current.logs
+          .where((AtlasSystemLog item) => !item.resolved)
+          .toList(),
       lastDiagnosticAt: current.lastDiagnosticAt,
     );
     await _repository.save(updated);
@@ -126,14 +131,18 @@ class _AtlasObservabilityDashboardState
     final int score = _engine.healthScore(data.healthChecks);
     final int average = _engine.averageResponseTime(data.healthChecks);
     final int warnings = data.healthChecks
-        .where((AtlasHealthCheck item) =>
-            item.status == AtlasHealthStatus.warning)
+        .where(
+          (AtlasHealthCheck item) => item.status == AtlasHealthStatus.warning,
+        )
         .length;
     final int critical = data.healthChecks
-        .where((AtlasHealthCheck item) =>
-            item.status == AtlasHealthStatus.critical)
+        .where(
+          (AtlasHealthCheck item) => item.status == AtlasHealthStatus.critical,
+        )
         .length;
-    final int openLogs = data.logs.where((AtlasSystemLog item) => !item.resolved).length;
+    final int openLogs = data.logs
+        .where((AtlasSystemLog item) => !item.resolved)
+        .length;
 
     return RefreshIndicator(
       onRefresh: _load,

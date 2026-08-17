@@ -1,0 +1,3 @@
+CICLO 4 IMPLEMENTADO
+Sprints 146 a 150
+Banco local, fila, pull, push e conflitos integrados.

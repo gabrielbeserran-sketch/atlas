@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_sustainability_enterprise/domain/mo
 import 'package:projeto_atlas/features/atlas_sustainability_enterprise/domain/services/atlas_sustainability_enterprise_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasSustainabilityEnterpriseAnalyticsService();
+  const service = AtlasSustainabilityEnterpriseAnalyticsService();
 
   test('calculates sustainability analytics', () {
     final records = [
       AtlasSustainabilityEnterpriseRecord(
         id: '1',
-        module:
-            AtlasSustainabilityEnterpriseModule.carbonFootprint,
+        module: AtlasSustainabilityEnterpriseModule.carbonFootprint,
         feature: 'Emissões por atividade',
         title: 'Emissão anual',
         date: '04/08/2026',
@@ -36,8 +34,7 @@ void main() {
       ),
       AtlasSustainabilityEnterpriseRecord(
         id: '2',
-        module:
-            AtlasSustainabilityEnterpriseModule.carbonFootprint,
+        module: AtlasSustainabilityEnterpriseModule.carbonFootprint,
         feature: 'Meta de redução',
         title: 'Meta pendente',
         date: '04/08/2026',
@@ -63,8 +60,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasSustainabilityEnterpriseModule.carbonFootprint,
+      module: AtlasSustainabilityEnterpriseModule.carbonFootprint,
       records: records,
     );
 

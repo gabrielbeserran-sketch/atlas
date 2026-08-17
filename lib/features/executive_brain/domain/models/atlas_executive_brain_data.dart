@@ -224,9 +224,7 @@ class AtlasExecutiveBrainAction {
 
   final bool completed;
 
-  AtlasExecutiveBrainAction copyWith({
-    bool? completed,
-  }) {
+  AtlasExecutiveBrainAction copyWith({bool? completed}) {
     return AtlasExecutiveBrainAction(
       position: position,
       id: id,
@@ -236,8 +234,7 @@ class AtlasExecutiveBrainAction {
       horizon: horizon,
       priority: priority,
       confidencePercent: confidencePercent,
-      expectedFinancialImpact:
-          expectedFinancialImpact,
+      expectedFinancialImpact: expectedFinancialImpact,
       deadlineHours: deadlineHours,
       source: source,
       completed: completed ?? this.completed,
@@ -330,38 +327,15 @@ class AtlasExecutiveMemoryInsight {
   final String recommendation;
 }
 
-enum AtlasExecutiveBrainStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasExecutiveBrainStatus { excellent, adequate, attention, critical }
 
-enum AtlasExecutiveBrainPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveBrainPriority { low, medium, high, critical }
 
-enum AtlasExecutiveBrainSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasExecutiveBrainSeverity { low, medium, high, critical }
 
-enum AtlasExecutiveBrainHorizon {
-  today,
-  week,
-  month,
-}
+enum AtlasExecutiveBrainHorizon { today, week, month }
 
-enum AtlasExecutiveImpactDirection {
-  positive,
-  negative,
-  mixed,
-}
+enum AtlasExecutiveImpactDirection { positive, negative, mixed }
 
 enum AtlasExecutiveConflictType {
   resource,
@@ -379,9 +353,7 @@ enum AtlasExecutiveMemoryInsightType {
   missionLesson,
 }
 
-String atlasExecutiveBrainStatusLabel(
-  AtlasExecutiveBrainStatus status,
-) {
+String atlasExecutiveBrainStatusLabel(AtlasExecutiveBrainStatus status) {
   switch (status) {
     case AtlasExecutiveBrainStatus.excellent:
       return 'Excelente';
@@ -397,9 +369,7 @@ String atlasExecutiveBrainStatusLabel(
   }
 }
 
-String atlasExecutiveBrainPriorityLabel(
-  AtlasExecutiveBrainPriority priority,
-) {
+String atlasExecutiveBrainPriorityLabel(AtlasExecutiveBrainPriority priority) {
   switch (priority) {
     case AtlasExecutiveBrainPriority.low:
       return 'Baixa';
@@ -415,9 +385,7 @@ String atlasExecutiveBrainPriorityLabel(
   }
 }
 
-String atlasExecutiveBrainSeverityLabel(
-  AtlasExecutiveBrainSeverity severity,
-) {
+String atlasExecutiveBrainSeverityLabel(AtlasExecutiveBrainSeverity severity) {
   switch (severity) {
     case AtlasExecutiveBrainSeverity.low:
       return 'Baixa';
@@ -433,9 +401,7 @@ String atlasExecutiveBrainSeverityLabel(
   }
 }
 
-String atlasExecutiveBrainHorizonLabel(
-  AtlasExecutiveBrainHorizon horizon,
-) {
+String atlasExecutiveBrainHorizonLabel(AtlasExecutiveBrainHorizon horizon) {
   switch (horizon) {
     case AtlasExecutiveBrainHorizon.today:
       return 'Hoje';
@@ -463,9 +429,7 @@ String atlasExecutiveImpactDirectionLabel(
   }
 }
 
-String atlasExecutiveConflictTypeLabel(
-  AtlasExecutiveConflictType type,
-) {
+String atlasExecutiveConflictTypeLabel(AtlasExecutiveConflictType type) {
   switch (type) {
     case AtlasExecutiveConflictType.resource:
       return 'Recursos';

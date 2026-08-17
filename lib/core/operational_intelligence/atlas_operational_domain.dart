@@ -13,9 +13,7 @@ enum AtlasOperationalDomain {
   unknown,
 }
 
-String atlasOperationalDomainLabel(
-  AtlasOperationalDomain domain,
-) {
+String atlasOperationalDomainLabel(AtlasOperationalDomain domain) {
   switch (domain) {
     case AtlasOperationalDomain.animal:
       return 'Rebanho';

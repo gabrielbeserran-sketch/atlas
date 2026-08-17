@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/atlas_backend_foundation/domain/models/atlas_backend_foundation_record.dart';
 import 'package:projeto_atlas/features/atlas_backend_foundation/domain/services/atlas_backend_foundation_analytics_service.dart';

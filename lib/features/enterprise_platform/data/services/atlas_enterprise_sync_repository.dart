@@ -10,26 +10,18 @@ class AtlasEnterpriseSyncRepository {
   static final AtlasEnterpriseSyncRepository instance =
       AtlasEnterpriseSyncRepository._();
 
-  static const String _queueKey =
-      'atlas_enterprise_24c_sync_queue_v1';
-  static const String _conflictsKey =
-      'atlas_enterprise_24c_sync_conflicts_v1';
+  static const String _queueKey = 'atlas_enterprise_24c_sync_queue_v1';
+  static const String _conflictsKey = 'atlas_enterprise_24c_sync_conflicts_v1';
   static const String _checkpointsKey =
       'atlas_enterprise_24c_sync_checkpoints_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasEnterpriseSyncOperation>> loadQueue() async {
-    return _decodeList(
-      _queueKey,
-      AtlasEnterpriseSyncOperation.fromMap,
-    );
+    return _decodeList(_queueKey, AtlasEnterpriseSyncOperation.fromMap);
   }
 
-  Future<void> saveOperation(
-    AtlasEnterpriseSyncOperation operation,
-  ) async {
+  Future<void> saveOperation(AtlasEnterpriseSyncOperation operation) async {
     final values = await loadQueue();
     final index = values.indexWhere(
       (item) => item.operationId == operation.operationId,
@@ -53,20 +45,13 @@ class AtlasEnterpriseSyncRepository {
     );
   }
 
-  Future<List<AtlasEnterpriseSyncConflict>>
-      loadConflicts() async {
-    return _decodeList(
-      _conflictsKey,
-      AtlasEnterpriseSyncConflict.fromMap,
-    );
+  Future<List<AtlasEnterpriseSyncConflict>> loadConflicts() async {
+    return _decodeList(_conflictsKey, AtlasEnterpriseSyncConflict.fromMap);
   }
 
-  Future<void> saveConflict(
-    AtlasEnterpriseSyncConflict conflict,
-  ) async {
+  Future<void> saveConflict(AtlasEnterpriseSyncConflict conflict) async {
     final values = await loadConflicts();
-    final index =
-        values.indexWhere((item) => item.id == conflict.id);
+    final index = values.indexWhere((item) => item.id == conflict.id);
     if (index == -1) {
       values.add(conflict);
     } else {
@@ -79,17 +64,11 @@ class AtlasEnterpriseSyncRepository {
     );
   }
 
-  Future<List<AtlasEnterpriseSyncCheckpoint>>
-      loadCheckpoints() async {
-    return _decodeList(
-      _checkpointsKey,
-      AtlasEnterpriseSyncCheckpoint.fromMap,
-    );
+  Future<List<AtlasEnterpriseSyncCheckpoint>> loadCheckpoints() async {
+    return _decodeList(_checkpointsKey, AtlasEnterpriseSyncCheckpoint.fromMap);
   }
 
-  Future<AtlasEnterpriseSyncCheckpoint> checkpoint(
-    String companyId,
-  ) async {
+  Future<AtlasEnterpriseSyncCheckpoint> checkpoint(String companyId) async {
     final values = await loadCheckpoints();
     for (final item in values) {
       if (item.companyId == companyId) return item;
@@ -102,9 +81,7 @@ class AtlasEnterpriseSyncRepository {
     );
   }
 
-  Future<void> saveCheckpoint(
-    AtlasEnterpriseSyncCheckpoint checkpoint,
-  ) async {
+  Future<void> saveCheckpoint(AtlasEnterpriseSyncCheckpoint checkpoint) async {
     final values = await loadCheckpoints();
     final index = values.indexWhere(
       (item) => item.companyId == checkpoint.companyId,
@@ -130,11 +107,7 @@ class AtlasEnterpriseSyncRepository {
 
     try {
       return (jsonDecode(raw) as List<dynamic>)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];

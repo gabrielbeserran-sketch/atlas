@@ -49,22 +49,14 @@ class AnimalHealthEventService {
           type: AtlasEventType.treatmentRecorded,
           sourceModule: 'animal_health',
           title: '${record.type} registrado',
-          description:
-              '$animalName recebeu ${record.product}.',
+          description: '$animalName recebeu ${record.product}.',
           priority: AtlasEventPriority.normal,
           farmId: farmName,
           farmName: farmName,
           entityId: animalId,
           entityType: 'animal',
-          payload: _payload(
-            animalName: animalName,
-            record: record,
-          ),
-          tags: const <String>[
-            'animal',
-            'health',
-            'treatment',
-          ],
+          payload: _payload(animalName: animalName, record: record),
+          tags: const <String>['animal', 'health', 'treatment'],
           occurredAt: _parseDate(record.date),
         );
 
@@ -81,16 +73,8 @@ class AnimalHealthEventService {
           farmName: farmName,
           entityId: animalId,
           entityType: 'animal',
-          payload: _payload(
-            animalName: animalName,
-            record: record,
-          ),
-          tags: const <String>[
-            'animal',
-            'health',
-            'clinical',
-            'alert',
-          ],
+          payload: _payload(animalName: animalName, record: record),
+          tags: const <String>['animal', 'health', 'clinical', 'alert'],
           occurredAt: _parseDate(record.date),
         );
 
@@ -107,14 +91,8 @@ class AnimalHealthEventService {
           farmName: farmName,
           entityId: animalId,
           entityType: 'animal',
-          payload: _payload(
-            animalName: animalName,
-            record: record,
-          ),
-          tags: const <String>[
-            'animal',
-            'health',
-          ],
+          payload: _payload(animalName: animalName, record: record),
+          tags: const <String>['animal', 'health'],
           occurredAt: _parseDate(record.date),
         );
     }

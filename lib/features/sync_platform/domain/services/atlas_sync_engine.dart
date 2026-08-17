@@ -4,12 +4,26 @@ class AtlasSyncEngine {
   const AtlasSyncEngine();
 
   AtlasSyncSummary summarize(List<AtlasSyncItem> items) {
-    final int pending = items.where((AtlasSyncItem item) => item.status == AtlasSyncStatus.pending || item.status == AtlasSyncStatus.syncing).length;
-    final int synced = items.where((AtlasSyncItem item) => item.status == AtlasSyncStatus.synced).length;
-    final int failed = items.where((AtlasSyncItem item) => item.status == AtlasSyncStatus.failed).length;
-    final int conflicts = items.where((AtlasSyncItem item) => item.status == AtlasSyncStatus.conflict).length;
+    final int pending = items
+        .where(
+          (AtlasSyncItem item) =>
+              item.status == AtlasSyncStatus.pending ||
+              item.status == AtlasSyncStatus.syncing,
+        )
+        .length;
+    final int synced = items
+        .where((AtlasSyncItem item) => item.status == AtlasSyncStatus.synced)
+        .length;
+    final int failed = items
+        .where((AtlasSyncItem item) => item.status == AtlasSyncStatus.failed)
+        .length;
+    final int conflicts = items
+        .where((AtlasSyncItem item) => item.status == AtlasSyncStatus.conflict)
+        .length;
     final int processed = synced + failed + conflicts;
-    final double successRate = processed == 0 ? 100 : (synced / processed) * 100;
+    final double successRate = processed == 0
+        ? 100
+        : (synced / processed) * 100;
     final Set<String> modules = items
         .where((AtlasSyncItem item) => item.status != AtlasSyncStatus.synced)
         .map((AtlasSyncItem item) => item.module)

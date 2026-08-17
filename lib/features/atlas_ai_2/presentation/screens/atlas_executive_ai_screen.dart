@@ -1,22 +1,16 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/atlas_ai_2/data/atlas_ai_repository.dart';
 
 class AtlasExecutiveAiScreen extends StatefulWidget {
-  const AtlasExecutiveAiScreen({
-    this.farmId,
-    super.key,
-  });
+  const AtlasExecutiveAiScreen({this.farmId, super.key});
 
   final String? farmId;
 
   @override
-  State<AtlasExecutiveAiScreen> createState() =>
-      _AtlasExecutiveAiScreenState();
+  State<AtlasExecutiveAiScreen> createState() => _AtlasExecutiveAiScreenState();
 }
 
-class _AtlasExecutiveAiScreenState
-    extends State<AtlasExecutiveAiScreen> {
+class _AtlasExecutiveAiScreenState extends State<AtlasExecutiveAiScreen> {
   final repository = AtlasAiRepository();
 
   Map<String, dynamic>? result;
@@ -36,9 +30,7 @@ class _AtlasExecutiveAiScreenState
     });
 
     try {
-      final data = await repository.executive(
-        farmId: widget.farmId,
-      );
+      final data = await repository.executive(farmId: widget.farmId);
 
       if (!mounted) return;
 
@@ -54,13 +46,8 @@ class _AtlasExecutiveAiScreenState
   @override
   Widget build(BuildContext context) {
     final recommendations =
-        ((result?['recommendations'] as List?) ??
-                const <dynamic>[])
-            .map(
-              (item) => Map<String, dynamic>.from(
-                item as Map,
-              ),
-            )
+        ((result?['recommendations'] as List?) ?? const <dynamic>[])
+            .map((item) => Map<String, dynamic>.from(item as Map))
             .toList();
 
     return Scaffold(
@@ -76,102 +63,86 @@ class _AtlasExecutiveAiScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-              ? Center(child: Text(error!))
-              : ListView(
-                  padding: const EdgeInsets.all(24),
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _MetricCard(
-                          title: 'Score executivo',
-                          value:
-                              '${result?['executive_score'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Situação',
-                          value:
-                              result?['status']?.toString() ??
-                                  '',
-                        ),
-                        _MetricCard(
-                          title: 'Recomendações',
-                          value:
-                              '${recommendations.length}',
-                        ),
-                      ],
+                    _MetricCard(
+                      title: 'Score executivo',
+                      value: '${result?['executive_score'] ?? 0}',
                     ),
-                    const SizedBox(height: 20),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(
-                          Icons.gavel_outlined,
-                        ),
-                        title: const Text('Decisão oficial'),
-                        subtitle: Text(
-                          result?['official_decision']
-                                  ?.toString() ??
-                              '',
-                        ),
-                      ),
+                    _MetricCard(
+                      title: 'Situação',
+                      value: result?['status']?.toString() ?? '',
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Prioridades',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall,
-                    ),
-                    const SizedBox(height: 10),
-                    ...recommendations.map(
-                      (item) => Card(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            child: Text(
-                              item['priority']
-                                      ?.toString()
-                                      .substring(0, 1)
-                                      .toUpperCase() ??
-                                  '-',
-                            ),
-                          ),
-                          title: Text(
-                            item['title']?.toString() ??
-                                '',
-                          ),
-                          subtitle: Text(
-                            '${item['summary'] ?? ''}\n'
-                            'Confiança: ${item['confidence'] ?? 0}%',
-                          ),
-                          isThreeLine: true,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Card(
-                      color: Color(0xFFFFF8E1),
-                      child: ListTile(
-                        leading: Icon(Icons.warning_amber),
-                        title: Text('Limitações'),
-                        subtitle: Text(
-                          'O motor atual usa regras explicáveis e dados internos. '
-                          'Toda decisão clínica, nutricional, comercial ou financeira '
-                          'deve ser revisada por profissional responsável.',
-                        ),
-                      ),
+                    _MetricCard(
+                      title: 'Recomendações',
+                      value: '${recommendations.length}',
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.gavel_outlined),
+                    title: const Text('Decisão oficial'),
+                    subtitle: Text(
+                      result?['official_decision']?.toString() ?? '',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Prioridades',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 10),
+                ...recommendations.map(
+                  (item) => Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        child: Text(
+                          item['priority']
+                                  ?.toString()
+                                  .substring(0, 1)
+                                  .toUpperCase() ??
+                              '-',
+                        ),
+                      ),
+                      title: Text(item['title']?.toString() ?? ''),
+                      subtitle: Text(
+                        '${item['summary'] ?? ''}\n'
+                        'Confiança: ${item['confidence'] ?? 0}%',
+                      ),
+                      isThreeLine: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Card(
+                  color: Color(0xFFFFF8E1),
+                  child: ListTile(
+                    leading: Icon(Icons.warning_amber),
+                    title: Text('Limitações'),
+                    subtitle: Text(
+                      'O motor atual usa regras explicáveis e dados internos. '
+                      'Toda decisão clínica, nutricional, comercial ou financeira '
+                      'deve ser revisada por profissional responsável.',
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.title,
-    required this.value,
-  });
+  const _MetricCard({required this.title, required this.value});
 
   final String title;
   final String value;
@@ -188,11 +159,7 @@ class _MetricCard extends StatelessWidget {
             children: [
               Text(title),
               const SizedBox(height: 8),
-              Text(
-                value,
-                style:
-                    Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(value, style: Theme.of(context).textTheme.headlineSmall),
             ],
           ),
         ),

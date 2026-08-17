@@ -9,11 +9,10 @@ import 'package:projeto_atlas/core/event_center/atlas_event_log_service.dart';
 import 'package:projeto_atlas/core/events/atlas_event.dart';
 import 'package:projeto_atlas/core/events/atlas_event_bus.dart';
 import 'package:projeto_atlas/core/operational_memory/atlas_operational_memory_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasEventCenterScreen extends StatefulWidget {
-  const AtlasEventCenterScreen({
-    super.key,
-  });
+  const AtlasEventCenterScreen({super.key});
 
   @override
   State<AtlasEventCenterScreen> createState() {
@@ -21,10 +20,8 @@ class AtlasEventCenterScreen extends StatefulWidget {
   }
 }
 
-class _AtlasEventCenterScreenState
-    extends State<AtlasEventCenterScreen> {
-  final TextEditingController searchController =
-      TextEditingController();
+class _AtlasEventCenterScreenState extends State<AtlasEventCenterScreen> {
+  final TextEditingController searchController = TextEditingController();
 
   StreamSubscription<AtlasEvent>? eventSubscription;
 
@@ -51,8 +48,7 @@ class _AtlasEventCenterScreenState
   Future<void> _load() async {
     await AtlasEventLogService.instance.load();
 
-    eventSubscription =
-        AtlasEventBus.instance.stream.listen((event) {
+    eventSubscription = AtlasEventBus.instance.stream.listen((event) {
       if (!liveUpdatesEnabled || !mounted) {
         return;
       }
@@ -74,24 +70,26 @@ class _AtlasEventCenterScreenState
   }
 
   List<String> get availableModules {
-    final modules = allEntries
-        .map((item) => item.sourceModule)
-        .where((item) => item.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final modules =
+        allEntries
+            .map((item) => item.sourceModule)
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     return modules;
   }
 
   List<String> get availableFarms {
-    final farms = allEntries
-        .map((item) => item.farmName)
-        .whereType<String>()
-        .where((item) => item.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final farms =
+        allEntries
+            .map((item) => item.farmName)
+            .whereType<String>()
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     return farms;
   }
@@ -100,21 +98,15 @@ class _AtlasEventCenterScreenState
     return AtlasEventLogService.instance.query(
       filter: AtlasEventLogFilter(
         search: searchController.text,
-        priorities: priority == null
-            ? null
-            : <AtlasEventPriority>{priority!},
+        priorities: priority == null ? null : <AtlasEventPriority>{priority!},
         sourceModule: sourceModule,
         farmName: farmName,
       ),
     );
   }
 
-  int countByPriority(
-    AtlasEventPriority value,
-  ) {
-    return allEntries
-        .where((item) => item.priority == value)
-        .length;
+  int countByPriority(AtlasEventPriority value) {
+    return allEntries.where((item) => item.priority == value).length;
   }
 
   @override
@@ -137,9 +129,7 @@ class _AtlasEventCenterScreenState
           IconButton(
             tooltip: 'Análises dos eventos',
             onPressed: _openAnalytics,
-            icon: const Icon(
-              Icons.analytics_outlined,
-            ),
+            icon: const Icon(Icons.analytics_outlined),
           ),
           IconButton(
             tooltip: liveUpdatesEnabled
@@ -158,18 +148,14 @@ class _AtlasEventCenterScreenState
           ),
           IconButton(
             tooltip: 'Limpar histórico',
-            onPressed: allEntries.isEmpty
-                ? null
-                : _confirmClear,
+            onPressed: allEntries.isEmpty ? null : _confirmClear,
             icon: const Icon(Icons.delete_sweep_outlined),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: Center(
                 child: ConstrainedBox(
@@ -179,11 +165,9 @@ class _AtlasEventCenterScreenState
                       _SummaryBar(
                         total: allEntries.length,
                         low: countByPriority(AtlasEventPriority.low),
-                        normal:
-                            countByPriority(AtlasEventPriority.normal),
+                        normal: countByPriority(AtlasEventPriority.normal),
                         high: countByPriority(AtlasEventPriority.high),
-                        critical:
-                            countByPriority(AtlasEventPriority.critical),
+                        critical: countByPriority(AtlasEventPriority.critical),
                         liveUpdatesEnabled: liveUpdatesEnabled,
                       ),
                       _FilterPanel(
@@ -231,8 +215,7 @@ class _AtlasEventCenterScreenState
                                   28,
                                 ),
                                 itemCount: entries.length,
-                                separatorBuilder:
-                                    (context, index) {
+                                separatorBuilder: (context, index) {
                                   return const SizedBox(height: 10);
                                 },
                                 itemBuilder: (context, index) {
@@ -275,15 +258,11 @@ class _AtlasEventCenterScreenState
     );
   }
 
-  Future<void> _openDetails(
-    AtlasEventLogEntry item,
-  ) async {
+  Future<void> _openDetails(AtlasEventLogEntry item) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
-          return AtlasEventDetailScreen(
-            item: item,
-          );
+          return AtlasEventDetailScreen(item: item);
         },
       ),
     );
@@ -422,20 +401,14 @@ class _SummaryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -508,9 +481,7 @@ class _FilterPanel extends StatelessWidget {
                     ...AtlasEventPriority.values.map((item) {
                       return DropdownMenuItem<AtlasEventPriority?>(
                         value: item,
-                        child: Text(
-                          atlasEventPriorityLabel(item),
-                        ),
+                        child: Text(atlasEventPriorityLabel(item)),
                       );
                     }),
                   ],
@@ -577,10 +548,7 @@ class _FilterPanel extends StatelessWidget {
 }
 
 class _EventCard extends StatelessWidget {
-  const _EventCard({
-    required this.item,
-    required this.onOpen,
-  });
+  const _EventCard({required this.item, required this.onOpen});
 
   final AtlasEventLogEntry item;
   final VoidCallback onOpen;
@@ -594,10 +562,7 @@ class _EventCard extends StatelessWidget {
         contentPadding: const EdgeInsets.all(16),
         leading: CircleAvatar(
           backgroundColor: color.withValues(alpha: 0.12),
-          child: Icon(
-            _eventIcon(item.type),
-            color: color,
-          ),
+          child: Icon(_eventIcon(item.type), color: color),
         ),
         title: Text(
           item.title,
@@ -615,10 +580,7 @@ class _EventCard extends StatelessWidget {
           children: [
             Text(
               atlasEventPriorityLabel(item.priority),
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right),
@@ -641,11 +603,7 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.event_note_outlined,
-              size: 56,
-              color: Colors.black26,
-            ),
+            Icon(Icons.event_note_outlined, size: 56, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Nenhum evento encontrado.',
@@ -664,9 +622,7 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-Color _priorityColor(
-  AtlasEventPriority priority,
-) {
+Color _priorityColor(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return const Color(0xFF2E7D32);
@@ -679,9 +635,7 @@ Color _priorityColor(
   }
 }
 
-IconData _eventIcon(
-  AtlasEventType type,
-) {
+IconData _eventIcon(AtlasEventType type) {
   switch (type) {
     case AtlasEventType.animalWeightRecorded:
       return Icons.monitor_weight_outlined;
@@ -694,7 +648,7 @@ IconData _eventIcon(
     case AtlasEventType.pregnancyConfirmed:
     case AtlasEventType.calvingRecorded:
     case AtlasEventType.inseminationRecorded:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     case AtlasEventType.financialEntryCreated:
     case AtlasEventType.financialEntryUpdated:
     case AtlasEventType.cashFlowUpdated:

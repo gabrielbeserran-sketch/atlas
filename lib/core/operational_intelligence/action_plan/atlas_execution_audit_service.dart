@@ -9,34 +9,29 @@ class AtlasExecutionAuditService {
   static final AtlasExecutionAuditService instance =
       AtlasExecutionAuditService._();
 
-  static const String _storageKey =
-      'atlas_execution_audit_v1';
+  static const String _storageKey = 'atlas_execution_audit_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasExecutionAuditEntry>> load({
     String? entityId,
     String? farmName,
   }) async {
     final all = await _loadAll();
-    final normalizedFarm =
-        farmName?.trim().toLowerCase();
+    final normalizedFarm = farmName?.trim().toLowerCase();
 
-    final filtered = all.where((entry) {
-      final matchesEntity =
-          entityId == null || entry.entityId == entityId;
-      final matchesFarm = normalizedFarm == null ||
-          normalizedFarm.isEmpty ||
-          entry.farmName?.trim().toLowerCase() ==
-              normalizedFarm;
+    final filtered =
+        all.where((entry) {
+          final matchesEntity = entityId == null || entry.entityId == entityId;
+          final matchesFarm =
+              normalizedFarm == null ||
+              normalizedFarm.isEmpty ||
+              entry.farmName?.trim().toLowerCase() == normalizedFarm;
 
-      return matchesEntity && matchesFarm;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.changedAt.compareTo(first.changedAt),
-      );
+          return matchesEntity && matchesFarm;
+        }).toList()..sort(
+          (first, second) => second.changedAt.compareTo(first.changedAt),
+        );
 
     return filtered;
   }
@@ -64,7 +59,8 @@ class AtlasExecutionAuditService {
 
     all.add(
       AtlasExecutionAuditEntry(
-        id: 'audit_${now.microsecondsSinceEpoch}_'
+        id:
+            'audit_${now.microsecondsSinceEpoch}_'
             '${all.length}',
         entityType: entityType,
         entityId: entityId,
@@ -82,10 +78,8 @@ class AtlasExecutionAuditService {
     await _saveAll(all);
   }
 
-  Future<List<AtlasExecutionAuditEntry>>
-      _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasExecutionAuditEntry>> _loadAll() async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasExecutionAuditEntry>[];
@@ -106,14 +100,10 @@ class AtlasExecutionAuditService {
     }
   }
 
-  Future<void> _saveAll(
-    List<AtlasExecutionAuditEntry> entries,
-  ) async {
+  Future<void> _saveAll(List<AtlasExecutionAuditEntry> entries) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        entries.map((entry) => entry.toMap()).toList(),
-      ),
+      jsonEncode(entries.map((entry) => entry.toMap()).toList()),
     );
   }
 

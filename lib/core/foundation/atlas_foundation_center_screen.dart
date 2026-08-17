@@ -40,8 +40,10 @@ class _AtlasFoundationCenterScreenState
       return;
     }
     final List<AtlasFoundationCheck> updated = snapshot.checks
-        .map((AtlasFoundationCheck item) =>
-            item.id == check.id ? item.copyWith(isCompleted: value) : item)
+        .map(
+          (AtlasFoundationCheck item) =>
+              item.id == check.id ? item.copyWith(isCompleted: value) : item,
+        )
         .toList();
     await _repository.save(updated);
     await _load();
@@ -91,9 +93,21 @@ class _AtlasFoundationCenterScreenState
             spacing: 10,
             runSpacing: 10,
             children: <Widget>[
-              _metric('Etapas', '${snapshot.checks.length}', Icons.layers_outlined),
-              _metric('Concluídas', '${snapshot.completed}', Icons.check_circle_outline),
-              _metric('Críticas pendentes', '${snapshot.criticalPending}', Icons.warning_amber_rounded),
+              _metric(
+                'Etapas',
+                '${snapshot.checks.length}',
+                Icons.layers_outlined,
+              ),
+              _metric(
+                'Concluídas',
+                '${snapshot.completed}',
+                Icons.check_circle_outline,
+              ),
+              _metric(
+                'Críticas pendentes',
+                '${snapshot.criticalPending}',
+                Icons.warning_amber_rounded,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -158,7 +172,13 @@ class _AtlasFoundationCenterScreenState
             children: <Widget>[
               Icon(icon),
               const SizedBox(height: 8),
-              Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Text(label),
             ],
           ),

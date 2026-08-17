@@ -98,11 +98,19 @@ class TechnicalFarmSummary {
         : DateTime(periodEnd.year, periodEnd.month, periodEnd.day);
 
     bool isInsidePeriod(String value) {
-      if (normalizedStart == null && normalizedEnd == null) return true;
+      if (normalizedStart == null && normalizedEnd == null) {
+        return true;
+      }
       final date = _parseDate(value);
-      if (date == null) return false;
-      if (normalizedStart != null && date.isBefore(normalizedStart)) return false;
-      if (normalizedEnd != null && date.isAfter(normalizedEnd)) return false;
+      if (date == null) {
+        return false;
+      }
+      if (normalizedStart != null && date.isBefore(normalizedStart)) {
+        return false;
+      }
+      if (normalizedEnd != null && date.isAfter(normalizedEnd)) {
+        return false;
+      }
       return true;
     }
 
@@ -118,15 +126,16 @@ class TechnicalFarmSummary {
     final periodFinances = finances
         .where((record) => isInsidePeriod(record.date))
         .toList();
-    final weightedAnimals =
-        animals.where((animal) => animal.weight > 0).toList();
+    final weightedAnimals = animals
+        .where((animal) => animal.weight > 0)
+        .toList();
     final averageWeight = weightedAnimals.isEmpty
         ? 0.0
         : weightedAnimals.fold<double>(
-              0,
-              (sum, animal) => sum + animal.weight,
-            ) /
-            weightedAnimals.length;
+                0,
+                (sum, animal) => sum + animal.weight,
+              ) /
+              weightedAnimals.length;
 
     bool isPast(String value) {
       final date = _parseDate(value);
@@ -162,8 +171,9 @@ class TechnicalFarmSummary {
           .where((record) => isPast(record.expectedDate))
           .length,
       healthRecords: periodHealthRecords.length,
-      overdueHealthReturns:
-          healthRecords.where((record) => isPast(record.nextDate)).length,
+      overdueHealthReturns: healthRecords
+          .where((record) => isPast(record.nextDate))
+          .length,
       activeWithdrawals: healthRecords
           .where((record) => isFutureOrToday(record.withdrawalEndDate))
           .length,
@@ -173,8 +183,10 @@ class TechnicalFarmSummary {
         (sum, record) => sum + record.treatmentCost,
       ),
       nutritionPlans: periodNutritionPlans.length,
-      nutritionAnimals:
-          periodNutritionPlans.fold<int>(0, (sum, plan) => sum + plan.animalCount),
+      nutritionAnimals: periodNutritionPlans.fold<int>(
+        0,
+        (sum, plan) => sum + plan.animalCount,
+      ),
       dailyFeedKg: periodNutritionPlans.fold<double>(
         0,
         (sum, plan) => sum + plan.totalDailyKg,
@@ -185,10 +197,14 @@ class TechnicalFarmSummary {
       ),
       income: income,
       expenses: expenses,
-      overdueAccounts: periodFinances.where((record) => record.isOverdue).length,
+      overdueAccounts: periodFinances
+          .where((record) => record.isOverdue)
+          .length,
       inventoryItems: inventory.length,
-      inventoryValue:
-          inventory.fold<double>(0, (sum, item) => sum + item.totalValue),
+      inventoryValue: inventory.fold<double>(
+        0,
+        (sum, item) => sum + item.totalValue,
+      ),
       lowStockItems: inventory.where((item) => item.hasLowStock).length,
       outOfStockItems: inventory.where((item) => item.isOutOfStock).length,
       inventoryMovements: inventory.fold<int>(
@@ -201,7 +217,9 @@ class TechnicalFarmSummary {
 
 DateTime? _parseDate(String value) {
   final trimmed = value.trim();
-  if (trimmed.isEmpty) return null;
+  if (trimmed.isEmpty) {
+    return null;
+  }
 
   final iso = DateTime.tryParse(trimmed);
   if (iso != null) {
@@ -209,12 +227,16 @@ DateTime? _parseDate(String value) {
   }
 
   final parts = trimmed.split('/');
-  if (parts.length != 3) return null;
+  if (parts.length != 3) {
+    return null;
+  }
 
   final day = int.tryParse(parts[0]);
   final month = int.tryParse(parts[1]);
   final year = int.tryParse(parts[2]);
-  if (day == null || month == null || year == null) return null;
+  if (day == null || month == null || year == null) {
+    return null;
+  }
 
   return DateTime(year, month, day);
 }

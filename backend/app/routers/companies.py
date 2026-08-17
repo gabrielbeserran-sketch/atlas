@@ -132,7 +132,7 @@ def create_company(
     name = request.name.strip()
     if not name:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="Informe o nome da empresa.",
         )
 
@@ -219,7 +219,7 @@ def update_company(
         name = request.name.strip()
         if not name:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="O nome da empresa não pode ficar vazio.",
             )
         company.name = name
@@ -231,7 +231,7 @@ def update_company(
         plan = request.subscription_plan.strip()
         if not plan:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="Informe o plano da empresa.",
             )
         company.subscription_plan = plan

@@ -6,77 +6,70 @@ enum AtlasEnterpriseOperationModule {
   fieldService,
 }
 
-extension AtlasEnterpriseOperationModuleX
-    on AtlasEnterpriseOperationModule {
+extension AtlasEnterpriseOperationModuleX on AtlasEnterpriseOperationModule {
   String get code => switch (this) {
-        AtlasEnterpriseOperationModule.procurement => 'procurement',
-        AtlasEnterpriseOperationModule.supplierPortal =>
-          'supplier_portal',
-        AtlasEnterpriseOperationModule.inventoryIntelligence =>
-          'inventory_intelligence',
-        AtlasEnterpriseOperationModule.maintenance => 'maintenance',
-        AtlasEnterpriseOperationModule.fieldService => 'field_service',
-      };
+    AtlasEnterpriseOperationModule.procurement => 'procurement',
+    AtlasEnterpriseOperationModule.supplierPortal => 'supplier_portal',
+    AtlasEnterpriseOperationModule.inventoryIntelligence =>
+      'inventory_intelligence',
+    AtlasEnterpriseOperationModule.maintenance => 'maintenance',
+    AtlasEnterpriseOperationModule.fieldService => 'field_service',
+  };
 
   String get title => switch (this) {
-        AtlasEnterpriseOperationModule.procurement =>
-          'Compras Enterprise',
-        AtlasEnterpriseOperationModule.supplierPortal =>
-          'Portal do Fornecedor',
-        AtlasEnterpriseOperationModule.inventoryIntelligence =>
-          'Estoque Inteligente',
-        AtlasEnterpriseOperationModule.maintenance =>
-          'Manutenção de Ativos',
-        AtlasEnterpriseOperationModule.fieldService =>
-          'Serviços de Campo',
-      };
+    AtlasEnterpriseOperationModule.procurement => 'Compras Enterprise',
+    AtlasEnterpriseOperationModule.supplierPortal => 'Portal do Fornecedor',
+    AtlasEnterpriseOperationModule.inventoryIntelligence =>
+      'Estoque Inteligente',
+    AtlasEnterpriseOperationModule.maintenance => 'Manutenção de Ativos',
+    AtlasEnterpriseOperationModule.fieldService => 'Serviços de Campo',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasEnterpriseOperationModule.procurement => 'Pacote 79',
-        AtlasEnterpriseOperationModule.supplierPortal => 'Pacote 80',
-        AtlasEnterpriseOperationModule.inventoryIntelligence =>
-          'Pacote 81',
-        AtlasEnterpriseOperationModule.maintenance => 'Pacote 82',
-        AtlasEnterpriseOperationModule.fieldService => 'Pacote 83',
-      };
+    AtlasEnterpriseOperationModule.procurement => 'Pacote 79',
+    AtlasEnterpriseOperationModule.supplierPortal => 'Pacote 80',
+    AtlasEnterpriseOperationModule.inventoryIntelligence => 'Pacote 81',
+    AtlasEnterpriseOperationModule.maintenance => 'Pacote 82',
+    AtlasEnterpriseOperationModule.fieldService => 'Pacote 83',
+  };
 
   List<String> get features => switch (this) {
-        AtlasEnterpriseOperationModule.procurement => const [
-            'Requisições de compra',
-            'Cotações e comparativos',
-            'Pedidos de compra',
-            'Aprovações e alçadas',
-            'Recebimento e conferência',
-          ],
-        AtlasEnterpriseOperationModule.supplierPortal => const [
-            'Cadastro de fornecedores',
-            'Documentos e homologação',
-            'Propostas e negociações',
-            'Entregas e desempenho',
-            'Pendências e comunicação',
-          ],
-        AtlasEnterpriseOperationModule.inventoryIntelligence => const [
-            'Saldo e disponibilidade',
-            'Ponto de reposição',
-            'Lotes e validade',
-            'Inventário e divergências',
-            'Previsão de consumo',
-          ],
-        AtlasEnterpriseOperationModule.maintenance => const [
-            'Cadastro de ativos',
-            'Planos preventivos',
-            'Ordens de serviço',
-            'Peças e custos',
-            'Falhas e disponibilidade',
-          ],
-        AtlasEnterpriseOperationModule.fieldService => const [
-            'Chamados de campo',
-            'Agenda e deslocamento',
-            'Checklist técnico',
-            'Evidências e assinatura',
-            'Fechamento e satisfação',
-          ],
-      };
+    AtlasEnterpriseOperationModule.procurement => const [
+      'Requisições de compra',
+      'Cotações e comparativos',
+      'Pedidos de compra',
+      'Aprovações e alçadas',
+      'Recebimento e conferência',
+    ],
+    AtlasEnterpriseOperationModule.supplierPortal => const [
+      'Cadastro de fornecedores',
+      'Documentos e homologação',
+      'Propostas e negociações',
+      'Entregas e desempenho',
+      'Pendências e comunicação',
+    ],
+    AtlasEnterpriseOperationModule.inventoryIntelligence => const [
+      'Saldo e disponibilidade',
+      'Ponto de reposição',
+      'Lotes e validade',
+      'Inventário e divergências',
+      'Previsão de consumo',
+    ],
+    AtlasEnterpriseOperationModule.maintenance => const [
+      'Cadastro de ativos',
+      'Planos preventivos',
+      'Ordens de serviço',
+      'Peças e custos',
+      'Falhas e disponibilidade',
+    ],
+    AtlasEnterpriseOperationModule.fieldService => const [
+      'Chamados de campo',
+      'Agenda e deslocamento',
+      'Checklist técnico',
+      'Evidências e assinatura',
+      'Fechamento e satisfação',
+    ],
+  };
 }
 
 class AtlasEnterpriseOperationRecord {
@@ -172,13 +165,10 @@ class AtlasEnterpriseOperationRecord {
     };
   }
 
-  factory AtlasEnterpriseOperationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnterpriseOperationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasEnterpriseOperationModule.values.firstWhere(
+    final module = AtlasEnterpriseOperationModule.values.firstWhere(
       (item) => item.code == code,
       orElse: () => AtlasEnterpriseOperationModule.procurement,
     );
@@ -193,15 +183,11 @@ class AtlasEnterpriseOperationRecord {
       counterparty: map['counterparty']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-      costAmount:
-          (map['costAmount'] as num?)?.toDouble() ?? 0.0,
+      costAmount: (map['costAmount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      stockLevel:
-          (map['stockLevel'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      stockLevel: (map['stockLevel'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

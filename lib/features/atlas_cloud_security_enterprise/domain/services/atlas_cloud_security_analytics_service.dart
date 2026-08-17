@@ -50,10 +50,10 @@ class AtlasCloudSecurityAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
-    final overdue =
-        moduleRecords.where((record) => record.isOverdue).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
+    final overdue = moduleRecords.where((record) => record.isOverdue).length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -64,22 +64,19 @@ class AtlasCloudSecurityAnalyticsService {
           (record.isOverdue ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasCloudSecurityRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasCloudSecurityRecord) selector) {
       if (moduleRecords.isEmpty) return 0;
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageAvailability =
-        averageOf((record) => record.availabilityPercent);
-    final averageRisk =
-        averageOf((record) => record.riskPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageAvailability = averageOf(
+      (record) => record.availabilityPercent,
+    );
+    final averageRisk = averageOf((record) => record.riskPercent);
     final totalRetries = moduleRecords.fold<int>(
       0,
       (total, record) => total + record.retryCount,
@@ -89,10 +86,7 @@ class AtlasCloudSecurityAnalyticsService {
     score += math.min(25, coverage.round() * 25 ~/ 100);
     score += math.min(20, operational * 4);
     score += math.min(15, averageProgress.round() * 15 ~/ 100);
-    score += math.min(
-      15,
-      averageAvailability.round() * 15 ~/ 100,
-    );
+    score += math.min(15, averageAvailability.round() * 15 ~/ 100);
     score -= math.min(30, alerts * 5);
     score -= math.min(15, overdue * 5);
     score -= math.min(20, averageRisk.round() * 20 ~/ 100);
@@ -123,60 +117,48 @@ class AtlasCloudSecurityAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasCloudSecurityModule.professionalAuthentication =>
-            const [
-              'Implemente MFA, expiração de sessão e bloqueio por tentativas.',
-              'Nunca armazene senhas em texto simples.',
-            ],
-          AtlasCloudSecurityModule.usersAndCompanies =>
-            const [
-              'Separe usuários, empresas, fazendas e papéis.',
-              'Revogue acessos imediatamente após desligamentos.',
-            ],
-          AtlasCloudSecurityModule.cloudDatabase =>
-            const [
-              'Use migrações versionadas e ambientes separados.',
-              'Monitore disponibilidade, erro e desempenho.',
-            ],
-          AtlasCloudSecurityModule.offlineSynchronization =>
-            const [
-              'Mantenha fila persistente e retentativas controladas.',
-              'Exiba claramente o status de sincronização.',
-            ],
-          AtlasCloudSecurityModule.conflictResolution =>
-            const [
-              'Registre versões e origem de cada alteração.',
-              'Permita revisão manual para conflitos críticos.',
-            ],
-          AtlasCloudSecurityModule.automatedBackup =>
-            const [
-              'Teste restauração periodicamente.',
-              'Mantenha retenção e cópia fora do ambiente principal.',
-            ],
-          AtlasCloudSecurityModule.dataEncryption =>
-            const [
-              'Use TLS em trânsito e criptografia em repouso.',
-              'Separe segredos do código-fonte e faça rotação de chaves.',
-            ],
-          AtlasCloudSecurityModule.userAuditLogs =>
-            const [
-              'Registre quem, quando, onde e o que mudou.',
-              'Proteja logs contra alteração e exclusão indevida.',
-            ],
-          AtlasCloudSecurityModule.integrationCenter =>
-            const [
-              'Armazene credenciais em serviço seguro.',
-              'Monitore falhas, latência e limites das APIs.',
-            ],
-          AtlasCloudSecurityModule.securityCenter =>
-            const [
-              'Centralize sessões, incidentes, permissões e backups.',
-              'Priorize riscos por severidade, alcance e urgência.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasCloudSecurityModule.professionalAuthentication => const [
+          'Implemente MFA, expiração de sessão e bloqueio por tentativas.',
+          'Nunca armazene senhas em texto simples.',
+        ],
+        AtlasCloudSecurityModule.usersAndCompanies => const [
+          'Separe usuários, empresas, fazendas e papéis.',
+          'Revogue acessos imediatamente após desligamentos.',
+        ],
+        AtlasCloudSecurityModule.cloudDatabase => const [
+          'Use migrações versionadas e ambientes separados.',
+          'Monitore disponibilidade, erro e desempenho.',
+        ],
+        AtlasCloudSecurityModule.offlineSynchronization => const [
+          'Mantenha fila persistente e retentativas controladas.',
+          'Exiba claramente o status de sincronização.',
+        ],
+        AtlasCloudSecurityModule.conflictResolution => const [
+          'Registre versões e origem de cada alteração.',
+          'Permita revisão manual para conflitos críticos.',
+        ],
+        AtlasCloudSecurityModule.automatedBackup => const [
+          'Teste restauração periodicamente.',
+          'Mantenha retenção e cópia fora do ambiente principal.',
+        ],
+        AtlasCloudSecurityModule.dataEncryption => const [
+          'Use TLS em trânsito e criptografia em repouso.',
+          'Separe segredos do código-fonte e faça rotação de chaves.',
+        ],
+        AtlasCloudSecurityModule.userAuditLogs => const [
+          'Registre quem, quando, onde e o que mudou.',
+          'Proteja logs contra alteração e exclusão indevida.',
+        ],
+        AtlasCloudSecurityModule.integrationCenter => const [
+          'Armazene credenciais em serviço seguro.',
+          'Monitore falhas, latência e limites das APIs.',
+        ],
+        AtlasCloudSecurityModule.securityCenter => const [
+          'Centralize sessões, incidentes, permissões e backups.',
+          'Priorize riscos por severidade, alcance e urgência.',
+        ],
+      });
     }
 
     return AtlasCloudSecurityAnalytics(

@@ -25,23 +25,17 @@ class AtlasPortfolioItem {
 
   bool get isCritical {
     return healthScore < 45 ||
-        governance?.decision ==
-            AtlasValueGovernanceDecisionType.pause ||
-        governance?.decision ==
-            AtlasValueGovernanceDecisionType.terminate;
+        governance?.decision == AtlasValueGovernanceDecisionType.pause ||
+        governance?.decision == AtlasValueGovernanceDecisionType.terminate;
   }
 
   bool get isCompleted {
-    return plan.status ==
-        AtlasStrategyExecutionStatus.completed;
+    return plan.status == AtlasStrategyExecutionStatus.completed;
   }
 }
 
 class AtlasPortfolioSummary {
-  const AtlasPortfolioSummary({
-    required this.items,
-    required this.generatedAt,
-  });
+  const AtlasPortfolioSummary({required this.items, required this.generatedAt});
 
   final List<AtlasPortfolioItem> items;
   final DateTime generatedAt;
@@ -52,10 +46,8 @@ class AtlasPortfolioSummary {
     return items
         .where(
           (item) =>
-              item.plan.status ==
-                  AtlasStrategyExecutionStatus.active ||
-              item.plan.status ==
-                  AtlasStrategyExecutionStatus.planned,
+              item.plan.status == AtlasStrategyExecutionStatus.active ||
+              item.plan.status == AtlasStrategyExecutionStatus.planned,
         )
         .length;
   }
@@ -65,10 +57,7 @@ class AtlasPortfolioSummary {
   }
 
   double get committedInvestment {
-    return items.fold<double>(
-      0,
-      (sum, item) => sum + item.plan.budget,
-    );
+    return items.fold<double>(0, (sum, item) => sum + item.plan.budget);
   }
 
   double get expectedValue {
@@ -81,16 +70,12 @@ class AtlasPortfolioSummary {
   double get realizedValue {
     return items.fold<double>(
       0,
-      (sum, item) =>
-          sum + (item.realization?.actualNetGain ?? 0),
+      (sum, item) => sum + (item.realization?.actualNetGain ?? 0),
     );
   }
 
   double get totalValueAtRisk {
-    return items.fold<double>(
-      0,
-      (sum, item) => sum + item.valueAtRisk,
-    );
+    return items.fold<double>(0, (sum, item) => sum + item.valueAtRisk);
   }
 
   double get averageHealth {
@@ -98,10 +83,7 @@ class AtlasPortfolioSummary {
       return 0;
     }
 
-    return items.fold<double>(
-          0,
-          (sum, item) => sum + item.healthScore,
-        ) /
+    return items.fold<double>(0, (sum, item) => sum + item.healthScore) /
         items.length;
   }
 
@@ -118,9 +100,6 @@ class AtlasPortfolioSummary {
   }
 
   double get resourceLoad {
-    return items.fold<double>(
-      0,
-      (sum, item) => sum + item.resourceLoad,
-    );
+    return items.fold<double>(0, (sum, item) => sum + item.resourceLoad);
   }
 }

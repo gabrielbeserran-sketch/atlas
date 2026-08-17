@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_finance_enterprise/domain/models/at
 import 'package:projeto_atlas/features/atlas_finance_enterprise/domain/services/atlas_finance_enterprise_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasFinanceEnterpriseAnalyticsService();
+  const service = AtlasFinanceEnterpriseAnalyticsService();
 
   test('calculates finance enterprise analytics', () {
     final records = [
       AtlasFinanceEnterpriseRecord(
         id: '1',
-        module:
-            AtlasFinanceEnterpriseModule.projectedCashFlow,
+        module: AtlasFinanceEnterpriseModule.projectedCashFlow,
         feature: 'Receitas projetadas',
         title: 'Receita mensal',
         date: '04/08/2026',
@@ -35,8 +33,7 @@ void main() {
       ),
       AtlasFinanceEnterpriseRecord(
         id: '2',
-        module:
-            AtlasFinanceEnterpriseModule.projectedCashFlow,
+        module: AtlasFinanceEnterpriseModule.projectedCashFlow,
         feature: 'Alertas de liquidez',
         title: 'Risco de caixa',
         date: '04/08/2026',
@@ -61,8 +58,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasFinanceEnterpriseModule.projectedCashFlow,
+      module: AtlasFinanceEnterpriseModule.projectedCashFlow,
       records: records,
     );
 

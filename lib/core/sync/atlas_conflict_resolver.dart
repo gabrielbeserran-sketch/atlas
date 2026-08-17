@@ -1,9 +1,4 @@
-
-enum AtlasConflictStrategy {
-  keepLocal,
-  keepRemote,
-  merge,
-}
+enum AtlasConflictStrategy { keepLocal, keepRemote, merge }
 
 class AtlasConflictDecision {
   const AtlasConflictDecision({
@@ -29,8 +24,7 @@ class AtlasConflictResolver {
     final conflicts = <String>[];
 
     for (final field in locallyEditedFields) {
-      if (remote.containsKey(field) &&
-          local[field] != remote[field]) {
+      if (remote.containsKey(field) && local[field] != remote[field]) {
         conflicts.add(field);
       }
     }
@@ -40,8 +34,7 @@ class AtlasConflictResolver {
         strategy: AtlasConflictStrategy.merge,
         payload: {
           ...remote,
-          for (final field in locallyEditedFields)
-            field: local[field],
+          for (final field in locallyEditedFields) field: local[field],
         },
         justification: justification,
       );
@@ -51,8 +44,7 @@ class AtlasConflictResolver {
       strategy: AtlasConflictStrategy.merge,
       payload: {
         ...remote,
-        for (final field in locallyEditedFields)
-          field: local[field],
+        for (final field in locallyEditedFields) field: local[field],
         '_conflict_fields': conflicts,
         '_requires_manual_review': true,
       },

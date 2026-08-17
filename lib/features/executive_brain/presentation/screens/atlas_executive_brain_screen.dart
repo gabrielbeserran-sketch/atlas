@@ -6,8 +6,7 @@ import 'package:projeto_atlas/features/executive_brain/domain/models/atlas_execu
 import 'package:projeto_atlas/features/executive_brain/presentation/screens/atlas_executive_brain_history_screen.dart';
 import 'package:projeto_atlas/features/executive_brain/presentation/screens/atlas_executive_brain_historical_intelligence_screen.dart';
 
-class AtlasExecutiveBrainScreen
-    extends StatefulWidget {
+class AtlasExecutiveBrainScreen extends StatefulWidget {
   const AtlasExecutiveBrainScreen({
     required this.data,
     this.onOpenFarm,
@@ -17,19 +16,16 @@ class AtlasExecutiveBrainScreen
 
   final AtlasExecutiveBrainData data;
   final ValueChanged<String>? onOpenFarm;
-  final Future<AtlasExecutiveBrainData?> Function(
-    AtlasReactiveUpdate update,
-  )? onReactiveRefresh;
+  final Future<AtlasExecutiveBrainData?> Function(AtlasReactiveUpdate update)?
+  onReactiveRefresh;
 
   @override
-  State<AtlasExecutiveBrainScreen>
-      createState() {
+  State<AtlasExecutiveBrainScreen> createState() {
     return _AtlasExecutiveBrainScreenState();
   }
 }
 
-class _AtlasExecutiveBrainScreenState
-    extends State<AtlasExecutiveBrainScreen> {
+class _AtlasExecutiveBrainScreenState extends State<AtlasExecutiveBrainScreen> {
   final AtlasReactiveIntelligenceCoordinator reactiveCoordinator =
       AtlasReactiveRuntime.instance.coordinator;
 
@@ -141,22 +137,17 @@ class _AtlasExecutiveBrainScreenState
     final data = currentData;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF4F6F8),
+      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
         title: const Text(
           'Atlas Executive Brain',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
             tooltip: 'Inteligência histórica',
             onPressed: _openHistoricalIntelligence,
-            icon: const Icon(
-              Icons.history_edu_outlined,
-            ),
+            icon: const Icon(Icons.history_edu_outlined),
           ),
           IconButton(
             tooltip: 'Histórico de decisões',
@@ -169,158 +160,120 @@ class _AtlasExecutiveBrainScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: data.hasData
                 ? ListView(
-                    padding:
-                        const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(22),
                     children: [
                       _BrainHero(data: data),
                       const SizedBox(height: 18),
                       const AtlasCommandCenterModuleCard(
-                        module:
-                            AtlasCommandCenterModule.executiveBrain,
+                        module: AtlasCommandCenterModule.executiveBrain,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
                         title: 'Executive Score 360°',
-                        subtitle: 'Composição do índice geral e contribuição de cada dimensão.',
+                        subtitle:
+                            'Composição do índice geral e contribuição de cada dimensão.',
                       ),
                       const SizedBox(height: 12),
                       _ExecutiveScoreGrid(items: data.scoreDimensions),
                       const SizedBox(height: 24),
                       const _SectionTitle(
                         title: 'Executive Radar',
-                        subtitle: 'Riscos, oportunidades, ganhos rápidos e atividades críticas.',
+                        subtitle:
+                            'Riscos, oportunidades, ganhos rápidos e atividades críticas.',
                       ),
                       const SizedBox(height: 12),
                       _ExecutiveRadarList(items: data.radarItems),
-                      if (data.officialDecision !=
-                          null) ...[
+                      if (data.officialDecision != null) ...[
                         const SizedBox(height: 24),
                         const _SectionTitle(
-                          title:
-                              'Decisão oficial do Atlas',
+                          title: 'Decisão oficial do Atlas',
                           subtitle:
                               'A decisão que deve orientar todos os módulos.',
                         ),
                         const SizedBox(height: 12),
                         _OfficialDecisionCard(
-                          item:
-                              data.officialDecision!,
-                          onOpenFarm:
-                              widget.onOpenFarm,
+                          item: data.officialDecision!,
+                          onOpenFarm: widget.onOpenFarm,
                         ),
                       ],
-                      if (data.strategy !=
-                          null) ...[
+                      if (data.strategy != null) ...[
                         const SizedBox(height: 24),
                         const _SectionTitle(
-                          title:
-                              'Estratégia central',
+                          title: 'Estratégia central',
                           subtitle:
                               'Direção executiva integrada para os próximos 30 dias.',
                         ),
                         const SizedBox(height: 12),
-                        _StrategyCard(
-                          item: data.strategy!,
-                        ),
+                        _StrategyCard(item: data.strategy!),
                       ],
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Plano de hoje',
+                        title: 'Plano de hoje',
                         subtitle:
                             'Ações imediatas priorizadas pelo Executive Brain.',
                       ),
                       const SizedBox(height: 12),
                       _DailyActionList(
                         items: dailyPlan,
-                        onChanged: (
-                          item,
-                          completed,
-                        ) {
+                        onChanged: (item, completed) {
                           setState(() {
-                            dailyPlan =
-                                dailyPlan.map((current) {
-                              return current.id ==
-                                      item.id
-                                  ? current.copyWith(
-                                      completed:
-                                          completed,
-                                    )
+                            dailyPlan = dailyPlan.map((current) {
+                              return current.id == item.id
+                                  ? current.copyWith(completed: completed)
                                   : current;
                             }).toList();
                           });
                         },
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Impactos cruzados',
-                        subtitle:
-                            'Como uma área pode afetar as demais.',
+                        title: 'Impactos cruzados',
+                        subtitle: 'Como uma área pode afetar as demais.',
                       ),
                       const SizedBox(height: 12),
-                      _CrossImpactList(
-                        items:
-                            data.crossImpacts,
-                      ),
+                      _CrossImpactList(items: data.crossImpacts),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Conflitos identificados',
+                        title: 'Conflitos identificados',
                         subtitle:
                             'Disputas de recursos, prioridades, prazos e execução.',
                       ),
                       const SizedBox(height: 12),
-                      _ConflictList(
-                        items: data.conflicts,
-                      ),
+                      _ConflictList(items: data.conflicts),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Plano semanal',
+                        title: 'Plano semanal',
                         subtitle:
                             'Ações coordenadas para os próximos sete dias.',
                       ),
                       const SizedBox(height: 12),
                       _ActionList(
-                        items:
-                            data.weeklyPlan,
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        items: data.weeklyPlan,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Plano mensal',
+                        title: 'Plano mensal',
                         subtitle:
                             'Ações estratégicas para os próximos 30 dias.',
                       ),
                       const SizedBox(height: 12),
                       _ActionList(
-                        items:
-                            data.monthlyPlan,
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        items: data.monthlyPlan,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Memória inteligente',
+                        title: 'Memória inteligente',
                         subtitle:
                             'Aprendizados extraídos da memória executiva.',
                       ),
                       const SizedBox(height: 12),
-                      _MemoryInsightList(
-                        items:
-                            data.memoryInsights,
-                      ),
+                      _MemoryInsightList(items: data.memoryInsights),
                       const SizedBox(height: 32),
                     ],
                   )
@@ -331,7 +284,6 @@ class _AtlasExecutiveBrainScreenState
     );
   }
 }
-
 
 class _ExecutiveScoreGrid extends StatelessWidget {
   const _ExecutiveScoreGrid({required this.items});
@@ -346,8 +298,8 @@ class _ExecutiveScoreGrid extends StatelessWidget {
         final width = constraints.maxWidth >= 900
             ? (constraints.maxWidth - 24) / 3
             : constraints.maxWidth >= 600
-                ? (constraints.maxWidth - 12) / 2
-                : constraints.maxWidth;
+            ? (constraints.maxWidth - 12) / 2
+            : constraints.maxWidth;
         return Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -364,17 +316,36 @@ class _ExecutiveScoreGrid extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text(
+                              item.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          Text('${score.toStringAsFixed(0)}/100', style: TextStyle(fontWeight: FontWeight.bold, color: _scoreColor(score))),
+                          Text(
+                            '${score.toStringAsFixed(0)}/100',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _scoreColor(score),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       LinearProgressIndicator(value: score / 100, minHeight: 8),
                       const SizedBox(height: 10),
-                      Text('Peso: ${item.weightPercent.toStringAsFixed(0)}% · contribuição: ${item.weightedContribution.toStringAsFixed(1)} pontos'),
+                      Text(
+                        'Peso: ${item.weightPercent.toStringAsFixed(0)}% · contribuição: ${item.weightedContribution.toStringAsFixed(1)} pontos',
+                      ),
                       const SizedBox(height: 6),
-                      Text(item.explanation, style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                      Text(
+                        item.explanation,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -404,15 +375,26 @@ class _ExecutiveRadarList extends StatelessWidget {
               backgroundColor: color.withValues(alpha: 0.12),
               child: Icon(_radarTypeIcon(item.type), color: color),
             ),
-            title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${atlasExecutiveRadarTypeLabel(item.type)} · prioridade ${atlasExecutiveBrainPriorityLabel(item.priority)} · confiança ${item.confidencePercent.toStringAsFixed(0)}%'),
+            title: Text(
+              item.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              '${atlasExecutiveRadarTypeLabel(item.type)} · prioridade ${atlasExecutiveBrainPriorityLabel(item.priority)} · confiança ${item.confidencePercent.toStringAsFixed(0)}%',
+            ),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             children: [
-              Align(alignment: Alignment.centerLeft, child: Text(item.description)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(item.description),
+              ),
               const SizedBox(height: 10),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Impacto financeiro estimado: ${_formatCurrency(item.expectedFinancialImpact)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Impacto financeiro estimado: ${_formatCurrency(item.expectedFinancialImpact)}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
               const SizedBox(height: 8),
               Align(
@@ -428,49 +410,32 @@ class _ExecutiveRadarList extends StatelessWidget {
 }
 
 class _BrainHero extends StatelessWidget {
-  const _BrainHero({
-    required this.data,
-  });
+  const _BrainHero({required this.data});
 
   final AtlasExecutiveBrainData data;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _statusColor(data.status);
+    final color = _statusColor(data.status);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF02040A),
-            Color(0xFF0E1B2B),
-            Color(0xFF1A3B52),
-          ],
+          colors: [Color(0xFF02040A), Color(0xFF0E1B2B), Color(0xFF1A3B52)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(
-                    Icons.hub_outlined,
-                    color: Color(0xFFB3E5FC),
-                    size: 34,
-                  ),
+                  Icon(Icons.hub_outlined, color: Color(0xFFB3E5FC), size: 34),
                   SizedBox(width: 11),
                   Expanded(
                     child: Text(
@@ -478,8 +443,7 @@ class _BrainHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 23,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -488,10 +452,7 @@ class _BrainHero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 data.summary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.48,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.48),
               ),
               const SizedBox(height: 15),
               Wrap(
@@ -500,23 +461,13 @@ class _BrainHero extends StatelessWidget {
                 children: [
                   _HeroMetric(
                     label: 'Impactos',
-                    value:
-                        data.crossImpacts.length,
+                    value: data.crossImpacts.length,
                   ),
-                  _HeroMetric(
-                    label: 'Conflitos',
-                    value:
-                        data.conflicts.length,
-                  ),
-                  _HeroMetric(
-                    label: 'Hoje',
-                    value:
-                        data.dailyPlan.length,
-                  ),
+                  _HeroMetric(label: 'Conflitos', value: data.conflicts.length),
+                  _HeroMetric(label: 'Hoje', value: data.dailyPlan.length),
                   _HeroMetric(
                     label: 'Memórias',
-                    value: data
-                        .memoryInsights.length,
+                    value: data.memoryInsights.length,
                   ),
                 ],
               ),
@@ -525,46 +476,30 @@ class _BrainHero extends StatelessWidget {
 
           final side = Container(
             width: 245,
-            padding:
-                const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data.brainScore
-                      .toStringAsFixed(0),
+                  data.brainScore.toStringAsFixed(0),
                   style: TextStyle(
                     color: color,
                     fontSize: 42,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  atlasExecutiveBrainStatusLabel(
-                    data.status,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
+                  atlasExecutiveBrainStatusLabel(data.status),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   '${data.confidencePercent.toStringAsFixed(0)}% de confiança',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),
@@ -572,19 +507,13 @@ class _BrainHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                information,
-                const SizedBox(height: 20),
-                side,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [information, const SizedBox(height: 20), side],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: information),
               const SizedBox(width: 24),
@@ -597,55 +526,42 @@ class _BrainHero extends StatelessWidget {
   }
 }
 
-class _OfficialDecisionCard
-    extends StatelessWidget {
-  const _OfficialDecisionCard({
-    required this.item,
-    required this.onOpenFarm,
-  });
+class _OfficialDecisionCard extends StatelessWidget {
+  const _OfficialDecisionCard({required this.item, required this.onOpenFarm});
 
   final AtlasExecutiveBrainDecision item;
   final ValueChanged<String>? onOpenFarm;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _priorityColor(item.priority);
+    final color = _priorityColor(item.priority);
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.gavel_outlined,
-                  color: color,
-                  size: 30,
-                ),
+                Icon(Icons.gavel_outlined, color: color, size: 30),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item.title,
                         style: const TextStyle(
                           fontSize: 19,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         item.farmName,
                         style: TextStyle(
                           color: color,
-                          fontWeight:
-                              FontWeight.w700,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -656,8 +572,7 @@ class _OfficialDecisionCard
                   style: TextStyle(
                     color: color,
                     fontSize: 21,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -665,10 +580,7 @@ class _OfficialDecisionCard
             const SizedBox(height: 12),
             Text(
               item.description,
-              style: const TextStyle(
-                color: Colors.black54,
-                height: 1.45,
-              ),
+              style: const TextStyle(color: Colors.black54, height: 1.45),
             ),
             const SizedBox(height: 10),
             Text(
@@ -681,21 +593,12 @@ class _OfficialDecisionCard
             const SizedBox(height: 12),
             ...item.actions.map((action) {
               return Padding(
-                padding:
-                    const EdgeInsets.only(
-                  bottom: 5,
-                ),
+                padding: const EdgeInsets.only(bottom: 5),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.check_circle_outline,
-                      color: color,
-                      size: 18,
-                    ),
+                    Icon(Icons.check_circle_outline, color: color, size: 18),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(action),
-                    ),
+                    Expanded(child: Text(action)),
                   ],
                 ),
               );
@@ -705,24 +608,14 @@ class _OfficialDecisionCard
               '${item.deadlineHours} horas · '
               '${item.confidencePercent.toStringAsFixed(0)}% de confiança · '
               '${item.expectedResult}',
-              style: TextStyle(
-                color: color,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
-            if (onOpenFarm != null &&
-                item.farmName !=
-                    'Operação') ...[
+            if (onOpenFarm != null && item.farmName != 'Operação') ...[
               const SizedBox(height: 12),
               ActionChip(
-                label: const Text(
-                  'Abrir fazenda',
-                ),
+                label: const Text('Abrir fazenda'),
                 onPressed: () {
-                  onOpenFarm!(
-                    item.farmName,
-                  );
+                  onOpenFarm!(item.farmName);
                 },
               ),
             ],
@@ -734,9 +627,7 @@ class _OfficialDecisionCard
 }
 
 class _StrategyCard extends StatelessWidget {
-  const _StrategyCard({
-    required this.item,
-  });
+  const _StrategyCard({required this.item});
 
   final AtlasExecutiveBrainStrategy item;
 
@@ -746,85 +637,57 @@ class _StrategyCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               item.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 7),
-            Text(
-              item.summary,
-              style: const TextStyle(
-                color: Colors.black54,
-              ),
-            ),
+            Text(item.summary, style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 9),
             Text(
               'Objetivo: ${item.objective}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 14),
             ...item.pillars.map((pillar) {
               return Padding(
-                padding:
-                    const EdgeInsets.only(
-                  bottom: 10,
-                ),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         CircleAvatar(
                           radius: 13,
                           child: Text(
-                            pillar.position
-                                .toString(),
-                            style: const TextStyle(
-                              fontSize: 11,
-                            ),
+                            pillar.position.toString(),
+                            style: const TextStyle(fontSize: 11),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             pillar.title,
-                            style: const TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Text(
                           '${pillar.weightPercent.toStringAsFixed(0)}%',
-                          style: const TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     const SizedBox(height: 5),
                     Text(
                       pillar.description,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                      ),
+                      style: const TextStyle(color: Colors.black54),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Meta: ${pillar.target}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                      ),
+                      style: const TextStyle(fontSize: 11),
                     ),
                   ],
                 ),
@@ -847,8 +710,7 @@ class _StrategyCard extends StatelessWidget {
   }
 }
 
-class _DailyActionList
-    extends StatelessWidget {
+class _DailyActionList extends StatelessWidget {
   const _DailyActionList({
     required this.items,
     required this.onChanged,
@@ -857,10 +719,7 @@ class _DailyActionList
 
   final List<AtlasExecutiveBrainAction> items;
 
-  final void Function(
-    AtlasExecutiveBrainAction item,
-    bool completed,
-  ) onChanged;
+  final void Function(AtlasExecutiveBrainAction item, bool completed) onChanged;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -873,24 +732,18 @@ class _DailyActionList
     return Card(
       child: Column(
         children: items.map((item) {
-          final color =
-              _priorityColor(item.priority);
+          final color = _priorityColor(item.priority);
 
           return CheckboxListTile(
             value: item.completed,
             onChanged: (value) {
-              onChanged(
-                item,
-                value ?? false,
-              );
+              onChanged(item, value ?? false);
             },
             title: Text(
               item.title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                decoration: item.completed
-                    ? TextDecoration.lineThrough
-                    : null,
+                decoration: item.completed ? TextDecoration.lineThrough : null,
               ),
             ),
             subtitle: Text(
@@ -901,17 +754,10 @@ class _DailyActionList
             ),
             isThreeLine: true,
             secondary: CircleAvatar(
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 item.position.toString(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
           );
@@ -921,11 +767,8 @@ class _DailyActionList
   }
 }
 
-class _CrossImpactList
-    extends StatelessWidget {
-  const _CrossImpactList({
-    required this.items,
-  });
+class _CrossImpactList extends StatelessWidget {
+  const _CrossImpactList({required this.items});
 
   final List<AtlasExecutiveCrossImpact> items;
 
@@ -937,23 +780,14 @@ class _CrossImpactList
 
     return Column(
       children: items.map((item) {
-        final color =
-            _impactDirectionColor(
-          item.direction,
-        );
+        final color = _impactDirectionColor(item.direction);
 
         return Card(
           child: ListTile(
-            leading: Icon(
-              Icons.compare_arrows_outlined,
-              color: color,
-            ),
+            leading: Icon(Icons.compare_arrows_outlined, color: color),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.sourceArea} → ${item.affectedArea} · '
@@ -962,13 +796,8 @@ class _CrossImpactList
             ),
             isThreeLine: true,
             trailing: Text(
-              item.impactScore
-                  .toStringAsFixed(0),
-              style: TextStyle(
-                color: color,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              item.impactScore.toStringAsFixed(0),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
           ),
         );
@@ -978,9 +807,7 @@ class _CrossImpactList
 }
 
 class _ConflictList extends StatelessWidget {
-  const _ConflictList({
-    required this.items,
-  });
+  const _ConflictList({required this.items});
 
   final List<AtlasExecutiveConflict> items;
 
@@ -992,21 +819,14 @@ class _ConflictList extends StatelessWidget {
 
     return Column(
       children: items.map((item) {
-        final color =
-            _severityColor(item.severity);
+        final color = _severityColor(item.severity);
 
         return Card(
           child: ListTile(
-            leading: Icon(
-              Icons.report_problem_outlined,
-              color: color,
-            ),
+            leading: Icon(Icons.report_problem_outlined, color: color),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasExecutiveConflictTypeLabel(item.type)} · '
@@ -1022,10 +842,7 @@ class _ConflictList extends StatelessWidget {
 }
 
 class _ActionList extends StatelessWidget {
-  const _ActionList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+  const _ActionList({required this.items, required this.onOpenFarm});
 
   final List<AtlasExecutiveBrainAction> items;
   final ValueChanged<String>? onOpenFarm;
@@ -1038,31 +855,20 @@ class _ActionList extends StatelessWidget {
 
     return Column(
       children: items.map((item) {
-        final color =
-            _priorityColor(item.priority);
+        final color = _priorityColor(item.priority);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 item.position.toString(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasExecutiveBrainHorizonLabel(item.horizon)} · '
@@ -1072,23 +878,13 @@ class _ActionList extends StatelessWidget {
             ),
             isThreeLine: true,
             trailing: Text(
-              atlasExecutiveBrainPriorityLabel(
-                item.priority,
-              ),
-              style: TextStyle(
-                color: color,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              atlasExecutiveBrainPriorityLabel(item.priority),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
-            onTap: onOpenFarm == null ||
-                    item.farmName ==
-                        'Operação'
+            onTap: onOpenFarm == null || item.farmName == 'Operação'
                 ? null
                 : () {
-                    onOpenFarm!(
-                      item.farmName,
-                    );
+                    onOpenFarm!(item.farmName);
                   },
           ),
         );
@@ -1097,14 +893,10 @@ class _ActionList extends StatelessWidget {
   }
 }
 
-class _MemoryInsightList
-    extends StatelessWidget {
-  const _MemoryInsightList({
-    required this.items,
-  });
+class _MemoryInsightList extends StatelessWidget {
+  const _MemoryInsightList({required this.items});
 
-  final List<AtlasExecutiveMemoryInsight>
-      items;
+  final List<AtlasExecutiveMemoryInsight> items;
 
   @override
   Widget build(BuildContext context) {
@@ -1122,10 +914,7 @@ class _MemoryInsightList
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasExecutiveMemoryInsightTypeLabel(item.type)} · '
@@ -1134,12 +923,10 @@ class _MemoryInsightList
             ),
             isThreeLine: true,
             trailing: Text(
-              item.relevanceScore
-                  .toStringAsFixed(0),
+              item.relevanceScore.toStringAsFixed(0),
               style: const TextStyle(
                 color: Color(0xFF455A64),
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -1150,10 +937,7 @@ class _MemoryInsightList
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -1161,25 +945,17 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
         style: const TextStyle(
           color: Colors.white70,
           fontSize: 10,
-          fontWeight:
-              FontWeight.w600,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1187,10 +963,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -1198,23 +971,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -1231,9 +995,7 @@ class _EmptySection extends StatelessWidget {
         child: Center(
           child: Text(
             'Nenhum item disponível.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -1241,8 +1003,7 @@ class _EmptySection extends StatelessWidget {
   }
 }
 
-class _EmptyBrainView
-    extends StatelessWidget {
+class _EmptyBrainView extends StatelessWidget {
   const _EmptyBrainView();
 
   @override
@@ -1250,14 +1011,11 @@ class _EmptyBrainView
     return const Center(
       child: Text(
         'Nenhuma inteligência executiva disponível.',
-        style: TextStyle(
-          color: Colors.black54,
-        ),
+        style: TextStyle(color: Colors.black54),
       ),
     );
   }
 }
-
 
 String _formatCurrency(double value) {
   final negative = value < 0;
@@ -1308,9 +1066,7 @@ Color _radarTypeColor(AtlasExecutiveRadarType type) {
   }
 }
 
-Color _statusColor(
-  AtlasExecutiveBrainStatus status,
-) {
+Color _statusColor(AtlasExecutiveBrainStatus status) {
   switch (status) {
     case AtlasExecutiveBrainStatus.excellent:
       return const Color(0xFF80CBC4);
@@ -1326,9 +1082,7 @@ Color _statusColor(
   }
 }
 
-Color _priorityColor(
-  AtlasExecutiveBrainPriority priority,
-) {
+Color _priorityColor(AtlasExecutiveBrainPriority priority) {
   switch (priority) {
     case AtlasExecutiveBrainPriority.low:
       return const Color(0xFF2E7D32);
@@ -1344,9 +1098,7 @@ Color _priorityColor(
   }
 }
 
-Color _severityColor(
-  AtlasExecutiveBrainSeverity severity,
-) {
+Color _severityColor(AtlasExecutiveBrainSeverity severity) {
   switch (severity) {
     case AtlasExecutiveBrainSeverity.low:
       return const Color(0xFF2E7D32);
@@ -1362,9 +1114,7 @@ Color _severityColor(
   }
 }
 
-Color _impactDirectionColor(
-  AtlasExecutiveImpactDirection direction,
-) {
+Color _impactDirectionColor(AtlasExecutiveImpactDirection direction) {
   switch (direction) {
     case AtlasExecutiveImpactDirection.positive:
       return const Color(0xFF1B5E20);

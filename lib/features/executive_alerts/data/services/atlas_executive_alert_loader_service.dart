@@ -22,42 +22,26 @@ class AtlasExecutiveAlertLoaderService {
     FarmFinanceStorageService? financeStorage,
     FarmInventoryStorageService? inventoryStorage,
     FarmAgendaStorageService? agendaStorage,
-    AtlasAiTrackedActionStorageService?
-        trackedActionStorage,
+    AtlasAiTrackedActionStorageService? trackedActionStorage,
     AnimalHealthStorageService? healthStorage,
     AnimalReproductionStorageService? reproductionStorage,
-    AtlasFarmIntelligenceService?
-        farmIntelligenceService,
+    AtlasFarmIntelligenceService? farmIntelligenceService,
     AtlasDiagnosticService? diagnosticService,
-  })  : farmStorage =
-            farmStorage ?? FarmStorageService(),
-        herdStorage =
-            herdStorage ?? HerdStorageService(),
-        animalStorage =
-            animalStorage ?? AnimalStorageService(),
-        paddockStorage =
-            paddockStorage ?? PaddockStorageService(),
-        financeStorage =
-            financeStorage ??
-                FarmFinanceStorageService(),
-        inventoryStorage =
-            inventoryStorage ??
-                FarmInventoryStorageService(),
-        agendaStorage =
-            agendaStorage ??
-                FarmAgendaStorageService(),
-        trackedActionStorage =
-            trackedActionStorage ??
-                const AtlasAiTrackedActionStorageService(),
-        healthStorage = healthStorage ?? AnimalHealthStorageService(),
-        reproductionStorage =
-            reproductionStorage ?? AnimalReproductionStorageService(),
-        farmIntelligenceService =
-            farmIntelligenceService ??
-                const AtlasFarmIntelligenceService(),
-        diagnosticService =
-            diagnosticService ??
-                const AtlasDiagnosticService();
+  }) : farmStorage = farmStorage ?? FarmStorageService(),
+       herdStorage = herdStorage ?? HerdStorageService(),
+       animalStorage = animalStorage ?? AnimalStorageService(),
+       paddockStorage = paddockStorage ?? PaddockStorageService(),
+       financeStorage = financeStorage ?? FarmFinanceStorageService(),
+       inventoryStorage = inventoryStorage ?? FarmInventoryStorageService(),
+       agendaStorage = agendaStorage ?? FarmAgendaStorageService(),
+       trackedActionStorage =
+           trackedActionStorage ?? const AtlasAiTrackedActionStorageService(),
+       healthStorage = healthStorage ?? AnimalHealthStorageService(),
+       reproductionStorage =
+           reproductionStorage ?? AnimalReproductionStorageService(),
+       farmIntelligenceService =
+           farmIntelligenceService ?? const AtlasFarmIntelligenceService(),
+       diagnosticService = diagnosticService ?? const AtlasDiagnosticService();
 
   final FarmStorageService farmStorage;
   final HerdStorageService herdStorage;
@@ -71,58 +55,30 @@ class AtlasExecutiveAlertLoaderService {
   final AnimalHealthStorageService healthStorage;
   final AnimalReproductionStorageService reproductionStorage;
 
-  final AtlasFarmIntelligenceService
-      farmIntelligenceService;
+  final AtlasFarmIntelligenceService farmIntelligenceService;
 
   final AtlasDiagnosticService diagnosticService;
 
-  Future<AtlasExecutiveAlertLoadResult>
-      load() async {
+  Future<AtlasExecutiveAlertLoadResult> load() async {
     final farms = await farmStorage.loadFarms();
 
-    final inputs = await Future.wait(
-      farms.map(_loadFarmInput),
-    );
+    final inputs = await Future.wait(farms.map(_loadFarmInput));
 
-    return AtlasExecutiveAlertLoadResult(
-      farms: farms,
-      inputs: inputs,
-    );
+    return AtlasExecutiveAlertLoadResult(farms: farms, inputs: inputs);
   }
 
-  Future<AtlasExecutiveFarmAlertInput>
-      _loadFarmInput(
-    FarmData farm,
-  ) async {
-    final groups =
-        await herdStorage.loadGroups(
-      farm.name,
-    );
+  Future<AtlasExecutiveFarmAlertInput> _loadFarmInput(FarmData farm) async {
+    final groups = await herdStorage.loadGroups(farm.name);
 
-    final paddocks =
-        await paddockStorage.loadPaddocks(
-      farm.name,
-    );
+    final paddocks = await paddockStorage.loadPaddocks(farm.id ?? '');
 
-    final financeRecords =
-        await financeStorage.loadRecords(
-      farm.name,
-    );
+    final financeRecords = await financeStorage.loadRecords(farm.name);
 
-    final inventoryItems =
-        await inventoryStorage.loadItems(
-      farm.name,
-    );
+    final inventoryItems = await inventoryStorage.loadItems(farm.name);
 
-    final agendaTasks =
-        await agendaStorage.loadTasks(
-      farm.name,
-    );
+    final agendaTasks = await agendaStorage.loadTasks(farm.name);
 
-    final trackedActions =
-        await trackedActionStorage.load(
-      farmName: farm.name,
-    );
+    final trackedActions = await trackedActionStorage.load(farmName: farm.name);
 
     final animalLists = await Future.wait(
       groups.map((group) {
@@ -133,13 +89,10 @@ class AtlasExecutiveAlertLoaderService {
       }),
     );
 
-    final animals = animalLists
-        .expand((items) => items)
-        .toList();
+    final animals = animalLists.expand((items) => items).toList();
 
     final healthRecords = <AtlasExecutiveAnimalHealthContext>[];
-    final reproductionRecords =
-        <AtlasExecutiveAnimalReproductionContext>[];
+    final reproductionRecords = <AtlasExecutiveAnimalReproductionContext>[];
 
     for (var groupIndex = 0; groupIndex < groups.length; groupIndex++) {
       final group = groups[groupIndex];
@@ -164,8 +117,7 @@ class AtlasExecutiveAlertLoaderService {
           ),
         );
 
-        final animalReproductionRecords =
-            await reproductionStorage.loadRecords(
+        final animalReproductionRecords = await reproductionStorage.loadRecords(
           farmName: farm.name,
           groupName: group.name,
           animalId: animal.id,
@@ -183,8 +135,7 @@ class AtlasExecutiveAlertLoaderService {
       }
     }
 
-    final intelligence =
-        farmIntelligenceService.analyze(
+    final intelligence = farmIntelligenceService.analyze(
       farm: farm,
       animals: animals,
       groups: groups,
@@ -194,8 +145,7 @@ class AtlasExecutiveAlertLoaderService {
       agendaTasks: agendaTasks,
     );
 
-    final diagnostic =
-        diagnosticService.buildFarmDiagnostic(
+    final diagnostic = diagnosticService.buildFarmDiagnostic(
       farm: intelligence,
     );
 
@@ -218,6 +168,5 @@ class AtlasExecutiveAlertLoadResult {
 
   final List<FarmData> farms;
 
-  final List<AtlasExecutiveFarmAlertInput>
-      inputs;
+  final List<AtlasExecutiveFarmAlertInput> inputs;
 }

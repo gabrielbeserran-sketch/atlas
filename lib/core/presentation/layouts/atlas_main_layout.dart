@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasMainLayout extends StatelessWidget {
   const AtlasMainLayout({
@@ -44,8 +45,8 @@ class AtlasMainLayout extends StatelessWidget {
     ),
     AtlasNavigationItem(
       label: 'Animais',
-      icon: Icons.pets_outlined,
-      selectedIcon: Icons.pets,
+      icon: AtlasLivestockIcons.cow,
+      selectedIcon: AtlasLivestockIcons.cow,
     ),
     AtlasNavigationItem(
       label: 'Piquetes',
@@ -470,7 +471,11 @@ class AtlasBrandSymbol extends StatelessWidget {
         color: const Color(0xFFF2C14E),
         borderRadius: BorderRadius.circular(15),
       ),
-      child: const Icon(Icons.pets, color: Color(0xFF153E1B), size: 28),
+      child: const Icon(
+        AtlasLivestockIcons.cow,
+        color: Color(0xFF153E1B),
+        size: 28,
+      ),
     );
   }
 }

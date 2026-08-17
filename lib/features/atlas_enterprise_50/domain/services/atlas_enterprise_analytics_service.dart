@@ -49,8 +49,7 @@ class AtlasEnterpriseAnalyticsService {
         'Cadastre o primeiro registro para iniciar a inteligência do pacote.',
       if (coveredSteps < totalCapabilities)
         'Existem ${totalCapabilities - coveredSteps} funcionalidades sem registros operacionais.',
-      if (alerts > 0)
-        'Há $alerts registro(s) em atenção ou estado crítico.',
+      if (alerts > 0) 'Há $alerts registro(s) em atenção ou estado crítico.',
       if (completed > 0)
         '$completed registro(s) foram concluídos e compõem o histórico de execução.',
       if (progress >= 80)

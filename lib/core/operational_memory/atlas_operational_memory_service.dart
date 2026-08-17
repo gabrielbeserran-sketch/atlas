@@ -28,21 +28,18 @@ class AtlasOperationalMemoryService {
         search: search,
         farmName: farmName,
         sourceModule: sourceModule,
-        priorities: priority == null
-            ? null
-            : <AtlasEventPriority>{priority},
+        priorities: priority == null ? null : <AtlasEventPriority>{priority},
         startDate: startDate,
         endDate: endDate,
       ),
     );
 
-    Iterable<AtlasOperationalMemoryEntry> result = entries
-        .map(AtlasOperationalMemoryEntry.fromLogEntry);
+    Iterable<AtlasOperationalMemoryEntry> result = entries.map(
+      AtlasOperationalMemoryEntry.fromLogEntry,
+    );
 
     if (entityType != null && entityType.trim().isNotEmpty) {
-      result = result.where(
-        (item) => item.entityType == entityType,
-      );
+      result = result.where((item) => item.entityType == entityType);
     }
 
     if (limit != null && limit >= 0) {
@@ -53,36 +50,39 @@ class AtlasOperationalMemoryService {
   }
 
   List<String> availableFarms() {
-    final values = AtlasEventLogService.instance.entries
-        .map((item) => item.farmName)
-        .whereType<String>()
-        .where((item) => item.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final values =
+        AtlasEventLogService.instance.entries
+            .map((item) => item.farmName)
+            .whereType<String>()
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     return values;
   }
 
   List<String> availableModules() {
-    final values = AtlasEventLogService.instance.entries
-        .map((item) => item.sourceModule)
-        .where((item) => item.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final values =
+        AtlasEventLogService.instance.entries
+            .map((item) => item.sourceModule)
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     return values;
   }
 
   List<String> availableEntityTypes() {
-    final values = AtlasEventLogService.instance.entries
-        .map((item) => item.entityType)
-        .whereType<String>()
-        .where((item) => item.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final values =
+        AtlasEventLogService.instance.entries
+            .map((item) => item.entityType)
+            .whereType<String>()
+            .where((item) => item.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
 
     return values;
   }

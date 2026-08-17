@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_executive_platform/domain/models/at
 import 'package:projeto_atlas/features/atlas_executive_platform/domain/services/atlas_executive_platform_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasExecutivePlatformAnalyticsService();
+  const service = AtlasExecutivePlatformAnalyticsService();
 
   test('calculates executive platform analytics', () {
     final records = [
       AtlasExecutivePlatformRecord(
         id: '1',
-        module:
-            AtlasExecutivePlatformModule.globalExecutiveDashboard,
+        module: AtlasExecutivePlatformModule.globalExecutiveDashboard,
         feature: 'Indicadores globais',
         title: 'Indicador consolidado',
         date: '04/08/2026',
@@ -36,8 +34,7 @@ void main() {
       ),
       AtlasExecutivePlatformRecord(
         id: '2',
-        module:
-            AtlasExecutivePlatformModule.globalExecutiveDashboard,
+        module: AtlasExecutivePlatformModule.globalExecutiveDashboard,
         feature: 'Riscos prioritários',
         title: 'Risco pendente',
         date: '04/08/2026',
@@ -63,8 +60,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasExecutivePlatformModule.globalExecutiveDashboard,
+      module: AtlasExecutivePlatformModule.globalExecutiveDashboard,
       records: records,
     );
 

@@ -22,14 +22,11 @@ class AtlasGeospatialScreen extends StatefulWidget {
   final AtlasGeospatialModule initialModule;
 
   @override
-  State<AtlasGeospatialScreen> createState() =>
-      _AtlasGeospatialScreenState();
+  State<AtlasGeospatialScreen> createState() => _AtlasGeospatialScreenState();
 }
 
-class _AtlasGeospatialScreenState
-    extends State<AtlasGeospatialScreen> {
-  final AtlasGeospatialStorageService storage =
-      AtlasGeospatialStorageService();
+class _AtlasGeospatialScreenState extends State<AtlasGeospatialScreen> {
+  final AtlasGeospatialStorageService storage = AtlasGeospatialStorageService();
   final AtlasGeospatialAnalyticsService analyticsService =
       const AtlasGeospatialAnalyticsService();
 
@@ -76,30 +73,26 @@ class _AtlasGeospatialScreenState
   }
 
   List<AtlasGeospatialRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasGeospatialRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasGeospatialRecord? current]) async {
     final result = await showDialog<AtlasGeospatialRecord>(
       context: context,
-      builder: (context) => _GeospatialForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _GeospatialForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -113,9 +106,7 @@ class _AtlasGeospatialScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasGeospatialRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasGeospatialRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -123,13 +114,11 @@ class _AtlasGeospatialScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -171,12 +160,9 @@ class _AtlasGeospatialScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -193,9 +179,7 @@ class _AtlasGeospatialScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 24 — Geoprocessamento',
-                          ),
+                          title: Text('Fase 24 — Geoprocessamento'),
                           subtitle: Text(
                             'A entrega organiza dados territoriais, métricas e planejamento. '
                             'Mapas e análises reais exigem fontes geográficas, imagens e validação de campo.',
@@ -261,8 +245,7 @@ class _AtlasGeospatialScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Métrica média',
-                            value:
-                                analytics.averageMetric.toStringAsFixed(2),
+                            value: analytics.averageMetric.toStringAsFixed(2),
                             subtitle: 'Leitura consolidada',
                             icon: Icons.show_chart_outlined,
                           ),
@@ -304,12 +287,8 @@ class _AtlasGeospatialScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira área, análise ou métrica.',
                             ),
@@ -320,8 +299,7 @@ class _AtlasGeospatialScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -335,10 +313,7 @@ class _AtlasGeospatialScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasGeospatialModule selected;
   final ValueChanged<AtlasGeospatialModule> onSelected;
@@ -351,23 +326,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasGeospatialModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasGeospatialModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -390,15 +363,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -417,24 +390,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Inconsistente' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Inconsistente' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Validado' ||
-      'Monitorado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Validado' ||
+      'Monitorado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -451,14 +420,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -467,21 +430,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _GeospatialForm extends StatefulWidget {
-  const _GeospatialForm({
-    required this.module,
-    this.current,
-  });
+  const _GeospatialForm({required this.module, this.current});
 
   final AtlasGeospatialModule module;
   final AtlasGeospatialRecord? current;
 
   @override
-  State<_GeospatialForm> createState() =>
-      _GeospatialFormState();
+  State<_GeospatialForm> createState() => _GeospatialFormState();
 }
 
-class _GeospatialFormState
-    extends State<_GeospatialForm> {
+class _GeospatialFormState extends State<_GeospatialForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -513,12 +471,9 @@ class _GeospatialFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasGeospatialDate(DateTime.now()),
+      text: current?.date ?? formatAtlasGeospatialDate(DateTime.now()),
     );
-    areaName = TextEditingController(
-      text: current?.areaName ?? '',
-    );
+    areaName = TextEditingController(text: current?.areaName ?? '');
     areaHectares = TextEditingController(
       text: current == null || current.areaHectares == 0
           ? ''
@@ -534,41 +489,29 @@ class _GeospatialFormState
           ? ''
           : current.longitude.toString(),
     );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    metricName = TextEditingController(text: current?.metricName ?? '');
     metricValue = TextEditingController(
       text: current == null || current.metricValue == 0
           ? ''
           : current.metricValue.toString(),
     );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
+    unit = TextEditingController(text: current?.unit ?? '');
     qualityPercent = TextEditingController(
       text: current == null || current.qualityPercent == 0
           ? ''
           : current.qualityPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    referenceDate = TextEditingController(
-      text: current?.referenceDate ?? '',
-    );
-    source = TextEditingController(
-      text: current?.source ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    referenceDate = TextEditingController(text: current?.referenceDate ?? '');
+    source = TextEditingController(text: current?.source ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -592,10 +535,7 @@ class _GeospatialFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -611,27 +551,20 @@ class _GeospatialFormState
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
-    final parsed =
-        parseAtlasGeospatialDate(controller.text);
+  Future<void> chooseDate(TextEditingController controller) async {
+    final parsed = parseAtlasGeospatialDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasGeospatialDate(selected);
+      controller.text = formatAtlasGeospatialDate(selected);
     });
   }
 
@@ -644,8 +577,7 @@ class _GeospatialFormState
     Navigator.pop(
       context,
       AtlasGeospatialRecord(
-        id: current?.id ??
-            'geo_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'geo_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -659,8 +591,7 @@ class _GeospatialFormState
         metricValue: decimal(metricValue),
         unit: unit.text.trim(),
         qualityPercent: percent(qualityPercent),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         referenceDate: referenceDate.text.trim(),
         source: source.text.trim(),
@@ -674,11 +605,7 @@ class _GeospatialFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -693,10 +620,8 @@ class _GeospatialFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -707,12 +632,9 @@ class _GeospatialFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -724,35 +646,32 @@ class _GeospatialFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Inconsistente',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Inconsistente',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -767,35 +686,26 @@ class _GeospatialFormState
                 ),
                 TextFormField(
                   controller: areaHectares,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Área (ha)',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Área (ha)'),
                 ),
                 TextFormField(
                   controller: latitude,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Latitude',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Latitude'),
                 ),
                 TextFormField(
                   controller: longitude,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Longitude',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Longitude'),
                 ),
                 TextFormField(
                   controller: metricName,
@@ -805,8 +715,7 @@ class _GeospatialFormState
                 ),
                 TextFormField(
                   controller: metricValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -815,14 +724,11 @@ class _GeospatialFormState
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 TextFormField(
                   controller: qualityPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -849,9 +755,7 @@ class _GeospatialFormState
                   onTap: () => chooseDate(referenceDate),
                   decoration: const InputDecoration(
                     labelText: 'Data de referência',
-                    suffixIcon: Icon(
-                      Icons.event_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_outlined),
                   ),
                 ),
                 TextFormField(
@@ -864,9 +768,7 @@ class _GeospatialFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -878,10 +780,7 @@ class _GeospatialFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -889,25 +788,15 @@ class _GeospatialFormState
 
 IconData _moduleIcon(AtlasGeospatialModule module) {
   return switch (module) {
-    AtlasGeospatialModule.gisMaps =>
-      Icons.map_outlined,
-    AtlasGeospatialModule.smartPaddocks =>
-      Icons.grid_on_outlined,
-    AtlasGeospatialModule.automaticRotation =>
-      Icons.sync_alt_outlined,
-    AtlasGeospatialModule.pasturePlanning =>
-      Icons.grass_outlined,
-    AtlasGeospatialModule.ndvi =>
-      Icons.eco_outlined,
-    AtlasGeospatialModule.biomass =>
-      Icons.stacked_line_chart_outlined,
-    AtlasGeospatialModule.soil =>
-      Icons.landscape_outlined,
-    AtlasGeospatialModule.slope =>
-      Icons.terrain_outlined,
-    AtlasGeospatialModule.irrigation =>
-      Icons.water_outlined,
-    AtlasGeospatialModule.territorialPlanning =>
-      Icons.account_tree_outlined,
+    AtlasGeospatialModule.gisMaps => Icons.map_outlined,
+    AtlasGeospatialModule.smartPaddocks => Icons.grid_on_outlined,
+    AtlasGeospatialModule.automaticRotation => Icons.sync_alt_outlined,
+    AtlasGeospatialModule.pasturePlanning => Icons.grass_outlined,
+    AtlasGeospatialModule.ndvi => Icons.eco_outlined,
+    AtlasGeospatialModule.biomass => Icons.stacked_line_chart_outlined,
+    AtlasGeospatialModule.soil => Icons.landscape_outlined,
+    AtlasGeospatialModule.slope => Icons.terrain_outlined,
+    AtlasGeospatialModule.irrigation => Icons.water_outlined,
+    AtlasGeospatialModule.territorialPlanning => Icons.account_tree_outlined,
   };
 }

@@ -12,49 +12,31 @@ class AtlasPeopleManagementService {
       AtlasPeopleManagementService._();
 
   static const String _shiftsKey = 'atlas_people_shifts_v1';
-  static const String _trainingsKey =
-      'atlas_people_trainings_v1';
-  static const String _reviewsKey =
-      'atlas_people_performance_reviews_v1';
+  static const String _trainingsKey = 'atlas_people_trainings_v1';
+  static const String _reviewsKey = 'atlas_people_performance_reviews_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasTeamMember>> loadMembers({
-    String? farmName,
-  }) {
+  Future<List<AtlasTeamMember>> loadMembers({String? farmName}) {
     return AtlasTeamMemberService.instance.load(
       farmName: farmName,
       includeInactive: true,
     );
   }
 
-  Future<List<AtlasWorkShift>> loadShifts({
-    String? farmName,
-  }) async {
-    final values = await _decodeList(
-      _shiftsKey,
-      AtlasWorkShift.fromMap,
-    );
+  Future<List<AtlasWorkShift>> loadShifts({String? farmName}) async {
+    final values = await _decodeList(_shiftsKey, AtlasWorkShift.fromMap);
     return _filterFarm(values, farmName, (item) => item.farmName)
       ..sort((a, b) => a.startAt.compareTo(b.startAt));
   }
 
   Future<void> saveShift(AtlasWorkShift shift) async {
-    final values = await _decodeList(
-      _shiftsKey,
-      AtlasWorkShift.fromMap,
-    );
+    final values = await _decodeList(_shiftsKey, AtlasWorkShift.fromMap);
     _upsert(values, shift, (item) => item.id);
-    await _saveList(
-      _shiftsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_shiftsKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasTrainingRecord>> loadTrainings({
-    String? farmName,
-  }) async {
+  Future<List<AtlasTrainingRecord>> loadTrainings({String? farmName}) async {
     final values = await _decodeList(
       _trainingsKey,
       AtlasTrainingRecord.fromMap,
@@ -63,23 +45,16 @@ class AtlasPeopleManagementService {
       ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
   }
 
-  Future<void> saveTraining(
-    AtlasTrainingRecord training,
-  ) async {
+  Future<void> saveTraining(AtlasTrainingRecord training) async {
     final values = await _decodeList(
       _trainingsKey,
       AtlasTrainingRecord.fromMap,
     );
     _upsert(values, training, (item) => item.id);
-    await _saveList(
-      _trainingsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_trainingsKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasPerformanceReview>> loadReviews({
-    String? farmName,
-  }) async {
+  Future<List<AtlasPerformanceReview>> loadReviews({String? farmName}) async {
     final values = await _decodeList(
       _reviewsKey,
       AtlasPerformanceReview.fromMap,
@@ -88,23 +63,16 @@ class AtlasPeopleManagementService {
       ..sort((a, b) => b.reviewedAt.compareTo(a.reviewedAt));
   }
 
-  Future<void> saveReview(
-    AtlasPerformanceReview review,
-  ) async {
+  Future<void> saveReview(AtlasPerformanceReview review) async {
     final values = await _decodeList(
       _reviewsKey,
       AtlasPerformanceReview.fromMap,
     );
     _upsert(values, review, (item) => item.id);
-    await _saveList(
-      _reviewsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_reviewsKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<AtlasPeopleExecutiveSnapshot> buildSnapshot({
-    String? farmName,
-  }) async {
+  Future<AtlasPeopleExecutiveSnapshot> buildSnapshot({String? farmName}) async {
     final members = await loadMembers(farmName: farmName);
     final shifts = await loadShifts(farmName: farmName);
     final trainings = await loadTrainings(farmName: farmName);
@@ -117,27 +85,22 @@ class AtlasPeopleManagementService {
     );
     final completedHours = shifts
         .where((item) => item.status == AtlasWorkShiftStatus.completed)
-        .fold<double>(
-          0,
-          (total, item) => total + item.plannedHours,
-        );
+        .fold<double>(0, (total, item) => total + item.plannedHours);
     final absences = shifts
         .where((item) => item.status == AtlasWorkShiftStatus.absent)
         .length;
-    final trainedMembers =
-        trainings.map((item) => item.memberId).toSet().length;
+    final trainedMembers = trainings
+        .map((item) => item.memberId)
+        .toSet()
+        .length;
     final trainingCoverage = active.isEmpty
         ? 0.0
         : trainedMembers / active.length * 100;
-    final expired =
-        trainings.where((item) => item.isExpired).length;
+    final expired = trainings.where((item) => item.isExpired).length;
     final performance = reviews.isEmpty
         ? 0.0
-        : reviews.fold<double>(
-              0,
-              (total, item) => total + item.overallScore,
-            ) /
-            reviews.length;
+        : reviews.fold<double>(0, (total, item) => total + item.overallScore) /
+              reviews.length;
 
     var score = 60.0;
     score += trainingCoverage * 0.2;
@@ -207,32 +170,19 @@ class AtlasPeopleManagementService {
     if (raw == null || raw.trim().isEmpty) return <T>[];
     try {
       return (jsonDecode(raw) as List)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {
@@ -248,8 +198,7 @@ class AtlasPeopleManagementService {
     final normalized = farmName?.trim().toLowerCase();
     if (normalized == null || normalized.isEmpty) return values;
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

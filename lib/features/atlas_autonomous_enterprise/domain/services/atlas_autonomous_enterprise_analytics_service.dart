@@ -52,8 +52,9 @@ class AtlasAutonomousEnterpriseAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operationalCount =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operationalCount = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pendingCount = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -81,23 +82,23 @@ class AtlasAutonomousEnterpriseAnalyticsService {
     final double averageConfidence = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.confidencePercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.confidencePercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final double averageRisk = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.riskPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.riskPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final double averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coveragePercent.round() * 30 ~/ 100);
@@ -150,27 +151,20 @@ class AtlasAutonomousEnterpriseAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasAutonomousEnterpriseModule.aiOrchestrator =>
-            const [
-              'Mantenha aprovação humana para decisões de alto impacto, baixa confiança ou risco elevado.',
-              'Registre premissas, evidências, resultado esperado e retorno real de cada decisão.',
-              'Use políticas claras, limites operacionais e trilha completa de auditoria.',
-            ],
-          AtlasAutonomousEnterpriseModule
-                .enterpriseReleaseCenter =>
-            const [
-              'Bloqueie a publicação quando testes, segurança, backup ou plano de rollback estiverem incompletos.',
-              'Use checklist de produção com responsável, evidência e aprovação para cada item.',
-              'Acompanhe erros, desempenho, adoção e suporte após cada lançamento.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasAutonomousEnterpriseModule.aiOrchestrator => const [
+          'Mantenha aprovação humana para decisões de alto impacto, baixa confiança ou risco elevado.',
+          'Registre premissas, evidências, resultado esperado e retorno real de cada decisão.',
+          'Use políticas claras, limites operacionais e trilha completa de auditoria.',
+        ],
+        AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter => const [
+          'Bloqueie a publicação quando testes, segurança, backup ou plano de rollback estiverem incompletos.',
+          'Use checklist de produção com responsável, evidência e aprovação para cada item.',
+          'Acompanhe erros, desempenho, adoção e suporte após cada lançamento.',
+        ],
+      });
     }
 
     return items;

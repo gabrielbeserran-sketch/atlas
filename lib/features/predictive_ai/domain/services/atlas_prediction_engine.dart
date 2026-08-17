@@ -9,13 +9,24 @@ class AtlasPredictionEngine {
     final revenueFactor = 1 + scenario.revenueChange / 100;
     final costFactor = 1 + scenario.costChange / 100;
 
-    final projectedRevenue = scenario.currentRevenue * productivityFactor * capacityFactor * revenueFactor;
-    final projectedCost = scenario.currentCost * costFactor + scenario.investment / (scenario.horizonMonths <= 0 ? 1 : scenario.horizonMonths);
+    final projectedRevenue =
+        scenario.currentRevenue *
+        productivityFactor *
+        capacityFactor *
+        revenueFactor;
+    final projectedCost =
+        scenario.currentCost * costFactor +
+        scenario.investment /
+            (scenario.horizonMonths <= 0 ? 1 : scenario.horizonMonths);
     final projectedProfit = projectedRevenue - projectedCost;
     final baseProfit = scenario.currentRevenue - scenario.currentCost;
     final incrementalProfit = projectedProfit - baseProfit;
-    final roi = scenario.investment <= 0 ? 0 : (incrementalProfit * 12 / scenario.investment) * 100;
-    final payback = incrementalProfit <= 0 ? 999.0 : scenario.investment / incrementalProfit;
+    final roi = scenario.investment <= 0
+        ? 0
+        : (incrementalProfit * 12 / scenario.investment) * 100;
+    final payback = incrementalProfit <= 0
+        ? 999.0
+        : scenario.investment / incrementalProfit;
 
     double risk = 18;
     if (scenario.investment > scenario.currentRevenue * .5) risk += 20;
@@ -25,16 +36,29 @@ class AtlasPredictionEngine {
     if (projectedProfit < 0) risk += 30;
     risk = risk.clamp(5, 95).toDouble();
 
-    final confidence = (92 - (scenario.productivityChange.abs() + scenario.capacityChange.abs()) * .7 - scenario.horizonMonths * .35).clamp(45, 95).toDouble();
-    final riskLevel = risk >= 75 ? AtlasRiskLevel.critical : risk >= 55 ? AtlasRiskLevel.high : risk >= 30 ? AtlasRiskLevel.moderate : AtlasRiskLevel.low;
+    final confidence =
+        (92 -
+                (scenario.productivityChange.abs() +
+                        scenario.capacityChange.abs()) *
+                    .7 -
+                scenario.horizonMonths * .35)
+            .clamp(45, 95)
+            .toDouble();
+    final riskLevel = risk >= 75
+        ? AtlasRiskLevel.critical
+        : risk >= 55
+        ? AtlasRiskLevel.high
+        : risk >= 30
+        ? AtlasRiskLevel.moderate
+        : AtlasRiskLevel.low;
 
     final recommendation = projectedProfit <= 0
         ? 'Não executar sem revisar as premissas: o cenário projeta resultado negativo.'
         : roi >= 25 && risk < 55
-            ? 'Cenário atrativo. Recomenda-se avançar com implantação controlada e acompanhamento mensal.'
-            : roi >= 10
-                ? 'Cenário viável, porém deve ser executado em fases e com gatilhos de revisão.'
-                : 'Retorno limitado. Compare alternativas antes de comprometer capital.';
+        ? 'Cenário atrativo. Recomenda-se avançar com implantação controlada e acompanhamento mensal.'
+        : roi >= 10
+        ? 'Cenário viável, porém deve ser executado em fases e com gatilhos de revisão.'
+        : 'Retorno limitado. Compare alternativas antes de comprometer capital.';
 
     final drivers = <String>[
       'Produtividade: ${scenario.productivityChange.toStringAsFixed(1)}%',

@@ -10,6 +10,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.services.concurrency import advisory_transaction_lock
+
 from ..authz import Principal, get_principal, require_permission
 from ..database import get_db
 from ..models import (
@@ -27,6 +29,8 @@ from ..models import (
     new_id,
     NutritionIngredient,
     NutritionPlan,
+    Paddock,
+    OperationalTask,
 )
 from ..schemas import (
     AnimalMovementRequest,
@@ -34,6 +38,7 @@ from ..schemas import (
     FinancialEntryCreateRequest,
     FinancialEntryResponse,
     HealthEventCreateRequest,
+    HealthEventUpdateRequest,
     HealthEventResponse,
     HealthProtocolApplyRequest,
     HealthProtocolCreateRequest,
@@ -50,6 +55,7 @@ from ..schemas import (
     NutritionEventCreateRequest,
     NutritionEventResponse,
     ReproductionEventCreateRequest,
+    ReproductionEventUpdateRequest,
     ReproductionEventResponse,
     ReproductionSummaryResponse,
     WeightCreateRequest,
@@ -67,6 +73,9 @@ from ..schemas import (
     FinancialEntryPhase3Response,
     FinancialSettlementRequest,
     FinancialSummaryResponse,
+    PaddockCreateRequest,
+    PaddockUpdateRequest,
+    PaddockResponse,
 )
 
 router = APIRouter(prefix="/livestock", tags=["livestock"])
@@ -76,7 +85,7 @@ def _farm_allowed(principal: Principal, farm_id: str) -> None:
     if principal.membership.role in {"owner", "admin"}:
         return
     allowed = set(principal.membership.farm_ids or [])
-    if farm_id not in allowed:
+    if allowed and farm_id not in allowed:
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
 
 
@@ -91,6 +100,110 @@ def _animal(db: Session, principal: Principal, animal_id: str) -> LivestockAnima
         raise HTTPException(status_code=404, detail="Animal não encontrado.")
     _farm_allowed(principal, item.farm_id)
     return item
+
+
+def _sync_operational_task(
+    *,
+    db: Session,
+    principal: Principal,
+    farm_id: str,
+    source_type: str,
+    source_id: str,
+    title: str,
+    description: str,
+    due_at: datetime | None,
+    priority: str = "medium",
+) -> OperationalTask | None:
+    tasks = list(
+        db.scalars(
+            select(OperationalTask)
+            .where(
+                OperationalTask.company_id == principal.company.id,
+                OperationalTask.farm_id == farm_id,
+                OperationalTask.source_type == source_type,
+                OperationalTask.source_id == source_id,
+            )
+            .order_by(OperationalTask.created_at.asc())
+        ).all()
+    )
+    task = tasks[0] if tasks else None
+    for duplicate in tasks[1:]:
+        duplicate.status = "cancelled"
+
+    if due_at is None:
+        if task is not None and task.status not in {"completed", "cancelled"}:
+            task.status = "cancelled"
+        return task
+
+    if task is None:
+        task = OperationalTask(
+            id=new_id("task"),
+            tenant_id=principal.company.tenant_id,
+            company_id=principal.company.id,
+            farm_id=farm_id,
+            source_type=source_type,
+            source_id=source_id,
+            title=title,
+            description=description,
+            priority=priority,
+            due_at=due_at,
+            status="open",
+        )
+        db.add(task)
+        return task
+
+    task.title = title
+    task.description = description
+    task.priority = priority
+    task.due_at = due_at
+    if task.status == "cancelled":
+        task.status = "open"
+    return task
+
+
+def _delete_source_tasks(
+    *,
+    db: Session,
+    principal: Principal,
+    source_type: str,
+    source_id: str,
+) -> None:
+    tasks = db.scalars(
+        select(OperationalTask).where(
+            OperationalTask.company_id == principal.company.id,
+            OperationalTask.source_type == source_type,
+            OperationalTask.source_id == source_id,
+        )
+    ).all()
+    for task in tasks:
+        db.delete(task)
+
+
+def _refresh_animal_reproduction_state(
+    *,
+    db: Session,
+    animal: LivestockAnimal,
+) -> None:
+    latest = db.scalar(
+        select(ReproductionEvent)
+        .where(ReproductionEvent.animal_id == animal.id)
+        .order_by(ReproductionEvent.occurred_at.desc())
+        .limit(1)
+    )
+    if latest is None:
+        animal.last_reproduction_event_at = None
+        animal.reproductive_status = ""
+        animal.expected_calving_at = None
+        return
+    animal.last_reproduction_event_at = latest.occurred_at
+    animal.reproductive_status = latest.reproductive_status or ""
+    if latest.event_code == "pregnancy_diagnosis" and latest.reproductive_status == "pregnant":
+        animal.expected_calving_at = latest.expected_date or (
+            latest.occurred_at.replace(microsecond=0)
+            + timedelta(days=max(0, 283 - latest.pregnancy_days))
+        )
+    elif latest.event_code in {"calving", "abortion", "reproductive_cull"}:
+        animal.expected_calving_at = None
 
 
 def _lot(db: Session, principal: Principal, lot_id: str) -> HerdLot:
@@ -507,8 +620,95 @@ def add_reproduction_event(
         animal.expected_calving_at = payload.expected_date or occurred_at.replace(microsecond=0) + timedelta(days=max(0, 283 - payload.pregnancy_days))
     elif event_code in {"calving", "abortion", "reproductive_cull"}:
         animal.expected_calving_at = None
-    db.add_all([item, animal]); db.commit(); db.refresh(item)
+    db.add_all([item, animal])
+    _sync_operational_task(
+        db=db,
+        principal=principal,
+        farm_id=animal.farm_id,
+        source_type="reproduction_event",
+        source_id=item.id,
+        title=f"{payload.event_type} — {animal.name or animal.tag or animal.id}",
+        description=f"Retorno reprodutivo de {animal.name or animal.tag or animal.id}.",
+        due_at=payload.expected_date,
+        priority="high" if event_code == "pregnancy_diagnosis" else "medium",
+    )
+    db.commit(); db.refresh(item)
     return item
+
+
+@router.patch("/animals/{animal_id}/reproduction/{event_id}", response_model=ReproductionEventResponse)
+def update_reproduction_event(
+    animal_id: str,
+    event_id: str,
+    payload: ReproductionEventUpdateRequest,
+    principal: Principal = Depends(require_permission("reproduction.write")),
+    db: Session = Depends(get_db),
+) -> ReproductionEvent:
+    animal = _animal(db, principal, animal_id)
+    item = db.scalar(
+        select(ReproductionEvent).where(
+            ReproductionEvent.id == event_id,
+            ReproductionEvent.company_id == principal.company.id,
+            ReproductionEvent.animal_id == animal.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Evento reprodutivo não encontrado.")
+    changes = payload.model_dump(exclude_unset=True)
+    for field, value in changes.items():
+        setattr(item, field, value)
+    if "event_type" in changes and "event_code" not in changes:
+        item.event_code = REPRODUCTION_CODES.get(item.event_type, item.event_code or "observation")
+    if "reproductive_status" not in changes:
+        probe = ReproductionEventCreateRequest(
+            event_type=item.event_type, event_code=item.event_code, result=item.result,
+            reproductive_status="", pregnancy_days=item.pregnancy_days,
+        )
+        item.reproductive_status = _derive_reproductive_status(probe)
+    db.flush()
+    _refresh_animal_reproduction_state(db=db, animal=animal)
+    _sync_operational_task(
+        db=db, principal=principal, farm_id=animal.farm_id,
+        source_type="reproduction_event", source_id=item.id,
+        title=f"{item.event_type} — {animal.name or animal.tag or animal.id}",
+        description=f"Retorno reprodutivo de {animal.name or animal.tag or animal.id}.",
+        due_at=item.expected_date,
+        priority="high" if item.event_code == "pregnancy_diagnosis" else "medium",
+    )
+    db.commit(); db.refresh(item)
+    return item
+
+
+@router.delete(
+    "/animals/{animal_id}/reproduction/{event_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
+def delete_reproduction_event(
+    animal_id: str,
+    event_id: str,
+    principal: Principal = Depends(require_permission("reproduction.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    animal = _animal(db, principal, animal_id)
+    item = db.scalar(
+        select(ReproductionEvent).where(
+            ReproductionEvent.id == event_id,
+            ReproductionEvent.company_id == principal.company.id,
+            ReproductionEvent.animal_id == animal.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Evento reprodutivo não encontrado.")
+    _delete_source_tasks(
+        db=db, principal=principal, source_type="reproduction_event", source_id=item.id
+    )
+    db.delete(item)
+    db.flush()
+    _refresh_animal_reproduction_state(db=db, animal=animal)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/animals/{animal_id}/reproduction", response_model=list[ReproductionEventResponse])
@@ -607,9 +807,123 @@ def add_health_event(
             reference_type="health_event", reference_id=item.id,
             created_by=principal.user.id,
         ))
+    subject = payload.animal_id or payload.lot_id or "manejo sanitário"
+    _sync_operational_task(
+        db=db, principal=principal, farm_id=payload.farm_id,
+        source_type="health_event", source_id=item.id,
+        title=f"Retorno sanitário — {payload.event_type}",
+        description=f"Retorno programado para {subject}.",
+        due_at=payload.next_date, priority="high" if payload.is_quarantine else "medium",
+    )
     db.commit()
     db.refresh(item)
     return item
+
+
+@router.patch("/health/{event_id}", response_model=HealthEventResponse)
+def update_health_event(
+    event_id: str,
+    payload: HealthEventUpdateRequest,
+    principal: Principal = Depends(require_permission("health.write")),
+    db: Session = Depends(get_db),
+) -> HealthEvent:
+    item = db.scalar(
+        select(HealthEvent).where(
+            HealthEvent.id == event_id,
+            HealthEvent.company_id == principal.company.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
+    _farm_allowed(principal, item.farm_id)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(item, field, value)
+    _sync_operational_task(
+        db=db, principal=principal, farm_id=item.farm_id,
+        source_type="health_event", source_id=item.id,
+        title=f"Retorno sanitário — {item.event_type}",
+        description=f"Retorno programado para {item.animal_id or item.lot_id or 'manejo sanitário'}.",
+        due_at=item.next_date, priority="high" if item.is_quarantine else "medium",
+    )
+    db.commit(); db.refresh(item)
+    return item
+
+
+@router.delete(
+    "/health/{event_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
+def delete_health_event(
+    event_id: str,
+    principal: Principal = Depends(require_permission("health.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    item = db.scalar(
+        select(HealthEvent).where(
+            HealthEvent.id == event_id,
+            HealthEvent.company_id == principal.company.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
+    _farm_allowed(principal, item.farm_id)
+
+    original_movement = db.scalar(
+        select(InventoryMovement).where(
+            InventoryMovement.company_id == principal.company.id,
+            InventoryMovement.reference_type == "health_event",
+            InventoryMovement.reference_id == item.id,
+            InventoryMovement.movement_type == "health_consumption",
+        )
+    )
+    reversal = db.scalar(
+        select(InventoryMovement).where(
+            InventoryMovement.company_id == principal.company.id,
+            InventoryMovement.reference_type == "health_event_reversal",
+            InventoryMovement.reference_id == item.id,
+        )
+    )
+    if original_movement is not None and reversal is None:
+        product = _inventory_product(db, principal, original_movement.product_id)
+        product.quantity += original_movement.quantity
+        db.add(
+            InventoryMovement(
+                id=new_id("stock_move"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=product.farm_id,
+                product_id=product.id,
+                movement_type="return",
+                quantity=original_movement.quantity,
+                unit_cost=original_movement.unit_cost,
+                balance_after=product.quantity,
+                reason=f"Estorno do evento sanitário {item.event_type}",
+                document_number=f"ESTORNO-{item.id}",
+                product_batch=original_movement.product_batch,
+                reference_type="health_event_reversal",
+                reference_id=item.id,
+                occurred_at=datetime.now(timezone.utc),
+                created_by=principal.user.id,
+            )
+        )
+
+    linked_finance = db.scalars(
+        select(FinancialEntry).where(
+            FinancialEntry.company_id == principal.company.id,
+            FinancialEntry.reference_type == "health_event",
+            FinancialEntry.reference_id == item.id,
+        )
+    ).all()
+    for entry in linked_finance:
+        db.delete(entry)
+    _delete_source_tasks(
+        db=db, principal=principal, source_type="health_event", source_id=item.id
+    )
+    db.delete(item)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/health", response_model=list[HealthEventResponse])
@@ -935,12 +1249,21 @@ def health_alerts(
 # FASES 2 E 3 — APIs integradas de nutrição, estoque e financeiro
 # ---------------------------------------------------------------------------
 
-def _inventory_product(db: Session, principal: Principal, product_id: str) -> InventoryProduct:
-    product = db.scalar(select(InventoryProduct).where(
+def _inventory_product(
+    db: Session,
+    principal: Principal,
+    product_id: str,
+    *,
+    for_update: bool = False,
+) -> InventoryProduct:
+    query = select(InventoryProduct).where(
         InventoryProduct.id == product_id,
         InventoryProduct.company_id == principal.company.id,
         InventoryProduct.active.is_(True),
-    ))
+    )
+    if for_update:
+        query = query.with_for_update()
+    product = db.scalar(query)
     if product is None:
         raise HTTPException(status_code=404, detail="Produto de estoque não encontrado.")
     _farm_allowed(principal, product.farm_id)
@@ -952,6 +1275,23 @@ def _apply_stock_movement(*, db: Session, principal: Principal, product: Invento
                           reason: str = "", document_number: str = "", product_batch: str = "",
                           reference_type: str = "", reference_id: str = "",
                           occurred_at: datetime | None = None) -> InventoryMovement:
+    if reference_type and reference_id:
+        lock_key = (
+            f"inventory:{principal.company.id}:{product.id}:"
+            f"{reference_type}:{reference_id}"
+        )
+        advisory_transaction_lock(db, lock_key)
+        existing = db.scalar(
+            select(InventoryMovement).where(
+                InventoryMovement.company_id == principal.company.id,
+                InventoryMovement.product_id == product.id,
+                InventoryMovement.reference_type == reference_type,
+                InventoryMovement.reference_id == reference_id,
+            )
+        )
+        if existing is not None:
+            return existing
+
     inbound = movement_type in {"entry", "adjustment_in", "return", "transfer_in"}
     outbound = movement_type in {"exit", "adjustment_out", "loss", "transfer_out", "health_consumption", "nutrition_consumption"}
     if not inbound and not outbound:
@@ -993,7 +1333,7 @@ def create_inventory_product_v2(payload: InventoryProductPhase2CreateRequest,
 @router.post("/inventory/products/{product_id}/movements/v2", response_model=InventoryMovementPhase2Response, status_code=201)
 def create_inventory_movement_v2(product_id: str, payload: InventoryMovementPhase2Request,
     principal: Principal = Depends(require_permission("inventory.write")), db: Session = Depends(get_db)) -> InventoryMovement:
-    product=_inventory_product(db, principal, product_id)
+    product=_inventory_product(db, principal, product_id, for_update=True)
     movement=_apply_stock_movement(db=db, principal=principal, product=product, **payload.model_dump())
     db.commit(); db.refresh(movement); return movement
 
@@ -1131,8 +1471,29 @@ def create_financial_entry_v2(payload: FinancialEntryPhase3CreateRequest,
     if payload.lot_id:
         lot=_lot(db,principal,payload.lot_id)
         if lot.farm_id!=payload.farm_id: raise HTTPException(status_code=422,detail="Lote pertence a outra fazenda.")
-    data=payload.model_dump();
-    if data["paid_at"] and data["status"]=="pending": data["status"]="paid"
+    data=payload.model_dump()
+    if data["paid_at"] and data["status"]=="pending":
+        data["status"]="paid"
+
+    if payload.reference_type and payload.reference_id:
+        advisory_transaction_lock(
+            db,
+            (
+                f"finance:{principal.company.id}:{payload.farm_id}:"
+                f"{payload.reference_type}:{payload.reference_id}"
+            ),
+        )
+        existing = db.scalar(
+            select(FinancialEntry).where(
+                FinancialEntry.company_id == principal.company.id,
+                FinancialEntry.farm_id == payload.farm_id,
+                FinancialEntry.reference_type == payload.reference_type,
+                FinancialEntry.reference_id == payload.reference_id,
+            )
+        )
+        if existing is not None:
+            return existing
+
     item=FinancialEntry(id=new_id("finance"),tenant_id=principal.company.tenant_id,
         company_id=principal.company.id,created_by=principal.user.id,**data)
     db.add(item); db.commit(); db.refresh(item); return item
@@ -1202,3 +1563,155 @@ def financial_cash_flow(farm_id: str,days: int=90,
         balance+=buckets[day]["income"]-buckets[day]["expense"]
         points.append({"date":day,**buckets[day],"projected_balance":balance})
     return {"farm_id":farm_id,"days":days,"points":points}
+
+
+# V1 FINAL — CRUD remoto oficial de piquetes.
+@router.get("/paddocks", response_model=list[PaddockResponse])
+def list_paddocks(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("herd.read")),
+    db: Session = Depends(get_db),
+) -> list[Paddock]:
+    _farm_allowed(principal, farm_id)
+    return list(db.scalars(
+        select(Paddock).where(
+            Paddock.company_id == principal.company.id,
+            Paddock.farm_id == farm_id,
+            Paddock.active.is_(True),
+        ).order_by(Paddock.name)
+    ).all())
+
+
+@router.post("/paddocks", response_model=PaddockResponse, status_code=201)
+def create_paddock(
+    payload: PaddockCreateRequest,
+    principal: Principal = Depends(require_permission("herd.write")),
+    db: Session = Depends(get_db),
+) -> Paddock:
+    _farm_allowed(principal, payload.farm_id)
+    item = Paddock(
+        id=new_id("paddock"),
+        tenant_id=principal.company.tenant_id,
+        company_id=principal.company.id,
+        **payload.model_dump(),
+    )
+    db.add(item)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Já existe um piquete com esse nome nesta fazenda.")
+    db.refresh(item)
+    return item
+
+
+@router.patch("/paddocks/{paddock_id}", response_model=PaddockResponse)
+def update_paddock(
+    paddock_id: str,
+    payload: PaddockUpdateRequest,
+    principal: Principal = Depends(require_permission("herd.write")),
+    db: Session = Depends(get_db),
+) -> Paddock:
+    item = db.scalar(select(Paddock).where(
+        Paddock.id == paddock_id,
+        Paddock.company_id == principal.company.id,
+    ))
+    if item is None:
+        raise HTTPException(status_code=404, detail="Piquete não encontrado.")
+    _farm_allowed(principal, item.farm_id)
+    for key, value in payload.model_dump(exclude_unset=True).items():
+        setattr(item, key, value)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Já existe um piquete com esse nome nesta fazenda.")
+    db.refresh(item)
+    return item
+
+
+@router.delete("/paddocks/{paddock_id}", status_code=204)
+def delete_paddock(
+    paddock_id: str,
+    principal: Principal = Depends(require_permission("herd.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    item = db.scalar(select(Paddock).where(
+        Paddock.id == paddock_id,
+        Paddock.company_id == principal.company.id,
+    ))
+    if item is None:
+        raise HTTPException(status_code=404, detail="Piquete não encontrado.")
+    _farm_allowed(principal, item.farm_id)
+    item.active = False
+    db.commit()
+    return Response(status_code=204)
+
+
+# V1 FINAL — mutações que faltavam para CRUD completo dos módulos centrais.
+@router.patch("/inventory/products/{product_id}/v2", response_model=InventoryProductResponse)
+def update_inventory_product_v2(
+    product_id: str, payload: InventoryProductPhase2CreateRequest,
+    principal: Principal = Depends(require_permission("inventory.write")),
+    db: Session = Depends(get_db),
+) -> InventoryProduct:
+    item=_inventory_product(db,principal,product_id)
+    _farm_allowed(principal,payload.farm_id)
+    for key,value in payload.model_dump().items():
+        setattr(item,key,value)
+    db.commit(); db.refresh(item); return item
+
+@router.delete("/inventory/products/{product_id}/v2", status_code=204)
+def delete_inventory_product_v2(
+    product_id: str,
+    principal: Principal = Depends(require_permission("inventory.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    item=_inventory_product(db,principal,product_id)
+    item.active=False; db.commit(); return Response(status_code=204)
+
+@router.patch("/nutrition/plans/{plan_id}", response_model=NutritionPlanResponse)
+def update_nutrition_plan(
+    plan_id: str, payload: NutritionPlanCreateRequest,
+    principal: Principal = Depends(require_permission("nutrition.write")),
+    db: Session = Depends(get_db),
+) -> NutritionPlan:
+    item=db.scalar(select(NutritionPlan).where(NutritionPlan.id==plan_id,NutritionPlan.company_id==principal.company.id))
+    if item is None: raise HTTPException(status_code=404,detail="Plano nutricional não encontrado.")
+    _farm_allowed(principal,item.farm_id)
+    for key,value in payload.model_dump().items():
+        if value is not None: setattr(item,key,value)
+    db.commit(); db.refresh(item); return item
+
+@router.delete("/nutrition/plans/{plan_id}", status_code=204)
+def delete_nutrition_plan(
+    plan_id: str,
+    principal: Principal = Depends(require_permission("nutrition.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    item=db.scalar(select(NutritionPlan).where(NutritionPlan.id==plan_id,NutritionPlan.company_id==principal.company.id))
+    if item is None: raise HTTPException(status_code=404,detail="Plano nutricional não encontrado.")
+    _farm_allowed(principal,item.farm_id); item.active=False; db.commit(); return Response(status_code=204)
+
+@router.patch("/finance/v2/{entry_id}", response_model=FinancialEntryPhase3Response)
+def update_financial_entry_v2(
+    entry_id: str, payload: FinancialEntryPhase3CreateRequest,
+    principal: Principal=Depends(require_permission("finance.write")),
+    db: Session=Depends(get_db),
+) -> FinancialEntry:
+    item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
+    if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
+    _farm_allowed(principal,item.farm_id)
+    for key,value in payload.model_dump().items():
+        setattr(item,key,value)
+    db.commit(); db.refresh(item); return item
+
+@router.delete("/finance/v2/{entry_id}", status_code=204)
+def delete_financial_entry_v2(
+    entry_id: str,
+    principal: Principal=Depends(require_permission("finance.write")),
+    db: Session=Depends(get_db),
+) -> Response:
+    item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
+    if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
+    _farm_allowed(principal,item.farm_id); db.delete(item); db.commit(); return Response(status_code=204)

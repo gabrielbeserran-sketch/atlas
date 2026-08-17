@@ -1,0 +1,1 @@
+﻿$ErrorActionPreference='Stop'; flutter pub get; dart format --output=none --set-exit-if-changed lib test; flutter analyze; flutter test; Push-Location backend; try { python scripts\quality\run_cycles13_15_gate.py } finally { Pop-Location }; Write-Host 'Release gate aprovado.' -ForegroundColor Green

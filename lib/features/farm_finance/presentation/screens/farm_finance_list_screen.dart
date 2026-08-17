@@ -19,8 +19,7 @@ class FarmFinanceListScreen extends StatefulWidget {
 class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final FarmFinanceStorageService storage = FarmFinanceStorageService();
 
-  final FarmFinanceEventService eventService =
-      const FarmFinanceEventService();
+  final FarmFinanceEventService eventService = const FarmFinanceEventService();
 
   List<FarmFinanceData> records = [];
 
@@ -35,7 +34,9 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   }
 
   List<FarmFinanceData> get filteredRecords {
-    if (selectedFilter == 'Todos') return records;
+    if (selectedFilter == 'Todos') {
+      return records;
+    }
     if (selectedFilter == 'Receita' || selectedFilter == 'Despesa') {
       return records.where((record) => record.type == selectedFilter).toList();
     }
@@ -75,23 +76,43 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       .fold<double>(0, (total, record) => total + record.amount);
 
   double get operatingResult {
-    final paidIncome = records.where((r) => r.isIncome && r.isPaid).fold<double>(0, (t, r) => t + r.amount);
-    final paidExpenses = records.where((r) => r.isExpense && r.isPaid).fold<double>(0, (t, r) => t + r.amount);
+    final paidIncome = records
+        .where((r) => r.isIncome && r.isPaid)
+        .fold<double>(0, (t, r) => t + r.amount);
+    final paidExpenses = records
+        .where((r) => r.isExpense && r.isPaid)
+        .fold<double>(0, (t, r) => t + r.amount);
     return paidIncome - paidExpenses;
   }
 
   Future<void> loadRecords() async {
-    final savedRecords = await storage.loadRecords(widget.farm.name);
-
-    if (!mounted) {
-      return;
+    if (mounted) {
+      setState(() => isLoading = true);
     }
-
-    setState(() {
-      records = savedRecords;
-      sortRecords();
-      isLoading = false;
-    });
+    try {
+      final savedRecords = await storage
+          .loadRecords(widget.farm.name, farmId: widget.farm.id ?? '')
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        records = savedRecords;
+        sortRecords();
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível carregar o Financeiro: $error'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   Future<void> saveRecords() async {
@@ -140,12 +161,26 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id ?? '';
+    final savedRecord = farmId.isEmpty
+        ? newRecord
+        : await storage.createRecord(
+            farmName: widget.farm.name,
+            farmId: farmId,
+            record: newRecord,
+          );
+
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      records.add(newRecord);
+      records.add(savedRecord);
       sortRecords();
     });
 
-    await saveRecords();
+    if (farmId.isEmpty) {
+      await saveRecords();
+    }
 
     await eventService.publishEntryCreated(
       farmName: widget.farm.name,
@@ -178,23 +213,33 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       return;
     }
 
-    final recordIndex = records.indexWhere((item) => item.id == record.id);
+    final farmId = widget.farm.id ?? '';
+    final savedRecord = farmId.isEmpty
+        ? editedRecord
+        : await storage.updateRecord(
+            farmName: widget.farm.name,
+            farmId: farmId,
+            record: editedRecord,
+          );
 
-    if (recordIndex == -1) {
+    final recordIndex = records.indexWhere((item) => item.id == record.id);
+    if (recordIndex == -1 || !mounted) {
       return;
     }
 
     setState(() {
-      records[recordIndex] = editedRecord;
+      records[recordIndex] = savedRecord;
       sortRecords();
     });
 
-    await saveRecords();
+    if (farmId.isEmpty) {
+      await saveRecords();
+    }
 
     await eventService.publishEntryUpdated(
       farmName: widget.farm.name,
       previousRecord: record,
-      updatedRecord: editedRecord,
+      updatedRecord: savedRecord,
       totalIncome: totalIncome,
       totalExpenses: totalExpenses,
       balance: balance,
@@ -244,11 +289,23 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id ?? '';
+    if (farmId.isNotEmpty) {
+      await storage.deleteRecord(
+        farmName: widget.farm.name,
+        entryId: record.id,
+      );
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       records.removeWhere((item) => item.id == record.id);
     });
 
-    await saveRecords();
+    if (farmId.isEmpty) {
+      await saveRecords();
+    }
 
     await eventService.publishEntryDeleted(
       farmName: widget.farm.name,
@@ -393,12 +450,14 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                             ChoiceChip(
                               label: const Text('Pendentes'),
                               selected: selectedFilter == 'Pendentes',
-                              onSelected: (_) => setState(() => selectedFilter = 'Pendentes'),
+                              onSelected: (_) =>
+                                  setState(() => selectedFilter = 'Pendentes'),
                             ),
                             ChoiceChip(
                               label: const Text('Vencidos'),
                               selected: selectedFilter == 'Vencidos',
-                              onSelected: (_) => setState(() => selectedFilter = 'Vencidos'),
+                              onSelected: (_) =>
+                                  setState(() => selectedFilter = 'Vencidos'),
                             ),
                           ],
                         ),
@@ -690,10 +749,14 @@ class FinanceRecordCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ],
-                    if (record.lotName.isNotEmpty || record.animalIdentification.isNotEmpty) ...[
+                    if (record.lotName.isNotEmpty ||
+                        record.animalIdentification.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        [record.lotName, record.animalIdentification].where((e) => e.isNotEmpty).join(' • '),
+                        [
+                          record.lotName,
+                          record.animalIdentification,
+                        ].where((e) => e.isNotEmpty).join(' • '),
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],

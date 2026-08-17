@@ -6,10 +6,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ex
 import 'package:projeto_atlas/features/digital_twin/presentation/screens/atlas_digital_twin_screen.dart';
 
 class AtlasExecutive360Screen extends StatefulWidget {
-  const AtlasExecutive360Screen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasExecutive360Screen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
@@ -18,8 +15,7 @@ class AtlasExecutive360Screen extends StatefulWidget {
       _AtlasExecutive360ScreenState();
 }
 
-class _AtlasExecutive360ScreenState
-    extends State<AtlasExecutive360Screen> {
+class _AtlasExecutive360ScreenState extends State<AtlasExecutive360Screen> {
   final service = const AtlasExecutive360Service();
 
   AtlasExecutive360Snapshot? snapshot;
@@ -45,9 +41,7 @@ class _AtlasExecutive360ScreenState
 
   Future<void> _openDigitalTwin() {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const AtlasDigitalTwinScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const AtlasDigitalTwinScreen()),
     );
   }
 
@@ -85,27 +79,19 @@ class _AtlasExecutive360ScreenState
           ),
         ),
         body: loading && item == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : item == null
-                ? const Center(
-                    child: Text('Não foi possível gerar o painel.'),
-                  )
-                : TabBarView(
-                    children: [
-                      _Overview(snapshot: item),
-                      _Areas(values: item.areaScores),
-                      _Risk(snapshot: item),
-                      _Bottlenecks(
-                        values: item.bottlenecks,
-                      ),
-                      _Decision(snapshot: item),
-                      _DigitalTwinBridge(
-                        onOpen: _openDigitalTwin,
-                      ),
-                    ],
-                  ),
+            ? const Center(child: Text('Não foi possível gerar o painel.'))
+            : TabBarView(
+                children: [
+                  _Overview(snapshot: item),
+                  _Areas(values: item.areaScores),
+                  _Risk(snapshot: item),
+                  _Bottlenecks(values: item.bottlenecks),
+                  _Decision(snapshot: item),
+                  _DigitalTwinBridge(onOpen: _openDigitalTwin),
+                ],
+              ),
       ),
     );
   }
@@ -123,10 +109,7 @@ class _Overview extends StatelessWidget {
       children: [
         Text(
           snapshot.farmName,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-          ),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
         ),
         Text(
           'Atualizado em '
@@ -137,26 +120,10 @@ class _Overview extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _card(
-              'Score geral',
-              snapshot.overallScore,
-              '/100',
-            ),
-            _card(
-              'Risco',
-              snapshot.riskScore,
-              '/100',
-            ),
-            _card(
-              'Produtividade',
-              snapshot.productivityScore,
-              '/100',
-            ),
-            _card(
-              'Gargalos',
-              snapshot.bottlenecks.length.toDouble(),
-              '',
-            ),
+            _card('Score geral', snapshot.overallScore, '/100'),
+            _card('Risco', snapshot.riskScore, '/100'),
+            _card('Produtividade', snapshot.productivityScore, '/100'),
+            _card('Gargalos', snapshot.bottlenecks.length.toDouble(), ''),
           ],
         ),
         const SizedBox(height: 16),
@@ -188,15 +155,11 @@ class _Areas extends StatelessWidget {
         return Card(
           child: ListTile(
             title: Text(item.area),
-            subtitle: LinearProgressIndicator(
-              value: item.score / 100,
-            ),
+            subtitle: LinearProgressIndicator(value: item.score / 100),
             trailing: Text(
               '${item.score.toStringAsFixed(1)}\n${item.status}',
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -215,10 +178,10 @@ class _Risk extends StatelessWidget {
     final level = snapshot.riskScore >= 70
         ? 'Crítico'
         : snapshot.riskScore >= 50
-            ? 'Alto'
-            : snapshot.riskScore >= 30
-                ? 'Moderado'
-                : 'Baixo';
+        ? 'Alto'
+        : snapshot.riskScore >= 30
+        ? 'Moderado'
+        : 'Baixo';
 
     return Center(
       child: Card(
@@ -228,10 +191,7 @@ class _Risk extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.shield_outlined,
-                size: 54,
-              ),
+              const Icon(Icons.shield_outlined, size: 54),
               const SizedBox(height: 12),
               Text(
                 snapshot.riskScore.toStringAsFixed(1),
@@ -263,9 +223,7 @@ class _Bottlenecks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (values.isEmpty) {
-      return const Center(
-        child: Text('Nenhum gargalo crítico detectado.'),
-      );
+      return const Center(child: Text('Nenhum gargalo crítico detectado.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -317,10 +275,7 @@ class _Decision extends StatelessWidget {
               const SizedBox(height: 14),
               const Text(
                 'Recomendação oficial do Atlas',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 12),
               Text(
@@ -366,10 +321,7 @@ Widget _card(String title, double value, String unit) {
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 1)}'
               '${unit == '/100' ? '/100' : ''}',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
             ),
           ],
         ),

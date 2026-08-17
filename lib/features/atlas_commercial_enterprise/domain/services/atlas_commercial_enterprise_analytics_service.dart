@@ -72,9 +72,7 @@ class AtlasCommercialEnterpriseAnalyticsService {
       double Function(AtlasCommercialEnterpriseRecord) selector,
     ) {
       if (moduleRecords.isEmpty) return 0.0;
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
@@ -88,25 +86,20 @@ class AtlasCommercialEnterpriseAnalyticsService {
       (total, record) => total + record.actualValue,
     );
 
-    final averageProbability =
-        averageOf((record) => record.probabilityPercent);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageSatisfaction =
-        averageOf((record) => record.satisfactionPercent);
+    final averageProbability = averageOf((record) => record.probabilityPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageSatisfaction = averageOf(
+      (record) => record.satisfactionPercent,
+    );
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
     score += math.min(20, operational * 4);
-    score += math.min(
-      15,
-      averageProbability.round() * 15 ~/ 100,
-    );
+    score += math.min(15, averageProbability.round() * 15 ~/ 100);
     score += math.min(10, averageProgress.round() ~/ 10);
-    score += math.min(
-      10,
-      averageSatisfaction.round() * 10 ~/ 100,
-    );
+    score += math.min(10, averageSatisfaction.round() * 10 ~/ 100);
     score -= math.min(35, alerts * 5);
     score = score.clamp(0, 100).toInt();
 
@@ -151,66 +144,52 @@ class AtlasCommercialEnterpriseAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasCommercialEnterpriseModule.premiumCrm =>
-          const [
-            'Registre toda interação relevante e mantenha a próxima ação atualizada.',
-            'Segmente clientes por perfil, potencial e relacionamento.',
-          ],
-        AtlasCommercialEnterpriseModule.intelligentPipeline =>
-          const [
-            'Revise probabilidade e valor em cada mudança de etapa.',
-            'Evite oportunidades sem responsável, prazo ou próxima ação.',
-          ],
-        AtlasCommercialEnterpriseModule.digitalContracts =>
-          const [
-            'Controle versões, aprovações, vigência e condições principais.',
-            'Nunca substitua revisão jurídica por automação.',
-          ],
-        AtlasCommercialEnterpriseModule.electronicSignature =>
-          const [
-            'Registre signatários, ordem, evidências e conclusão.',
-            'Use provedor homologado para validade jurídica real.',
-          ],
-        AtlasCommercialEnterpriseModule.customerManagement =>
-          const [
-            'Mantenha dados, documentos e classificação atualizados.',
-            'Restrinja acesso a informações pessoais e financeiras.',
-          ],
-        AtlasCommercialEnterpriseModule.afterSales =>
-          const [
-            'Acompanhe satisfação, solicitações e oportunidades de renovação.',
-            'Feche o ciclo entre promessa comercial e entrega real.',
-          ],
-        AtlasCommercialEnterpriseModule.commercialIndicators =>
-          const [
-            'Padronize período, fonte e fórmula de cada indicador.',
-            'Compare previsão, realizado, conversão e ciclo de vendas.',
-          ],
-        AtlasCommercialEnterpriseModule.servicesMarketplace =>
-          const [
-            'Valide escopo, proposta, contratado e avaliação.',
-            'Mantenha regras de reputação, disputa e cancelamento.',
-          ],
-        AtlasCommercialEnterpriseModule.auctions =>
-          const [
-            'Registre lotes, lances, arremates e liquidação com auditoria.',
-            'Use integrações seguras para pagamentos e documentos.',
-          ],
-        AtlasCommercialEnterpriseModule.commercialCenter =>
-          const [
-            'Centralize pipeline, contratos, alertas e receita.',
-            'Priorize oportunidades por valor, chance, prazo e risco.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasCommercialEnterpriseModule.premiumCrm => const [
+        'Registre toda interação relevante e mantenha a próxima ação atualizada.',
+        'Segmente clientes por perfil, potencial e relacionamento.',
+      ],
+      AtlasCommercialEnterpriseModule.intelligentPipeline => const [
+        'Revise probabilidade e valor em cada mudança de etapa.',
+        'Evite oportunidades sem responsável, prazo ou próxima ação.',
+      ],
+      AtlasCommercialEnterpriseModule.digitalContracts => const [
+        'Controle versões, aprovações, vigência e condições principais.',
+        'Nunca substitua revisão jurídica por automação.',
+      ],
+      AtlasCommercialEnterpriseModule.electronicSignature => const [
+        'Registre signatários, ordem, evidências e conclusão.',
+        'Use provedor homologado para validade jurídica real.',
+      ],
+      AtlasCommercialEnterpriseModule.customerManagement => const [
+        'Mantenha dados, documentos e classificação atualizados.',
+        'Restrinja acesso a informações pessoais e financeiras.',
+      ],
+      AtlasCommercialEnterpriseModule.afterSales => const [
+        'Acompanhe satisfação, solicitações e oportunidades de renovação.',
+        'Feche o ciclo entre promessa comercial e entrega real.',
+      ],
+      AtlasCommercialEnterpriseModule.commercialIndicators => const [
+        'Padronize período, fonte e fórmula de cada indicador.',
+        'Compare previsão, realizado, conversão e ciclo de vendas.',
+      ],
+      AtlasCommercialEnterpriseModule.servicesMarketplace => const [
+        'Valide escopo, proposta, contratado e avaliação.',
+        'Mantenha regras de reputação, disputa e cancelamento.',
+      ],
+      AtlasCommercialEnterpriseModule.auctions => const [
+        'Registre lotes, lances, arremates e liquidação com auditoria.',
+        'Use integrações seguras para pagamentos e documentos.',
+      ],
+      AtlasCommercialEnterpriseModule.commercialCenter => const [
+        'Centralize pipeline, contratos, alertas e receita.',
+        'Priorize oportunidades por valor, chance, prazo e risco.',
+      ],
+    });
 
     return items;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/scenario_simulator/domain/models/atlas_simulation_result.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasScenarioResultScreen extends StatelessWidget {
   const AtlasScenarioResultScreen({required this.result, super.key});
@@ -157,7 +158,7 @@ class _FinancialGrid extends StatelessWidget {
         value:
             '${result.simulation.changes.herdSizeChange >= 0 ? '+' : ''}'
             '${result.simulation.changes.herdSizeChange}',
-        icon: Icons.pets_outlined,
+        icon: AtlasLivestockIcons.cow,
       ),
     ];
 

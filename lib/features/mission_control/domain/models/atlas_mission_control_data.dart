@@ -208,9 +208,7 @@ class AtlasMissionDailyAction {
 
   final bool completed;
 
-  AtlasMissionDailyAction copyWith({
-    bool? completed,
-  }) {
+  AtlasMissionDailyAction copyWith({bool? completed}) {
     return AtlasMissionDailyAction(
       position: position,
       farmName: farmName,
@@ -225,33 +223,13 @@ class AtlasMissionDailyAction {
   }
 }
 
-enum AtlasMissionControlStatus {
-  stable,
-  attention,
-  highRisk,
-  critical,
-}
+enum AtlasMissionControlStatus { stable, attention, highRisk, critical }
 
-enum AtlasMissionPriorityLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasMissionPriorityLevel { low, medium, high, critical }
 
-enum AtlasMissionUrgency {
-  low,
-  medium,
-  high,
-  immediate,
-}
+enum AtlasMissionUrgency { low, medium, high, immediate }
 
-enum AtlasMissionSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasMissionSeverity { low, medium, high, critical }
 
 enum AtlasMissionSource {
   decisionEngine,
@@ -271,9 +249,7 @@ enum AtlasMissionWorkflowStatus {
   cancelled,
 }
 
-String atlasMissionControlStatusLabel(
-  AtlasMissionControlStatus status,
-) {
+String atlasMissionControlStatusLabel(AtlasMissionControlStatus status) {
   switch (status) {
     case AtlasMissionControlStatus.stable:
       return 'Estável';
@@ -289,9 +265,7 @@ String atlasMissionControlStatusLabel(
   }
 }
 
-String atlasMissionPriorityLabel(
-  AtlasMissionPriorityLevel priority,
-) {
+String atlasMissionPriorityLabel(AtlasMissionPriorityLevel priority) {
   switch (priority) {
     case AtlasMissionPriorityLevel.low:
       return 'Baixa';
@@ -307,9 +281,7 @@ String atlasMissionPriorityLabel(
   }
 }
 
-String atlasMissionUrgencyLabel(
-  AtlasMissionUrgency urgency,
-) {
+String atlasMissionUrgencyLabel(AtlasMissionUrgency urgency) {
   switch (urgency) {
     case AtlasMissionUrgency.low:
       return 'Baixa';
@@ -325,9 +297,7 @@ String atlasMissionUrgencyLabel(
   }
 }
 
-String atlasMissionSeverityLabel(
-  AtlasMissionSeverity severity,
-) {
+String atlasMissionSeverityLabel(AtlasMissionSeverity severity) {
   switch (severity) {
     case AtlasMissionSeverity.low:
       return 'Baixa';
@@ -343,9 +313,7 @@ String atlasMissionSeverityLabel(
   }
 }
 
-String atlasMissionSourceLabel(
-  AtlasMissionSource source,
-) {
+String atlasMissionSourceLabel(AtlasMissionSource source) {
   switch (source) {
     case AtlasMissionSource.decisionEngine:
       return 'Decision Engine';
@@ -370,9 +338,7 @@ String atlasMissionSourceLabel(
   }
 }
 
-String atlasMissionWorkflowStatusLabel(
-  AtlasMissionWorkflowStatus status,
-) {
+String atlasMissionWorkflowStatusLabel(AtlasMissionWorkflowStatus status) {
   switch (status) {
     case AtlasMissionWorkflowStatus.planned:
       return 'Planejado';

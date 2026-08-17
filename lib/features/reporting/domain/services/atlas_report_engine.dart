@@ -33,7 +33,9 @@ class AtlasReportEngine {
           .where((AtlasReport item) => item.status == AtlasReportStatus.draft)
           .length,
       archived: reports
-          .where((AtlasReport item) => item.status == AtlasReportStatus.archived)
+          .where(
+            (AtlasReport item) => item.status == AtlasReportStatus.archived,
+          )
           .length,
       averageKpi: values.isEmpty
           ? 0

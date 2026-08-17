@@ -6,30 +6,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasInventoryService {
   AtlasInventoryService._();
 
-  static final AtlasInventoryService instance =
-      AtlasInventoryService._();
+  static final AtlasInventoryService instance = AtlasInventoryService._();
 
-  static const String _locationsKey =
-      'atlas_inventory_locations_v1';
-  static const String _suppliersKey =
-      'atlas_inventory_suppliers_v1';
-  static const String _itemsKey =
-      'atlas_inventory_items_v1';
-  static const String _batchesKey =
-      'atlas_inventory_batches_v1';
-  static const String _movementsKey =
-      'atlas_inventory_movements_v1';
-  static const String _purchaseOrdersKey =
-      'atlas_purchase_orders_v1';
+  static const String _locationsKey = 'atlas_inventory_locations_v1';
+  static const String _suppliersKey = 'atlas_inventory_suppliers_v1';
+  static const String _itemsKey = 'atlas_inventory_items_v1';
+  static const String _batchesKey = 'atlas_inventory_batches_v1';
+  static const String _movementsKey = 'atlas_inventory_movements_v1';
+  static const String _purchaseOrdersKey = 'atlas_purchase_orders_v1';
   static const String _lastAutomaticConsumptionKey =
       'atlas_inventory_last_automatic_consumption_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasInventoryLocation>> loadLocations({
-    String? farmName,
-  }) async {
+  Future<List<AtlasInventoryLocation>> loadLocations({String? farmName}) async {
     final all = await _decodeList(
       _locationsKey,
       AtlasInventoryLocation.fromMap,
@@ -39,8 +29,7 @@ class AtlasInventoryService {
         AtlasInventoryLocation(
           id: 'inventory_location_main',
           name: 'Almoxarifado principal',
-          description:
-              'Local principal de armazenamento.',
+          description: 'Local principal de armazenamento.',
           responsibleName: '',
           farmName: farmName,
           active: true,
@@ -55,110 +44,63 @@ class AtlasInventoryService {
     return _filterFarm(all, farmName, (item) => item.farmName);
   }
 
-  Future<void> saveLocation(
-    AtlasInventoryLocation location,
-  ) async {
+  Future<void> saveLocation(AtlasInventoryLocation location) async {
     final all = await _decodeList(
       _locationsKey,
       AtlasInventoryLocation.fromMap,
     );
     _upsert(all, location, (item) => item.id);
-    await _saveList(
-      _locationsKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_locationsKey, all.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasSupplier>> loadSuppliers({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _suppliersKey,
-      AtlasSupplier.fromMap,
-    );
+  Future<List<AtlasSupplier>> loadSuppliers({String? farmName}) async {
+    final all = await _decodeList(_suppliersKey, AtlasSupplier.fromMap);
     return _filterFarm(all, farmName, (item) => item.farmName);
   }
 
   Future<void> saveSupplier(AtlasSupplier supplier) async {
-    final all = await _decodeList(
-      _suppliersKey,
-      AtlasSupplier.fromMap,
-    );
+    final all = await _decodeList(_suppliersKey, AtlasSupplier.fromMap);
     _upsert(all, supplier, (item) => item.id);
-    await _saveList(
-      _suppliersKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_suppliersKey, all.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasInventoryItem>> loadItems({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _itemsKey,
-      AtlasInventoryItem.fromMap,
-    );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort((first, second) =>
-              first.name.compareTo(second.name));
+  Future<List<AtlasInventoryItem>> loadItems({String? farmName}) async {
+    final all = await _decodeList(_itemsKey, AtlasInventoryItem.fromMap);
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) => first.name.compareTo(second.name));
     return filtered;
   }
 
   Future<void> saveItem(AtlasInventoryItem item) async {
-    final all = await _decodeList(
-      _itemsKey,
-      AtlasInventoryItem.fromMap,
-    );
+    final all = await _decodeList(_itemsKey, AtlasInventoryItem.fromMap);
     _upsert(all, item, (entry) => entry.id);
-    await _saveList(
-      _itemsKey,
-      all.map((entry) => entry.toMap()).toList(),
-    );
+    await _saveList(_itemsKey, all.map((entry) => entry.toMap()).toList());
   }
 
-  Future<List<AtlasInventoryBatch>> loadBatches({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _batchesKey,
-      AtlasInventoryBatch.fromMap,
-    );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort((first, second) {
-            final firstDate =
-                first.expiresAt ?? DateTime(9999);
-            final secondDate =
-                second.expiresAt ?? DateTime(9999);
-            return firstDate.compareTo(secondDate);
-          });
+  Future<List<AtlasInventoryBatch>> loadBatches({String? farmName}) async {
+    final all = await _decodeList(_batchesKey, AtlasInventoryBatch.fromMap);
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) {
+        final firstDate = first.expiresAt ?? DateTime(9999);
+        final secondDate = second.expiresAt ?? DateTime(9999);
+        return firstDate.compareTo(secondDate);
+      });
     return filtered;
   }
 
   Future<void> saveBatch(AtlasInventoryBatch batch) async {
-    final all = await _decodeList(
-      _batchesKey,
-      AtlasInventoryBatch.fromMap,
-    );
+    final all = await _decodeList(_batchesKey, AtlasInventoryBatch.fromMap);
     _upsert(all, batch, (item) => item.id);
-    await _saveList(
-      _batchesKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_batchesKey, all.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasInventoryMovement>> loadMovements({
-    String? farmName,
-  }) async {
+  Future<List<AtlasInventoryMovement>> loadMovements({String? farmName}) async {
     final all = await _decodeList(
       _movementsKey,
       AtlasInventoryMovement.fromMap,
     );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort((first, second) =>
-              second.occurredAt.compareTo(first.occurredAt));
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) => second.occurredAt.compareTo(first.occurredAt));
     return filtered;
   }
 
@@ -169,16 +111,12 @@ class AtlasInventoryService {
       _purchaseOrdersKey,
       AtlasPurchaseOrder.fromMap,
     );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort((first, second) =>
-              second.createdAt.compareTo(first.createdAt));
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) => second.createdAt.compareTo(first.createdAt));
     return filtered;
   }
 
-  Future<void> savePurchaseOrder(
-    AtlasPurchaseOrder order,
-  ) async {
+  Future<void> savePurchaseOrder(AtlasPurchaseOrder order) async {
     final all = await _decodeList(
       _purchaseOrdersKey,
       AtlasPurchaseOrder.fromMap,
@@ -190,16 +128,9 @@ class AtlasInventoryService {
     );
   }
 
-  Future<void> registerMovement(
-    AtlasInventoryMovement movement,
-  ) async {
-    final items = await _decodeList(
-      _itemsKey,
-      AtlasInventoryItem.fromMap,
-    );
-    final index = items.indexWhere(
-      (item) => item.id == movement.itemId,
-    );
+  Future<void> registerMovement(AtlasInventoryMovement movement) async {
+    final items = await _decodeList(_itemsKey, AtlasInventoryItem.fromMap);
+    final index = items.indexWhere((item) => item.id == movement.itemId);
     if (index == -1) {
       throw StateError('Item de estoque não encontrado.');
     }
@@ -223,15 +154,11 @@ class AtlasInventoryService {
     var newAverageCost = current.averageUnitCost;
     if (movement.type == AtlasInventoryMovementType.entry &&
         movement.quantity > 0) {
-      final previousValue =
-          current.currentQuantity * current.averageUnitCost;
-      final incomingValue =
-          movement.quantity * movement.unitCost;
-      final totalQuantity =
-          current.currentQuantity + movement.quantity;
+      final previousValue = current.currentQuantity * current.averageUnitCost;
+      final incomingValue = movement.quantity * movement.unitCost;
+      final totalQuantity = current.currentQuantity + movement.quantity;
       if (totalQuantity > 0) {
-        newAverageCost =
-            (previousValue + incomingValue) / totalQuantity;
+        newAverageCost = (previousValue + incomingValue) / totalQuantity;
       }
     }
 
@@ -239,30 +166,21 @@ class AtlasInventoryService {
       currentQuantity: newQuantity,
       averageUnitCost: newAverageCost,
     );
-    await _saveList(
-      _itemsKey,
-      items.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_itemsKey, items.map((item) => item.toMap()).toList());
 
-    final movements = await _decodeList(
-      _movementsKey,
-      AtlasInventoryMovement.fromMap,
-    )..add(movement);
+    final movements =
+        await _decodeList(_movementsKey, AtlasInventoryMovement.fromMap)
+          ..add(movement);
     await _saveList(
       _movementsKey,
       movements.map((item) => item.toMap()).toList(),
     );
   }
 
-  Future<int> processAutomaticConsumption({
-    String? farmName,
-  }) async {
+  Future<int> processAutomaticConsumption({String? farmName}) async {
     final today = DateTime.now();
-    final todayKey =
-        '${today.year}-${today.month}-${today.day}';
-    final lastKey = await _preferences.getString(
-      _lastAutomaticConsumptionKey,
-    );
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    final lastKey = await _preferences.getString(_lastAutomaticConsumptionKey);
     if (lastKey == todayKey) {
       return 0;
     }
@@ -277,16 +195,18 @@ class AtlasInventoryService {
           entry.automaticConsumptionPerDay > 0 &&
           entry.currentQuantity > 0,
     )) {
-      final quantity = item.automaticConsumptionPerDay
-          .clamp(0, item.currentQuantity);
+      final quantity = item.automaticConsumptionPerDay.clamp(
+        0,
+        item.currentQuantity,
+      );
       await registerMovement(
         AtlasInventoryMovement(
-          id: 'automatic_consumption_'
+          id:
+              'automatic_consumption_'
               '${item.id}_${today.microsecondsSinceEpoch}',
           itemId: item.id,
           batchId: null,
-          type:
-              AtlasInventoryMovementType.automaticConsumption,
+          type: AtlasInventoryMovementType.automaticConsumption,
           quantity: quantity.toDouble(),
           unitCost: item.averageUnitCost,
           occurredAt: today,
@@ -294,26 +214,21 @@ class AtlasInventoryService {
           destinationLocationId: null,
           responsibleName: 'Sistema Atlas',
           reference: 'Consumo diário automático',
-          notes:
-              'Baixa automática configurada no cadastro do item.',
+          notes: 'Baixa automática configurada no cadastro do item.',
           farmName: item.farmName,
         ),
       );
       processed++;
     }
 
-    await _preferences.setString(
-      _lastAutomaticConsumptionKey,
-      todayKey,
-    );
+    await _preferences.setString(_lastAutomaticConsumptionKey, todayKey);
     return processed;
   }
 
   List<AtlasPurchaseOrder> buildRestockSuggestions({
     required List<AtlasInventoryItem> items,
   }) {
-    final grouped =
-        <String?, List<AtlasPurchaseOrderLine>>{};
+    final grouped = <String?, List<AtlasPurchaseOrderLine>>{};
 
     for (final item in items.where(
       (entry) =>
@@ -338,7 +253,8 @@ class AtlasInventoryService {
     final now = DateTime.now();
     return grouped.entries.map((entry) {
       return AtlasPurchaseOrder(
-        id: 'restock_suggestion_'
+        id:
+            'restock_suggestion_'
             '${now.microsecondsSinceEpoch}_'
             '${entry.key ?? 'no_supplier'}',
         supplierId: entry.key,
@@ -348,8 +264,7 @@ class AtlasInventoryService {
         receivedAt: null,
         lines: entry.value,
         responsibleName: '',
-        notes:
-            'Sugestão automática baseada em estoque mínimo e máximo.',
+        notes: 'Sugestão automática baseada em estoque mínimo e máximo.',
         farmName: items.isEmpty ? null : items.first.farmName,
       );
     }).toList();
@@ -369,32 +284,16 @@ class AtlasInventoryService {
     );
 
     final entriesValue = monthMovements
-        .where(
-          (movement) =>
-              movement.type ==
-              AtlasInventoryMovementType.entry,
-        )
-        .fold<double>(
-          0,
-          (total, movement) =>
-              total + movement.totalValue,
-        );
+        .where((movement) => movement.type == AtlasInventoryMovementType.entry)
+        .fold<double>(0, (total, movement) => total + movement.totalValue);
     final exitsValue = monthMovements
         .where(
           (movement) =>
-              movement.type ==
-                  AtlasInventoryMovementType.exit ||
-              movement.type ==
-                  AtlasInventoryMovementType.loss ||
-              movement.type ==
-                  AtlasInventoryMovementType
-                      .automaticConsumption,
+              movement.type == AtlasInventoryMovementType.exit ||
+              movement.type == AtlasInventoryMovementType.loss ||
+              movement.type == AtlasInventoryMovementType.automaticConsumption,
         )
-        .fold<double>(
-          0,
-          (total, movement) =>
-              total + movement.totalValue,
-        );
+        .fold<double>(0, (total, movement) => total + movement.totalValue);
 
     return AtlasInventorySummary(
       totalItems: items.where((item) => item.active).length,
@@ -402,17 +301,12 @@ class AtlasInventoryService {
         0,
         (total, item) => total + item.stockValue,
       ),
-      lowStockItems:
-          items.where((item) => item.needsRestock).length,
-      expiringBatches:
-          batches.where((batch) => batch.expiresSoon).length,
-      expiredBatches:
-          batches.where((batch) => batch.isExpired).length,
+      lowStockItems: items.where((item) => item.needsRestock).length,
+      expiringBatches: batches.where((batch) => batch.expiresSoon).length,
+      expiredBatches: batches.where((batch) => batch.isExpired).length,
       openPurchaseOrders: purchaseOrders.where((order) {
-        return order.status !=
-                AtlasPurchaseOrderStatus.received &&
-            order.status !=
-                AtlasPurchaseOrderStatus.cancelled;
+        return order.status != AtlasPurchaseOrderStatus.received &&
+            order.status != AtlasPurchaseOrderStatus.cancelled;
       }).length,
       monthlyEntriesValue: entriesValue,
       monthlyExitsValue: exitsValue,
@@ -436,41 +330,29 @@ class AtlasInventoryService {
       }
       final days = item.estimatedDaysUntilStockout;
       if (days != null && days <= 7) {
-        alerts.add(
-          '${item.name}: previsão de ruptura em $days dia(s).',
-        );
+        alerts.add('${item.name}: previsão de ruptura em $days dia(s).');
       }
     }
 
     for (final batch in batches) {
       if (batch.isExpired) {
-        alerts.add(
-          'Lote ${batch.batchNumber}: produto vencido.',
-        );
+        alerts.add('Lote ${batch.batchNumber}: produto vencido.');
       } else if (batch.expiresSoon) {
-        alerts.add(
-          'Lote ${batch.batchNumber}: validade em até 30 dias.',
-        );
+        alerts.add('Lote ${batch.batchNumber}: validade em até 30 dias.');
       }
     }
 
     for (final order in orders) {
       if (order.expectedAt != null &&
-          order.status !=
-              AtlasPurchaseOrderStatus.received &&
-          order.status !=
-              AtlasPurchaseOrderStatus.cancelled &&
+          order.status != AtlasPurchaseOrderStatus.received &&
+          order.status != AtlasPurchaseOrderStatus.cancelled &&
           order.expectedAt!.isBefore(DateTime.now())) {
-        alerts.add(
-          'Pedido ${order.id}: recebimento atrasado.',
-        );
+        alerts.add('Pedido ${order.id}: recebimento atrasado.');
       }
     }
 
     if (alerts.isEmpty) {
-      alerts.add(
-        'Nenhum alerta crítico de estoque no momento.',
-      );
+      alerts.add('Nenhum alerta crítico de estoque no momento.');
     }
     return alerts;
   }
@@ -487,35 +369,20 @@ class AtlasInventoryService {
     try {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
-    return _preferences.setString(
-      key,
-      jsonEncode(values),
-    );
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
+    return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
     final id = readId(value);
-    final index =
-        values.indexWhere((item) => readId(item) == id);
+    final index = values.indexWhere((item) => readId(item) == id);
     if (index == -1) {
       values.add(value);
     } else {
@@ -534,8 +401,7 @@ class AtlasInventoryService {
     }
 
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

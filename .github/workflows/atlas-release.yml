@@ -1,0 +1,16 @@
+name: Atlas Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable}
+      - run: flutter pub get
+      - run: flutter build web --release
+      - run: tar -czf atlas-web-${GITHUB_REF_NAME}.tar.gz -C build/web .
+      - uses: actions/upload-artifact@v4
+        with: {name: atlas-web-${{ github.ref_name }}, path: atlas-web-*.tar.gz}

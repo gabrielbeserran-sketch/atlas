@@ -8,10 +8,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_te
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_team_workload_service.dart';
 
 class AtlasTeamManagementScreen extends StatefulWidget {
-  const AtlasTeamManagementScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasTeamManagementScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
@@ -20,10 +17,8 @@ class AtlasTeamManagementScreen extends StatefulWidget {
       _AtlasTeamManagementScreenState();
 }
 
-class _AtlasTeamManagementScreenState
-    extends State<AtlasTeamManagementScreen> {
-  final AtlasTeamMemberService memberService =
-      AtlasTeamMemberService.instance;
+class _AtlasTeamManagementScreenState extends State<AtlasTeamManagementScreen> {
+  final AtlasTeamMemberService memberService = AtlasTeamMemberService.instance;
   final AtlasCommandCenterActionService actionService =
       AtlasCommandCenterActionService.instance;
   final AtlasTeamWorkloadService workloadService =
@@ -33,11 +28,10 @@ class _AtlasTeamManagementScreenState
   bool isLoading = false;
   bool includeInactive = false;
 
-  List<AtlasTeamWorkload> get workloads =>
-      workloadService.build(
-        members: members,
-        actions: widget.actionController.actions,
-      );
+  List<AtlasTeamWorkload> get workloads => workloadService.build(
+    members: members,
+    actions: widget.actionController.actions,
+  );
 
   @override
   void initState() {
@@ -60,18 +54,10 @@ class _AtlasTeamManagementScreenState
     }
   }
 
-  Future<void> _createOrEdit({
-    AtlasTeamMember? member,
-  }) async {
-    final name = TextEditingController(
-      text: member?.name ?? '',
-    );
-    final phone = TextEditingController(
-      text: member?.phone ?? '',
-    );
-    final email = TextEditingController(
-      text: member?.email ?? '',
-    );
+  Future<void> _createOrEdit({AtlasTeamMember? member}) async {
+    final name = TextEditingController(text: member?.name ?? '');
+    final phone = TextEditingController(text: member?.phone ?? '');
+    final email = TextEditingController(text: member?.email ?? '');
     var role = member?.role ?? AtlasTeamMemberRole.employee;
 
     final result = await showDialog<AtlasTeamMember>(
@@ -81,9 +67,7 @@ class _AtlasTeamManagementScreenState
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                member == null
-                    ? 'Cadastrar responsável'
-                    : 'Editar responsável',
+                member == null ? 'Cadastrar responsável' : 'Editar responsável',
               ),
               content: SizedBox(
                 width: 500,
@@ -99,8 +83,7 @@ class _AtlasTeamManagementScreenState
                         ),
                       ),
                       const SizedBox(height: 12),
-                      DropdownButtonFormField<
-                          AtlasTeamMemberRole>(
+                      DropdownButtonFormField<AtlasTeamMemberRole>(
                         initialValue: role,
                         decoration: const InputDecoration(
                           labelText: 'Função',
@@ -110,11 +93,7 @@ class _AtlasTeamManagementScreenState
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(
-                                  atlasTeamMemberRoleLabel(
-                                    value,
-                                  ),
-                                ),
+                                child: Text(atlasTeamMemberRoleLabel(value)),
                               ),
                             )
                             .toList(growable: false),
@@ -146,8 +125,7 @@ class _AtlasTeamManagementScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -159,14 +137,14 @@ class _AtlasTeamManagementScreenState
                     final now = DateTime.now();
                     final result = member == null
                         ? AtlasTeamMember(
-                            id: 'team_member_'
+                            id:
+                                'team_member_'
                                 '${now.microsecondsSinceEpoch}',
                             name: name.text.trim(),
                             role: role,
                             phone: phone.text.trim(),
                             email: email.text.trim(),
-                            farmName:
-                                widget.actionController.farmName,
+                            farmName: widget.actionController.farmName,
                             active: true,
                             createdAt: now,
                             updatedAt: now,
@@ -201,9 +179,7 @@ class _AtlasTeamManagementScreenState
     await _load();
   }
 
-  Future<void> _openMember(
-    AtlasTeamWorkload workload,
-  ) {
+  Future<void> _openMember(AtlasTeamWorkload workload) {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -218,31 +194,11 @@ class _AtlasTeamManagementScreenState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    Chip(
-                      label: Text(
-                        '${workload.openActions} abertas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${workload.overdueActions} atrasadas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${workload.criticalActions} críticas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${workload.dueSoonActions} próximas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${workload.blockedActions} bloqueadas',
-                      ),
-                    ),
+                    Chip(label: Text('${workload.openActions} abertas')),
+                    Chip(label: Text('${workload.overdueActions} atrasadas')),
+                    Chip(label: Text('${workload.criticalActions} críticas')),
+                    Chip(label: Text('${workload.dueSoonActions} próximas')),
+                    Chip(label: Text('${workload.blockedActions} bloqueadas')),
                     Chip(
                       label: Text(
                         '${workload.averageProgressPercent.toStringAsFixed(0)}% progresso',
@@ -253,18 +209,12 @@ class _AtlasTeamManagementScreenState
                 const SizedBox(height: 12),
                 Expanded(
                   child: workload.actions.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Nenhuma ação atribuída.',
-                          ),
-                        )
+                      ? const Center(child: Text('Nenhuma ação atribuída.'))
                       : ListView.separated(
                           itemCount: workload.actions.length,
-                          separatorBuilder: (_, __) =>
-                              const Divider(),
+                          separatorBuilder: (_, __) => const Divider(),
                           itemBuilder: (context, index) {
-                            final action =
-                                workload.actions[index];
+                            final action = workload.actions[index];
 
                             return ListTile(
                               title: Text(action.title),
@@ -273,9 +223,7 @@ class _AtlasTeamManagementScreenState
                                 '${action.dueAt == null ? 'Sem prazo' : DateFormat('dd/MM/yyyy').format(action.dueAt!)}',
                               ),
                               trailing: action.isOverdue
-                                  ? const Icon(
-                                      Icons.warning_amber_rounded,
-                                    )
+                                  ? const Icon(Icons.warning_amber_rounded)
                                   : null,
                             );
                           },
@@ -286,8 +234,7 @@ class _AtlasTeamManagementScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Fechar'),
             ),
             FilledButton.tonalIcon(
@@ -295,9 +242,7 @@ class _AtlasTeamManagementScreenState
                   ? null
                   : () async {
                       Navigator.of(dialogContext).pop();
-                      await _redistribute(
-                        source: workload.member,
-                      );
+                      await _redistribute(source: workload.member);
                     },
               icon: const Icon(Icons.swap_horiz),
               label: const Text('Redistribuir tarefas'),
@@ -308,14 +253,9 @@ class _AtlasTeamManagementScreenState
     );
   }
 
-  Future<void> _redistribute({
-    required AtlasTeamMember source,
-  }) async {
+  Future<void> _redistribute({required AtlasTeamMember source}) async {
     final targets = members
-        .where(
-          (member) =>
-              member.active && member.id != source.id,
-        )
+        .where((member) => member.active && member.id != source.id)
         .toList();
 
     if (targets.isEmpty) {
@@ -337,9 +277,7 @@ class _AtlasTeamManagementScreenState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Transferir tarefas de ${source.name} para:',
-                    ),
+                    Text('Transferir tarefas de ${source.name} para:'),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<AtlasTeamMember>(
                       decoration: const InputDecoration(
@@ -361,9 +299,7 @@ class _AtlasTeamManagementScreenState
                     const SizedBox(height: 8),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Transferir somente ações abertas',
-                      ),
+                      title: const Text('Transferir somente ações abertas'),
                       value: onlyOpen,
                       onChanged: (value) {
                         setDialogState(() => onlyOpen = value);
@@ -374,15 +310,13 @@ class _AtlasTeamManagementScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(false),
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
                   onPressed: target == null
                       ? null
-                      : () =>
-                          Navigator.of(dialogContext).pop(true),
+                      : () => Navigator.of(dialogContext).pop(true),
                   child: const Text('Transferir'),
                 ),
               ],
@@ -396,13 +330,11 @@ class _AtlasTeamManagementScreenState
       return;
     }
 
-    final sourceActions =
-        widget.actionController.actions.where((action) {
-      final assigned = action.responsibleId == source.id ||
+    final sourceActions = widget.actionController.actions.where((action) {
+      final assigned =
+          action.responsibleId == source.id ||
           (action.responsibleId == null &&
-              action.responsibleName
-                      .trim()
-                      .toLowerCase() ==
+              action.responsibleName.trim().toLowerCase() ==
                   source.name.trim().toLowerCase());
 
       return assigned && (!onlyOpen || action.isOpen);
@@ -457,15 +389,11 @@ class _AtlasTeamManagementScreenState
         label: const Text('Cadastrar pessoa'),
       ),
       body: isLoading && members.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 SwitchListTile(
-                  title: const Text(
-                    'Mostrar pessoas inativas',
-                  ),
+                  title: const Text('Mostrar pessoas inativas'),
                   value: includeInactive,
                   onChanged: (value) async {
                     setState(() => includeInactive = value);
@@ -473,9 +401,7 @@ class _AtlasTeamManagementScreenState
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -501,35 +427,23 @@ class _AtlasTeamManagementScreenState
                 const SizedBox(height: 8),
                 Expanded(
                   child: teamWorkloads.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Nenhuma pessoa cadastrada.',
-                          ),
-                        )
+                      ? const Center(child: Text('Nenhuma pessoa cadastrada.'))
                       : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
-                            16,
-                            8,
-                            16,
-                            96,
-                          ),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                           itemCount: teamWorkloads.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 10),
                           itemBuilder: (context, index) {
-                            final workload =
-                                teamWorkloads[index];
+                            final workload = teamWorkloads[index];
 
                             return Card(
                               child: ListTile(
-                                onTap: () =>
-                                    _openMember(workload),
+                                onTap: () => _openMember(workload),
                                 leading: CircleAvatar(
                                   child: Text(
                                     workload.member.name.isEmpty
                                         ? '?'
-                                        : workload.member.name[0]
-                                            .toUpperCase(),
+                                        : workload.member.name[0].toUpperCase(),
                                   ),
                                 ),
                                 title: Text(
@@ -548,22 +462,16 @@ class _AtlasTeamManagementScreenState
                                   onSelected: (value) async {
                                     if (value == 'edit') {
                                       await _createOrEdit(
-                                        member:
-                                            workload.member,
+                                        member: workload.member,
                                       );
-                                    } else if (value ==
-                                        'redistribute') {
+                                    } else if (value == 'redistribute') {
                                       await _redistribute(
-                                        source:
-                                            workload.member,
+                                        source: workload.member,
                                       );
-                                    } else if (value ==
-                                        'toggle') {
+                                    } else if (value == 'toggle') {
                                       await memberService.setActive(
-                                        member:
-                                            workload.member,
-                                        active: !workload
-                                            .member.active,
+                                        member: workload.member,
+                                        active: !workload.member.active,
                                       );
                                       await _load();
                                     }
@@ -575,9 +483,7 @@ class _AtlasTeamManagementScreenState
                                     ),
                                     const PopupMenuItem(
                                       value: 'redistribute',
-                                      child: Text(
-                                        'Redistribuir tarefas',
-                                      ),
+                                      child: Text('Redistribuir tarefas'),
                                     ),
                                     PopupMenuItem(
                                       value: 'toggle',

@@ -29,8 +29,7 @@ class AtlasOperationsEnterpriseScreen extends StatefulWidget {
 class _AtlasOperationsEnterpriseScreenState
     extends State<AtlasOperationsEnterpriseScreen> {
   final storage = AtlasOperationsEnterpriseStorageService();
-  final analyticsService =
-      const AtlasOperationsEnterpriseAnalyticsService();
+  final analyticsService = const AtlasOperationsEnterpriseAnalyticsService();
 
   late AtlasOperationsEnterpriseModule selectedModule;
   List<AtlasOperationsEnterpriseRecord> records = [];
@@ -53,8 +52,9 @@ class _AtlasOperationsEnterpriseScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasOperationsDate(b.date)
-          .compareTo(parseAtlasOperationsDate(a.date)),
+      (a, b) => parseAtlasOperationsDate(
+        b.date,
+      ).compareTo(parseAtlasOperationsDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,28 +66,22 @@ class _AtlasOperationsEnterpriseScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasOperationsEnterpriseRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasOperationsEnterpriseRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasOperationsEnterpriseRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasOperationsEnterpriseRecord>(
+  Future<void> openForm([AtlasOperationsEnterpriseRecord? current]) async {
+    final result = await showDialog<AtlasOperationsEnterpriseRecord>(
       context: context,
-      builder: (_) => _OperationsForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) => _OperationsForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -106,9 +100,7 @@ class _AtlasOperationsEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasOperationsEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasOperationsEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -258,15 +250,17 @@ class _AtlasOperationsEnterpriseScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Horas planejadas',
-                            value:
-                                analytics.totalPlannedHours.toStringAsFixed(1),
+                            value: analytics.totalPlannedHours.toStringAsFixed(
+                              1,
+                            ),
                             subtitle: 'Total consolidado',
                             icon: Icons.schedule_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Horas realizadas',
-                            value:
-                                analytics.totalActualHours.toStringAsFixed(1),
+                            value: analytics.totalActualHours.toStringAsFixed(
+                              1,
+                            ),
                             subtitle:
                                 'Desvio ${analytics.hourDeviation.toStringAsFixed(1)} h',
                             icon: Icons.timelapse_outlined,
@@ -335,9 +329,7 @@ class _AtlasOperationsEnterpriseScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro plano, tarefa, equipe ou equipamento.',
                             ),
@@ -390,10 +382,7 @@ class _AtlasOperationsEnterpriseScreenState
 }
 
 class _OperationsForm extends StatefulWidget {
-  const _OperationsForm({
-    required this.module,
-    this.current,
-  });
+  const _OperationsForm({required this.module, this.current});
 
   final AtlasOperationsEnterpriseModule module;
   final AtlasOperationsEnterpriseRecord? current;
@@ -436,14 +425,12 @@ class _OperationsFormState extends State<_OperationsForm> {
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasOperationsDate(DateTime.now()),
+      text: current?.date ?? formatAtlasOperationsDate(DateTime.now()),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
     farmName = TextEditingController(text: current?.farmName ?? '');
     areaName = TextEditingController(text: current?.areaName ?? '');
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     teamName = TextEditingController(text: current?.teamName ?? '');
     assetName = TextEditingController(text: current?.assetName ?? '');
     plannedHours = TextEditingController(
@@ -467,9 +454,7 @@ class _OperationsFormState extends State<_OperationsForm> {
           : current.actualCost.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     qualityPercent = TextEditingController(
       text: current == null || current.qualityPercent == 0
@@ -510,26 +495,18 @@ class _OperationsFormState extends State<_OperationsForm> {
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasOperationsDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -548,7 +525,8 @@ class _OperationsFormState extends State<_OperationsForm> {
     Navigator.pop(
       context,
       AtlasOperationsEnterpriseRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'operations_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -579,11 +557,7 @@ class _OperationsFormState extends State<_OperationsForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -598,10 +572,8 @@ class _OperationsFormState extends State<_OperationsForm> {
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -612,13 +584,10 @@ class _OperationsFormState extends State<_OperationsForm> {
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -626,9 +595,7 @@ class _OperationsFormState extends State<_OperationsForm> {
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 TextFormField(
@@ -637,35 +604,32 @@ class _OperationsFormState extends State<_OperationsForm> {
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Em execução',
-                    'Concluído',
-                    'Validado',
-                    'Atenção',
-                    'Atrasado',
-                    'Crítico',
-                    'Bloqueado',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Em execução',
+                            'Concluído',
+                            'Validado',
+                            'Atenção',
+                            'Atrasado',
+                            'Crítico',
+                            'Bloqueado',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -674,20 +638,11 @@ class _OperationsFormState extends State<_OperationsForm> {
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -698,9 +653,7 @@ class _OperationsFormState extends State<_OperationsForm> {
                 ),
                 TextFormField(
                   controller: farmName,
-                  decoration: const InputDecoration(
-                    labelText: 'Fazenda',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Fazenda'),
                 ),
                 TextFormField(
                   controller: areaName,
@@ -710,15 +663,11 @@ class _OperationsFormState extends State<_OperationsForm> {
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: teamName,
-                  decoration: const InputDecoration(
-                    labelText: 'Equipe',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Equipe'),
                 ),
                 TextFormField(
                   controller: assetName,
@@ -735,13 +684,10 @@ class _OperationsFormState extends State<_OperationsForm> {
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -762,9 +708,7 @@ class _OperationsFormState extends State<_OperationsForm> {
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -776,27 +720,20 @@ class _OperationsFormState extends State<_OperationsForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasOperationsEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasOperationsEnterpriseModule module) {
   return switch (module) {
     AtlasOperationsEnterpriseModule.farmOperationalPlanning =>
       Icons.event_note_outlined,
     AtlasOperationsEnterpriseModule.intelligentActivityAgenda =>
       Icons.calendar_month_outlined,
-    AtlasOperationsEnterpriseModule.workOrders =>
-      Icons.assignment_outlined,
-    AtlasOperationsEnterpriseModule.teamManagement =>
-      Icons.groups_outlined,
+    AtlasOperationsEnterpriseModule.workOrders => Icons.assignment_outlined,
+    AtlasOperationsEnterpriseModule.teamManagement => Icons.groups_outlined,
     AtlasOperationsEnterpriseModule.workdayControl =>
       Icons.punch_clock_outlined,
     AtlasOperationsEnterpriseModule.machineryManagement =>

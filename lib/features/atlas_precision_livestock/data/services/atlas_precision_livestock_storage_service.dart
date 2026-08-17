@@ -4,20 +4,13 @@ import 'package:projeto_atlas/features/atlas_precision_livestock/domain/models/a
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtlasPrecisionLivestockStorageService {
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_precision_livestock_'
         '${_normalize(farmName)}_'
         '${_normalize(animalId)}';
@@ -28,10 +21,7 @@ class AtlasPrecisionLivestockStorageService {
     required String animalId,
   }) async {
     final raw = await _preferences.getString(
-      _key(
-        farmName: farmName,
-        animalId: animalId,
-      ),
+      _key(farmName: farmName, animalId: animalId),
     );
 
     if (raw == null || raw.trim().isEmpty) return [];
@@ -39,8 +29,7 @@ class AtlasPrecisionLivestockStorageService {
     try {
       return (jsonDecode(raw) as List<dynamic>)
           .map(
-            (item) =>
-                AtlasPrecisionLivestockRecord.fromMap(
+            (item) => AtlasPrecisionLivestockRecord.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -56,13 +45,8 @@ class AtlasPrecisionLivestockStorageService {
     required List<AtlasPrecisionLivestockRecord> records,
   }) async {
     await _preferences.setString(
-      _key(
-        farmName: farmName,
-        animalId: animalId,
-      ),
-      jsonEncode(
-        records.map((record) => record.toMap()).toList(),
-      ),
+      _key(farmName: farmName, animalId: animalId),
+      jsonEncode(records.map((record) => record.toMap()).toList()),
     );
   }
 }

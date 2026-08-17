@@ -1,0 +1,712 @@
+# Ciclo 1 — Inventário oficial de integração
+
+- Telas Flutter identificadas: **235**
+- Endpoints backend identificados estaticamente: **460**
+
+## Contratos consolidados nesta entrega
+
+- Autenticação: `/api/v1/auth/login`, `/api/v1/auth/me`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`.
+- Empresa ativa: `/api/v1/auth/switch-company`.
+- Fazendas autorizadas: `GET /api/v1/farms`.
+- Contexto enviado pelo Flutter: `Authorization`, `X-Request-ID`, `X-Atlas-Company-Id`, `X-Atlas-Tenant-Id`, `X-Atlas-Farm-Id`.
+
+## Telas (amostra completa por arquivo)
+
+- `AnimalDetailScreen` — `lib/features/animal/presentation/screens/animal_detail_screen.dart`
+- `AnimalDocumentFormScreen` — `lib/features/animal_document/presentation/screens/animal_document_form_screen.dart`
+- `AnimalDocumentListScreen` — `lib/features/animal_document/presentation/screens/animal_document_list_screen.dart`
+- `AnimalEventFormScreen` — `lib/features/animal_event/presentation/screens/animal_event_form_screen.dart`
+- `AnimalExecutivePanelScreen` — `lib/features/animal_executive_panel/presentation/screens/animal_executive_panel_screen.dart`
+- `AnimalFormScreen` — `lib/features/animal/presentation/screens/animal_form_screen.dart`
+- `AnimalGenealogyScreen` — `lib/features/animal_genealogy/presentation/screens/animal_genealogy_screen.dart`
+- `AnimalHealthEnterpriseScreen` — `lib/features/animal_health_enterprise/presentation/screens/animal_health_enterprise_screen.dart`
+- `AnimalHealthFormScreen` — `lib/features/animal_health/presentation/screens/animal_health_form_screen.dart`
+- `AnimalHealthListScreen` — `lib/features/animal_health/presentation/screens/animal_health_list_screen.dart`
+- `AnimalIntelligence360Screen` — `lib/features/animal_intelligence_360/presentation/screens/animal_intelligence_360_screen.dart`
+- `AnimalListScreen` — `lib/features/animal/presentation/screens/animal_list_screen.dart`
+- `AnimalMovementFormScreen` — `lib/features/animal_movement/presentation/screens/animal_movement_form_screen.dart`
+- `AnimalMovementListScreen` — `lib/features/animal_movement/presentation/screens/animal_movement_list_screen.dart`
+- `AnimalNutritionEnterpriseScreen` — `lib/features/animal_nutrition_enterprise/presentation/screens/animal_nutrition_enterprise_screen.dart`
+- `AnimalOperationsCenterScreen` — `lib/features/animal_operations_center/presentation/screens/animal_operations_center_screen.dart`
+- `AnimalPhotoComparisonScreen` — `lib/features/animal_photo/presentation/screens/animal_photo_gallery_screen.dart`
+- `AnimalPhotoFormScreen` — `lib/features/animal_photo/presentation/screens/animal_photo_form_screen.dart`
+- `AnimalPhotoGalleryScreen` — `lib/features/animal_photo/presentation/screens/animal_photo_gallery_screen.dart`
+- `AnimalReproductionEnterpriseScreen` — `lib/features/animal_reproduction_enterprise/presentation/screens/animal_reproduction_enterprise_screen.dart`
+- `AnimalReproductionFormScreen` — `lib/features/animal_reproduction/presentation/screens/animal_reproduction_form_screen.dart`
+- `AnimalReproductionListScreen` — `lib/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart`
+- `AnimalTimelineScreen` — `lib/features/animal_event/presentation/screens/animal_timeline_screen.dart`
+- `AnimalWeightFormScreen` — `lib/features/animal_weight/presentation/screens/animal_weight_form_screen.dart`
+- `AnimalWeightIntelligenceScreen` — `lib/features/animal_weight_intelligence/presentation/screens/animal_weight_intelligence_screen.dart`
+- `AnimalWeightListScreen` — `lib/features/animal_weight/presentation/screens/animal_weight_list_screen.dart`
+- `AnimalZootechnicalDashboardScreen` — `lib/features/animal_zootechnical/presentation/screens/animal_zootechnical_dashboard_screen.dart`
+- `AtlasActionAttentionScreen` — `lib/core/operational_intelligence/action_plan/atlas_action_attention_screen.dart`
+- `AtlasActionPlanScreen` — `lib/features/action_plan/presentation/screens/atlas_action_plan_screen.dart`
+- `AtlasAdvancedAiScreen` — `lib/features/atlas_advanced_ai/presentation/screens/atlas_advanced_ai_screen.dart`
+- `AtlasAdvancedDashboardScreen` — `lib/features/atlas_advanced/presentation/screens/atlas_advanced_dashboard_screen.dart`
+- `AtlasAgricultureScreen` — `lib/core/operational_intelligence/action_plan/atlas_agriculture_screen.dart`
+- `AtlasAiConversationScreen` — `lib/features/atlas_ai_2/presentation/screens/atlas_ai_conversation_screen.dart`
+- `AtlasAiEnterpriseScreen` — `lib/features/atlas_ai_enterprise/presentation/screens/atlas_ai_enterprise_screen.dart`
+- `AtlasAiOperationActionsScreen` — `lib/features/atlas_ai/presentation/screens/atlas_ai_operation_actions_screen.dart`
+- `AtlasAiScreen` — `lib/features/atlas_ai/presentation/screens/atlas_ai_screen.dart`
+- `AtlasAssetMaintenanceScreen` — `lib/core/operational_intelligence/action_plan/atlas_asset_maintenance_screen.dart`
+- `AtlasAuthSyncScreen` — `lib/features/atlas_auth_sync_enterprise/presentation/screens/atlas_auth_sync_screen.dart`
+- `AtlasAutomationOperationsScreen` — `lib/features/atlas_automation_operations/presentation/screens/atlas_automation_operations_screen.dart`
+- `AtlasAutomationStrategyScreen` — `lib/features/automation_strategy/presentation/screens/atlas_automation_strategy_screen.dart`
+- `AtlasAutonomousConsultantScreen` — `lib/features/autonomous_consultant/presentation/screens/atlas_autonomous_consultant_screen.dart`
+- `AtlasAutonomousEnterpriseScreen` — `lib/features/atlas_autonomous_enterprise/presentation/screens/atlas_autonomous_enterprise_screen.dart`
+- `AtlasBackendFoundationScreen` — `lib/features/atlas_backend_foundation/presentation/screens/atlas_backend_foundation_screen.dart`
+- `AtlasBenefitsRealizationScreen` — `lib/features/benefits_realization/presentation/screens/atlas_benefits_realization_screen.dart`
+- `AtlasBiAnalyticsScreen` — `lib/features/atlas_bi_analytics/presentation/screens/atlas_bi_analytics_screen.dart`
+- `AtlasBiBenchmarkScreen` — `lib/features/atlas_bi/presentation/screens/atlas_bi_benchmark_screen.dart`
+- `AtlasBiDashboardScreen` — `lib/features/analytics/presentation/screens/atlas_bi_dashboard_screen.dart`
+- `AtlasBiForecastScreen` — `lib/features/atlas_bi/presentation/screens/atlas_bi_forecast_screen.dart`
+- `AtlasBiHubScreen` — `lib/features/atlas_bi/presentation/screens/atlas_bi_hub_screen.dart`
+- `AtlasBiManagementDashboardScreen` — `lib/features/atlas_bi/presentation/screens/atlas_bi_management_dashboard_screen.dart`
+- `AtlasBiScreen` — `lib/features/atlas_bi/presentation/screens/atlas_bi_screen.dart`
+- `AtlasBusinessDashboardScreen` — `lib/features/atlas_business/presentation/screens/atlas_business_dashboard_screen.dart`
+- `AtlasClimateEnterpriseScreen` — `lib/features/atlas_climate_enterprise/presentation/screens/atlas_climate_enterprise_screen.dart`
+- `AtlasClimateScreen` — `lib/core/operational_intelligence/action_plan/atlas_climate_screen.dart`
+- `AtlasCloudSecurityScreen` — `lib/features/atlas_cloud_security_enterprise/presentation/screens/atlas_cloud_security_screen.dart`
+- `AtlasCommandCenterActionPlanScreen` — `lib/core/operational_intelligence/action_plan/atlas_command_center_action_plan_screen.dart`
+- `AtlasCommandCenterDetailsScreen` — `lib/core/operational_intelligence/presentation/screens/atlas_command_center_details_screen.dart`
+- `AtlasCommandCenterScreen` — `lib/features/command_center/presentation/screens/atlas_command_center_screen.dart`
+- `AtlasCommercialDashboardScreen` — `lib/features/commercial_platform/presentation/screens/atlas_commercial_dashboard_screen.dart`
+- `AtlasCommercialEnterpriseScreen` — `lib/features/atlas_commercial_enterprise/presentation/screens/atlas_commercial_enterprise_screen.dart`
+- `AtlasCommercialOperationsScreen` — `lib/features/atlas_commercial_operations/presentation/screens/atlas_commercial_operations_screen.dart`
+- `AtlasCommercialScreen` — `lib/core/operational_intelligence/action_plan/atlas_commercial_screen.dart`
+- `AtlasComparativeDiagnosticScreen` — `lib/features/diagnostics/presentation/screens/atlas_comparative_diagnostic_screen.dart`
+- `AtlasConsultancyWorkflowScreen` — `lib/features/consultancy_workflow/presentation/screens/atlas_consultancy_workflow_screen.dart`
+- `AtlasContinuousImprovementScreen` — `lib/features/continuous_improvement/presentation/screens/atlas_continuous_improvement_screen.dart`
+- `AtlasCopilotConversationViewerScreen` — `lib/features/copilot/presentation/screens/atlas_copilot_conversation_viewer_screen.dart`
+- `AtlasCopilotFeedbackAnalyticsScreen` — `lib/features/copilot/presentation/screens/atlas_copilot_feedback_analytics_screen.dart`
+- `AtlasCopilotHistoryScreen` — `lib/features/copilot/presentation/screens/atlas_copilot_history_screen.dart`
+- `AtlasCopilotImprovementScreen` — `lib/features/copilot/presentation/screens/atlas_copilot_improvement_screen.dart`
+- `AtlasCopilotScreen` — `lib/features/atlas_copilot/presentation/screens/atlas_copilot_screen.dart`
+- `AtlasCopilotScreen` — `lib/features/copilot/presentation/screens/atlas_copilot_screen.dart`
+- `AtlasDataGovernanceScreen` — `lib/features/data_governance/presentation/screens/atlas_data_governance_screen.dart`
+- `AtlasDecisionEngineScreen` — `lib/features/decision_engine/presentation/screens/atlas_decision_engine_screen.dart`
+- `AtlasDecisionEngineV2Screen` — `lib/features/decision_engine_v2/presentation/screens/atlas_decision_engine_v2_screen.dart`
+- `AtlasDecisionIntelligenceLabScreen` — `lib/features/decision_intelligence_lab/presentation/screens/atlas_decision_intelligence_lab_screen.dart`
+- `AtlasDecisionTrackingScreen` — `lib/features/decision_tracking/presentation/screens/atlas_decision_tracking_screen.dart`
+- `AtlasDiagnosticScreen` — `lib/features/diagnostics/presentation/screens/atlas_diagnostic_screen.dart`
+- `AtlasDigitalTwinScreen` — `lib/features/digital_twin/presentation/screens/atlas_digital_twin_screen.dart`
+- `AtlasEconomicIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_economic_intelligence_screen.dart`
+- `AtlasEconomicScenarioScreen` — `lib/core/operational_intelligence/action_plan/atlas_economic_scenario_screen.dart`
+- `AtlasEcosystemScreen` — `lib/features/atlas_sustainability_ecosystem/presentation/screens/atlas_ecosystem_screen.dart`
+- `AtlasEnterprise24AScreen` — `lib/features/enterprise_platform/presentation/screens/atlas_enterprise_24a_screen.dart`
+- `AtlasEnterprise24BScreen` — `lib/features/enterprise_platform/presentation/screens/atlas_enterprise_24b_screen.dart`
+- `AtlasEnterprise24CScreen` — `lib/features/enterprise_platform/presentation/screens/atlas_enterprise_24c_screen.dart`
+- `AtlasEnterprise24DScreen` — `lib/features/enterprise_platform/presentation/screens/atlas_enterprise_24d_screen.dart`
+- `AtlasEnterprise50Screen` — `lib/features/atlas_enterprise_50/presentation/screens/atlas_enterprise_50_screen.dart`
+- `AtlasEnterpriseOperationsScreen` — `lib/features/atlas_enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart`
+- `AtlasEnterprisePlatformScreen` — `lib/features/enterprise_platform/presentation/screens/atlas_enterprise_platform_screen.dart`
+- `AtlasEnvironmentalAiScreen` — `lib/features/atlas_environmental_ai/presentation/screens/atlas_environmental_ai_screen.dart`
+- `AtlasEsgScreen` — `lib/core/operational_intelligence/action_plan/atlas_esg_screen.dart`
+- `AtlasEventAnalyticsScreen` — `lib/core/event_center/atlas_event_analytics_screen.dart`
+- `AtlasEventCenterScreen` — `lib/core/event_center/atlas_event_center_screen.dart`
+- `AtlasEventDetailScreen` — `lib/core/event_center/atlas_event_detail_screen.dart`
+- `AtlasExecutionAuditScreen` — `lib/core/operational_intelligence/action_plan/atlas_execution_audit_screen.dart`
+- `AtlasExecutionEngineScreen` — `lib/features/strategic_execution_engine/presentation/screens/atlas_execution_engine_screen.dart`
+- `AtlasExecutionMeetingScreen` — `lib/core/operational_intelligence/action_plan/atlas_execution_meeting_screen.dart`
+- `AtlasExecutionWeeklyReviewScreen` — `lib/core/operational_intelligence/action_plan/atlas_execution_weekly_review_screen.dart`
+- `AtlasExecutive360Screen` — `lib/core/operational_intelligence/action_plan/atlas_executive_360_screen.dart`
+- `AtlasExecutiveAiAdvisorScreen` — `lib/features/executive_ai_advisor/presentation/screens/atlas_executive_ai_advisor_screen.dart`
+- `AtlasExecutiveAiScreen` — `lib/features/atlas_ai_2/presentation/screens/atlas_executive_ai_screen.dart`
+- `AtlasExecutiveAlertsScreen` — `lib/features/executive_alerts/presentation/screens/atlas_executive_alerts_screen.dart`
+- `AtlasExecutiveBrainHistoricalIntelligenceScreen` — `lib/features/executive_brain/presentation/screens/atlas_executive_brain_historical_intelligence_screen.dart`
+- `AtlasExecutiveBrainHistoryScreen` — `lib/features/executive_brain/presentation/screens/atlas_executive_brain_history_screen.dart`
+- `AtlasExecutiveBrainScreen` — `lib/features/executive_brain/presentation/screens/atlas_executive_brain_screen.dart`
+- `AtlasExecutiveCoreScreen` — `lib/features/executive_core/presentation/screens/atlas_executive_core_screen.dart`
+- `AtlasExecutiveGoalHistoryScreen` — `lib/features/executive_goals/presentation/screens/atlas_executive_goal_history_screen.dart`
+- `AtlasExecutiveGoalsScreen` — `lib/features/executive_goals/presentation/screens/atlas_executive_goals_screen.dart`
+- `AtlasExecutiveIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_executive_intelligence_screen.dart`
+- `AtlasExecutiveIntelligenceScreen` — `lib/features/atlas_executive_intelligence/presentation/screens/atlas_executive_intelligence_screen.dart`
+- `AtlasExecutiveIntelligenceScreen` — `lib/features/executive_intelligence/presentation/screens/atlas_executive_intelligence_screen.dart`
+- `AtlasExecutiveKpiHistoryScreen` — `lib/features/executive_kpis/presentation/screens/atlas_executive_kpi_history_screen.dart`
+- `AtlasExecutiveKpisScreen` — `lib/features/executive_kpis/presentation/screens/atlas_executive_kpis_screen.dart`
+- `AtlasExecutivePlatformScreen` — `lib/features/atlas_executive_platform/presentation/screens/atlas_executive_platform_screen.dart`
+- `AtlasFarmAuditScreen` — `lib/features/farm_audit/presentation/screens/atlas_farm_audit_screen.dart`
+- `AtlasFarmIntelligenceScreen` — `lib/features/farm/presentation/screens/atlas_farm_intelligence_screen.dart`
+- `AtlasFinanceEnterpriseScreen` — `lib/features/atlas_finance_enterprise/presentation/screens/atlas_finance_enterprise_screen.dart`
+- `AtlasFinancialIntegrationsScreen` — `lib/features/atlas_financial_integrations/presentation/screens/atlas_financial_integrations_screen.dart`
+- `AtlasFinancialManagementScreen` — `lib/core/operational_intelligence/action_plan/atlas_financial_management_screen.dart`
+- `AtlasFoundationCenterScreen` — `lib/core/foundation/atlas_foundation_center_screen.dart`
+- `AtlasGeospatialScreen` — `lib/features/atlas_geospatial_platform/presentation/screens/atlas_geospatial_screen.dart`
+- `AtlasGlobalPlatformScreen` — `lib/features/atlas_global_platform/presentation/screens/atlas_global_platform_screen.dart`
+- `AtlasGovernanceOperationsScreen` — `lib/features/atlas_governance_operations/presentation/screens/atlas_governance_operations_screen.dart`
+- `AtlasGovernancePeopleScreen` — `lib/features/atlas_governance_people_enterprise/presentation/screens/atlas_governance_people_screen.dart`
+- `AtlasGovernanceResilienceScreen` — `lib/features/governance_resilience/presentation/screens/atlas_governance_resilience_screen.dart`
+- `AtlasHealthIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_health_intelligence_screen.dart`
+- `AtlasHealthStrategyScreen` — `lib/core/operational_intelligence/action_plan/atlas_health_strategy_screen.dart`
+- `AtlasIntegrationCenterScreen` — `lib/features/integration_hub/presentation/screens/atlas_integration_center_screen.dart`
+- `AtlasIntegrationCoreScreen` — `lib/core/integration/atlas_integration_core_screen.dart`
+- `AtlasIntegrationEcosystemScreen` — `lib/features/integration_ecosystem/presentation/screens/atlas_integration_ecosystem_screen.dart`
+- `AtlasIntelligenceReportsScreen` — `lib/features/atlas_intelligence_reports_experience/presentation/screens/atlas_intelligence_reports_screen.dart`
+- `AtlasIntelligenceScreen` — `lib/features/atlas_intelligence/presentation/screens/atlas_intelligence_screen.dart`
+- `AtlasIntelligenceScreen` — `lib/features/dashboard/presentation/screens/atlas_intelligence_screen.dart`
+- `AtlasInventoryManagementScreen` — `lib/core/operational_intelligence/action_plan/atlas_inventory_management_screen.dart`
+- `AtlasInvestmentCapitalScreen` — `lib/features/investment_capital_allocation/presentation/screens/atlas_investment_capital_screen.dart`
+- `AtlasIotEnterpriseScreen` — `lib/features/iot_enterprise/presentation/screens/atlas_iot_enterprise_screen.dart`
+- `AtlasIotScreen` — `lib/features/atlas_iot_platform/presentation/screens/atlas_iot_screen.dart`
+- `AtlasKnowledgeLearningScreen` — `lib/features/knowledge_learning/presentation/screens/atlas_knowledge_learning_screen.dart`
+- `AtlasLandIntelligenceScreen` — `lib/features/atlas_land_intelligence/presentation/screens/atlas_land_intelligence_screen.dart`
+- `AtlasLivestockIntegrationScreen` — `lib/features/atlas_livestock_integration/presentation/screens/atlas_livestock_integration_screen.dart`
+- `AtlasMeetingDecisionMonitoringScreen` — `lib/core/operational_intelligence/action_plan/atlas_meeting_decision_monitoring_screen.dart`
+- `AtlasMissionControlScreen` — `lib/features/mission_control/presentation/screens/atlas_mission_control_screen.dart`
+- `AtlasMlPlatformScreen` — `lib/features/ml_platform/presentation/screens/atlas_ml_platform_screen.dart`
+- `AtlasNutritionIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_nutrition_intelligence_screen.dart`
+- `AtlasNutritionStrategyScreen` — `lib/core/operational_intelligence/action_plan/atlas_nutrition_strategy_screen.dart`
+- `AtlasOfficialIntegrationsScreen` — `lib/features/atlas_official_integrations/presentation/screens/atlas_official_integrations_screen.dart`
+- `AtlasOfflineFieldScreen` — `lib/features/offline_field/presentation/screens/atlas_offline_field_screen.dart`
+- `AtlasOperationalMemoryScreen` — `lib/core/operational_memory/atlas_operational_memory_screen.dart`
+- `AtlasOperationsCenterScreen` — `lib/features/farm_operations/presentation/screens/atlas_operations_center_screen.dart`
+- `AtlasOperationsEnterpriseScreen` — `lib/features/atlas_operations_enterprise/presentation/screens/atlas_operations_enterprise_screen.dart`
+- `AtlasOperationsIntelligenceScreen` — `lib/features/dashboard/presentation/screens/atlas_operations_intelligence_screen.dart`
+- `AtlasOptimizationResultScreen` — `lib/features/optimization_engine/presentation/screens/atlas_optimization_result_screen.dart`
+- `AtlasOptimizationScreen` — `lib/features/optimization_engine/presentation/screens/atlas_optimization_screen.dart`
+- `AtlasOsScreen` — `lib/features/atlas_os/presentation/screens/atlas_os_screen.dart`
+- `AtlasPastureManagementScreen` — `lib/core/operational_intelligence/action_plan/atlas_pasture_management_screen.dart`
+- `AtlasPastureStrategyScreen` — `lib/core/operational_intelligence/action_plan/atlas_pasture_strategy_screen.dart`
+- `AtlasPeopleManagementScreen` — `lib/core/operational_intelligence/action_plan/atlas_people_management_screen.dart`
+- `AtlasPerformanceCenterScreen` — `lib/features/performance_center/presentation/screens/atlas_performance_center_screen.dart`
+- `AtlasPerformanceDashboardScreen` — `lib/features/performance_intelligence/presentation/screens/atlas_performance_dashboard_screen.dart`
+- `AtlasPlatformDashboardScreen` — `lib/features/platform_v1/presentation/screens/atlas_platform_dashboard_screen.dart`
+- `AtlasPlatformResilienceScreen` — `lib/features/atlas_platform_resilience/presentation/screens/atlas_platform_resilience_screen.dart`
+- `AtlasPortfolioManagementScreen` — `lib/features/portfolio_management/presentation/screens/atlas_portfolio_management_screen.dart`
+- `AtlasPrecisionLivestockScreen` — `lib/features/atlas_precision_livestock/presentation/screens/atlas_precision_livestock_screen.dart`
+- `AtlasPredictiveAiScreen` — `lib/features/atlas_predictive_ai_suite/presentation/screens/atlas_predictive_ai_screen.dart`
+- `AtlasPredictiveAiScreen` — `lib/features/predictive_ai/presentation/screens/atlas_predictive_ai_screen.dart`
+- `AtlasPredictiveAnalyticsScreen` — `lib/features/predictive_analytics/presentation/screens/atlas_predictive_analytics_screen.dart`
+- `AtlasPredictiveScreen` — `lib/features/predictive/presentation/screens/atlas_predictive_screen.dart`
+- `AtlasQualityCenterScreen` — `lib/features/quality_center/presentation/screens/atlas_quality_center_screen.dart`
+- `AtlasQualityReleaseScreen` — `lib/features/atlas_quality_release/presentation/screens/atlas_quality_release_screen.dart`
+- `AtlasRealtimeCenterScreen` — `lib/features/realtime/presentation/screens/atlas_realtime_center_screen.dart`
+- `AtlasRecommendationIntelligenceScreen` — `lib/features/recommendation_intelligence/presentation/screens/atlas_recommendation_intelligence_screen.dart`
+- `AtlasReleaseCandidateScreen` — `lib/core/release_candidate/atlas_release_candidate_screen.dart`
+- `AtlasReleaseEngineeringScreen` — `lib/features/release_engineering/presentation/screens/atlas_release_engineering_screen.dart`
+- `AtlasReproductiveAiScreen` — `lib/features/atlas_reproductive_ai/presentation/screens/atlas_reproductive_ai_screen.dart`
+- `AtlasReproductiveIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_reproductive_intelligence_screen.dart`
+- `AtlasReproductivePremiumScreen` — `lib/features/atlas_reproductive_premium/presentation/screens/atlas_reproductive_premium_screen.dart`
+- `AtlasReproductiveStrategyScreen` — `lib/core/operational_intelligence/action_plan/atlas_reproductive_strategy_screen.dart`
+- `AtlasResultsIntelligenceScreen` — `lib/core/operational_intelligence/action_plan/atlas_results_intelligence_screen.dart`
+- `AtlasRuralBusinessScreen` — `lib/features/atlas_rural_business/presentation/screens/atlas_rural_business_screen.dart`
+- `AtlasSaasPlatformScreen` — `lib/features/atlas_saas_platform/presentation/screens/atlas_saas_platform_screen.dart`
+- `AtlasScenarioResultScreen` — `lib/features/scenario_simulator/presentation/screens/atlas_scenario_result_screen.dart`
+- `AtlasScenarioSimulatorScreen` — `lib/features/scenario_simulator/presentation/screens/atlas_scenario_simulator_screen.dart`
+- `AtlasSecurityPrivacyContinuityScreen` — `lib/features/security_privacy_continuity/presentation/screens/atlas_security_privacy_continuity_screen.dart`
+- `AtlasSprints1620DashboardScreen` — `lib/features/atlas_sprints_16_20/presentation/screens/atlas_sprints_16_20_dashboard_screen.dart`
+- `AtlasSprints2125DashboardScreen` — `lib/features/atlas_sprints_21_25/presentation/screens/atlas_sprints_21_25_dashboard_screen.dart`
+- `AtlasSprintsDashboardScreen` — `lib/features/atlas_sprints_11_15/presentation/screens/atlas_sprints_dashboard_screen.dart`
+- `AtlasStrategicAlignmentScreen` — `lib/features/strategic_alignment/presentation/screens/atlas_strategic_alignment_screen.dart`
+- `AtlasStrategicCapacityScreen` — `lib/features/strategic_capacity/presentation/screens/atlas_strategic_capacity_screen.dart`
+- `AtlasStrategicScenarioPlanningScreen` — `lib/features/strategic_scenario_planning/presentation/screens/atlas_strategic_scenario_planning_screen.dart`
+- `AtlasStrategyCenterScreen` — `lib/features/strategy_center/presentation/screens/atlas_strategy_center_screen.dart`
+- `AtlasStrategyExecutionScreen` — `lib/features/strategy_execution/presentation/screens/atlas_strategy_execution_screen.dart`
+- `AtlasStrategyPerformanceScreen` — `lib/core/operational_intelligence/action_plan/atlas_strategy_performance_screen.dart`
+- `AtlasSupplyChainScreen` — `lib/features/atlas_supply_chain/presentation/screens/atlas_supply_chain_screen.dart`
+- `AtlasSupplyLogisticsScreen` — `lib/features/atlas_supply_logistics_enterprise/presentation/screens/atlas_supply_logistics_screen.dart`
+- `AtlasSustainabilityEnterpriseScreen` — `lib/features/atlas_sustainability_enterprise/presentation/screens/atlas_sustainability_enterprise_screen.dart`
+- `AtlasSyncDashboardScreen` — `lib/features/sync_platform/presentation/screens/atlas_sync_dashboard_screen.dart`
+- `AtlasSystemCenterScreen` — `lib/core/system_center/atlas_system_center_screen.dart`
+- `AtlasTeamManagementScreen` — `lib/core/operational_intelligence/action_plan/atlas_team_management_screen.dart`
+- `AtlasUnifiedWorkflowScreen` — `lib/features/unified_workflow/presentation/screens/atlas_unified_workflow_screen.dart`
+- `AtlasValueGovernanceScreen` — `lib/features/value_governance/presentation/screens/atlas_value_governance_screen.dart`
+- `AtlasVeterinaryAiScreen` — `lib/features/atlas_veterinary_ai/presentation/screens/atlas_veterinary_ai_screen.dart`
+- `AtlasWorkflowScreen` — `lib/features/workflow_engine/presentation/screens/atlas_workflow_screen.dart`
+- `CompanySelectionScreen` — `lib/features/authentication/presentation/screens/company_selection_screen.dart`
+- `DashboardScreen` — `lib/features/dashboard/presentation/screens/dashboard_screen.dart`
+- `DecisionScenarioSimulatorScreen` — `lib/features/dashboard/presentation/screens/decision_scenario_simulator_screen.dart`
+- `ExecutiveDashboardScreen` — `lib/features/dashboard/presentation/screens/executive_dashboard_screen.dart`
+- `ExecutiveDecisionCenterScreen` — `lib/features/dashboard/presentation/screens/executive_decision_center_screen.dart`
+- `FarmAgendaFormScreen` — `lib/features/farm_agenda/presentation/screens/farm_agenda_form_screen.dart`
+- `FarmAgendaListScreen` — `lib/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart`
+- `FarmDetailScreen` — `lib/features/farm/presentation/screens/farm_detail_screen.dart`
+- `FarmFinanceFormScreen` — `lib/features/farm_finance/presentation/screens/farm_finance_form_screen.dart`
+- `FarmFinanceListScreen` — `lib/features/farm_finance/presentation/screens/farm_finance_list_screen.dart`
+- `FarmFormScreen` — `lib/features/farm/presentation/screens/farm_form_screen.dart`
+- `FarmInventoryFormScreen` — `lib/features/farm_inventory/presentation/screens/farm_inventory_form_screen.dart`
+- `FarmInventoryListScreen` — `lib/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart`
+- `FarmListScreen` — `lib/features/farm/presentation/screens/farm_list_screen.dart`
+- `FinanceOverviewScreen` — `lib/features/farm_finance/presentation/screens/finance_overview_screen.dart`
+- `HealthOverviewScreen` — `lib/features/animal_health/presentation/screens/health_overview_screen.dart`
+- `HerdGroupFormScreen` — `lib/features/herd/presentation/screens/herd_group_form_screen.dart`
+- `HerdListScreen` — `lib/features/herd/presentation/screens/herd_list_screen.dart`
+- `HerdOverviewScreen` — `lib/features/herd/presentation/screens/herd_overview_screen.dart`
+- `IndicatorsScreen` — `lib/features/indicators/presentation/screens/indicators_screen.dart`
+- `InventoryOverviewScreen` — `lib/features/farm_inventory/presentation/screens/inventory_overview_screen.dart`
+- `LoginScreen` — `lib/features/authentication/presentation/screens/login_screen.dart`
+- `NutritionOverviewScreen` — `lib/features/nutrition/presentation/screens/nutrition_overview_screen.dart`
+- `PaddockFormScreen` — `lib/features/paddock/presentation/screens/paddock_form_screen.dart`
+- `PaddockListScreen` — `lib/features/paddock/presentation/screens/paddock_list_screen.dart`
+- `PasswordRecoveryScreen` — `lib/features/authentication/presentation/screens/password_recovery_screen.dart`
+- `RegisterScreen` — `lib/features/authentication/presentation/screens/register_screen.dart`
+- `ReportActionListScreen` — `lib/features/reports/presentation/screens/report_action_list_screen.dart`
+- `ReportsScreen` — `lib/features/reports/presentation/screens/reports_screen.dart`
+- `ReproductionOverviewScreen` — `lib/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart`
+- `TechnicalDashboardScreen` — `lib/features/technical_dashboard/presentation/screens/technical_dashboard_screen.dart`
+- `WelcomeScreen` — `lib/features/authentication/presentation/screens/welcome_screen.dart`
+- `_FailureScreen` — `lib/core/session/atlas_session_gate.dart`
+- `_LoadingScreen` — `lib/core/session/atlas_session_gate.dart`
+
+## Endpoints detectados
+
+- `DELETE /api/v1/animals/{animal_id}` — `backend/app/routers/animals.py`
+- `DELETE /api/v1/auth/mfa` — `backend/app/routers/auth.py`
+- `DELETE /api/v1/auth/sessions/{session_id}` — `backend/app/routers/auth.py`
+- `DELETE /api/v1/farms/{farm_id}` — `backend/app/routers/farms.py`
+- `GET /api/v1/advanced/farms/{farm_id}/advanced-dashboard` — `backend/app/routers/advanced.py`
+- `GET /api/v1/advanced/farms/{farm_id}/agriculture/dashboard` — `backend/app/routers/advanced.py`
+- `GET /api/v1/advanced/farms/{farm_id}/genetics/ranking` — `backend/app/routers/advanced.py`
+- `GET /api/v1/advanced/farms/{farm_id}/genetics/{animal_id}/pedigree` — `backend/app/routers/advanced.py`
+- `GET /api/v1/advanced/farms/{farm_id}/geo-assets` — `backend/app/routers/advanced.py`
+- `GET /api/v1/advanced/farms/{farm_id}/pasture/dashboard` — `backend/app/routers/advanced.py`
+- `GET /api/v1/ai/conversations` — `backend/app/routers/ai.py`
+- `GET /api/v1/analytics/benchmarks` — `backend/app/routers/analytics.py`
+- `GET /api/v1/analytics/dashboard` — `backend/app/routers/analytics.py`
+- `GET /api/v1/analytics/facts` — `backend/app/routers/analytics.py`
+- `GET /api/v1/analytics/farm-score/{farm_id}` — `backend/app/routers/analytics.py`
+- `GET /api/v1/analytics/goals` — `backend/app/routers/analytics.py`
+- `GET /api/v1/analytics/kpis` — `backend/app/routers/analytics.py`
+- `GET /api/v1/animals` — `backend/app/routers/animals.py`
+- `GET /api/v1/animals/{animal_id}` — `backend/app/routers/animals.py`
+- `GET /api/v1/atlas-ai/dashboard` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-ai/memories` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-ai/plans` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-ai/recommendations` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-ai/sessions` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-ai/sessions/{session_id}/messages` — `backend/app/routers/atlas_ai_enterprise.py`
+- `GET /api/v1/atlas-brain/readiness` — `backend/app/routers/atlas_brain.py`
+- `GET /api/v1/atlas-vision/readiness` — `backend/app/routers/atlas_vision.py`
+- `GET /api/v1/audit` — `backend/app/routers/audit.py`
+- `GET /api/v1/auth/me` — `backend/app/routers/auth.py`
+- `GET /api/v1/auth/security-events` — `backend/app/routers/auth.py`
+- `GET /api/v1/auth/sessions` — `backend/app/routers/auth.py`
+- `GET /api/v1/automation/calendar` — `backend/app/routers/automation.py`
+- `GET /api/v1/automation/dashboard` — `backend/app/routers/automation.py`
+- `GET /api/v1/automation/objectives` — `backend/app/routers/automation.py`
+- `GET /api/v1/automation/rules` — `backend/app/routers/automation.py`
+- `GET /api/v1/automation/workflows` — `backend/app/routers/automation.py`
+- `GET /api/v1/backups` — `backend/app/routers/backups.py`
+- `GET /api/v1/billing/readiness` — `backend/app/routers/billing.py`
+- `GET /api/v1/business/bi/dashboard` — `backend/app/routers/business.py`
+- `GET /api/v1/business/commercial-documents` — `backend/app/routers/business.py`
+- `GET /api/v1/business/commercial/dashboard` — `backend/app/routers/business.py`
+- `GET /api/v1/business/consulting/dashboard` — `backend/app/routers/business.py`
+- `GET /api/v1/business/consulting/visits` — `backend/app/routers/business.py`
+- `GET /api/v1/business/dashboard` — `backend/app/routers/business.py`
+- `GET /api/v1/business/enterprise/readiness` — `backend/app/routers/business.py`
+- `GET /api/v1/business/parties` — `backend/app/routers/business.py`
+- `GET /api/v1/business/product/readiness` — `backend/app/routers/business.py`
+- `GET /api/v1/cloud-operations/readiness` — `backend/app/routers/cloud_operations.py`
+- `GET /api/v1/commercial/customers` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/dashboard` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/invoices` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/opportunities` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/plans` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/proposals` — `backend/app/routers/commercial.py`
+- `GET /api/v1/commercial/subscriptions` — `backend/app/routers/commercial.py`
+- `GET /api/v1/companies` — `backend/app/routers/companies.py`
+- `GET /api/v1/companies/{company_id}` — `backend/app/routers/companies.py`
+- `GET /api/v1/core-validation/farms/{farm_id}` — `backend/app/routers/core_livestock_validation.py`
+- `GET /api/v1/corporate-intelligence/executive-board` — `backend/app/routers/corporate_intelligence.py`
+- `GET /api/v1/data-platform/cache/{key}` — `backend/app/routers/data_platform.py`
+- `GET /api/v1/data-platform/dashboard` — `backend/app/routers/data_platform.py`
+- `GET /api/v1/data-platform/realtime/metrics` — `backend/app/routers/data_platform.py`
+- `GET /api/v1/ecosystem/dashboard` — `backend/app/routers/ecosystem.py`
+- `GET /api/v1/ecosystem/partners` — `backend/app/routers/ecosystem.py`
+- `GET /api/v1/enterprise-analytics/readiness` — `backend/app/routers/enterprise_analytics.py`
+- `GET /api/v1/enterprise-operations/dashboard` — `backend/app/routers/enterprise_operations.py`
+- `GET /api/v1/enterprise-release/readiness` — `backend/app/routers/enterprise_release.py`
+- `GET /api/v1/farm-operations/farms/{farm_id}/dashboard` — `backend/app/routers/farm_operations.py`
+- `GET /api/v1/farms` — `backend/app/routers/farms.py`
+- `GET /api/v1/farms/{farm_id}` — `backend/app/routers/farms.py`
+- `GET /api/v1/finance-enterprise/farms/{farm_id}/dashboard` — `backend/app/routers/finance_enterprise.py`
+- `GET /api/v1/global-platform/readiness` — `backend/app/routers/global_platform.py`
+- `GET /api/v1/governance/catalog/assets` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/compliance/controls` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/compliance/score` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/dashboard` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/health/summary` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/incidents` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/policies` — `backend/app/routers/governance.py`
+- `GET /api/v1/governance/quality/runs` — `backend/app/routers/governance.py`
+- `GET /api/v1/health` — `backend/app/routers/health.py`
+- `GET /api/v1/health-intelligence/farms/{farm_id}/dashboard` — `backend/app/routers/health_intelligence.py`
+- `GET /api/v1/health/live` — `backend/app/routers/health.py`
+- `GET /api/v1/health/ready` — `backend/app/routers/health.py`
+- `GET /api/v1/integrations/connections` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/dashboard` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/partners/applications` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/providers` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/sync-jobs` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/usage/summary` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/webhooks` — `backend/app/routers/integrations.py`
+- `GET /api/v1/integrations/webhooks/deliveries` — `backend/app/routers/integrations.py`
+- `GET /api/v1/inventory-enterprise/farms/{farm_id}/dashboard` — `backend/app/routers/inventory_enterprise.py`
+- `GET /api/v1/iot-platform/readiness` — `backend/app/routers/iot_platform.py`
+- `GET /api/v1/iot/dashboard` — `backend/app/routers/iot.py`
+- `GET /api/v1/iot/devices` — `backend/app/routers/iot.py`
+- `GET /api/v1/iot/devices/{device_id}/commands` — `backend/app/routers/iot.py`
+- `GET /api/v1/iot/gateways` — `backend/app/routers/iot.py`
+- `GET /api/v1/iot/telemetry` — `backend/app/routers/iot.py`
+- `GET /api/v1/livestock/animals` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/animals/{animal_id}` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/animals/{animal_id}/movements` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/animals/{animal_id}/reproduction` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/animals/{animal_id}/weights` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/dashboard` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/finance` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/finance/cash-flow` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/finance/summary` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/finance/v2` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/health` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/health/alerts` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/health/protocols` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/inventory/alerts` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/inventory/products` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/inventory/products/{product_id}/movements` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/lots` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/nutrition` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/nutrition/ingredients` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/nutrition/performance` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/nutrition/plans` — `backend/app/routers/livestock.py`
+- `GET /api/v1/livestock/reproduction/summary` — `backend/app/routers/livestock.py`
+- `GET /api/v1/machine-learning-registry/readiness` — `backend/app/routers/machine_learning_registry.py`
+- `GET /api/v1/members` — `backend/app/routers/members.py`
+- `GET /api/v1/members/catalog` — `backend/app/routers/members.py`
+- `GET /api/v1/ml/dashboard` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/datasets` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/deployments` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/deployments/{deployment_id}/drift` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/features` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/models` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/predictions` — `backend/app/routers/ml.py`
+- `GET /api/v1/ml/training-runs` — `backend/app/routers/ml.py`
+- `GET /api/v1/nutrition-intelligence/farms/{farm_id}/dashboard` — `backend/app/routers/nutrition_intelligence.py`
+- `GET /api/v1/offline/conflicts` — `backend/app/routers/offline_sync.py`
+- `GET /api/v1/offline/pull-page` — `backend/app/routers/offline_sync.py`
+- `GET /api/v1/offline/status` — `backend/app/routers/offline_sync.py`
+- `GET /api/v1/operations/alerts` — `backend/app/routers/operations.py`
+- `GET /api/v1/operations/exports/{dataset}.csv` — `backend/app/routers/operations.py`
+- `GET /api/v1/operations/indicators` — `backend/app/routers/operations.py`
+- `GET /api/v1/operations/reports/executive` — `backend/app/routers/operations.py`
+- `GET /api/v1/operations/tasks` — `backend/app/routers/operations.py`
+- `GET /api/v1/operations/timeline` — `backend/app/routers/operations.py`
+- `GET /api/v1/platform/ai/context/farms/{farm_id}` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/ai/recommendations/farms/{farm_id}` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/dashboard/company` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/dashboard/farms/{farm_id}` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/production/readiness` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/security/permission-matrix` — `backend/app/routers/platform.py`
+- `GET /api/v1/platform/security/readiness/farms/{farm_id}` — `backend/app/routers/platform.py`
+- `GET /api/v1/precision-hub/farms/{farm_id}/dashboard` — `backend/app/routers/precision_hub.py`
+- `GET /api/v1/precision-livestock/farms/{farm_id}/dashboard` — `backend/app/routers/precision_livestock.py`
+- `GET /api/v1/public-api/readiness` — `backend/app/routers/public_api.py`
+- `GET /api/v1/quality/diagnostics` — `backend/app/routers/quality.py`
+- `GET /api/v1/quality/ready` — `backend/app/routers/quality.py`
+- `GET /api/v1/quality/version` — `backend/app/routers/quality.py`
+- `GET /api/v1/realtime/events` — `backend/app/routers/realtime.py`
+- `GET /api/v1/realtime/metrics` — `backend/app/routers/realtime.py`
+- `GET /api/v1/realtime/notifications` — `backend/app/routers/realtime.py`
+- `GET /api/v1/release-engineering/builds` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/change-approvals` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/dashboard` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/deployments` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/environments` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/feature-flags` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/pipelines` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-engineering/readiness` — `backend/app/routers/release_engineering.py`
+- `GET /api/v1/release-growth/dashboard` — `backend/app/routers/release_growth.py`
+- `GET /api/v1/reproduction-advanced/farms/{farm_id}/dashboard` — `backend/app/routers/reproduction_advanced.py`
+- `GET /api/v1/reproduction-advanced/farms/{farm_id}/protocols` — `backend/app/routers/reproduction_advanced.py`
+- `GET /api/v1/saas-growth/admin/dashboard` — `backend/app/routers/saas_growth.py`
+- `GET /api/v1/saas-growth/client-portal` — `backend/app/routers/saas_growth.py`
+- `GET /api/v1/saas-growth/feature-flags/effective` — `backend/app/routers/saas_growth.py`
+- `GET /api/v1/security-compliance/audit/verify` — `backend/app/routers/security_compliance.py`
+- `GET /api/v1/security-compliance/dashboard` — `backend/app/routers/security_compliance.py`
+- `GET /api/v1/security-enterprise/access-reviews` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/continuity/plans` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/dashboard` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/policies` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/privacy/consents` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/privacy/requests` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/security-enterprise/risks` — `backend/app/routers/security_enterprise.py`
+- `GET /api/v1/sprints-16-20/analytics/kpis` — `backend/app/routers/enterprise_product.py`
+- `GET /api/v1/sprints-16-20/dashboard` — `backend/app/routers/enterprise_product.py`
+- `GET /api/v1/sprints-16-20/enterprise/readiness` — `backend/app/routers/enterprise_product.py`
+- `GET /api/v1/sprints-16-20/public-api/openapi-contract` — `backend/app/routers/enterprise_product.py`
+- `GET /api/v1/sprints/brain/farms/{farm_id}/context` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sprints/cloud/readiness` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sprints/dashboard` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sprints/iot/farms/{farm_id}/dashboard` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sprints/vision/farms/{farm_id}/analyses` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sprints/web/dashboard` — `backend/app/routers/innovation_platform.py`
+- `GET /api/v1/sync/pull` — `backend/app/routers/sync.py`
+- `GET /api/v1/system/metrics` — `backend/app/routers/system.py`
+- `GET /api/v1/system/status` — `backend/app/routers/system.py`
+- `GET /api/v1/web-platform/readiness` — `backend/app/routers/web_platform.py`
+- `PATCH /api/v1/analytics/goals/{goal_id}` — `backend/app/routers/analytics.py`
+- `PATCH /api/v1/animals/{animal_id}` — `backend/app/routers/animals.py`
+- `PATCH /api/v1/business/consulting/actions/{action_id}/complete` — `backend/app/routers/business.py`
+- `PATCH /api/v1/commercial/contracts/{contract_id}/sign` — `backend/app/routers/commercial.py`
+- `PATCH /api/v1/commercial/invoices/{invoice_id}/pay` — `backend/app/routers/commercial.py`
+- `PATCH /api/v1/commercial/opportunities/{opportunity_id}` — `backend/app/routers/commercial.py`
+- `PATCH /api/v1/commercial/proposals/{proposal_id}/status` — `backend/app/routers/commercial.py`
+- `PATCH /api/v1/companies/{company_id}` — `backend/app/routers/companies.py`
+- `PATCH /api/v1/farm-operations/work-orders/{work_order_id}/complete` — `backend/app/routers/farm_operations.py`
+- `PATCH /api/v1/farms/{farm_id}` — `backend/app/routers/farms.py`
+- `PATCH /api/v1/integrations/sync-jobs/{job_id}/complete` — `backend/app/routers/integrations.py`
+- `PATCH /api/v1/livestock/animals/{animal_id}` — `backend/app/routers/livestock.py`
+- `PATCH /api/v1/livestock/finance/{entry_id}/settle` — `backend/app/routers/livestock.py`
+- `PATCH /api/v1/livestock/lots/{lot_id}` — `backend/app/routers/livestock.py`
+- `PATCH /api/v1/members/{membership_id}` — `backend/app/routers/members.py`
+- `PATCH /api/v1/ml/training-runs/{run_id}/complete` — `backend/app/routers/ml.py`
+- `PATCH /api/v1/operations/tasks/{task_id}` — `backend/app/routers/operations.py`
+- `PATCH /api/v1/realtime/notifications/{notification_id}/read` — `backend/app/routers/realtime.py`
+- `PATCH /api/v1/release-engineering/builds/{build_id}/complete` — `backend/app/routers/release_engineering.py`
+- `PATCH /api/v1/release-engineering/change-approvals/{approval_id}/decision` — `backend/app/routers/release_engineering.py`
+- `PATCH /api/v1/release-engineering/deployments/{deployment_id}/complete` — `backend/app/routers/release_engineering.py`
+- `PATCH /api/v1/release-engineering/readiness-checks/{check_id}/complete` — `backend/app/routers/release_engineering.py`
+- `PATCH /api/v1/security-enterprise/access-reviews/{review_id}/complete` — `backend/app/routers/security_enterprise.py`
+- `PATCH /api/v1/security-enterprise/continuity/exercises/{exercise_id}/complete` — `backend/app/routers/security_enterprise.py`
+- `PATCH /api/v1/sprints-16-20/ml/models/{model_id}/approve` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/advanced/farms/{farm_id}/agriculture` — `backend/app/routers/advanced.py`
+- `POST /api/v1/advanced/farms/{farm_id}/ai/forecast` — `backend/app/routers/advanced.py`
+- `POST /api/v1/advanced/farms/{farm_id}/genetics/mating-simulator` — `backend/app/routers/advanced.py`
+- `POST /api/v1/advanced/farms/{farm_id}/geo-assets` — `backend/app/routers/advanced.py`
+- `POST /api/v1/advanced/farms/{farm_id}/geo/import` — `backend/app/routers/advanced.py`
+- `POST /api/v1/advanced/farms/{farm_id}/pasture` — `backend/app/routers/advanced.py`
+- `POST /api/v1/ai-operational/automations/{automation_id}/approve` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/farms/{farm_id}/automations` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/farms/{farm_id}/context` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/farms/{farm_id}/memory` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/farms/{farm_id}/recommendations` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/farms/{farm_id}/simulate` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/governance/models` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/governance/models/{model_id}/approve` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai-operational/recommendations/{recommendation_id}/decision` — `backend/app/routers/ai_operational.py`
+- `POST /api/v1/ai/conversations` — `backend/app/routers/ai.py`
+- `POST /api/v1/ai/executive` — `backend/app/routers/ai.py`
+- `POST /api/v1/analytics/benchmarks/{metric_key}` — `backend/app/routers/analytics.py`
+- `POST /api/v1/analytics/farm-score/{farm_id}` — `backend/app/routers/analytics.py`
+- `POST /api/v1/analytics/goals` — `backend/app/routers/analytics.py`
+- `POST /api/v1/analytics/goals/recalculate` — `backend/app/routers/analytics.py`
+- `POST /api/v1/analytics/kpis` — `backend/app/routers/analytics.py`
+- `POST /api/v1/analytics/warehouse/refresh` — `backend/app/routers/analytics.py`
+- `POST /api/v1/animals` — `backend/app/routers/animals.py`
+- `POST /api/v1/atlas-ai/chat` — `backend/app/routers/atlas_ai_enterprise.py`
+- `POST /api/v1/atlas-ai/memories` — `backend/app/routers/atlas_ai_enterprise.py`
+- `POST /api/v1/atlas-ai/plans` — `backend/app/routers/atlas_ai_enterprise.py`
+- `POST /api/v1/atlas-ai/sessions` — `backend/app/routers/atlas_ai_enterprise.py`
+- `POST /api/v1/auth/confirm-email` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/login` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/logout` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/mfa/challenge` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/mfa/setup` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/mfa/verify` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/password/confirm` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/password/request` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/refresh` — `backend/app/routers/auth.py`
+- `POST /api/v1/auth/switch-company` — `backend/app/routers/auth.py`
+- `POST /api/v1/automation/calendar` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/events/execute` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/executive-digests` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/objectives` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/rules` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/workflows` — `backend/app/routers/automation.py`
+- `POST /api/v1/automation/workflows/{workflow_id}/start` — `backend/app/routers/automation.py`
+- `POST /api/v1/backups/run` — `backend/app/routers/backups.py`
+- `POST /api/v1/business/api-keys` — `backend/app/routers/business.py`
+- `POST /api/v1/business/bi/snapshots` — `backend/app/routers/business.py`
+- `POST /api/v1/business/commercial-documents` — `backend/app/routers/business.py`
+- `POST /api/v1/business/consulting/actions` — `backend/app/routers/business.py`
+- `POST /api/v1/business/consulting/visits` — `backend/app/routers/business.py`
+- `POST /api/v1/business/parties` — `backend/app/routers/business.py`
+- `POST /api/v1/business/subscriptions` — `backend/app/routers/business.py`
+- `POST /api/v1/business/webhooks` — `backend/app/routers/business.py`
+- `POST /api/v1/business/workflows` — `backend/app/routers/business.py`
+- `POST /api/v1/business/workflows/start` — `backend/app/routers/business.py`
+- `POST /api/v1/business/workflows/{instance_id}/decision` — `backend/app/routers/business.py`
+- `POST /api/v1/commercial/contracts` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/customers` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/invoices` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/notifications/due` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/opportunities` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/plans` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/proposals` — `backend/app/routers/commercial.py`
+- `POST /api/v1/commercial/subscriptions` — `backend/app/routers/commercial.py`
+- `POST /api/v1/companies` — `backend/app/routers/companies.py`
+- `POST /api/v1/corporate-intelligence/plans` — `backend/app/routers/corporate_intelligence.py`
+- `POST /api/v1/corporate-intelligence/scenarios` — `backend/app/routers/corporate_intelligence.py`
+- `POST /api/v1/data-platform/benchmarks/cohorts` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/benchmarks/generate` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/cache` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/events` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/events/publish` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/jobs` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/jobs/claim` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/kpis/definitions` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/kpis/observations` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/realtime/metrics` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/reports` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/warehouse/dimensions` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/data-platform/warehouse/facts` — `backend/app/routers/data_platform.py`
+- `POST /api/v1/ecosystem/partners` — `backend/app/routers/ecosystem.py`
+- `POST /api/v1/ecosystem/support` — `backend/app/routers/ecosystem.py`
+- `POST /api/v1/enterprise-operations/assets/usage` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/consulting/visits` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/crm/leads` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/documents` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/purchases` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/sales` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/support/tickets` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/teams` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/workflows/definitions` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/enterprise-operations/workflows/{definition_id}/start` — `backend/app/routers/enterprise_operations.py`
+- `POST /api/v1/farm-operations/farms/{farm_id}/assets` — `backend/app/routers/farm_operations.py`
+- `POST /api/v1/farm-operations/farms/{farm_id}/work-orders` — `backend/app/routers/farm_operations.py`
+- `POST /api/v1/farms` — `backend/app/routers/farms.py`
+- `POST /api/v1/finance-enterprise/farms/{farm_id}/budgets` — `backend/app/routers/finance_enterprise.py`
+- `POST /api/v1/global-platform/certifications` — `backend/app/routers/global_platform.py`
+- `POST /api/v1/global-platform/training` — `backend/app/routers/global_platform.py`
+- `POST /api/v1/governance/catalog/assets` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/compliance/controls` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/compliance/controls/{control_id}/assess` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/health/snapshots` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/incidents` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/policies` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/quality/assets/{asset_id}/run` — `backend/app/routers/governance.py`
+- `POST /api/v1/governance/quality/rules` — `backend/app/routers/governance.py`
+- `POST /api/v1/health-intelligence/farms/{farm_id}/medicines` — `backend/app/routers/health_intelligence.py`
+- `POST /api/v1/health-intelligence/farms/{farm_id}/occurrences` — `backend/app/routers/health_intelligence.py`
+- `POST /api/v1/integrations/connections` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/partners/applications` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/providers` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/sync-jobs` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/usage` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/webhooks` — `backend/app/routers/integrations.py`
+- `POST /api/v1/integrations/webhooks/events` — `backend/app/routers/integrations.py`
+- `POST /api/v1/inventory-enterprise/farms/{farm_id}/counts` — `backend/app/routers/inventory_enterprise.py`
+- `POST /api/v1/iot/devices` — `backend/app/routers/iot.py`
+- `POST /api/v1/iot/gateways` — `backend/app/routers/iot.py`
+- `POST /api/v1/iot/telemetry/ingest` — `backend/app/routers/iot.py`
+- `POST /api/v1/livestock/animals` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/animals/{animal_id}/movements` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/animals/{animal_id}/reproduction` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/animals/{animal_id}/weights` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/finance` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/finance/v2` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/health` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/health/protocols` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/health/protocols/{protocol_id}/apply` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/inventory/products` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/inventory/products/v2` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/inventory/products/{product_id}/movements` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/inventory/products/{product_id}/movements/v2` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/lots` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/nutrition` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/nutrition/ingredients` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/nutrition/lots/{lot_id}/consumption` — `backend/app/routers/livestock.py`
+- `POST /api/v1/livestock/nutrition/plans` — `backend/app/routers/livestock.py`
+- `POST /api/v1/members` — `backend/app/routers/members.py`
+- `POST /api/v1/members/{membership_id}/reset-password` — `backend/app/routers/members.py`
+- `POST /api/v1/ml/datasets` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/deployments` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/deployments/{deployment_id}/drift` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/features` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/models` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/predictions/{prediction_id}/feedback` — `backend/app/routers/ml.py`
+- `POST /api/v1/ml/training-runs` — `backend/app/routers/ml.py`
+- `POST /api/v1/nutrition-intelligence/farms/{farm_id}/simulations` — `backend/app/routers/nutrition_intelligence.py`
+- `POST /api/v1/offline/conflicts/{conflict_id}/resolve` — `backend/app/routers/offline_sync.py`
+- `POST /api/v1/offline/devices/register` — `backend/app/routers/offline_sync.py`
+- `POST /api/v1/offline/diagnostics` — `backend/app/routers/offline_sync.py`
+- `POST /api/v1/offline/push-batch` — `backend/app/routers/offline_sync.py`
+- `POST /api/v1/operations/alerts/generate` — `backend/app/routers/operations.py`
+- `POST /api/v1/operations/alerts/{alert_id}/task` — `backend/app/routers/operations.py`
+- `POST /api/v1/operations/conflicts/{entity_type}/{entity_id}/resolve` — `backend/app/routers/operations.py`
+- `POST /api/v1/operations/indicators/generate` — `backend/app/routers/operations.py`
+- `POST /api/v1/operations/tasks` — `backend/app/routers/operations.py`
+- `POST /api/v1/platform/ai/recommendations/{recommendation_id}/decision` — `backend/app/routers/platform.py`
+- `POST /api/v1/platform/automations/farms/{farm_id}/bootstrap` — `backend/app/routers/platform.py`
+- `POST /api/v1/platform/automations/farms/{farm_id}/evaluate` — `backend/app/routers/platform.py`
+- `POST /api/v1/precision-hub/adapters` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/devices/{device_id}/telemetry` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/devices` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/geo-assets` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/geofences` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/remote-sensing/scenes` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/rfid-bindings` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/farms/{farm_id}/vision` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-hub/vision/{analysis_id}/review` — `backend/app/routers/precision_hub.py`
+- `POST /api/v1/precision-livestock/farms/{farm_id}/assessments` — `backend/app/routers/precision_livestock.py`
+- `POST /api/v1/realtime/notifications` — `backend/app/routers/realtime.py`
+- `POST /api/v1/realtime/publish` — `backend/app/routers/realtime.py`
+- `POST /api/v1/realtime/subscriptions` — `backend/app/routers/realtime.py`
+- `POST /api/v1/release-engineering/builds` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/change-approvals` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/deployments` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/environments` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/feature-flags` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/metrics` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/pipelines` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-engineering/readiness-checks` — `backend/app/routers/release_engineering.py`
+- `POST /api/v1/release-growth/capability-reviews` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/documentation` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/environments` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/growth-experiments` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/learning-paths` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/mobile-profiles` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/pilots` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/readiness` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/roadmaps` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/release-growth/web-releases` — `backend/app/routers/release_growth.py`
+- `POST /api/v1/reproduction-advanced/farms/{farm_id}/protocols` — `backend/app/routers/reproduction_advanced.py`
+- `POST /api/v1/reproduction-advanced/farms/{farm_id}/seasons` — `backend/app/routers/reproduction_advanced.py`
+- `POST /api/v1/saas-growth/communications/deliveries` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/communications/templates` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/exports` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/feature-flags` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/imports` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/invoices` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/onboarding` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/plans` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/saas-growth/subscriptions` — `backend/app/routers/saas_growth.py`
+- `POST /api/v1/security-compliance/audit` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/availability-targets` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/backups` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/certifications` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/continuity-plans` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/incidents` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/privacy/requests` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/regional-policies` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/roles` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-compliance/translations` — `backend/app/routers/security_compliance.py`
+- `POST /api/v1/security-enterprise/access-reviews` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/continuity/exercises` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/continuity/plans` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/policies` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/posture/snapshots` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/privacy/consents` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/privacy/requests` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/security-enterprise/risks` — `backend/app/routers/security_enterprise.py`
+- `POST /api/v1/sprints-16-20/analytics/datasets` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/analytics/facts` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/billing/subscriptions` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/billing/webhooks/{provider}` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/enterprise/releases` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/ml/models` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/ml/models/{model_id}/predict` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints-16-20/public-api/apps` — `backend/app/routers/enterprise_product.py`
+- `POST /api/v1/sprints/brain/farms/{farm_id}/agents/{agent}` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/brain/farms/{farm_id}/memory` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/brain/farms/{farm_id}/simulate` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/brain/farms/{farm_id}/weekly-plan` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/cloud/jobs` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/iot/devices/{device_id}/telemetry` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/iot/farms/{farm_id}/devices` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sprints/vision/farms/{farm_id}/analyze` — `backend/app/routers/innovation_platform.py`
+- `POST /api/v1/sync/push` — `backend/app/routers/sync.py`
+- `PUT /api/v1/advanced/farms/{farm_id}/genetics` — `backend/app/routers/advanced.py`
+- `PUT /api/v1/global-platform/localization` — `backend/app/routers/global_platform.py`
+- `PUT /api/v1/sprints/web/workspace` — `backend/app/routers/innovation_platform.py`

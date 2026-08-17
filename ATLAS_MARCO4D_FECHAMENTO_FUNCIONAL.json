@@ -1,0 +1,17 @@
+{
+  "contract_count": 20,
+  "unexpected_contract_errors": [],
+  "required_regression_tests": [
+    "backend/tests/test_core_livestock_validation.py",
+    "backend/tests/test_animal_genealogy.py",
+    "backend/tests/test_animal_timeline_history.py",
+    "backend/tests/test_farm_scope_regression.py",
+    "backend/tests/test_marco2_management_crud.py",
+    "backend/tests/test_marco3_agenda_integrations.py"
+  ],
+  "missing_regression_tests": [],
+  "marco5_production_blockers": [],
+  "marco6_android_blockers": [],
+  "marco4d_status": "closed_with_explicit_downstream_blockers",
+  "decision": "Os fluxos operacionais V1 auditados mantêm autoridade remota/cache controlado. Fotos e Documentos possuem autoridade remota desde o Marco 5 e a experiência Android foi substituída por Photo Picker/câmera/FileProvider no Marco 6. Não restam bloqueadores de produção ou Android dentro deste contrato V1."
+}

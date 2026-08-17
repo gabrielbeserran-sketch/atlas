@@ -1,39 +1,12 @@
-enum AtlasCanonicalPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasCanonicalPriority { low, medium, high, critical }
 
-enum AtlasCanonicalStatus {
-  pending,
-  inProgress,
-  completed,
-  cancelled,
-  blocked,
-}
+enum AtlasCanonicalStatus { pending, inProgress, completed, cancelled, blocked }
 
-enum AtlasCanonicalHorizon {
-  today,
-  week,
-  month,
-  quarter,
-  longTerm,
-}
+enum AtlasCanonicalHorizon { today, week, month, quarter, longTerm }
 
-enum AtlasCanonicalRisk {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasCanonicalRisk { low, medium, high, critical }
 
-enum AtlasCanonicalConfidenceLevel {
-  low,
-  medium,
-  high,
-  veryHigh,
-}
+enum AtlasCanonicalConfidenceLevel { low, medium, high, veryHigh }
 
 String atlasCanonicalPriorityLabel(AtlasCanonicalPriority value) {
   switch (value) {

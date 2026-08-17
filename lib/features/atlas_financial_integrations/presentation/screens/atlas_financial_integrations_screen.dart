@@ -30,8 +30,7 @@ class _AtlasFinancialIntegrationsScreenState
     extends State<AtlasFinancialIntegrationsScreen> {
   final AtlasFinancialIntegrationStorageService storage =
       AtlasFinancialIntegrationStorageService();
-  final AtlasFinancialIntegrationAnalyticsService
-      analyticsService =
+  final AtlasFinancialIntegrationAnalyticsService analyticsService =
       const AtlasFinancialIntegrationAnalyticsService();
 
   late AtlasFinancialIntegrationModule selectedModule;
@@ -79,31 +78,26 @@ class _AtlasFinancialIntegrationsScreenState
   }
 
   List<AtlasFinancialIntegrationRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasFinancialIntegrationRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasFinancialIntegrationRecord>(
+  Future<void> openForm([AtlasFinancialIntegrationRecord? current]) async {
+    final result = await showDialog<AtlasFinancialIntegrationRecord>(
       context: context,
-      builder: (context) => _FinancialIntegrationForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _FinancialIntegrationForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -117,9 +111,7 @@ class _AtlasFinancialIntegrationsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasFinancialIntegrationRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasFinancialIntegrationRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -127,13 +119,11 @@ class _AtlasFinancialIntegrationsScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -175,12 +165,9 @@ class _AtlasFinancialIntegrationsScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -225,8 +212,7 @@ class _AtlasFinancialIntegrationsScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -247,8 +233,7 @@ class _AtlasFinancialIntegrationsScreenState
                           EnterpriseMetricCard(
                             title: 'Operacionais',
                             value: '${analytics.operationalCount}',
-                            subtitle:
-                                'Processados, pagos ou autorizados',
+                            subtitle: 'Processados, pagos ou autorizados',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -260,8 +245,7 @@ class _AtlasFinancialIntegrationsScreenState
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Vencimentos, rejeições ou falhas',
+                            subtitle: 'Vencimentos, rejeições ou falhas',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -277,8 +261,7 @@ class _AtlasFinancialIntegrationsScreenState
                             value:
                                 'R\$ ${analytics.netAmount.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Após tarifas informadas',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -311,12 +294,8 @@ class _AtlasFinancialIntegrationsScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro processo, cobrança ou documento.',
                             ),
@@ -327,8 +306,7 @@ class _AtlasFinancialIntegrationsScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -342,14 +320,10 @@ class _AtlasFinancialIntegrationsScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasFinancialIntegrationModule selected;
-  final ValueChanged<AtlasFinancialIntegrationModule>
-      onSelected;
+  final ValueChanged<AtlasFinancialIntegrationModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -357,36 +331,33 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children:
-              AtlasFinancialIntegrationModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasFinancialIntegrationModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: module ==
-                            AtlasFinancialIntegrationModule
-                                .values.last
-                        ? 0
-                        : 8,
-                  ),
-                  child: FilledButton.tonalIcon(
-                    onPressed: () => onSelected(module),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: active
-                          ? const Color(0xFF1B5E20)
-                          : null,
-                      foregroundColor:
-                          active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right:
+                          module == AtlasFinancialIntegrationModule.values.last
+                          ? 0
+                          : 8,
                     ),
-                    icon: Icon(_moduleIcon(module)),
-                    label: Text(module.packageLabel),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                ),
-              );
-            },
-          ).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -411,13 +382,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -436,25 +409,24 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Rejeitado' || 'Vencido' || 'Bloqueado' ||
-      'Falhou' =>
-        Colors.red.shade800,
+      'Rejeitado' ||
+      'Vencido' ||
+      'Bloqueado' ||
+      'Falhou' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Processado' || 'Pago' || 'Recebido' ||
-      'Autorizado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Processado' ||
+      'Pago' ||
+      'Recebido' ||
+      'Autorizado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -471,14 +443,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -487,10 +453,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _FinancialIntegrationForm extends StatefulWidget {
-  const _FinancialIntegrationForm({
-    required this.module,
-    this.current,
-  });
+  const _FinancialIntegrationForm({required this.module, this.current});
 
   final AtlasFinancialIntegrationModule module;
   final AtlasFinancialIntegrationRecord? current;
@@ -500,8 +463,7 @@ class _FinancialIntegrationForm extends StatefulWidget {
       _FinancialIntegrationFormState();
 }
 
-class _FinancialIntegrationFormState
-    extends State<_FinancialIntegrationForm> {
+class _FinancialIntegrationFormState extends State<_FinancialIntegrationForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -532,18 +494,11 @@ class _FinancialIntegrationFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasFinancialDate(DateTime.now()),
+      text: current?.date ?? formatAtlasFinancialDate(DateTime.now()),
     );
-    externalId = TextEditingController(
-      text: current?.externalId ?? '',
-    );
-    counterparty = TextEditingController(
-      text: current?.counterparty ?? '',
-    );
-    documentNumber = TextEditingController(
-      text: current?.documentNumber ?? '',
-    );
+    externalId = TextEditingController(text: current?.externalId ?? '');
+    counterparty = TextEditingController(text: current?.counterparty ?? '');
+    documentNumber = TextEditingController(text: current?.documentNumber ?? '');
     amount = TextEditingController(
       text: current == null || current.amount == 0
           ? ''
@@ -560,24 +515,16 @@ class _FinancialIntegrationFormState
           : current.quantity.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -599,29 +546,21 @@ class _FinancialIntegrationFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasFinancialDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -640,8 +579,7 @@ class _FinancialIntegrationFormState
     Navigator.pop(
       context,
       AtlasFinancialIntegrationRecord(
-        id: current?.id ??
-            'financial_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'financial_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -653,8 +591,7 @@ class _FinancialIntegrationFormState
         amount: decimal(amount),
         feeAmount: decimal(feeAmount),
         quantity: _maxZero(integer(quantity)),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -670,11 +607,7 @@ class _FinancialIntegrationFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -689,10 +622,8 @@ class _FinancialIntegrationFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -703,12 +634,9 @@ class _FinancialIntegrationFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -720,38 +648,35 @@ class _FinancialIntegrationFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Rascunho',
-                    'Em conferência',
-                    'Pronto para processar',
-                    'Processado',
-                    'Pago',
-                    'Recebido',
-                    'Autorizado',
-                    'Concluído',
-                    'Atenção',
-                    'Rejeitado',
-                    'Vencido',
-                    'Bloqueado',
-                    'Falhou',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Rascunho',
+                            'Em conferência',
+                            'Pronto para processar',
+                            'Processado',
+                            'Pago',
+                            'Recebido',
+                            'Autorizado',
+                            'Concluído',
+                            'Atenção',
+                            'Rejeitado',
+                            'Vencido',
+                            'Bloqueado',
+                            'Falhou',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -761,28 +686,24 @@ class _FinancialIntegrationFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Identificador, protocolo ou referência externa',
+                    labelText: 'Identificador, protocolo ou referência externa',
                   ),
                 ),
                 TextFormField(
                   controller: counterparty,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Cliente, fornecedor, banco ou destinatário',
+                    labelText: 'Cliente, fornecedor, banco ou destinatário',
                   ),
                 ),
                 TextFormField(
                   controller: documentNumber,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, nota, cobrança ou transação',
+                    labelText: 'Documento, nota, cobrança ou transação',
                   ),
                 ),
                 TextFormField(
                   controller: amount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -791,21 +712,18 @@ class _FinancialIntegrationFormState
                 ),
                 TextFormField(
                   controller: feeAmount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Tarifas, impostos ou descontos (R\$)',
+                    labelText: 'Tarifas, impostos ou descontos (R\$)',
                   ),
                 ),
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Quantidade de itens, eventos ou documentos',
+                    labelText: 'Quantidade de itens, eventos ou documentos',
                   ),
                 ),
                 TextFormField(
@@ -828,25 +746,20 @@ class _FinancialIntegrationFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Data de vencimento',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Arquivo, endpoint, chave ou referência',
+                    labelText: 'Arquivo, endpoint, chave ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -858,26 +771,19 @@ class _FinancialIntegrationFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasFinancialIntegrationModule module,
-) {
+IconData _moduleIcon(AtlasFinancialIntegrationModule module) {
   return switch (module) {
     AtlasFinancialIntegrationModule.receitaFederal =>
       Icons.receipt_long_outlined,
     AtlasFinancialIntegrationModule.bancoBrasil =>
       Icons.account_balance_outlined,
-    AtlasFinancialIntegrationModule.pix =>
-      Icons.qr_code_scanner_outlined,
-    AtlasFinancialIntegrationModule.nfe =>
-      Icons.description_outlined,
+    AtlasFinancialIntegrationModule.pix => Icons.qr_code_scanner_outlined,
+    AtlasFinancialIntegrationModule.nfe => Icons.description_outlined,
   };
 }

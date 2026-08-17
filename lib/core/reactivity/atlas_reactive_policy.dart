@@ -4,9 +4,7 @@ import 'package:projeto_atlas/core/reactivity/atlas_reactive_target.dart';
 class AtlasReactivePolicy {
   const AtlasReactivePolicy();
 
-  Set<AtlasReactiveTarget> targetsFor(
-    AtlasEvent event,
-  ) {
+  Set<AtlasReactiveTarget> targetsFor(AtlasEvent event) {
     final operationalTargets = <AtlasReactiveTarget>{
       AtlasReactiveTarget.executiveDashboard,
       AtlasReactiveTarget.technicalDashboard,

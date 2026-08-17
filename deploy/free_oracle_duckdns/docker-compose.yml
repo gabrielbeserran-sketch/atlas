@@ -1,0 +1,152 @@
+name: atlas-free-production
+
+x-atlas-env: &atlas-env
+  ATLAS_ENV: production
+  ATLAS_DATABASE_URL: postgresql+psycopg://atlas:${ATLAS_POSTGRES_PASSWORD}@postgres:5432/atlas
+  ATLAS_REDIS_URL: redis://redis:6379/0
+  ATLAS_JWT_SECRET: ${ATLAS_JWT_SECRET}
+  ATLAS_MFA_ENCRYPTION_KEY: ${ATLAS_MFA_ENCRYPTION_KEY}
+  ATLAS_IOT_INGEST_KEY: ${ATLAS_IOT_INGEST_KEY}
+  ATLAS_PUBLIC_BASE_URL: https://${DUCKDNS_SUBDOMAIN}.duckdns.org
+  ATLAS_EMAIL_SENDER: ${ATLAS_EMAIL_SENDER}
+  ATLAS_CORS_ORIGINS: https://${DUCKDNS_SUBDOMAIN}.duckdns.org
+  ATLAS_BOOTSTRAP_ENABLED: "false"
+  ATLAS_AUTO_CREATE_SCHEMA: "false"
+  ATLAS_DOCS_ENABLED: "false"
+  ATLAS_BACKUP_DIR: /data/backups
+  ATLAS_BACKUP_RETENTION_DAYS: ${ATLAS_BACKUP_RETENTION_DAYS}
+  ATLAS_ATTACHMENT_DIR: /data/attachments
+  ATLAS_ATTACHMENT_MAX_MB: ${ATLAS_ATTACHMENT_MAX_MB}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: ${ATLAS_POSTGRES_PASSWORD}
+    volumes:
+      - atlas_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - atlas_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.11
+
+  migrate:
+    build:
+      context: ../../backend
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    environment:
+      <<: *atlas-env
+      ATLAS_TRUST_PROXY_HEADERS: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.19
+
+  api:
+    build:
+      context: ../../backend
+    environment:
+      <<: *atlas-env
+      ATLAS_TRUST_PROXY_HEADERS: "true"
+      ATLAS_TRUSTED_PROXY_CIDRS: 172.29.0.0/16
+    volumes:
+      - atlas_backups:/data/backups
+      - atlas_attachments:/data/attachments
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready')); assert d['status']=='ready'"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.20
+
+  backup-worker:
+    build:
+      context: ../../backend
+    command: ["python", "scripts/backup_loop.py"]
+    environment:
+      <<: *atlas-env
+      ATLAS_TRUST_PROXY_HEADERS: "false"
+    volumes:
+      - atlas_backups:/data/backups
+      - atlas_attachments:/data/attachments
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.21
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      ATLAS_PUBLIC_HOST: ${DUCKDNS_SUBDOMAIN}.duckdns.org
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - atlas_caddy_data:/data
+      - atlas_caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      atlas_net:
+        ipv4_address: 172.29.0.30
+
+volumes:
+  atlas_postgres:
+  atlas_redis:
+  atlas_backups:
+  atlas_attachments:
+  atlas_caddy_data:
+  atlas_caddy_config:
+
+networks:
+  atlas_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16

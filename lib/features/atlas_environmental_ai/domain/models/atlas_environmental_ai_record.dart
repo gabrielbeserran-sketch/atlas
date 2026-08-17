@@ -1,54 +1,47 @@
-enum AtlasEnvironmentalAiModule {
-  climate,
-  pasture,
-  satellite,
-}
+enum AtlasEnvironmentalAiModule { climate, pasture, satellite }
 
 extension AtlasEnvironmentalAiModuleX on AtlasEnvironmentalAiModule {
   String get code => switch (this) {
-        AtlasEnvironmentalAiModule.climate => 'climate',
-        AtlasEnvironmentalAiModule.pasture => 'pasture',
-        AtlasEnvironmentalAiModule.satellite => 'satellite',
-      };
+    AtlasEnvironmentalAiModule.climate => 'climate',
+    AtlasEnvironmentalAiModule.pasture => 'pasture',
+    AtlasEnvironmentalAiModule.satellite => 'satellite',
+  };
 
   String get title => switch (this) {
-        AtlasEnvironmentalAiModule.climate =>
-          'IA Climática',
-        AtlasEnvironmentalAiModule.pasture =>
-          'IA de Pastagens',
-        AtlasEnvironmentalAiModule.satellite =>
-          'Monitoramento por Satélite',
-      };
+    AtlasEnvironmentalAiModule.climate => 'IA Climática',
+    AtlasEnvironmentalAiModule.pasture => 'IA de Pastagens',
+    AtlasEnvironmentalAiModule.satellite => 'Monitoramento por Satélite',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasEnvironmentalAiModule.climate => 'Pacote 56',
-        AtlasEnvironmentalAiModule.pasture => 'Pacote 57',
-        AtlasEnvironmentalAiModule.satellite => 'Pacote 58',
-      };
+    AtlasEnvironmentalAiModule.climate => 'Pacote 56',
+    AtlasEnvironmentalAiModule.pasture => 'Pacote 57',
+    AtlasEnvironmentalAiModule.satellite => 'Pacote 58',
+  };
 
   List<String> get features => switch (this) {
-        AtlasEnvironmentalAiModule.climate => const [
-            'Previsão climática integrada',
-            'Impacto no ganho de peso',
-            'Impacto na reprodução',
-            'Impacto na pastagem',
-            'Plano preventivo automático',
-          ],
-        AtlasEnvironmentalAiModule.pasture => const [
-            'Índice de degradação',
-            'Recuperação automática',
-            'Lotação ideal',
-            'Rotação recomendada',
-            'Predição de disponibilidade',
-          ],
-        AtlasEnvironmentalAiModule.satellite => const [
-            'Imagens Sentinel',
-            'NDVI',
-            'Biomassa',
-            'Umidade',
-            'Alertas ambientais',
-          ],
-      };
+    AtlasEnvironmentalAiModule.climate => const [
+      'Previsão climática integrada',
+      'Impacto no ganho de peso',
+      'Impacto na reprodução',
+      'Impacto na pastagem',
+      'Plano preventivo automático',
+    ],
+    AtlasEnvironmentalAiModule.pasture => const [
+      'Índice de degradação',
+      'Recuperação automática',
+      'Lotação ideal',
+      'Rotação recomendada',
+      'Predição de disponibilidade',
+    ],
+    AtlasEnvironmentalAiModule.satellite => const [
+      'Imagens Sentinel',
+      'NDVI',
+      'Biomassa',
+      'Umidade',
+      'Alertas ambientais',
+    ],
+  };
 }
 
 class AtlasEnvironmentalAiRecord {
@@ -99,9 +92,7 @@ class AtlasEnvironmentalAiRecord {
       status == 'Alagado';
 
   bool get isCompleted =>
-      status == 'Ativo' ||
-      status == 'Concluído' ||
-      status == 'Monitorado';
+      status == 'Ativo' || status == 'Concluído' || status == 'Monitorado';
 
   Map<String, dynamic> toMap() {
     return {
@@ -126,9 +117,7 @@ class AtlasEnvironmentalAiRecord {
     };
   }
 
-  factory AtlasEnvironmentalAiRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnvironmentalAiRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasEnvironmentalAiModule.values.firstWhere(
@@ -143,22 +132,15 @@ class AtlasEnvironmentalAiRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      temperatureCelsius:
-          (map['temperatureCelsius'] as num?)?.toDouble() ?? 0,
+      temperatureCelsius: (map['temperatureCelsius'] as num?)?.toDouble() ?? 0,
       rainfallMillimeters:
           (map['rainfallMillimeters'] as num?)?.toDouble() ?? 0,
-      humidityPercent:
-          (map['humidityPercent'] as num?)?.toDouble() ?? 0,
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0,
-      areaHectares:
-          (map['areaHectares'] as num?)?.toDouble() ?? 0,
-      stockingRateUaHa:
-          (map['stockingRateUaHa'] as num?)?.toDouble() ?? 0,
-      referenceName:
-          map['referenceName']?.toString() ?? '',
+      humidityPercent: (map['humidityPercent'] as num?)?.toDouble() ?? 0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0,
+      areaHectares: (map['areaHectares'] as num?)?.toDouble() ?? 0,
+      stockingRateUaHa: (map['stockingRateUaHa'] as num?)?.toDouble() ?? 0,
+      referenceName: map['referenceName']?.toString() ?? '',
       unit: map['unit']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

@@ -6,46 +6,37 @@ enum AtlasGlobalPlatformFeature {
   commandCenter,
 }
 
-extension AtlasGlobalPlatformFeatureX
-    on AtlasGlobalPlatformFeature {
+extension AtlasGlobalPlatformFeatureX on AtlasGlobalPlatformFeature {
   String get code => switch (this) {
-        AtlasGlobalPlatformFeature.multiCompany =>
-          'multi_company',
-        AtlasGlobalPlatformFeature.advancedMultiUser =>
-          'advanced_multi_user',
-        AtlasGlobalPlatformFeature.integrationMarketplace =>
-          'integration_marketplace',
-        AtlasGlobalPlatformFeature.publicApi =>
-          'public_api',
-        AtlasGlobalPlatformFeature.commandCenter =>
-          'command_center',
-      };
+    AtlasGlobalPlatformFeature.multiCompany => 'multi_company',
+    AtlasGlobalPlatformFeature.advancedMultiUser => 'advanced_multi_user',
+    AtlasGlobalPlatformFeature.integrationMarketplace =>
+      'integration_marketplace',
+    AtlasGlobalPlatformFeature.publicApi => 'public_api',
+    AtlasGlobalPlatformFeature.commandCenter => 'command_center',
+  };
 
   String get title => switch (this) {
-        AtlasGlobalPlatformFeature.multiCompany =>
-          'Multiempresa',
-        AtlasGlobalPlatformFeature.advancedMultiUser =>
-          'Multiusuário avançado',
-        AtlasGlobalPlatformFeature.integrationMarketplace =>
-          'Marketplace de integrações',
-        AtlasGlobalPlatformFeature.publicApi =>
-          'API pública para parceiros',
-        AtlasGlobalPlatformFeature.commandCenter =>
-          'Atlas Command Center',
-      };
+    AtlasGlobalPlatformFeature.multiCompany => 'Multiempresa',
+    AtlasGlobalPlatformFeature.advancedMultiUser => 'Multiusuário avançado',
+    AtlasGlobalPlatformFeature.integrationMarketplace =>
+      'Marketplace de integrações',
+    AtlasGlobalPlatformFeature.publicApi => 'API pública para parceiros',
+    AtlasGlobalPlatformFeature.commandCenter => 'Atlas Command Center',
+  };
 
   String get description => switch (this) {
-        AtlasGlobalPlatformFeature.multiCompany =>
-          'Empresas, fazendas, escopos e consolidação executiva.',
-        AtlasGlobalPlatformFeature.advancedMultiUser =>
-          'Usuários, perfis, permissões e segregação de acesso.',
-        AtlasGlobalPlatformFeature.integrationMarketplace =>
-          'Catálogo, homologação e acompanhamento de integrações.',
-        AtlasGlobalPlatformFeature.publicApi =>
-          'Parceiros, credenciais, escopos, limites e auditoria.',
-        AtlasGlobalPlatformFeature.commandCenter =>
-          'Visão consolidada de risco, operação, dados e estratégia.',
-      };
+    AtlasGlobalPlatformFeature.multiCompany =>
+      'Empresas, fazendas, escopos e consolidação executiva.',
+    AtlasGlobalPlatformFeature.advancedMultiUser =>
+      'Usuários, perfis, permissões e segregação de acesso.',
+    AtlasGlobalPlatformFeature.integrationMarketplace =>
+      'Catálogo, homologação e acompanhamento de integrações.',
+    AtlasGlobalPlatformFeature.publicApi =>
+      'Parceiros, credenciais, escopos, limites e auditoria.',
+    AtlasGlobalPlatformFeature.commandCenter =>
+      'Visão consolidada de risco, operação, dados e estratégia.',
+  };
 }
 
 class AtlasGlobalPlatformRecord {
@@ -112,16 +103,12 @@ class AtlasGlobalPlatformRecord {
     };
   }
 
-  factory AtlasGlobalPlatformRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasGlobalPlatformRecord.fromMap(Map<String, dynamic> map) {
     final code = map['feature']?.toString() ?? '';
 
-    final feature =
-        AtlasGlobalPlatformFeature.values.firstWhere(
+    final feature = AtlasGlobalPlatformFeature.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasGlobalPlatformFeature.multiCompany,
+      orElse: () => AtlasGlobalPlatformFeature.multiCompany,
     );
 
     return AtlasGlobalPlatformRecord(
@@ -132,13 +119,10 @@ class AtlasGlobalPlatformRecord {
       status: map['status']?.toString() ?? 'Planejado',
       entityName: map['entityName']?.toString() ?? '',
       roleOrScope: map['roleOrScope']?.toString() ?? '',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
-      endpointOrReference:
-          map['endpointOrReference']?.toString() ?? '',
+      endpointOrReference: map['endpointOrReference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

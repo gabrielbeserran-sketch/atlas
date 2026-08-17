@@ -101,9 +101,8 @@ class _AtlasStrategicScenarioPlanningScreenState
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => AtlasInvestmentCapitalScreen(
-                    farmId: widget.farmId,
-                  ),
+                  builder: (_) =>
+                      AtlasInvestmentCapitalScreen(farmId: widget.farmId),
                 ),
               );
             },

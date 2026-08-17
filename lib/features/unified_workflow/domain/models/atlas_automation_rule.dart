@@ -43,21 +43,23 @@ class AtlasAutomationRule {
       actionTitle: actionTitle ?? this.actionTitle,
       enabled: enabled ?? this.enabled,
       priority: priority ?? this.priority,
-      sourceModule: clearSourceModule ? null : sourceModule ?? this.sourceModule,
+      sourceModule: clearSourceModule
+          ? null
+          : sourceModule ?? this.sourceModule,
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'description': description,
-        'triggerType': triggerType.name,
-        'actionType': actionType.name,
-        'actionTitle': actionTitle,
-        'enabled': enabled,
-        'priority': priority.name,
-        'sourceModule': sourceModule,
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'triggerType': triggerType.name,
+    'actionType': actionType.name,
+    'actionTitle': actionTitle,
+    'enabled': enabled,
+    'priority': priority.name,
+    'sourceModule': sourceModule,
+  };
 
   factory AtlasAutomationRule.fromJson(Map<String, dynamic> json) {
     return AtlasAutomationRule(

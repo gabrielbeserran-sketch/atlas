@@ -22,14 +22,11 @@ class AtlasAdvancedAiScreen extends StatefulWidget {
   final AtlasAdvancedAiModule initialModule;
 
   @override
-  State<AtlasAdvancedAiScreen> createState() =>
-      _AtlasAdvancedAiScreenState();
+  State<AtlasAdvancedAiScreen> createState() => _AtlasAdvancedAiScreenState();
 }
 
-class _AtlasAdvancedAiScreenState
-    extends State<AtlasAdvancedAiScreen> {
-  final AtlasAdvancedAiStorageService storage =
-      AtlasAdvancedAiStorageService();
+class _AtlasAdvancedAiScreenState extends State<AtlasAdvancedAiScreen> {
+  final AtlasAdvancedAiStorageService storage = AtlasAdvancedAiStorageService();
   final AtlasAdvancedAiAnalyticsService analyticsService =
       const AtlasAdvancedAiAnalyticsService();
 
@@ -76,30 +73,26 @@ class _AtlasAdvancedAiScreenState
   }
 
   List<AtlasAdvancedAiRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasAdvancedAiRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasAdvancedAiRecord? current]) async {
     final result = await showDialog<AtlasAdvancedAiRecord>(
       context: context,
-      builder: (context) => _AdvancedAiForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _AdvancedAiForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -113,9 +106,7 @@ class _AtlasAdvancedAiScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasAdvancedAiRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasAdvancedAiRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -123,13 +114,11 @@ class _AtlasAdvancedAiScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -171,12 +160,9 @@ class _AtlasAdvancedAiScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -311,12 +297,8 @@ class _AtlasAdvancedAiScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira análise ou recomendação.',
                             ),
@@ -327,8 +309,7 @@ class _AtlasAdvancedAiScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -342,10 +323,7 @@ class _AtlasAdvancedAiScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasAdvancedAiModule selected;
   final ValueChanged<AtlasAdvancedAiModule> onSelected;
@@ -358,23 +336,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasAdvancedAiModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasAdvancedAiModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -397,15 +373,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -424,25 +400,23 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' ||
-      'Baixa confiança' || 'Revisão obrigatória' =>
-        Colors.red.shade800,
+      'Crítico' ||
+      'Bloqueado' ||
+      'Baixa confiança' ||
+      'Revisão obrigatória' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Validado' || 'Aprovado' ||
-      'Em acompanhamento' || 'Concluído' =>
-        Colors.green.shade800,
+      'Validado' ||
+      'Aprovado' ||
+      'Em acompanhamento' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -459,14 +433,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -475,21 +443,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _AdvancedAiForm extends StatefulWidget {
-  const _AdvancedAiForm({
-    required this.module,
-    this.current,
-  });
+  const _AdvancedAiForm({required this.module, this.current});
 
   final AtlasAdvancedAiModule module;
   final AtlasAdvancedAiRecord? current;
 
   @override
-  State<_AdvancedAiForm> createState() =>
-      _AdvancedAiFormState();
+  State<_AdvancedAiForm> createState() => _AdvancedAiFormState();
 }
 
-class _AdvancedAiFormState
-    extends State<_AdvancedAiForm> {
+class _AdvancedAiFormState extends State<_AdvancedAiForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -520,31 +483,17 @@ class _AdvancedAiFormState
     feature = current?.feature ?? widget.module.features.first;
     status = current?.status ?? 'Rascunho';
 
-    title = TextEditingController(
-      text: current?.title ?? '',
-    );
+    title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasAdvancedAiDate(DateTime.now()),
+      text: current?.date ?? formatAtlasAdvancedAiDate(DateTime.now()),
     );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    contextScope = TextEditingController(
-      text: current?.contextScope ?? '',
-    );
-    promptSummary = TextEditingController(
-      text: current?.promptSummary ?? '',
-    );
-    recommendation = TextEditingController(
-      text: current?.recommendation ?? '',
-    );
-    evidence = TextEditingController(
-      text: current?.evidence ?? '',
-    );
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    contextScope = TextEditingController(text: current?.contextScope ?? '');
+    promptSummary = TextEditingController(text: current?.promptSummary ?? '');
+    recommendation = TextEditingController(text: current?.recommendation ?? '');
+    evidence = TextEditingController(text: current?.evidence ?? '');
     confidencePercent = TextEditingController(
-      text: current == null ||
-              current.confidencePercent == 0
+      text: current == null || current.confidencePercent == 0
           ? ''
           : current.confidencePercent.toString(),
     );
@@ -554,8 +503,7 @@ class _AdvancedAiFormState
           : current.riskPercent.toString(),
     );
     estimatedImpact = TextEditingController(
-      text: current == null ||
-              current.estimatedImpact == 0
+      text: current == null || current.estimatedImpact == 0
           ? ''
           : current.estimatedImpact.toString(),
     );
@@ -565,24 +513,16 @@ class _AdvancedAiFormState
           : current.priority.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    reviewDate = TextEditingController(
-      text: current?.reviewDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    reviewDate = TextEditingController(text: current?.reviewDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -607,10 +547,7 @@ class _AdvancedAiFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -626,27 +563,20 @@ class _AdvancedAiFormState
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
-    final parsed =
-        parseAtlasAdvancedAiDate(controller.text);
+  Future<void> chooseDate(TextEditingController controller) async {
+    final parsed = parseAtlasAdvancedAiDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasAdvancedAiDate(selected);
+      controller.text = formatAtlasAdvancedAiDate(selected);
     });
   }
 
@@ -659,7 +589,8 @@ class _AdvancedAiFormState
     Navigator.pop(
       context,
       AtlasAdvancedAiRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'advanced_ai_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -671,13 +602,11 @@ class _AdvancedAiFormState
         promptSummary: promptSummary.text.trim(),
         recommendation: recommendation.text.trim(),
         evidence: evidence.text.trim(),
-        confidencePercent:
-            percent(confidencePercent),
+        confidencePercent: percent(confidencePercent),
         riskPercent: percent(riskPercent),
         estimatedImpact: decimal(estimatedImpact),
         priority: integer(priority).clamp(0, 5),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         reviewDate: reviewDate.text.trim(),
         reference: reference.text.trim(),
@@ -691,11 +620,7 @@ class _AdvancedAiFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -710,10 +635,8 @@ class _AdvancedAiFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -724,12 +647,9 @@ class _AdvancedAiFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -741,37 +661,34 @@ class _AdvancedAiFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Rascunho',
-                    'Em análise',
-                    'Aguardando revisão',
-                    'Validado',
-                    'Aprovado',
-                    'Em acompanhamento',
-                    'Concluído',
-                    'Atenção',
-                    'Baixa confiança',
-                    'Revisão obrigatória',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Rascunho',
+                            'Em análise',
+                            'Aguardando revisão',
+                            'Validado',
+                            'Aprovado',
+                            'Em acompanhamento',
+                            'Concluído',
+                            'Atenção',
+                            'Baixa confiança',
+                            'Revisão obrigatória',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -781,15 +698,13 @@ class _AdvancedAiFormState
                 TextFormField(
                   controller: responsible,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Responsável pela revisão',
+                    labelText: 'Responsável pela revisão',
                   ),
                 ),
                 TextFormField(
                   controller: contextScope,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Escopo do contexto',
+                    labelText: 'Escopo do contexto',
                   ),
                 ),
                 TextFormField(
@@ -797,8 +712,7 @@ class _AdvancedAiFormState
                   minLines: 2,
                   maxLines: 4,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Pergunta, hipótese ou objetivo',
+                    labelText: 'Pergunta, hipótese ou objetivo',
                   ),
                 ),
                 TextFormField(
@@ -806,8 +720,7 @@ class _AdvancedAiFormState
                   minLines: 3,
                   maxLines: 6,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Recomendação ou resposta',
+                    labelText: 'Recomendação ou resposta',
                   ),
                 ),
                 TextFormField(
@@ -815,41 +728,34 @@ class _AdvancedAiFormState
                   minLines: 2,
                   maxLines: 5,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Evidências utilizadas',
+                    labelText: 'Evidências utilizadas',
                   ),
                 ),
                 TextFormField(
                   controller: confidencePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Confiança (0 a 100%)',
+                    labelText: 'Confiança (0 a 100%)',
                   ),
                 ),
                 TextFormField(
                   controller: riskPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Risco ou incerteza (0 a 100%)',
+                    labelText: 'Risco ou incerteza (0 a 100%)',
                   ),
                 ),
                 TextFormField(
                   controller: estimatedImpact,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Impacto estimado (R\$)',
+                    labelText: 'Impacto estimado (R\$)',
                   ),
                 ),
                 TextFormField(
@@ -863,16 +769,14 @@ class _AdvancedAiFormState
                   controller: progressPercent,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Progresso (0 a 100%)',
+                    labelText: 'Progresso (0 a 100%)',
                   ),
                 ),
                 TextFormField(
                   controller: alertCount,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Quantidade de alertas',
+                    labelText: 'Quantidade de alertas',
                   ),
                 ),
                 TextFormField(
@@ -880,27 +784,21 @@ class _AdvancedAiFormState
                   readOnly: true,
                   onTap: () => chooseDate(reviewDate),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Prazo para revisão',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    labelText: 'Prazo para revisão',
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Fonte, documento ou referência',
+                    labelText: 'Fonte, documento ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -912,10 +810,7 @@ class _AdvancedAiFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -923,25 +818,16 @@ class _AdvancedAiFormState
 
 IconData _moduleIcon(AtlasAdvancedAiModule module) {
   return switch (module) {
-    AtlasAdvancedAiModule.conversationalAssistant =>
-      Icons.smart_toy_outlined,
-    AtlasAdvancedAiModule.farmContextChat =>
-      Icons.forum_outlined,
+    AtlasAdvancedAiModule.conversationalAssistant => Icons.smart_toy_outlined,
+    AtlasAdvancedAiModule.farmContextChat => Icons.forum_outlined,
     AtlasAdvancedAiModule.healthDecisionSupport =>
       Icons.health_and_safety_outlined,
-    AtlasAdvancedAiModule.reproductiveIntelligence =>
-      Icons.favorite_outline,
-    AtlasAdvancedAiModule.nutritionalIntelligence =>
-      Icons.restaurant_outlined,
-    AtlasAdvancedAiModule.geneticIntelligence =>
-      Icons.schema_outlined,
-    AtlasAdvancedAiModule.financialIntelligence =>
-      Icons.savings_outlined,
-    AtlasAdvancedAiModule.strategicIntelligence =>
-      Icons.track_changes_outlined,
-    AtlasAdvancedAiModule.climateIntelligence =>
-      Icons.cloud_outlined,
-    AtlasAdvancedAiModule.explainableAi =>
-      Icons.lightbulb_outline,
+    AtlasAdvancedAiModule.reproductiveIntelligence => Icons.favorite_outline,
+    AtlasAdvancedAiModule.nutritionalIntelligence => Icons.restaurant_outlined,
+    AtlasAdvancedAiModule.geneticIntelligence => Icons.schema_outlined,
+    AtlasAdvancedAiModule.financialIntelligence => Icons.savings_outlined,
+    AtlasAdvancedAiModule.strategicIntelligence => Icons.track_changes_outlined,
+    AtlasAdvancedAiModule.climateIntelligence => Icons.cloud_outlined,
+    AtlasAdvancedAiModule.explainableAi => Icons.lightbulb_outline,
   };
 }

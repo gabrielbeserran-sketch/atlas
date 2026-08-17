@@ -8,11 +8,7 @@ import 'package:projeto_atlas/features/strategy_execution/data/services/atlas_st
 import 'package:projeto_atlas/features/strategy_execution/domain/models/atlas_strategy_execution_plan.dart';
 
 class AtlasBenefitsRealizationScreen extends StatefulWidget {
-  const AtlasBenefitsRealizationScreen({
-    super.key,
-    this.farmId,
-    this.planId,
-  });
+  const AtlasBenefitsRealizationScreen({super.key, this.farmId, this.planId});
 
   final String? farmId;
   final String? planId;
@@ -26,10 +22,8 @@ class AtlasBenefitsRealizationScreen extends StatefulWidget {
 class _AtlasBenefitsRealizationScreenState
     extends State<AtlasBenefitsRealizationScreen> {
   bool loading = true;
-  List<AtlasStrategyExecutionPlan> plans =
-      <AtlasStrategyExecutionPlan>[];
-  List<AtlasBenefitRealization> results =
-      <AtlasBenefitRealization>[];
+  List<AtlasStrategyExecutionPlan> plans = <AtlasStrategyExecutionPlan>[];
+  List<AtlasBenefitRealization> results = <AtlasBenefitRealization>[];
 
   @override
   void initState() {
@@ -38,29 +32,22 @@ class _AtlasBenefitsRealizationScreenState
   }
 
   Future<void> _load() async {
-    final loadedPlans =
-        await AtlasStrategyExecutionRepository.instance.loadAll();
-    final loadedResults =
-        await AtlasBenefitsRealizationRepository.instance.loadAll();
+    final loadedPlans = await AtlasStrategyExecutionRepository.instance
+        .loadAll();
+    final loadedResults = await AtlasBenefitsRealizationRepository.instance
+        .loadAll();
 
-    final filteredPlans = loadedPlans.where(
-      (item) {
-        final farmMatches = widget.farmId == null ||
-            item.farmId == widget.farmId;
-        final planMatches =
-            widget.planId == null || item.id == widget.planId;
+    final filteredPlans = loadedPlans.where((item) {
+      final farmMatches = widget.farmId == null || item.farmId == widget.farmId;
+      final planMatches = widget.planId == null || item.id == widget.planId;
 
-        return farmMatches && planMatches;
-      },
-    ).toList();
+      return farmMatches && planMatches;
+    }).toList();
 
-    final allowedIds =
-        filteredPlans.map((item) => item.id).toSet();
+    final allowedIds = filteredPlans.map((item) => item.id).toSet();
 
     final filteredResults = loadedResults
-        .where(
-          (item) => allowedIds.contains(item.strategyPlanId),
-        )
+        .where((item) => allowedIds.contains(item.strategyPlanId))
         .toList();
 
     if (!mounted) {
@@ -74,26 +61,16 @@ class _AtlasBenefitsRealizationScreenState
     });
   }
 
-  Future<void> _evaluate(
-    AtlasStrategyExecutionPlan plan,
-  ) async {
+  Future<void> _evaluate(AtlasStrategyExecutionPlan plan) async {
     final current = results
-        .where(
-          (item) => item.strategyPlanId == plan.id,
-        )
+        .where((item) => item.strategyPlanId == plan.id)
         .cast<AtlasBenefitRealization?>()
-        .firstWhere(
-          (item) => item != null,
-          orElse: () => null,
-        );
+        .firstWhere((item) => item != null, orElse: () => null);
 
     final formResult = await showDialog<_EvaluationInput>(
       context: context,
       builder: (context) {
-        return _EvaluationDialog(
-          plan: plan,
-          current: current,
-        );
+        return _EvaluationDialog(plan: plan, current: current);
       },
     );
 
@@ -101,26 +78,21 @@ class _AtlasBenefitsRealizationScreenState
       return;
     }
 
-    final evaluated =
-        const AtlasBenefitsRealizationEngine().evaluate(
+    final evaluated = const AtlasBenefitsRealizationEngine().evaluate(
       plan: plan,
       actualCost: formResult.actualCost,
       actualNetGain: formResult.actualNetGain,
       actualIndicator: formResult.actualIndicator,
     );
 
-    await AtlasBenefitsRealizationRepository.instance.save(
-      evaluated,
-    );
+    await AtlasBenefitsRealizationRepository.instance.save(evaluated);
 
     await _load();
   }
 
   @override
   Widget build(BuildContext context) {
-    final portfolio = AtlasBenefitPortfolio(
-      items: results,
-    );
+    final portfolio = AtlasBenefitPortfolio(items: results);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
@@ -136,9 +108,7 @@ class _AtlasBenefitsRealizationScreenState
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) {
-                    return AtlasValueGovernanceScreen(
-                      farmId: widget.farmId,
-                    );
+                    return AtlasValueGovernanceScreen(farmId: widget.farmId);
                   },
                 ),
               );
@@ -156,55 +126,48 @@ class _AtlasBenefitsRealizationScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : plans.isEmpty
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1220),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(portfolio: portfolio),
-                        const SizedBox(height: 22),
-                        const Text(
-                          'Benefícios por estratégia',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Compare o que foi prometido com o que realmente foi entregue.',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 14),
-                        ...plans.map(
-                          (plan) {
-                            final result = results
-                                .where(
-                                  (item) =>
-                                      item.strategyPlanId ==
-                                      plan.id,
-                                )
-                                .cast<AtlasBenefitRealization?>()
-                                .firstWhere(
-                                  (item) => item != null,
-                                  orElse: () => null,
-                                );
-
-                            return _BenefitCard(
-                              plan: plan,
-                              result: result,
-                              onEvaluate: () => _evaluate(plan),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1220),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(portfolio: portfolio),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Benefícios por estratégia',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Compare o que foi prometido com o que realmente foi entregue.',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 14),
+                    ...plans.map((plan) {
+                      final result = results
+                          .where((item) => item.strategyPlanId == plan.id)
+                          .cast<AtlasBenefitRealization?>()
+                          .firstWhere(
+                            (item) => item != null,
+                            orElse: () => null,
+                          );
+
+                      return _BenefitCard(
+                        plan: plan,
+                        result: result,
+                        onEvaluate: () => _evaluate(plan),
+                      );
+                    }),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
@@ -257,10 +220,7 @@ class _Hero extends StatelessWidget {
                 label: 'No caminho certo',
                 value: '${portfolio.onTrack}',
               ),
-              _HeroMetric(
-                label: 'Críticas',
-                value: '${portfolio.critical}',
-              ),
+              _HeroMetric(label: 'Críticas', value: '${portfolio.critical}'),
               _HeroMetric(
                 label: 'Ganho planejado',
                 value: _currency(portfolio.plannedGain),
@@ -271,8 +231,7 @@ class _Hero extends StatelessWidget {
               ),
               _HeroMetric(
                 label: 'Realização',
-                value:
-                    '${portfolio.achievement.toStringAsFixed(1)}%',
+                value: '${portfolio.achievement.toStringAsFixed(1)}%',
               ),
             ],
           ),
@@ -303,8 +262,7 @@ class _BenefitCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              statusColor.withValues(alpha: 0.12),
+          backgroundColor: statusColor.withValues(alpha: 0.12),
           child: Icon(
             current == null
                 ? Icons.pending_actions_outlined
@@ -320,10 +278,9 @@ class _BenefitCard extends StatelessWidget {
           current == null
               ? '${plan.farmName} · ainda não avaliado'
               : '${plan.farmName} · ${atlasBenefitRealizationStatusLabel(current.status)} · '
-                  '${current.benefitAchievement.toStringAsFixed(1)}% realizado',
+                    '${current.benefitAchievement.toStringAsFixed(1)}% realizado',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           if (current == null)
             const Align(
@@ -364,16 +321,12 @@ class _BenefitCard extends StatelessWidget {
                 ),
                 _Metric(
                   label: 'Confiança original',
-                  value:
-                      '${current.confidence.toStringAsFixed(1)}%',
+                  value: '${current.confidence.toStringAsFixed(1)}%',
                 ),
               ],
             ),
             const SizedBox(height: 18),
-            _ListBlock(
-              title: 'Constatações',
-              items: current.findings,
-            ),
+            _ListBlock(title: 'Constatações', items: current.findings),
             _ListBlock(
               title: 'Ações corretivas',
               items: current.correctiveActions,
@@ -399,10 +352,7 @@ class _BenefitCard extends StatelessWidget {
 }
 
 class _EvaluationDialog extends StatefulWidget {
-  const _EvaluationDialog({
-    required this.plan,
-    required this.current,
-  });
+  const _EvaluationDialog({required this.plan, required this.current});
 
   final AtlasStrategyExecutionPlan plan;
   final AtlasBenefitRealization? current;
@@ -413,8 +363,7 @@ class _EvaluationDialog extends StatefulWidget {
   }
 }
 
-class _EvaluationDialogState
-    extends State<_EvaluationDialog> {
+class _EvaluationDialogState extends State<_EvaluationDialog> {
   final formKey = GlobalKey<FormState>();
   late final TextEditingController costController;
   late final TextEditingController gainController;
@@ -424,19 +373,18 @@ class _EvaluationDialogState
   void initState() {
     super.initState();
     costController = TextEditingController(
-      text: (widget.current?.actualCost ??
-              widget.plan.committedBudget *
-                  widget.plan.progressPercent /
-                  100)
-          .toStringAsFixed(2),
+      text:
+          (widget.current?.actualCost ??
+                  widget.plan.committedBudget *
+                      widget.plan.progressPercent /
+                      100)
+              .toStringAsFixed(2),
     );
     gainController = TextEditingController(
-      text: (widget.current?.actualNetGain ?? 0)
-          .toStringAsFixed(2),
+      text: (widget.current?.actualNetGain ?? 0).toStringAsFixed(2),
     );
     indicatorController = TextEditingController(
-      text: (widget.current?.actualIndicator ?? 50)
-          .toStringAsFixed(1),
+      text: (widget.current?.actualIndicator ?? 50).toStringAsFixed(1),
     );
   }
 
@@ -492,12 +440,9 @@ class _EvaluationDialogState
 
             Navigator.of(context).pop(
               _EvaluationInput(
-                actualCost:
-                    _parseDouble(costController.text),
-                actualNetGain:
-                    _parseDouble(gainController.text),
-                actualIndicator:
-                    _parseDouble(indicatorController.text),
+                actualCost: _parseDouble(costController.text),
+                actualNetGain: _parseDouble(gainController.text),
+                actualIndicator: _parseDouble(indicatorController.text),
               ),
             );
           },
@@ -528,13 +473,8 @@ class _NumberField extends StatelessWidget {
         prefixText: prefix,
         border: const OutlineInputBorder(),
       ),
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(
-          RegExp(r'[0-9,.-]'),
-        ),
-      ],
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.-]'))],
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return 'Informe o valor.';
@@ -547,10 +487,7 @@ class _NumberField extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -567,15 +504,9 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.black54),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -583,10 +514,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -603,10 +531,7 @@ class _HeroMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -623,10 +548,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _ListBlock extends StatelessWidget {
-  const _ListBlock({
-    required this.title,
-    required this.items,
-  });
+  const _ListBlock({required this.title, required this.items});
 
   final String title;
   final List<String> items;
@@ -640,11 +562,7 @@ class _ListBlock extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             ...items.map(
               (item) => Padding(
@@ -670,11 +588,7 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.insights_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.insights_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existem estratégias para avaliar.',
@@ -705,9 +619,7 @@ class _EvaluationInput {
   final double actualIndicator;
 }
 
-Color _statusColor(
-  AtlasBenefitRealizationStatus status,
-) {
+Color _statusColor(AtlasBenefitRealizationStatus status) {
   switch (status) {
     case AtlasBenefitRealizationStatus.onTrack:
       return const Color(0xFF2E7D32);
@@ -721,10 +633,7 @@ Color _statusColor(
 }
 
 double _parseDouble(String value) {
-  final normalized = value
-      .trim()
-      .replaceAll('.', '')
-      .replaceAll(',', '.');
+  final normalized = value.trim().replaceAll('.', '').replaceAll(',', '.');
 
   return double.tryParse(normalized) ?? 0;
 }

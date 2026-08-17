@@ -1,45 +1,151 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# ============================================================
+# Projeto Atlas — .gitignore
+# Marco 6 v16 — Render + Supabase
+# ============================================================
 
-# IntelliJ related
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*.log
+.idea/
+.history/
+.svn/
+.vscode/*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+pip-wheel-metadata/
+
+# Ambientes virtuais
+.venv/
+**/.venv/
+venv/
+env/
+ENV/
+
+# Temporários
+migrate_working_dir/
+.cache/
+tmp/
+temp/
+
+# ============================================================
+# SEGREDOS / CREDENCIAIS — NUNCA VERSIONAR
+# ============================================================
+
+# .env real em qualquer pasta
+.env
+**/.env
+.env.*
+**/.env.*
+
+# Modelos seguros continuam versionados
+!.env.example
+!**/.env.example
+!*.env.example
+!**/*.env.example
+
+# Android signing
+android/key.properties
+**/key.properties
+android/keystore/
+**/keystore/
+*.jks
+*.keystore
+*.p12
+*.pfx
+
+# Chaves privadas / certificados
+*.pem
+*.key
+*.crt.key
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# Service accounts / credenciais de cloud
+credentials.json
+**/credentials.json
+service-account.json
+**/service-account.json
+service_account.json
+**/service_account.json
+google-services-private.json
+**/google-services-private.json
+
+# Segredos locais
+secrets/
+**/secrets/
+*.secret
+*.secrets
+*.token
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+**/build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+app.*.symbols
+app.*.map.json
+
+# Android / Gradle
+android/.gradle/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/.cxx/
+**/.cxx/
+captures/
+GeneratedPluginRegistrant.java
+
+# Java / Kotlin
+*.class
 *.iml
 *.ipr
 *.iws
-.idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# Apple
+.swiftpm/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
+# Backend runtime / dados locais
+backend/data/
+backend/backups/
+backend/attachments/
+data/backups/
+data/attachments/
 
-# Symbolication related
-app.*.symbols
+# Dumps / bancos locais
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
 
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Artefatos locais de release
+dist/
+*.apk
+*.aab

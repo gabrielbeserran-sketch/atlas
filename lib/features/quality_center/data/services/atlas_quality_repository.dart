@@ -21,24 +21,28 @@ class AtlasQualityRepository {
     }
 
     final List<dynamic> checksJson = jsonDecode(checksRaw) as List<dynamic>;
-    final List<dynamic> incidentsJson = incidentsRaw == null || incidentsRaw.isEmpty
+    final List<dynamic> incidentsJson =
+        incidentsRaw == null || incidentsRaw.isEmpty
         ? <dynamic>[]
         : jsonDecode(incidentsRaw) as List<dynamic>;
 
     return AtlasQualityState(
       checks: checksJson
-          .map((dynamic item) => AtlasQualityCheck.fromJson(
-                Map<String, dynamic>.from(item as Map),
-              ))
+          .map(
+            (dynamic item) => AtlasQualityCheck.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
           .toList(),
       incidents: incidentsJson
-          .map((dynamic item) => AtlasQualityIncident.fromJson(
-                Map<String, dynamic>.from(item as Map),
-              ))
+          .map(
+            (dynamic item) => AtlasQualityIncident.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
           .toList(),
-      lastReviewAt: DateTime.tryParse(
-            preferences.getString(_reviewKey) ?? '',
-          ) ??
+      lastReviewAt:
+          DateTime.tryParse(preferences.getString(_reviewKey) ?? '') ??
           DateTime.now(),
     );
   }
@@ -47,15 +51,22 @@ class AtlasQualityRepository {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _checksKey,
-      jsonEncode(state.checks.map((AtlasQualityCheck item) => item.toJson()).toList()),
+      jsonEncode(
+        state.checks.map((AtlasQualityCheck item) => item.toJson()).toList(),
+      ),
     );
     await preferences.setString(
       _incidentsKey,
       jsonEncode(
-        state.incidents.map((AtlasQualityIncident item) => item.toJson()).toList(),
+        state.incidents
+            .map((AtlasQualityIncident item) => item.toJson())
+            .toList(),
       ),
     );
-    await preferences.setString(_reviewKey, state.lastReviewAt.toIso8601String());
+    await preferences.setString(
+      _reviewKey,
+      state.lastReviewAt.toIso8601String(),
+    );
   }
 
   AtlasQualityState _seed() {
@@ -64,7 +75,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'analyze',
           title: 'Executar flutter analyze',
-          description: 'Confirmar que não existem erros de compilação ou avisos críticos.',
+          description:
+              'Confirmar que não existem erros de compilação ou avisos críticos.',
           category: 'Código',
           completed: false,
           critical: true,
@@ -72,7 +84,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'navigation',
           title: 'Testar navegação principal',
-          description: 'Abrir o dashboard e validar o acesso aos módulos essenciais.',
+          description:
+              'Abrir o dashboard e validar o acesso aos módulos essenciais.',
           category: 'Interface',
           completed: false,
           critical: true,
@@ -80,7 +93,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'persistence',
           title: 'Validar persistência local',
-          description: 'Criar, editar e reabrir registros armazenados no aparelho.',
+          description:
+              'Criar, editar e reabrir registros armazenados no aparelho.',
           category: 'Dados',
           completed: false,
           critical: true,
@@ -88,7 +102,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'offline',
           title: 'Validar modo offline',
-          description: 'Registrar informações sem conexão e testar a fila de sincronização.',
+          description:
+              'Registrar informações sem conexão e testar a fila de sincronização.',
           category: 'Campo',
           completed: false,
           critical: false,
@@ -96,7 +111,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'permissions',
           title: 'Revisar perfis e permissões',
-          description: 'Conferir acessos de administrador, consultor, técnico e produtor.',
+          description:
+              'Conferir acessos de administrador, consultor, técnico e produtor.',
           category: 'Segurança',
           completed: false,
           critical: false,
@@ -104,7 +120,8 @@ class AtlasQualityRepository {
         AtlasQualityCheck(
           id: 'backup',
           title: 'Definir rotina de backup',
-          description: 'Documentar a estratégia de cópia e recuperação dos dados.',
+          description:
+              'Documentar a estratégia de cópia e recuperação dos dados.',
           category: 'Dados',
           completed: false,
           critical: false,
@@ -114,7 +131,8 @@ class AtlasQualityRepository {
         AtlasQualityIncident(
           id: 'seed_enterprise_const',
           title: 'Uso indevido de const corrigido',
-          description: 'Construtor de usuário Enterprise utilizava variável em contexto constante.',
+          description:
+              'Construtor de usuário Enterprise utilizava variável em contexto constante.',
           module: 'Enterprise Platform',
           severity: 'Média',
           createdAt: DateTime.now(),

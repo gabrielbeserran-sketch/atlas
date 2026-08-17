@@ -13,15 +13,12 @@ class AtlasAiResponseService {
   AtlasAiResponse answer({
     required String question,
     required AtlasAiFarmContext context,
-    List<AtlasAiTrackedAction> trackedActions =
-        const [],
+    List<AtlasAiTrackedAction> trackedActions = const [],
     DateTime? now,
   }) {
-    final normalizedQuestion =
-        _normalize(question);
+    final normalizedQuestion = _normalize(question);
 
-    final intent =
-        _identifyIntent(normalizedQuestion);
+    final intent = _identifyIntent(normalizedQuestion);
 
     switch (intent) {
       case AtlasAiIntent.generalSituation:
@@ -40,11 +37,7 @@ class AtlasAiResponseService {
         );
 
       case AtlasAiIntent.risks:
-        return _answerRisks(
-          question: question,
-          context: context,
-          now: now,
-        );
+        return _answerRisks(question: question, context: context, now: now);
 
       case AtlasAiIntent.opportunities:
         return _answerOpportunities(
@@ -54,11 +47,7 @@ class AtlasAiResponseService {
         );
 
       case AtlasAiIntent.strengths:
-        return _answerStrengths(
-          question: question,
-          context: context,
-          now: now,
-        );
+        return _answerStrengths(question: question, context: context, now: now);
 
       case AtlasAiIntent.finance:
         return _answerArea(
@@ -170,10 +159,8 @@ class AtlasAiResponseService {
           context: context,
           trackedActions: trackedActions,
           intent: intent,
-          status:
-              AtlasAiTrackedActionStatus.pending,
-          emptyMessage:
-              'Não existem ações pendentes no acompanhamento atual.',
+          status: AtlasAiTrackedActionStatus.pending,
+          emptyMessage: 'Não existem ações pendentes no acompanhamento atual.',
           now: now,
         );
 
@@ -191,10 +178,8 @@ class AtlasAiResponseService {
           context: context,
           trackedActions: trackedActions,
           intent: intent,
-          status:
-              AtlasAiTrackedActionStatus.completed,
-          emptyMessage:
-              'Nenhuma ação foi marcada como concluída.',
+          status: AtlasAiTrackedActionStatus.completed,
+          emptyMessage: 'Nenhuma ação foi marcada como concluída.',
           now: now,
         );
 
@@ -204,19 +189,13 @@ class AtlasAiResponseService {
           context: context,
           trackedActions: trackedActions,
           intent: intent,
-          status:
-              AtlasAiTrackedActionStatus.inProgress,
-          emptyMessage:
-              'Não existem ações em andamento.',
+          status: AtlasAiTrackedActionStatus.inProgress,
+          emptyMessage: 'Não existem ações em andamento.',
           now: now,
         );
 
       case AtlasAiIntent.unknown:
-        return _answerUnknown(
-          question: question,
-          context: context,
-          now: now,
-        );
+        return _answerUnknown(question: question, context: context, now: now);
     }
   }
 
@@ -230,19 +209,15 @@ class AtlasAiResponseService {
     final evidences = <AtlasAiEvidence>[
       AtlasAiEvidence(
         label: 'Score geral',
-        value:
-            '${context.score.toStringAsFixed(0)}/100',
-        description:
-            'Pontuação consolidada do diagnóstico da propriedade.',
+        value: '${context.score.toStringAsFixed(0)}/100',
+        description: 'Pontuação consolidada do diagnóstico da propriedade.',
         area: AtlasFarmAnalysisArea.general,
         weight: 1,
       ),
       AtlasAiEvidence(
         label: 'Situação',
-        value:
-            atlasDiagnosticLevelLabel(context.level),
-        description:
-            'Classificação atual da fazenda.',
+        value: atlasDiagnosticLevelLabel(context.level),
+        description: 'Classificação atual da fazenda.',
         area: AtlasFarmAnalysisArea.general,
         weight: 0.95,
       ),
@@ -252,8 +227,7 @@ class AtlasAiResponseService {
       evidences.add(
         AtlasAiEvidence(
           label: 'Área mais fraca',
-          value:
-              '${weakest.title}: ${weakest.score.toStringAsFixed(0)}/100',
+          value: '${weakest.title}: ${weakest.score.toStringAsFixed(0)}/100',
           description: weakest.analysis,
           area: weakest.area,
           weight: 0.9,
@@ -269,22 +243,18 @@ class AtlasAiResponseService {
           'A ${context.farmName} está em situação '
           '${atlasDiagnosticLevelLabel(context.level).toLowerCase()}, '
           'com ${context.score.toStringAsFixed(0)} pontos de 100.',
-      justification:
-          context.executiveSummary,
+      justification: context.executiveSummary,
       evidences: evidences,
-      actionPlan:
-          _mapActions(context.shortTermActions.take(3).toList()),
+      actionPlan: _mapActions(context.shortTermActions.take(3).toList()),
       nextStep:
           'Abra o Diagnóstico Inteligente para revisar as áreas e executar a prioridade principal.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: context.level,
       actions: const [
         AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Abrir diagnóstico',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -303,13 +273,11 @@ class AtlasAiResponseService {
       intent: AtlasAiIntent.priority,
       directAnswer:
           'A prioridade número 1 da ${context.farmName} é: ${priority.title}.',
-      justification:
-          '${priority.description} ${priority.recommendation}',
+      justification: '${priority.description} ${priority.recommendation}',
       evidences: [
         AtlasAiEvidence(
           label: 'Score da prioridade',
-          value:
-              priority.score.toStringAsFixed(0),
+          value: priority.score.toStringAsFixed(0),
           description:
               'Quanto maior o valor, maior a urgência e o impacto da intervenção.',
           area: priority.area,
@@ -317,32 +285,27 @@ class AtlasAiResponseService {
         ),
         AtlasAiEvidence(
           label: 'Área afetada',
-          value:
-              atlasFarmAreaLabel(priority.area),
-          description:
-              'Módulo diretamente relacionado ao problema.',
+          value: atlasFarmAreaLabel(priority.area),
+          description: 'Módulo diretamente relacionado ao problema.',
           area: priority.area,
           weight: 0.9,
         ),
       ],
-      actionPlan:
-          _relatedActions(
+      actionPlan: _relatedActions(
         context: context,
         area: priority.area,
         maximum: 3,
       ),
       nextStep:
           'Acesse ${atlasFarmAreaLabel(priority.area)} e inicie a primeira ação recomendada.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: priority.level,
       actions: [
         _navigationForArea(priority.area),
         const AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver diagnóstico completo',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -363,31 +326,24 @@ class AtlasAiResponseService {
         justification:
             'Os dados cadastrados não geraram alertas classificados como risco.',
         evidences: const [],
-        actionPlan:
-            _mapActions(context.shortTermActions.take(2).toList()),
+        actionPlan: _mapActions(context.shortTermActions.take(2).toList()),
         nextStep:
             'Mantenha os registros atualizados e revise o diagnóstico periodicamente.',
-        confidence:
-            _confidenceFromContext(context),
+        confidence: _confidenceFromContext(context),
         level: AtlasDiagnosticLevel.stable,
         actions: const [
           AtlasAiNavigationAction(
             id: 'open_diagnostic',
             label: 'Revisar diagnóstico',
-            type:
-                AtlasAiNavigationActionType.openDiagnostic,
+            type: AtlasAiNavigationActionType.openDiagnostic,
           ),
         ],
       );
     }
 
-    final ordered = [...context.risks]
-      ..sort(
-        (first, second) =>
-            second.impactScore.compareTo(
-          first.impactScore,
-        ),
-      );
+    final ordered = [
+      ...context.risks,
+    ]..sort((first, second) => second.impactScore.compareTo(first.impactScore));
 
     final first = ordered.first;
 
@@ -395,39 +351,32 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: AtlasAiIntent.risks,
-      directAnswer:
-          'O risco mais importante é: ${first.title}.',
-      justification:
-          '${first.description} ${first.recommendation}',
+      directAnswer: 'O risco mais importante é: ${first.title}.',
+      justification: '${first.description} ${first.recommendation}',
       evidences: ordered.take(4).map((item) {
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              'Impacto ${item.impactScore.toStringAsFixed(0)}',
+          value: 'Impacto ${item.impactScore.toStringAsFixed(0)}',
           description: item.description,
           area: item.area,
-          weight:
-              item.impactScore / 100,
+          weight: item.impactScore / 100,
         );
       }).toList(),
-      actionPlan:
-          _relatedActions(
+      actionPlan: _relatedActions(
         context: context,
         area: first.area,
         maximum: 3,
       ),
       nextStep:
           'Abra ${atlasFarmAreaLabel(first.area)} e execute a recomendação de mitigação.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: first.level,
       actions: [
         _navigationForArea(first.area),
         const AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver todos os riscos',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -448,31 +397,24 @@ class AtlasAiResponseService {
         justification:
             'Isso pode ocorrer quando os dados são insuficientes ou quando as áreas estão focadas em correções prioritárias.',
         evidences: const [],
-        actionPlan:
-            _mapActions(context.mediumTermActions.take(3).toList()),
+        actionPlan: _mapActions(context.mediumTermActions.take(3).toList()),
         nextStep:
             'Complete os registros e revise os cenários da Inteligência Preditiva.',
-        confidence:
-            _confidenceFromContext(context),
+        confidence: _confidenceFromContext(context),
         level: context.level,
         actions: const [
           AtlasAiNavigationAction(
             id: 'open_predictive',
             label: 'Simular decisões',
-            type:
-                AtlasAiNavigationActionType.openPredictive,
+            type: AtlasAiNavigationActionType.openPredictive,
           ),
         ],
       );
     }
 
-    final ordered = [...context.opportunities]
-      ..sort(
-        (first, second) =>
-            second.impactScore.compareTo(
-          first.impactScore,
-        ),
-      );
+    final ordered = [
+      ...context.opportunities,
+    ]..sort((first, second) => second.impactScore.compareTo(first.impactScore));
 
     final first = ordered.first;
 
@@ -480,38 +422,30 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: AtlasAiIntent.opportunities,
-      directAnswer:
-          'A principal oportunidade é: ${first.title}.',
-      justification:
-          '${first.description} ${first.recommendation}',
+      directAnswer: 'A principal oportunidade é: ${first.title}.',
+      justification: '${first.description} ${first.recommendation}',
       evidences: ordered.take(4).map((item) {
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              'Potencial ${item.impactScore.toStringAsFixed(0)}',
+          value: 'Potencial ${item.impactScore.toStringAsFixed(0)}',
           description: item.description,
           area: item.area,
-          weight:
-              item.impactScore / 100,
+          weight: item.impactScore / 100,
         );
       }).toList(),
-      actionPlan:
-          _relatedActions(
+      actionPlan: _relatedActions(
         context: context,
         area: first.area,
         maximum: 3,
       ),
-      nextStep:
-          'Simule o impacto dessa oportunidade antes de executá-la.',
-      confidence:
-          _confidenceFromContext(context),
+      nextStep: 'Simule o impacto dessa oportunidade antes de executá-la.',
+      confidence: _confidenceFromContext(context),
       level: AtlasDiagnosticLevel.stable,
       actions: [
         const AtlasAiNavigationAction(
           id: 'open_predictive',
           label: 'Simular oportunidade',
-          type:
-              AtlasAiNavigationActionType.openPredictive,
+          type: AtlasAiNavigationActionType.openPredictive,
         ),
         _navigationForArea(first.area),
       ],
@@ -533,31 +467,24 @@ class AtlasAiResponseService {
         justification:
             'O diagnóstico atual está concentrado em riscos, gargalos e ações corretivas.',
         evidences: const [],
-        actionPlan:
-            _mapActions(context.longTermActions.take(2).toList()),
+        actionPlan: _mapActions(context.longTermActions.take(2).toList()),
         nextStep:
             'Após executar as prioridades, gere um novo diagnóstico para medir os avanços.',
-        confidence:
-            _confidenceFromContext(context),
+        confidence: _confidenceFromContext(context),
         level: context.level,
         actions: const [
           AtlasAiNavigationAction(
             id: 'open_diagnostic',
             label: 'Abrir diagnóstico',
-            type:
-                AtlasAiNavigationActionType.openDiagnostic,
+            type: AtlasAiNavigationActionType.openDiagnostic,
           ),
         ],
       );
     }
 
-    final ordered = [...context.strengths]
-      ..sort(
-        (first, second) =>
-            second.impactScore.compareTo(
-          first.impactScore,
-        ),
-      );
+    final ordered = [
+      ...context.strengths,
+    ]..sort((first, second) => second.impactScore.compareTo(first.impactScore));
 
     final first = ordered.first;
 
@@ -565,34 +492,27 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: AtlasAiIntent.strengths,
-      directAnswer:
-          'O principal ponto forte é: ${first.title}.',
-      justification:
-          '${first.description} ${first.recommendation}',
+      directAnswer: 'O principal ponto forte é: ${first.title}.',
+      justification: '${first.description} ${first.recommendation}',
       evidences: ordered.take(4).map((item) {
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              atlasDiagnosticLevelLabel(item.level),
+          value: atlasDiagnosticLevelLabel(item.level),
           description: item.description,
           area: item.area,
-          weight:
-              item.impactScore / 100,
+          weight: item.impactScore / 100,
         );
       }).toList(),
-      actionPlan:
-          _mapActions(context.longTermActions.take(3).toList()),
+      actionPlan: _mapActions(context.longTermActions.take(3).toList()),
       nextStep:
           'Documente a prática positiva e avalie se ela pode ser replicada em outras áreas.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: AtlasDiagnosticLevel.excellent,
       actions: const [
         AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver pontos fortes',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -605,15 +525,10 @@ class AtlasAiResponseService {
     required AtlasAiIntent intent,
     DateTime? now,
   }) {
-    final areaContext =
-        _findArea(context, area);
+    final areaContext = _findArea(context, area);
 
     if (areaContext == null) {
-      return _answerUnknown(
-        question: question,
-        context: context,
-        now: now,
-      );
+      return _answerUnknown(question: question, context: context, now: now);
     }
 
     final relatedInsights = [
@@ -626,18 +541,12 @@ class AtlasAiResponseService {
       ...context.opportunities.where((item) {
         return item.area == area;
       }),
-    ]..sort(
-        (first, second) =>
-            second.impactScore.compareTo(
-          first.impactScore,
-        ),
-      );
+    ]..sort((first, second) => second.impactScore.compareTo(first.impactScore));
 
     final evidences = <AtlasAiEvidence>[
       AtlasAiEvidence(
         label: 'Score da área',
-        value:
-            '${areaContext.score.toStringAsFixed(0)}/100',
+        value: '${areaContext.score.toStringAsFixed(0)}/100',
         description: areaContext.analysis,
         area: area,
         weight: 1,
@@ -645,12 +554,10 @@ class AtlasAiResponseService {
       ...relatedInsights.take(3).map((item) {
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              'Impacto ${item.impactScore.toStringAsFixed(0)}',
+          value: 'Impacto ${item.impactScore.toStringAsFixed(0)}',
           description: item.description,
           area: area,
-          weight:
-              item.impactScore / 100,
+          weight: item.impactScore / 100,
         );
       }),
     ];
@@ -663,27 +570,19 @@ class AtlasAiResponseService {
           '${areaContext.title} está com '
           '${areaContext.score.toStringAsFixed(0)} pontos e nível '
           '${atlasDiagnosticLevelLabel(areaContext.level).toLowerCase()}.',
-      justification:
-          '${areaContext.analysis} ${areaContext.recommendation}',
+      justification: '${areaContext.analysis} ${areaContext.recommendation}',
       evidences: evidences,
-      actionPlan:
-          _relatedActions(
-        context: context,
-        area: area,
-        maximum: 4,
-      ),
+      actionPlan: _relatedActions(context: context, area: area, maximum: 4),
       nextStep:
           'Abra ${atlasFarmAreaLabel(area)} para conferir os registros e executar a primeira recomendação.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: areaContext.level,
       actions: [
         _navigationForArea(area),
         const AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver diagnóstico',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -702,23 +601,19 @@ class AtlasAiResponseService {
         generatedAt: now ?? DateTime.now(),
         question: question,
         intent: intent,
-        directAnswer:
-            'Nenhuma ação foi definida para os $horizonLabel.',
+        directAnswer: 'Nenhuma ação foi definida para os $horizonLabel.',
         justification:
             'O diagnóstico atual não gerou atividades para esse horizonte.',
         evidences: const [],
         actionPlan: const [],
-        nextStep:
-            'Revise o diagnóstico e atualize os dados da propriedade.',
-        confidence:
-            _confidenceFromContext(context),
+        nextStep: 'Revise o diagnóstico e atualize os dados da propriedade.',
+        confidence: _confidenceFromContext(context),
         level: context.level,
         actions: const [
           AtlasAiNavigationAction(
             id: 'open_diagnostic',
             label: 'Abrir diagnóstico',
-            type:
-                AtlasAiNavigationActionType.openDiagnostic,
+            type: AtlasAiNavigationActionType.openDiagnostic,
           ),
         ],
       );
@@ -730,43 +625,36 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: intent,
-      directAnswer:
-          'Para os $horizonLabel, a primeira ação é: ${first.title}.',
+      directAnswer: 'Para os $horizonLabel, a primeira ação é: ${first.title}.',
       justification:
           '${first.description} O resultado esperado é ${first.expectedResult.toLowerCase()}',
       evidences: [
         AtlasAiEvidence(
           label: 'Quantidade de ações',
           value: actions.length.toString(),
-          description:
-              'Número de atividades previstas para o período.',
+          description: 'Número de atividades previstas para o período.',
           area: AtlasFarmAnalysisArea.general,
           weight: 0.85,
         ),
         AtlasAiEvidence(
           label: 'Primeira área',
-          value:
-              atlasFarmAreaLabel(first.area),
-          description:
-              'Área relacionada à primeira ação.',
+          value: atlasFarmAreaLabel(first.area),
+          description: 'Área relacionada à primeira ação.',
           area: first.area,
           weight: 1,
         ),
       ],
-      actionPlan:
-          _mapActions(actions.take(5).toList()),
+      actionPlan: _mapActions(actions.take(5).toList()),
       nextStep:
           'Inicie a ação ${first.position} e registre sua execução no módulo correspondente.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: first.level,
       actions: [
         _navigationForArea(first.area),
         const AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver plano completo',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -787,8 +675,7 @@ class AtlasAiResponseService {
         justification:
             'A Inteligência Preditiva depende dos dados financeiros, operacionais, zootécnicos, de estoque e de piquetes.',
         evidences: const [],
-        actionPlan:
-            _mapActions(context.shortTermActions.take(2).toList()),
+        actionPlan: _mapActions(context.shortTermActions.take(2).toList()),
         nextStep:
             'Abra a Inteligência Preditiva e gere os cenários recomendados.',
         confidence: 60,
@@ -797,27 +684,20 @@ class AtlasAiResponseService {
           AtlasAiNavigationAction(
             id: 'open_predictive',
             label: 'Simular decisões',
-            type:
-                AtlasAiNavigationActionType.openPredictive,
+            type: AtlasAiNavigationActionType.openPredictive,
           ),
         ],
       );
     }
 
     final ordered = [...context.predictiveScenarios]
-      ..sort(
-        (first, second) {
-          final firstScore =
-              _predictiveScore(first);
+      ..sort((first, second) {
+        final firstScore = _predictiveScore(first);
 
-          final secondScore =
-              _predictiveScore(second);
+        final secondScore = _predictiveScore(second);
 
-          return secondScore.compareTo(
-            firstScore,
-          );
-        },
-      );
+        return secondScore.compareTo(firstScore);
+      });
 
     final best = ordered.first;
 
@@ -825,8 +705,7 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: AtlasAiIntent.predictiveDecision,
-      directAnswer:
-          'A melhor decisão simulada é: ${best.title}.',
+      directAnswer: 'A melhor decisão simulada é: ${best.title}.',
       justification:
           '${best.recommendation} O cenário projeta '
           '${best.scoreVariation >= 0 ? '+' : ''}'
@@ -843,33 +722,26 @@ class AtlasAiResponseService {
               'Confiança ${item.confidence.toStringAsFixed(0)}%, '
               'redução de risco ${item.riskReductionPercent.toStringAsFixed(0)}% '
               'e impacto provável ${_currency(item.financialImpact)}.',
-          area:
-              _areaForPredictiveType(item.type),
-          weight:
-              item.confidence / 100,
+          area: _areaForPredictiveType(item.type),
+          weight: item.confidence / 100,
         );
       }).toList(),
-      actionPlan:
-          _relatedActions(
+      actionPlan: _relatedActions(
         context: context,
-        area:
-            _areaForPredictiveType(best.type),
+        area: _areaForPredictiveType(best.type),
         maximum: 3,
       ),
       nextStep:
           'Abra a Inteligência Preditiva, revise os três cenários e confirme se o esforço é viável.',
-      confidence:
-          best.confidence,
-      level:
-          best.scoreVariation >= 8
-              ? AtlasDiagnosticLevel.excellent
-              : AtlasDiagnosticLevel.stable,
+      confidence: best.confidence,
+      level: best.scoreVariation >= 8
+          ? AtlasDiagnosticLevel.excellent
+          : AtlasDiagnosticLevel.stable,
       actions: const [
         AtlasAiNavigationAction(
           id: 'open_predictive',
           label: 'Abrir simulação',
-          type:
-              AtlasAiNavigationActionType.openPredictive,
+          type: AtlasAiNavigationActionType.openPredictive,
         ),
       ],
     );
@@ -884,44 +756,34 @@ class AtlasAiResponseService {
       generatedAt: now ?? DateTime.now(),
       question: question,
       intent: AtlasAiIntent.simpleExplanation,
-      directAnswer:
-          context.simpleSummary,
+      directAnswer: context.simpleSummary,
       justification:
           'Essa explicação resume o score, a situação atual e a prioridade principal sem termos técnicos.',
       evidences: [
         AtlasAiEvidence(
           label: 'Score',
-          value:
-              '${context.score.toStringAsFixed(0)}/100',
-          description:
-              'Representa a situação geral da fazenda.',
+          value: '${context.score.toStringAsFixed(0)}/100',
+          description: 'Representa a situação geral da fazenda.',
           area: AtlasFarmAnalysisArea.general,
           weight: 1,
         ),
         AtlasAiEvidence(
           label: 'Prioridade',
-          value:
-              context.mainPriority.title,
-          description:
-              context.mainPriority.description,
-          area:
-              context.mainPriority.area,
+          value: context.mainPriority.title,
+          description: context.mainPriority.description,
+          area: context.mainPriority.area,
           weight: 0.95,
         ),
       ],
-      actionPlan:
-          _mapActions(context.shortTermActions.take(3).toList()),
-      nextStep:
-          'Comece pela primeira ação do plano de 7 dias.',
-      confidence:
-          _confidenceFromContext(context),
+      actionPlan: _mapActions(context.shortTermActions.take(3).toList()),
+      nextStep: 'Comece pela primeira ação do plano de 7 dias.',
+      confidence: _confidenceFromContext(context),
       level: context.level,
       actions: const [
         AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Ver diagnóstico',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
@@ -933,19 +795,10 @@ class AtlasAiResponseService {
     DateTime? now,
   }) {
     final ordered = [...context.areaContexts]
-      ..sort(
-        (first, second) =>
-            first.score.compareTo(
-          second.score,
-        ),
-      );
+      ..sort((first, second) => first.score.compareTo(second.score));
 
     if (ordered.isEmpty) {
-      return _answerUnknown(
-        question: question,
-        context: context,
-        now: now,
-      );
+      return _answerUnknown(question: question, context: context, now: now);
     }
 
     final weakest = ordered.first;
@@ -963,32 +816,27 @@ class AtlasAiResponseService {
       evidences: ordered.take(3).map((item) {
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              '${item.score.toStringAsFixed(0)}/100',
+          value: '${item.score.toStringAsFixed(0)}/100',
           description: item.analysis,
           area: item.area,
-          weight:
-              (100 - item.score) / 100,
+          weight: (100 - item.score) / 100,
         );
       }).toList(),
-      actionPlan:
-          _relatedActions(
+      actionPlan: _relatedActions(
         context: context,
         area: weakest.area,
         maximum: 4,
       ),
       nextStep:
           'Abra ${atlasFarmAreaLabel(weakest.area)} e corrija primeiro os registros ou processos com maior impacto.',
-      confidence:
-          _confidenceFromContext(context),
+      confidence: _confidenceFromContext(context),
       level: weakest.level,
       actions: [
         _navigationForArea(weakest.area),
         const AtlasAiNavigationAction(
           id: 'open_predictive',
           label: 'Simular melhoria',
-          type:
-              AtlasAiNavigationActionType.openPredictive,
+          type: AtlasAiNavigationActionType.openPredictive,
         ),
       ],
     );
@@ -997,12 +845,10 @@ class AtlasAiResponseService {
   AtlasAiResponse _answerActionProgress({
     required String question,
     required AtlasAiFarmContext context,
-    required List<AtlasAiTrackedAction>
-        trackedActions,
+    required List<AtlasAiTrackedAction> trackedActions,
     DateTime? now,
   }) {
-    final progress =
-        _calculateActionProgress(trackedActions);
+    final progress = _calculateActionProgress(trackedActions);
 
     if (!progress.hasActions) {
       return AtlasAiResponse(
@@ -1014,8 +860,7 @@ class AtlasAiResponseService {
         justification:
             'As ações são criadas automaticamente a partir dos planos sugeridos nas respostas do Atlas IA.',
         evidences: const [],
-        actionPlan:
-            _mapActions(context.shortTermActions.take(3).toList()),
+        actionPlan: _mapActions(context.shortTermActions.take(3).toList()),
         nextStep:
             'Faça uma pergunta sobre prioridades ou plano de 7 dias para gerar ações acompanháveis.',
         confidence: 90,
@@ -1024,21 +869,18 @@ class AtlasAiResponseService {
           AtlasAiNavigationAction(
             id: 'open_diagnostic',
             label: 'Abrir diagnóstico',
-            type:
-                AtlasAiNavigationActionType.openDiagnostic,
+            type: AtlasAiNavigationActionType.openDiagnostic,
           ),
         ],
       );
     }
 
-    final nextAction =
-        _nextTrackedAction(trackedActions);
+    final nextAction = _nextTrackedAction(trackedActions);
 
     final evidences = <AtlasAiEvidence>[
       AtlasAiEvidence(
         label: 'Progresso geral',
-        value:
-            '${progress.completionPercent.toStringAsFixed(0)}%',
+        value: '${progress.completionPercent.toStringAsFixed(0)}%',
         description:
             '${progress.completed} concluídas de ${progress.validTotal} ações válidas.',
         area: AtlasFarmAnalysisArea.general,
@@ -1047,27 +889,23 @@ class AtlasAiResponseService {
       AtlasAiEvidence(
         label: 'Pendentes',
         value: progress.pending.toString(),
-        description:
-            'Ações que ainda não foram iniciadas.',
+        description: 'Ações que ainda não foram iniciadas.',
         area: AtlasFarmAnalysisArea.general,
         weight: 0.85,
       ),
       AtlasAiEvidence(
         label: 'Em andamento',
         value: progress.inProgress.toString(),
-        description:
-            'Ações cuja execução já começou.',
+        description: 'Ações cuja execução já começou.',
         area: AtlasFarmAnalysisArea.general,
         weight: 0.9,
       ),
       AtlasAiEvidence(
         label: 'Atrasadas',
         value: progress.overdue.toString(),
-        description:
-            'Ações abertas cujo prazo previsto já terminou.',
+        description: 'Ações abertas cujo prazo previsto já terminou.',
         area: AtlasFarmAnalysisArea.general,
-        weight:
-            progress.overdue > 0 ? 1 : 0.7,
+        weight: progress.overdue > 0 ? 1 : 0.7,
       ),
     ];
 
@@ -1086,12 +924,7 @@ class AtlasAiResponseService {
       evidences: evidences,
       actionPlan: nextAction == null
           ? const []
-          : [
-              _trackedActionStep(
-                action: nextAction,
-                position: 1,
-              ),
-            ],
+          : [_trackedActionStep(action: nextAction, position: 1)],
       nextStep: nextAction == null
           ? 'Revise as ações concluídas e gere um novo plano quando necessário.'
           : 'A próxima ação recomendada é "${nextAction.title}".',
@@ -1099,34 +932,26 @@ class AtlasAiResponseService {
       level: progress.overdue > 0
           ? AtlasDiagnosticLevel.attention
           : progress.completionPercent >= 80
-              ? AtlasDiagnosticLevel.excellent
-              : AtlasDiagnosticLevel.stable,
-      actions: [
-        if (nextAction != null)
-          _navigationForArea(nextAction.area),
-      ],
+          ? AtlasDiagnosticLevel.excellent
+          : AtlasDiagnosticLevel.stable,
+      actions: [if (nextAction != null) _navigationForArea(nextAction.area)],
     );
   }
 
   AtlasAiResponse _answerTrackedActions({
     required String question,
     required AtlasAiFarmContext context,
-    required List<AtlasAiTrackedAction>
-        trackedActions,
+    required List<AtlasAiTrackedAction> trackedActions,
     required AtlasAiIntent intent,
     required AtlasAiTrackedActionStatus status,
     required String emptyMessage,
     DateTime? now,
   }) {
-    final items = trackedActions.where((item) {
-      return item.status == status;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            first.dueDate.compareTo(
-          second.dueDate,
-        ),
-      );
+    final items =
+        trackedActions.where((item) {
+            return item.status == status;
+          }).toList()
+          ..sort((first, second) => first.dueDate.compareTo(second.dueDate));
 
     if (items.isEmpty) {
       return AtlasAiResponse(
@@ -1138,8 +963,7 @@ class AtlasAiResponseService {
             'O acompanhamento considera os status registrados no painel Ações da Consultoria.',
         evidences: const [],
         actionPlan: const [],
-        nextStep:
-            'Abra o painel de ações para revisar ou atualizar os status.',
+        nextStep: 'Abra o painel de ações para revisar ou atualizar os status.',
         confidence: 96,
         level: AtlasDiagnosticLevel.stable,
         actions: const [],
@@ -1147,9 +971,7 @@ class AtlasAiResponseService {
     }
 
     final first = items.first;
-    final label =
-        atlasAiTrackedActionStatusLabel(status)
-            .toLowerCase();
+    final label = atlasAiTrackedActionStatusLabel(status).toLowerCase();
 
     return AtlasAiResponse(
       generatedAt: now ?? DateTime.now(),
@@ -1175,51 +997,37 @@ class AtlasAiResponseService {
           weight: item.isOverdue ? 1 : 0.85,
         );
       }).toList(),
-      actionPlan: List.generate(
-        items.take(5).length,
-        (index) {
-          return _trackedActionStep(
-            action: items[index],
-            position: index + 1,
-          );
-        },
-      ),
+      actionPlan: List.generate(items.take(5).length, (index) {
+        return _trackedActionStep(action: items[index], position: index + 1);
+      }),
       nextStep:
           'Atualize o status da ação "${first.title}" após revisar sua execução.',
       confidence: 97,
       level: items.any((item) => item.isOverdue)
           ? AtlasDiagnosticLevel.attention
           : AtlasDiagnosticLevel.stable,
-      actions: [
-        _navigationForArea(first.area),
-      ],
+      actions: [_navigationForArea(first.area)],
     );
   }
 
   AtlasAiResponse _answerOverdueActions({
     required String question,
     required AtlasAiFarmContext context,
-    required List<AtlasAiTrackedAction>
-        trackedActions,
+    required List<AtlasAiTrackedAction> trackedActions,
     DateTime? now,
   }) {
-    final overdue = trackedActions.where((item) {
-      return item.isOverdue;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            first.dueDate.compareTo(
-          second.dueDate,
-        ),
-      );
+    final overdue =
+        trackedActions.where((item) {
+            return item.isOverdue;
+          }).toList()
+          ..sort((first, second) => first.dueDate.compareTo(second.dueDate));
 
     if (overdue.isEmpty) {
       return AtlasAiResponse(
         generatedAt: now ?? DateTime.now(),
         question: question,
         intent: AtlasAiIntent.overdueActions,
-        directAnswer:
-            'Não existem ações atrasadas no acompanhamento atual.',
+        directAnswer: 'Não existem ações atrasadas no acompanhamento atual.',
         justification:
             'Todas as ações abertas ainda estão dentro do prazo registrado.',
         evidences: const [],
@@ -1245,13 +1053,11 @@ class AtlasAiResponseService {
           'A ação mais antiga é "${first.title}", '
           'com prazo encerrado em ${_formatDate(first.dueDate)}.',
       evidences: overdue.take(5).map((item) {
-        final delay =
-            DateTime.now().difference(item.dueDate).inDays;
+        final delay = DateTime.now().difference(item.dueDate).inDays;
 
         return AtlasAiEvidence(
           label: item.title,
-          value:
-              '$delay ${delay == 1 ? 'dia' : 'dias'} de atraso',
+          value: '$delay ${delay == 1 ? 'dia' : 'dias'} de atraso',
           description: item.notes.isEmpty
               ? item.description
               : '${item.description} Observação: ${item.notes}',
@@ -1259,22 +1065,14 @@ class AtlasAiResponseService {
           weight: 1,
         );
       }).toList(),
-      actionPlan: List.generate(
-        overdue.take(5).length,
-        (index) {
-          return _trackedActionStep(
-            action: overdue[index],
-            position: index + 1,
-          );
-        },
-      ),
+      actionPlan: List.generate(overdue.take(5).length, (index) {
+        return _trackedActionStep(action: overdue[index], position: index + 1);
+      }),
       nextStep:
           'Revise imediatamente "${first.title}", ajuste o prazo ou atualize seu status.',
       confidence: 99,
       level: AtlasDiagnosticLevel.critical,
-      actions: [
-        _navigationForArea(first.area),
-      ],
+      actions: [_navigationForArea(first.area)],
     );
   }
 
@@ -1282,31 +1080,26 @@ class AtlasAiResponseService {
     List<AtlasAiTrackedAction> actions,
   ) {
     final pending = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.pending;
+      return item.status == AtlasAiTrackedActionStatus.pending;
     }).length;
 
     final inProgress = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.inProgress;
+      return item.status == AtlasAiTrackedActionStatus.inProgress;
     }).length;
 
     final completed = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.completed;
+      return item.status == AtlasAiTrackedActionStatus.completed;
     }).length;
 
     final cancelled = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.cancelled;
+      return item.status == AtlasAiTrackedActionStatus.cancelled;
     }).length;
 
     final overdue = actions.where((item) {
       return item.isOverdue;
     }).length;
 
-    final validTotal =
-        actions.length - cancelled;
+    final validTotal = actions.length - cancelled;
 
     return _ActionProgressData(
       total: actions.length,
@@ -1318,38 +1111,31 @@ class AtlasAiResponseService {
       overdue: overdue,
       completionPercent: validTotal == 0
           ? 0
-          : (completed / validTotal * 100)
-              .clamp(0.0, 100.0),
+          : (completed / validTotal * 100).clamp(0.0, 100.0),
     );
   }
 
-  AtlasAiTrackedAction? _nextTrackedAction(
-    List<AtlasAiTrackedAction> actions,
-  ) {
-    final open = actions.where((item) {
-      return item.isOpen;
-    }).toList()
-      ..sort((first, second) {
-        if (first.isOverdue != second.isOverdue) {
-          return first.isOverdue ? -1 : 1;
-        }
-
-        if (first.status != second.status) {
-          if (first.status ==
-              AtlasAiTrackedActionStatus.inProgress) {
-            return -1;
+  AtlasAiTrackedAction? _nextTrackedAction(List<AtlasAiTrackedAction> actions) {
+    final open =
+        actions.where((item) {
+          return item.isOpen;
+        }).toList()..sort((first, second) {
+          if (first.isOverdue != second.isOverdue) {
+            return first.isOverdue ? -1 : 1;
           }
 
-          if (second.status ==
-              AtlasAiTrackedActionStatus.inProgress) {
-            return 1;
-          }
-        }
+          if (first.status != second.status) {
+            if (first.status == AtlasAiTrackedActionStatus.inProgress) {
+              return -1;
+            }
 
-        return first.dueDate.compareTo(
-          second.dueDate,
-        );
-      });
+            if (second.status == AtlasAiTrackedActionStatus.inProgress) {
+              return 1;
+            }
+          }
+
+          return first.dueDate.compareTo(second.dueDate);
+        });
 
     return open.isEmpty ? null : open.first;
   }
@@ -1358,8 +1144,7 @@ class AtlasAiResponseService {
     required AtlasAiTrackedAction action,
     required int position,
   }) {
-    final daysRemaining =
-        action.dueDate.difference(DateTime.now()).inDays;
+    final daysRemaining = action.dueDate.difference(DateTime.now()).inDays;
 
     return AtlasAiResponseActionStep(
       position: position,
@@ -1367,22 +1152,16 @@ class AtlasAiResponseService {
       description: action.notes.isEmpty
           ? action.description
           : '${action.description} Observação: ${action.notes}',
-      expectedResult:
-          action.expectedResult,
+      expectedResult: action.expectedResult,
       area: action.area,
-      deadlineDays:
-          daysRemaining < 0 ? 0 : daysRemaining,
+      deadlineDays: daysRemaining < 0 ? 0 : daysRemaining,
     );
   }
 
-  String _formatDate(
-    DateTime date,
-  ) {
-    final day =
-        date.day.toString().padLeft(2, '0');
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
 
-    final month =
-        date.month.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year}';
   }
@@ -1410,16 +1189,13 @@ class AtlasAiResponseService {
         AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Abrir diagnóstico',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         ),
       ],
     );
   }
 
-  AtlasAiIntent _identifyIntent(
-    String question,
-  ) {
+  AtlasAiIntent _identifyIntent(String question) {
     if (_containsAny(question, [
       'linguagem simples',
       'explique simples',
@@ -1461,11 +1237,7 @@ class AtlasAiResponseService {
       return AtlasAiIntent.mediumTermPlan;
     }
 
-    if (_containsAny(question, [
-      '90 dias',
-      'trimestre',
-      'longo prazo',
-    ])) {
+    if (_containsAny(question, ['90 dias', 'trimestre', 'longo prazo'])) {
       return AtlasAiIntent.longTermPlan;
     }
 
@@ -1647,8 +1419,7 @@ class AtlasAiResponseService {
     return AtlasAiIntent.unknown;
   }
 
-  List<AtlasAiResponseActionStep>
-      _relatedActions({
+  List<AtlasAiResponseActionStep> _relatedActions({
     required AtlasAiFarmContext context,
     required AtlasFarmAnalysisArea area,
     required int maximum,
@@ -1659,63 +1430,47 @@ class AtlasAiResponseService {
       ...context.longTermActions,
     ];
 
-    final related = allActions.where((item) {
-      return item.area == area;
-    }).take(maximum).toList();
+    final related = allActions
+        .where((item) {
+          return item.area == area;
+        })
+        .take(maximum)
+        .toList();
 
     if (related.isNotEmpty) {
       return _mapActions(related);
     }
 
-    return _mapActions(
-      context.shortTermActions.take(maximum).toList(),
-    );
+    return _mapActions(context.shortTermActions.take(maximum).toList());
   }
 
   List<AtlasAiResponseActionStep> _mapActions(
     List<AtlasAiActionContext> source,
   ) {
-    return List.generate(
-      source.length,
-      (index) {
-        final item = source[index];
+    return List.generate(source.length, (index) {
+      final item = source[index];
 
-        return AtlasAiResponseActionStep(
-          position: index + 1,
-          title: item.title,
-          description: item.description,
-          expectedResult:
-              item.expectedResult,
-          area: item.area,
-          deadlineDays:
-              _deadlineForHorizon(
-            item.horizon,
-            index,
-          ),
-        );
-      },
-    );
+      return AtlasAiResponseActionStep(
+        position: index + 1,
+        title: item.title,
+        description: item.description,
+        expectedResult: item.expectedResult,
+        area: item.area,
+        deadlineDays: _deadlineForHorizon(item.horizon, index),
+      );
+    });
   }
 
-  int _deadlineForHorizon(
-    AtlasDiagnosticHorizon horizon,
-    int index,
-  ) {
+  int _deadlineForHorizon(AtlasDiagnosticHorizon horizon, int index) {
     switch (horizon) {
       case AtlasDiagnosticHorizon.sevenDays:
         return math.min(7, index + 1);
 
       case AtlasDiagnosticHorizon.thirtyDays:
-        return math.min(
-          30,
-          (index + 1) * 7,
-        );
+        return math.min(30, (index + 1) * 7);
 
       case AtlasDiagnosticHorizon.ninetyDays:
-        return math.min(
-          90,
-          (index + 1) * 30,
-        );
+        return math.min(90, (index + 1) * 30);
     }
   }
 
@@ -1732,74 +1487,59 @@ class AtlasAiResponseService {
     return null;
   }
 
-  AtlasAiAreaContext? _weakestArea(
-    AtlasAiFarmContext context,
-  ) {
+  AtlasAiAreaContext? _weakestArea(AtlasAiFarmContext context) {
     if (context.areaContexts.isEmpty) {
       return null;
     }
 
     final ordered = [...context.areaContexts]
-      ..sort(
-        (first, second) =>
-            first.score.compareTo(
-          second.score,
-        ),
-      );
+      ..sort((first, second) => first.score.compareTo(second.score));
 
     return ordered.first;
   }
 
-  AtlasAiNavigationAction _navigationForArea(
-    AtlasFarmAnalysisArea area,
-  ) {
+  AtlasAiNavigationAction _navigationForArea(AtlasFarmAnalysisArea area) {
     switch (area) {
       case AtlasFarmAnalysisArea.finance:
         return const AtlasAiNavigationAction(
           id: 'open_finance',
           label: 'Abrir Financeiro',
-          type:
-              AtlasAiNavigationActionType.openFinance,
+          type: AtlasAiNavigationActionType.openFinance,
         );
 
       case AtlasFarmAnalysisArea.herd:
         return const AtlasAiNavigationAction(
           id: 'open_herd',
           label: 'Abrir Rebanho',
-          type:
-              AtlasAiNavigationActionType.openHerd,
+          type: AtlasAiNavigationActionType.openHerd,
         );
 
       case AtlasFarmAnalysisArea.paddock:
         return const AtlasAiNavigationAction(
           id: 'open_paddocks',
           label: 'Abrir Piquetes',
-          type:
-              AtlasAiNavigationActionType.openPaddocks,
+          type: AtlasAiNavigationActionType.openPaddocks,
         );
 
       case AtlasFarmAnalysisArea.inventory:
         return const AtlasAiNavigationAction(
           id: 'open_inventory',
           label: 'Abrir Estoque',
-          type:
-              AtlasAiNavigationActionType.openInventory,
+          type: AtlasAiNavigationActionType.openInventory,
         );
 
       case AtlasFarmAnalysisArea.agenda:
         return const AtlasAiNavigationAction(
           id: 'open_agenda',
           label: 'Abrir Agenda',
-          type:
-              AtlasAiNavigationActionType.openAgenda,
+          type: AtlasAiNavigationActionType.openAgenda,
         );
 
       case AtlasFarmAnalysisArea.general:
         return const AtlasAiNavigationAction(
           id: 'open_diagnostic',
           label: 'Abrir Diagnóstico',
-          type:
-              AtlasAiNavigationActionType.openDiagnostic,
+          type: AtlasAiNavigationActionType.openDiagnostic,
         );
     }
   }
@@ -1812,20 +1552,16 @@ class AtlasAiResponseService {
       case AtlasPredictiveScenarioType.increaseRevenue:
         return AtlasFarmAnalysisArea.finance;
 
-      case AtlasPredictiveScenarioType
-            .reduceOverdueTasks:
+      case AtlasPredictiveScenarioType.reduceOverdueTasks:
         return AtlasFarmAnalysisArea.agenda;
 
-      case AtlasPredictiveScenarioType
-            .reduceInventoryLosses:
+      case AtlasPredictiveScenarioType.reduceInventoryLosses:
         return AtlasFarmAnalysisArea.inventory;
 
-      case AtlasPredictiveScenarioType
-            .improveHerdRecords:
+      case AtlasPredictiveScenarioType.improveHerdRecords:
         return AtlasFarmAnalysisArea.herd;
 
-      case AtlasPredictiveScenarioType
-            .improvePaddockUse:
+      case AtlasPredictiveScenarioType.improvePaddockUse:
         return AtlasFarmAnalysisArea.paddock;
 
       case AtlasPredictiveScenarioType.custom:
@@ -1833,11 +1569,8 @@ class AtlasAiResponseService {
     }
   }
 
-  double _predictiveScore(
-    AtlasAiPredictiveContext item,
-  ) {
-    final effortWeight =
-        switch (item.effort) {
+  double _predictiveScore(AtlasAiPredictiveContext item) {
+    final effortWeight = switch (item.effort) {
       AtlasPredictiveEffort.low => 1.0,
       AtlasPredictiveEffort.medium => 0.78,
       AtlasPredictiveEffort.high => 0.56,
@@ -1849,17 +1582,14 @@ class AtlasAiResponseService {
         effortWeight;
   }
 
-  double _confidenceFromContext(
-    AtlasAiFarmContext context,
-  ) {
+  double _confidenceFromContext(AtlasAiFarmContext context) {
     var confidence = 68.0;
 
     if (context.areaContexts.length >= 5) {
       confidence += 10;
     }
 
-    if (context.risks.isNotEmpty ||
-        context.bottlenecks.isNotEmpty) {
+    if (context.risks.isNotEmpty || context.bottlenecks.isNotEmpty) {
       confidence += 5;
     }
 
@@ -1874,10 +1604,7 @@ class AtlasAiResponseService {
     return confidence.clamp(45.0, 93.0);
   }
 
-  bool _containsAny(
-    String value,
-    List<String> terms,
-  ) {
+  bool _containsAny(String value, List<String> terms) {
     for (final term in terms) {
       if (value.contains(term)) {
         return true;
@@ -1887,9 +1614,7 @@ class AtlasAiResponseService {
     return false;
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     return value
         .trim()
         .toLowerCase()
@@ -1907,11 +1632,8 @@ class AtlasAiResponseService {
         .replaceAll('ç', 'c');
   }
 
-  String _currency(
-    double value,
-  ) {
-    final fixed =
-        value.abs().toStringAsFixed(2);
+  String _currency(double value) {
+    final fixed = value.abs().toStringAsFixed(2);
 
     final parts = fixed.split('.');
 
@@ -1920,20 +1642,12 @@ class AtlasAiResponseService {
 
     final buffer = StringBuffer();
 
-    for (
-      var index = 0;
-      index < integer.length;
-      index++
-    ) {
-      final remaining =
-          integer.length - index;
+    for (var index = 0; index < integer.length; index++) {
+      final remaining = integer.length - index;
 
       buffer.write(integer[index]);
 
-      if (
-        remaining > 1 &&
-        remaining % 3 == 1
-      ) {
+      if (remaining > 1 && remaining % 3 == 1) {
         buffer.write('.');
       }
     }
@@ -1969,4 +1683,3 @@ class _ActionProgressData {
     return total > 0;
   }
 }
-

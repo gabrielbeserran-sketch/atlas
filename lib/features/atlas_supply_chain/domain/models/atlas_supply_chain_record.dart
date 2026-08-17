@@ -1,52 +1,47 @@
-enum AtlasSupplyChainModule {
-  purchases,
-  commercialization,
-  logistics,
-}
+enum AtlasSupplyChainModule { purchases, commercialization, logistics }
 
 extension AtlasSupplyChainModuleX on AtlasSupplyChainModule {
   String get code => switch (this) {
-        AtlasSupplyChainModule.purchases => 'purchases',
-        AtlasSupplyChainModule.commercialization => 'commercialization',
-        AtlasSupplyChainModule.logistics => 'logistics',
-      };
+    AtlasSupplyChainModule.purchases => 'purchases',
+    AtlasSupplyChainModule.commercialization => 'commercialization',
+    AtlasSupplyChainModule.logistics => 'logistics',
+  };
 
   String get title => switch (this) {
-        AtlasSupplyChainModule.purchases => 'Compras Enterprise',
-        AtlasSupplyChainModule.commercialization =>
-          'Comercialização Enterprise',
-        AtlasSupplyChainModule.logistics => 'Logística Enterprise',
-      };
+    AtlasSupplyChainModule.purchases => 'Compras Enterprise',
+    AtlasSupplyChainModule.commercialization => 'Comercialização Enterprise',
+    AtlasSupplyChainModule.logistics => 'Logística Enterprise',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasSupplyChainModule.purchases => 'Pacote 44',
-        AtlasSupplyChainModule.commercialization => 'Pacote 45',
-        AtlasSupplyChainModule.logistics => 'Pacote 46',
-      };
+    AtlasSupplyChainModule.purchases => 'Pacote 44',
+    AtlasSupplyChainModule.commercialization => 'Pacote 45',
+    AtlasSupplyChainModule.logistics => 'Pacote 46',
+  };
 
   List<String> get features => switch (this) {
-        AtlasSupplyChainModule.purchases => const [
-            'Solicitações de compra',
-            'Cotação entre fornecedores',
-            'Aprovação de compras',
-            'Recebimento de materiais',
-            'Histórico de preços',
-          ],
-        AtlasSupplyChainModule.commercialization => const [
-            'Venda de animais',
-            'Contratos',
-            'Romaneios',
-            'Rentabilidade por venda',
-            'Inteligência de mercado',
-          ],
-        AtlasSupplyChainModule.logistics => const [
-            'Transporte de animais',
-            'GTA',
-            'Roteirização',
-            'Custos logísticos',
-            'Histórico de movimentações',
-          ],
-      };
+    AtlasSupplyChainModule.purchases => const [
+      'Solicitações de compra',
+      'Cotação entre fornecedores',
+      'Aprovação de compras',
+      'Recebimento de materiais',
+      'Histórico de preços',
+    ],
+    AtlasSupplyChainModule.commercialization => const [
+      'Venda de animais',
+      'Contratos',
+      'Romaneios',
+      'Rentabilidade por venda',
+      'Inteligência de mercado',
+    ],
+    AtlasSupplyChainModule.logistics => const [
+      'Transporte de animais',
+      'GTA',
+      'Roteirização',
+      'Custos logísticos',
+      'Histórico de movimentações',
+    ],
+  };
 }
 
 class AtlasSupplyChainRecord {
@@ -86,11 +81,9 @@ class AtlasSupplyChainRecord {
 
   double get totalValue => quantity * unitValue;
 
-  bool get isCritical =>
-      status == 'Crítico' || status == 'Atenção';
+  bool get isCritical => status == 'Crítico' || status == 'Atenção';
 
-  bool get isCompleted =>
-      status == 'Concluído' || status == 'Recebido';
+  bool get isCompleted => status == 'Concluído' || status == 'Recebido';
 
   Map<String, dynamic> toMap() {
     return {
@@ -112,9 +105,7 @@ class AtlasSupplyChainRecord {
     };
   }
 
-  factory AtlasSupplyChainRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasSupplyChainRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasSupplyChainModule.values.firstWhere(

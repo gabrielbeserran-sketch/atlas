@@ -15,14 +15,12 @@ class AtlasEnterpriseScopeGuard {
     }
   }
 
-  Future<void> requireFarm(
-    AtlasEnterpriseFarm farm,
-  ) async {
+  Future<void> requireFarm(AtlasEnterpriseFarm farm) async {
     await requireCompany(farm.scope.companyId);
 
-    final allowed =
-        await AtlasEnterpriseSessionService.instance
-            .canAccessFarm(farm.id);
+    final allowed = await AtlasEnterpriseSessionService.instance.canAccessFarm(
+      farm.id,
+    );
     if (!allowed) {
       throw StateError(
         'Acesso bloqueado: o usuário não possui vínculo com esta fazenda.',
@@ -30,20 +28,15 @@ class AtlasEnterpriseScopeGuard {
     }
   }
 
-  Future<void> requireEntityScope(
-    AtlasEntityScope scope,
-  ) async {
+  Future<void> requireEntityScope(AtlasEntityScope scope) async {
     await requireCompany(scope.companyId);
 
     final farmId = scope.farmId;
     if (farmId != null) {
-      final allowed =
-          await AtlasEnterpriseSessionService.instance
-              .canAccessFarm(farmId);
+      final allowed = await AtlasEnterpriseSessionService.instance
+          .canAccessFarm(farmId);
       if (!allowed) {
-        throw StateError(
-          'Acesso bloqueado pelo isolamento multiempresa.',
-        );
+        throw StateError('Acesso bloqueado pelo isolamento multiempresa.');
       }
     }
   }

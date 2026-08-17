@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/executive_ai_advisor/domain/models/atlas_executive_ai_advisor_data.dart';
 
-class AtlasExecutiveAiAdvisorScreen
-    extends StatelessWidget {
+class AtlasExecutiveAiAdvisorScreen extends StatelessWidget {
   const AtlasExecutiveAiAdvisorScreen({
     required this.data,
     this.onOpenFarm,
@@ -15,77 +14,59 @@ class AtlasExecutiveAiAdvisorScreen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text(
           'Atlas Executive AI Advisor',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: data.hasData
                 ? ListView(
-                    padding:
-                        const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(22),
                     children: [
                       _AdvisorHero(data: data),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Diagnóstico executivo',
-                        subtitle:
-                            'Síntese consolidada de toda a operação.',
+                        title: 'Diagnóstico executivo',
+                        subtitle: 'Síntese consolidada de toda a operação.',
                       ),
                       const SizedBox(height: 12),
-                      _DiagnosticCard(
-                        diagnostic:
-                            data.diagnostic,
-                      ),
+                      _DiagnosticCard(diagnostic: data.diagnostic),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Prioridades da semana',
-                        subtitle:
-                            'Decisões que exigem ação imediata.',
+                        title: 'Prioridades da semana',
+                        subtitle: 'Decisões que exigem ação imediata.',
                       ),
                       const SizedBox(height: 12),
                       _PriorityList(
-                        items:
-                            data.weeklyPriorities,
+                        items: data.weeklyPriorities,
                         onOpenFarm: onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Prioridades do mês',
+                        title: 'Prioridades do mês',
                         subtitle:
                             'Temas estratégicos para os próximos 30 dias.',
                       ),
                       const SizedBox(height: 12),
                       _PriorityList(
-                        items:
-                            data.monthlyPriorities,
+                        items: data.monthlyPriorities,
                         onOpenFarm: onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Oportunidades financeiras',
+                        title: 'Oportunidades financeiras',
                         subtitle:
                             'Intervenções com maior potencial de retorno.',
                       ),
                       const SizedBox(height: 12),
                       _FinancialOpportunityList(
-                        items: data
-                            .financialOpportunities,
+                        items: data.financialOpportunities,
                         onOpenFarm: onOpenFarm,
                       ),
                       const SizedBox(height: 24),
@@ -101,34 +82,27 @@ class AtlasExecutiveAiAdvisorScreen
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Gargalos operacionais',
-                        subtitle:
-                            'Pontos que mais limitam os resultados.',
+                        title: 'Gargalos operacionais',
+                        subtitle: 'Pontos que mais limitam os resultados.',
                       ),
                       const SizedBox(height: 12),
                       _BottleneckList(
-                        items: data
-                            .operationalBottlenecks,
+                        items: data.operationalBottlenecks,
                         onOpenFarm: onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Recomendações estratégicas',
-                        subtitle:
-                            'Orientações consolidadas do Advisor.',
+                        title: 'Recomendações estratégicas',
+                        subtitle: 'Orientações consolidadas do Advisor.',
                       ),
                       const SizedBox(height: 12),
                       _RecommendationList(
-                        items: data
-                            .strategicRecommendations,
+                        items: data.strategicRecommendations,
                         onOpenFarm: onOpenFarm,
                       ),
                       const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Plano de ação automático',
+                        title: 'Plano de ação automático',
                         subtitle:
                             'Sequência recomendada para transformar análise em execução.',
                       ),
@@ -149,41 +123,28 @@ class AtlasExecutiveAiAdvisorScreen
 }
 
 class _AdvisorHero extends StatelessWidget {
-  const _AdvisorHero({
-    required this.data,
-  });
+  const _AdvisorHero({required this.data});
 
   final AtlasExecutiveAiAdvisorData data;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _statusColor(data.status);
+    final color = _statusColor(data.status);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0B132B),
-            Color(0xFF1C2541),
-            Color(0xFF3A506B),
-          ],
+          colors: [Color(0xFF0B132B), Color(0xFF1C2541), Color(0xFF3A506B)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
@@ -199,8 +160,7 @@ class _AdvisorHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -209,10 +169,7 @@ class _AdvisorHero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 data.executiveSummary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.45,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.45),
               ),
               const SizedBox(height: 15),
               Wrap(
@@ -221,23 +178,14 @@ class _AdvisorHero extends StatelessWidget {
                 children: [
                   _HeroMetric(
                     label: 'Semana',
-                    value: data
-                        .weeklyPriorities.length,
+                    value: data.weeklyPriorities.length,
                   ),
                   _HeroMetric(
                     label: 'Mês',
-                    value: data
-                        .monthlyPriorities.length,
+                    value: data.monthlyPriorities.length,
                   ),
-                  _HeroMetric(
-                    label: 'Riscos',
-                    value:
-                        data.hiddenRisks.length,
-                  ),
-                  _HeroMetric(
-                    label: 'Ações',
-                    value: data.actionPlan.length,
-                  ),
+                  _HeroMetric(label: 'Riscos', value: data.hiddenRisks.length),
+                  _HeroMetric(label: 'Ações', value: data.actionPlan.length),
                 ],
               ),
             ],
@@ -247,64 +195,39 @@ class _AdvisorHero extends StatelessWidget {
             width: 225,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data.advisorScore
-                      .toStringAsFixed(0),
+                  data.advisorScore.toStringAsFixed(0),
                   style: TextStyle(
                     color: color,
                     fontSize: 42,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  atlasExecutiveAdvisorStatusLabel(
-                    data.status,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
+                  atlasExecutiveAdvisorStatusLabel(data.status),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(20),
-                  child:
-                      LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(20),
+                  child: LinearProgressIndicator(
                     minHeight: 9,
-                    value:
-                        data.advisorScore / 100,
-                    backgroundColor:
-                        Colors.white.withValues(
-                      alpha: 0.12,
-                    ),
-                    valueColor:
-                        AlwaysStoppedAnimation<
-                            Color>(
-                      color,
-                    ),
+                    value: data.advisorScore / 100,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Confiança: '
                   '${data.confidencePercent.toStringAsFixed(0)}%',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),
@@ -312,19 +235,13 @@ class _AdvisorHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                information,
-                const SizedBox(height: 20),
-                side,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [information, const SizedBox(height: 20), side],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: information),
               const SizedBox(width: 24),
@@ -338,9 +255,7 @@ class _AdvisorHero extends StatelessWidget {
 }
 
 class _DiagnosticCard extends StatelessWidget {
-  const _DiagnosticCard({
-    required this.diagnostic,
-  });
+  const _DiagnosticCard({required this.diagnostic});
 
   final String diagnostic;
 
@@ -350,8 +265,7 @@ class _DiagnosticCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Icon(
               Icons.assignment_outlined,
@@ -362,10 +276,7 @@ class _DiagnosticCard extends StatelessWidget {
             Expanded(
               child: Text(
                 diagnostic,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  height: 1.5,
-                ),
+                style: const TextStyle(color: Colors.black87, height: 1.5),
               ),
             ),
           ],
@@ -376,13 +287,9 @@ class _DiagnosticCard extends StatelessWidget {
 }
 
 class _PriorityList extends StatelessWidget {
-  const _PriorityList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+  const _PriorityList({required this.items, required this.onOpenFarm});
 
-  final List<AtlasExecutiveAdvisorPriority>
-      items;
+  final List<AtlasExecutiveAdvisorPriority> items;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -394,29 +301,20 @@ class _PriorityList extends StatelessWidget {
 
     return Column(
       children: items.map((item) {
-        final color =
-            _priorityColor(item.priority);
+        final color = _priorityColor(item.priority);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 item.position.toString(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.farmName} · '
@@ -425,13 +323,8 @@ class _PriorityList extends StatelessWidget {
             ),
             isThreeLine: true,
             trailing: Text(
-              atlasExecutiveAdvisorPriorityLabel(
-                item.priority,
-              ),
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              atlasExecutiveAdvisorPriorityLabel(item.priority),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
             onTap: onOpenFarm == null
                 ? null
@@ -445,15 +338,13 @@ class _PriorityList extends StatelessWidget {
   }
 }
 
-class _FinancialOpportunityList
-    extends StatelessWidget {
+class _FinancialOpportunityList extends StatelessWidget {
   const _FinancialOpportunityList({
     required this.items,
     required this.onOpenFarm,
   });
 
-  final List<AtlasExecutiveAdvisorFinancialOpportunity>
-      items;
+  final List<AtlasExecutiveAdvisorFinancialOpportunity> items;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -467,16 +358,10 @@ class _FinancialOpportunityList
       children: items.map((item) {
         return Card(
           child: ListTile(
-            leading: CircleAvatar(
-              child: Text(
-                item.position.toString(),
-              ),
-            ),
+            leading: CircleAvatar(child: Text(item.position.toString())),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.farmName} · investimento de '
@@ -504,10 +389,7 @@ class _FinancialOpportunityList
 }
 
 class _RiskList extends StatelessWidget {
-  const _RiskList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+  const _RiskList({required this.items, required this.onOpenFarm});
 
   final List<AtlasExecutiveAdvisorRisk> items;
   final ValueChanged<String>? onOpenFarm;
@@ -520,20 +402,14 @@ class _RiskList extends StatelessWidget {
 
     return Column(
       children: items.map((item) {
-        final color =
-            _severityColor(item.severity);
+        final color = _severityColor(item.severity);
 
         return Card(
           child: ListTile(
-            leading: Icon(
-              Icons.warning_amber_outlined,
-              color: color,
-            ),
+            leading: Icon(Icons.warning_amber_outlined, color: color),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.farmName} · horizonte de '
@@ -543,10 +419,7 @@ class _RiskList extends StatelessWidget {
             isThreeLine: true,
             trailing: Text(
               '${item.probabilityPercent.toStringAsFixed(0)}%',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
             onTap: onOpenFarm == null
                 ? null
@@ -560,15 +433,10 @@ class _RiskList extends StatelessWidget {
   }
 }
 
-class _BottleneckList
-    extends StatelessWidget {
-  const _BottleneckList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+class _BottleneckList extends StatelessWidget {
+  const _BottleneckList({required this.items, required this.onOpenFarm});
 
-  final List<AtlasExecutiveAdvisorBottleneck>
-      items;
+  final List<AtlasExecutiveAdvisorBottleneck> items;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -580,20 +448,14 @@ class _BottleneckList
 
     return Column(
       children: items.map((item) {
-        final color =
-            _severityColor(item.severity);
+        final color = _severityColor(item.severity);
 
         return Card(
           child: ListTile(
-            leading: Icon(
-              Icons.crisis_alert_outlined,
-              color: color,
-            ),
+            leading: Icon(Icons.crisis_alert_outlined, color: color),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.farmName} · '
@@ -603,10 +465,7 @@ class _BottleneckList
             isThreeLine: true,
             trailing: Text(
               item.impactScore.toStringAsFixed(0),
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
             onTap: onOpenFarm == null
                 ? null
@@ -620,15 +479,10 @@ class _BottleneckList
   }
 }
 
-class _RecommendationList
-    extends StatelessWidget {
-  const _RecommendationList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+class _RecommendationList extends StatelessWidget {
+  const _RecommendationList({required this.items, required this.onOpenFarm});
 
-  final List<AtlasExecutiveAdvisorRecommendation>
-      items;
+  final List<AtlasExecutiveAdvisorRecommendation> items;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -640,20 +494,14 @@ class _RecommendationList
 
     return Column(
       children: items.map((item) {
-        final color =
-            _priorityColor(item.priority);
+        final color = _priorityColor(item.priority);
 
         return Card(
           child: ListTile(
-            leading: Icon(
-              Icons.lightbulb_outline,
-              color: color,
-            ),
+            leading: Icon(Icons.lightbulb_outline, color: color),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.description}\n'
@@ -663,13 +511,9 @@ class _RecommendationList
             isThreeLine: true,
             trailing: Text(
               '${item.confidencePercent.toStringAsFixed(0)}%',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
-            onTap: onOpenFarm == null ||
-                    item.farmName == 'Operação'
+            onTap: onOpenFarm == null || item.farmName == 'Operação'
                 ? null
                 : () {
                     onOpenFarm!(item.farmName);
@@ -681,15 +525,10 @@ class _RecommendationList
   }
 }
 
-class _ActionPlanList
-    extends StatelessWidget {
-  const _ActionPlanList({
-    required this.items,
-    required this.onOpenFarm,
-  });
+class _ActionPlanList extends StatelessWidget {
+  const _ActionPlanList({required this.items, required this.onOpenFarm});
 
-  final List<AtlasExecutiveAdvisorAction>
-      items;
+  final List<AtlasExecutiveAdvisorAction> items;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -701,29 +540,20 @@ class _ActionPlanList
 
     return Column(
       children: items.map((item) {
-        final color =
-            _priorityColor(item.priority);
+        final color = _priorityColor(item.priority);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 item.position.toString(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasExecutiveAdvisorActionSourceLabel(item.source)} · '
@@ -733,13 +563,8 @@ class _ActionPlanList
             ),
             isThreeLine: true,
             trailing: Text(
-              atlasExecutiveAdvisorPriorityLabel(
-                item.priority,
-              ),
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              atlasExecutiveAdvisorPriorityLabel(item.priority),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
             onTap: onOpenFarm == null
                 ? null
@@ -754,10 +579,7 @@ class _ActionPlanList
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -765,17 +587,10 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
@@ -790,10 +605,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -801,23 +613,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -834,9 +637,7 @@ class _EmptySection extends StatelessWidget {
         child: Center(
           child: Text(
             'Nenhum item disponível.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -844,8 +645,7 @@ class _EmptySection extends StatelessWidget {
   }
 }
 
-class _EmptyAdvisorView
-    extends StatelessWidget {
+class _EmptyAdvisorView extends StatelessWidget {
   const _EmptyAdvisorView();
 
   @override
@@ -853,17 +653,13 @@ class _EmptyAdvisorView
     return const Center(
       child: Text(
         'Nenhum parecer executivo disponível.',
-        style: TextStyle(
-          color: Colors.black54,
-        ),
+        style: TextStyle(color: Colors.black54),
       ),
     );
   }
 }
 
-Color _statusColor(
-  AtlasExecutiveAdvisorStatus status,
-) {
+Color _statusColor(AtlasExecutiveAdvisorStatus status) {
   switch (status) {
     case AtlasExecutiveAdvisorStatus.excellent:
       return const Color(0xFF80CBC4);
@@ -879,9 +675,7 @@ Color _statusColor(
   }
 }
 
-Color _severityColor(
-  AtlasExecutiveAdvisorSeverity severity,
-) {
+Color _severityColor(AtlasExecutiveAdvisorSeverity severity) {
   switch (severity) {
     case AtlasExecutiveAdvisorSeverity.low:
       return const Color(0xFF2E7D32);
@@ -897,9 +691,7 @@ Color _severityColor(
   }
 }
 
-Color _priorityColor(
-  AtlasExecutiveAdvisorPriorityLevel priority,
-) {
+Color _priorityColor(AtlasExecutiveAdvisorPriorityLevel priority) {
   switch (priority) {
     case AtlasExecutiveAdvisorPriorityLevel.low:
       return const Color(0xFF2E7D32);

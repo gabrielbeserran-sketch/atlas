@@ -1,0 +1,14 @@
+{
+  "advanced_local_components_total": 98,
+  "advanced_local_components_baseline_minimum": 98,
+  "advanced_local_components_delta_from_baseline": 0,
+  "disposition_counts": {
+    "advanced_validation": 85,
+    "internal_tool": 13
+  },
+  "feature_roots_total": 69,
+  "official_v1_local_advanced_blockers": [],
+  "navigation_maturity_errors": [],
+  "digital_twin_demo_is_explicit": true,
+  "decision": "Os componentes locais avançados permanecem fora da autoridade dos cadastros V1. Módulos avançados e ferramentas internas devem ser identificados visualmente até terem backend e homologação próprios."
+}

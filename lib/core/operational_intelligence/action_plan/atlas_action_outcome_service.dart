@@ -12,39 +12,29 @@ class AtlasActionOutcomeService {
   static final AtlasActionOutcomeService instance =
       AtlasActionOutcomeService._();
 
-  static const String _storageKey =
-      'atlas_action_outcomes_v1';
+  static const String _storageKey = 'atlas_action_outcomes_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasActionOutcome>> load({
-    String? farmName,
-  }) async {
+  Future<List<AtlasActionOutcome>> load({String? farmName}) async {
     final all = await _loadAll();
-    final normalizedFarm =
-        farmName?.trim().toLowerCase();
+    final normalizedFarm = farmName?.trim().toLowerCase();
 
-    final filtered = all.where((outcome) {
-      if (normalizedFarm == null ||
-          normalizedFarm.isEmpty) {
-        return true;
-      }
+    final filtered =
+        all.where((outcome) {
+          if (normalizedFarm == null || normalizedFarm.isEmpty) {
+            return true;
+          }
 
-      return outcome.farmName?.trim().toLowerCase() ==
-          normalizedFarm;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.updatedAt.compareTo(first.updatedAt),
-      );
+          return outcome.farmName?.trim().toLowerCase() == normalizedFarm;
+        }).toList()..sort(
+          (first, second) => second.updatedAt.compareTo(first.updatedAt),
+        );
 
     return filtered;
   }
 
-  Future<AtlasActionOutcome?> findByAction(
-    String actionId,
-  ) async {
+  Future<AtlasActionOutcome?> findByAction(String actionId) async {
     final all = await _loadAll();
 
     for (final outcome in all) {
@@ -68,24 +58,19 @@ class AtlasActionOutcomeService {
   }) async {
     final now = DateTime.now();
     final all = await _loadAll();
-    final index = all.indexWhere(
-      (item) => item.actionId == action.id,
-    );
+    final index = all.indexWhere((item) => item.actionId == action.id);
 
     final previous = index == -1 ? null : all[index];
 
     final outcome = AtlasActionOutcome(
-      id: previous?.id ??
-          'action_outcome_${now.microsecondsSinceEpoch}',
+      id: previous?.id ?? 'action_outcome_${now.microsecondsSinceEpoch}',
       actionId: action.id,
       farmName: action.farmName,
       technicalResult: technicalResult.trim(),
       lessonsLearned: lessonsLearned.trim(),
       evidence: evidence.trim(),
-      expectedFinancialImpact:
-          action.expectedFinancialImpact,
-      realizedFinancialImpact:
-          realizedFinancialImpact,
+      expectedFinancialImpact: action.expectedFinancialImpact,
+      realizedFinancialImpact: realizedFinancialImpact,
       executionCost: executionCost,
       revenueGenerated: revenueGenerated,
       savingsGenerated: savingsGenerated,
@@ -106,16 +91,13 @@ class AtlasActionOutcomeService {
 
   Future<void> deleteByAction(String actionId) async {
     final all = await _loadAll()
-      ..removeWhere(
-        (outcome) => outcome.actionId == actionId,
-      );
+      ..removeWhere((outcome) => outcome.actionId == actionId);
 
     await _saveAll(all);
   }
 
   Future<List<AtlasActionOutcome>> _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasActionOutcome>[];
@@ -136,14 +118,10 @@ class AtlasActionOutcomeService {
     }
   }
 
-  Future<void> _saveAll(
-    List<AtlasActionOutcome> outcomes,
-  ) async {
+  Future<void> _saveAll(List<AtlasActionOutcome> outcomes) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        outcomes.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(outcomes.map((item) => item.toMap()).toList()),
     );
   }
 
@@ -153,7 +131,8 @@ class AtlasActionOutcomeService {
   ) async {
     await AtlasEventBus.instance.publish(
       AtlasEvent(
-        id: 'action_outcome_${outcome.id}_'
+        id:
+            'action_outcome_${outcome.id}_'
             '${DateTime.now().microsecondsSinceEpoch}',
         type: AtlasEventType.systemUpdated,
         sourceModule: 'action_results_intelligence',
@@ -168,13 +147,10 @@ class AtlasActionOutcomeService {
         entityType: 'command_center_action',
         payload: <String, dynamic>{
           'outcomeId': outcome.id,
-          'expectedFinancialImpact':
-              outcome.expectedFinancialImpact,
-          'realizedFinancialImpact':
-              outcome.realizedFinancialImpact,
+          'expectedFinancialImpact': outcome.expectedFinancialImpact,
+          'realizedFinancialImpact': outcome.realizedFinancialImpact,
           'executionCost': outcome.executionCost,
-          'netFinancialResult':
-              outcome.netFinancialResult,
+          'netFinancialResult': outcome.netFinancialResult,
           'roiPercent': outcome.roiPercent,
         },
         tags: const <String>[

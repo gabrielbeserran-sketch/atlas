@@ -6,66 +6,34 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasAgricultureService {
   AtlasAgricultureService._();
 
-  static final AtlasAgricultureService instance =
-      AtlasAgricultureService._();
+  static final AtlasAgricultureService instance = AtlasAgricultureService._();
 
-  static const String _fieldsKey =
-      'atlas_agriculture_fields_v1';
-  static const String _soilSamplesKey =
-      'atlas_agriculture_soil_samples_v1';
-  static const String _operationsKey =
-      'atlas_agriculture_operations_v1';
+  static const String _fieldsKey = 'atlas_agriculture_fields_v1';
+  static const String _soilSamplesKey = 'atlas_agriculture_soil_samples_v1';
+  static const String _operationsKey = 'atlas_agriculture_operations_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasCropField>> loadFields({
-    String? farmName,
-  }) async {
-    final values = await _decodeList(
-      _fieldsKey,
-      AtlasCropField.fromMap,
-    );
-    return _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    )..sort((a, b) => a.name.compareTo(b.name));
+  Future<List<AtlasCropField>> loadFields({String? farmName}) async {
+    final values = await _decodeList(_fieldsKey, AtlasCropField.fromMap);
+    return _filterFarm(values, farmName, (item) => item.farmName)
+      ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   Future<void> saveField(AtlasCropField field) async {
-    final values = await _decodeList(
-      _fieldsKey,
-      AtlasCropField.fromMap,
-    );
+    final values = await _decodeList(_fieldsKey, AtlasCropField.fromMap);
     _upsert(values, field, (item) => item.id);
-    await _saveList(
-      _fieldsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_fieldsKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasSoilSample>> loadSoilSamples({
-    String? farmName,
-  }) async {
-    final values = await _decodeList(
-      _soilSamplesKey,
-      AtlasSoilSample.fromMap,
-    );
-    return _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    )..sort((a, b) => b.sampledAt.compareTo(a.sampledAt));
+  Future<List<AtlasSoilSample>> loadSoilSamples({String? farmName}) async {
+    final values = await _decodeList(_soilSamplesKey, AtlasSoilSample.fromMap);
+    return _filterFarm(values, farmName, (item) => item.farmName)
+      ..sort((a, b) => b.sampledAt.compareTo(a.sampledAt));
   }
 
-  Future<void> saveSoilSample(
-    AtlasSoilSample sample,
-  ) async {
-    final values = await _decodeList(
-      _soilSamplesKey,
-      AtlasSoilSample.fromMap,
-    );
+  Future<void> saveSoilSample(AtlasSoilSample sample) async {
+    final values = await _decodeList(_soilSamplesKey, AtlasSoilSample.fromMap);
     _upsert(values, sample, (item) => item.id);
     await _saveList(
       _soilSamplesKey,
@@ -80,18 +48,11 @@ class AtlasAgricultureService {
       _operationsKey,
       AtlasAgriculturalOperation.fromMap,
     );
-    return _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    )..sort(
-        (a, b) => a.scheduledAt.compareTo(b.scheduledAt),
-      );
+    return _filterFarm(values, farmName, (item) => item.farmName)
+      ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
   }
 
-  Future<void> saveOperation(
-    AtlasAgriculturalOperation operation,
-  ) async {
+  Future<void> saveOperation(AtlasAgriculturalOperation operation) async {
     final values = await _decodeList(
       _operationsKey,
       AtlasAgriculturalOperation.fromMap,
@@ -107,10 +68,8 @@ class AtlasAgricultureService {
     String? farmName,
   }) async {
     final fields = await loadFields(farmName: farmName);
-    final samples =
-        await loadSoilSamples(farmName: farmName);
-    final operations =
-        await loadOperations(farmName: farmName);
+    final samples = await loadSoilSamples(farmName: farmName);
+    final operations = await loadOperations(farmName: farmName);
 
     final totalArea = fields.fold<double>(
       0,
@@ -123,49 +82,29 @@ class AtlasAgricultureService {
               item.status == AtlasCropStatus.developing ||
               item.status == AtlasCropStatus.harvesting,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.areaHectares,
-        );
+        .fold<double>(0, (total, item) => total + item.areaHectares);
     final integratedArea = fields
         .where((item) => item.integratedLivestock)
-        .fold<double>(
-          0,
-          (total, item) => total + item.areaHectares,
-        );
+        .fold<double>(0, (total, item) => total + item.areaHectares);
 
-    double averageField(
-      double Function(AtlasCropField item) value,
-    ) {
+    double averageField(double Function(AtlasCropField item) value) {
       if (fields.isEmpty) {
         return 0;
       }
-      return fields.fold<double>(
-            0,
-            (total, item) => total + value(item),
-          ) /
+      return fields.fold<double>(0, (total, item) => total + value(item)) /
           fields.length;
     }
 
     final averageSoil = samples.isEmpty
         ? 0.0
-        : samples.fold<double>(
-              0,
-              (total, item) => total + item.soilScore,
-            ) /
-            samples.length;
+        : samples.fold<double>(0, (total, item) => total + item.soilScore) /
+              samples.length;
 
-    final overdue =
-        operations.where((item) => item.isOverdue).length;
-    final cost = operations.fold<double>(
-      0,
-      (total, item) => total + item.cost,
-    );
+    final overdue = operations.where((item) => item.isOverdue).length;
+    final cost = operations.fold<double>(0, (total, item) => total + item.cost);
 
-    final target =
-        averageField((item) => item.targetProductivityKgHa);
-    final actual =
-        averageField((item) => item.actualProductivityKgHa);
+    final target = averageField((item) => item.targetProductivityKgHa);
+    final actual = averageField((item) => item.actualProductivityKgHa);
 
     var score = 75.0;
     score += (averageSoil - 60) * 0.25;
@@ -197,11 +136,9 @@ class AtlasAgricultureService {
   }) async {
     final recommendations = <String>[];
     final fields = await loadFields(farmName: farmName);
-    final samples =
-        await loadSoilSamples(farmName: farmName);
+    final samples = await loadSoilSamples(farmName: farmName);
 
-    if (snapshot.averageSoilScore > 0 &&
-        snapshot.averageSoilScore < 60) {
+    if (snapshot.averageSoilScore > 0 && snapshot.averageSoilScore < 60) {
       recommendations.add(
         'Fertilidade média do solo abaixo da meta. Priorize correção, matéria orgânica e adubação baseada em análise.',
       );
@@ -226,12 +163,9 @@ class AtlasAgricultureService {
       );
     }
 
-    final lowPh =
-        samples.where((item) => item.ph < 5.2).length;
+    final lowPh = samples.where((item) => item.ph < 5.2).length;
     if (lowPh > 0) {
-      recommendations.add(
-        '$lowPh amostra(s) apresentam pH abaixo de 5,2.',
-      );
+      recommendations.add('$lowPh amostra(s) apresentam pH abaixo de 5,2.');
     }
 
     final harvestingSoon = fields.where((item) {
@@ -264,32 +198,19 @@ class AtlasAgricultureService {
     }
     try {
       return (jsonDecode(raw) as List)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {
@@ -307,8 +228,7 @@ class AtlasAgricultureService {
       return values;
     }
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

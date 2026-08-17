@@ -7,16 +7,10 @@ class AtlasEnterpriseStorageService {
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_enterprise_50_${_normalize(farmName)}_${_normalize(animalId)}';
   }
 

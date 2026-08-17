@@ -4,6 +4,7 @@ import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intellige
 import 'package:projeto_atlas/features/predictive/domain/models/atlas_predictive_scenario.dart';
 import 'package:projeto_atlas/features/predictive/data/services/atlas_predictive_scenario_storage_service.dart';
 import 'package:projeto_atlas/features/predictive/domain/services/atlas_predictive_service.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasPredictiveScreen extends StatefulWidget {
   const AtlasPredictiveScreen({
@@ -24,22 +25,17 @@ class AtlasPredictiveScreen extends StatefulWidget {
   }
 }
 
-class _AtlasPredictiveScreenState
-    extends State<AtlasPredictiveScreen> {
-  final AtlasPredictiveService service =
-      const AtlasPredictiveService();
+class _AtlasPredictiveScreenState extends State<AtlasPredictiveScreen> {
+  final AtlasPredictiveService service = const AtlasPredictiveService();
 
-  final AtlasPredictiveScenarioStorageService
-      storage =
+  final AtlasPredictiveScenarioStorageService storage =
       const AtlasPredictiveScenarioStorageService();
 
   bool isLoadingScenarios = true;
 
-  late List<AtlasPredictiveScenarioRequest>
-      requests;
+  late List<AtlasPredictiveScenarioRequest> requests;
 
-  final List<AtlasPredictiveScenarioRequest>
-      customRequests = [];
+  final List<AtlasPredictiveScenarioRequest> customRequests = [];
 
   late AtlasPredictiveScenarioRanking ranking;
 
@@ -52,10 +48,7 @@ class _AtlasPredictiveScreenState
   }
 
   Future<void> _initializeScenarios() async {
-    final saved = await storage.load(
-      farmName:
-          widget.diagnostic.scopeLabel,
-    );
+    final saved = await storage.load(farmName: widget.diagnostic.scopeLabel);
 
     if (!mounted) {
       return;
@@ -74,8 +67,7 @@ class _AtlasPredictiveScreenState
 
   Future<void> _saveCustomScenarios() {
     return storage.save(
-      farmName:
-          widget.diagnostic.scopeLabel,
+      farmName: widget.diagnostic.scopeLabel,
       scenarios: customRequests,
     );
   }
@@ -98,17 +90,13 @@ class _AtlasPredictiveScreenState
     selectedResult = ranking.bestScenario;
   }
 
-  void _selectScenario(
-    AtlasPredictiveScenarioResult result,
-  ) {
+  void _selectScenario(AtlasPredictiveScenarioResult result) {
     setState(() {
       selectedResult = result;
     });
   }
 
-  void _openArea(
-    AtlasFarmAnalysisArea area,
-  ) {
+  void _openArea(AtlasFarmAnalysisArea area) {
     final callback = widget.onOpenArea;
 
     if (callback == null) {
@@ -126,8 +114,7 @@ class _AtlasPredictiveScreenState
   }
 
   Future<void> _openCustomScenarioDialog() async {
-    final request =
-        await showDialog<AtlasPredictiveScenarioRequest>(
+    final request = await showDialog<AtlasPredictiveScenarioRequest>(
       context: context,
       builder: (dialogContext) {
         return const _CustomScenarioDialog();
@@ -163,9 +150,7 @@ class _AtlasPredictiveScreenState
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
-          content: Text(
-            'Cenário personalizado criado e comparado.',
-          ),
+          content: Text('Cenário personalizado criado e comparado.'),
         ),
       );
   }
@@ -176,12 +161,9 @@ class _AtlasPredictiveScreenState
     final index = customRequests.indexWhere((request) {
       return request.title == result.request.title &&
           request.type == result.request.type &&
-          request.changePercent ==
-              result.request.changePercent &&
-          request.investmentValue ==
-              result.request.investmentValue &&
-          request.executionDays ==
-              result.request.executionDays;
+          request.changePercent == result.request.changePercent &&
+          request.investmentValue == result.request.investmentValue &&
+          request.executionDays == result.request.executionDays;
     });
 
     if (index < 0) {
@@ -196,18 +178,13 @@ class _AtlasPredictiveScreenState
     await _saveCustomScenarios();
   }
 
-  bool _isCustomScenario(
-    AtlasPredictiveScenarioResult result,
-  ) {
+  bool _isCustomScenario(AtlasPredictiveScenarioResult result) {
     return customRequests.any((request) {
       return request.title == result.request.title &&
           request.type == result.request.type &&
-          request.changePercent ==
-              result.request.changePercent &&
-          request.investmentValue ==
-              result.request.investmentValue &&
-          request.executionDays ==
-              result.request.executionDays;
+          request.changePercent == result.request.changePercent &&
+          request.investmentValue == result.request.investmentValue &&
+          request.executionDays == result.request.executionDays;
     });
   }
 
@@ -216,37 +193,26 @@ class _AtlasPredictiveScreenState
       return;
     }
 
-    final confirmed =
-        await showDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Apagar cenários personalizados?',
-          ),
+          title: const Text('Apagar cenários personalizados?'),
           content: const Text(
             'Todos os cenários personalizados desta fazenda serão removidos.',
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(false);
+                Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Cancelar',
-              ),
+              child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(true);
+                Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(
-                'Apagar',
-              ),
+              child: const Text('Apagar'),
             ),
           ],
         );
@@ -259,10 +225,7 @@ class _AtlasPredictiveScreenState
 
     customRequests.clear();
 
-    await storage.clear(
-      farmName:
-          widget.diagnostic.scopeLabel,
-    );
+    await storage.clear(farmName: widget.diagnostic.scopeLabel);
 
     if (!mounted) {
       return;
@@ -276,25 +239,20 @@ class _AtlasPredictiveScreenState
     final selected = selectedResult;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Inteligência Preditiva',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Text(
               widget.diagnostic.scopeLabel,
               style: const TextStyle(
                 fontSize: 11,
-                fontWeight:
-                    FontWeight.normal,
+                fontWeight: FontWeight.normal,
               ),
             ),
           ],
@@ -302,161 +260,120 @@ class _AtlasPredictiveScreenState
         actions: [
           IconButton(
             tooltip: 'Novo cenário',
-            onPressed:
-                _openCustomScenarioDialog,
-            icon: const Icon(
-              Icons.add_chart_outlined,
-            ),
+            onPressed: _openCustomScenarioDialog,
+            icon: const Icon(Icons.add_chart_outlined),
           ),
           IconButton(
-            tooltip:
-                'Apagar cenários personalizados',
-            onPressed:
-                customRequests.isEmpty
-                    ? null
-                    : _clearCustomScenarios,
-            icon: const Icon(
-              Icons.delete_sweep_outlined,
-            ),
+            tooltip: 'Apagar cenários personalizados',
+            onPressed: customRequests.isEmpty ? null : _clearCustomScenarios,
+            icon: const Icon(Icons.delete_sweep_outlined),
           ),
           IconButton(
             tooltip: 'Recalcular cenários',
-            onPressed:
-                isLoadingScenarios
-                    ? null
-                    : () {
-                        setState(
-                          _generateScenarios,
-                        );
-                      },
-            icon: const Icon(
-              Icons.refresh,
-            ),
+            onPressed: isLoadingScenarios
+                ? null
+                : () {
+                    setState(_generateScenarios);
+                  },
+            icon: const Icon(Icons.refresh),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: isLoadingScenarios
+      body: Column(
+        children: [
+          const Material(
+            color: Color(0xFFFFF7E6),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Avançado em validação: cenários personalizados ainda são salvos somente neste dispositivo e não alteram os cadastros oficiais da fazenda.',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: isLoadingScenarios
           ? const _PredictiveLoadingView()
           : requests.isEmpty
-              ? const _EmptyPredictiveView()
-              : SafeArea(
+          ? const _EmptyPredictiveView()
+          : SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 1240,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 1240),
                   child: ListView(
-                    padding:
-                        const EdgeInsets.all(
-                      22,
-                    ),
+                    padding: const EdgeInsets.all(22),
                     children: [
-                      _PredictiveHero(
-                        ranking: ranking,
-                      ),
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      _PredictiveHero(ranking: ranking),
+                      const SizedBox(height: 24),
                       const _SectionTitle(
-                        title:
-                            'Cenários recomendados',
+                        title: 'Cenários recomendados',
                         subtitle:
                             'Selecione um cenário para analisar as projeções.',
                       ),
-                      const SizedBox(
-                        height: 14,
-                      ),
+                      const SizedBox(height: 14),
                       _ScenarioSelector(
-                        results:
-                            ranking.results,
-                        selected:
-                            selected,
-                        onSelected:
-                            _selectScenario,
-                        isCustom:
-                            _isCustomScenario,
-                        onRemoveCustom:
-                            _removeCustomScenario,
-                        onCreateCustom:
-                            _openCustomScenarioDialog,
+                        results: ranking.results,
+                        selected: selected,
+                        onSelected: _selectScenario,
+                        isCustom: _isCustomScenario,
+                        onRemoveCustom: _removeCustomScenario,
+                        onCreateCustom: _openCustomScenarioDialog,
                       ),
-                      if (selected !=
-                          null) ...[
-                        const SizedBox(
-                          height: 28,
-                        ),
-                        _ScenarioSummaryCard(
-                          result: selected,
-                        ),
-                        const SizedBox(
-                          height: 28,
-                        ),
+                      if (selected != null) ...[
+                        const SizedBox(height: 28),
+                        _ScenarioSummaryCard(result: selected),
+                        const SizedBox(height: 28),
                         const _SectionTitle(
-                          title:
-                              'Projeções',
+                          title: 'Projeções',
                           subtitle:
                               'Comparação entre cenário conservador, provável e otimista.',
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-                        _ProjectionGrid(
-                          projections:
-                              selected.projections,
-                        ),
-                        const SizedBox(
-                          height: 28,
-                        ),
+                        const SizedBox(height: 14),
+                        _ProjectionGrid(projections: selected.projections),
+                        const SizedBox(height: 28),
                         const _SectionTitle(
-                          title:
-                              'Impacto financeiro',
+                          title: 'Impacto financeiro',
                           subtitle:
                               'Estimativa de retorno e investimento do cenário.',
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-                        _FinancialImpactCard(
-                          impact: selected
-                              .financialImpact,
-                        ),
-                        const SizedBox(
-                          height: 28,
-                        ),
+                        const SizedBox(height: 14),
+                        _FinancialImpactCard(impact: selected.financialImpact),
+                        const SizedBox(height: 28),
                         const _SectionTitle(
-                          title:
-                              'Plano de execução',
+                          title: 'Plano de execução',
                           subtitle:
                               'Etapas recomendadas para colocar o cenário em prática.',
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
+                        const SizedBox(height: 14),
                         _PredictiveActionList(
-                          actions:
-                              selected.actions,
-                          onOpenArea:
-                              _openArea,
+                          actions: selected.actions,
+                          onOpenArea: _openArea,
                         ),
-                        const SizedBox(
-                          height: 34,
-                        ),
+                        const SizedBox(height: 34),
                       ],
                     ],
                   ),
                 ),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _PredictiveHero extends StatelessWidget {
-  const _PredictiveHero({
-    required this.ranking,
-  });
+  const _PredictiveHero({required this.ranking});
 
   final AtlasPredictiveScenarioRanking ranking;
 
@@ -469,26 +386,16 @@ class _PredictiveHero extends StatelessWidget {
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF102A43),
-            Color(0xFF243B53),
-            Color(0xFF334E68),
-          ],
+          colors: [Color(0xFF102A43), Color(0xFF243B53), Color(0xFF334E68)],
         ),
-        borderRadius:
-            BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(26),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
@@ -504,8 +411,7 @@ class _PredictiveHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 23,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -514,37 +420,22 @@ class _PredictiveHero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 ranking.summary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.5,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.5),
               ),
               if (best != null) ...[
                 const SizedBox(height: 15),
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.all(
-                    14,
-                  ),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color:
-                        Colors.white.withValues(
-                      alpha: 0.08,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      15,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
                     'Melhor decisão: ${best.request.title}',
-                    style:
-                        const TextStyle(
-                      color:
-                          Color(0xFFC8A951),
-                      fontWeight:
-                          FontWeight.w700,
+                    style: const TextStyle(
+                      color: Color(0xFFC8A951),
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -556,69 +447,35 @@ class _PredictiveHero extends StatelessWidget {
               ? const SizedBox.shrink()
               : Container(
                   width: 220,
-                  padding:
-                      const EdgeInsets.all(
-                    19,
-                  ),
+                  padding: const EdgeInsets.all(19),
                   decoration: BoxDecoration(
-                    color:
-                        Colors.white.withValues(
-                      alpha: 0.08,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      18,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color:
-                          const Color(
-                        0xFFC8A951,
-                      ).withValues(
-                        alpha: 0.42,
-                      ),
+                      color: const Color(0xFFC8A951).withValues(alpha: 0.42),
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'Impacto × esforço',
-                        style: TextStyle(
-                          color:
-                              Colors.white70,
-                          fontSize: 11,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 11),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       Text(
-                        best.impactEffortScore
-                            .toStringAsFixed(
-                          0,
-                        ),
-                        style:
-                            const TextStyle(
-                          color:
-                              Color(0xFFC8A951),
+                        best.impactEffortScore.toStringAsFixed(0),
+                        style: const TextStyle(
+                          color: Color(0xFFC8A951),
                           fontSize: 38,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
+                      const SizedBox(height: 5),
                       Text(
                         '${best.scoreVariation >= 0 ? '+' : ''}'
                         '${best.scoreVariation.toStringAsFixed(1)} pontos no score',
-                        style:
-                            const TextStyle(
-                          color:
-                              Colors.white70,
-                        ),
+                        style: const TextStyle(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -626,31 +483,19 @@ class _PredictiveHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 information,
-                if (best != null) ...[
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  score,
-                ],
+                if (best != null) ...[const SizedBox(height: 20), score],
               ],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: information,
-              ),
-              if (best != null) ...[
-                const SizedBox(width: 25),
-                score,
-              ],
+              Expanded(child: information),
+              if (best != null) ...[const SizedBox(width: 25), score],
             ],
           );
         },
@@ -659,8 +504,7 @@ class _PredictiveHero extends StatelessWidget {
   }
 }
 
-class _ScenarioSelector
-    extends StatelessWidget {
+class _ScenarioSelector extends StatelessWidget {
   const _ScenarioSelector({
     required this.results,
     required this.selected,
@@ -670,173 +514,104 @@ class _ScenarioSelector
     required this.onCreateCustom,
   });
 
-  final List<AtlasPredictiveScenarioResult>
-      results;
+  final List<AtlasPredictiveScenarioResult> results;
 
-  final AtlasPredictiveScenarioResult?
-      selected;
+  final AtlasPredictiveScenarioResult? selected;
 
-  final ValueChanged<
-      AtlasPredictiveScenarioResult> onSelected;
+  final ValueChanged<AtlasPredictiveScenarioResult> onSelected;
 
-  final bool Function(
-    AtlasPredictiveScenarioResult result,
-  ) isCustom;
+  final bool Function(AtlasPredictiveScenarioResult result) isCustom;
 
-  final ValueChanged<
-      AtlasPredictiveScenarioResult> onRemoveCustom;
+  final ValueChanged<AtlasPredictiveScenarioResult> onRemoveCustom;
 
   final VoidCallback onCreateCustom;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (
-        context,
-        constraints,
-      ) {
-        final width =
-            constraints.maxWidth >= 1000
-                ? (constraints.maxWidth -
-                        32) /
-                    3
-                : constraints.maxWidth >=
-                        650
-                    ? (constraints.maxWidth -
-                            16) /
-                        2
-                    : constraints.maxWidth;
+      builder: (context, constraints) {
+        final width = constraints.maxWidth >= 1000
+            ? (constraints.maxWidth - 32) / 3
+            : constraints.maxWidth >= 650
+            ? (constraints.maxWidth - 16) / 2
+            : constraints.maxWidth;
 
         final cards = results.map((result) {
-          final isSelected =
-              selected?.request.title ==
-                  result.request.title;
+          final isSelected = selected?.request.title == result.request.title;
 
           final custom = isCustom(result);
 
-          final color =
-              predictiveResultColor(
-            result,
-          );
+          final color = predictiveResultColor(result);
 
           return SizedBox(
             width: width,
             child: Card(
-              clipBehavior:
-                  Clip.antiAlias,
-              elevation:
-                  isSelected ? 4 : 1,
+              clipBehavior: Clip.antiAlias,
+              elevation: isSelected ? 4 : 1,
               child: InkWell(
                 onTap: () {
                   onSelected(result);
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.all(
-                    18,
-                  ),
-                  decoration:
-                      BoxDecoration(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
                     border: isSelected
-                        ? Border.all(
-                            color: color,
-                            width: 2,
-                          )
+                        ? Border.all(color: color, width: 2)
                         : null,
                   ),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           Icon(
-                            predictiveScenarioIcon(
-                              result
-                                  .request.type,
-                            ),
+                            predictiveScenarioIcon(result.request.type),
                             color: color,
                           ),
-                          const SizedBox(
-                            width: 9,
-                          ),
+                          const SizedBox(width: 9),
                           Expanded(
                             child: Text(
-                              result
-                                  .request.title,
-                              style:
-                                  const TextStyle(
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
+                              result.request.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           if (custom)
                             IconButton(
-                              tooltip:
-                                  'Excluir cenário',
-                              visualDensity:
-                                  VisualDensity
-                                      .compact,
+                              tooltip: 'Excluir cenário',
+                              visualDensity: VisualDensity.compact,
                               onPressed: () {
-                                onRemoveCustom(
-                                  result,
-                                );
+                                onRemoveCustom(result);
                               },
-                              icon: const Icon(
-                                Icons
-                                    .delete_outline,
-                                size: 19,
-                              ),
+                              icon: const Icon(Icons.delete_outline, size: 19),
                             )
                           else if (isSelected)
-                            Icon(
-                              Icons
-                                  .check_circle,
-                              color: color,
-                            ),
+                            Icon(Icons.check_circle, color: color),
                         ],
                       ),
                       if (custom) ...[
-                        const SizedBox(
-                          height: 5,
-                        ),
+                        const SizedBox(height: 5),
                         const Text(
                           'Cenário personalizado',
                           style: TextStyle(
-                            color:
-                                Color(
-                              0xFF6A1B9A,
-                            ),
+                            color: Color(0xFF6A1B9A),
                             fontSize: 10,
-                            fontWeight:
-                                FontWeight
-                                    .w700,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
-                      const SizedBox(
-                        height: 11,
-                      ),
+                      const SizedBox(height: 11),
                       Text(
-                        result.request
-                            .description,
+                        result.request.description,
                         maxLines: 3,
-                        overflow:
-                            TextOverflow
-                                .ellipsis,
-                        style:
-                            const TextStyle(
-                          color:
-                              Colors.black54,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.black54,
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(
-                        height: 13,
-                      ),
+                      const SizedBox(height: 13),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -852,21 +627,12 @@ class _ScenarioSelector
                             label: 'Risco',
                             value:
                                 '-${result.riskReductionPercent.toStringAsFixed(0)}%',
-                            color:
-                                const Color(
-                              0xFF1565C0,
-                            ),
+                            color: const Color(0xFF1565C0),
                           ),
                           _SmallMetricChip(
                             label: 'Esforço',
-                            value:
-                                atlasPredictiveEffortLabel(
-                              result.effort,
-                            ),
-                            color:
-                                const Color(
-                              0xFF6A1B9A,
-                            ),
+                            value: atlasPredictiveEffortLabel(result.effort),
+                            color: const Color(0xFF6A1B9A),
                           ),
                         ],
                       ),
@@ -882,60 +648,32 @@ class _ScenarioSelector
           SizedBox(
             width: width,
             child: Card(
-              clipBehavior:
-                  Clip.antiAlias,
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onCreateCustom,
                 child: const Padding(
-                  padding:
-                      EdgeInsets.all(
-                    18,
-                  ),
+                  padding: EdgeInsets.all(18),
                   child: SizedBox(
                     height: 150,
                     child: Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons
-                              .add_chart_outlined,
+                          Icons.add_chart_outlined,
                           size: 34,
-                          color: Color(
-                            0xFF1565C0,
-                          ),
+                          color: Color(0xFF1565C0),
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
+                        SizedBox(height: 10),
                         Text(
                           'Criar cenário personalizado',
-                          textAlign:
-                              TextAlign
-                                  .center,
-                          style:
-                              TextStyle(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(
-                          height: 5,
-                        ),
+                        SizedBox(height: 5),
                         Text(
                           'Defina mudança, investimento e prazo.',
-                          textAlign:
-                              TextAlign
-                                  .center,
-                          style:
-                              TextStyle(
-                            color:
-                                Colors
-                                    .black54,
-                            fontSize: 11,
-                          ),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black54, fontSize: 11),
                         ),
                       ],
                     ),
@@ -946,53 +684,36 @@ class _ScenarioSelector
           ),
         );
 
-        return Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: cards,
-        );
+        return Wrap(spacing: 16, runSpacing: 16, children: cards);
       },
     );
   }
 }
 
-class _ScenarioSummaryCard
-    extends StatelessWidget {
-  const _ScenarioSummaryCard({
-    required this.result,
-  });
+class _ScenarioSummaryCard extends StatelessWidget {
+  const _ScenarioSummaryCard({required this.result});
 
   final AtlasPredictiveScenarioResult result;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        predictiveResultColor(result);
+    final color = predictiveResultColor(result);
 
     return Card(
-      color: color.withValues(
-        alpha: 0.04,
-      ),
+      color: color.withValues(alpha: 0.04),
       child: Padding(
         padding: const EdgeInsets.all(21),
         child: LayoutBuilder(
-          builder: (
-            context,
-            constraints,
-          ) {
-            final compact =
-                constraints.maxWidth < 760;
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 760;
 
             final information = Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Icon(
-                      predictiveScenarioIcon(
-                        result.request.type,
-                      ),
+                      predictiveScenarioIcon(result.request.type),
                       color: color,
                       size: 30,
                     ),
@@ -1000,11 +721,9 @@ class _ScenarioSummaryCard
                     Expanded(
                       child: Text(
                         result.request.title,
-                        style:
-                            const TextStyle(
+                        style: const TextStyle(
                           fontSize: 20,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -1013,20 +732,14 @@ class _ScenarioSummaryCard
                 const SizedBox(height: 13),
                 Text(
                   result.mainEvidence,
-                  style:
-                      const TextStyle(
-                    color:
-                        Colors.black54,
-                    height: 1.45,
-                  ),
+                  style: const TextStyle(color: Colors.black54, height: 1.45),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   result.recommendation,
                   style: TextStyle(
                     color: color,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                     height: 1.45,
                   ),
                 ),
@@ -1038,73 +751,41 @@ class _ScenarioSummaryCard
               runSpacing: 10,
               children: [
                 _LargeMetric(
-                  label:
-                      'Score projetado',
-                  value: result.projectedScore
-                      .toStringAsFixed(0),
+                  label: 'Score projetado',
+                  value: result.projectedScore.toStringAsFixed(0),
                   color: color,
                 ),
                 _LargeMetric(
-                  label:
-                      'Redução de risco',
-                  value:
-                      '${result.riskReductionPercent.toStringAsFixed(0)}%',
-                  color:
-                      const Color(
-                    0xFF1565C0,
-                  ),
+                  label: 'Redução de risco',
+                  value: '${result.riskReductionPercent.toStringAsFixed(0)}%',
+                  color: const Color(0xFF1565C0),
                 ),
                 _LargeMetric(
-                  label:
-                      'Confiança',
-                  value:
-                      '${result.confidence.toStringAsFixed(0)}%',
-                  color:
-                      const Color(
-                    0xFF6A1B9A,
-                  ),
+                  label: 'Confiança',
+                  value: '${result.confidence.toStringAsFixed(0)}%',
+                  color: const Color(0xFF6A1B9A),
                 ),
                 _LargeMetric(
-                  label:
-                      'Esforço',
-                  value:
-                      atlasPredictiveEffortLabel(
-                    result.effort,
-                  ),
-                  color:
-                      const Color(
-                    0xFFEF6C00,
-                  ),
+                  label: 'Esforço',
+                  value: atlasPredictiveEffortLabel(result.effort),
+                  color: const Color(0xFFEF6C00),
                 ),
               ],
             );
 
             if (compact) {
               return Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  information,
-                  const SizedBox(
-                    height: 18,
-                  ),
-                  metrics,
-                ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [information, const SizedBox(height: 18), metrics],
               );
             }
 
             return Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: information,
-                ),
+                Expanded(child: information),
                 const SizedBox(width: 22),
-                SizedBox(
-                  width: 420,
-                  child: metrics,
-                ),
+                SizedBox(width: 420, child: metrics),
               ],
             );
           },
@@ -1115,117 +796,69 @@ class _ScenarioSummaryCard
 }
 
 class _ProjectionGrid extends StatelessWidget {
-  const _ProjectionGrid({
-    required this.projections,
-  });
+  const _ProjectionGrid({required this.projections});
 
-  final List<AtlasPredictiveProjection>
-      projections;
+  final List<AtlasPredictiveProjection> projections;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (
-        context,
-        constraints,
-      ) {
-        final width =
-            constraints.maxWidth >= 900
-                ? (constraints.maxWidth -
-                        28) /
-                    3
-                : constraints.maxWidth;
+      builder: (context, constraints) {
+        final width = constraints.maxWidth >= 900
+            ? (constraints.maxWidth - 28) / 3
+            : constraints.maxWidth;
 
         return Wrap(
           spacing: 14,
           runSpacing: 14,
-          children:
-              projections.map((item) {
-            final color =
-                projectionColor(
-              item.kind,
-            );
+          children: projections.map((item) {
+            final color = projectionColor(item.kind);
 
             return SizedBox(
               width: width,
               child: Card(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.all(
-                    18,
-                  ),
+                  padding: const EdgeInsets.all(18),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            projectionIcon(
-                              item.kind,
-                            ),
-                            color: color,
-                          ),
-                          const SizedBox(
-                            width: 9,
-                          ),
+                          Icon(projectionIcon(item.kind), color: color),
+                          const SizedBox(width: 9),
                           Expanded(
                             child: Text(
                               item.label,
-                              style:
-                                  const TextStyle(
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 15,
-                      ),
+                      const SizedBox(height: 15),
                       _ProjectionMetric(
-                        label:
-                            'Score',
-                        value: item
-                            .projectedScore
-                            .toStringAsFixed(
-                          0,
-                        ),
+                        label: 'Score',
+                        value: item.projectedScore.toStringAsFixed(0),
                         color: color,
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       _ProjectionMetric(
-                        label:
-                            'Impacto financeiro',
-                        value:
-                            _currency(
-                          item.financialImpact,
-                        ),
+                        label: 'Impacto financeiro',
+                        value: _currency(item.financialImpact),
                         color: color,
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       _ProjectionMetric(
-                        label:
-                            'Redução de risco',
+                        label: 'Redução de risco',
                         value:
                             '${item.riskReductionPercent.toStringAsFixed(0)}%',
                         color: color,
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       _ProjectionMetric(
-                        label:
-                            'Confiança',
-                        value:
-                            '${item.confidence.toStringAsFixed(0)}%',
+                        label: 'Confiança',
+                        value: '${item.confidence.toStringAsFixed(0)}%',
                         color: color,
                       ),
                     ],
@@ -1240,14 +873,10 @@ class _ProjectionGrid extends StatelessWidget {
   }
 }
 
-class _FinancialImpactCard
-    extends StatelessWidget {
-  const _FinancialImpactCard({
-    required this.impact,
-  });
+class _FinancialImpactCard extends StatelessWidget {
+  const _FinancialImpactCard({required this.impact});
 
-  final AtlasPredictiveFinancialImpact
-      impact;
+  final AtlasPredictiveFinancialImpact impact;
 
   @override
   Widget build(BuildContext context) {
@@ -1255,19 +884,10 @@ class _FinancialImpactCard
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: LayoutBuilder(
-          builder: (
-            context,
-            constraints,
-          ) {
-            final width =
-                constraints.maxWidth >=
-                        760
-                    ? (constraints.maxWidth -
-                            36) /
-                        4
-                    : (constraints.maxWidth -
-                            12) /
-                        2;
+          builder: (context, constraints) {
+            final width = constraints.maxWidth >= 760
+                ? (constraints.maxWidth - 36) / 4
+                : (constraints.maxWidth - 12) / 2;
 
             return Wrap(
               spacing: 12,
@@ -1275,59 +895,34 @@ class _FinancialImpactCard
               children: [
                 _FinancialMetricCard(
                   width: width,
-                  label:
-                      'Impacto provável',
-                  value: _currency(
-                    impact.probableValue,
-                  ),
-                  icon:
-                      Icons.trending_up,
-                  color:
-                      const Color(
-                    0xFF1B5E20,
-                  ),
+                  label: 'Impacto provável',
+                  value: _currency(impact.probableValue),
+                  icon: Icons.trending_up,
+                  color: const Color(0xFF1B5E20),
                 ),
                 _FinancialMetricCard(
                   width: width,
-                  label:
-                      'Investimento',
-                  value: _currency(
-                    impact.investmentValue,
-                  ),
-                  icon:
-                      Icons.payments_outlined,
-                  color:
-                      const Color(
-                    0xFF1565C0,
-                  ),
+                  label: 'Investimento',
+                  value: _currency(impact.investmentValue),
+                  icon: Icons.payments_outlined,
+                  color: const Color(0xFF1565C0),
                 ),
                 _FinancialMetricCard(
                   width: width,
                   label: 'ROI',
                   value:
                       '${impact.returnOnInvestmentPercent.toStringAsFixed(0)}%',
-                  icon:
-                      Icons.show_chart,
-                  color:
-                      const Color(
-                    0xFF6A1B9A,
-                  ),
+                  icon: Icons.show_chart,
+                  color: const Color(0xFF6A1B9A),
                 ),
                 _FinancialMetricCard(
                   width: width,
-                  label:
-                      'Payback',
-                  value:
-                      impact.paybackDays ==
-                              null
-                          ? 'Não aplicável'
-                          : '${impact.paybackDays} dias',
-                  icon:
-                      Icons.schedule,
-                  color:
-                      const Color(
-                    0xFFEF6C00,
-                  ),
+                  label: 'Payback',
+                  value: impact.paybackDays == null
+                      ? 'Não aplicável'
+                      : '${impact.paybackDays} dias',
+                  icon: Icons.schedule,
+                  color: const Color(0xFFEF6C00),
                 ),
               ],
             );
@@ -1338,122 +933,77 @@ class _FinancialImpactCard
   }
 }
 
-class _PredictiveActionList
-    extends StatelessWidget {
+class _PredictiveActionList extends StatelessWidget {
   const _PredictiveActionList({
     required this.actions,
     required this.onOpenArea,
   });
 
-  final List<AtlasPredictiveAction>
-      actions;
+  final List<AtlasPredictiveAction> actions;
 
-  final ValueChanged<AtlasFarmAnalysisArea>
-      onOpenArea;
+  final ValueChanged<AtlasFarmAnalysisArea> onOpenArea;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: actions.map((action) {
         return Padding(
-          padding: const EdgeInsets.only(
-            bottom: 11,
-          ),
+          padding: const EdgeInsets.only(bottom: 11),
           child: Card(
-            clipBehavior:
-                Clip.antiAlias,
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
-                onOpenArea(
-                  action.area,
-                );
+                onOpenArea(action.area);
               },
               child: Padding(
-                padding:
-                    const EdgeInsets.all(
-                  18,
-                ),
+                padding: const EdgeInsets.all(18),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
                       child: Text(
                         '${action.position}',
-                        style:
-                            const TextStyle(
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    const SizedBox(
-                      width: 12,
-                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             action.title,
-                            style:
-                                const TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(
-                            height: 7,
-                          ),
+                          const SizedBox(height: 7),
                           Text(
                             action.description,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Colors.black54,
+                            style: const TextStyle(
+                              color: Colors.black54,
                               height: 1.4,
                             ),
                           ),
-                          const SizedBox(
-                            height: 9,
-                          ),
+                          const SizedBox(height: 9),
                           Text(
                             'Resultado esperado: ${action.expectedResult}',
-                            style:
-                                const TextStyle(
-                              color:
-                                  Color(
-                                0xFF1B5E20,
-                              ),
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
+                            style: const TextStyle(
+                              color: Color(0xFF1B5E20),
+                              fontWeight: FontWeight.w600,
                               height: 1.4,
                             ),
                           ),
-                          const SizedBox(
-                            height: 8,
-                          ),
+                          const SizedBox(height: 8),
                           Text(
                             '${atlasFarmAreaLabel(action.area)} · prazo: ${action.deadlineDays} dias',
-                            style:
-                                const TextStyle(
-                              color:
-                                  Colors.black38,
+                            style: const TextStyle(
+                              color: Colors.black38,
                               fontSize: 10,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.chevron_right,
-                      color:
-                          Colors.black38,
-                    ),
+                    const Icon(Icons.chevron_right, color: Colors.black38),
                   ],
                 ),
               ),
@@ -1465,12 +1015,8 @@ class _PredictiveActionList
   }
 }
 
-class _SectionTitle
-    extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -1478,8 +1024,7 @@ class _SectionTitle
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
@@ -1490,19 +1035,13 @@ class _SectionTitle
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
-class _SmallMetricChip
-    extends StatelessWidget {
+class _SmallMetricChip extends StatelessWidget {
   const _SmallMetricChip({
     required this.label,
     required this.value,
@@ -1516,17 +1055,10 @@ class _SmallMetricChip
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(11),
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(11),
       ),
       child: Text(
         '$label: $value',
@@ -1557,15 +1089,11 @@ class _LargeMetric extends StatelessWidget {
       width: 195,
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.07,
-        ),
-        borderRadius:
-            BorderRadius.circular(13),
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(13),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             value,
@@ -1577,10 +1105,7 @@ class _LargeMetric extends StatelessWidget {
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.black45,
-              fontSize: 10,
-            ),
+            style: const TextStyle(color: Colors.black45, fontSize: 10),
           ),
         ],
       ),
@@ -1588,8 +1113,7 @@ class _LargeMetric extends StatelessWidget {
   }
 }
 
-class _ProjectionMetric
-    extends StatelessWidget {
+class _ProjectionMetric extends StatelessWidget {
   const _ProjectionMetric({
     required this.label,
     required this.value,
@@ -1605,27 +1129,18 @@ class _ProjectionMetric
     return Row(
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          child: Text(label, style: const TextStyle(color: Colors.black54)),
         ),
         Text(
           value,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 }
 
-class _FinancialMetricCard
-    extends StatelessWidget {
+class _FinancialMetricCard extends StatelessWidget {
   const _FinancialMetricCard({
     required this.width,
     required this.label,
@@ -1647,41 +1162,28 @@ class _FinancialMetricCard
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: color.withValues(
-            alpha: 0.06,
-          ),
-          borderRadius:
-              BorderRadius.circular(14),
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: color,
-            ),
+            Icon(icon, color: color),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     value,
                     style: TextStyle(
                       color: color,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                       fontSize: 17,
                     ),
                   ),
                   Text(
                     label,
-                    style:
-                        const TextStyle(
-                      color:
-                          Colors.black45,
-                      fontSize: 10,
-                    ),
+                    style: const TextStyle(color: Colors.black45, fontSize: 10),
                   ),
                 ],
               ),
@@ -1693,44 +1195,29 @@ class _FinancialMetricCard
   }
 }
 
-class _CustomScenarioDialog
-    extends StatefulWidget {
+class _CustomScenarioDialog extends StatefulWidget {
   const _CustomScenarioDialog();
 
   @override
-  State<_CustomScenarioDialog>
-      createState() {
+  State<_CustomScenarioDialog> createState() {
     return _CustomScenarioDialogState();
   }
 }
 
-class _CustomScenarioDialogState
-    extends State<_CustomScenarioDialog> {
+class _CustomScenarioDialogState extends State<_CustomScenarioDialog> {
   final formKey = GlobalKey<FormState>();
 
-  final titleController =
-      TextEditingController();
+  final titleController = TextEditingController();
 
-  final descriptionController =
-      TextEditingController();
+  final descriptionController = TextEditingController();
 
-  final changeController =
-      TextEditingController(
-    text: '10',
-  );
+  final changeController = TextEditingController(text: '10');
 
-  final investmentController =
-      TextEditingController(
-    text: '0',
-  );
+  final investmentController = TextEditingController(text: '0');
 
-  final daysController =
-      TextEditingController(
-    text: '30',
-  );
+  final daysController = TextEditingController(text: '30');
 
-  AtlasPredictiveScenarioType selectedType =
-      AtlasPredictiveScenarioType.custom;
+  AtlasPredictiveScenarioType selectedType = AtlasPredictiveScenarioType.custom;
 
   @override
   void dispose() {
@@ -1747,102 +1234,60 @@ class _CustomScenarioDialogState
       return;
     }
 
-    final change =
-        _parseNumber(changeController.text);
+    final change = _parseNumber(changeController.text);
 
-    final investment =
-        _parseNumber(
-      investmentController.text,
-    );
+    final investment = _parseNumber(investmentController.text);
 
-    final days = int.tryParse(
-          daysController.text.trim(),
-        ) ??
-        30;
+    final days = int.tryParse(daysController.text.trim()) ?? 30;
 
     Navigator.of(context).pop(
       AtlasPredictiveScenarioRequest(
         type: selectedType,
-        title:
-            titleController.text.trim(),
-        description:
-            descriptionController.text
-                    .trim()
-                    .isEmpty
-                ? 'Cenário personalizado criado para simular uma decisão da propriedade.'
-                : descriptionController.text
-                    .trim(),
-        changePercent:
-            change.clamp(0.1, 100.0),
-        investmentValue:
-            investment.clamp(
-          0.0,
-          double.infinity,
-        ),
-        executionDays:
-            days.clamp(1, 3650),
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim().isEmpty
+            ? 'Cenário personalizado criado para simular uma decisão da propriedade.'
+            : descriptionController.text.trim(),
+        changePercent: change.clamp(0.1, 100.0),
+        investmentValue: investment.clamp(0.0, double.infinity),
+        executionDays: days.clamp(1, 3650),
       ),
     );
   }
 
-  double _parseNumber(
-    String value,
-  ) {
-    var normalized =
-        value.trim().replaceAll('R\$', '');
+  double _parseNumber(String value) {
+    var normalized = value.trim().replaceAll('R\$', '');
 
-    if (normalized.contains(',') &&
-        normalized.contains('.')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+    if (normalized.contains(',') && normalized.contains('.')) {
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     } else {
-      normalized =
-          normalized.replaceAll(',', '.');
+      normalized = normalized.replaceAll(',', '.');
     }
 
-    return double.tryParse(normalized) ??
-        0;
+    return double.tryParse(normalized) ?? 0;
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        'Novo cenário',
-      ),
+      title: const Text('Novo cenário'),
       content: SizedBox(
         width: 520,
         child: Form(
           key: formKey,
           child: SingleChildScrollView(
             child: Column(
-              mainAxisSize:
-                  MainAxisSize.min,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                DropdownButtonFormField<
-                    AtlasPredictiveScenarioType>(
-                  initialValue:
-                      selectedType,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Tipo de decisão',
-                    prefixIcon: Icon(
-                      Icons.tune_outlined,
-                    ),
+                DropdownButtonFormField<AtlasPredictiveScenarioType>(
+                  initialValue: selectedType,
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo de decisão',
+                    prefixIcon: Icon(Icons.tune_outlined),
                   ),
-                  items:
-                      AtlasPredictiveScenarioType
-                          .values
-                          .map((type) {
+                  items: AtlasPredictiveScenarioType.values.map((type) {
                     return DropdownMenuItem(
                       value: type,
-                      child: Text(
-                        atlasPredictiveScenarioTypeLabel(
-                          type,
-                        ),
-                      ),
+                      child: Text(atlasPredictiveScenarioTypeLabel(type)),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -1855,81 +1300,50 @@ class _CustomScenarioDialogState
                     });
                   },
                 ),
-                const SizedBox(
-                  height: 13,
-                ),
+                const SizedBox(height: 13),
                 TextFormField(
-                  controller:
-                      titleController,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Título do cenário',
-                    hintText:
-                        'Ex.: Reduzir custo de suplementação',
-                    prefixIcon: Icon(
-                      Icons.title,
-                    ),
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Título do cenário',
+                    hintText: 'Ex.: Reduzir custo de suplementação',
+                    prefixIcon: Icon(Icons.title),
                   ),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe um título.';
                     }
 
                     return null;
                   },
                 ),
-                const SizedBox(
-                  height: 13,
-                ),
+                const SizedBox(height: 13),
                 TextFormField(
-                  controller:
-                      descriptionController,
+                  controller: descriptionController,
                   minLines: 2,
                   maxLines: 4,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Descrição',
-                    hintText:
-                        'Explique a mudança que deseja simular.',
-                    prefixIcon: Icon(
-                      Icons
-                          .description_outlined,
-                    ),
+                  decoration: const InputDecoration(
+                    labelText: 'Descrição',
+                    hintText: 'Explique a mudança que deseja simular.',
+                    prefixIcon: Icon(Icons.description_outlined),
                   ),
                 ),
-                const SizedBox(
-                  height: 13,
-                ),
+                const SizedBox(height: 13),
                 Row(
                   children: [
                     Expanded(
                       child: TextFormField(
-                        controller:
-                            changeController,
-                        keyboardType:
-                            const TextInputType
-                                .numberWithOptions(
+                        controller: changeController,
+                        keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration:
-                            const InputDecoration(
-                          labelText:
-                              'Mudança (%)',
-                          prefixIcon: Icon(
-                            Icons.percent,
-                          ),
+                        decoration: const InputDecoration(
+                          labelText: 'Mudança (%)',
+                          prefixIcon: Icon(Icons.percent),
                         ),
                         validator: (value) {
-                          final number =
-                              _parseNumber(
-                            value ?? '',
-                          );
+                          final number = _parseNumber(value ?? '');
 
-                          if (number <= 0 ||
-                              number > 100) {
+                          if (number <= 0 || number > 100) {
                             return 'Use valor entre 0 e 100.';
                           }
 
@@ -1937,33 +1351,19 @@ class _CustomScenarioDialogState
                         },
                       ),
                     ),
-                    const SizedBox(
-                      width: 12,
-                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: TextFormField(
-                        controller:
-                            daysController,
-                        keyboardType:
-                            TextInputType
-                                .number,
-                        decoration:
-                            const InputDecoration(
-                          labelText:
-                              'Prazo (dias)',
-                          prefixIcon: Icon(
-                            Icons.schedule,
-                          ),
+                        controller: daysController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Prazo (dias)',
+                          prefixIcon: Icon(Icons.schedule),
                         ),
                         validator: (value) {
-                          final days =
-                              int.tryParse(
-                            value?.trim() ??
-                                '',
-                          );
+                          final days = int.tryParse(value?.trim() ?? '');
 
-                          if (days == null ||
-                              days <= 0) {
+                          if (days == null || days <= 0) {
                             return 'Prazo inválido.';
                           }
 
@@ -1973,33 +1373,20 @@ class _CustomScenarioDialogState
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 13,
-                ),
+                const SizedBox(height: 13),
                 TextFormField(
-                  controller:
-                      investmentController,
-                  keyboardType:
-                      const TextInputType
-                          .numberWithOptions(
+                  controller: investmentController,
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Investimento previsto',
+                  decoration: const InputDecoration(
+                    labelText: 'Investimento previsto',
                     hintText: '0,00',
                     prefixText: 'R\$ ',
-                    prefixIcon: Icon(
-                      Icons
-                          .payments_outlined,
-                    ),
+                    prefixIcon: Icon(Icons.payments_outlined),
                   ),
                   validator: (value) {
-                    final number =
-                        _parseNumber(
-                      value ?? '',
-                    );
+                    final number = _parseNumber(value ?? '');
 
                     if (number < 0) {
                       return 'O investimento não pode ser negativo.';
@@ -2008,9 +1395,7 @@ class _CustomScenarioDialogState
                     return null;
                   },
                 ),
-                const SizedBox(
-                  height: 12,
-                ),
+                const SizedBox(height: 12),
                 const Text(
                   'A simulação é uma estimativa gerencial baseada nos dados cadastrados e não substitui avaliação técnica ou financeira específica.',
                   style: TextStyle(
@@ -2029,26 +1414,19 @@ class _CustomScenarioDialogState
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text(
-            'Cancelar',
-          ),
+          child: const Text('Cancelar'),
         ),
         FilledButton.icon(
           onPressed: submit,
-          icon: const Icon(
-            Icons.auto_graph_outlined,
-          ),
-          label: const Text(
-            'Simular',
-          ),
+          icon: const Icon(Icons.auto_graph_outlined),
+          label: const Text('Simular'),
         ),
       ],
     );
   }
 }
 
-class _PredictiveLoadingView
-    extends StatelessWidget {
+class _PredictiveLoadingView extends StatelessWidget {
   const _PredictiveLoadingView();
 
   @override
@@ -2057,16 +1435,13 @@ class _PredictiveLoadingView
       child: Padding(
         padding: EdgeInsets.all(28),
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 15),
             Text(
               'Carregando cenários salvos...',
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -2075,8 +1450,7 @@ class _PredictiveLoadingView
   }
 }
 
-class _EmptyPredictiveView
-    extends StatelessWidget {
+class _EmptyPredictiveView extends StatelessWidget {
   const _EmptyPredictiveView();
 
   @override
@@ -2085,32 +1459,19 @@ class _EmptyPredictiveView
       child: Padding(
         padding: EdgeInsets.all(28),
         child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.auto_graph_outlined,
-              size: 56,
-              color: Colors.black38,
-            ),
+            Icon(Icons.auto_graph_outlined, size: 56, color: Colors.black38),
             SizedBox(height: 14),
             Text(
               'Nenhum cenário disponível',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 7),
             Text(
               'Cadastre mais dados financeiros, operacionais, zootécnicos ou de estoque para gerar simulações.',
-              textAlign:
-                  TextAlign.center,
-              style: TextStyle(
-                color:
-                    Colors.black54,
-              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -2119,11 +1480,8 @@ class _EmptyPredictiveView
   }
 }
 
-Color predictiveResultColor(
-  AtlasPredictiveScenarioResult result,
-) {
-  if (result.confidence >= 80 &&
-      result.scoreVariation >= 8) {
+Color predictiveResultColor(AtlasPredictiveScenarioResult result) {
+  if (result.confidence >= 80 && result.scoreVariation >= 8) {
     return const Color(0xFF1B5E20);
   }
 
@@ -2138,9 +1496,7 @@ Color predictiveResultColor(
   return const Color(0xFFC62828);
 }
 
-Color projectionColor(
-  AtlasPredictiveProjectionKind kind,
-) {
+Color projectionColor(AtlasPredictiveProjectionKind kind) {
   switch (kind) {
     case AtlasPredictiveProjectionKind.conservative:
       return const Color(0xFF1565C0);
@@ -2153,9 +1509,7 @@ Color projectionColor(
   }
 }
 
-IconData projectionIcon(
-  AtlasPredictiveProjectionKind kind,
-) {
+IconData projectionIcon(AtlasPredictiveProjectionKind kind) {
   switch (kind) {
     case AtlasPredictiveProjectionKind.conservative:
       return Icons.shield_outlined;
@@ -2168,9 +1522,7 @@ IconData projectionIcon(
   }
 }
 
-IconData predictiveScenarioIcon(
-  AtlasPredictiveScenarioType type,
-) {
+IconData predictiveScenarioIcon(AtlasPredictiveScenarioType type) {
   switch (type) {
     case AtlasPredictiveScenarioType.reduceCosts:
       return Icons.savings_outlined;
@@ -2185,7 +1537,7 @@ IconData predictiveScenarioIcon(
       return Icons.inventory_2_outlined;
 
     case AtlasPredictiveScenarioType.improveHerdRecords:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
 
     case AtlasPredictiveScenarioType.improvePaddockUse:
       return Icons.grid_view_outlined;
@@ -2195,11 +1547,8 @@ IconData predictiveScenarioIcon(
   }
 }
 
-String _currency(
-  double value,
-) {
-  final fixed =
-      value.abs().toStringAsFixed(2);
+String _currency(double value) {
+  final fixed = value.abs().toStringAsFixed(2);
 
   final parts = fixed.split('.');
 
@@ -2208,20 +1557,12 @@ String _currency(
 
   final buffer = StringBuffer();
 
-  for (
-    var index = 0;
-    index < integer.length;
-    index++
-  ) {
-    final remaining =
-        integer.length - index;
+  for (var index = 0; index < integer.length; index++) {
+    final remaining = integer.length - index;
 
     buffer.write(integer[index]);
 
-    if (
-      remaining > 1 &&
-      remaining % 3 == 1
-    ) {
+    if (remaining > 1 && remaining % 3 == 1) {
       buffer.write('.');
     }
   }

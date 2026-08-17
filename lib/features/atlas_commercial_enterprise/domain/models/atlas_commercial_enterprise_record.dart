@@ -11,149 +11,126 @@ enum AtlasCommercialEnterpriseModule {
   commercialCenter,
 }
 
-extension AtlasCommercialEnterpriseModuleX
-    on AtlasCommercialEnterpriseModule {
+extension AtlasCommercialEnterpriseModuleX on AtlasCommercialEnterpriseModule {
   String get code => switch (this) {
-        AtlasCommercialEnterpriseModule.premiumCrm =>
-          'premium_crm',
-        AtlasCommercialEnterpriseModule.intelligentPipeline =>
-          'intelligent_pipeline',
-        AtlasCommercialEnterpriseModule.digitalContracts =>
-          'digital_contracts',
-        AtlasCommercialEnterpriseModule.electronicSignature =>
-          'electronic_signature',
-        AtlasCommercialEnterpriseModule.customerManagement =>
-          'customer_management',
-        AtlasCommercialEnterpriseModule.afterSales =>
-          'after_sales',
-        AtlasCommercialEnterpriseModule.commercialIndicators =>
-          'commercial_indicators',
-        AtlasCommercialEnterpriseModule.servicesMarketplace =>
-          'services_marketplace',
-        AtlasCommercialEnterpriseModule.auctions =>
-          'auctions',
-        AtlasCommercialEnterpriseModule.commercialCenter =>
-          'commercial_center',
-      };
+    AtlasCommercialEnterpriseModule.premiumCrm => 'premium_crm',
+    AtlasCommercialEnterpriseModule.intelligentPipeline =>
+      'intelligent_pipeline',
+    AtlasCommercialEnterpriseModule.digitalContracts => 'digital_contracts',
+    AtlasCommercialEnterpriseModule.electronicSignature =>
+      'electronic_signature',
+    AtlasCommercialEnterpriseModule.customerManagement => 'customer_management',
+    AtlasCommercialEnterpriseModule.afterSales => 'after_sales',
+    AtlasCommercialEnterpriseModule.commercialIndicators =>
+      'commercial_indicators',
+    AtlasCommercialEnterpriseModule.servicesMarketplace =>
+      'services_marketplace',
+    AtlasCommercialEnterpriseModule.auctions => 'auctions',
+    AtlasCommercialEnterpriseModule.commercialCenter => 'commercial_center',
+  };
 
   String get title => switch (this) {
-        AtlasCommercialEnterpriseModule.premiumCrm =>
-          'CRM Premium',
-        AtlasCommercialEnterpriseModule.intelligentPipeline =>
-          'Pipeline Inteligente',
-        AtlasCommercialEnterpriseModule.digitalContracts =>
-          'Contratos Digitais',
-        AtlasCommercialEnterpriseModule.electronicSignature =>
-          'Assinatura Eletrônica',
-        AtlasCommercialEnterpriseModule.customerManagement =>
-          'Gestão de Clientes',
-        AtlasCommercialEnterpriseModule.afterSales =>
-          'Pós-venda',
-        AtlasCommercialEnterpriseModule.commercialIndicators =>
-          'Indicadores Comerciais',
-        AtlasCommercialEnterpriseModule.servicesMarketplace =>
-          'Marketplace de Serviços',
-        AtlasCommercialEnterpriseModule.auctions =>
-          'Leilões',
-        AtlasCommercialEnterpriseModule.commercialCenter =>
-          'Central Comercial',
-      };
+    AtlasCommercialEnterpriseModule.premiumCrm => 'CRM Premium',
+    AtlasCommercialEnterpriseModule.intelligentPipeline =>
+      'Pipeline Inteligente',
+    AtlasCommercialEnterpriseModule.digitalContracts => 'Contratos Digitais',
+    AtlasCommercialEnterpriseModule.electronicSignature =>
+      'Assinatura Eletrônica',
+    AtlasCommercialEnterpriseModule.customerManagement => 'Gestão de Clientes',
+    AtlasCommercialEnterpriseModule.afterSales => 'Pós-venda',
+    AtlasCommercialEnterpriseModule.commercialIndicators =>
+      'Indicadores Comerciais',
+    AtlasCommercialEnterpriseModule.servicesMarketplace =>
+      'Marketplace de Serviços',
+    AtlasCommercialEnterpriseModule.auctions => 'Leilões',
+    AtlasCommercialEnterpriseModule.commercialCenter => 'Central Comercial',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasCommercialEnterpriseModule.premiumCrm =>
-          'Pacote 171',
-        AtlasCommercialEnterpriseModule.intelligentPipeline =>
-          'Pacote 172',
-        AtlasCommercialEnterpriseModule.digitalContracts =>
-          'Pacote 173',
-        AtlasCommercialEnterpriseModule.electronicSignature =>
-          'Pacote 174',
-        AtlasCommercialEnterpriseModule.customerManagement =>
-          'Pacote 175',
-        AtlasCommercialEnterpriseModule.afterSales =>
-          'Pacote 176',
-        AtlasCommercialEnterpriseModule.commercialIndicators =>
-          'Pacote 177',
-        AtlasCommercialEnterpriseModule.servicesMarketplace =>
-          'Pacote 178',
-        AtlasCommercialEnterpriseModule.auctions =>
-          'Pacote 179',
-        AtlasCommercialEnterpriseModule.commercialCenter =>
-          'Pacote 180',
-      };
+    AtlasCommercialEnterpriseModule.premiumCrm => 'Pacote 171',
+    AtlasCommercialEnterpriseModule.intelligentPipeline => 'Pacote 172',
+    AtlasCommercialEnterpriseModule.digitalContracts => 'Pacote 173',
+    AtlasCommercialEnterpriseModule.electronicSignature => 'Pacote 174',
+    AtlasCommercialEnterpriseModule.customerManagement => 'Pacote 175',
+    AtlasCommercialEnterpriseModule.afterSales => 'Pacote 176',
+    AtlasCommercialEnterpriseModule.commercialIndicators => 'Pacote 177',
+    AtlasCommercialEnterpriseModule.servicesMarketplace => 'Pacote 178',
+    AtlasCommercialEnterpriseModule.auctions => 'Pacote 179',
+    AtlasCommercialEnterpriseModule.commercialCenter => 'Pacote 180',
+  };
 
   List<String> get features => switch (this) {
-        AtlasCommercialEnterpriseModule.premiumCrm => const [
-            'Leads e oportunidades',
-            'Interações',
-            'Tarefas comerciais',
-            'Segmentação',
-            'Histórico do relacionamento',
-          ],
-        AtlasCommercialEnterpriseModule.intelligentPipeline => const [
-            'Etapas do funil',
-            'Probabilidade de fechamento',
-            'Valor potencial',
-            'Próxima ação',
-            'Previsão comercial',
-          ],
-        AtlasCommercialEnterpriseModule.digitalContracts => const [
-            'Minutas',
-            'Partes e condições',
-            'Versões',
-            'Aprovação',
-            'Vigência e renovação',
-          ],
-        AtlasCommercialEnterpriseModule.electronicSignature => const [
-            'Signatários',
-            'Ordem de assinatura',
-            'Envio',
-            'Evidências',
-            'Conclusão e auditoria',
-          ],
-        AtlasCommercialEnterpriseModule.customerManagement => const [
-            'Cadastro de clientes',
-            'Classificação',
-            'Documentos',
-            'Preferências',
-            'Risco e crédito',
-          ],
-        AtlasCommercialEnterpriseModule.afterSales => const [
-            'Acompanhamento',
-            'Solicitações',
-            'Satisfação',
-            'Renovação',
-            'Oportunidades adicionais',
-          ],
-        AtlasCommercialEnterpriseModule.commercialIndicators => const [
-            'Receita comercial',
-            'Ticket médio',
-            'Conversão',
-            'Ciclo de vendas',
-            'Previsão versus realizado',
-          ],
-        AtlasCommercialEnterpriseModule.servicesMarketplace => const [
-            'Oferta de serviços',
-            'Solicitações',
-            'Propostas',
-            'Contratações',
-            'Avaliações',
-          ],
-        AtlasCommercialEnterpriseModule.auctions => const [
-            'Eventos',
-            'Lotes',
-            'Lances',
-            'Arremates',
-            'Liquidação',
-          ],
-        AtlasCommercialEnterpriseModule.commercialCenter => const [
-            'Indicadores consolidados',
-            'Pipeline',
-            'Contratos',
-            'Alertas',
-            'Painel executivo',
-          ],
-      };
+    AtlasCommercialEnterpriseModule.premiumCrm => const [
+      'Leads e oportunidades',
+      'Interações',
+      'Tarefas comerciais',
+      'Segmentação',
+      'Histórico do relacionamento',
+    ],
+    AtlasCommercialEnterpriseModule.intelligentPipeline => const [
+      'Etapas do funil',
+      'Probabilidade de fechamento',
+      'Valor potencial',
+      'Próxima ação',
+      'Previsão comercial',
+    ],
+    AtlasCommercialEnterpriseModule.digitalContracts => const [
+      'Minutas',
+      'Partes e condições',
+      'Versões',
+      'Aprovação',
+      'Vigência e renovação',
+    ],
+    AtlasCommercialEnterpriseModule.electronicSignature => const [
+      'Signatários',
+      'Ordem de assinatura',
+      'Envio',
+      'Evidências',
+      'Conclusão e auditoria',
+    ],
+    AtlasCommercialEnterpriseModule.customerManagement => const [
+      'Cadastro de clientes',
+      'Classificação',
+      'Documentos',
+      'Preferências',
+      'Risco e crédito',
+    ],
+    AtlasCommercialEnterpriseModule.afterSales => const [
+      'Acompanhamento',
+      'Solicitações',
+      'Satisfação',
+      'Renovação',
+      'Oportunidades adicionais',
+    ],
+    AtlasCommercialEnterpriseModule.commercialIndicators => const [
+      'Receita comercial',
+      'Ticket médio',
+      'Conversão',
+      'Ciclo de vendas',
+      'Previsão versus realizado',
+    ],
+    AtlasCommercialEnterpriseModule.servicesMarketplace => const [
+      'Oferta de serviços',
+      'Solicitações',
+      'Propostas',
+      'Contratações',
+      'Avaliações',
+    ],
+    AtlasCommercialEnterpriseModule.auctions => const [
+      'Eventos',
+      'Lotes',
+      'Lances',
+      'Arremates',
+      'Liquidação',
+    ],
+    AtlasCommercialEnterpriseModule.commercialCenter => const [
+      'Indicadores consolidados',
+      'Pipeline',
+      'Contratos',
+      'Alertas',
+      'Painel executivo',
+    ],
+  };
 }
 
 class AtlasCommercialEnterpriseRecord {
@@ -252,16 +229,12 @@ class AtlasCommercialEnterpriseRecord {
     };
   }
 
-  factory AtlasCommercialEnterpriseRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCommercialEnterpriseRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasCommercialEnterpriseModule.values.firstWhere(
+    final module = AtlasCommercialEnterpriseModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasCommercialEnterpriseModule.premiumCrm,
+      orElse: () => AtlasCommercialEnterpriseModule.premiumCrm,
     );
 
     return AtlasCommercialEnterpriseRecord(
@@ -276,20 +249,14 @@ class AtlasCommercialEnterpriseRecord {
       referenceId: map['referenceId']?.toString() ?? '',
       stage: map['stage']?.toString() ?? '',
       owner: map['owner']?.toString() ?? '',
-      potentialValue:
-          (map['potentialValue'] as num?)?.toDouble() ?? 0.0,
-      actualValue:
-          (map['actualValue'] as num?)?.toDouble() ?? 0.0,
+      potentialValue: (map['potentialValue'] as num?)?.toDouble() ?? 0.0,
+      actualValue: (map['actualValue'] as num?)?.toDouble() ?? 0.0,
       probabilityPercent:
-          (map['probabilityPercent'] as num?)?.toDouble() ??
-              0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
+          (map['probabilityPercent'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
       satisfactionPercent:
-          (map['satisfactionPercent'] as num?)?.toDouble() ??
-              0.0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+          (map['satisfactionPercent'] as num?)?.toDouble() ?? 0.0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

@@ -43,7 +43,7 @@ def _farm_allowed(principal: Principal, farm_id: str | None) -> None:
     if farm_id is None or principal.membership.role in {"owner", "admin"}:
         return
     allowed = set(principal.membership.farm_ids or [])
-    if farm_id not in allowed:
+    if allowed and farm_id not in allowed:
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
 
 

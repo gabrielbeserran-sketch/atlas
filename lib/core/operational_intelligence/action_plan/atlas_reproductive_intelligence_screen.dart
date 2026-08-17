@@ -4,8 +4,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_co
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_reproductive_models.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_reproductive_service.dart';
 
-class AtlasReproductiveIntelligenceScreen
-    extends StatefulWidget {
+class AtlasReproductiveIntelligenceScreen extends StatefulWidget {
   const AtlasReproductiveIntelligenceScreen({
     required this.actionController,
     super.key,
@@ -20,19 +19,14 @@ class AtlasReproductiveIntelligenceScreen
 
 class _AtlasReproductiveIntelligenceScreenState
     extends State<AtlasReproductiveIntelligenceScreen> {
-  final AtlasReproductiveService service =
-      AtlasReproductiveService.instance;
+  final AtlasReproductiveService service = AtlasReproductiveService.instance;
 
-  List<AtlasReproductiveProtocol> protocols =
-      <AtlasReproductiveProtocol>[];
-  List<AtlasReproductiveEvent> events =
-      <AtlasReproductiveEvent>[];
-  List<AtlasGeneticAnimal> genetics =
-      <AtlasGeneticAnimal>[];
+  List<AtlasReproductiveProtocol> protocols = <AtlasReproductiveProtocol>[];
+  List<AtlasReproductiveEvent> events = <AtlasReproductiveEvent>[];
+  List<AtlasGeneticAnimal> genetics = <AtlasGeneticAnimal>[];
   bool isLoading = false;
 
-  AtlasReproductiveSummary get summary =>
-      service.buildSummary(events);
+  AtlasReproductiveSummary get summary => service.buildSummary(events);
 
   @override
   void initState() {
@@ -60,35 +54,18 @@ class _AtlasReproductiveIntelligenceScreenState
     AtlasReproductiveEvent? event,
     AtlasReproductiveEventType? initialType,
   }) async {
-    final animalId = TextEditingController(
-      text: event?.animalId ?? '',
-    );
-    final animalName = TextEditingController(
-      text: event?.animalName ?? '',
-    );
-    final sire = TextEditingController(
-      text: event?.sireId ?? '',
-    );
-    final semen = TextEditingController(
-      text: event?.semenBatch ?? '',
-    );
-    final professional = TextEditingController(
-      text: event?.professional ?? '',
-    );
-    final resultText = TextEditingController(
-      text: event?.result ?? '',
-    );
-    final notes = TextEditingController(
-      text: event?.notes ?? '',
-    );
-    var type = event?.type ??
-        initialType ??
-        AtlasReproductiveEventType.heat;
+    final animalId = TextEditingController(text: event?.animalId ?? '');
+    final animalName = TextEditingController(text: event?.animalName ?? '');
+    final sire = TextEditingController(text: event?.sireId ?? '');
+    final semen = TextEditingController(text: event?.semenBatch ?? '');
+    final professional = TextEditingController(text: event?.professional ?? '');
+    final resultText = TextEditingController(text: event?.result ?? '');
+    final notes = TextEditingController(text: event?.notes ?? '');
+    var type = event?.type ?? initialType ?? AtlasReproductiveEventType.heat;
     var occurredAt = event?.occurredAt ?? DateTime.now();
     String? protocolId = event?.protocolId;
 
-    final result =
-        await showDialog<AtlasReproductiveEvent>(
+    final result = await showDialog<AtlasReproductiveEvent>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -110,11 +87,9 @@ class _AtlasReproductiveIntelligenceScreenState
                           Expanded(
                             child: TextField(
                               controller: animalId,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'ID do animal',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -122,42 +97,34 @@ class _AtlasReproductiveIntelligenceScreenState
                           Expanded(
                             child: TextField(
                               controller: animalName,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Nome do animal',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      DropdownButtonFormField<
-                          AtlasReproductiveEventType>(
+                      DropdownButtonFormField<AtlasReproductiveEventType>(
                         initialValue: type,
                         decoration: const InputDecoration(
                           labelText: 'Tipo de evento',
                           border: OutlineInputBorder(),
                         ),
-                        items: AtlasReproductiveEventType
-                            .values
+                        items: AtlasReproductiveEventType.values
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(
-                                  atlasReproductiveEventTypeLabel(
-                                    value,
-                                  ),
+                                  atlasReproductiveEventTypeLabel(value),
                                 ),
                               ),
                             )
                             .toList(growable: false),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => type = value,
-                            );
+                            setDialogState(() => type = value);
                           }
                         },
                       ),
@@ -174,17 +141,14 @@ class _AtlasReproductiveIntelligenceScreenState
                             child: Text('Sem protocolo'),
                           ),
                           ...protocols.map(
-                            (protocol) =>
-                                DropdownMenuItem<String?>(
+                            (protocol) => DropdownMenuItem<String?>(
                               value: protocol.id,
                               child: Text(protocol.name),
                             ),
                           ),
                         ],
                         onChanged: (value) {
-                          setDialogState(
-                            () => protocolId = value,
-                          );
+                          setDialogState(() => protocolId = value);
                         },
                       ),
                       const SizedBox(height: 10),
@@ -192,23 +156,18 @@ class _AtlasReproductiveIntelligenceScreenState
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Data do evento'),
                         subtitle: Text(
-                          DateFormat('dd/MM/yyyy')
-                              .format(occurredAt),
+                          DateFormat('dd/MM/yyyy').format(occurredAt),
                         ),
-                        trailing:
-                            const Icon(Icons.calendar_month),
+                        trailing: const Icon(Icons.calendar_month),
                         onTap: () async {
-                          final selected =
-                              await showDatePicker(
+                          final selected = await showDatePicker(
                             context: dialogContext,
                             initialDate: occurredAt,
                             firstDate: DateTime(2010),
                             lastDate: DateTime(2100),
                           );
                           if (selected != null) {
-                            setDialogState(
-                              () => occurredAt = selected,
-                            );
+                            setDialogState(() => occurredAt = selected);
                           }
                         },
                       ),
@@ -217,11 +176,9 @@ class _AtlasReproductiveIntelligenceScreenState
                           Expanded(
                             child: TextField(
                               controller: sire,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Touro/doador',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -229,11 +186,9 @@ class _AtlasReproductiveIntelligenceScreenState
                           Expanded(
                             child: TextField(
                               controller: semen,
-                              decoration:
-                                  const InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Lote de sêmen',
-                                border:
-                                    OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
@@ -252,8 +207,7 @@ class _AtlasReproductiveIntelligenceScreenState
                         controller: resultText,
                         decoration: const InputDecoration(
                           labelText: 'Resultado',
-                          hintText:
-                              'Ex.: positivo, negativo, normal.',
+                          hintText: 'Ex.: positivo, negativo, normal.',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -272,8 +226,7 @@ class _AtlasReproductiveIntelligenceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -284,23 +237,21 @@ class _AtlasReproductiveIntelligenceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasReproductiveEvent(
-                        id: event?.id ??
+                        id:
+                            event?.id ??
                             'reproductive_event_'
                                 '${now.microsecondsSinceEpoch}',
                         animalId: animalId.text.trim(),
-                        animalName:
-                            animalName.text.trim(),
+                        animalName: animalName.text.trim(),
                         type: type,
                         occurredAt: occurredAt,
                         protocolId: protocolId,
                         sireId: sire.text.trim(),
                         semenBatch: semen.text.trim(),
-                        professional:
-                            professional.text.trim(),
+                        professional: professional.text.trim(),
                         result: resultText.text.trim(),
                         notes: notes.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                       ),
                     );
                   },
@@ -327,34 +278,24 @@ class _AtlasReproductiveIntelligenceScreenState
     }
   }
 
-  Future<void> _editProtocol({
-    AtlasReproductiveProtocol? protocol,
-  }) async {
-    final name = TextEditingController(
-      text: protocol?.name ?? '',
-    );
+  Future<void> _editProtocol({AtlasReproductiveProtocol? protocol}) async {
+    final name = TextEditingController(text: protocol?.name ?? '');
     final description = TextEditingController(
       text: protocol?.description ?? '',
     );
-    final steps = TextEditingController(
-      text: protocol?.steps.join('\n') ?? '',
-    );
+    final steps = TextEditingController(text: protocol?.steps.join('\n') ?? '');
     var startAt = protocol?.startAt ?? DateTime.now();
-    var endAt = protocol?.endAt ??
-        DateTime.now().add(const Duration(days: 10));
+    var endAt = protocol?.endAt ?? DateTime.now().add(const Duration(days: 10));
     var active = protocol?.active ?? true;
 
-    final result =
-        await showDialog<AtlasReproductiveProtocol>(
+    final result = await showDialog<AtlasReproductiveProtocol>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
               title: Text(
-                protocol == null
-                    ? 'Novo protocolo'
-                    : 'Editar protocolo',
+                protocol == null ? 'Novo protocolo' : 'Editar protocolo',
               ),
               content: SizedBox(
                 width: 560,
@@ -383,8 +324,7 @@ class _AtlasReproductiveIntelligenceScreenState
                         controller: steps,
                         maxLines: 6,
                         decoration: const InputDecoration(
-                          labelText:
-                              'Etapas — uma por linha',
+                          labelText: 'Etapas — uma por linha',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -395,27 +335,20 @@ class _AtlasReproductiveIntelligenceScreenState
                           '${DateFormat('dd/MM/yyyy').format(startAt)} '
                           'a ${DateFormat('dd/MM/yyyy').format(endAt)}',
                         ),
-                        trailing:
-                            const Icon(Icons.date_range),
+                        trailing: const Icon(Icons.date_range),
                         onTap: () async {
-                          final first =
-                              await showDatePicker(
+                          final first = await showDatePicker(
                             context: dialogContext,
                             initialDate: startAt,
                             firstDate: DateTime(2010),
                             lastDate: DateTime(2100),
                           );
-                          if (first == null ||
-                              !dialogContext.mounted) {
+                          if (first == null || !dialogContext.mounted) {
                             return;
                           }
-                          final last =
-                              await showDatePicker(
+                          final last = await showDatePicker(
                             context: dialogContext,
-                            initialDate:
-                                endAt.isBefore(first)
-                                    ? first
-                                    : endAt,
+                            initialDate: endAt.isBefore(first) ? first : endAt,
                             firstDate: first,
                             lastDate: DateTime(2100),
                           );
@@ -431,9 +364,7 @@ class _AtlasReproductiveIntelligenceScreenState
                         title: const Text('Ativo'),
                         value: active,
                         onChanged: (value) {
-                          setDialogState(
-                            () => active = value,
-                          );
+                          setDialogState(() => active = value);
                         },
                       ),
                     ],
@@ -442,8 +373,7 @@ class _AtlasReproductiveIntelligenceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -454,16 +384,15 @@ class _AtlasReproductiveIntelligenceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasReproductiveProtocol(
-                        id: protocol?.id ??
+                        id:
+                            protocol?.id ??
                             'reproductive_protocol_'
                                 '${now.microsecondsSinceEpoch}',
                         name: name.text.trim(),
-                        description:
-                            description.text.trim(),
+                        description: description.text.trim(),
                         startAt: startAt,
                         endAt: endAt,
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                         active: active,
                         steps: steps.text
                             .split('\n')
@@ -492,27 +421,13 @@ class _AtlasReproductiveIntelligenceScreenState
     }
   }
 
-  Future<void> _editGenetic({
-    AtlasGeneticAnimal? animal,
-  }) async {
-    final id = TextEditingController(
-      text: animal?.id ?? '',
-    );
-    final name = TextEditingController(
-      text: animal?.name ?? '',
-    );
-    final sex = TextEditingController(
-      text: animal?.sex ?? '',
-    );
-    final breed = TextEditingController(
-      text: animal?.breed ?? '',
-    );
-    final sire = TextEditingController(
-      text: animal?.sireId ?? '',
-    );
-    final dam = TextEditingController(
-      text: animal?.damId ?? '',
-    );
+  Future<void> _editGenetic({AtlasGeneticAnimal? animal}) async {
+    final id = TextEditingController(text: animal?.id ?? '');
+    final name = TextEditingController(text: animal?.name ?? '');
+    final sex = TextEditingController(text: animal?.sex ?? '');
+    final breed = TextEditingController(text: animal?.breed ?? '');
+    final sire = TextEditingController(text: animal?.sireId ?? '');
+    final dam = TextEditingController(text: animal?.damId ?? '');
     final genetic = TextEditingController(
       text: animal?.geneticIndex.toString() ?? '',
     );
@@ -598,10 +513,7 @@ class _AtlasReproductiveIntelligenceScreenState
                   ),
                   const SizedBox(height: 10),
                   _twoFields(
-                    _scoreField(
-                      calving,
-                      'Facilidade de parto',
-                    ),
+                    _scoreField(calving, 'Facilidade de parto'),
                     _scoreField(maternal, 'Maternal'),
                   ),
                 ],
@@ -610,8 +522,7 @@ class _AtlasReproductiveIntelligenceScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             FilledButton(
@@ -627,16 +538,11 @@ class _AtlasReproductiveIntelligenceScreenState
                     breed: breed.text.trim(),
                     sireId: sire.text.trim(),
                     damId: dam.text.trim(),
-                    geneticIndex:
-                        double.tryParse(genetic.text) ?? 0,
-                    fertilityScore:
-                        double.tryParse(fertility.text) ?? 0,
-                    calvingEaseScore:
-                        double.tryParse(calving.text) ?? 0,
-                    maternalScore:
-                        double.tryParse(maternal.text) ?? 0,
-                    farmName:
-                        widget.actionController.farmName,
+                    geneticIndex: double.tryParse(genetic.text) ?? 0,
+                    fertilityScore: double.tryParse(fertility.text) ?? 0,
+                    calvingEaseScore: double.tryParse(calving.text) ?? 0,
+                    maternalScore: double.tryParse(maternal.text) ?? 0,
+                    farmName: widget.actionController.farmName,
                   ),
                 );
               },
@@ -671,8 +577,7 @@ class _AtlasReproductiveIntelligenceScreenState
   @override
   Widget build(BuildContext context) {
     final alerts = service.buildAlerts(events);
-    final projected =
-        service.projectedCalvingDates(events);
+    final projected = service.projectedCalvingDates(events);
 
     return DefaultTabController(
       length: 7,
@@ -692,62 +597,54 @@ class _AtlasReproductiveIntelligenceScreenState
               Tab(text: 'Agenda', icon: Icon(Icons.calendar_month)),
               Tab(text: 'IATF', icon: Icon(Icons.biotech_outlined)),
               Tab(text: 'Protocolos', icon: Icon(Icons.list_alt)),
-              Tab(text: 'Gestação', icon: Icon(Icons.medical_information_outlined)),
+              Tab(
+                text: 'Gestação',
+                icon: Icon(Icons.medical_information_outlined),
+              ),
               Tab(text: 'Indicadores', icon: Icon(Icons.analytics_outlined)),
               Tab(text: 'Genética', icon: Icon(Icons.hub_outlined)),
-              Tab(text: 'Alertas', icon: Icon(Icons.notifications_active_outlined)),
+              Tab(
+                text: 'Alertas',
+                icon: Icon(Icons.notifications_active_outlined),
+              ),
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _editEvent(),
           icon: const Icon(Icons.add),
           label: const Text('Novo evento'),
         ),
-        body: isLoading &&
-                events.isEmpty &&
-                protocols.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+        body: isLoading && events.isEmpty && protocols.isEmpty
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _EventsTab(
                     events: events,
-                    onEdit: (event) =>
-                        _editEvent(event: event),
+                    onEdit: (event) => _editEvent(event: event),
                   ),
                   _EventsTab(
                     events: events
                         .where(
                           (event) =>
                               event.type ==
-                              AtlasReproductiveEventType
-                                  .fixedTimeAi,
+                              AtlasReproductiveEventType.fixedTimeAi,
                         )
                         .toList(),
-                    onEdit: (event) =>
-                        _editEvent(event: event),
-                    emptyMessage:
-                        'Nenhum procedimento de IATF registrado.',
+                    onEdit: (event) => _editEvent(event: event),
+                    emptyMessage: 'Nenhum procedimento de IATF registrado.',
                   ),
                   _ProtocolsTab(
                     protocols: protocols,
                     onAdd: () => _editProtocol(),
-                    onEdit: (protocol) =>
-                        _editProtocol(protocol: protocol),
+                    onEdit: (protocol) => _editProtocol(protocol: protocol),
                   ),
-                  _PregnancyTab(
-                    events: events,
-                    projected: projected,
-                  ),
+                  _PregnancyTab(events: events, projected: projected),
                   _IndicatorsTab(summary: summary),
                   _GeneticsTab(
                     items: genetics,
                     onAdd: () => _editGenetic(),
-                    onEdit: (animal) =>
-                        _editGenetic(animal: animal),
+                    onEdit: (animal) => _editGenetic(animal: animal),
                   ),
                   _AlertsTab(alerts: alerts),
                 ],
@@ -756,10 +653,7 @@ class _AtlasReproductiveIntelligenceScreenState
     );
   }
 
-  static Widget _twoFields(
-    Widget first,
-    Widget second,
-  ) {
+  static Widget _twoFields(Widget first, Widget second) {
     return Row(
       children: [
         Expanded(child: first),
@@ -769,16 +663,10 @@ class _AtlasReproductiveIntelligenceScreenState
     );
   }
 
-  static Widget _scoreField(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _scoreField(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -806,16 +694,13 @@ class _EventsTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: events.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final event = events[index];
         return Card(
           child: ListTile(
             onTap: () => onEdit(event),
-            leading: const CircleAvatar(
-              child: Icon(Icons.event_note),
-            ),
+            leading: const CircleAvatar(child: Icon(Icons.event_note)),
             title: Text(
               '${event.animalName.isEmpty ? event.animalId : event.animalName} — '
               '${atlasReproductiveEventTypeLabel(event.type)}',
@@ -859,21 +744,11 @@ class _ProtocolsTab extends StatelessWidget {
         ),
         Expanded(
           child: protocols.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum protocolo cadastrado.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum protocolo cadastrado.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: protocols.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final protocol = protocols[index];
                     return Card(
@@ -890,15 +765,13 @@ class _ProtocolsTab extends StatelessWidget {
                         ),
                         trailing: IconButton(
                           tooltip: 'Editar',
-                          onPressed: () =>
-                              onEdit(protocol),
+                          onPressed: () => onEdit(protocol),
                           icon: const Icon(Icons.edit),
                         ),
                         children: protocol.steps
                             .map(
                               (step) => ListTile(
-                                leading:
-                                    const Icon(Icons.check),
+                                leading: const Icon(Icons.check),
                                 title: Text(step),
                               ),
                             )
@@ -914,10 +787,7 @@ class _ProtocolsTab extends StatelessWidget {
 }
 
 class _PregnancyTab extends StatelessWidget {
-  const _PregnancyTab({
-    required this.events,
-    required this.projected,
-  });
+  const _PregnancyTab({required this.events, required this.projected});
 
   final List<AtlasReproductiveEvent> events;
   final List<DateTime> projected;
@@ -927,9 +797,7 @@ class _PregnancyTab extends StatelessWidget {
     final diagnoses = events
         .where(
           (event) =>
-              event.type ==
-              AtlasReproductiveEventType
-                  .pregnancyDiagnosis,
+              event.type == AtlasReproductiveEventType.pregnancyDiagnosis,
         )
         .toList();
     return ListView(
@@ -937,19 +805,14 @@ class _PregnancyTab extends StatelessWidget {
       children: [
         const Text(
           'Diagnósticos de gestação',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
         ),
         const SizedBox(height: 8),
         ...diagnoses.map(
           (event) => Card(
             child: ListTile(
               title: Text(
-                event.animalName.isEmpty
-                    ? event.animalId
-                    : event.animalName,
+                event.animalName.isEmpty ? event.animalId : event.animalName,
               ),
               subtitle: Text(
                 '${DateFormat('dd/MM/yyyy').format(event.occurredAt)} • '
@@ -961,19 +824,14 @@ class _PregnancyTab extends StatelessWidget {
         const SizedBox(height: 16),
         const Text(
           'Previsão de partos',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
         ),
         const SizedBox(height: 8),
         ...projected.map(
           (date) => Card(
             child: ListTile(
               leading: const Icon(Icons.child_friendly),
-              title: Text(
-                DateFormat('dd/MM/yyyy').format(date),
-              ),
+              title: Text(DateFormat('dd/MM/yyyy').format(date)),
             ),
           ),
         ),
@@ -983,9 +841,7 @@ class _PregnancyTab extends StatelessWidget {
 }
 
 class _IndicatorsTab extends StatelessWidget {
-  const _IndicatorsTab({
-    required this.summary,
-  });
+  const _IndicatorsTab({required this.summary});
 
   final AtlasReproductiveSummary summary;
 
@@ -1028,8 +884,7 @@ class _Metric extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title),
               const SizedBox(height: 8),
@@ -1076,29 +931,17 @@ class _GeneticsTab extends StatelessWidget {
         ),
         Expanded(
           child: items.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum registro genético.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum registro genético.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return Card(
                       child: ListTile(
                         onTap: () => onEdit(item),
-                        leading: CircleAvatar(
-                          child: Text('${index + 1}'),
-                        ),
+                        leading: CircleAvatar(child: Text('${index + 1}')),
                         title: Text(
                           '${item.name.isEmpty ? item.id : item.name} — ${item.sex}',
                         ),
@@ -1124,9 +967,7 @@ class _GeneticsTab extends StatelessWidget {
 }
 
 class _AlertsTab extends StatelessWidget {
-  const _AlertsTab({
-    required this.alerts,
-  });
+  const _AlertsTab({required this.alerts});
 
   final List<String> alerts;
 
@@ -1135,13 +976,10 @@ class _AlertsTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: alerts.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) => Card(
         child: ListTile(
-          leading: const Icon(
-            Icons.notifications_active_outlined,
-          ),
+          leading: const Icon(Icons.notifications_active_outlined),
           title: Text(alerts[index]),
         ),
       ),

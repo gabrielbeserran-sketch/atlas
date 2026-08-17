@@ -10,6 +10,7 @@ import 'package:projeto_atlas/features/atlas_ai/data/services/atlas_ai_conversat
 import 'package:projeto_atlas/features/atlas_ai/domain/services/atlas_ai_response_service.dart';
 import 'package:projeto_atlas/features/diagnostics/domain/models/atlas_diagnostic_data.dart';
 import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intelligence_service.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasAiScreen extends StatefulWidget {
   const AtlasAiScreen({
@@ -41,29 +42,22 @@ class AtlasAiScreen extends StatefulWidget {
 }
 
 class _AtlasAiScreenState extends State<AtlasAiScreen> {
-  final AtlasAiResponseService responseService =
-      const AtlasAiResponseService();
+  final AtlasAiResponseService responseService = const AtlasAiResponseService();
 
-  final AtlasAiConversationStorageService
-      conversationStorage =
+  final AtlasAiConversationStorageService conversationStorage =
       const AtlasAiConversationStorageService();
 
-  final AtlasAiMemoryService memoryService =
-      const AtlasAiMemoryService();
+  final AtlasAiMemoryService memoryService = const AtlasAiMemoryService();
 
-  final AtlasAiTrackedActionStorageService
-      trackedActionStorage =
+  final AtlasAiTrackedActionStorageService trackedActionStorage =
       const AtlasAiTrackedActionStorageService();
 
-  final AtlasAiActionTrackingService
-      actionTrackingService =
+  final AtlasAiActionTrackingService actionTrackingService =
       const AtlasAiActionTrackingService();
 
-  final TextEditingController inputController =
-      TextEditingController();
+  final TextEditingController inputController = TextEditingController();
 
-  final ScrollController scrollController =
-      ScrollController();
+  final ScrollController scrollController = ScrollController();
 
   final List<_AtlasAiChatItem> messages = [];
 
@@ -74,8 +68,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
 
   List<AtlasAiTrackedAction> trackedActions = [];
 
-  AtlasAiTrackedActionStatus?
-      selectedActionStatus;
+  AtlasAiTrackedActionStatus? selectedActionStatus;
 
   AtlasAiFarmContext get contextData {
     return widget.contextData;
@@ -88,13 +81,11 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
   }
 
   Future<void> _loadConversation() async {
-    final stored =
-        await conversationStorage.load(
+    final stored = await conversationStorage.load(
       farmName: contextData.farmName,
     );
 
-    final savedTrackedActions =
-        await trackedActionStorage.load(
+    final savedTrackedActions = await trackedActionStorage.load(
       farmName: contextData.farmName,
     );
 
@@ -102,19 +93,14 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
       return;
     }
 
-    trackedActions =
-        savedTrackedActions;
+    trackedActions = savedTrackedActions;
 
     messages
       ..clear()
-      ..addAll(
-        stored.map(_AtlasAiChatItem.fromStored),
-      );
+      ..addAll(stored.map(_AtlasAiChatItem.fromStored));
 
     if (messages.isEmpty) {
-      messages.add(
-        _buildWelcomeMessage(),
-      );
+      messages.add(_buildWelcomeMessage());
     }
 
     _rebuildMemory();
@@ -122,8 +108,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     final memory = memoryData;
 
     if (memory != null) {
-      trackedActions =
-          actionTrackingService.importFromMemory(
+      trackedActions = actionTrackingService.importFromMemory(
         farmName: contextData.farmName,
         memory: memory,
         existingActions: trackedActions,
@@ -145,31 +130,22 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
         generatedAt: DateTime.now(),
         question: '',
         intent: AtlasAiIntent.generalSituation,
-        directAnswer:
-            'Olá! Sou o Atlas IA da ${contextData.farmName}.',
+        directAnswer: 'Olá! Sou o Atlas IA da ${contextData.farmName}.',
         justification:
             'Posso explicar o diagnóstico, indicar prioridades, analisar riscos, sugerir planos de ação e comparar decisões simuladas.',
         evidences: [
           AtlasAiEvidence(
             label: 'Score atual',
-            value:
-                '${contextData.score.toStringAsFixed(0)}/100',
-            description:
-                'Pontuação consolidada do diagnóstico.',
-            area:
-                AtlasFarmAnalysisArea.general,
+            value: '${contextData.score.toStringAsFixed(0)}/100',
+            description: 'Pontuação consolidada do diagnóstico.',
+            area: AtlasFarmAnalysisArea.general,
             weight: 1,
           ),
           AtlasAiEvidence(
             label: 'Situação',
-            value:
-                atlasDiagnosticLevelLabel(
-              contextData.level,
-            ),
-            description:
-                'Classificação atual da propriedade.',
-            area:
-                AtlasFarmAnalysisArea.general,
+            value: atlasDiagnosticLevelLabel(contextData.level),
+            description: 'Classificação atual da propriedade.',
+            area: AtlasFarmAnalysisArea.general,
             weight: 0.9,
           ),
         ],
@@ -211,9 +187,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
   }
 
   AtlasAiActionProgress get actionProgress {
-    return actionTrackingService.calculateProgress(
-      trackedActions,
-    );
+    return actionTrackingService.calculateProgress(trackedActions);
   }
 
   List<AtlasAiTrackedAction> get filteredTrackedActions {
@@ -230,19 +204,14 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
         return first.isOverdue ? -1 : 1;
       }
 
-      return second.updatedAt.compareTo(
-        first.updatedAt,
-      );
+      return second.updatedAt.compareTo(first.updatedAt);
     });
 
     return items;
   }
 
-  Future<void> _importActionsFromResponse(
-    AtlasAiResponse response,
-  ) async {
-    trackedActions =
-        actionTrackingService.importFromResponse(
+  Future<void> _importActionsFromResponse(AtlasAiResponse response) async {
+    trackedActions = actionTrackingService.importFromResponse(
       farmName: contextData.farmName,
       response: response,
       existingActions: trackedActions,
@@ -255,16 +224,13 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     AtlasAiTrackedAction action,
     AtlasAiTrackedActionStatus status,
   ) async {
-    final index = trackedActions.indexWhere(
-      (item) => item.id == action.id,
-    );
+    final index = trackedActions.indexWhere((item) => item.id == action.id);
 
     if (index < 0) {
       return;
     }
 
-    final updated =
-        actionTrackingService.updateStatus(
+    final updated = actionTrackingService.updateStatus(
       action: action,
       status: status,
     );
@@ -276,51 +242,34 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     await _saveTrackedActions();
   }
 
-  Future<void> _editActionNotes(
-    AtlasAiTrackedAction action,
-  ) async {
-    final controller = TextEditingController(
-      text: action.notes,
-    );
+  Future<void> _editActionNotes(AtlasAiTrackedAction action) async {
+    final controller = TextEditingController(text: action.notes);
 
     final notes = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Observações da ação',
-          ),
+          title: const Text('Observações da ação'),
           content: TextField(
             controller: controller,
             minLines: 3,
             maxLines: 7,
             decoration: const InputDecoration(
-              hintText:
-                  'Registre andamento, impedimentos ou resultados.',
+              hintText: 'Registre andamento, impedimentos ou resultados.',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop();
+                Navigator.of(dialogContext).pop();
               },
-              child: const Text(
-                'Cancelar',
-              ),
+              child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(
-                  controller.text.trim(),
-                );
+                Navigator.of(dialogContext).pop(controller.text.trim());
               },
-              child: const Text(
-                'Salvar',
-              ),
+              child: const Text('Salvar'),
             ),
           ],
         );
@@ -333,16 +282,13 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
       return;
     }
 
-    final index = trackedActions.indexWhere(
-      (item) => item.id == action.id,
-    );
+    final index = trackedActions.indexWhere((item) => item.id == action.id);
 
     if (index < 0) {
       return;
     }
 
-    final updated =
-        actionTrackingService.updateNotes(
+    final updated = actionTrackingService.updateNotes(
       action: action,
       notes: notes,
     );
@@ -354,9 +300,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     await _saveTrackedActions();
   }
 
-  void _selectActionStatus(
-    AtlasAiTrackedActionStatus? status,
-  ) {
+  void _selectActionStatus(AtlasAiTrackedActionStatus? status) {
     setState(() {
       selectedActionStatus = status;
     });
@@ -366,16 +310,11 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     final progress = actionProgress;
 
     final merged = <String>[
-      if (progress.hasActions)
-        'Qual é o progresso das ações da consultoria?',
-      if (progress.pending > 0)
-        'Quais ações estão pendentes?',
-      if (progress.inProgress > 0)
-        'Quais ações estão em andamento?',
-      if (progress.overdue > 0)
-        'Quais ações estão atrasadas?',
-      if (progress.completed > 0)
-        'O que já foi concluído?',
+      if (progress.hasActions) 'Qual é o progresso das ações da consultoria?',
+      if (progress.pending > 0) 'Quais ações estão pendentes?',
+      if (progress.inProgress > 0) 'Quais ações estão em andamento?',
+      if (progress.overdue > 0) 'Quais ações estão atrasadas?',
+      if (progress.completed > 0) 'O que já foi concluído?',
       ...?memoryData?.suggestedQuestions,
       ...contextData.suggestedQuestions,
     ];
@@ -384,16 +323,12 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
   }
 
   void resumeLastTopic() {
-    final lastQuestion =
-        memoryData?.lastQuestion;
+    final lastQuestion = memoryData?.lastQuestion;
 
-    if (lastQuestion == null ||
-        lastQuestion.trim().isEmpty) {
+    if (lastQuestion == null || lastQuestion.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Ainda não existe um assunto anterior para retomar.',
-          ),
+          content: Text('Ainda não existe um assunto anterior para retomar.'),
         ),
       );
       return;
@@ -411,16 +346,12 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     super.dispose();
   }
 
-  Future<void> sendQuestion([
-    String? suggestedQuestion,
-  ]) async {
+  Future<void> sendQuestion([String? suggestedQuestion]) async {
     if (isProcessing) {
       return;
     }
 
-    final question =
-        (suggestedQuestion ?? inputController.text)
-            .trim();
+    final question = (suggestedQuestion ?? inputController.text).trim();
 
     if (question.isEmpty) {
       return;
@@ -429,11 +360,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     inputController.clear();
 
     setState(() {
-      messages.add(
-        _AtlasAiChatItem.user(
-          text: question,
-        ),
-      );
+      messages.add(_AtlasAiChatItem.user(text: question));
 
       isProcessing = true;
     });
@@ -442,11 +369,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
 
     _scrollToBottom();
 
-    await Future<void>.delayed(
-      const Duration(
-        milliseconds: 280,
-      ),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 280));
 
     final response = responseService.answer(
       question: question,
@@ -459,19 +382,13 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     }
 
     setState(() {
-      messages.add(
-        _AtlasAiChatItem.assistant(
-          response: response,
-        ),
-      );
+      messages.add(_AtlasAiChatItem.assistant(response: response));
 
       isProcessing = false;
     });
 
     await _saveConversation();
-    await _importActionsFromResponse(
-      response,
-    );
+    await _importActionsFromResponse(response);
 
     if (mounted) {
       setState(() {});
@@ -481,49 +398,34 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        if (!scrollController.hasClients) {
-          return;
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!scrollController.hasClients) {
+        return;
+      }
 
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(
-            milliseconds: 280,
-          ),
-          curve: Curves.easeOut,
-        );
-      },
-    );
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
-  void handleNavigation(
-    AtlasAiNavigationAction action,
-  ) {
+  void handleNavigation(AtlasAiNavigationAction action) {
     final callback = switch (action.type) {
-      AtlasAiNavigationActionType.openDiagnostic =>
-        widget.onOpenDiagnostic,
-      AtlasAiNavigationActionType.openPredictive =>
-        widget.onOpenPredictive,
-      AtlasAiNavigationActionType.openFinance =>
-        widget.onOpenFinance,
-      AtlasAiNavigationActionType.openHerd =>
-        widget.onOpenHerd,
-      AtlasAiNavigationActionType.openPaddocks =>
-        widget.onOpenPaddocks,
-      AtlasAiNavigationActionType.openInventory =>
-        widget.onOpenInventory,
-      AtlasAiNavigationActionType.openAgenda =>
-        widget.onOpenAgenda,
+      AtlasAiNavigationActionType.openDiagnostic => widget.onOpenDiagnostic,
+      AtlasAiNavigationActionType.openPredictive => widget.onOpenPredictive,
+      AtlasAiNavigationActionType.openFinance => widget.onOpenFinance,
+      AtlasAiNavigationActionType.openHerd => widget.onOpenHerd,
+      AtlasAiNavigationActionType.openPaddocks => widget.onOpenPaddocks,
+      AtlasAiNavigationActionType.openInventory => widget.onOpenInventory,
+      AtlasAiNavigationActionType.openAgenda => widget.onOpenAgenda,
     };
 
     if (callback == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'A ação "${action.label}" ainda não foi conectada.',
-          ),
+          content: Text('A ação "${action.label}" ainda não foi conectada.'),
         ),
       );
       return;
@@ -537,32 +439,20 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Limpar conversa?',
-          ),
-          content: const Text(
-            'As mensagens desta sessão serão removidas.',
-          ),
+          title: const Text('Limpar conversa?'),
+          content: const Text('As mensagens desta sessão serão removidas.'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(false);
+                Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(
-                'Cancelar',
-              ),
+              child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(true);
+                Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(
-                'Limpar',
-              ),
+              child: const Text('Limpar'),
             ),
           ],
         );
@@ -573,9 +463,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
       return;
     }
 
-    await conversationStorage.clear(
-      farmName: contextData.farmName,
-    );
+    await conversationStorage.clear(farmName: contextData.farmName);
 
     if (!mounted) {
       return;
@@ -584,9 +472,7 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
     setState(() {
       messages
         ..clear()
-        ..add(
-          _buildWelcomeMessage(),
-        );
+        ..add(_buildWelcomeMessage());
 
       _rebuildMemory();
     });
@@ -597,18 +483,14 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Atlas IA',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Text(
               contextData.farmName,
@@ -622,39 +504,27 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
         actions: [
           IconButton(
             tooltip: 'Retomar último assunto',
-            onPressed:
-                isLoadingHistory ||
-                        memoryData?.lastQuestion ==
-                            null
-                    ? null
-                    : resumeLastTopic,
-            icon: const Icon(
-              Icons.history_toggle_off_outlined,
-            ),
+            onPressed: isLoadingHistory || memoryData?.lastQuestion == null
+                ? null
+                : resumeLastTopic,
+            icon: const Icon(Icons.history_toggle_off_outlined),
           ),
           IconButton(
             tooltip: 'Abrir diagnóstico',
             onPressed: widget.onOpenDiagnostic,
-            icon: const Icon(
-              Icons.health_and_safety_outlined,
-            ),
+            icon: const Icon(Icons.health_and_safety_outlined),
           ),
           IconButton(
             tooltip: 'Simular decisões',
             onPressed: widget.onOpenPredictive,
-            icon: const Icon(
-              Icons.auto_graph_outlined,
-            ),
+            icon: const Icon(Icons.auto_graph_outlined),
           ),
           IconButton(
             tooltip: 'Limpar conversa',
-            onPressed:
-                isLoadingHistory || messages.isEmpty
-                    ? null
-                    : clearConversation,
-            icon: const Icon(
-              Icons.delete_sweep_outlined,
-            ),
+            onPressed: isLoadingHistory || messages.isEmpty
+                ? null
+                : clearConversation,
+            icon: const Icon(Icons.delete_sweep_outlined),
           ),
           const SizedBox(width: 8),
         ],
@@ -662,100 +532,71 @@ class _AtlasAiScreenState extends State<AtlasAiScreen> {
       body: isLoadingHistory
           ? const _AtlasAiHistoryLoadingView()
           : SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1100,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1100),
+                  child: Column(
+                    children: [
+                      _AtlasAiContextBanner(contextData: contextData),
+                      if (memoryData != null && memoryData!.hasHistory)
+                        _AtlasAiMemoryPanel(
+                          memory: memoryData!,
+                          onResume: resumeLastTopic,
+                          onQuestionSelected: sendQuestion,
+                        ),
+                      if (trackedActions.isNotEmpty)
+                        _AtlasAiTrackedActionsPanel(
+                          actions: filteredTrackedActions,
+                          progress: actionProgress,
+                          selectedStatus: selectedActionStatus,
+                          onSelectStatus: _selectActionStatus,
+                          onChangeStatus: _changeActionStatus,
+                          onEditNotes: _editActionNotes,
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
+                          itemCount: messages.length + (isProcessing ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == messages.length) {
+                              return const _AtlasAiTypingBubble();
+                            }
+
+                            final item = messages[index];
+
+                            if (item.isUser) {
+                              return _AtlasAiUserBubble(text: item.text!);
+                            }
+
+                            return _AtlasAiResponseBubble(
+                              response: item.response!,
+                              onActionPressed: handleNavigation,
+                            );
+                          },
+                        ),
+                      ),
+                      if (effectiveSuggestedQuestions.isNotEmpty)
+                        _AtlasAiSuggestions(
+                          questions: effectiveSuggestedQuestions,
+                          enabled: !isProcessing,
+                          onSelected: sendQuestion,
+                        ),
+                      _AtlasAiInputBar(
+                        controller: inputController,
+                        enabled: !isProcessing,
+                        onSend: sendQuestion,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            child: Column(
-              children: [
-                _AtlasAiContextBanner(
-                  contextData: contextData,
-                ),
-                if (memoryData != null &&
-                    memoryData!.hasHistory)
-                  _AtlasAiMemoryPanel(
-                    memory: memoryData!,
-                    onResume:
-                        resumeLastTopic,
-                    onQuestionSelected:
-                        sendQuestion,
-                  ),
-                if (trackedActions.isNotEmpty)
-                  _AtlasAiTrackedActionsPanel(
-                    actions:
-                        filteredTrackedActions,
-                    progress:
-                        actionProgress,
-                    selectedStatus:
-                        selectedActionStatus,
-                    onSelectStatus:
-                        _selectActionStatus,
-                    onChangeStatus:
-                        _changeActionStatus,
-                    onEditNotes:
-                        _editActionNotes,
-                  ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    padding:
-                        const EdgeInsets.fromLTRB(
-                      18,
-                      18,
-                      18,
-                      10,
-                    ),
-                    itemCount: messages.length +
-                        (isProcessing ? 1 : 0),
-                    itemBuilder: (
-                      context,
-                      index,
-                    ) {
-                      if (index == messages.length) {
-                        return const _AtlasAiTypingBubble();
-                      }
-
-                      final item = messages[index];
-
-                      if (item.isUser) {
-                        return _AtlasAiUserBubble(
-                          text: item.text!,
-                        );
-                      }
-
-                      return _AtlasAiResponseBubble(
-                        response: item.response!,
-                        onActionPressed:
-                            handleNavigation,
-                      );
-                    },
-                  ),
-                ),
-                if (effectiveSuggestedQuestions
-                    .isNotEmpty)
-                  _AtlasAiSuggestions(
-                    questions:
-                        effectiveSuggestedQuestions,
-                    enabled: !isProcessing,
-                    onSelected: sendQuestion,
-                  ),
-                _AtlasAiInputBar(
-                  controller: inputController,
-                  enabled: !isProcessing,
-                  onSend: sendQuestion,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
 
-class _AtlasAiHistoryLoadingView
-    extends StatelessWidget {
+class _AtlasAiHistoryLoadingView extends StatelessWidget {
   const _AtlasAiHistoryLoadingView();
 
   @override
@@ -770,9 +611,7 @@ class _AtlasAiHistoryLoadingView
             SizedBox(height: 15),
             Text(
               'Carregando memória da conversa...',
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -781,8 +620,7 @@ class _AtlasAiHistoryLoadingView
   }
 }
 
-class _AtlasAiMemoryPanel
-    extends StatefulWidget {
+class _AtlasAiMemoryPanel extends StatefulWidget {
   const _AtlasAiMemoryPanel({
     required this.memory,
     required this.onResume,
@@ -791,8 +629,7 @@ class _AtlasAiMemoryPanel
 
   final AtlasAiMemory memory;
   final VoidCallback onResume;
-  final ValueChanged<String>
-      onQuestionSelected;
+  final ValueChanged<String> onQuestionSelected;
 
   @override
   State<_AtlasAiMemoryPanel> createState() {
@@ -800,111 +637,75 @@ class _AtlasAiMemoryPanel
   }
 }
 
-class _AtlasAiMemoryPanelState
-    extends State<_AtlasAiMemoryPanel> {
+class _AtlasAiMemoryPanelState extends State<_AtlasAiMemoryPanel> {
   bool expanded = false;
 
-  AtlasAiMemory get memory =>
-      widget.memory;
+  AtlasAiMemory get memory => widget.memory;
 
   @override
   Widget build(BuildContext context) {
-    final mainIntent =
-        memory.mostFrequentIntents.isEmpty
-            ? null
-            : memory.mostFrequentIntents.first;
+    final mainIntent = memory.mostFrequentIntents.isEmpty
+        ? null
+        : memory.mostFrequentIntents.first;
 
-    final mainArea =
-        memory.frequentAreas.isEmpty
-            ? null
-            : memory.frequentAreas.first;
+    final mainArea = memory.frequentAreas.isEmpty
+        ? null
+        : memory.frequentAreas.first;
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(
-        14,
-        12,
-        14,
-        0,
-      ),
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
       decoration: BoxDecoration(
         color: const Color(0xFFF1ECF7),
-        borderRadius:
-            BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(17),
         border: Border.all(
-          color: const Color(
-            0xFF6A1B9A,
-          ).withValues(
-            alpha: 0.16,
-          ),
+          color: const Color(0xFF6A1B9A).withValues(alpha: 0.16),
         ),
       ),
       child: Column(
         children: [
           InkWell(
-            borderRadius:
-                BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(17),
             onTap: () {
               setState(() {
                 expanded = !expanded;
               });
             },
             child: Padding(
-              padding:
-                  const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Row(
                 children: [
                   Container(
                     width: 43,
                     height: 43,
-                    decoration:
-                        BoxDecoration(
-                      color: const Color(
-                        0xFF6A1B9A,
-                      ).withValues(
-                        alpha: 0.10,
-                      ),
-                      borderRadius:
-                          BorderRadius
-                              .circular(13),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A1B9A).withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
-                      Icons
-                          .memory_outlined,
-                      color: Color(
-                        0xFF6A1B9A,
-                      ),
+                      Icons.memory_outlined,
+                      color: Color(0xFF6A1B9A),
                     ),
                   ),
                   const SizedBox(width: 11),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Memória da Fazenda',
                           style: TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                            color: Color(
-                              0xFF4A235A,
-                            ),
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4A235A),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           memory.summary,
-                          maxLines:
-                              expanded ? 8 : 2,
-                          overflow:
-                              TextOverflow
-                                  .ellipsis,
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black54,
+                          maxLines: expanded ? 8 : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.black54,
                             height: 1.35,
                             fontSize: 11,
                           ),
@@ -913,11 +714,8 @@ class _AtlasAiMemoryPanelState
                     ),
                   ),
                   Icon(
-                    expanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    color:
-                        Colors.black45,
+                    expanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.black45,
                   ),
                 ],
               ),
@@ -926,12 +724,9 @@ class _AtlasAiMemoryPanelState
           if (expanded) ...[
             const Divider(height: 1),
             Padding(
-              padding:
-                  const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Wrap(
                     spacing: 8,
@@ -939,164 +734,92 @@ class _AtlasAiMemoryPanelState
                     children: [
                       _MemoryMetricChip(
                         label: 'Perguntas',
-                        value: memory
-                            .userQuestionCount
-                            .toString(),
+                        value: memory.userQuestionCount.toString(),
                       ),
                       _MemoryMetricChip(
                         label: 'Respostas',
-                        value: memory
-                            .assistantResponseCount
-                            .toString(),
+                        value: memory.assistantResponseCount.toString(),
                       ),
                       _MemoryMetricChip(
-                        label:
-                            'Ações pendentes',
-                        value: memory
-                            .pendingActions.length
-                            .toString(),
+                        label: 'Ações pendentes',
+                        value: memory.pendingActions.length.toString(),
                       ),
                       if (mainIntent != null)
                         _MemoryMetricChip(
-                          label:
-                              'Assunto principal',
-                          value:
-                              mainIntent.label,
+                          label: 'Assunto principal',
+                          value: mainIntent.label,
                         ),
                       if (mainArea != null)
                         _MemoryMetricChip(
-                          label:
-                              'Área principal',
-                          value:
-                              mainArea.label,
+                          label: 'Área principal',
+                          value: mainArea.label,
                         ),
                     ],
                   ),
-                  if (memory.lastQuestion !=
-                      null) ...[
-                    const SizedBox(
-                      height: 14,
-                    ),
+                  if (memory.lastQuestion != null) ...[
+                    const SizedBox(height: 14),
                     Container(
-                      width:
-                          double.infinity,
-                      padding:
-                          const EdgeInsets
-                              .all(12),
-                      decoration:
-                          BoxDecoration(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius:
-                            BorderRadius
-                                .circular(13),
+                        borderRadius: BorderRadius.circular(13),
                       ),
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Último assunto',
-                            style:
-                                TextStyle(
-                              color: Colors
-                                  .black45,
+                            style: TextStyle(
+                              color: Colors.black45,
                               fontSize: 10,
-                              fontWeight:
-                                  FontWeight
-                                      .w700,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(
-                            height: 5,
-                          ),
+                          const SizedBox(height: 5),
                           Text(
-                            memory
-                                .lastQuestion!,
-                            style:
-                                const TextStyle(
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
-                            ),
+                            memory.lastQuestion!,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          const SizedBox(
-                            height: 9,
-                          ),
-                          FilledButton
-                              .tonalIcon(
-                            onPressed:
-                                widget.onResume,
-                            icon: const Icon(
-                              Icons
-                                  .history_outlined,
-                            ),
-                            label: const Text(
-                              'Retomar assunto',
-                            ),
+                          const SizedBox(height: 9),
+                          FilledButton.tonalIcon(
+                            onPressed: widget.onResume,
+                            icon: const Icon(Icons.history_outlined),
+                            label: const Text('Retomar assunto'),
                           ),
                         ],
                       ),
                     ),
                   ],
-                  if (memory.pendingActions
-                      .isNotEmpty) ...[
-                    const SizedBox(
-                      height: 14,
-                    ),
+                  if (memory.pendingActions.isNotEmpty) ...[
+                    const SizedBox(height: 14),
                     const Text(
                       'Ações discutidas',
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    ...memory.pendingActions
-                        .take(3)
-                        .map((action) {
-                      return _MemoryPendingActionTile(
-                        action: action,
-                      );
+                    const SizedBox(height: 8),
+                    ...memory.pendingActions.take(3).map((action) {
+                      return _MemoryPendingActionTile(action: action);
                     }),
                   ],
-                  if (memory.suggestedQuestions
-                      .isNotEmpty) ...[
-                    const SizedBox(
-                      height: 14,
-                    ),
+                  if (memory.suggestedQuestions.isNotEmpty) ...[
+                    const SizedBox(height: 14),
                     const Text(
                       'Perguntas para retomar',
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 7,
                       runSpacing: 7,
-                      children: memory
-                          .suggestedQuestions
-                          .take(4)
-                          .map((question) {
+                      children: memory.suggestedQuestions.take(4).map((
+                        question,
+                      ) {
                         return ActionChip(
-                          avatar: const Icon(
-                            Icons
-                                .refresh_outlined,
-                            size: 16,
-                          ),
-                          label:
-                              Text(question),
+                          avatar: const Icon(Icons.refresh_outlined, size: 16),
+                          label: Text(question),
                           onPressed: () {
-                            widget
-                                .onQuestionSelected(
-                              question,
-                            );
+                            widget.onQuestionSelected(question);
                           },
                         );
                       }).toList(),
@@ -1112,12 +835,8 @@ class _AtlasAiMemoryPanelState
   }
 }
 
-class _MemoryMetricChip
-    extends StatelessWidget {
-  const _MemoryMetricChip({
-    required this.label,
-    required this.value,
-  });
+class _MemoryMetricChip extends StatelessWidget {
+  const _MemoryMetricChip({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1125,15 +844,10 @@ class _MemoryMetricChip
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(11),
       ),
       child: Text(
         '$label: $value',
@@ -1147,63 +861,45 @@ class _MemoryMetricChip
   }
 }
 
-class _MemoryPendingActionTile
-    extends StatelessWidget {
-  const _MemoryPendingActionTile({
-    required this.action,
-  });
+class _MemoryPendingActionTile extends StatelessWidget {
+  const _MemoryPendingActionTile({required this.action});
 
-  final AtlasAiMemoryPendingAction
-      action;
+  final AtlasAiMemoryPendingAction action;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin:
-          const EdgeInsets.only(
-        bottom: 7,
-      ),
+      margin: const EdgeInsets.only(bottom: 7),
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(
-            Icons
-                .pending_actions_outlined,
+            Icons.pending_actions_outlined,
             color: Color(0xFFEF6C00),
             size: 19,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   action.title,
-                  style:
-                      const TextStyle(
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   action.description,
                   maxLines: 2,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(
-                    color:
-                        Colors.black54,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.black54,
                     fontSize: 11,
                     height: 1.35,
                   ),
@@ -1212,12 +908,7 @@ class _MemoryPendingActionTile
                 Text(
                   '${atlasFarmAreaLabel(action.area)} · '
                   '${action.deadlineDays} dias',
-                  style:
-                      const TextStyle(
-                    color:
-                        Colors.black38,
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(color: Colors.black38, fontSize: 10),
                 ),
               ],
             ),
@@ -1228,8 +919,7 @@ class _MemoryPendingActionTile
   }
 }
 
-class _AtlasAiTrackedActionsPanel
-    extends StatefulWidget {
+class _AtlasAiTrackedActionsPanel extends StatefulWidget {
   const _AtlasAiTrackedActionsPanel({
     required this.actions,
     required this.progress,
@@ -1242,23 +932,20 @@ class _AtlasAiTrackedActionsPanel
   final List<AtlasAiTrackedAction> actions;
   final AtlasAiActionProgress progress;
 
-  final AtlasAiTrackedActionStatus?
-      selectedStatus;
+  final AtlasAiTrackedActionStatus? selectedStatus;
 
-  final ValueChanged<
-      AtlasAiTrackedActionStatus?> onSelectStatus;
+  final ValueChanged<AtlasAiTrackedActionStatus?> onSelectStatus;
 
   final void Function(
     AtlasAiTrackedAction action,
     AtlasAiTrackedActionStatus status,
-  ) onChangeStatus;
+  )
+  onChangeStatus;
 
-  final ValueChanged<AtlasAiTrackedAction>
-      onEditNotes;
+  final ValueChanged<AtlasAiTrackedAction> onEditNotes;
 
   @override
-  State<_AtlasAiTrackedActionsPanel>
-      createState() {
+  State<_AtlasAiTrackedActionsPanel> createState() {
     return _AtlasAiTrackedActionsPanelState();
   }
 }
@@ -1273,76 +960,49 @@ class _AtlasAiTrackedActionsPanelState
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(
-        14,
-        12,
-        14,
-        0,
-      ),
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
       decoration: BoxDecoration(
         color: const Color(0xFFEDF4F8),
-        borderRadius:
-            BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(17),
         border: Border.all(
-          color: const Color(
-            0xFF1565C0,
-          ).withValues(
-            alpha: 0.16,
-          ),
+          color: const Color(0xFF1565C0).withValues(alpha: 0.16),
         ),
       ),
       child: Column(
         children: [
           InkWell(
-            borderRadius:
-                BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(17),
             onTap: () {
               setState(() {
                 expanded = !expanded;
               });
             },
             child: Padding(
-              padding:
-                  const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Row(
                 children: [
                   Container(
                     width: 43,
                     height: 43,
-                    decoration:
-                        BoxDecoration(
-                      color: const Color(
-                        0xFF1565C0,
-                      ).withValues(
-                        alpha: 0.10,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(
-                        13,
-                      ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
-                      Icons
-                          .assignment_turned_in_outlined,
-                      color: Color(
-                        0xFF1565C0,
-                      ),
+                      Icons.assignment_turned_in_outlined,
+                      color: Color(0xFF1565C0),
                     ),
                   ),
                   const SizedBox(width: 11),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Ações da Consultoria',
                           style: TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                            color: Color(
-                              0xFF0D47A1,
-                            ),
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0D47A1),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -1351,10 +1011,8 @@ class _AtlasAiTrackedActionsPanelState
                           '${progress.inProgress} em andamento · '
                           '${progress.pending} pendentes'
                           '${progress.overdue > 0 ? ' · ${progress.overdue} atrasadas' : ''}',
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.black54,
+                          style: const TextStyle(
+                            color: Colors.black54,
                             fontSize: 11,
                           ),
                         ),
@@ -1364,19 +1022,14 @@ class _AtlasAiTrackedActionsPanelState
                   Text(
                     '${progress.completionPercent.toStringAsFixed(0)}%',
                     style: const TextStyle(
-                      color:
-                          Color(0xFF1565C0),
-                      fontWeight:
-                          FontWeight.bold,
+                      color: Color(0xFF1565C0),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Icon(
-                    expanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    color:
-                        Colors.black45,
+                    expanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.black45,
                   ),
                 ],
               ),
@@ -1385,81 +1038,45 @@ class _AtlasAiTrackedActionsPanelState
           if (expanded) ...[
             const Divider(height: 1),
             Padding(
-              padding:
-                  const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(
-                      20,
-                    ),
-                    child:
-                        LinearProgressIndicator(
+                    borderRadius: BorderRadius.circular(20),
+                    child: LinearProgressIndicator(
                       minHeight: 9,
-                      value:
-                          progress.completionPercent /
-                              100,
-                      backgroundColor:
-                          const Color(
+                      value: progress.completionPercent / 100,
+                      backgroundColor: const Color(
                         0xFF1565C0,
-                      ).withValues(
-                        alpha: 0.10,
-                      ),
+                      ).withValues(alpha: 0.10),
                     ),
                   ),
                   const SizedBox(height: 13),
                   SingleChildScrollView(
-                    scrollDirection:
-                        Axis.horizontal,
+                    scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
                         _ActionStatusFilterChip(
                           label: 'Todas',
-                          selected: widget
-                                  .selectedStatus ==
-                              null,
-                          count:
-                              progress.total,
+                          selected: widget.selectedStatus == null,
+                          count: progress.total,
                           onTap: () {
-                            widget.onSelectStatus(
-                              null,
-                            );
+                            widget.onSelectStatus(null);
                           },
                         ),
                         const SizedBox(width: 7),
-                        ...AtlasAiTrackedActionStatus
-                            .values
-                            .map((status) {
-                          final count =
-                              _statusCount(
-                            progress,
-                            status,
-                          );
+                        ...AtlasAiTrackedActionStatus.values.map((status) {
+                          final count = _statusCount(progress, status);
 
                           return Padding(
-                            padding:
-                                const EdgeInsets
-                                    .only(
-                              right: 7,
-                            ),
-                            child:
-                                _ActionStatusFilterChip(
-                              label:
-                                  atlasAiTrackedActionStatusLabel(
-                                status,
-                              ),
-                              selected: widget
-                                      .selectedStatus ==
-                                  status,
+                            padding: const EdgeInsets.only(right: 7),
+                            child: _ActionStatusFilterChip(
+                              label: atlasAiTrackedActionStatusLabel(status),
+                              selected: widget.selectedStatus == status,
                               count: count,
                               onTap: () {
-                                widget
-                                    .onSelectStatus(
-                                  status,
-                                );
+                                widget.onSelectStatus(status);
                               },
                             ),
                           );
@@ -1470,28 +1087,20 @@ class _AtlasAiTrackedActionsPanelState
                   const SizedBox(height: 13),
                   if (widget.actions.isEmpty)
                     const Padding(
-                      padding:
-                          EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16),
                       child: Center(
                         child: Text(
                           'Nenhuma ação encontrada neste filtro.',
-                          style: TextStyle(
-                            color:
-                                Colors.black54,
-                          ),
+                          style: TextStyle(color: Colors.black54),
                         ),
                       ),
                     )
                   else
-                    ...widget.actions
-                        .take(8)
-                        .map((action) {
+                    ...widget.actions.take(8).map((action) {
                       return _TrackedActionTile(
                         action: action,
-                        onChangeStatus:
-                            widget.onChangeStatus,
-                        onEditNotes:
-                            widget.onEditNotes,
+                        onChangeStatus: widget.onChangeStatus,
+                        onEditNotes: widget.onEditNotes,
                       );
                     }),
                 ],
@@ -1523,8 +1132,7 @@ class _AtlasAiTrackedActionsPanelState
   }
 }
 
-class _ActionStatusFilterChip
-    extends StatelessWidget {
+class _ActionStatusFilterChip extends StatelessWidget {
   const _ActionStatusFilterChip({
     required this.label,
     required this.selected,
@@ -1541,9 +1149,7 @@ class _ActionStatusFilterChip
   Widget build(BuildContext context) {
     return ChoiceChip(
       selected: selected,
-      label: Text(
-        '$label ($count)',
-      ),
+      label: Text('$label ($count)'),
       onSelected: (_) {
         onTap();
       },
@@ -1551,8 +1157,7 @@ class _ActionStatusFilterChip
   }
 }
 
-class _TrackedActionTile
-    extends StatelessWidget {
+class _TrackedActionTile extends StatelessWidget {
   const _TrackedActionTile({
     required this.action,
     required this.onChangeStatus,
@@ -1564,39 +1169,29 @@ class _TrackedActionTile
   final void Function(
     AtlasAiTrackedAction action,
     AtlasAiTrackedActionStatus status,
-  ) onChangeStatus;
+  )
+  onChangeStatus;
 
-  final ValueChanged<AtlasAiTrackedAction>
-      onEditNotes;
+  final ValueChanged<AtlasAiTrackedAction> onEditNotes;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _trackedActionColor(action);
+    final color = _trackedActionColor(action);
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(
-        bottom: 9,
-      ),
+      margin: const EdgeInsets.only(bottom: 9),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(13),
-        border: Border.all(
-          color: color.withValues(
-            alpha: 0.20,
-          ),
-        ),
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 action.isOverdue
@@ -1608,27 +1203,19 @@ class _TrackedActionTile
               const SizedBox(width: 9),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       action.title,
-                      style:
-                          const TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       action.description,
                       maxLines: 3,
-                      overflow:
-                          TextOverflow.ellipsis,
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.black54,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black54,
                         fontSize: 11,
                         height: 1.35,
                       ),
@@ -1636,27 +1223,16 @@ class _TrackedActionTile
                   ],
                 ),
               ),
-              PopupMenuButton<
-                  AtlasAiTrackedActionStatus>(
-                tooltip:
-                    'Alterar status',
+              PopupMenuButton<AtlasAiTrackedActionStatus>(
+                tooltip: 'Alterar status',
                 onSelected: (status) {
-                  onChangeStatus(
-                    action,
-                    status,
-                  );
+                  onChangeStatus(action, status);
                 },
                 itemBuilder: (context) {
-                  return AtlasAiTrackedActionStatus
-                      .values
-                      .map((status) {
+                  return AtlasAiTrackedActionStatus.values.map((status) {
                     return PopupMenuItem(
                       value: status,
-                      child: Text(
-                        atlasAiTrackedActionStatusLabel(
-                          status,
-                        ),
-                      ),
+                      child: Text(atlasAiTrackedActionStatusLabel(status)),
                     );
                   }).toList();
                 },
@@ -1669,32 +1245,18 @@ class _TrackedActionTile
             runSpacing: 7,
             children: [
               _TrackedActionChip(
-                label:
-                    atlasAiTrackedActionStatusLabel(
-                  action.status,
-                ),
+                label: atlasAiTrackedActionStatusLabel(action.status),
                 color: color,
               ),
               _TrackedActionChip(
-                label:
-                    atlasFarmAreaLabel(
-                  action.area,
-                ),
-                color:
-                    const Color(
-                  0xFF6A1B9A,
-                ),
+                label: atlasFarmAreaLabel(action.area),
+                color: const Color(0xFF6A1B9A),
               ),
               _TrackedActionChip(
-                label:
-                    'Prazo: ${_formatDate(action.dueDate)}',
+                label: 'Prazo: ${_formatDate(action.dueDate)}',
                 color: action.isOverdue
-                    ? const Color(
-                        0xFFC62828,
-                      )
-                    : const Color(
-                        0xFF1565C0,
-                      ),
+                    ? const Color(0xFFC62828)
+                    : const Color(0xFF1565C0),
               ),
             ],
           ),
@@ -1705,8 +1267,7 @@ class _TrackedActionTile
               style: const TextStyle(
                 color: Colors.black54,
                 fontSize: 11,
-                fontStyle:
-                    FontStyle.italic,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -1715,9 +1276,7 @@ class _TrackedActionTile
             onPressed: () {
               onEditNotes(action);
             },
-            icon: const Icon(
-              Icons.edit_note_outlined,
-            ),
+            icon: const Icon(Icons.edit_note_outlined),
             label: Text(
               action.notes.isEmpty
                   ? 'Adicionar observação'
@@ -1730,12 +1289,8 @@ class _TrackedActionTile
   }
 }
 
-class _TrackedActionChip
-    extends StatelessWidget {
-  const _TrackedActionChip({
-    required this.label,
-    required this.color,
-  });
+class _TrackedActionChip extends StatelessWidget {
+  const _TrackedActionChip({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -1743,17 +1298,10 @@ class _TrackedActionChip
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.08,
-        ),
-        borderRadius:
-            BorderRadius.circular(10),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
@@ -1767,9 +1315,7 @@ class _TrackedActionChip
   }
 }
 
-Color _trackedActionColor(
-  AtlasAiTrackedAction action,
-) {
+Color _trackedActionColor(AtlasAiTrackedAction action) {
   if (action.isOverdue) {
     return const Color(0xFFC62828);
   }
@@ -1789,69 +1335,44 @@ Color _trackedActionColor(
   }
 }
 
-String _formatDate(
-  DateTime date,
-) {
-  final day =
-      date.day.toString().padLeft(2, '0');
+String _formatDate(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
 
-  final month =
-      date.month.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
 
   return '$day/$month/${date.year}';
 }
 
 class _AtlasAiContextBanner extends StatelessWidget {
-  const _AtlasAiContextBanner({
-    required this.contextData,
-  });
+  const _AtlasAiContextBanner({required this.contextData});
 
   final AtlasAiFarmContext contextData;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _diagnosticColor(contextData.level);
+    final color = _diagnosticColor(contextData.level);
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 12,
-      ),
-      color: color.withValues(
-        alpha: 0.08,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      color: color.withValues(alpha: 0.08),
       child: Row(
         children: [
-          Icon(
-            Icons.psychology_outlined,
-            color: color,
-          ),
+          Icon(Icons.psychology_outlined, color: color),
           const SizedBox(width: 9),
           Expanded(
             child: Text(
               '${contextData.farmName} · '
               '${contextData.score.toStringAsFixed(0)}/100 · '
               '${atlasDiagnosticLevelLabel(contextData.level)}',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.w700),
             ),
           ),
-          const Icon(
-            Icons.verified_outlined,
-            color: Colors.black38,
-            size: 16,
-          ),
+          const Icon(Icons.verified_outlined, color: Colors.black38, size: 16),
           const SizedBox(width: 5),
           const Text(
             'Contexto carregado',
-            style: TextStyle(
-              color: Colors.black45,
-              fontSize: 10,
-            ),
+            style: TextStyle(color: Colors.black45, fontSize: 10),
           ),
         ],
       ),
@@ -1860,9 +1381,7 @@ class _AtlasAiContextBanner extends StatelessWidget {
 }
 
 class _AtlasAiUserBubble extends StatelessWidget {
-  const _AtlasAiUserBubble({
-    required this.text,
-  });
+  const _AtlasAiUserBubble({required this.text});
 
   final String text;
 
@@ -1871,27 +1390,16 @@ class _AtlasAiUserBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 720,
-        ),
-        margin: const EdgeInsets.only(
-          left: 48,
-          bottom: 14,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 13,
-        ),
+        constraints: const BoxConstraints(maxWidth: 720),
+        margin: const EdgeInsets.only(left: 48, bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: BoxDecoration(
           color: const Color(0xFF1B5E20),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Text(
           text,
-          style: const TextStyle(
-            color: Colors.white,
-            height: 1.4,
-          ),
+          style: const TextStyle(color: Colors.white, height: 1.4),
         ),
       ),
     );
@@ -1906,8 +1414,7 @@ class _AtlasAiResponseBubble extends StatefulWidget {
 
   final AtlasAiResponse response;
 
-  final ValueChanged<AtlasAiNavigationAction>
-      onActionPressed;
+  final ValueChanged<AtlasAiNavigationAction> onActionPressed;
 
   @override
   State<_AtlasAiResponseBubble> createState() {
@@ -1915,8 +1422,7 @@ class _AtlasAiResponseBubble extends StatefulWidget {
   }
 }
 
-class _AtlasAiResponseBubbleState
-    extends State<_AtlasAiResponseBubble> {
+class _AtlasAiResponseBubbleState extends State<_AtlasAiResponseBubble> {
   bool showDetails = false;
 
   AtlasAiResponse get response {
@@ -1925,27 +1431,19 @@ class _AtlasAiResponseBubbleState
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _diagnosticColor(response.level);
+    final color = _diagnosticColor(response.level);
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 860,
-        ),
-        margin: const EdgeInsets.only(
-          right: 32,
-          bottom: 16,
-        ),
+        constraints: const BoxConstraints(maxWidth: 860),
+        margin: const EdgeInsets.only(right: 32, bottom: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: 0.05,
-              ),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, 5),
             ),
@@ -1954,8 +1452,7 @@ class _AtlasAiResponseBubbleState
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
@@ -1963,33 +1460,22 @@ class _AtlasAiResponseBubbleState
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: color.withValues(
-                        alpha: 0.10,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(12),
+                      color: color.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.psychology_outlined,
-                      color: color,
-                    ),
+                    child: Icon(Icons.psychology_outlined, color: color),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      atlasAiIntentLabel(
-                        response.intent,
-                      ),
+                      atlasAiIntentLabel(response.intent),
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
-                  _ConfidenceBadge(
-                    confidence:
-                        response.confidence,
-                  ),
+                  _ConfidenceBadge(confidence: response.confidence),
                 ],
               ),
               const SizedBox(height: 14),
@@ -2004,10 +1490,7 @@ class _AtlasAiResponseBubbleState
               const SizedBox(height: 10),
               Text(
                 response.justification,
-                style: const TextStyle(
-                  color: Colors.black54,
-                  height: 1.5,
-                ),
+                style: const TextStyle(color: Colors.black54, height: 1.5),
               ),
               if (response.evidences.isNotEmpty ||
                   response.actionPlan.isNotEmpty) ...[
@@ -2019,14 +1502,10 @@ class _AtlasAiResponseBubbleState
                     });
                   },
                   icon: Icon(
-                    showDetails
-                        ? Icons.expand_less
-                        : Icons.expand_more,
+                    showDetails ? Icons.expand_less : Icons.expand_more,
                   ),
                   label: Text(
-                    showDetails
-                        ? 'Ocultar detalhes'
-                        : 'Ver evidências e plano',
+                    showDetails ? 'Ocultar detalhes' : 'Ver evidências e plano',
                   ),
                 ),
               ],
@@ -2035,35 +1514,23 @@ class _AtlasAiResponseBubbleState
                   const Divider(),
                   const Text(
                     'Evidências',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 9),
-                  ...response.evidences.map(
-                    (evidence) {
-                      return _EvidenceTile(
-                        evidence: evidence,
-                      );
-                    },
-                  ),
+                  ...response.evidences.map((evidence) {
+                    return _EvidenceTile(evidence: evidence);
+                  }),
                 ],
                 if (response.actionPlan.isNotEmpty) ...[
                   const Divider(),
                   const Text(
                     'Plano de ação',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 9),
-                  ...response.actionPlan.map(
-                    (step) {
-                      return _ActionStepTile(
-                        step: step,
-                      );
-                    },
-                  ),
+                  ...response.actionPlan.map((step) {
+                    return _ActionStepTile(step: step);
+                  }),
                 ],
               ],
               const Divider(height: 28),
@@ -2080,25 +1547,15 @@ class _AtlasAiResponseBubbleState
                 Wrap(
                   spacing: 9,
                   runSpacing: 9,
-                  children: response.actions.map(
-                    (action) {
-                      return FilledButton.tonalIcon(
-                        onPressed: () {
-                          widget.onActionPressed(
-                            action,
-                          );
-                        },
-                        icon: Icon(
-                          _navigationIcon(
-                            action.type,
-                          ),
-                        ),
-                        label: Text(
-                          action.label,
-                        ),
-                      );
-                    },
-                  ).toList(),
+                  children: response.actions.map((action) {
+                    return FilledButton.tonalIcon(
+                      onPressed: () {
+                        widget.onActionPressed(action);
+                      },
+                      icon: Icon(_navigationIcon(action.type)),
+                      label: Text(action.label),
+                    );
+                  }).toList(),
                 ),
               ],
             ],
@@ -2110,9 +1567,7 @@ class _AtlasAiResponseBubbleState
 }
 
 class _EvidenceTile extends StatelessWidget {
-  const _EvidenceTile({
-    required this.evidence,
-  });
+  const _EvidenceTile({required this.evidence});
 
   final AtlasAiEvidence evidence;
 
@@ -2120,17 +1575,14 @@ class _EvidenceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(
-        bottom: 8,
-      ),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F6F8),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(
             Icons.fact_check_outlined,
@@ -2140,22 +1592,16 @@ class _EvidenceTile extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${evidence.label}: ${evidence.value}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   evidence.description,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
                 ),
               ],
             ),
@@ -2167,9 +1613,7 @@ class _EvidenceTile extends StatelessWidget {
 }
 
 class _ActionStepTile extends StatelessWidget {
-  const _ActionStepTile({
-    required this.step,
-  });
+  const _ActionStepTile({required this.step});
 
   final AtlasAiResponseActionStep step;
 
@@ -2177,47 +1621,35 @@ class _ActionStepTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(
-        bottom: 8,
-      ),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F6F8),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 15,
             child: Text(
               '${step.position}',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   step.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   step.description,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -2231,10 +1663,7 @@ class _ActionStepTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Prazo: ${step.deadlineDays} dias',
-                  style: const TextStyle(
-                    color: Colors.black38,
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(color: Colors.black38, fontSize: 10),
                 ),
               ],
             ),
@@ -2260,12 +1689,7 @@ class _AtlasAiSuggestions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        14,
-        10,
-        14,
-        8,
-      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
       color: Colors.white,
       child: SizedBox(
         height: 42,
@@ -2275,17 +1699,11 @@ class _AtlasAiSuggestions extends StatelessWidget {
           separatorBuilder: (_, __) {
             return const SizedBox(width: 8);
           },
-          itemBuilder: (
-            context,
-            index,
-          ) {
+          itemBuilder: (context, index) {
             final question = questions[index];
 
             return ActionChip(
-              avatar: const Icon(
-                Icons.lightbulb_outline,
-                size: 17,
-              ),
+              avatar: const Icon(Icons.lightbulb_outline, size: 17),
               label: Text(question),
               onPressed: enabled
                   ? () {
@@ -2314,16 +1732,10 @@ class _AtlasAiInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        14,
-        8,
-        14,
-        14,
-      ),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
       color: Colors.white,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: TextField(
@@ -2331,14 +1743,10 @@ class _AtlasAiInputBar extends StatelessWidget {
               enabled: enabled,
               minLines: 1,
               maxLines: 5,
-              textInputAction:
-                  TextInputAction.newline,
+              textInputAction: TextInputAction.newline,
               decoration: const InputDecoration(
-                hintText:
-                    'Pergunte sobre a fazenda...',
-                prefixIcon: Icon(
-                  Icons.chat_outlined,
-                ),
+                hintText: 'Pergunte sobre a fazenda...',
+                prefixIcon: Icon(Icons.chat_outlined),
               ),
               onSubmitted: (_) {
                 if (enabled) {
@@ -2350,11 +1758,8 @@ class _AtlasAiInputBar extends StatelessWidget {
           const SizedBox(width: 10),
           IconButton.filled(
             tooltip: 'Enviar',
-            onPressed:
-                enabled ? onSend : null,
-            icon: const Icon(
-              Icons.send,
-            ),
+            onPressed: enabled ? onSend : null,
+            icon: const Icon(Icons.send),
           ),
         ],
       ),
@@ -2370,17 +1775,11 @@ class _AtlasAiTypingBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(
-          bottom: 14,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 13,
-        ),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius:
-              BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
@@ -2388,16 +1787,12 @@ class _AtlasAiTypingBubble extends StatelessWidget {
             SizedBox(
               width: 17,
               height: 17,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
             SizedBox(width: 10),
             Text(
               'Analisando o contexto...',
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -2407,9 +1802,7 @@ class _AtlasAiTypingBubble extends StatelessWidget {
 }
 
 class _ConfidenceBadge extends StatelessWidget {
-  const _ConfidenceBadge({
-    required this.confidence,
-  });
+  const _ConfidenceBadge({required this.confidence});
 
   final double confidence;
 
@@ -2418,20 +1811,14 @@ class _ConfidenceBadge extends StatelessWidget {
     final color = confidence >= 80
         ? const Color(0xFF1B5E20)
         : confidence >= 60
-            ? const Color(0xFFEF6C00)
-            : const Color(0xFFC62828);
+        ? const Color(0xFFEF6C00)
+        : const Color(0xFFC62828);
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(11),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(11),
       ),
       child: Text(
         '${confidence.toStringAsFixed(0)}% confiança',
@@ -2453,9 +1840,7 @@ class _AtlasAiChatItem {
     this.response,
   });
 
-  factory _AtlasAiChatItem.user({
-    required String text,
-  }) {
+  factory _AtlasAiChatItem.user({required String text}) {
     return _AtlasAiChatItem._(
       isUser: true,
       createdAt: DateTime.now(),
@@ -2463,9 +1848,7 @@ class _AtlasAiChatItem {
     );
   }
 
-  factory _AtlasAiChatItem.assistant({
-    required AtlasAiResponse response,
-  }) {
+  factory _AtlasAiChatItem.assistant({required AtlasAiResponse response}) {
     return _AtlasAiChatItem._(
       isUser: false,
       createdAt: response.generatedAt,
@@ -2473,9 +1856,7 @@ class _AtlasAiChatItem {
     );
   }
 
-  factory _AtlasAiChatItem.fromStored(
-    AtlasAiStoredMessage stored,
-  ) {
+  factory _AtlasAiChatItem.fromStored(AtlasAiStoredMessage stored) {
     return _AtlasAiChatItem._(
       isUser: stored.isUser,
       createdAt: stored.createdAt,
@@ -2499,9 +1880,7 @@ class _AtlasAiChatItem {
   }
 }
 
-Color _diagnosticColor(
-  AtlasDiagnosticLevel level,
-) {
+Color _diagnosticColor(AtlasDiagnosticLevel level) {
   switch (level) {
     case AtlasDiagnosticLevel.excellent:
       return const Color(0xFF1B5E20);
@@ -2517,9 +1896,7 @@ Color _diagnosticColor(
   }
 }
 
-IconData _navigationIcon(
-  AtlasAiNavigationActionType type,
-) {
+IconData _navigationIcon(AtlasAiNavigationActionType type) {
   switch (type) {
     case AtlasAiNavigationActionType.openDiagnostic:
       return Icons.health_and_safety_outlined;
@@ -2531,7 +1908,7 @@ IconData _navigationIcon(
       return Icons.account_balance_wallet_outlined;
 
     case AtlasAiNavigationActionType.openHerd:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
 
     case AtlasAiNavigationActionType.openPaddocks:
       return Icons.grid_view_outlined;

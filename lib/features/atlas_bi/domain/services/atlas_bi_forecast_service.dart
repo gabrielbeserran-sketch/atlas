@@ -19,33 +19,25 @@ class AtlasBiForecastService {
         horizonDays: horizonDays,
         now: currentTime,
       );
-    }).toList()
-      ..sort(_compareForecasts);
+    }).toList()..sort(_compareForecasts);
 
     final positiveCount = forecasts.where((item) {
-      return item.trend ==
-              AtlasBiForecastTrend.strongGrowth ||
-          item.trend ==
-              AtlasBiForecastTrend.growth;
+      return item.trend == AtlasBiForecastTrend.strongGrowth ||
+          item.trend == AtlasBiForecastTrend.growth;
     }).length;
 
     final stableCount = forecasts.where((item) {
-      return item.trend ==
-          AtlasBiForecastTrend.stable;
+      return item.trend == AtlasBiForecastTrend.stable;
     }).length;
 
     final negativeCount = forecasts.where((item) {
-      return item.trend ==
-              AtlasBiForecastTrend.decline ||
-          item.trend ==
-              AtlasBiForecastTrend.strongDecline;
+      return item.trend == AtlasBiForecastTrend.decline ||
+          item.trend == AtlasBiForecastTrend.strongDecline;
     }).length;
 
     final highRiskCount = forecasts.where((item) {
-      return item.risk ==
-              AtlasBiForecastRisk.high ||
-          item.risk ==
-              AtlasBiForecastRisk.critical;
+      return item.risk == AtlasBiForecastRisk.high ||
+          item.risk == AtlasBiForecastRisk.critical;
     }).length;
 
     return AtlasBiForecastDashboardData(
@@ -74,36 +66,24 @@ class AtlasBiForecastService {
     final currentTime = now ?? DateTime.now();
 
     final orderedSeries = [...indicator.series]
-      ..sort(
-        (first, second) =>
-            first.recordedAt.compareTo(
-          second.recordedAt,
-        ),
-      );
+      ..sort((first, second) => first.recordedAt.compareTo(second.recordedAt));
 
-    final regression = _linearRegression(
-      orderedSeries,
-    );
+    final regression = _linearRegression(orderedSeries);
 
     final projectedValue = orderedSeries.length < 2
         ? indicator.currentValue
         : regression.intercept +
-            regression.slope *
-                (orderedSeries.length - 1 +
-                    horizonDays);
+              regression.slope * (orderedSeries.length - 1 + horizonDays);
 
-    final safeProjectedValue =
-        projectedValue.isFinite
-            ? projectedValue
-            : indicator.currentValue;
+    final safeProjectedValue = projectedValue.isFinite
+        ? projectedValue
+        : indicator.currentValue;
 
-    final variationPercent =
-        indicator.currentValue == 0
-            ? 0.0
-            : (safeProjectedValue -
-                    indicator.currentValue) /
-                indicator.currentValue.abs() *
-                100;
+    final variationPercent = indicator.currentValue == 0
+        ? 0.0
+        : (safeProjectedValue - indicator.currentValue) /
+              indicator.currentValue.abs() *
+              100;
 
     final trend = _trendFromVariation(
       variationPercent,
@@ -112,12 +92,10 @@ class AtlasBiForecastService {
 
     final confidence = _confidence(
       sampleCount: orderedSeries.length,
-      determinationCoefficient:
-          regression.determinationCoefficient,
+      determinationCoefficient: regression.determinationCoefficient,
     );
 
-    final targetProbability =
-        _targetProbability(
+    final targetProbability = _targetProbability(
       projectedValue: safeProjectedValue,
       targetValue: indicator.targetValue,
       currentValue: indicator.currentValue,
@@ -127,16 +105,14 @@ class AtlasBiForecastService {
     final risk = _risk(
       status: indicator.status,
       trend: trend,
-      targetProbabilityPercent:
-          targetProbability,
+      targetProbabilityPercent: targetProbability,
       confidencePercent: confidence,
     );
 
     final points = _forecastPoints(
       currentTime: currentTime,
       currentValue: indicator.currentValue,
-      finalProjectedValue:
-          safeProjectedValue,
+      finalProjectedValue: safeProjectedValue,
       horizonDays: horizonDays,
       confidencePercent: confidence,
     );
@@ -152,18 +128,15 @@ class AtlasBiForecastService {
       targetValue: indicator.targetValue,
       horizonDays: horizonDays,
       projectedValue: safeProjectedValue,
-      projectedVariationPercent:
-          variationPercent,
-      targetProbabilityPercent:
-          targetProbability,
+      projectedVariationPercent: variationPercent,
+      targetProbabilityPercent: targetProbability,
       confidencePercent: confidence,
       trend: trend,
       risk: risk,
       summary: _forecastSummary(
         indicator: indicator,
         projectedValue: safeProjectedValue,
-        variationPercent:
-            variationPercent,
+        variationPercent: variationPercent,
         trend: trend,
         risk: risk,
         horizonDays: horizonDays,
@@ -172,21 +145,17 @@ class AtlasBiForecastService {
         indicator: indicator,
         trend: trend,
         risk: risk,
-        targetProbabilityPercent:
-            targetProbability,
+        targetProbabilityPercent: targetProbability,
       ),
       points: points,
     );
   }
 
-  _RegressionResult _linearRegression(
-    List<AtlasBiSeriesPoint> series,
-  ) {
+  _RegressionResult _linearRegression(List<AtlasBiSeriesPoint> series) {
     if (series.length < 2) {
       return _RegressionResult(
         slope: 0,
-        intercept:
-            series.isEmpty ? 0 : series.last.value,
+        intercept: series.isEmpty ? 0 : series.last.value,
         determinationCoefficient: 0,
       );
     }
@@ -198,9 +167,7 @@ class AtlasBiForecastService {
     var sumXY = 0.0;
     var sumXX = 0.0;
 
-    for (var index = 0;
-        index < series.length;
-        index++) {
+    for (var index = 0; index < series.length; index++) {
       final x = index.toDouble();
       final y = series[index].value;
 
@@ -210,8 +177,7 @@ class AtlasBiForecastService {
       sumXX += x * x;
     }
 
-    final denominator =
-        count * sumXX - sumX * sumX;
+    final denominator = count * sumXX - sumX * sumX;
 
     if (denominator == 0) {
       return _RegressionResult(
@@ -221,49 +187,34 @@ class AtlasBiForecastService {
       );
     }
 
-    final slope =
-        (count * sumXY - sumX * sumY) /
-            denominator;
+    final slope = (count * sumXY - sumX * sumY) / denominator;
 
-    final intercept =
-        (sumY - slope * sumX) / count;
+    final intercept = (sumY - slope * sumX) / count;
 
     final meanY = sumY / count;
 
     var totalVariation = 0.0;
     var residualVariation = 0.0;
 
-    for (var index = 0;
-        index < series.length;
-        index++) {
+    for (var index = 0; index < series.length; index++) {
       final actual = series[index].value;
-      final predicted =
-          intercept + slope * index;
+      final predicted = intercept + slope * index;
 
-      totalVariation +=
-          math.pow(actual - meanY, 2).toDouble();
+      totalVariation += math.pow(actual - meanY, 2).toDouble();
 
-      residualVariation +=
-          math.pow(
-            actual - predicted,
-            2,
-          ).toDouble();
+      residualVariation += math.pow(actual - predicted, 2).toDouble();
     }
 
-    final determinationCoefficient =
-        totalVariation == 0
-            ? 1.0
-            : 1 -
-                residualVariation /
-                    totalVariation;
+    final determinationCoefficient = totalVariation == 0
+        ? 1.0
+        : 1 - residualVariation / totalVariation;
 
     return _RegressionResult(
       slope: slope,
       intercept: intercept,
-      determinationCoefficient:
-          determinationCoefficient
-              .clamp(0.0, 1.0)
-              .toDouble(),
+      determinationCoefficient: determinationCoefficient
+          .clamp(0.0, 1.0)
+          .toDouble(),
     );
   }
 
@@ -275,14 +226,9 @@ class AtlasBiForecastService {
       return 20;
     }
 
-    final sampleScore =
-        (sampleCount / 12 * 100)
-            .clamp(0.0, 100.0)
-            .toDouble();
+    final sampleScore = (sampleCount / 12 * 100).clamp(0.0, 100.0).toDouble();
 
-    final value =
-        sampleScore * 0.45 +
-            determinationCoefficient * 100 * 0.55;
+    final value = sampleScore * 0.45 + determinationCoefficient * 100 * 0.55;
 
     return value.clamp(20.0, 98.0).toDouble();
   }
@@ -297,24 +243,18 @@ class AtlasBiForecastService {
       return 0;
     }
 
-    final distanceToTarget =
-        (targetValue - currentValue).abs();
+    final distanceToTarget = (targetValue - currentValue).abs();
 
     if (distanceToTarget == 0) {
       return 100;
     }
 
     final projectedProgress =
-        1 -
-            (targetValue - projectedValue).abs() /
-                distanceToTarget;
+        1 - (targetValue - projectedValue).abs() / distanceToTarget;
 
-    final baseProbability =
-        projectedProgress * 100;
+    final baseProbability = projectedProgress * 100;
 
-    final adjusted =
-        baseProbability * 0.70 +
-            confidencePercent * 0.30;
+    final adjusted = baseProbability * 0.70 + confidencePercent * 0.30;
 
     return adjusted.clamp(0.0, 100.0).toDouble();
   }
@@ -352,13 +292,11 @@ class AtlasBiForecastService {
     required double targetProbabilityPercent,
     required double confidencePercent,
   }) {
-    if (status == AtlasBiStatus.critical &&
-        targetProbabilityPercent < 35) {
+    if (status == AtlasBiStatus.critical && targetProbabilityPercent < 35) {
       return AtlasBiForecastRisk.critical;
     }
 
-    if (trend ==
-            AtlasBiForecastTrend.strongDecline ||
+    if (trend == AtlasBiForecastTrend.strongDecline ||
         targetProbabilityPercent < 50) {
       return AtlasBiForecastRisk.high;
     }
@@ -381,42 +319,27 @@ class AtlasBiForecastService {
   }) {
     const pointCount = 6;
 
-    final points =
-        <AtlasBiForecastPoint>[];
+    final points = <AtlasBiForecastPoint>[];
 
-    final uncertaintyPercent =
-        (100 - confidencePercent) / 100;
+    final uncertaintyPercent = (100 - confidencePercent) / 100;
 
-    for (var index = 1;
-        index <= pointCount;
-        index++) {
+    for (var index = 1; index <= pointCount; index++) {
       final progress = index / pointCount;
 
       final projectedValue =
-          currentValue +
-              (finalProjectedValue -
-                      currentValue) *
-                  progress;
+          currentValue + (finalProjectedValue - currentValue) * progress;
 
       final uncertainty =
-          projectedValue.abs() *
-              uncertaintyPercent *
-              progress *
-              0.35;
+          projectedValue.abs() * uncertaintyPercent * progress * 0.35;
 
       points.add(
         AtlasBiForecastPoint(
           date: currentTime.add(
-            Duration(
-              days:
-                  (horizonDays * progress).round(),
-            ),
+            Duration(days: (horizonDays * progress).round()),
           ),
           projectedValue: projectedValue,
-          lowerBound:
-              projectedValue - uncertainty,
-          upperBound:
-              projectedValue + uncertainty,
+          lowerBound: projectedValue - uncertainty,
+          upperBound: projectedValue + uncertainty,
         ),
       );
     }
@@ -424,29 +347,21 @@ class AtlasBiForecastService {
     return points;
   }
 
-  int _compareForecasts(
-    AtlasBiForecast first,
-    AtlasBiForecast second,
-  ) {
-    final firstRisk =
-        _riskWeight(first.risk);
+  int _compareForecasts(AtlasBiForecast first, AtlasBiForecast second) {
+    final firstRisk = _riskWeight(first.risk);
 
-    final secondRisk =
-        _riskWeight(second.risk);
+    final secondRisk = _riskWeight(second.risk);
 
     if (firstRisk != secondRisk) {
       return secondRisk.compareTo(firstRisk);
     }
 
-    return first.targetProbabilityPercent
-        .compareTo(
+    return first.targetProbabilityPercent.compareTo(
       second.targetProbabilityPercent,
     );
   }
 
-  int _riskWeight(
-    AtlasBiForecastRisk risk,
-  ) {
+  int _riskWeight(AtlasBiForecastRisk risk) {
     switch (risk) {
       case AtlasBiForecastRisk.low:
         return 1;
@@ -470,10 +385,7 @@ class AtlasBiForecastService {
     required AtlasBiForecastRisk risk,
     required int horizonDays,
   }) {
-    final variationLabel =
-        variationPercent >= 0
-            ? 'aumento'
-            : 'redução';
+    final variationLabel = variationPercent >= 0 ? 'aumento' : 'redução';
 
     return 'Nos próximos $horizonDays dias, '
         '${indicator.title} apresenta '
@@ -505,8 +417,7 @@ class AtlasBiForecastService {
       return 'Reavaliar a meta e reforçar as ações com maior impacto esperado.';
     }
 
-    if (trend ==
-            AtlasBiForecastTrend.strongGrowth ||
+    if (trend == AtlasBiForecastTrend.strongGrowth ||
         trend == AtlasBiForecastTrend.growth) {
       return 'Manter o plano atual, documentar as práticas responsáveis pelo avanço e validar a consistência do resultado.';
     }

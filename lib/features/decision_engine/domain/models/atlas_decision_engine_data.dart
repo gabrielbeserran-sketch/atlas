@@ -123,33 +123,13 @@ class AtlasDecisionMonitoringIndicator {
   final int measurementFrequencyDays;
 }
 
-enum AtlasDecisionEngineStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasDecisionEngineStatus { excellent, adequate, attention, critical }
 
-enum AtlasDecisionPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasDecisionPriority { low, medium, high, critical }
 
-enum AtlasDecisionUrgency {
-  low,
-  medium,
-  high,
-  immediate,
-}
+enum AtlasDecisionUrgency { low, medium, high, immediate }
 
-enum AtlasDecisionRisk {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasDecisionRisk { low, medium, high, critical }
 
 enum AtlasDecisionStatus {
   recommended,
@@ -159,9 +139,7 @@ enum AtlasDecisionStatus {
   cancelled,
 }
 
-String atlasDecisionEngineStatusLabel(
-  AtlasDecisionEngineStatus status,
-) {
+String atlasDecisionEngineStatusLabel(AtlasDecisionEngineStatus status) {
   switch (status) {
     case AtlasDecisionEngineStatus.excellent:
       return 'Excelente';
@@ -177,9 +155,7 @@ String atlasDecisionEngineStatusLabel(
   }
 }
 
-String atlasDecisionPriorityLabel(
-  AtlasDecisionPriority priority,
-) {
+String atlasDecisionPriorityLabel(AtlasDecisionPriority priority) {
   switch (priority) {
     case AtlasDecisionPriority.low:
       return 'Baixa';
@@ -195,9 +171,7 @@ String atlasDecisionPriorityLabel(
   }
 }
 
-String atlasDecisionUrgencyLabel(
-  AtlasDecisionUrgency urgency,
-) {
+String atlasDecisionUrgencyLabel(AtlasDecisionUrgency urgency) {
   switch (urgency) {
     case AtlasDecisionUrgency.low:
       return 'Baixa';
@@ -213,9 +187,7 @@ String atlasDecisionUrgencyLabel(
   }
 }
 
-String atlasDecisionRiskLabel(
-  AtlasDecisionRisk risk,
-) {
+String atlasDecisionRiskLabel(AtlasDecisionRisk risk) {
   switch (risk) {
     case AtlasDecisionRisk.low:
       return 'Baixo';
@@ -231,9 +203,7 @@ String atlasDecisionRiskLabel(
   }
 }
 
-String atlasDecisionStatusLabel(
-  AtlasDecisionStatus status,
-) {
+String atlasDecisionStatusLabel(AtlasDecisionStatus status) {
   switch (status) {
     case AtlasDecisionStatus.recommended:
       return 'Recomendada';

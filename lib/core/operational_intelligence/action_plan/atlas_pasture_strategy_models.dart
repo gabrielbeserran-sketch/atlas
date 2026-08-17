@@ -74,48 +74,34 @@ class AtlasPastureRecoveryPlan {
   final String notes;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'paddockId': paddockId,
-        'title': title,
-        'startAt': startAt.toIso8601String(),
-        'endAt': endAt.toIso8601String(),
-        'estimatedCost': estimatedCost,
-        'expectedDryMatterGainKgHa':
-            expectedDryMatterGainKgHa,
-        'expectedSupportGainAuHa':
-            expectedSupportGainAuHa,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'paddockId': paddockId,
+    'title': title,
+    'startAt': startAt.toIso8601String(),
+    'endAt': endAt.toIso8601String(),
+    'estimatedCost': estimatedCost,
+    'expectedDryMatterGainKgHa': expectedDryMatterGainKgHa,
+    'expectedSupportGainAuHa': expectedSupportGainAuHa,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasPastureRecoveryPlan.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPastureRecoveryPlan.fromMap(Map<String, dynamic> map) {
     return AtlasPastureRecoveryPlan(
       id: map['id']?.toString() ?? '',
       paddockId: map['paddockId']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
-      startAt: DateTime.tryParse(
-            map['startAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(
-            map['endAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      estimatedCost:
-          (map['estimatedCost'] as num?)?.toDouble() ?? 0,
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ?? DateTime.now(),
+      estimatedCost: (map['estimatedCost'] as num?)?.toDouble() ?? 0,
       expectedDryMatterGainKgHa:
-          (map['expectedDryMatterGainKgHa'] as num?)
-                  ?.toDouble() ??
-              0,
+          (map['expectedDryMatterGainKgHa'] as num?)?.toDouble() ?? 0,
       expectedSupportGainAuHa:
-          (map['expectedSupportGainAuHa'] as num?)
-                  ?.toDouble() ??
-              0,
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+          (map['expectedSupportGainAuHa'] as num?)?.toDouble() ?? 0,
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

@@ -22,9 +22,7 @@ class AtlasBiData {
   final List<AtlasBiInsight> insights;
 
   bool get hasData {
-    return indicators.isNotEmpty ||
-        rankings.isNotEmpty ||
-        insights.isNotEmpty;
+    return indicators.isNotEmpty || rankings.isNotEmpty || insights.isNotEmpty;
   }
 
   List<AtlasBiIndicator> get criticalIndicators {
@@ -91,10 +89,7 @@ class AtlasBiIndicator {
 }
 
 class AtlasBiSeriesPoint {
-  const AtlasBiSeriesPoint({
-    required this.recordedAt,
-    required this.value,
-  });
+  const AtlasBiSeriesPoint({required this.recordedAt, required this.value});
 
   final DateTime recordedAt;
   final double value;
@@ -148,10 +143,7 @@ class AtlasBiInsight {
 }
 
 class AtlasBiInput {
-  const AtlasBiInput({
-    required this.indicators,
-    required this.insights,
-  });
+  const AtlasBiInput({required this.indicators, required this.insights});
 
   final List<AtlasBiIndicatorInput> indicators;
   final List<AtlasBiInsight> insights;
@@ -200,40 +192,15 @@ enum AtlasBiCategory {
   intelligence,
 }
 
-enum AtlasBiStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasBiStatus { excellent, adequate, attention, critical }
 
-enum AtlasBiTrend {
-  strongUp,
-  up,
-  stable,
-  down,
-  strongDown,
-  unavailable,
-}
+enum AtlasBiTrend { strongUp, up, stable, down, strongDown, unavailable }
 
-enum AtlasBiInsightType {
-  opportunity,
-  risk,
-  anomaly,
-  trend,
-  recommendation,
-}
+enum AtlasBiInsightType { opportunity, risk, anomaly, trend, recommendation }
 
-enum AtlasBiPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasBiPriority { low, medium, high, critical }
 
-String atlasBiCategoryLabel(
-  AtlasBiCategory category,
-) {
+String atlasBiCategoryLabel(AtlasBiCategory category) {
   switch (category) {
     case AtlasBiCategory.production:
       return 'Produção';
@@ -261,9 +228,7 @@ String atlasBiCategoryLabel(
   }
 }
 
-String atlasBiStatusLabel(
-  AtlasBiStatus status,
-) {
+String atlasBiStatusLabel(AtlasBiStatus status) {
   switch (status) {
     case AtlasBiStatus.excellent:
       return 'Excelente';
@@ -279,9 +244,7 @@ String atlasBiStatusLabel(
   }
 }
 
-String atlasBiTrendLabel(
-  AtlasBiTrend trend,
-) {
+String atlasBiTrendLabel(AtlasBiTrend trend) {
   switch (trend) {
     case AtlasBiTrend.strongUp:
       return 'Alta forte';
@@ -303,9 +266,7 @@ String atlasBiTrendLabel(
   }
 }
 
-String atlasBiInsightTypeLabel(
-  AtlasBiInsightType type,
-) {
+String atlasBiInsightTypeLabel(AtlasBiInsightType type) {
   switch (type) {
     case AtlasBiInsightType.opportunity:
       return 'Oportunidade';

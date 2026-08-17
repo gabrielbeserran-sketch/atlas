@@ -1,0 +1,45 @@
+{
+  "release": "Atlas V1",
+  "steps": {
+    "11": {
+      "name": "Dashboards reais",
+      "status": "implemented_with_audit"
+    },
+    "12": {
+      "name": "IA consolidada",
+      "status": "implemented_with_inventory"
+    },
+    "13": {
+      "name": "Tratamento global de erros",
+      "status": "implemented"
+    },
+    "14": {
+      "name": "Loading/vazio/retry",
+      "status": "implemented_standard"
+    },
+    "15": {
+      "name": "Padronização visual",
+      "status": "implemented_standard"
+    },
+    "16": {
+      "name": "Testes automatizados",
+      "status": "gate_created_requires_local_run"
+    },
+    "17": {
+      "name": "Android E2E",
+      "status": "requires_physical_device_validation"
+    },
+    "18": {
+      "name": "Produção",
+      "status": "technical_preparation_implemented"
+    },
+    "19": {
+      "name": "APK/AAB release",
+      "status": "script_ready_requires_release_signing_and_https"
+    },
+    "20": {
+      "name": "Play Store",
+      "status": "external_action_checklist_ready"
+    }
+  }
+}

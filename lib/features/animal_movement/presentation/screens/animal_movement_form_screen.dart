@@ -38,7 +38,9 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
   bool get isLotChange => selectedType == 'Mudança de lote';
 
   List<HerdGroupData> get destinationGroups => widget.groups
-      .where((group) => group.id.isNotEmpty && group.id != widget.currentGroup.id)
+      .where(
+        (group) => group.id.isNotEmpty && group.id != widget.currentGroup.id,
+      )
       .toList(growable: false);
 
   @override
@@ -160,8 +162,13 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      isEditing ? 'Atualizar movimentação' : 'Registrar movimentação',
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                      isEditing
+                          ? 'Atualizar movimentação'
+                          : 'Registrar movimentação',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -176,12 +183,30 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                         prefixIcon: Icon(Icons.swap_horiz_outlined),
                       ),
                       items: const [
-                        DropdownMenuItem(value: 'Mudança de lote', child: Text('Mudança de lote')),
-                        DropdownMenuItem(value: 'Mudança de piquete', child: Text('Mudança de piquete')),
-                        DropdownMenuItem(value: 'Entrada na propriedade', child: Text('Entrada na propriedade')),
-                        DropdownMenuItem(value: 'Saída da propriedade', child: Text('Saída da propriedade')),
-                        DropdownMenuItem(value: 'Transferência', child: Text('Transferência')),
-                        DropdownMenuItem(value: 'Curral', child: Text('Movimentação para curral')),
+                        DropdownMenuItem(
+                          value: 'Mudança de lote',
+                          child: Text('Mudança de lote'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Mudança de piquete',
+                          child: Text('Mudança de piquete'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Entrada na propriedade',
+                          child: Text('Entrada na propriedade'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Saída da propriedade',
+                          child: Text('Saída da propriedade'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Transferência',
+                          child: Text('Transferência'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Curral',
+                          child: Text('Movimentação para curral'),
+                        ),
                         DropdownMenuItem(value: 'Outro', child: Text('Outro')),
                       ],
                       onChanged: isEditing
@@ -236,8 +261,8 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                         onChanged: isEditing
                             ? null
                             : (value) => setState(
-                                  () => selectedDestinationLotId = value ?? '',
-                                ),
+                                () => selectedDestinationLotId = value ?? '',
+                              ),
                       )
                     else
                       TextFormField(
@@ -279,7 +304,9 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                     FilledButton.icon(
                       onPressed: isSaving ? null : saveRecord,
                       icon: const Icon(Icons.save_outlined),
-                      label: Text(isSaving ? 'Salvando...' : 'Salvar movimentação'),
+                      label: Text(
+                        isSaving ? 'Salvando...' : 'Salvar movimentação',
+                      ),
                     ),
                   ],
                 ),

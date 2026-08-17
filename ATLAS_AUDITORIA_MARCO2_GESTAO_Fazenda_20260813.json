@@ -1,0 +1,25 @@
+{
+  "marco": 2,
+  "escopo": [
+    "Nutrição",
+    "Piquetes",
+    "Estoque",
+    "Financeiro"
+  ],
+  "status": "consolidado estruturalmente",
+  "migration_head": "20260813_0039",
+  "backend_regression_test": "backend/tests/test_marco2_management_crud.py",
+  "correcoes": [
+    "cache_nutricao_por_fazenda",
+    "ingredientes_nutricao_recarregados_do_backend",
+    "estado_integracao_estoque_persistido",
+    "baixa_nutricao_em_estoque_remoto",
+    "persistencia_verificada_nutricao",
+    "persistencia_verificada_estoque",
+    "financeiro_resolve_lot_animal_ids",
+    "financeiro_referencias_humanas_na_recarga",
+    "estoque_financeiro_idempotente_por_reference_id",
+    "persistencia_verificada_piquetes",
+    "loading_resiliente"
+  ]
+}

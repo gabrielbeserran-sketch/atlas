@@ -6,22 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasFinancialService {
   AtlasFinancialService._();
 
-  static final AtlasFinancialService instance =
-      AtlasFinancialService._();
+  static final AtlasFinancialService instance = AtlasFinancialService._();
 
-  static const String _accountsKey =
-      'atlas_financial_accounts_v1';
-  static const String _transactionsKey =
-      'atlas_financial_transactions_v1';
-  static const String _costCentersKey =
-      'atlas_cost_centers_v1';
+  static const String _accountsKey = 'atlas_financial_accounts_v1';
+  static const String _transactionsKey = 'atlas_financial_transactions_v1';
+  static const String _costCentersKey = 'atlas_cost_centers_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasFinancialAccount>> loadAccounts() async {
-    final encoded =
-        await _preferences.getString(_accountsKey);
+    final encoded = await _preferences.getString(_accountsKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       final defaults = _defaultAccounts();
@@ -44,13 +38,9 @@ class AtlasFinancialService {
     }
   }
 
-  Future<void> saveAccount(
-    AtlasFinancialAccount account,
-  ) async {
+  Future<void> saveAccount(AtlasFinancialAccount account) async {
     final all = await loadAccounts();
-    final index = all.indexWhere(
-      (item) => item.id == account.id,
-    );
+    final index = all.indexWhere((item) => item.id == account.id);
 
     if (index == -1) {
       all.add(account);
@@ -71,8 +61,7 @@ class AtlasFinancialService {
   Future<List<AtlasFinancialTransaction>> loadTransactions({
     String? farmName,
   }) async {
-    final encoded =
-        await _preferences.getString(_transactionsKey);
+    final encoded = await _preferences.getString(_transactionsKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasFinancialTransaction>[];
@@ -87,24 +76,15 @@ class AtlasFinancialService {
             ),
           )
           .toList();
-      final normalizedFarm =
-          farmName?.trim().toLowerCase();
+      final normalizedFarm = farmName?.trim().toLowerCase();
 
       final filtered = all.where((transaction) {
-        if (normalizedFarm == null ||
-            normalizedFarm.isEmpty) {
+        if (normalizedFarm == null || normalizedFarm.isEmpty) {
           return true;
         }
 
-        return transaction.farmName
-                ?.trim()
-                .toLowerCase() ==
-            normalizedFarm;
-      }).toList()
-        ..sort(
-          (first, second) =>
-              second.dueAt.compareTo(first.dueAt),
-        );
+        return transaction.farmName?.trim().toLowerCase() == normalizedFarm;
+      }).toList()..sort((first, second) => second.dueAt.compareTo(first.dueAt));
 
       return filtered;
     } catch (_) {
@@ -112,13 +92,9 @@ class AtlasFinancialService {
     }
   }
 
-  Future<void> saveTransaction(
-    AtlasFinancialTransaction transaction,
-  ) async {
+  Future<void> saveTransaction(AtlasFinancialTransaction transaction) async {
     final all = await _loadAllTransactions();
-    final index = all.indexWhere(
-      (item) => item.id == transaction.id,
-    );
+    final index = all.indexWhere((item) => item.id == transaction.id);
 
     if (index == -1) {
       all.add(transaction);
@@ -128,9 +104,7 @@ class AtlasFinancialService {
 
     await _preferences.setString(
       _transactionsKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
   }
 
@@ -140,17 +114,12 @@ class AtlasFinancialService {
 
     await _preferences.setString(
       _transactionsKey,
-      jsonEncode(
-        all.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(all.map((item) => item.toMap()).toList()),
     );
   }
 
-  Future<List<AtlasCostCenter>> loadCostCenters({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_costCentersKey);
+  Future<List<AtlasCostCenter>> loadCostCenters({String? farmName}) async {
+    final encoded = await _preferences.getString(_costCentersKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       final defaults = <AtlasCostCenter>[
@@ -184,35 +153,27 @@ class AtlasFinancialService {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       final all = decoded
           .map(
-            (item) => AtlasCostCenter.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasCostCenter.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
-      final normalizedFarm =
-          farmName?.trim().toLowerCase();
+      final normalizedFarm = farmName?.trim().toLowerCase();
 
       return all.where((item) {
-        if (normalizedFarm == null ||
-            normalizedFarm.isEmpty) {
+        if (normalizedFarm == null || normalizedFarm.isEmpty) {
           return true;
         }
 
-        return item.farmName?.trim().toLowerCase() ==
-            normalizedFarm;
+        return item.farmName?.trim().toLowerCase() == normalizedFarm;
       }).toList();
     } catch (_) {
       return <AtlasCostCenter>[];
     }
   }
 
-  Future<void> saveCostCenter(
-    AtlasCostCenter center,
-  ) async {
+  Future<void> saveCostCenter(AtlasCostCenter center) async {
     final all = await _loadAllCostCenters();
-    final index = all.indexWhere(
-      (item) => item.id == center.id,
-    );
+    final index = all.indexWhere((item) => item.id == center.id);
 
     if (index == -1) {
       all.add(center);
@@ -236,54 +197,35 @@ class AtlasFinancialService {
     final settledIncome = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.income &&
+              item.type == AtlasFinancialTransactionType.income &&
               item.isSettled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
     final settledExpense = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.expense &&
+              item.type == AtlasFinancialTransactionType.expense &&
               item.isSettled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
     final payable = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.expense &&
+              item.type == AtlasFinancialTransactionType.expense &&
               !item.isSettled &&
-              item.status !=
-                  AtlasFinancialTransactionStatus.cancelled,
+              item.status != AtlasFinancialTransactionStatus.cancelled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
     final receivable = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.income &&
+              item.type == AtlasFinancialTransactionType.income &&
               !item.isSettled &&
-              item.status !=
-                  AtlasFinancialTransactionStatus.cancelled,
+              item.status != AtlasFinancialTransactionStatus.cancelled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
 
-    final contributionMargin =
-        settledIncome - settledExpense;
+    final contributionMargin = settledIncome - settledExpense;
     final netProfit = contributionMargin;
 
     return AtlasFinancialSummary(
@@ -336,9 +278,7 @@ class AtlasFinancialService {
     final result = <String, double>{};
 
     for (final transaction in transactions.where(
-      (item) =>
-          item.type ==
-          AtlasFinancialTransactionType.expense,
+      (item) => item.type == AtlasFinancialTransactionType.expense,
     )) {
       final key = transaction.lotName.trim().isEmpty
           ? 'Sem lote'
@@ -355,9 +295,7 @@ class AtlasFinancialService {
     final result = <String, double>{};
 
     for (final transaction in transactions.where(
-      (item) =>
-          item.type ==
-          AtlasFinancialTransactionType.expense,
+      (item) => item.type == AtlasFinancialTransactionType.expense,
     )) {
       final key = transaction.animalId.trim().isEmpty
           ? 'Sem animal'
@@ -368,10 +306,8 @@ class AtlasFinancialService {
     return result;
   }
 
-  Future<List<AtlasFinancialTransaction>>
-      _loadAllTransactions() async {
-    final encoded =
-        await _preferences.getString(_transactionsKey);
+  Future<List<AtlasFinancialTransaction>> _loadAllTransactions() async {
+    final encoded = await _preferences.getString(_transactionsKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasFinancialTransaction>[];
@@ -392,10 +328,8 @@ class AtlasFinancialService {
     }
   }
 
-  Future<List<AtlasCostCenter>>
-      _loadAllCostCenters() async {
-    final encoded =
-        await _preferences.getString(_costCentersKey);
+  Future<List<AtlasCostCenter>> _loadAllCostCenters() async {
+    final encoded = await _preferences.getString(_costCentersKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasCostCenter>[];
@@ -406,9 +340,8 @@ class AtlasFinancialService {
 
       return decoded
           .map(
-            (item) => AtlasCostCenter.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasCostCenter.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {
@@ -416,25 +349,17 @@ class AtlasFinancialService {
     }
   }
 
-  Future<void> _saveAccounts(
-    List<AtlasFinancialAccount> accounts,
-  ) async {
+  Future<void> _saveAccounts(List<AtlasFinancialAccount> accounts) async {
     await _preferences.setString(
       _accountsKey,
-      jsonEncode(
-        accounts.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(accounts.map((item) => item.toMap()).toList()),
     );
   }
 
-  Future<void> _saveCostCenters(
-    List<AtlasCostCenter> centers,
-  ) async {
+  Future<void> _saveCostCenters(List<AtlasCostCenter> centers) async {
     await _preferences.setString(
       _costCentersKey,
-      jsonEncode(
-        centers.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(centers.map((item) => item.toMap()).toList()),
     );
   }
 

@@ -84,10 +84,7 @@ class _AtlasSprints1620DashboardScreenState
             children: [
               const Icon(Icons.error_outline, size: 48),
               const SizedBox(height: 12),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-              ),
+              Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _load,
@@ -102,9 +99,7 @@ class _AtlasSprints1620DashboardScreenState
 
     final data = _data;
     if (data == null) {
-      return const Center(
-        child: Text('Nenhum dado disponível.'),
-      );
+      return const Center(child: Text('Nenhum dado disponível.'));
     }
 
     final cards = <_DashboardCardData>[
@@ -142,10 +137,7 @@ class _AtlasSprints1620DashboardScreenState
         padding: const EdgeInsets.all(16),
         children: cards
             .map<Widget>(
-              (card) => _buildDashboardCard(
-                context: context,
-                card: card,
-              ),
+              (card) => _buildDashboardCard(context: context, card: card),
             )
             .toList(),
       ),

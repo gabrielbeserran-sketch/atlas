@@ -20,15 +20,15 @@ class FarmInventoryMovement {
   final double unitValue;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'type': type,
-        'quantity': quantity,
-        'date': date,
-        'responsible': responsible,
-        'reason': reason,
-        'document': document,
-        'unitValue': unitValue,
-      };
+    'id': id,
+    'type': type,
+    'quantity': quantity,
+    'date': date,
+    'responsible': responsible,
+    'reason': reason,
+    'document': document,
+    'unitValue': unitValue,
+  };
 
   factory FarmInventoryMovement.fromMap(Map<String, dynamic> map) {
     return FarmInventoryMovement(
@@ -109,34 +109,35 @@ class FarmInventoryData {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'category': category,
-        'quantity': quantity,
-        'minimumQuantity': minimumQuantity,
-        'unit': unit,
-        'unitValue': unitValue,
-        'expirationDate': expirationDate,
-        'supplier': supplier,
-        'batch': batch,
-        'notes': notes,
-        'internalCode': internalCode,
-        'barcode': barcode,
-        'brand': brand,
-        'manufacturer': manufacturer,
-        'maximumQuantity': maximumQuantity,
-        'lastPurchaseValue': lastPurchaseValue,
-        'manufacturingDate': manufacturingDate,
-        'withdrawalDays': withdrawalDays,
-        'storageLocation': storageLocation,
-        'activeIngredient': activeIngredient,
-        'purchaseDocument': purchaseDocument,
-        'lastInventoryDate': lastInventoryDate,
-        'movements': movements.map((movement) => movement.toMap()).toList(),
-      };
+    'id': id,
+    'name': name,
+    'category': category,
+    'quantity': quantity,
+    'minimumQuantity': minimumQuantity,
+    'unit': unit,
+    'unitValue': unitValue,
+    'expirationDate': expirationDate,
+    'supplier': supplier,
+    'batch': batch,
+    'notes': notes,
+    'internalCode': internalCode,
+    'barcode': barcode,
+    'brand': brand,
+    'manufacturer': manufacturer,
+    'maximumQuantity': maximumQuantity,
+    'lastPurchaseValue': lastPurchaseValue,
+    'manufacturingDate': manufacturingDate,
+    'withdrawalDays': withdrawalDays,
+    'storageLocation': storageLocation,
+    'activeIngredient': activeIngredient,
+    'purchaseDocument': purchaseDocument,
+    'lastInventoryDate': lastInventoryDate,
+    'movements': movements.map((movement) => movement.toMap()).toList(),
+  };
 
   factory FarmInventoryData.fromMap(Map<String, dynamic> map) {
-    final movementMaps = map['movements'] as List<dynamic>? ?? const <dynamic>[];
+    final movementMaps =
+        map['movements'] as List<dynamic>? ?? const <dynamic>[];
     return FarmInventoryData(
       id: map['id'] as String? ?? '',
       name: map['name'] as String? ?? '',
@@ -154,7 +155,8 @@ class FarmInventoryData {
       brand: map['brand'] as String? ?? '',
       manufacturer: map['manufacturer'] as String? ?? '',
       maximumQuantity: (map['maximumQuantity'] as num?)?.toDouble() ?? 0,
-      lastPurchaseValue: (map['lastPurchaseValue'] as num?)?.toDouble() ??
+      lastPurchaseValue:
+          (map['lastPurchaseValue'] as num?)?.toDouble() ??
           (map['unitValue'] as num?)?.toDouble() ??
           0,
       manufacturingDate: map['manufacturingDate'] as String? ?? '',
@@ -164,9 +166,11 @@ class FarmInventoryData {
       purchaseDocument: map['purchaseDocument'] as String? ?? '',
       lastInventoryDate: map['lastInventoryDate'] as String? ?? '',
       movements: movementMaps
-          .map((value) => FarmInventoryMovement.fromMap(
-                Map<String, dynamic>.from(value as Map),
-              ))
+          .map(
+            (value) => FarmInventoryMovement.fromMap(
+              Map<String, dynamic>.from(value as Map),
+            ),
+          )
           .toList(),
     );
   }

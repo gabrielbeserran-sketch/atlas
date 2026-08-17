@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import hmac
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import select
@@ -42,7 +43,7 @@ settings = get_settings()
 def _farm_allowed(principal: Principal, farm_id: str) -> None:
     if principal.membership.role in {"owner", "admin", "companyAdministrator"}:
         return
-    if farm_id not in set(principal.membership.farm_ids or []):
+    if principal.membership.farm_ids and farm_id not in set(principal.membership.farm_ids):
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
 
 
@@ -145,8 +146,15 @@ async def ingest_telemetry(
     x_atlas_iot_key: str = Header(default=""),
     db: Session = Depends(get_db),
 ) -> IotTelemetry:
-    expected_key = getattr(settings, "atlas_iot_ingest_key", "")
-    if expected_key and x_atlas_iot_key != expected_key:
+    expected_key = settings.atlas_iot_ingest_key
+    if (
+        not expected_key
+        or not x_atlas_iot_key
+        or not hmac.compare_digest(
+            x_atlas_iot_key.encode("utf-8"),
+            expected_key.encode("utf-8"),
+        )
+    ):
         raise HTTPException(status_code=401, detail="Chave IoT inválida.")
 
     device = db.scalar(

@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal_document/domain/models/animal_document_data.dart';
 
 class AnimalDocumentFormScreen extends StatefulWidget {
-  const AnimalDocumentFormScreen({
-    this.document,
-    super.key,
-  });
+  const AnimalDocumentFormScreen({this.document, super.key});
 
   final AnimalDocumentData? document;
 
@@ -18,8 +15,7 @@ class AnimalDocumentFormScreen extends StatefulWidget {
   }
 }
 
-class _AnimalDocumentFormScreenState
-    extends State<AnimalDocumentFormScreen> {
+class _AnimalDocumentFormScreenState extends State<AnimalDocumentFormScreen> {
   final formKey = GlobalKey<FormState>();
 
   late final TextEditingController titleController;
@@ -78,9 +74,7 @@ class _AnimalDocumentFormScreenState
         document?.category ?? inferDocumentCategory(selectedType);
     isFavorite = document?.isFavorite ?? false;
 
-    titleController = TextEditingController(
-      text: document?.title ?? '',
-    );
+    titleController = TextEditingController(text: document?.title ?? '');
     dateController = TextEditingController(
       text: document?.date ?? formatDate(DateTime.now()),
     );
@@ -90,12 +84,8 @@ class _AnimalDocumentFormScreenState
     referenceController = TextEditingController(
       text: document?.reference ?? '',
     );
-    issuerController = TextEditingController(
-      text: document?.issuer ?? '',
-    );
-    notesController = TextEditingController(
-      text: document?.notes ?? '',
-    );
+    issuerController = TextEditingController(text: document?.issuer ?? '');
+    notesController = TextEditingController(text: document?.notes ?? '');
   }
 
   @override
@@ -121,8 +111,8 @@ class _AnimalDocumentFormScreenState
     if (reference.isEmpty) return null;
 
     final uri = Uri.tryParse(reference);
-    final isWebUrl = uri != null &&
-        (uri.scheme == 'http' || uri.scheme == 'https');
+    final isWebUrl =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
     if (isWebUrl) return null;
 
@@ -139,9 +129,7 @@ class _AnimalDocumentFormScreenState
     return null;
   }
 
-  Future<void> selectDate({
-    required TextEditingController controller,
-  }) async {
+  Future<void> selectDate({required TextEditingController controller}) async {
     final initial = parseDocumentDate(controller.text) ?? DateTime.now();
 
     final selected = await showDatePicker(
@@ -187,9 +175,7 @@ class _AnimalDocumentFormScreenState
     ];
 
     try {
-      final selectedFile = await openFile(
-        acceptedTypeGroups: acceptedTypes,
-      );
+      final selectedFile = await openFile(acceptedTypeGroups: acceptedTypes);
 
       if (!mounted || selectedFile == null) return;
 
@@ -198,9 +184,7 @@ class _AnimalDocumentFormScreenState
       if (selectedPath.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'O seletor não retornou um caminho válido.',
-            ),
+            content: Text('O seletor não retornou um caminho válido.'),
           ),
         );
         return;
@@ -211,9 +195,7 @@ class _AnimalDocumentFormScreenState
       if (!file.existsSync()) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'O arquivo selecionado não foi localizado.',
-            ),
+            content: Text('O arquivo selecionado não foi localizado.'),
           ),
         );
         return;
@@ -233,9 +215,7 @@ class _AnimalDocumentFormScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Não foi possível abrir o seletor de arquivos: $error',
-          ),
+          content: Text('Não foi possível abrir o seletor de arquivos: $error'),
         ),
       );
     } finally {
@@ -261,8 +241,7 @@ class _AnimalDocumentFormScreenState
     Navigator.pop<AnimalDocumentData>(
       context,
       AnimalDocumentData(
-        id: current?.id ??
-            'document_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'document_${DateTime.now().microsecondsSinceEpoch}',
         type: selectedType,
         category: selectedCategory,
         title: titleController.text.trim(),
@@ -303,9 +282,7 @@ class _AnimalDocumentFormScreenState
                 padding: const EdgeInsets.all(24),
                 children: [
                   Text(
-                    isEditing
-                        ? 'Atualizar documento'
-                        : 'Registrar documento',
+                    isEditing ? 'Atualizar documento' : 'Registrar documento',
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -326,10 +303,8 @@ class _AnimalDocumentFormScreenState
                     ),
                     items: types
                         .map(
-                          (type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(type),
-                          ),
+                          (type) =>
+                              DropdownMenuItem(value: type, child: Text(type)),
                         )
                         .toList(growable: false),
                     onChanged: (value) {
@@ -337,8 +312,7 @@ class _AnimalDocumentFormScreenState
 
                       setState(() {
                         selectedType = value;
-                        selectedCategory =
-                            inferDocumentCategory(selectedType);
+                        selectedCategory = inferDocumentCategory(selectedType);
                       });
                     },
                   ),
@@ -391,14 +365,11 @@ class _AnimalDocumentFormScreenState
                   TextFormField(
                     controller: expirationController,
                     readOnly: true,
-                    onTap: () => selectDate(
-                      controller: expirationController,
-                    ),
+                    onTap: () => selectDate(controller: expirationController),
                     decoration: InputDecoration(
                       labelText: 'Data de vencimento',
                       helperText: 'Opcional',
-                      prefixIcon:
-                          const Icon(Icons.event_busy_outlined),
+                      prefixIcon: const Icon(Icons.event_busy_outlined),
                       suffixIcon: expirationController.text.isEmpty
                           ? const Icon(Icons.arrow_drop_down)
                           : IconButton(
@@ -417,8 +388,7 @@ class _AnimalDocumentFormScreenState
                     decoration: InputDecoration(
                       labelText: 'Arquivo ou link',
                       hintText: 'Selecione um arquivo ou informe uma URL',
-                      prefixIcon:
-                          const Icon(Icons.attach_file_outlined),
+                      prefixIcon: const Icon(Icons.attach_file_outlined),
                       suffixIcon: reference.isEmpty
                           ? null
                           : IconButton(
@@ -433,15 +403,12 @@ class _AnimalDocumentFormScreenState
                   Align(
                     alignment: Alignment.centerLeft,
                     child: OutlinedButton.icon(
-                      onPressed:
-                          isSelectingFile ? null : selectFile,
+                      onPressed: isSelectingFile ? null : selectFile,
                       icon: isSelectingFile
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.folder_open_outlined),
                       label: Text(
@@ -492,9 +459,7 @@ class _AnimalDocumentFormScreenState
                     onPressed: isSaving ? null : saveDocument,
                     icon: const Icon(Icons.save_outlined),
                     label: Text(
-                      isEditing
-                          ? 'Salvar alterações'
-                          : 'Cadastrar documento',
+                      isEditing ? 'Salvar alterações' : 'Cadastrar documento',
                     ),
                   ),
                 ],
@@ -508,10 +473,7 @@ class _AnimalDocumentFormScreenState
 }
 
 class AttachmentPreview extends StatelessWidget {
-  const AttachmentPreview({
-    required this.information,
-    super.key,
-  });
+  const AttachmentPreview({required this.information, super.key});
 
   final AttachmentInformation information;
 
@@ -540,14 +502,7 @@ class AttachmentPreview extends StatelessWidget {
   }
 }
 
-enum AttachmentKind {
-  url,
-  pdf,
-  image,
-  spreadsheet,
-  document,
-  other,
-}
+enum AttachmentKind { url, pdf, image, spreadsheet, document, other }
 
 class AttachmentInformation {
   const AttachmentInformation({
@@ -568,14 +523,11 @@ AttachmentInformation? attachmentInformation(String reference) {
   if (normalized.isEmpty) return null;
 
   final uri = Uri.tryParse(normalized);
-  final isUrl = uri != null &&
-      (uri.scheme == 'http' || uri.scheme == 'https');
+  final isUrl = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
   if (isUrl) {
     return AttachmentInformation(
-      name: uri.pathSegments.isEmpty
-          ? normalized
-          : uri.pathSegments.last,
+      name: uri.pathSegments.isEmpty ? normalized : uri.pathSegments.last,
       extension: '',
       sizeBytes: 0,
       kind: AttachmentKind.url,

@@ -27,10 +27,8 @@ class AtlasCopilotCommandCenterView {
     ];
 
     final suggestedQuestions = <String>[
-      if (topPriority != null)
-        'Como devo agir sobre "${topPriority.title}"?',
-      if (topInsight != null)
-        'Explique o insight "${topInsight.title}".',
+      if (topPriority != null) 'Como devo agir sobre "${topPriority.title}"?',
+      if (topInsight != null) 'Explique o insight "${topInsight.title}".',
       'Quais são as prioridades da fazenda hoje?',
       'Quais módulos precisam de atenção?',
       'Resuma os acontecimentos dos últimos sete dias.',
@@ -40,16 +38,11 @@ class AtlasCopilotCommandCenterView {
       generatedAt: snapshot.generatedAt,
       farmName: snapshot.farmName,
       contextSummary: summaryParts.join('. '),
-      suggestedQuestions:
-          List<String>.unmodifiable(suggestedQuestions),
-      priorities:
-          List<AtlasOperationalPriority>.unmodifiable(
+      suggestedQuestions: List<String>.unmodifiable(suggestedQuestions),
+      priorities: List<AtlasOperationalPriority>.unmodifiable(
         snapshot.priorities,
       ),
-      insights:
-          List<AtlasOperationalInsight>.unmodifiable(
-        snapshot.insights,
-      ),
+      insights: List<AtlasOperationalInsight>.unmodifiable(snapshot.insights),
     );
   }
 
@@ -70,9 +63,7 @@ class AtlasCopilotCommandCenterView {
       buffer.writeln('Principais prioridades:');
 
       for (final priority in priorities.take(5)) {
-        buffer.writeln(
-          '- ${priority.title}: ${priority.recommendedAction}',
-        );
+        buffer.writeln('- ${priority.title}: ${priority.recommendedAction}');
       }
     }
 
@@ -80,9 +71,7 @@ class AtlasCopilotCommandCenterView {
       buffer.writeln('Principais insights:');
 
       for (final insight in insights.take(5)) {
-        buffer.writeln(
-          '- ${insight.title}: ${insight.description}',
-        );
+        buffer.writeln('- ${insight.title}: ${insight.description}');
       }
     }
 

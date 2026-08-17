@@ -51,11 +51,9 @@ class FarmInventoryEventService {
           'previousName': previousItem.name,
           'previousCategory': previousItem.category,
           'previousQuantity': previousItem.quantity,
-          'previousMinimumQuantity':
-              previousItem.minimumQuantity,
+          'previousMinimumQuantity': previousItem.minimumQuantity,
           'previousUnitValue': previousItem.unitValue,
-          'quantityVariation':
-              updatedItem.quantity - previousItem.quantity,
+          'quantityVariation': updatedItem.quantity - previousItem.quantity,
         },
       ),
       ..._stockAlertEvents(
@@ -80,9 +78,7 @@ class FarmInventoryEventService {
       item: deletedItem,
       totalInventoryValue: totalInventoryValue,
       priority: AtlasEventPriority.normal,
-      extraPayload: const <String, dynamic>{
-        'deleted': true,
-      },
+      extraPayload: const <String, dynamic>{'deleted': true},
     );
 
     await AtlasEventBus.instance.publish(event);
@@ -95,8 +91,7 @@ class FarmInventoryEventService {
     required FarmInventoryData item,
     required double totalInventoryValue,
     AtlasEventPriority? priority,
-    Map<String, dynamic> extraPayload =
-        const <String, dynamic>{},
+    Map<String, dynamic> extraPayload = const <String, dynamic>{},
   }) {
     return eventFactory.create(
       type: type,
@@ -105,8 +100,7 @@ class FarmInventoryEventService {
       description:
           '${item.name}: ${item.quantity.toStringAsFixed(2)} '
           '${item.unit} em estoque.',
-      priority:
-          priority ?? _priorityForItem(item),
+      priority: priority ?? _priorityForItem(item),
       farmId: farmName,
       farmName: farmName,
       entityId: item.id,
@@ -132,8 +126,8 @@ class FarmInventoryEventService {
         item.quantity <= 0
             ? 'out_of_stock'
             : item.hasLowStock
-                ? 'low_stock'
-                : 'available',
+            ? 'low_stock'
+            : 'available',
       ],
     );
   }
@@ -149,8 +143,7 @@ class FarmInventoryEventService {
           type: AtlasEventType.inventoryOutOfStock,
           sourceModule: 'farm_inventory',
           title: 'Produto esgotado',
-          description:
-              '${item.name} está sem estoque na fazenda $farmName.',
+          description: '${item.name} está sem estoque na fazenda $farmName.',
           priority: AtlasEventPriority.critical,
           farmId: farmName,
           farmName: farmName,
@@ -214,9 +207,7 @@ class FarmInventoryEventService {
     return const <AtlasEvent>[];
   }
 
-  AtlasEventPriority _priorityForItem(
-    FarmInventoryData item,
-  ) {
+  AtlasEventPriority _priorityForItem(FarmInventoryData item) {
     if (item.quantity <= 0) {
       return AtlasEventPriority.critical;
     }
@@ -228,15 +219,7 @@ class FarmInventoryEventService {
     return AtlasEventPriority.normal;
   }
 
-  String _normalizeTag(
-    String value,
-  ) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        );
+  String _normalizeTag(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 }

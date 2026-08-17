@@ -5,8 +5,7 @@ import 'package:projeto_atlas/features/workflow_engine/domain/models/atlas_workf
 import 'package:projeto_atlas/features/workflow_engine/domain/services/atlas_workflow_service.dart';
 import 'package:projeto_atlas/features/workflow_engine/domain/services/atlas_workflow_event_service.dart';
 
-class AtlasWorkflowScreen
-    extends StatefulWidget {
+class AtlasWorkflowScreen extends StatefulWidget {
   const AtlasWorkflowScreen({
     required this.workflows,
     this.onWorkflowsChanged,
@@ -16,8 +15,7 @@ class AtlasWorkflowScreen
 
   final List<AtlasWorkflow> workflows;
 
-  final ValueChanged<List<AtlasWorkflow>>?
-      onWorkflowsChanged;
+  final ValueChanged<List<AtlasWorkflow>>? onWorkflowsChanged;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -27,10 +25,8 @@ class AtlasWorkflowScreen
   }
 }
 
-class _AtlasWorkflowScreenState
-    extends State<AtlasWorkflowScreen> {
-  final AtlasWorkflowService service =
-      const AtlasWorkflowService();
+class _AtlasWorkflowScreenState extends State<AtlasWorkflowScreen> {
+  final AtlasWorkflowService service = const AtlasWorkflowService();
 
   final AtlasWorkflowEventService eventService =
       const AtlasWorkflowEventService();
@@ -47,16 +43,11 @@ class _AtlasWorkflowScreenState
   }
 
   AtlasWorkflowData get dashboard {
-    return service.buildDashboard(
-      workflows: workflows,
-    );
+    return service.buildDashboard(workflows: workflows);
   }
 
   List<String> get farms {
-    final result = workflows
-        .map((item) => item.farmName)
-        .toSet()
-        .toList()
+    final result = workflows.map((item) => item.farmName).toSet().toList()
       ..sort();
 
     return result;
@@ -64,13 +55,11 @@ class _AtlasWorkflowScreenState
 
   List<AtlasWorkflow> get filteredWorkflows {
     return dashboard.workflows.where((item) {
-      if (selectedFarm != null &&
-          item.farmName != selectedFarm) {
+      if (selectedFarm != null && item.farmName != selectedFarm) {
         return false;
       }
 
-      if (selectedStatus != null &&
-          item.status != selectedStatus) {
+      if (selectedStatus != null && item.status != selectedStatus) {
         return false;
       }
 
@@ -78,32 +67,22 @@ class _AtlasWorkflowScreenState
     }).toList();
   }
 
-  Future<void> _updateWorkflow(
-    AtlasWorkflow updated,
-  ) async {
-    final previous = workflows
-        .cast<AtlasWorkflow?>()
-        .firstWhere(
-          (item) => item?.id == updated.id,
-          orElse: () => null,
-        );
+  Future<void> _updateWorkflow(AtlasWorkflow updated) async {
+    final previous = workflows.cast<AtlasWorkflow?>().firstWhere(
+      (item) => item?.id == updated.id,
+      orElse: () => null,
+    );
 
     setState(() {
       workflows = workflows.map((item) {
-        return item.id == updated.id
-            ? updated
-            : item;
+        return item.id == updated.id ? updated : item;
       }).toList();
     });
 
-    widget.onWorkflowsChanged?.call(
-      workflows,
-    );
+    widget.onWorkflowsChanged?.call(workflows);
 
     if (previous == null) {
-      await eventService.publishWorkflowCreated(
-        workflow: updated,
-      );
+      await eventService.publishWorkflowCreated(workflow: updated);
       return;
     }
 
@@ -117,24 +96,16 @@ class _AtlasWorkflowScreenState
     required AtlasWorkflow workflow,
     required AtlasWorkflowTask task,
   }) async {
-    final controller = TextEditingController(
-      text: task.responsibleName,
-    );
+    final controller = TextEditingController(text: task.responsibleName);
 
     final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Definir responsável',
-          ),
+          title: const Text('Definir responsável'),
           content: TextField(
             controller: controller,
-            decoration:
-                const InputDecoration(
-              labelText:
-                  'Nome do responsável',
-            ),
+            decoration: const InputDecoration(labelText: 'Nome do responsável'),
           ),
           actions: [
             TextButton(
@@ -145,9 +116,7 @@ class _AtlasWorkflowScreenState
             ),
             FilledButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(
-                  controller.text.trim(),
-                );
+                Navigator.of(dialogContext).pop(controller.text.trim());
               },
               child: const Text('Salvar'),
             ),
@@ -158,9 +127,7 @@ class _AtlasWorkflowScreenState
 
     controller.dispose();
 
-    if (result == null ||
-        result.isEmpty ||
-        !mounted) {
+    if (result == null || result.isEmpty || !mounted) {
       return;
     }
 
@@ -178,35 +145,27 @@ class _AtlasWorkflowScreenState
     final data = dashboard;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text(
           'Atlas Workflow Engine',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: data.hasData
                 ? ListView(
-                    padding:
-                        const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(22),
                     children: [
                       _WorkflowHero(data: data),
                       const SizedBox(height: 22),
                       _WorkflowFilters(
                         farms: farms,
-                        selectedFarm:
-                            selectedFarm,
-                        selectedStatus:
-                            selectedStatus,
+                        selectedFarm: selectedFarm,
+                        selectedStatus: selectedStatus,
                         onFarmChanged: (value) {
                           setState(() {
                             selectedFarm = value;
@@ -220,8 +179,7 @@ class _AtlasWorkflowScreenState
                       ),
                       const SizedBox(height: 26),
                       const _SectionTitle(
-                        title:
-                            'Planos de execução',
+                        title: 'Planos de execução',
                         subtitle:
                             'Tarefas, responsáveis, dependências e cronograma.',
                       ),
@@ -229,67 +187,46 @@ class _AtlasWorkflowScreenState
                       if (filteredWorkflows.isEmpty)
                         const _EmptyFilteredView()
                       else
-                        ...filteredWorkflows.map(
-                          (workflow) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                bottom: 13,
-                              ),
-                              child:
-                                  _WorkflowCard(
-                                workflow:
-                                    workflow,
-                                onStartTask:
-                                    (taskId) async {
-                                  await _updateWorkflow(
-                                    service.startTask(
-                                      workflow:
-                                          workflow,
-                                      taskId: taskId,
-                                    ),
-                                  );
-                                },
-                                onProgressChanged:
-                                    (
-                                  taskId,
-                                  value,
-                                ) async {
-                                  await _updateWorkflow(
-                                    service
-                                        .updateTaskProgress(
-                                      workflow:
-                                          workflow,
-                                      taskId: taskId,
-                                      progressPercent:
-                                          value,
-                                    ),
-                                  );
-                                },
-                                onAssignResponsible:
-                                    (task) {
-                                  _assignResponsible(
-                                    workflow:
-                                        workflow,
-                                    task: task,
-                                  );
-                                },
-                                onReplan: (days) async {
-                                  await _updateWorkflow(
-                                    service.replan(
-                                      workflow:
-                                          workflow,
-                                      additionalDays:
-                                          days,
-                                    ),
-                                  );
-                                },
-                                onOpenFarm:
-                                    widget.onOpenFarm,
-                              ),
-                            );
-                          },
-                        ),
+                        ...filteredWorkflows.map((workflow) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 13),
+                            child: _WorkflowCard(
+                              workflow: workflow,
+                              onStartTask: (taskId) async {
+                                await _updateWorkflow(
+                                  service.startTask(
+                                    workflow: workflow,
+                                    taskId: taskId,
+                                  ),
+                                );
+                              },
+                              onProgressChanged: (taskId, value) async {
+                                await _updateWorkflow(
+                                  service.updateTaskProgress(
+                                    workflow: workflow,
+                                    taskId: taskId,
+                                    progressPercent: value,
+                                  ),
+                                );
+                              },
+                              onAssignResponsible: (task) {
+                                _assignResponsible(
+                                  workflow: workflow,
+                                  task: task,
+                                );
+                              },
+                              onReplan: (days) async {
+                                await _updateWorkflow(
+                                  service.replan(
+                                    workflow: workflow,
+                                    additionalDays: days,
+                                  ),
+                                );
+                              },
+                              onOpenFarm: widget.onOpenFarm,
+                            ),
+                          );
+                        }),
                       const SizedBox(height: 32),
                     ],
                   )
@@ -302,9 +239,7 @@ class _AtlasWorkflowScreenState
 }
 
 class _WorkflowHero extends StatelessWidget {
-  const _WorkflowHero({
-    required this.data,
-  });
+  const _WorkflowHero({required this.data});
 
   final AtlasWorkflowData data;
 
@@ -314,26 +249,16 @@ class _WorkflowHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0F2027),
-            Color(0xFF203A43),
-            Color(0xFF2C5364),
-          ],
+          colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
@@ -349,8 +274,7 @@ class _WorkflowHero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -359,29 +283,16 @@ class _WorkflowHero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 data.summary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.45,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.45),
               ),
               const SizedBox(height: 15),
               Wrap(
                 spacing: 9,
                 runSpacing: 9,
                 children: [
-                  _HeroMetric(
-                    label: 'Tarefas',
-                    value: data.totalTasks,
-                  ),
-                  _HeroMetric(
-                    label: 'Concluídas',
-                    value:
-                        data.completedTasks,
-                  ),
-                  _HeroMetric(
-                    label: 'Atrasadas',
-                    value: data.delayedTasks,
-                  ),
+                  _HeroMetric(label: 'Tarefas', value: data.totalTasks),
+                  _HeroMetric(label: 'Concluídas', value: data.completedTasks),
+                  _HeroMetric(label: 'Atrasadas', value: data.delayedTasks),
                 ],
               ),
             ],
@@ -391,48 +302,32 @@ class _WorkflowHero extends StatelessWidget {
             width: 225,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${data.progressPercent.toStringAsFixed(0)}%',
                   style: const TextStyle(
                     color: Color(0xFFB2DFDB),
                     fontSize: 40,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Text(
                   'Progresso global',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 12),
                 ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(20),
-                  child:
-                      LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(20),
+                  child: LinearProgressIndicator(
                     minHeight: 9,
-                    value:
-                        data.progressPercent /
-                            100,
-                    backgroundColor:
-                        Colors.white.withValues(
-                      alpha: 0.12,
-                    ),
-                    valueColor:
-                        const AlwaysStoppedAnimation<
-                            Color>(
+                    value: data.progressPercent / 100,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                       Color(0xFFB2DFDB),
                     ),
                   ),
@@ -443,19 +338,13 @@ class _WorkflowHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                information,
-                const SizedBox(height: 20),
-                side,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [information, const SizedBox(height: 20), side],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: information),
               const SizedBox(width: 24),
@@ -468,8 +357,7 @@ class _WorkflowHero extends StatelessWidget {
   }
 }
 
-class _WorkflowFilters
-    extends StatelessWidget {
+class _WorkflowFilters extends StatelessWidget {
   const _WorkflowFilters({
     required this.farms,
     required this.selectedFarm,
@@ -483,11 +371,9 @@ class _WorkflowFilters
 
   final AtlasWorkflowStatus? selectedStatus;
 
-  final ValueChanged<String?>
-      onFarmChanged;
+  final ValueChanged<String?> onFarmChanged;
 
-  final ValueChanged<AtlasWorkflowStatus?>
-      onStatusChanged;
+  final ValueChanged<AtlasWorkflowStatus?> onStatusChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -500,25 +386,16 @@ class _WorkflowFilters
           children: [
             SizedBox(
               width: 260,
-              child: DropdownButtonFormField<
-                  String?>(
+              child: DropdownButtonFormField<String?>(
                 initialValue: selectedFarm,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Fazenda',
-                ),
+                decoration: const InputDecoration(labelText: 'Fazenda'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as fazendas',
-                    ),
+                    child: Text('Todas as fazendas'),
                   ),
                   ...farms.map((farm) {
-                    return DropdownMenuItem(
-                      value: farm,
-                      child: Text(farm),
-                    );
+                    return DropdownMenuItem(value: farm, child: Text(farm));
                   }),
                 ],
                 onChanged: onFarmChanged,
@@ -526,29 +403,18 @@ class _WorkflowFilters
             ),
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<
-                  AtlasWorkflowStatus?>(
+              child: DropdownButtonFormField<AtlasWorkflowStatus?>(
                 initialValue: selectedStatus,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Situação',
-                ),
+                decoration: const InputDecoration(labelText: 'Situação'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as situações',
-                    ),
+                    child: Text('Todas as situações'),
                   ),
-                  ...AtlasWorkflowStatus.values
-                      .map((status) {
+                  ...AtlasWorkflowStatus.values.map((status) {
                     return DropdownMenuItem(
                       value: status,
-                      child: Text(
-                        atlasWorkflowStatusLabel(
-                          status,
-                        ),
-                      ),
+                      child: Text(atlasWorkflowStatusLabel(status)),
                     );
                   }),
                 ],
@@ -576,13 +442,9 @@ class _WorkflowCard extends StatelessWidget {
 
   final ValueChanged<String> onStartTask;
 
-  final void Function(
-    String taskId,
-    double progress,
-  ) onProgressChanged;
+  final void Function(String taskId, double progress) onProgressChanged;
 
-  final ValueChanged<AtlasWorkflowTask>
-      onAssignResponsible;
+  final ValueChanged<AtlasWorkflowTask> onAssignResponsible;
 
   final ValueChanged<int> onReplan;
 
@@ -590,136 +452,90 @@ class _WorkflowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _workflowStatusColor(workflow.status);
+    final color = _workflowStatusColor(workflow.status);
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.schema_outlined,
-                  color: color,
-                  size: 29,
-                ),
+                Icon(Icons.schema_outlined, color: color, size: 29),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         workflow.title,
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         workflow.farmName,
                         style: TextStyle(
                           color: color,
-                          fontWeight:
-                              FontWeight.w700,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  atlasWorkflowStatusLabel(
-                    workflow.status,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  atlasWorkflowStatusLabel(workflow.status),
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 11),
             Text(
               workflow.description,
-              style: const TextStyle(
-                color: Colors.black54,
-                height: 1.4,
-              ),
+              style: const TextStyle(color: Colors.black54, height: 1.4),
             ),
             const SizedBox(height: 12),
             LinearProgressIndicator(
               minHeight: 9,
-              value:
-                  workflow.progressPercent / 100,
-              backgroundColor:
-                  color.withValues(
-                alpha: 0.10,
-              ),
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(
-                color,
-              ),
+              value: workflow.progressPercent / 100,
+              backgroundColor: color.withValues(alpha: 0.10),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
             const SizedBox(height: 7),
             Text(
               '${workflow.progressPercent.toStringAsFixed(0)}% concluído · '
               'prazo ${_date(workflow.deadline)}',
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.black54, fontSize: 11),
             ),
             const SizedBox(height: 15),
             ...workflow.tasks.map((task) {
-              final taskColor =
-                  _taskStatusColor(task.status);
+              final taskColor = _taskStatusColor(task.status);
 
               return Container(
                 width: double.infinity,
-                margin:
-                    const EdgeInsets.only(
-                  bottom: 10,
-                ),
-                padding:
-                    const EdgeInsets.all(13),
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(13),
                 decoration: BoxDecoration(
-                  color: taskColor.withValues(
-                    alpha: 0.05,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(12),
-                  border: Border.all(
-                    color:
-                        taskColor.withValues(
-                      alpha: 0.15,
-                    ),
-                  ),
+                  color: taskColor.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: taskColor.withValues(alpha: 0.15)),
                 ),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         CircleAvatar(
                           radius: 14,
-                          backgroundColor:
-                              taskColor.withValues(
-                            alpha: 0.12,
-                          ),
+                          backgroundColor: taskColor.withValues(alpha: 0.12),
                           child: Text(
-                            task.position
-                                .toString(),
+                            task.position.toString(),
                             style: TextStyle(
                               color: taskColor,
                               fontSize: 11,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -727,20 +543,14 @@ class _WorkflowCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             task.title,
-                            style: const TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         Text(
-                          atlasWorkflowTaskStatusLabel(
-                            task.status,
-                          ),
+                          atlasWorkflowTaskStatusLabel(task.status),
                           style: TextStyle(
                             color: taskColor,
-                            fontWeight:
-                                FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                             fontSize: 10,
                           ),
                         ),
@@ -749,9 +559,7 @@ class _WorkflowCard extends StatelessWidget {
                     const SizedBox(height: 7),
                     Text(
                       task.description,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                      ),
+                      style: const TextStyle(color: Colors.black54),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -760,81 +568,46 @@ class _WorkflowCard extends StatelessWidget {
                           : 'Responsável: ${task.responsibleName}',
                       style: TextStyle(
                         color: taskColor,
-                        fontWeight:
-                            FontWeight.w600,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
                       minHeight: 7,
-                      value:
-                          task.progressPercent /
-                              100,
-                      backgroundColor:
-                          taskColor.withValues(
-                        alpha: 0.10,
-                      ),
-                      valueColor:
-                          AlwaysStoppedAnimation<
-                              Color>(
-                        taskColor,
-                      ),
+                      value: task.progressPercent / 100,
+                      backgroundColor: taskColor.withValues(alpha: 0.10),
+                      valueColor: AlwaysStoppedAnimation<Color>(taskColor),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        if (task.status ==
-                                AtlasWorkflowTaskStatus
-                                    .pending ||
-                            task.status ==
-                                AtlasWorkflowTaskStatus
-                                    .delayed)
+                        if (task.status == AtlasWorkflowTaskStatus.pending ||
+                            task.status == AtlasWorkflowTaskStatus.delayed)
                           OutlinedButton.icon(
                             onPressed: () {
                               onStartTask(task.id);
                             },
-                            icon: const Icon(
-                              Icons.play_arrow,
-                            ),
-                            label: const Text(
-                              'Iniciar',
-                            ),
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('Iniciar'),
                           ),
-                        if (task.status ==
-                            AtlasWorkflowTaskStatus
-                                .inProgress)
+                        if (task.status == AtlasWorkflowTaskStatus.inProgress)
                           OutlinedButton.icon(
                             onPressed: () {
                               onProgressChanged(
                                 task.id,
-                                math.min(
-                                  task.progressPercent +
-                                      25,
-                                  100,
-                                ),
+                                math.min(task.progressPercent + 25, 100),
                               );
                             },
-                            icon: const Icon(
-                              Icons.add_task,
-                            ),
-                            label: const Text(
-                              'Avançar 25%',
-                            ),
+                            icon: const Icon(Icons.add_task),
+                            label: const Text('Avançar 25%'),
                           ),
                         ActionChip(
-                          avatar: const Icon(
-                            Icons.person_outline,
-                            size: 16,
-                          ),
-                          label: const Text(
-                            'Responsável',
-                          ),
+                          avatar: const Icon(Icons.person_outline, size: 16),
+                          label: const Text('Responsável'),
                           onPressed: () {
-                            onAssignResponsible(
-                              task,
-                            );
+                            onAssignResponsible(task);
                           },
                         ),
                       ],
@@ -847,88 +620,54 @@ class _WorkflowCard extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 'Gargalos identificados',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...workflow.bottlenecks.map(
-                (item) {
-                  final severityColor =
-                      _bottleneckColor(
-                    item.severity,
-                  );
+              ...workflow.bottlenecks.map((item) {
+                final severityColor = _bottleneckColor(item.severity);
 
-                  return ListTile(
-                    contentPadding:
-                        EdgeInsets.zero,
-                    leading: Icon(
-                      Icons
-                          .warning_amber_outlined,
-                      color: severityColor,
-                    ),
-                    title: Text(
-                      item.title,
-                      style: const TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${item.delayDays} dias de atraso · '
-                      '${item.recommendation}',
-                    ),
-                  );
-                },
-              ),
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.warning_amber_outlined,
+                    color: severityColor,
+                  ),
+                  title: Text(
+                    item.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    '${item.delayDays} dias de atraso · '
+                    '${item.recommendation}',
+                  ),
+                );
+              }),
             ],
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (workflow
-                    .replanningSuggestions
-                    .isNotEmpty)
+                if (workflow.replanningSuggestions.isNotEmpty)
                   FilledButton.icon(
                     onPressed: () {
-                      final suggestion =
-                          workflow
-                              .replanningSuggestions
-                              .first;
+                      final suggestion = workflow.replanningSuggestions.first;
 
-                      final days = suggestion
-                          .newDeadline
-                          .difference(
-                            workflow.deadline,
-                          )
+                      final days = suggestion.newDeadline
+                          .difference(workflow.deadline)
                           .inDays;
 
-                      onReplan(
-                        math.max(days, 1),
-                      );
+                      onReplan(math.max(days, 1));
                     },
-                    icon: const Icon(
-                      Icons
-                          .calendar_month_outlined,
-                    ),
-                    label: const Text(
-                      'Aplicar replanejamento',
-                    ),
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    label: const Text('Aplicar replanejamento'),
                   ),
                 if (onOpenFarm != null)
                   ActionChip(
-                    avatar: const Icon(
-                      Icons.agriculture_outlined,
-                      size: 16,
-                    ),
-                    label: const Text(
-                      'Abrir fazenda',
-                    ),
+                    avatar: const Icon(Icons.agriculture_outlined, size: 16),
+                    label: const Text('Abrir fazenda'),
                     onPressed: () {
-                      onOpenFarm!(
-                        workflow.farmName,
-                      );
+                      onOpenFarm!(workflow.farmName);
                     },
                   ),
               ],
@@ -941,10 +680,7 @@ class _WorkflowCard extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -952,17 +688,10 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
@@ -977,10 +706,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -988,30 +714,20 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
-class _EmptyFilteredView
-    extends StatelessWidget {
+class _EmptyFilteredView extends StatelessWidget {
   const _EmptyFilteredView();
 
   @override
@@ -1022,9 +738,7 @@ class _EmptyFilteredView
         child: Center(
           child: Text(
             'Nenhum workflow encontrado com os filtros atuais.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -1032,8 +746,7 @@ class _EmptyFilteredView
   }
 }
 
-class _EmptyWorkflowView
-    extends StatelessWidget {
+class _EmptyWorkflowView extends StatelessWidget {
   const _EmptyWorkflowView();
 
   @override
@@ -1041,17 +754,13 @@ class _EmptyWorkflowView
     return const Center(
       child: Text(
         'Nenhum plano de execução disponível.',
-        style: TextStyle(
-          color: Colors.black54,
-        ),
+        style: TextStyle(color: Colors.black54),
       ),
     );
   }
 }
 
-Color _workflowStatusColor(
-  AtlasWorkflowStatus status,
-) {
+Color _workflowStatusColor(AtlasWorkflowStatus status) {
   switch (status) {
     case AtlasWorkflowStatus.planned:
       return const Color(0xFF1565C0);
@@ -1070,9 +779,7 @@ Color _workflowStatusColor(
   }
 }
 
-Color _taskStatusColor(
-  AtlasWorkflowTaskStatus status,
-) {
+Color _taskStatusColor(AtlasWorkflowTaskStatus status) {
   switch (status) {
     case AtlasWorkflowTaskStatus.blocked:
       return const Color(0xFF616161);
@@ -1094,9 +801,7 @@ Color _taskStatusColor(
   }
 }
 
-Color _bottleneckColor(
-  AtlasWorkflowBottleneckSeverity severity,
-) {
+Color _bottleneckColor(AtlasWorkflowBottleneckSeverity severity) {
   switch (severity) {
     case AtlasWorkflowBottleneckSeverity.low:
       return const Color(0xFF1565C0);
@@ -1112,14 +817,10 @@ Color _bottleneckColor(
   }
 }
 
-String _date(
-  DateTime date,
-) {
-  final day =
-      date.day.toString().padLeft(2, '0');
+String _date(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
 
-  final month =
-      date.month.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
 
   return '$day/$month/${date.year}';
 }

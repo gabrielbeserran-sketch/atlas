@@ -11,21 +11,15 @@ class AtlasEnterprise24ARepository {
   static final AtlasEnterprise24ARepository instance =
       AtlasEnterprise24ARepository._();
 
-  static const String _companiesKey =
-      'atlas_enterprise_24a_companies_v1';
-  static const String _farmsKey =
-      'atlas_enterprise_24a_farms_v1';
-  static const String _membershipsKey =
-      'atlas_enterprise_24a_memberships_v1';
-  static const String _consultantsKey =
-      'atlas_enterprise_24a_consultants_v1';
-  static const String _sessionKey =
-      'atlas_enterprise_24a_session_v1';
+  static const String _companiesKey = 'atlas_enterprise_24a_companies_v1';
+  static const String _farmsKey = 'atlas_enterprise_24a_farms_v1';
+  static const String _membershipsKey = 'atlas_enterprise_24a_memberships_v1';
+  static const String _consultantsKey = 'atlas_enterprise_24a_consultants_v1';
+  static const String _sessionKey = 'atlas_enterprise_24a_session_v1';
   static const String _migrationVersionKey =
       'atlas_enterprise_24a_migration_version';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<AtlasEnterprise24ASnapshot> load() async {
     var companies = await _decodeList(
@@ -51,10 +45,7 @@ class AtlasEnterprise24ARepository {
       );
     }
 
-    final farms = await _decodeList(
-      _farmsKey,
-      AtlasEnterpriseFarm.fromMap,
-    );
+    final farms = await _decodeList(_farmsKey, AtlasEnterpriseFarm.fromMap);
     final consultantLinks = await _decodeList(
       _consultantsKey,
       AtlasConsultantCompanyLink.fromMap,
@@ -63,10 +54,9 @@ class AtlasEnterprise24ARepository {
     final migrationVersion =
         await _preferences.getInt(_migrationVersionKey) ?? 0;
 
-    final safeSession = session ?? _defaultSession(
-      companies: companies,
-      memberships: memberships,
-    );
+    final safeSession =
+        session ??
+        _defaultSession(companies: companies, memberships: memberships);
 
     if (session == null && safeSession != null) {
       await saveSession(safeSession);
@@ -82,9 +72,7 @@ class AtlasEnterprise24ARepository {
     );
   }
 
-  Future<void> saveSnapshot(
-    AtlasEnterprise24ASnapshot snapshot,
-  ) async {
+  Future<void> saveSnapshot(AtlasEnterprise24ASnapshot snapshot) async {
     await _saveList(
       _companiesKey,
       snapshot.companies.map((item) => item.toMap()).toList(),
@@ -99,9 +87,7 @@ class AtlasEnterprise24ARepository {
     );
     await _saveList(
       _consultantsKey,
-      snapshot.consultantLinks
-          .map((item) => item.toMap())
-          .toList(),
+      snapshot.consultantLinks.map((item) => item.toMap()).toList(),
     );
     if (snapshot.session != null) {
       await saveSession(snapshot.session!);
@@ -109,13 +95,8 @@ class AtlasEnterprise24ARepository {
     await setMigrationVersion(snapshot.migrationVersion);
   }
 
-  Future<void> saveSession(
-    AtlasEnterpriseSession session,
-  ) {
-    return _preferences.setString(
-      _sessionKey,
-      jsonEncode(session.toMap()),
-    );
+  Future<void> saveSession(AtlasEnterpriseSession session) {
+    return _preferences.setString(_sessionKey, jsonEncode(session.toMap()));
   }
 
   Future<void> setMigrationVersion(int version) {
@@ -166,10 +147,7 @@ class AtlasEnterprise24ARepository {
 
     await saveSnapshot(
       snapshot.copyWith(
-        companies: <AtlasEnterpriseCompany>[
-          ...snapshot.companies,
-          company,
-        ],
+        companies: <AtlasEnterpriseCompany>[...snapshot.companies, company],
         memberships: <AtlasEnterpriseMembership>[
           ...snapshot.memberships,
           membership,
@@ -196,11 +174,7 @@ class AtlasEnterprise24ARepository {
     }
 
     final now = DateTime.now();
-    final farmId = _buildId(
-      'farm',
-      '$companyId-${name.trim()}',
-      now,
-    );
+    final farmId = _buildId('farm', '$companyId-${name.trim()}', now);
     final farm = AtlasEnterpriseFarm(
       id: farmId,
       name: name.trim(),
@@ -218,13 +192,10 @@ class AtlasEnterprise24ARepository {
       ),
     );
 
-    await _saveList(
-      _farmsKey,
-      <Map<String, dynamic>>[
-        ...snapshot.farms.map((item) => item.toMap()),
-        farm.toMap(),
-      ],
-    );
+    await _saveList(_farmsKey, <Map<String, dynamic>>[
+      ...snapshot.farms.map((item) => item.toMap()),
+      farm.toMap(),
+    ]);
     return farm;
   }
 
@@ -237,19 +208,14 @@ class AtlasEnterprise24ARepository {
   }) async {
     final snapshot = await load();
     for (final membership in snapshot.memberships) {
-      if (membership.companyId == companyId &&
-          membership.userId == userId) {
+      if (membership.companyId == companyId && membership.userId == userId) {
         return membership;
       }
     }
 
     final now = DateTime.now();
     final membership = AtlasEnterpriseMembership(
-      id: _buildId(
-        'membership',
-        '$companyId-$userId',
-        now,
-      ),
+      id: _buildId('membership', '$companyId-$userId', now),
       userId: userId,
       userName: userName.trim(),
       email: email.trim(),
@@ -269,13 +235,10 @@ class AtlasEnterprise24ARepository {
       ),
     );
 
-    await _saveList(
-      _membershipsKey,
-      <Map<String, dynamic>>[
-        ...snapshot.memberships.map((item) => item.toMap()),
-        membership.toMap(),
-      ],
-    );
+    await _saveList(_membershipsKey, <Map<String, dynamic>>[
+      ...snapshot.memberships.map((item) => item.toMap()),
+      membership.toMap(),
+    ]);
     return membership;
   }
 
@@ -299,11 +262,7 @@ class AtlasEnterprise24ARepository {
     final link = AtlasConsultantCompanyLink(
       id: existingIndex >= 0
           ? snapshot.consultantLinks[existingIndex].id
-          : _buildId(
-              'consultant',
-              '$companyId-$consultantUserId',
-              now,
-            ),
+          : _buildId('consultant', '$companyId-$consultantUserId', now),
       consultantUserId: consultantUserId,
       consultantName: consultantName.trim(),
       companyId: companyId,
@@ -329,8 +288,7 @@ class AtlasEnterprise24ARepository {
       ),
     );
 
-    final links =
-        <AtlasConsultantCompanyLink>[...snapshot.consultantLinks];
+    final links = <AtlasConsultantCompanyLink>[...snapshot.consultantLinks];
     if (existingIndex >= 0) {
       links[existingIndex] = link;
     } else {
@@ -344,14 +302,10 @@ class AtlasEnterprise24ARepository {
     return link;
   }
 
-  Future<List<AtlasEnterpriseCompany>> companiesForUser(
-    String userId,
-  ) async {
+  Future<List<AtlasEnterpriseCompany>> companiesForUser(String userId) async {
     final snapshot = await load();
     final ids = snapshot.memberships
-        .where(
-          (item) => item.userId == userId && item.active,
-        )
+        .where((item) => item.userId == userId && item.active)
         .map((item) => item.companyId)
         .toSet();
 
@@ -364,15 +318,10 @@ class AtlasEnterprise24ARepository {
         .toList();
   }
 
-  Future<List<AtlasEnterpriseFarm>> farmsForCompany(
-    String companyId,
-  ) async {
+  Future<List<AtlasEnterpriseFarm>> farmsForCompany(String companyId) async {
     final snapshot = await load();
     return snapshot.farms
-        .where(
-          (item) =>
-              item.scope.companyId == companyId && item.active,
-        )
+        .where((item) => item.scope.companyId == companyId && item.active)
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
@@ -384,9 +333,7 @@ class AtlasEnterprise24ARepository {
     final snapshot = await load();
     final membership = snapshot.memberships.where(
       (item) =>
-          item.companyId == companyId &&
-          item.userId == userId &&
-          item.active,
+          item.companyId == companyId && item.userId == userId && item.active,
     );
 
     if (membership.isEmpty) {
@@ -395,10 +342,7 @@ class AtlasEnterprise24ARepository {
 
     final role = membership.first.role;
     final companyFarms = snapshot.farms
-        .where(
-          (item) =>
-              item.scope.companyId == companyId && item.active,
-        )
+        .where((item) => item.scope.companyId == companyId && item.active)
         .toList();
 
     if (role != AtlasEnterpriseMembershipRole.consultant) {
@@ -429,9 +373,7 @@ class AtlasEnterprise24ARepository {
       return companyFarms;
     }
 
-    return companyFarms
-        .where((item) => allowedIds.contains(item.id))
-        .toList();
+    return companyFarms.where((item) => allowedIds.contains(item.id)).toList();
   }
 
   Future<bool> canUserAccessCompany({
@@ -441,9 +383,7 @@ class AtlasEnterprise24ARepository {
     final snapshot = await load();
     return snapshot.memberships.any(
       (item) =>
-          item.userId == userId &&
-          item.companyId == companyId &&
-          item.active,
+          item.userId == userId && item.companyId == companyId && item.active,
     );
   }
 
@@ -459,8 +399,8 @@ class AtlasEnterprise24ARepository {
     return farms.any((item) => item.id == farmId);
   }
 
-  Future<(List<AtlasEnterpriseCompany>,
-      List<AtlasEnterpriseMembership>)> _bootstrapFromLegacy() async {
+  Future<(List<AtlasEnterpriseCompany>, List<AtlasEnterpriseMembership>)>
+  _bootstrapFromLegacy() async {
     try {
       final legacy = await AtlasEnterpriseRepository().load();
       final now = DateTime.now();
@@ -475,8 +415,7 @@ class AtlasEnterprise24ARepository {
           document: tenant.document,
           status: switch (tenant.status.name) {
             'trial' => AtlasEnterpriseCompanyStatus.trial,
-            'suspended' =>
-              AtlasEnterpriseCompanyStatus.suspended,
+            'suspended' => AtlasEnterpriseCompanyStatus.suspended,
             _ => AtlasEnterpriseCompanyStatus.active,
           },
           subscriptionPlan: tenant.plan.name,
@@ -503,16 +442,11 @@ class AtlasEnterprise24ARepository {
           role: switch (user.role.name) {
             'administrator' =>
               AtlasEnterpriseMembershipRole.companyAdministrator,
-            'consultant' =>
-              AtlasEnterpriseMembershipRole.consultant,
-            'veterinarian' =>
-              AtlasEnterpriseMembershipRole.veterinarian,
-            'technician' =>
-              AtlasEnterpriseMembershipRole.technician,
-            'employee' =>
-              AtlasEnterpriseMembershipRole.operator,
-            'producer' =>
-              AtlasEnterpriseMembershipRole.owner,
+            'consultant' => AtlasEnterpriseMembershipRole.consultant,
+            'veterinarian' => AtlasEnterpriseMembershipRole.veterinarian,
+            'technician' => AtlasEnterpriseMembershipRole.technician,
+            'employee' => AtlasEnterpriseMembershipRole.operator,
+            'producer' => AtlasEnterpriseMembershipRole.owner,
             _ => AtlasEnterpriseMembershipRole.viewer,
           },
           active: user.active,
@@ -561,8 +495,7 @@ class AtlasEnterprise24ARepository {
             userName: 'Administrador',
             email: 'administrador@atlas.local',
             companyId: companyId,
-            role:
-                AtlasEnterpriseMembershipRole.companyAdministrator,
+            role: AtlasEnterpriseMembershipRole.companyAdministrator,
             active: true,
             startedAt: now,
             endedAt: null,
@@ -600,9 +533,7 @@ class AtlasEnterprise24ARepository {
 
     try {
       return AtlasEnterpriseSession.fromMap(
-        Map<String, dynamic>.from(
-          jsonDecode(raw) as Map,
-        ),
+        Map<String, dynamic>.from(jsonDecode(raw) as Map),
       );
     } catch (_) {
       return null;
@@ -618,32 +549,18 @@ class AtlasEnterprise24ARepository {
 
     try {
       return (jsonDecode(raw) as List<dynamic>)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
-    return _preferences.setString(
-      key,
-      jsonEncode(values),
-    );
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
+    return _preferences.setString(key, jsonEncode(values));
   }
 
-  String _buildId(
-    String prefix,
-    String seed,
-    DateTime now,
-  ) {
+  String _buildId(String prefix, String seed, DateTime now) {
     final slug = seed
         .trim()
         .toLowerCase()

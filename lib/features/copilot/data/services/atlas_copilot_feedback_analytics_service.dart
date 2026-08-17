@@ -5,26 +5,19 @@ import 'package:projeto_atlas/features/dashboard/domain/services/atlas_copilot_s
 
 class AtlasCopilotFeedbackAnalyticsService {
   const AtlasCopilotFeedbackAnalyticsService({
-    this.historyStorage =
-        const AtlasCopilotHistoryStorageService(),
+    this.historyStorage = const AtlasCopilotHistoryStorageService(),
   });
 
-  final AtlasCopilotHistoryStorageService
-      historyStorage;
+  final AtlasCopilotHistoryStorageService historyStorage;
 
-  Future<AtlasCopilotFeedbackAnalytics>
-      buildAnalytics() async {
-    final summaries =
-        await historyStorage.loadConversationSummaries();
+  Future<AtlasCopilotFeedbackAnalytics> buildAnalytics() async {
+    final summaries = await historyStorage.loadConversationSummaries();
 
-    final intentAccumulator =
-        <AtlasCopilotIntent, _FeedbackAccumulator>{};
+    final intentAccumulator = <AtlasCopilotIntent, _FeedbackAccumulator>{};
 
-    final contextMetrics =
-        <AtlasCopilotContextFeedbackMetric>[];
+    final contextMetrics = <AtlasCopilotContextFeedbackMetric>[];
 
-    final recentFeedback =
-        <AtlasCopilotRecentFeedbackItem>[];
+    final recentFeedback = <AtlasCopilotRecentFeedbackItem>[];
 
     var totalMessages = 0;
     var evaluatedResponses = 0;
@@ -36,8 +29,7 @@ class AtlasCopilotFeedbackAnalyticsService {
         contextKey: summary.contextKey,
       );
 
-      final copilotMessages =
-          messages.where((message) {
+      final copilotMessages = messages.where((message) {
         return message.isCopilot;
       }).toList();
 
@@ -55,8 +47,7 @@ class AtlasCopilotFeedbackAnalyticsService {
 
         evaluatedResponses++;
 
-        if (feedback ==
-            AtlasCopilotMessageFeedback.useful) {
+        if (feedback == AtlasCopilotMessageFeedback.useful) {
           usefulResponses++;
           contextUseful++;
         } else {
@@ -64,19 +55,16 @@ class AtlasCopilotFeedbackAnalyticsService {
           contextNotUseful++;
         }
 
-        final intent =
-            message.intent ?? AtlasCopilotIntent.unknown;
+        final intent = message.intent ?? AtlasCopilotIntent.unknown;
 
-        final accumulator =
-            intentAccumulator.putIfAbsent(
+        final accumulator = intentAccumulator.putIfAbsent(
           intent,
           _FeedbackAccumulator.new,
         );
 
         accumulator.total++;
 
-        if (feedback ==
-            AtlasCopilotMessageFeedback.useful) {
+        if (feedback == AtlasCopilotMessageFeedback.useful) {
           accumulator.useful++;
         } else {
           accumulator.notUseful++;
@@ -93,8 +81,7 @@ class AtlasCopilotFeedbackAnalyticsService {
         );
       }
 
-      final contextTotal =
-          contextUseful + contextNotUseful;
+      final contextTotal = contextUseful + contextNotUseful;
 
       if (contextTotal > 0) {
         contextMetrics.add(
@@ -104,8 +91,7 @@ class AtlasCopilotFeedbackAnalyticsService {
             total: contextTotal,
             useful: contextUseful,
             notUseful: contextNotUseful,
-            approvalRate:
-                contextUseful / contextTotal * 100,
+            approvalRate: contextUseful / contextTotal * 100,
           ),
         );
       }
@@ -113,22 +99,17 @@ class AtlasCopilotFeedbackAnalyticsService {
 
     final intentMetrics =
         intentAccumulator.entries.map((entry) {
-      final total = entry.value.total;
+          final total = entry.value.total;
 
-      return AtlasCopilotIntentFeedbackMetric(
-        intent: entry.key,
-        total: total,
-        useful: entry.value.useful,
-        notUseful: entry.value.notUseful,
-        approvalRate: total == 0
-            ? 0
-            : entry.value.useful / total * 100,
-      );
-    }).toList()
-      ..sort(
-        (first, second) {
-          final rateComparison =
-              first.approvalRate.compareTo(
+          return AtlasCopilotIntentFeedbackMetric(
+            intent: entry.key,
+            total: total,
+            useful: entry.value.useful,
+            notUseful: entry.value.notUseful,
+            approvalRate: total == 0 ? 0 : entry.value.useful / total * 100,
+          );
+        }).toList()..sort((first, second) {
+          final rateComparison = first.approvalRate.compareTo(
             second.approvalRate,
           );
 
@@ -136,34 +117,21 @@ class AtlasCopilotFeedbackAnalyticsService {
             return rateComparison;
           }
 
-          return second.total.compareTo(
-            first.total,
-          );
-        },
-      );
+          return second.total.compareTo(first.total);
+        });
 
-    contextMetrics.sort(
-      (first, second) {
-        final rateComparison =
-            first.approvalRate.compareTo(
-          second.approvalRate,
-        );
+    contextMetrics.sort((first, second) {
+      final rateComparison = first.approvalRate.compareTo(second.approvalRate);
 
-        if (rateComparison != 0) {
-          return rateComparison;
-        }
+      if (rateComparison != 0) {
+        return rateComparison;
+      }
 
-        return second.total.compareTo(
-          first.total,
-        );
-      },
-    );
+      return second.total.compareTo(first.total);
+    });
 
     recentFeedback.sort(
-      (first, second) =>
-          second.createdAt.compareTo(
-        first.createdAt,
-      ),
+      (first, second) => second.createdAt.compareTo(first.createdAt),
     );
 
     return AtlasCopilotFeedbackAnalytics(
@@ -174,13 +142,10 @@ class AtlasCopilotFeedbackAnalyticsService {
       notUsefulResponses: notUsefulResponses,
       approvalRate: evaluatedResponses == 0
           ? 0
-          : usefulResponses /
-              evaluatedResponses *
-              100,
+          : usefulResponses / evaluatedResponses * 100,
       intentMetrics: intentMetrics,
       contextMetrics: contextMetrics,
-      recentFeedback:
-          recentFeedback.take(30).toList(),
+      recentFeedback: recentFeedback.take(30).toList(),
     );
   }
 }

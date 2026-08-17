@@ -9,14 +9,10 @@ class AtlasStrategicScenarioEngine {
   AtlasScenarioPortfolioAnalysis analyzeAll(
     List<AtlasStrategicScenario> scenarios,
   ) {
-    final items = scenarios
-        .map(analyze)
-        .toList()
+    final items = scenarios.map(analyze).toList()
       ..sort(
         (first, second) =>
-            second.netPresentValue.compareTo(
-          first.netPresentValue,
-        ),
+            second.netPresentValue.compareTo(first.netPresentValue),
       );
 
     return AtlasScenarioPortfolioAnalysis(
@@ -25,9 +21,7 @@ class AtlasStrategicScenarioEngine {
     );
   }
 
-  AtlasScenarioAnalysis analyze(
-    AtlasStrategicScenario scenario,
-  ) {
+  AtlasScenarioAnalysis analyze(AtlasStrategicScenario scenario) {
     final baseCashFlows = _cashFlows(
       scenario: scenario,
       revenueFactor: 1,
@@ -36,31 +30,25 @@ class AtlasStrategicScenarioEngine {
 
     final optimisticCashFlows = _cashFlows(
       scenario: scenario,
-      revenueFactor:
-          1 + scenario.priceSensitivityPercent / 100,
-      costFactor:
-          1 - scenario.costSensitivityPercent / 200,
+      revenueFactor: 1 + scenario.priceSensitivityPercent / 100,
+      costFactor: 1 - scenario.costSensitivityPercent / 200,
     );
 
     final pessimisticCashFlows = _cashFlows(
       scenario: scenario,
-      revenueFactor:
-          1 - scenario.priceSensitivityPercent / 100,
-      costFactor:
-          1 + scenario.costSensitivityPercent / 100,
+      revenueFactor: 1 - scenario.priceSensitivityPercent / 100,
+      costFactor: 1 + scenario.costSensitivityPercent / 100,
     );
 
-    final npv = _npv(
-      baseCashFlows,
-      scenario.discountRatePercent / 100,
-    );
+    final npv = _npv(baseCashFlows, scenario.discountRatePercent / 100);
 
     final irr = _irr(baseCashFlows);
     final totalInvestment =
-        scenario.initialInvestment +
-        scenario.workingCapital;
-    final totalNetGain =
-        baseCashFlows.fold<double>(0, (sum, item) => sum + item);
+        scenario.initialInvestment + scenario.workingCapital;
+    final totalNetGain = baseCashFlows.fold<double>(
+      0,
+      (sum, item) => sum + item,
+    );
     final roi = totalInvestment <= 0
         ? 0.0
         : totalNetGain / totalInvestment * 100;
@@ -124,21 +112,14 @@ class AtlasStrategicScenarioEngine {
       -(scenario.initialInvestment + scenario.workingCapital),
     ];
 
-    for (var year = 1;
-        year <= scenario.horizonYears;
-        year++) {
-      final maturityFactor =
-          math.min(1.0, 0.55 + year * 0.15);
+    for (var year = 1; year <= scenario.horizonYears; year++) {
+      final maturityFactor = math.min(1.0, 0.55 + year * 0.15);
       var flow =
-          scenario.annualAdditionalRevenue *
-              revenueFactor *
-              maturityFactor -
-          scenario.annualAdditionalCost *
-              costFactor;
+          scenario.annualAdditionalRevenue * revenueFactor * maturityFactor -
+          scenario.annualAdditionalCost * costFactor;
 
       if (year == scenario.horizonYears) {
-        flow += scenario.residualValue +
-            scenario.workingCapital;
+        flow += scenario.residualValue + scenario.workingCapital;
       }
 
       flows.add(flow);
@@ -147,17 +128,11 @@ class AtlasStrategicScenarioEngine {
     return flows;
   }
 
-  double _npv(
-    List<double> cashFlows,
-    double rate,
-  ) {
+  double _npv(List<double> cashFlows, double rate) {
     var result = 0.0;
 
-    for (var year = 0;
-        year < cashFlows.length;
-        year++) {
-      result += cashFlows[year] /
-          math.pow(1 + rate, year);
+    for (var year = 0; year < cashFlows.length; year++) {
+      result += cashFlows[year] / math.pow(1 + rate, year);
     }
 
     return result;
@@ -199,9 +174,7 @@ class AtlasStrategicScenarioEngine {
       return 0;
     }
 
-    for (var year = 1;
-        year < cashFlows.length;
-        year++) {
+    for (var year = 1; year < cashFlows.length; year++) {
       final previous = accumulated;
       accumulated += cashFlows[year];
 
@@ -212,8 +185,7 @@ class AtlasStrategicScenarioEngine {
           return year.toDouble();
         }
 
-        return (year - 1) +
-            (-previous / annualFlow);
+        return (year - 1) + (-previous / annualFlow);
       }
     }
 
@@ -228,17 +200,12 @@ class AtlasStrategicScenarioEngine {
   }) {
     final downsideProtection = baseNpv == 0
         ? 0.0
-        : (
-            100 -
-            ((baseNpv - pessimisticNpv).abs() /
-                    baseNpv.abs() *
-                100)
-          ).clamp(0.0, 100.0);
+        : (100 - ((baseNpv - pessimisticNpv).abs() / baseNpv.abs() * 100))
+              .clamp(0.0, 100.0);
 
-    return (
-      (100 - risk) * 0.60 +
-      downsideProtection * 0.40
-    ).clamp(0.0, 100.0).toDouble();
+    return ((100 - risk) * 0.60 + downsideProtection * 0.40)
+        .clamp(0.0, 100.0)
+        .toDouble();
   }
 
   AtlasScenarioClassification _classification({
@@ -248,16 +215,11 @@ class AtlasStrategicScenarioEngine {
     required double payback,
     required int horizonYears,
   }) {
-    if (npv > 0 &&
-        roi >= 25 &&
-        risk <= 55 &&
-        payback <= horizonYears) {
+    if (npv > 0 && roi >= 25 && risk <= 55 && payback <= horizonYears) {
       return AtlasScenarioClassification.recommended;
     }
 
-    if (npv > 0 &&
-        roi >= 12 &&
-        risk <= 75) {
+    if (npv > 0 && roi >= 12 && risk <= 75) {
       return AtlasScenarioClassification.recommendedInPhases;
     }
 

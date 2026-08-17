@@ -8,8 +8,7 @@ import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intellige
 class AtlasCopilotController extends ChangeNotifier {
   AtlasCopilotController({
     required this.service,
-    this.historyStorage =
-        const AtlasCopilotHistoryStorageService(),
+    this.historyStorage = const AtlasCopilotHistoryStorageService(),
     this.operationBrief,
     this.farmIntelligence,
     this.consultantName = 'Gabriel',
@@ -28,27 +27,21 @@ class AtlasCopilotController extends ChangeNotifier {
   bool _isProcessing = false;
   String? _errorMessage;
 
-  List<AtlasCopilotMessage> get messages =>
-      List.unmodifiable(_messages);
+  List<AtlasCopilotMessage> get messages => List.unmodifiable(_messages);
 
   bool get isInitializing => _isInitializing;
   bool get isProcessing => _isProcessing;
   String? get errorMessage => _errorMessage;
 
-  bool get hasFarmContext =>
-      farmIntelligence != null;
+  bool get hasFarmContext => farmIntelligence != null;
 
-  int get usefulFeedbackCount =>
-      _messages.where((message) {
-        return message.feedback ==
-            AtlasCopilotMessageFeedback.useful;
-      }).length;
+  int get usefulFeedbackCount => _messages.where((message) {
+    return message.feedback == AtlasCopilotMessageFeedback.useful;
+  }).length;
 
-  int get notUsefulFeedbackCount =>
-      _messages.where((message) {
-        return message.feedback ==
-            AtlasCopilotMessageFeedback.notUseful;
-      }).length;
+  int get notUsefulFeedbackCount => _messages.where((message) {
+    return message.feedback == AtlasCopilotMessageFeedback.notUseful;
+  }).length;
 
   String get contextLabel {
     if (farmIntelligence != null) {
@@ -86,10 +79,7 @@ class AtlasCopilotController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final savedMessages =
-          await historyStorage.load(
-        contextKey: contextKey,
-      );
+      final savedMessages = await historyStorage.load(contextKey: contextKey);
 
       _messages
         ..clear()
@@ -109,12 +99,11 @@ class AtlasCopilotController extends ChangeNotifier {
   }
 
   void _addInitialMessage() {
-    final contextDescription =
-        farmIntelligence != null
-            ? 'Estou analisando os dados da ${farmIntelligence!.farmName}.'
-            : operationBrief != null
-                ? 'Estou analisando a operação consolidada.'
-                : 'Ainda não recebi dados suficientes da operação.';
+    final contextDescription = farmIntelligence != null
+        ? 'Estou analisando os dados da ${farmIntelligence!.farmName}.'
+        : operationBrief != null
+        ? 'Estou analisando a operação consolidada.'
+        : 'Ainda não recebi dados suficientes da operação.';
 
     _messages.add(
       AtlasCopilotMessage(
@@ -130,14 +119,10 @@ class AtlasCopilotController extends ChangeNotifier {
     );
   }
 
-  Future<void> sendQuestion(
-    String question,
-  ) async {
+  Future<void> sendQuestion(String question) async {
     final normalized = question.trim();
 
-    if (normalized.isEmpty ||
-        _isProcessing ||
-        _isInitializing) {
+    if (normalized.isEmpty || _isProcessing || _isInitializing) {
       return;
     }
 
@@ -158,9 +143,7 @@ class AtlasCopilotController extends ChangeNotifier {
     await _saveHistory();
 
     try {
-      await Future<void>.delayed(
-        const Duration(milliseconds: 350),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 350));
 
       final response = service.answer(
         question: normalized,
@@ -183,8 +166,7 @@ class AtlasCopilotController extends ChangeNotifier {
 
       await _saveHistory();
     } catch (_) {
-      _errorMessage =
-          'Não foi possível processar a pergunta. Tente novamente.';
+      _errorMessage = 'Não foi possível processar a pergunta. Tente novamente.';
 
       _messages.add(
         AtlasCopilotMessage(
@@ -206,9 +188,7 @@ class AtlasCopilotController extends ChangeNotifier {
     required String messageId,
     required AtlasCopilotMessageFeedback feedback,
   }) async {
-    final index = _messages.indexWhere(
-      (message) => message.id == messageId,
-    );
+    final index = _messages.indexWhere((message) => message.id == messageId);
 
     if (index < 0 || !_messages[index].isCopilot) {
       return;
@@ -217,22 +197,16 @@ class AtlasCopilotController extends ChangeNotifier {
     final current = _messages[index];
 
     if (current.feedback == feedback) {
-      _messages[index] = current.copyWith(
-        clearFeedback: true,
-      );
+      _messages[index] = current.copyWith(clearFeedback: true);
     } else {
-      _messages[index] = current.copyWith(
-        feedback: feedback,
-      );
+      _messages[index] = current.copyWith(feedback: feedback);
     }
 
     notifyListeners();
     await _saveHistory();
   }
 
-  Future<void> selectSuggestion(
-    String suggestion,
-  ) {
+  Future<void> selectSuggestion(String suggestion) {
     return sendQuestion(suggestion);
   }
 
@@ -244,9 +218,7 @@ class AtlasCopilotController extends ChangeNotifier {
     _messages.clear();
     _errorMessage = null;
 
-    await historyStorage.clear(
-      contextKey: contextKey,
-    );
+    await historyStorage.clear(contextKey: contextKey);
 
     _addInitialMessage();
     await _saveHistory();
@@ -255,10 +227,7 @@ class AtlasCopilotController extends ChangeNotifier {
   }
 
   Future<void> reloadHistory() async {
-    final savedMessages =
-        await historyStorage.load(
-      contextKey: contextKey,
-    );
+    final savedMessages = await historyStorage.load(contextKey: contextKey);
 
     _messages
       ..clear()
@@ -281,8 +250,6 @@ class AtlasCopilotController extends ChangeNotifier {
   }
 
   String _newId() {
-    return DateTime.now()
-        .microsecondsSinceEpoch
-        .toString();
+    return DateTime.now().microsecondsSinceEpoch.toString();
   }
 }

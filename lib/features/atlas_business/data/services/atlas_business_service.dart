@@ -3,7 +3,7 @@ import '../../domain/models/atlas_business_dashboard_data.dart';
 
 class AtlasBusinessService {
   AtlasBusinessService({AtlasHttpClient? client})
-      : _client = client ?? AtlasHttpClient();
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
@@ -55,10 +55,7 @@ class AtlasBusinessService {
     return response.asMapList();
   }
 
-  Future<Map<String, dynamic>> bi({
-    String? farmId,
-    int days = 365,
-  }) async {
+  Future<Map<String, dynamic>> bi({String? farmId, int days = 365}) async {
     final normalizedFarmId = farmId?.trim() ?? '';
 
     final response = await _client.send(
@@ -74,10 +71,7 @@ class AtlasBusinessService {
   }
 
   Future<Map<String, dynamic>> productReadiness() async {
-    final response = await _client.send(
-      'GET',
-      '/business/product/readiness',
-    );
+    final response = await _client.send('GET', '/business/product/readiness');
 
     return response.asMap();
   }

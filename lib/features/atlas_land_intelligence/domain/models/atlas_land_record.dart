@@ -1,51 +1,47 @@
-enum AtlasLandModule {
-  genetics,
-  pasture,
-  agriculture,
-}
+enum AtlasLandModule { genetics, pasture, agriculture }
 
 extension AtlasLandModuleX on AtlasLandModule {
   String get code => switch (this) {
-        AtlasLandModule.genetics => 'genetics',
-        AtlasLandModule.pasture => 'pasture',
-        AtlasLandModule.agriculture => 'agriculture',
-      };
+    AtlasLandModule.genetics => 'genetics',
+    AtlasLandModule.pasture => 'pasture',
+    AtlasLandModule.agriculture => 'agriculture',
+  };
 
   String get title => switch (this) {
-        AtlasLandModule.genetics => 'Genética Enterprise',
-        AtlasLandModule.pasture => 'Pastagens Enterprise',
-        AtlasLandModule.agriculture => 'Agricultura Integrada',
-      };
+    AtlasLandModule.genetics => 'Genética Enterprise',
+    AtlasLandModule.pasture => 'Pastagens Enterprise',
+    AtlasLandModule.agriculture => 'Agricultura Integrada',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasLandModule.genetics => 'Pacote 41',
-        AtlasLandModule.pasture => 'Pacote 42',
-        AtlasLandModule.agriculture => 'Pacote 43',
-      };
+    AtlasLandModule.genetics => 'Pacote 41',
+    AtlasLandModule.pasture => 'Pacote 42',
+    AtlasLandModule.agriculture => 'Pacote 43',
+  };
 
   List<String> get features => switch (this) {
-        AtlasLandModule.genetics => const [
-            'Cadastro genético completo',
-            'Acasalamento inteligente',
-            'Seleção genética automática',
-            'Projeção genética das progênies',
-            'Ranking genético do rebanho',
-          ],
-        AtlasLandModule.pasture => const [
-            'Cadastro de piquetes',
-            'Taxa de lotação',
-            'Oferta de forragem',
-            'Rotação de pastagens',
-            'IA para manejo de pasto',
-          ],
-        AtlasLandModule.agriculture => const [
-            'Cadastro de culturas',
-            'Planejamento agrícola',
-            'Custos agrícolas',
-            'Integração lavoura-pecuária',
-            'Calendário agrícola',
-          ],
-      };
+    AtlasLandModule.genetics => const [
+      'Cadastro genético completo',
+      'Acasalamento inteligente',
+      'Seleção genética automática',
+      'Projeção genética das progênies',
+      'Ranking genético do rebanho',
+    ],
+    AtlasLandModule.pasture => const [
+      'Cadastro de piquetes',
+      'Taxa de lotação',
+      'Oferta de forragem',
+      'Rotação de pastagens',
+      'IA para manejo de pasto',
+    ],
+    AtlasLandModule.agriculture => const [
+      'Cadastro de culturas',
+      'Planejamento agrícola',
+      'Custos agrícolas',
+      'Integração lavoura-pecuária',
+      'Calendário agrícola',
+    ],
+  };
 }
 
 class AtlasLandRecord {
@@ -77,8 +73,7 @@ class AtlasLandRecord {
   final String createdAt;
   final String updatedAt;
 
-  bool get isCritical =>
-      status == 'Crítico' || status == 'Atenção';
+  bool get isCritical => status == 'Crítico' || status == 'Atenção';
 
   bool get isCompleted => status == 'Concluído';
 
@@ -144,10 +139,8 @@ class AtlasLandRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

@@ -9,9 +9,9 @@ import 'package:projeto_atlas/core/operational_intelligence/atlas_command_center
 
 class AtlasCommandCenterRuntime {
   AtlasCommandCenterRuntime._()
-      : cacheService = AtlasCommandCenterCacheService(),
-        versionService = AtlasCommandCenterVersionService(),
-        store = AtlasCommandCenterStore() {
+    : cacheService = AtlasCommandCenterCacheService(),
+      versionService = AtlasCommandCenterVersionService(),
+      store = AtlasCommandCenterStore() {
     reactiveRuntime = AtlasCommandCenterReactiveRuntime(
       eventBus: AtlasEventBus.instance,
       cacheService: cacheService,

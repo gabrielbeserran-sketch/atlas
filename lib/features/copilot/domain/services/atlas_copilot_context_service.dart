@@ -99,7 +99,8 @@ class AtlasCopilotContextService {
         .clamp(0.0, 100.0)
         .toDouble();
 
-    final confidence = executiveBrainData?.confidencePercent ??
+    final confidence =
+        executiveBrainData?.confidencePercent ??
         (hasFarmContext || hasOperationBrief ? 78.0 : 42.0);
 
     return AtlasCopilotContextSnapshot(
@@ -107,8 +108,8 @@ class AtlasCopilotContextService {
       modeLabel: hasFarmContext
           ? 'Consultoria por propriedade'
           : hasOperationBrief
-              ? 'Consultoria consolidada'
-              : 'Modo exploratório',
+          ? 'Consultoria consolidada'
+          : 'Modo exploratório',
       contextScore: contextScore,
       confidencePercent: confidence.clamp(0.0, 100.0).toDouble(),
       connectedSources: connectedSources,

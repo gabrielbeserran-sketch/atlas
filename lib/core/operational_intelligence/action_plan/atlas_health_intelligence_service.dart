@@ -9,21 +9,14 @@ class AtlasHealthIntelligenceService {
   static final AtlasHealthIntelligenceService instance =
       AtlasHealthIntelligenceService._();
 
-  static const String _protocolsKey =
-      'atlas_health_protocols_v1';
-  static const String _medicationsKey =
-      'atlas_health_medications_v1';
-  static const String _eventsKey =
-      'atlas_health_events_v1';
+  static const String _protocolsKey = 'atlas_health_protocols_v1';
+  static const String _medicationsKey = 'atlas_health_medications_v1';
+  static const String _eventsKey = 'atlas_health_events_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasHealthProtocol>> loadProtocols({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_protocolsKey);
+  Future<List<AtlasHealthProtocol>> loadProtocols({String? farmName}) async {
+    final encoded = await _preferences.getString(_protocolsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasHealthProtocol>[];
     }
@@ -45,12 +38,9 @@ class AtlasHealthIntelligenceService {
     }
   }
 
-  Future<void> saveProtocol(
-    AtlasHealthProtocol protocol,
-  ) async {
+  Future<void> saveProtocol(AtlasHealthProtocol protocol) async {
     final all = await _loadAllProtocols();
-    final index =
-        all.indexWhere((item) => item.id == protocol.id);
+    final index = all.indexWhere((item) => item.id == protocol.id);
     if (index == -1) {
       all.add(protocol);
     } else {
@@ -62,11 +52,8 @@ class AtlasHealthIntelligenceService {
     );
   }
 
-  Future<List<AtlasMedication>> loadMedications({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_medicationsKey);
+  Future<List<AtlasMedication>> loadMedications({String? farmName}) async {
+    final encoded = await _preferences.getString(_medicationsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasMedication>[];
     }
@@ -88,12 +75,9 @@ class AtlasHealthIntelligenceService {
     }
   }
 
-  Future<void> saveMedication(
-    AtlasMedication medication,
-  ) async {
+  Future<void> saveMedication(AtlasMedication medication) async {
     final all = await _loadAllMedications();
-    final index =
-        all.indexWhere((item) => item.id == medication.id);
+    final index = all.indexWhere((item) => item.id == medication.id);
     if (index == -1) {
       all.add(medication);
     } else {
@@ -105,11 +89,8 @@ class AtlasHealthIntelligenceService {
     );
   }
 
-  Future<List<AtlasHealthEvent>> loadEvents({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_eventsKey);
+  Future<List<AtlasHealthEvent>> loadEvents({String? farmName}) async {
+    final encoded = await _preferences.getString(_eventsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasHealthEvent>[];
     }
@@ -126,9 +107,7 @@ class AtlasHealthIntelligenceService {
         farmName,
         (item) => item.farmName,
       );
-      items.sort(
-        (a, b) => b.occurredAt.compareTo(a.occurredAt),
-      );
+      items.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
       return items;
     } catch (_) {
       return <AtlasHealthEvent>[];
@@ -137,8 +116,7 @@ class AtlasHealthIntelligenceService {
 
   Future<void> saveEvent(AtlasHealthEvent event) async {
     final all = await _loadAllEvents();
-    final index =
-        all.indexWhere((item) => item.id == event.id);
+    final index = all.indexWhere((item) => item.id == event.id);
     if (index == -1) {
       all.add(event);
     } else {
@@ -159,19 +137,12 @@ class AtlasHealthIntelligenceService {
         .map((event) => event.animalId)
         .where((value) => value.trim().isNotEmpty)
         .toSet();
-    final denominator =
-        animalIds.isEmpty ? events.length : animalIds.length;
+    final denominator = animalIds.isEmpty ? events.length : animalIds.length;
     final morbidity = events
-        .where(
-          (event) =>
-              event.type == AtlasHealthEventType.morbidity,
-        )
+        .where((event) => event.type == AtlasHealthEventType.morbidity)
         .length;
     final mortality = events
-        .where(
-          (event) =>
-              event.type == AtlasHealthEventType.mortality,
-        )
+        .where((event) => event.type == AtlasHealthEventType.mortality)
         .length;
     final alerts = buildAlerts(
       events: events,
@@ -182,18 +153,10 @@ class AtlasHealthIntelligenceService {
     return AtlasHealthSummary(
       totalEvents: events.length,
       vaccinations: events
-          .where(
-            (event) =>
-                event.type ==
-                AtlasHealthEventType.vaccination,
-          )
+          .where((event) => event.type == AtlasHealthEventType.vaccination)
           .length,
       treatments: events
-          .where(
-            (event) =>
-                event.type ==
-                AtlasHealthEventType.treatment,
-          )
+          .where((event) => event.type == AtlasHealthEventType.treatment)
           .length,
       morbidityCases: morbidity,
       mortalityCases: mortality,
@@ -203,10 +166,7 @@ class AtlasHealthIntelligenceService {
       mortalityRatePercent: denominator == 0
           ? 0
           : mortality / denominator * 100,
-      totalCost: events.fold<double>(
-        0,
-        (total, event) => total + event.cost,
-      ),
+      totalCost: events.fold<double>(0, (total, event) => total + event.cost),
       activeAlerts: alerts.length,
     );
   }
@@ -219,35 +179,23 @@ class AtlasHealthIntelligenceService {
     final alerts = <String>[];
     final now = DateTime.now();
 
-    for (final protocol in protocols.where(
-      (item) => item.active,
-    )) {
+    for (final protocol in protocols.where((item) => item.active)) {
       final days = protocol.nextDueAt.difference(now).inDays;
       if (days < 0) {
-        alerts.add(
-          'Protocolo "${protocol.name}" está atrasado.',
-        );
+        alerts.add('Protocolo "${protocol.name}" está atrasado.');
       } else if (days <= 15) {
-        alerts.add(
-          'Protocolo "${protocol.name}" vence em $days dia(s).',
-        );
+        alerts.add('Protocolo "${protocol.name}" vence em $days dia(s).');
       }
     }
 
     for (final medication in medications) {
       if (medication.isExpired) {
-        alerts.add(
-          'Medicamento "${medication.name}" está vencido.',
-        );
+        alerts.add('Medicamento "${medication.name}" está vencido.');
       } else if (medication.expiresSoon) {
-        alerts.add(
-          'Medicamento "${medication.name}" vence em até 30 dias.',
-        );
+        alerts.add('Medicamento "${medication.name}" vence em até 30 dias.');
       }
       if (medication.quantity <= 0) {
-        alerts.add(
-          'Medicamento "${medication.name}" está sem estoque.',
-        );
+        alerts.add('Medicamento "${medication.name}" está sem estoque.');
       }
     }
 
@@ -256,22 +204,16 @@ class AtlasHealthIntelligenceService {
           now.difference(event.occurredAt).inDays <= 30;
     }).length;
     if (recentMortality >= 2) {
-      alerts.add(
-        '$recentMortality mortes registradas nos últimos 30 dias.',
-      );
+      alerts.add('$recentMortality mortes registradas nos últimos 30 dias.');
     }
 
     if (alerts.isEmpty) {
-      alerts.add(
-        'Nenhum alerta sanitário crítico no momento.',
-      );
+      alerts.add('Nenhum alerta sanitário crítico no momento.');
     }
     return alerts;
   }
 
-  Map<String, int> epidemiologyByDiagnosis(
-    List<AtlasHealthEvent> events,
-  ) {
+  Map<String, int> epidemiologyByDiagnosis(List<AtlasHealthEvent> events) {
     final result = <String, int>{};
     for (final event in events) {
       final key = event.diagnosis.trim().isEmpty
@@ -282,25 +224,21 @@ class AtlasHealthIntelligenceService {
     return result;
   }
 
-  Map<String, int> healthMapByLocation(
-    List<AtlasHealthEvent> events,
-  ) {
+  Map<String, int> healthMapByLocation(List<AtlasHealthEvent> events) {
     final result = <String, int>{};
     for (final event in events) {
       final location = event.paddockName.trim().isNotEmpty
           ? event.paddockName.trim()
           : event.lotName.trim().isNotEmpty
-              ? event.lotName.trim()
-              : 'Local não informado';
+          ? event.lotName.trim()
+          : 'Local não informado';
       result[location] = (result[location] ?? 0) + 1;
     }
     return result;
   }
 
-  Future<List<AtlasHealthProtocol>>
-      _loadAllProtocols() async {
-    final encoded =
-        await _preferences.getString(_protocolsKey);
+  Future<List<AtlasHealthProtocol>> _loadAllProtocols() async {
+    final encoded = await _preferences.getString(_protocolsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasHealthProtocol>[];
     }
@@ -318,10 +256,8 @@ class AtlasHealthIntelligenceService {
     }
   }
 
-  Future<List<AtlasMedication>>
-      _loadAllMedications() async {
-    final encoded =
-        await _preferences.getString(_medicationsKey);
+  Future<List<AtlasMedication>> _loadAllMedications() async {
+    final encoded = await _preferences.getString(_medicationsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasMedication>[];
     }
@@ -329,9 +265,8 @@ class AtlasHealthIntelligenceService {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
           .map(
-            (item) => AtlasMedication.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasMedication.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {
@@ -339,10 +274,8 @@ class AtlasHealthIntelligenceService {
     }
   }
 
-  Future<List<AtlasHealthEvent>>
-      _loadAllEvents() async {
-    final encoded =
-        await _preferences.getString(_eventsKey);
+  Future<List<AtlasHealthEvent>> _loadAllEvents() async {
+    final encoded = await _preferences.getString(_eventsKey);
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasHealthEvent>[];
     }
@@ -370,8 +303,7 @@ class AtlasHealthIntelligenceService {
       return items;
     }
     return items.where((item) {
-      return readFarm(item)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(item)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

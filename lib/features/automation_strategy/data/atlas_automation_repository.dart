@@ -1,9 +1,8 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasAutomationRepository {
   AtlasAutomationRepository({AtlasHttpClient? client})
-      : _client = client ?? AtlasHttpClient();
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 

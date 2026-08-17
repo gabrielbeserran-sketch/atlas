@@ -6,19 +6,14 @@ class AtlasCommandCenterScope extends InheritedNotifier {
     required super.child,
     AtlasCommandCenterRuntime? runtime,
     super.key,
-  })  : runtime = runtime ?? AtlasCommandCenterRuntime.instance,
-        super(
-          notifier:
-              (runtime ?? AtlasCommandCenterRuntime.instance).store,
-        );
+  }) : runtime = runtime ?? AtlasCommandCenterRuntime.instance,
+       super(notifier: (runtime ?? AtlasCommandCenterRuntime.instance).store);
 
   final AtlasCommandCenterRuntime runtime;
 
-  static AtlasCommandCenterRuntime of(
-    BuildContext context,
-  ) {
-    final scope = context.dependOnInheritedWidgetOfExactType<
-        AtlasCommandCenterScope>();
+  static AtlasCommandCenterRuntime of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<AtlasCommandCenterScope>();
 
     assert(
       scope != null,
@@ -28,12 +23,9 @@ class AtlasCommandCenterScope extends InheritedNotifier {
     return scope!.runtime;
   }
 
-  static AtlasCommandCenterRuntime? maybeOf(
-    BuildContext context,
-  ) {
+  static AtlasCommandCenterRuntime? maybeOf(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<
-            AtlasCommandCenterScope>()
+        .dependOnInheritedWidgetOfExactType<AtlasCommandCenterScope>()
         ?.runtime;
   }
 }

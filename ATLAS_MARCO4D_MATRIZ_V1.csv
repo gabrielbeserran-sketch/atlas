@@ -1,0 +1,21 @@
+﻿module,layer,path,required_markers,forbidden_markers,disposition,note,exists,missing_markers,forbidden_markers_found,contract_ok
+Fazendas,service,lib/features/farm/data/services/farm_storage_service.dart,"('/farms',)",(),v1_remote_cache,,True,,,True
+Detalhes da Fazenda,screen,lib/features/farm/presentation/screens/farm_detail_screen.dart,(),"('atlas_predictive_scenario_storage_service.dart', 'predictive/domain/models/atlas_predictive_scenario.dart')",v1_remote,,True,,,True
+Rebanho,service,lib/features/herd/data/services/herd_storage_service.dart,"('/farms',)",(),v1_remote_cache,,True,,,True
+Animais,cache,lib/features/animal/data/services/animal_storage_service.dart,"('AnimalEnterpriseService', '/livestock/lots')",(),v1_remote_cache,,True,,,True
+Animais,remote,lib/features/animal/data/services/animal_enterprise_service.dart,"('/livestock/animals', 'POST', 'PATCH', 'DELETE')",(),v1_remote,,True,,,True
+Central do Animal,screen,lib/features/animal/presentation/screens/animal_detail_screen.dart,"('AnimalPhotoGalleryScreen', 'AnimalDocumentListScreen')",(),v1_remote,,True,,,True
+Agenda,service,lib/features/farm_agenda/data/services/farm_agenda_storage_service.dart,"('/operations/tasks', 'PATCH', 'cancelled', '_fetchRemoteTasks')",(),v1_remote_cache,,True,,,True
+Financeiro,service,lib/features/farm_finance/data/services/farm_finance_storage_service.dart,"('/livestock/finance/v2', 'PATCH', 'DELETE')",(),v1_remote_cache,,True,,,True
+Estoque,service,lib/features/farm_inventory/data/services/farm_inventory_storage_service.dart,"('/livestock/inventory/products/v2', '/movements/v2', 'PATCH', 'DELETE')",(),v1_remote_cache,,True,,,True
+Piquetes,service,lib/features/paddock/data/services/paddock_storage_service.dart,"('/livestock/paddocks', 'PATCH', 'DELETE')",(),v1_remote,,True,,,True
+Nutrição,service,lib/features/nutrition/data/services/nutrition_storage_service.dart,"('/livestock/nutrition/plans', 'PATCH', 'DELETE')",(),v1_remote_cache,,True,,,True
+Reprodução,backend,backend/app/routers/livestock.py,"('/animals/{animal_id}/reproduction', 'reproduction_event', 'expected_date')",(),v1_remote,,True,,,True
+Sanidade,backend,backend/app/routers/livestock.py,"('/health', 'health_event', 'health_event_reversal')",(),v1_remote,,True,,,True
+Pesagens,backend,backend/app/routers/livestock.py,"('/weights',)",(),v1_remote,,True,,,True
+Genealogia,backend,backend/app/routers/animals.py,"('genealogy',)",(),v1_remote,,True,,,True
+Movimentações,backend,backend/app/routers/livestock.py,"('movement',)",(),v1_remote,,True,,,True
+Fotos,attachment,lib/features/animal_photo/data/services/animal_photo_storage_service.dart,"('AnimalMediaRemoteService', '_remote.list', '_remote.create', 'atlas_animal_photos_cache_')",(),v1_remote_cache,Backend animal-media é autoridade; cache local é subordinado.,True,,,True
+Documentos,attachment,lib/features/animal_document/data/services/animal_document_storage_service.dart,"('AnimalMediaRemoteService', '_remote.list', '_remote.create', 'atlas_animal_documents_cache_')",(),v1_remote_cache,Backend animal-media é autoridade; cache local é subordinado.,True,,,True
+Documentos,platform,lib/features/animal_document/presentation/screens/animal_document_list_screen.dart,"('AtlasExternalOpenService.open',)","(""Process.start('cmd'"",)",v1_android,Abertura multiplataforma; Android usa FileProvider.,True,,,True
+Fotos,platform,lib/features/animal_photo/presentation/screens/animal_photo_form_screen.dart,"('ImageSource.gallery', 'ImageSource.camera', 'retrieveLostData')","('Caminho da imagem',)",v1_android,Android usa seletor de mídia/câmera; caminho manual foi removido.,True,,,True

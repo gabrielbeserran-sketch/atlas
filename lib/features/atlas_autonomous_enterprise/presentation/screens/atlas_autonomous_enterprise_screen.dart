@@ -30,8 +30,7 @@ class _AtlasAutonomousEnterpriseScreenState
     extends State<AtlasAutonomousEnterpriseScreen> {
   final AtlasAutonomousEnterpriseStorageService storage =
       AtlasAutonomousEnterpriseStorageService();
-  final AtlasAutonomousEnterpriseAnalyticsService
-      analyticsService =
+  final AtlasAutonomousEnterpriseAnalyticsService analyticsService =
       const AtlasAutonomousEnterpriseAnalyticsService();
 
   late AtlasAutonomousEnterpriseModule selectedModule;
@@ -77,31 +76,26 @@ class _AtlasAutonomousEnterpriseScreenState
   }
 
   List<AtlasAutonomousEnterpriseRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasAutonomousEnterpriseRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasAutonomousEnterpriseRecord>(
+  Future<void> openForm([AtlasAutonomousEnterpriseRecord? current]) async {
+    final result = await showDialog<AtlasAutonomousEnterpriseRecord>(
       context: context,
-      builder: (context) => _AutonomousEnterpriseForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _AutonomousEnterpriseForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +109,7 @@ class _AtlasAutonomousEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasAutonomousEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasAutonomousEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +117,11 @@ class _AtlasAutonomousEnterpriseScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -192,9 +182,7 @@ class _AtlasAutonomousEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Camada final de autonomia e produção',
-                          ),
+                          title: Text('Camada final de autonomia e produção'),
                           subtitle: Text(
                             'Decisões automáticas de alto impacto exigem aprovação humana. '
                             'Publicações reais dependem de infraestrutura, segurança e testes completos.',
@@ -277,8 +265,7 @@ class _AtlasAutonomousEnterpriseScreenState
                             value:
                                 'R\$ ${analytics.financialImpact.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Impacto consolidado',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -311,12 +298,8 @@ class _AtlasAutonomousEnterpriseScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira decisão ou validação.',
                             ),
@@ -327,8 +310,7 @@ class _AtlasAutonomousEnterpriseScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -342,14 +324,10 @@ class _AtlasAutonomousEnterpriseScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasAutonomousEnterpriseModule selected;
-  final ValueChanged<AtlasAutonomousEnterpriseModule>
-      onSelected;
+  final ValueChanged<AtlasAutonomousEnterpriseModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -359,22 +337,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasAutonomousEnterpriseModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasAutonomousEnterpriseModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor: active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -397,13 +374,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -422,13 +401,13 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Bloqueado' || 'Falhou' || 'Crítico' ||
-      'Rollback' =>
-        Colors.red.shade800,
+      'Bloqueado' || 'Falhou' || 'Crítico' || 'Rollback' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Aprovado' || 'Em execução' || 'Publicado' ||
-      'Concluído' || 'Monitorado' =>
-        Colors.green.shade800,
+      'Aprovado' ||
+      'Em execução' ||
+      'Publicado' ||
+      'Concluído' ||
+      'Monitorado' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
@@ -463,10 +442,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _AutonomousEnterpriseForm extends StatefulWidget {
-  const _AutonomousEnterpriseForm({
-    required this.module,
-    this.current,
-  });
+  const _AutonomousEnterpriseForm({required this.module, this.current});
 
   final AtlasAutonomousEnterpriseModule module;
   final AtlasAutonomousEnterpriseRecord? current;
@@ -476,8 +452,7 @@ class _AutonomousEnterpriseForm extends StatefulWidget {
       _AutonomousEnterpriseFormState();
 }
 
-class _AutonomousEnterpriseFormState
-    extends State<_AutonomousEnterpriseForm> {
+class _AutonomousEnterpriseFormState extends State<_AutonomousEnterpriseForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -508,12 +483,10 @@ class _AutonomousEnterpriseFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasAutonomousDate(DateTime.now()),
+      text: current?.date ?? formatAtlasAutonomousDate(DateTime.now()),
     );
     owner = TextEditingController(text: current?.owner ?? '');
-    externalId =
-        TextEditingController(text: current?.externalId ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
     priority = TextEditingController(
       text: current == null || current.priority == 0
           ? ''
@@ -540,9 +513,7 @@ class _AutonomousEnterpriseFormState
           : current.quantity.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -550,8 +521,7 @@ class _AutonomousEnterpriseFormState
           : current.alertCount.toString(),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
-    reference =
-        TextEditingController(text: current?.reference ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
     notes = TextEditingController(text: current?.notes ?? '');
   }
 
@@ -575,10 +545,7 @@ class _AutonomousEnterpriseFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -591,19 +558,14 @@ class _AutonomousEnterpriseFormState
     return decimal(controller).clamp(0.0, 100.0);
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasAutonomousDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -622,7 +584,8 @@ class _AutonomousEnterpriseFormState
     Navigator.pop(
       context,
       AtlasAutonomousEnterpriseRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'autonomous_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -636,8 +599,7 @@ class _AutonomousEnterpriseFormState
         riskPercent: _percent(riskPercent),
         financialImpact: decimal(financialImpact),
         quantity: _maxZero(integer(quantity)),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -651,11 +613,7 @@ class _AutonomousEnterpriseFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -670,10 +628,8 @@ class _AutonomousEnterpriseFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -684,8 +640,7 @@ class _AutonomousEnterpriseFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration:
-                      const InputDecoration(labelText: 'Título'),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -699,36 +654,35 @@ class _AutonomousEnterpriseFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon:
-                        Icon(Icons.calendar_month_outlined),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration:
-                      const InputDecoration(labelText: 'Situação'),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Aguardando aprovação',
-                    'Aprovado',
-                    'Em execução',
-                    'Monitorado',
-                    'Publicado',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                    'Bloqueado',
-                    'Falhou',
-                    'Rollback',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Aguardando aprovação',
+                            'Aprovado',
+                            'Em execução',
+                            'Monitorado',
+                            'Publicado',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                            'Bloqueado',
+                            'Falhou',
+                            'Rollback',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -744,8 +698,7 @@ class _AutonomousEnterpriseFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Decisão, versão, implantação ou referência',
+                    labelText: 'Decisão, versão, implantação ou referência',
                   ),
                 ),
                 TextFormField(
@@ -757,8 +710,7 @@ class _AutonomousEnterpriseFormState
                 ),
                 TextFormField(
                   controller: confidencePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -767,8 +719,7 @@ class _AutonomousEnterpriseFormState
                 ),
                 TextFormField(
                   controller: riskPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -777,8 +728,7 @@ class _AutonomousEnterpriseFormState
                 ),
                 TextFormField(
                   controller: financialImpact,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -788,8 +738,7 @@ class _AutonomousEnterpriseFormState
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Quantidade'),
+                  decoration: const InputDecoration(labelText: 'Quantidade'),
                 ),
                 TextFormField(
                   controller: progressPercent,
@@ -817,17 +766,14 @@ class _AutonomousEnterpriseFormState
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Evidência, teste, log ou documento',
+                    labelText: 'Evidência, teste, log ou documento',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -839,18 +785,13 @@ class _AutonomousEnterpriseFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasAutonomousEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasAutonomousEnterpriseModule module) {
   return switch (module) {
     AtlasAutonomousEnterpriseModule.aiOrchestrator =>
       Icons.auto_awesome_motion_outlined,

@@ -43,16 +43,14 @@ class AtlasCommandCenterAction {
 
   bool get hasResponsible => responsibleName.trim().isNotEmpty;
 
-  bool get isCompleted =>
-      status == AtlasCanonicalStatus.completed;
+  bool get isCompleted => status == AtlasCanonicalStatus.completed;
 
   bool get isOpen =>
       status == AtlasCanonicalStatus.pending ||
       status == AtlasCanonicalStatus.inProgress ||
       status == AtlasCanonicalStatus.blocked;
 
-  bool get isCancelled =>
-      status == AtlasCanonicalStatus.cancelled;
+  bool get isCancelled => status == AtlasCanonicalStatus.cancelled;
 
   Duration? get remainingTime {
     final dueDate = dueAt;
@@ -101,22 +99,16 @@ class AtlasCommandCenterAction {
       id: id,
       title: title ?? this.title,
       description: description ?? this.description,
-      recommendedAction:
-          recommendedAction ?? this.recommendedAction,
+      recommendedAction: recommendedAction ?? this.recommendedAction,
       priority: priority ?? this.priority,
       status: status ?? this.status,
-      farmName:
-          replaceFarmName ? farmName : this.farmName,
+      farmName: replaceFarmName ? farmName : this.farmName,
       sourceModule: sourceModule ?? this.sourceModule,
-      sourceEventId: replaceSourceEventId
-          ? sourceEventId
-          : this.sourceEventId,
+      sourceEventId: replaceSourceEventId ? sourceEventId : this.sourceEventId,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       dueAt: clearDueAt ? null : dueAt ?? this.dueAt,
-      completedAt: clearCompletedAt
-          ? null
-          : completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : completedAt ?? this.completedAt,
       notes: notes ?? this.notes,
       responsibleName: responsibleName ?? this.responsibleName,
       responsibleId: clearResponsibleId
@@ -151,52 +143,37 @@ class AtlasCommandCenterAction {
     };
   }
 
-  factory AtlasCommandCenterAction.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCommandCenterAction.fromMap(Map<String, dynamic> map) {
     return AtlasCommandCenterAction(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      recommendedAction:
-          map['recommendedAction']?.toString() ?? '',
-      priority: _priorityFromName(
-        map['priority']?.toString(),
-      ),
-      status: _statusFromName(
-        map['status']?.toString(),
-      ),
+      recommendedAction: map['recommendedAction']?.toString() ?? '',
+      priority: _priorityFromName(map['priority']?.toString()),
+      status: _statusFromName(map['status']?.toString()),
       farmName: map['farmName']?.toString(),
-      sourceModule:
-          map['sourceModule']?.toString() ?? 'command_center',
+      sourceModule: map['sourceModule']?.toString() ?? 'command_center',
       sourceEventId: map['sourceEventId']?.toString(),
-      createdAt: _dateFromValue(map['createdAt']) ??
-          DateTime.now(),
-      updatedAt: _dateFromValue(map['updatedAt']) ??
-          DateTime.now(),
+      createdAt: _dateFromValue(map['createdAt']) ?? DateTime.now(),
+      updatedAt: _dateFromValue(map['updatedAt']) ?? DateTime.now(),
       dueAt: _dateFromValue(map['dueAt']),
       completedAt: _dateFromValue(map['completedAt']),
       notes: map['notes']?.toString() ?? '',
       responsibleName: map['responsibleName']?.toString() ?? '',
       responsibleId: map['responsibleId']?.toString(),
       progressPercent: _intFromValue(map['progressPercent']).clamp(0, 100),
-      expectedFinancialImpact:
-          _doubleFromValue(map['expectedFinancialImpact']),
+      expectedFinancialImpact: _doubleFromValue(map['expectedFinancialImpact']),
     );
   }
 
-  static AtlasCanonicalPriority _priorityFromName(
-    String? name,
-  ) {
+  static AtlasCanonicalPriority _priorityFromName(String? name) {
     return AtlasCanonicalPriority.values.firstWhere(
       (value) => value.name == name,
       orElse: () => AtlasCanonicalPriority.medium,
     );
   }
 
-  static AtlasCanonicalStatus _statusFromName(
-    String? name,
-  ) {
+  static AtlasCanonicalStatus _statusFromName(String? name) {
     return AtlasCanonicalStatus.values.firstWhere(
       (value) => value.name == name,
       orElse: () => AtlasCanonicalStatus.pending,

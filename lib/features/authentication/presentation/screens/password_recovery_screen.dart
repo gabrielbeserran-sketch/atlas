@@ -5,12 +5,10 @@ class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({super.key});
 
   @override
-  State<PasswordRecoveryScreen> createState() =>
-      _PasswordRecoveryScreenState();
+  State<PasswordRecoveryScreen> createState() => _PasswordRecoveryScreenState();
 }
 
-class _PasswordRecoveryScreenState
-    extends State<PasswordRecoveryScreen> {
+class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final email = TextEditingController();
   final token = TextEditingController();
   final password = TextEditingController();
@@ -32,8 +30,7 @@ class _PasswordRecoveryScreenState
     setState(() => loading = true);
 
     try {
-      await AtlasEnterpriseApiClient.instance
-          .requestPasswordReset(email.text);
+      await AtlasEnterpriseApiClient.instance.requestPasswordReset(email.text);
 
       if (!mounted) return;
 
@@ -41,24 +38,21 @@ class _PasswordRecoveryScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Caso o e-mail exista, as instruções foram enviadas.',
-          ),
+          content: Text('Caso o e-mail exista, as instruções foram enviadas.'),
         ),
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> redefine() async {
-    if (token.text.trim().isEmpty ||
-        password.text.length < 10) {
+    if (token.text.trim().isEmpty || password.text.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -72,8 +66,7 @@ class _PasswordRecoveryScreenState
     setState(() => loading = true);
 
     try {
-      await AtlasEnterpriseApiClient.instance
-          .confirmPasswordReset(
+      await AtlasEnterpriseApiClient.instance.confirmPasswordReset(
         token: token.text,
         newPassword: password.text,
       );
@@ -81,17 +74,15 @@ class _PasswordRecoveryScreenState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Senha alterada com sucesso.'),
-        ),
+        const SnackBar(content: Text('Senha alterada com sucesso.')),
       );
 
       Navigator.pop(context);
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -118,8 +109,7 @@ class _PasswordRecoveryScreenState
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed:
-                    loading || requested ? null : requestToken,
+                onPressed: loading || requested ? null : requestToken,
                 child: const Text('Solicitar redefinição'),
               ),
               if (requested) ...[

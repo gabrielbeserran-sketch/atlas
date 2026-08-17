@@ -19,8 +19,12 @@ class AtlasQualitySummary {
 class AtlasQualityEngine {
   AtlasQualitySummary summarize(AtlasQualityState state) {
     final int total = state.checks.length;
-    final int completed = state.checks.where((AtlasQualityCheck item) => item.completed).length;
-    final int openIncidents = state.incidents.where((AtlasQualityIncident item) => !item.resolved).length;
+    final int completed = state.checks
+        .where((AtlasQualityCheck item) => item.completed)
+        .length;
+    final int openIncidents = state.incidents
+        .where((AtlasQualityIncident item) => !item.resolved)
+        .length;
     final int criticalPending = state.checks
         .where((AtlasQualityCheck item) => item.critical && !item.completed)
         .length;

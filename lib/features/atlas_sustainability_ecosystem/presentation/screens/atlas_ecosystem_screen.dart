@@ -22,14 +22,11 @@ class AtlasEcosystemScreen extends StatefulWidget {
   final AtlasEcosystemModule initialModule;
 
   @override
-  State<AtlasEcosystemScreen> createState() =>
-      _AtlasEcosystemScreenState();
+  State<AtlasEcosystemScreen> createState() => _AtlasEcosystemScreenState();
 }
 
-class _AtlasEcosystemScreenState
-    extends State<AtlasEcosystemScreen> {
-  final AtlasEcosystemStorageService storage =
-      AtlasEcosystemStorageService();
+class _AtlasEcosystemScreenState extends State<AtlasEcosystemScreen> {
+  final AtlasEcosystemStorageService storage = AtlasEcosystemStorageService();
   final AtlasEcosystemAnalyticsService analyticsService =
       const AtlasEcosystemAnalyticsService();
 
@@ -78,30 +75,26 @@ class _AtlasEcosystemScreenState
   }
 
   List<AtlasEcosystemRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasEcosystemRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasEcosystemRecord? current]) async {
     final result = await showDialog<AtlasEcosystemRecord>(
       context: context,
-      builder: (context) => _EcosystemRecordForm(
-        module: selectedModule,
-        record: current,
-      ),
+      builder: (context) =>
+          _EcosystemRecordForm(module: selectedModule, record: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +108,7 @@ class _AtlasEcosystemScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasEcosystemRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasEcosystemRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +116,11 @@ class _AtlasEcosystemScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -206,8 +195,7 @@ class _AtlasEcosystemScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -234,8 +222,7 @@ class _AtlasEcosystemScreenState
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Atenção, crítico ou desconectado',
+                            subtitle: 'Atenção, crítico ou desconectado',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -271,12 +258,8 @@ class _AtlasEcosystemScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro registro '
                               'para iniciar os indicadores.',
@@ -288,8 +271,7 @@ class _AtlasEcosystemScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -303,10 +285,7 @@ class _AtlasEcosystemScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasEcosystemModule selected;
   final ValueChanged<AtlasEcosystemModule> onSelected;
@@ -317,31 +296,30 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasEcosystemModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasEcosystemModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: module == AtlasEcosystemModule.values.last
-                      ? 0
-                      : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasEcosystemModule.values.last ? 0 : 8,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -366,13 +344,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: feature == selected,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: feature == selected,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -393,20 +373,15 @@ class _RecordCard extends StatelessWidget {
     final statusColor = switch (record.status) {
       'Crítico' || 'Desconectado' => Colors.red.shade700,
       'Atenção' => Colors.orange.shade800,
-      'Concluído' || 'Ativo' || 'Conectado' =>
-        Colors.green.shade800,
+      'Concluído' || 'Ativo' || 'Conectado' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              statusColor.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: statusColor,
-          ),
+          backgroundColor: statusColor.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: statusColor),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -423,14 +398,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -439,21 +408,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _EcosystemRecordForm extends StatefulWidget {
-  const _EcosystemRecordForm({
-    required this.module,
-    this.record,
-  });
+  const _EcosystemRecordForm({required this.module, this.record});
 
   final AtlasEcosystemModule module;
   final AtlasEcosystemRecord? record;
 
   @override
-  State<_EcosystemRecordForm> createState() =>
-      _EcosystemRecordFormState();
+  State<_EcosystemRecordForm> createState() => _EcosystemRecordFormState();
 }
 
-class _EcosystemRecordFormState
-    extends State<_EcosystemRecordForm> {
+class _EcosystemRecordFormState extends State<_EcosystemRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -479,26 +443,17 @@ class _EcosystemRecordFormState
 
     title = TextEditingController(text: record?.title ?? '');
     date = TextEditingController(
-      text: record?.date ??
-          formatAtlasEcosystemDate(DateTime.now()),
+      text: record?.date ?? formatAtlasEcosystemDate(DateTime.now()),
     );
     primary = TextEditingController(
-      text: record == null
-          ? ''
-          : record.primaryValue.toString(),
+      text: record == null ? '' : record.primaryValue.toString(),
     );
     secondary = TextEditingController(
-      text: record == null
-          ? ''
-          : record.secondaryValue.toString(),
+      text: record == null ? '' : record.secondaryValue.toString(),
     );
     unit = TextEditingController(text: record?.unit ?? '');
-    responsible = TextEditingController(
-      text: record?.responsible ?? '',
-    );
-    reference = TextEditingController(
-      text: record?.reference ?? '',
-    );
+    responsible = TextEditingController(text: record?.responsible ?? '');
+    reference = TextEditingController(text: record?.reference ?? '');
     notes = TextEditingController(text: record?.notes ?? '');
   }
 
@@ -516,10 +471,7 @@ class _EcosystemRecordFormState
   }
 
   double number(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   Future<void> chooseDate() async {
@@ -527,12 +479,9 @@ class _EcosystemRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -551,8 +500,7 @@ class _EcosystemRecordFormState
     Navigator.pop(
       context,
       AtlasEcosystemRecord(
-        id: current?.id ??
-            'ecosystem_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'ecosystem_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -573,11 +521,7 @@ class _EcosystemRecordFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.record == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.record == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 680,
         child: Form(
@@ -592,10 +536,8 @@ class _EcosystemRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -606,9 +548,7 @@ class _EcosystemRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -622,33 +562,30 @@ class _EcosystemRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em andamento',
-                    'Ativo',
-                    'Conectado',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                    'Desconectado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em andamento',
+                            'Ativo',
+                            'Conectado',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                            'Desconectado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -657,8 +594,7 @@ class _EcosystemRecordFormState
                 ),
                 TextFormField(
                   controller: primary,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -667,8 +603,7 @@ class _EcosystemRecordFormState
                 ),
                 TextFormField(
                   controller: secondary,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -698,9 +633,7 @@ class _EcosystemRecordFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -712,10 +645,7 @@ class _EcosystemRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -723,11 +653,8 @@ class _EcosystemRecordFormState
 
 IconData _moduleIcon(AtlasEcosystemModule module) {
   return switch (module) {
-    AtlasEcosystemModule.sustainability =>
-      Icons.eco_outlined,
-    AtlasEcosystemModule.iot =>
-      Icons.sensors_outlined,
-    AtlasEcosystemModule.consultancy =>
-      Icons.support_agent_outlined,
+    AtlasEcosystemModule.sustainability => Icons.eco_outlined,
+    AtlasEcosystemModule.iot => Icons.sensors_outlined,
+    AtlasEcosystemModule.consultancy => Icons.support_agent_outlined,
   };
 }

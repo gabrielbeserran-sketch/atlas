@@ -27,8 +27,9 @@ class AtlasFoundationRepository {
     final String? lastReviewRaw = preferences.getString(_lastReviewKey);
     return AtlasFoundationSnapshot(
       checks: checks,
-      lastReviewAt:
-          lastReviewRaw == null ? null : DateTime.tryParse(lastReviewRaw),
+      lastReviewAt: lastReviewRaw == null
+          ? null
+          : DateTime.tryParse(lastReviewRaw),
     );
   }
 
@@ -36,9 +37,14 @@ class AtlasFoundationRepository {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _checksKey,
-      jsonEncode(checks.map((AtlasFoundationCheck item) => item.toMap()).toList()),
+      jsonEncode(
+        checks.map((AtlasFoundationCheck item) => item.toMap()).toList(),
+      ),
     );
-    await preferences.setString(_lastReviewKey, DateTime.now().toIso8601String());
+    await preferences.setString(
+      _lastReviewKey,
+      DateTime.now().toIso8601String(),
+    );
   }
 
   List<AtlasFoundationCheck> _defaultChecks() {
@@ -46,7 +52,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'repository_contract',
         title: 'Contrato único de repositórios',
-        description: 'Padronizar leitura, gravação, exclusão e tratamento de falhas.',
+        description:
+            'Padronizar leitura, gravação, exclusão e tratamento de falhas.',
         area: 'Persistência',
         isCompleted: true,
         isCritical: true,
@@ -54,7 +61,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'shared_preferences_inventory',
         title: 'Inventário do SharedPreferences',
-        description: 'Mapear chaves e responsáveis antes da migração para banco local.',
+        description:
+            'Mapear chaves e responsáveis antes da migração para banco local.',
         area: 'Persistência',
         isCompleted: false,
         isCritical: true,
@@ -62,7 +70,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'navigation_registry',
         title: 'Registro central de rotas',
-        description: 'Centralizar nomes, permissões e destinos das principais telas.',
+        description:
+            'Centralizar nomes, permissões e destinos das principais telas.',
         area: 'Navegação',
         isCompleted: false,
         isCritical: true,
@@ -70,7 +79,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'shared_components',
         title: 'Componentes visuais reutilizáveis',
-        description: 'Padronizar cartões, estados vazios, indicadores e diálogos.',
+        description:
+            'Padronizar cartões, estados vazios, indicadores e diálogos.',
         area: 'Interface',
         isCompleted: false,
         isCritical: false,
@@ -78,7 +88,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'state_strategy',
         title: 'Estratégia única de estado',
-        description: 'Definir a migração progressiva para Riverpod sem quebrar telas atuais.',
+        description:
+            'Definir a migração progressiva para Riverpod sem quebrar telas atuais.',
         area: 'Estado',
         isCompleted: false,
         isCritical: true,
@@ -94,7 +105,8 @@ class AtlasFoundationRepository {
       AtlasFoundationCheck(
         id: 'error_contract',
         title: 'Contrato de erros e logs',
-        description: 'Unificar falhas técnicas com Observability e Integration Core.',
+        description:
+            'Unificar falhas técnicas com Observability e Integration Core.',
         area: 'Observabilidade',
         isCompleted: true,
         isCritical: false,

@@ -20,16 +20,13 @@ class AtlasMeetingDecisionActionLink {
     };
   }
 
-  factory AtlasMeetingDecisionActionLink.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasMeetingDecisionActionLink.fromMap(Map<String, dynamic> map) {
     return AtlasMeetingDecisionActionLink(
       meetingId: map['meetingId']?.toString() ?? '',
       decisionId: map['decisionId']?.toString() ?? '',
       actionId: map['actionId']?.toString() ?? '',
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

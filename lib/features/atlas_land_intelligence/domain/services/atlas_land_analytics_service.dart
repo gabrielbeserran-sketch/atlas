@@ -42,10 +42,10 @@ class AtlasLandAnalyticsService {
         ? 0.0
         : representedFeatures.length * 100 / module.features.length;
 
-    final completed =
-        moduleRecords.where((record) => record.isCompleted).length;
-    final alerts =
-        moduleRecords.where((record) => record.isCritical).length;
+    final completed = moduleRecords
+        .where((record) => record.isCompleted)
+        .length;
+    final alerts = moduleRecords.where((record) => record.isCritical).length;
 
     final values = moduleRecords
         .map((record) => record.primaryValue)
@@ -105,22 +105,20 @@ class AtlasLandAnalyticsService {
         'do ${module.packageLabel}.',
       );
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasLandModule.genetics => const [
-              'Use pedigree, índices e objetivos do sistema para evitar decisões baseadas em um único indicador.',
-              'Revise consanguinidade antes de confirmar qualquer acasalamento.',
-            ],
-          AtlasLandModule.pasture => const [
-              'Compare taxa de lotação com oferta real de forragem e período de descanso.',
-              'Registre entrada e saída dos lotes para melhorar a recomendação de rotação.',
-            ],
-          AtlasLandModule.agriculture => const [
-              'Vincule custos, calendário e destino da produção ao planejamento pecuário.',
-              'Compare área planejada, área executada e impacto no estoque de alimentos.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasLandModule.genetics => const [
+          'Use pedigree, índices e objetivos do sistema para evitar decisões baseadas em um único indicador.',
+          'Revise consanguinidade antes de confirmar qualquer acasalamento.',
+        ],
+        AtlasLandModule.pasture => const [
+          'Compare taxa de lotação com oferta real de forragem e período de descanso.',
+          'Registre entrada e saída dos lotes para melhorar a recomendação de rotação.',
+        ],
+        AtlasLandModule.agriculture => const [
+          'Vincule custos, calendário e destino da produção ao planejamento pecuário.',
+          'Compare área planejada, área executada e impacto no estoque de alimentos.',
+        ],
+      });
     }
 
     return items;

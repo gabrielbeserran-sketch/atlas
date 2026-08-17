@@ -6,17 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasExecutiveGoalStorageService {
   const AtlasExecutiveGoalStorageService();
 
-  static const String _storageKey =
-      'atlas_executive_goals_v1';
+  static const String _storageKey = 'atlas_executive_goals_v1';
 
   static const int maximumGoals = 500;
 
   Future<List<AtlasExecutiveGoal>> load() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final value =
-        preferences.getString(_storageKey);
+    final value = preferences.getString(_storageKey);
 
     if (value == null || value.trim().isEmpty) {
       return [];
@@ -32,22 +29,16 @@ class AtlasExecutiveGoalStorageService {
       final goals = decoded
           .whereType<Map>()
           .map((item) {
-            return AtlasExecutiveGoal.fromJson(
-              Map<String, dynamic>.from(item),
-            );
+            return AtlasExecutiveGoal.fromJson(Map<String, dynamic>.from(item));
           })
           .where((item) {
-            return item.id.trim().isNotEmpty &&
-                item.farmName.trim().isNotEmpty;
+            return item.id.trim().isNotEmpty && item.farmName.trim().isNotEmpty;
           })
           .take(maximumGoals)
           .toList();
 
       goals.sort(
-        (first, second) =>
-            second.updatedAt.compareTo(
-          first.updatedAt,
-        ),
+        (first, second) => second.updatedAt.compareTo(first.updatedAt),
       );
 
       return goals;
@@ -56,22 +47,13 @@ class AtlasExecutiveGoalStorageService {
     }
   }
 
-  Future<void> save(
-    List<AtlasExecutiveGoal> goals,
-  ) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<void> save(List<AtlasExecutiveGoal> goals) async {
+    final preferences = await SharedPreferences.getInstance();
 
     final ordered = [...goals]
-      ..sort(
-        (first, second) =>
-            second.updatedAt.compareTo(
-          first.updatedAt,
-        ),
-      );
+      ..sort((first, second) => second.updatedAt.compareTo(first.updatedAt));
 
-    final limited =
-        ordered.take(maximumGoals).toList();
+    final limited = ordered.take(maximumGoals).toList();
 
     await preferences.setString(
       _storageKey,
@@ -84,8 +66,7 @@ class AtlasExecutiveGoalStorageService {
   }
 
   Future<void> clear() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.remove(_storageKey);
   }

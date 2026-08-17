@@ -1,56 +1,47 @@
-enum AtlasPredictiveAiModule {
-  nutrition,
-  economics,
-  commercialization,
-}
+enum AtlasPredictiveAiModule { nutrition, economics, commercialization }
 
 extension AtlasPredictiveAiModuleX on AtlasPredictiveAiModule {
   String get code => switch (this) {
-        AtlasPredictiveAiModule.nutrition => 'nutrition',
-        AtlasPredictiveAiModule.economics => 'economics',
-        AtlasPredictiveAiModule.commercialization =>
-          'commercialization',
-      };
+    AtlasPredictiveAiModule.nutrition => 'nutrition',
+    AtlasPredictiveAiModule.economics => 'economics',
+    AtlasPredictiveAiModule.commercialization => 'commercialization',
+  };
 
   String get title => switch (this) {
-        AtlasPredictiveAiModule.nutrition =>
-          'IA Nutricional',
-        AtlasPredictiveAiModule.economics =>
-          'IA Econômica',
-        AtlasPredictiveAiModule.commercialization =>
-          'IA de Comercialização',
-      };
+    AtlasPredictiveAiModule.nutrition => 'IA Nutricional',
+    AtlasPredictiveAiModule.economics => 'IA Econômica',
+    AtlasPredictiveAiModule.commercialization => 'IA de Comercialização',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasPredictiveAiModule.nutrition => 'Pacote 53',
-        AtlasPredictiveAiModule.economics => 'Pacote 54',
-        AtlasPredictiveAiModule.commercialization =>
-          'Pacote 55',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Pacote 53',
+    AtlasPredictiveAiModule.economics => 'Pacote 54',
+    AtlasPredictiveAiModule.commercialization => 'Pacote 55',
+  };
 
   List<String> get features => switch (this) {
-        AtlasPredictiveAiModule.nutrition => const [
-            'Formulação inteligente de dietas',
-            'Ajuste automático conforme peso',
-            'Consumo previsto',
-            'Eficiência alimentar',
-            'Alerta de desperdício',
-          ],
-        AtlasPredictiveAiModule.economics => const [
-            'Previsão de lucro',
-            'Fluxo de caixa preditivo',
-            'Simulação financeira',
-            'Payback automático',
-            'ROI em tempo real',
-          ],
-        AtlasPredictiveAiModule.commercialization => const [
-            'Predição do preço da arroba',
-            'Melhor momento para venda',
-            'Comparação de frigoríficos',
-            'Ranking de compradores',
-            'Simulador de negociação',
-          ],
-      };
+    AtlasPredictiveAiModule.nutrition => const [
+      'Formulação inteligente de dietas',
+      'Ajuste automático conforme peso',
+      'Consumo previsto',
+      'Eficiência alimentar',
+      'Alerta de desperdício',
+    ],
+    AtlasPredictiveAiModule.economics => const [
+      'Previsão de lucro',
+      'Fluxo de caixa preditivo',
+      'Simulação financeira',
+      'Payback automático',
+      'ROI em tempo real',
+    ],
+    AtlasPredictiveAiModule.commercialization => const [
+      'Predição do preço da arroba',
+      'Melhor momento para venda',
+      'Comparação de frigoríficos',
+      'Ranking de compradores',
+      'Simulador de negociação',
+    ],
+  };
 }
 
 class AtlasPredictiveAiRecord {
@@ -92,11 +83,9 @@ class AtlasPredictiveAiRecord {
   final String createdAt;
   final String updatedAt;
 
-  bool get isCritical =>
-      status == 'Crítico' || status == 'Atenção';
+  bool get isCritical => status == 'Crítico' || status == 'Atenção';
 
-  bool get isCompleted =>
-      status == 'Concluído' || status == 'Ativo';
+  bool get isCompleted => status == 'Concluído' || status == 'Ativo';
 
   Map<String, dynamic> toMap() {
     return {
@@ -120,9 +109,7 @@ class AtlasPredictiveAiRecord {
     };
   }
 
-  factory AtlasPredictiveAiRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPredictiveAiRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasPredictiveAiModule.values.firstWhere(
@@ -137,20 +124,13 @@ class AtlasPredictiveAiRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      primaryInput:
-          (map['primaryInput'] as num?)?.toDouble() ?? 0,
-      secondaryInput:
-          (map['secondaryInput'] as num?)?.toDouble() ?? 0,
-      tertiaryInput:
-          (map['tertiaryInput'] as num?)?.toDouble() ?? 0,
-      costValue:
-          (map['costValue'] as num?)?.toDouble() ?? 0,
-      revenueValue:
-          (map['revenueValue'] as num?)?.toDouble() ?? 0,
-      periodDays:
-          (map['periodDays'] as num?)?.toInt() ?? 0,
-      referenceName:
-          map['referenceName']?.toString() ?? '',
+      primaryInput: (map['primaryInput'] as num?)?.toDouble() ?? 0,
+      secondaryInput: (map['secondaryInput'] as num?)?.toDouble() ?? 0,
+      tertiaryInput: (map['tertiaryInput'] as num?)?.toDouble() ?? 0,
+      costValue: (map['costValue'] as num?)?.toDouble() ?? 0,
+      revenueValue: (map['revenueValue'] as num?)?.toDouble() ?? 0,
+      periodDays: (map['periodDays'] as num?)?.toInt() ?? 0,
+      referenceName: map['referenceName']?.toString() ?? '',
       unit: map['unit']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

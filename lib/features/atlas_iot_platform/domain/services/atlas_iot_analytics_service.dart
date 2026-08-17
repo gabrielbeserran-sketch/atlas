@@ -53,31 +53,29 @@ class AtlasIotAnalyticsService {
     final alerts = moduleRecords.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
     final averageSignal = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.signalPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.signalPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageBattery = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.batteryPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.batteryPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageMetric = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.metricValue)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.metricValue)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -120,62 +118,56 @@ class AtlasIotAnalyticsService {
     }
 
     if (alerts > 0) {
-      items.add(
-        'Existem $alerts alertas ou dispositivos em situação crítica.',
-      );
+      items.add('Existem $alerts alertas ou dispositivos em situação crítica.');
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasIotModule.smartScales => const [
-            'Valide calibração e unidade antes de aceitar leituras.',
-            'Registre falhas de sincronização e pesos fora do padrão.',
-          ],
-        AtlasIotModule.rfidTags => const [
-            'Garanta associação única entre brinco e animal.',
-            'Audite leituras duplicadas, perdas e substituições.',
-          ],
-        AtlasIotModule.smartCollars => const [
-            'Monitore bateria, sinal e aderência do dispositivo.',
-            'Use alertas comportamentais como apoio de triagem.',
-          ],
-        AtlasIotModule.environmentalSensors => const [
-            'Posicione sensores em locais representativos.',
-            'Calibre regularmente temperatura, umidade e gases.',
-          ],
-        AtlasIotModule.waterSensors => const [
-            'Combine nível, vazão e qualidade para reduzir falsos alertas.',
-            'Inspecione fisicamente quando houver risco de abastecimento.',
-          ],
-        AtlasIotModule.energySensors => const [
-            'Revise picos, quedas e consumo fora do padrão.',
-            'Mantenha plano de contingência para falhas elétricas.',
-          ],
-        AtlasIotModule.weatherStations => const [
-            'Registre local, altura, manutenção e horário de sincronização.',
-            'Compare leituras com fontes meteorológicas de referência.',
-          ],
-        AtlasIotModule.drones => const [
-            'Planeje voos com autorização, segurança e checklist.',
-            'Associe imagens a data, local e objetivo da inspeção.',
-          ],
-        AtlasIotModule.satellites => const [
-            'Considere resolução, nuvens e data da imagem.',
-            'Valide mudanças relevantes com inspeção de campo.',
-          ],
-        AtlasIotModule.iotCommandCenter => const [
-            'Priorize dispositivos críticos e alertas acionáveis.',
-            'Mantenha saúde da rede, bateria e sincronização visíveis.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasIotModule.smartScales => const [
+        'Valide calibração e unidade antes de aceitar leituras.',
+        'Registre falhas de sincronização e pesos fora do padrão.',
+      ],
+      AtlasIotModule.rfidTags => const [
+        'Garanta associação única entre brinco e animal.',
+        'Audite leituras duplicadas, perdas e substituições.',
+      ],
+      AtlasIotModule.smartCollars => const [
+        'Monitore bateria, sinal e aderência do dispositivo.',
+        'Use alertas comportamentais como apoio de triagem.',
+      ],
+      AtlasIotModule.environmentalSensors => const [
+        'Posicione sensores em locais representativos.',
+        'Calibre regularmente temperatura, umidade e gases.',
+      ],
+      AtlasIotModule.waterSensors => const [
+        'Combine nível, vazão e qualidade para reduzir falsos alertas.',
+        'Inspecione fisicamente quando houver risco de abastecimento.',
+      ],
+      AtlasIotModule.energySensors => const [
+        'Revise picos, quedas e consumo fora do padrão.',
+        'Mantenha plano de contingência para falhas elétricas.',
+      ],
+      AtlasIotModule.weatherStations => const [
+        'Registre local, altura, manutenção e horário de sincronização.',
+        'Compare leituras com fontes meteorológicas de referência.',
+      ],
+      AtlasIotModule.drones => const [
+        'Planeje voos com autorização, segurança e checklist.',
+        'Associe imagens a data, local e objetivo da inspeção.',
+      ],
+      AtlasIotModule.satellites => const [
+        'Considere resolução, nuvens e data da imagem.',
+        'Valide mudanças relevantes com inspeção de campo.',
+      ],
+      AtlasIotModule.iotCommandCenter => const [
+        'Priorize dispositivos críticos e alertas acionáveis.',
+        'Mantenha saúde da rede, bateria e sincronização visíveis.',
+      ],
+    });
 
     return items;
   }

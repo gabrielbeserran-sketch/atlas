@@ -107,47 +107,31 @@ class AtlasBenefitRealization {
     };
   }
 
-  factory AtlasBenefitRealization.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasBenefitRealization.fromJson(Map<String, dynamic> json) {
     return AtlasBenefitRealization(
       id: json['id'] as String? ?? '',
-      strategyPlanId:
-          json['strategyPlanId'] as String? ?? '',
+      strategyPlanId: json['strategyPlanId'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
-      farmName:
-          json['farmName'] as String? ?? 'Fazenda',
-      strategyTitle:
-          json['strategyTitle'] as String? ?? 'Estratégia',
+      farmName: json['farmName'] as String? ?? 'Fazenda',
+      strategyTitle: json['strategyTitle'] as String? ?? 'Estratégia',
       area: AtlasFarmAuditArea.values.firstWhere(
         (item) => item.name == json['area'],
         orElse: () => AtlasFarmAuditArea.operational,
       ),
       measuredAt:
           DateTime.tryParse(json['measuredAt'] as String? ?? '') ??
-              DateTime.now(),
-      plannedBudget:
-          (json['plannedBudget'] as num?)?.toDouble() ?? 0,
-      actualCost:
-          (json['actualCost'] as num?)?.toDouble() ?? 0,
-      plannedNetGain:
-          (json['plannedNetGain'] as num?)?.toDouble() ?? 0,
-      actualNetGain:
-          (json['actualNetGain'] as num?)?.toDouble() ?? 0,
-      plannedRoi:
-          (json['plannedRoi'] as num?)?.toDouble() ?? 0,
-      actualRoi:
-          (json['actualRoi'] as num?)?.toDouble() ?? 0,
-      plannedProgress:
-          (json['plannedProgress'] as num?)?.toDouble() ?? 0,
-      actualProgress:
-          (json['actualProgress'] as num?)?.toDouble() ?? 0,
-      plannedIndicator:
-          (json['plannedIndicator'] as num?)?.toDouble() ?? 0,
-      actualIndicator:
-          (json['actualIndicator'] as num?)?.toDouble() ?? 0,
-      confidence:
-          (json['confidence'] as num?)?.toDouble() ?? 0,
+          DateTime.now(),
+      plannedBudget: (json['plannedBudget'] as num?)?.toDouble() ?? 0,
+      actualCost: (json['actualCost'] as num?)?.toDouble() ?? 0,
+      plannedNetGain: (json['plannedNetGain'] as num?)?.toDouble() ?? 0,
+      actualNetGain: (json['actualNetGain'] as num?)?.toDouble() ?? 0,
+      plannedRoi: (json['plannedRoi'] as num?)?.toDouble() ?? 0,
+      actualRoi: (json['actualRoi'] as num?)?.toDouble() ?? 0,
+      plannedProgress: (json['plannedProgress'] as num?)?.toDouble() ?? 0,
+      actualProgress: (json['actualProgress'] as num?)?.toDouble() ?? 0,
+      plannedIndicator: (json['plannedIndicator'] as num?)?.toDouble() ?? 0,
+      actualIndicator: (json['actualIndicator'] as num?)?.toDouble() ?? 0,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
       risk: AtlasDecisionRisk.values.firstWhere(
         (item) => item.name == json['risk'],
         orElse: () => AtlasDecisionRisk.moderate,
@@ -156,13 +140,11 @@ class AtlasBenefitRealization {
         (item) => item.name == json['status'],
         orElse: () => AtlasBenefitRealizationStatus.attention,
       ),
-      findings:
-          (json['findings'] as List? ?? const <dynamic>[])
-              .whereType<String>()
-              .toList(),
+      findings: (json['findings'] as List? ?? const <dynamic>[])
+          .whereType<String>()
+          .toList(),
       correctiveActions:
-          (json['correctiveActions'] as List? ??
-                  const <dynamic>[])
+          (json['correctiveActions'] as List? ?? const <dynamic>[])
               .whereType<String>()
               .toList(),
     );
@@ -170,9 +152,7 @@ class AtlasBenefitRealization {
 }
 
 class AtlasBenefitPortfolio {
-  const AtlasBenefitPortfolio({
-    required this.items,
-  });
+  const AtlasBenefitPortfolio({required this.items});
 
   final List<AtlasBenefitRealization> items;
 
@@ -180,36 +160,22 @@ class AtlasBenefitPortfolio {
 
   int get onTrack {
     return items
-        .where(
-          (item) =>
-              item.status ==
-              AtlasBenefitRealizationStatus.onTrack,
-        )
+        .where((item) => item.status == AtlasBenefitRealizationStatus.onTrack)
         .length;
   }
 
   int get critical {
     return items
-        .where(
-          (item) =>
-              item.status ==
-              AtlasBenefitRealizationStatus.critical,
-        )
+        .where((item) => item.status == AtlasBenefitRealizationStatus.critical)
         .length;
   }
 
   double get plannedGain {
-    return items.fold<double>(
-      0,
-      (sum, item) => sum + item.plannedNetGain,
-    );
+    return items.fold<double>(0, (sum, item) => sum + item.plannedNetGain);
   }
 
   double get actualGain {
-    return items.fold<double>(
-      0,
-      (sum, item) => sum + item.actualNetGain,
-    );
+    return items.fold<double>(0, (sum, item) => sum + item.actualNetGain);
   }
 
   double get achievement {
@@ -217,18 +183,11 @@ class AtlasBenefitPortfolio {
       return actualGain > 0 ? 100 : 0;
     }
 
-    return (actualGain / plannedGain * 100)
-        .clamp(-100.0, 200.0)
-        .toDouble();
+    return (actualGain / plannedGain * 100).clamp(-100.0, 200.0).toDouble();
   }
 }
 
-enum AtlasBenefitRealizationStatus {
-  onTrack,
-  attention,
-  offTrack,
-  critical,
-}
+enum AtlasBenefitRealizationStatus { onTrack, attention, offTrack, critical }
 
 String atlasBenefitRealizationStatusLabel(
   AtlasBenefitRealizationStatus status,

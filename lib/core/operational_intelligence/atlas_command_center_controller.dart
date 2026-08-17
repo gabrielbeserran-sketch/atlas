@@ -10,8 +10,8 @@ class AtlasCommandCenterController {
     required AtlasCommandCenterCachedService service,
     required AtlasCommandCenterVersionService versionService,
     required this.store,
-  })  : _service = service,
-        _versionService = versionService;
+  }) : _service = service,
+       _versionService = versionService;
 
   final AtlasCommandCenterCachedService _service;
   final AtlasCommandCenterVersionService _versionService;
@@ -48,13 +48,8 @@ class AtlasCommandCenterController {
     });
   }
 
-  Future<AtlasCommandCenterSnapshot> refresh({
-    String? farmName,
-  }) {
-    return load(
-      farmName: farmName,
-      forceRefresh: true,
-    );
+  Future<AtlasCommandCenterSnapshot> refresh({String? farmName}) {
+    return load(farmName: farmName, forceRefresh: true);
   }
 
   Future<AtlasCommandCenterSnapshot> _executeLoad({
@@ -71,18 +66,11 @@ class AtlasCommandCenterController {
 
       final version = _versionService.current(farmName);
 
-      store.publish(
-        farmName: farmName,
-        snapshot: snapshot,
-        version: version,
-      );
+      store.publish(farmName: farmName, snapshot: snapshot, version: version);
 
       return snapshot;
     } catch (error) {
-      store.publishError(
-        farmName: farmName,
-        error: error,
-      );
+      store.publishError(farmName: farmName, error: error);
       rethrow;
     }
   }

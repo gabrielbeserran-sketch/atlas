@@ -8,9 +8,7 @@ enum AtlasOperationalArea {
   general,
 }
 
-String atlasOperationalAreaLabel(
-  AtlasOperationalArea area,
-) {
+String atlasOperationalAreaLabel(AtlasOperationalArea area) {
   switch (area) {
     case AtlasOperationalArea.herd:
       return 'Rebanho';
@@ -29,15 +27,9 @@ String atlasOperationalAreaLabel(
   }
 }
 
-enum AtlasGoalPeriod {
-  monthly,
-  quarterly,
-  annual,
-}
+enum AtlasGoalPeriod { monthly, quarterly, annual }
 
-String atlasGoalPeriodLabel(
-  AtlasGoalPeriod period,
-) {
+String atlasGoalPeriodLabel(AtlasGoalPeriod period) {
   switch (period) {
     case AtlasGoalPeriod.monthly:
       return 'Mensal';
@@ -48,16 +40,9 @@ String atlasGoalPeriodLabel(
   }
 }
 
-enum AtlasGoalMetricType {
-  percentage,
-  quantity,
-  currency,
-  score,
-}
+enum AtlasGoalMetricType { percentage, quantity, currency, score }
 
-String atlasGoalMetricTypeLabel(
-  AtlasGoalMetricType type,
-) {
+String atlasGoalMetricTypeLabel(AtlasGoalMetricType type) {
   switch (type) {
     case AtlasGoalMetricType.percentage:
       return 'Percentual';
@@ -108,15 +93,12 @@ class AtlasOperationalGoal {
       return 0;
     }
 
-    return (currentValue / targetValue * 100)
-        .clamp(0.0, 100.0);
+    return (currentValue / targetValue * 100).clamp(0.0, 100.0);
   }
 
-  bool get isCompleted =>
-      targetValue > 0 && currentValue >= targetValue;
+  bool get isCompleted => targetValue > 0 && currentValue >= targetValue;
 
-  bool get isOverdue =>
-      !isCompleted && endAt.isBefore(DateTime.now());
+  bool get isOverdue => !isCompleted && endAt.isBefore(DateTime.now());
 
   AtlasOperationalGoal copyWith({
     String? title,
@@ -144,8 +126,7 @@ class AtlasOperationalGoal {
       currentValue: currentValue ?? this.currentValue,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
-      farmName:
-          replaceFarmName ? farmName : this.farmName,
+      farmName: replaceFarmName ? farmName : this.farmName,
       active: active ?? this.active,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -171,9 +152,7 @@ class AtlasOperationalGoal {
     };
   }
 
-  factory AtlasOperationalGoal.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasOperationalGoal.fromMap(Map<String, dynamic> map) {
     return AtlasOperationalGoal(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
@@ -186,31 +165,24 @@ class AtlasOperationalGoal {
         (value) => value.name == map['period']?.toString(),
         orElse: () => AtlasGoalPeriod.monthly,
       ),
-      metricType:
-          AtlasGoalMetricType.values.firstWhere(
-        (value) =>
-            value.name == map['metricType']?.toString(),
+      metricType: AtlasGoalMetricType.values.firstWhere(
+        (value) => value.name == map['metricType']?.toString(),
         orElse: () => AtlasGoalMetricType.percentage,
       ),
       targetValue: _readDouble(map['targetValue']),
       currentValue: _readDouble(map['currentValue']),
-      startAt: DateTime.tryParse(
-            map['startAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(
-            map['endAt']?.toString() ?? '',
-          ) ??
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ??
           DateTime.now().add(const Duration(days: 30)),
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            map['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(map['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

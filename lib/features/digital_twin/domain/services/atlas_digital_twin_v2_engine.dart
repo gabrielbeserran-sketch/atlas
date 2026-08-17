@@ -35,19 +35,26 @@ class AtlasDigitalTwinV2Engine {
         ? 0.85
         : (1 + request.investmentValue / 250000).clamp(1.0, 1.40);
 
-    final areaVariation = normalizedChange * 0.42 * horizonFactor * investmentFactor;
+    final areaVariation =
+        normalizedChange * 0.42 * horizonFactor * investmentFactor;
     final projectedAreaScore = (areaScore + areaVariation).clamp(0.0, 100.0);
     final overallWeight = _areaWeight(request.area);
     final scoreVariation = (projectedAreaScore - areaScore) * overallWeight;
-    final projectedScore = (twin.overallScore + scoreVariation).clamp(0.0, 100.0);
+    final projectedScore = (twin.overallScore + scoreVariation).clamp(
+      0.0,
+      100.0,
+    );
     final financialImpact = request.investmentValue == 0
         ? normalizedChange * 850 * horizonFactor
         : request.investmentValue * (normalizedChange / 100) * 1.65;
     final riskReduction = normalizedChange <= 0
         ? 0.0
         : (normalizedChange * 0.72 * horizonFactor).clamp(0.0, 35.0);
-    final confidence = (68 + horizonFactor * 14 - (normalizedChange.abs() * 0.18))
-        .clamp(55.0, 91.0);
+    final confidence =
+        (68 + horizonFactor * 14 - (normalizedChange.abs() * 0.18)).clamp(
+          55.0,
+          91.0,
+        );
 
     return AtlasDigitalTwinSimulationResult(
       request: request,
@@ -67,7 +74,8 @@ class AtlasDigitalTwinV2Engine {
   }
 
   String executiveSummary(AtlasDigitalTwin twin) {
-    final insights = buildInsights(twin)..sort((a, b) => a.score.compareTo(b.score));
+    final insights = buildInsights(twin)
+      ..sort((a, b) => a.score.compareTo(b.score));
     final weakest = insights.first;
     final criticalRisks = twin.risks.where((risk) {
       return risk.level == AtlasFarmRiskLevel.high ||

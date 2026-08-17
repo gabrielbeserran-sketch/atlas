@@ -117,16 +117,9 @@ class _AnimalZootechnicalDashboardScreenState
               padding: const EdgeInsets.all(28),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 52,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 52, color: Colors.red),
                   const SizedBox(height: 14),
-                  Text(
-                    errorMessage!,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(errorMessage!, textAlign: TextAlign.center),
                   const SizedBox(height: 18),
                   FilledButton.icon(
                     onPressed: loadDashboard,
@@ -157,8 +150,7 @@ class _AnimalZootechnicalDashboardScreenState
           const SizedBox(height: 20),
           _SectionTitle(
             title: 'Indicadores individuais',
-            subtitle:
-                'Desempenho atual, tendência e posição dentro do lote.',
+            subtitle: 'Desempenho atual, tendência e posição dentro do lote.',
           ),
           const SizedBox(height: 15),
           Wrap(
@@ -190,14 +182,12 @@ class _AnimalZootechnicalDashboardScreenState
               _MetricCard(
                 title: 'Média do lote',
                 value: '${_weight(dashboard.groupAverageWeight)} kg',
-                subtitle:
-                    'Mediana: ${_weight(dashboard.groupMedianWeight)} kg',
+                subtitle: 'Mediana: ${_weight(dashboard.groupMedianWeight)} kg',
                 icon: Icons.groups_outlined,
               ),
               _MetricCard(
                 title: 'Consistência',
-                value:
-                    '${dashboard.consistencyScore.toStringAsFixed(0)}%',
+                value: '${dashboard.consistencyScore.toStringAsFixed(0)}%',
                 subtitle: 'Regularidade do ganho de peso',
                 icon: Icons.insights_outlined,
               ),
@@ -260,8 +250,7 @@ class _DashboardHeader extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 34,
-              backgroundColor:
-                  const Color(0xFF1B5E20).withValues(alpha: 0.10),
+              backgroundColor: const Color(0xFF1B5E20).withValues(alpha: 0.10),
               child: const Icon(
                 Icons.analytics_outlined,
                 size: 35,
@@ -300,10 +289,7 @@ class _DashboardHeader extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -315,10 +301,7 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(subtitle, style: const TextStyle(color: Colors.black54)),
@@ -350,8 +333,9 @@ class _MetricCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                backgroundColor: const Color(
+                  0xFF1B5E20,
+                ).withValues(alpha: 0.10),
                 child: Icon(icon, color: const Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 13),
@@ -359,10 +343,7 @@ class _MetricCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(color: Colors.black54),
-                    ),
+                    Text(title, style: const TextStyle(color: Colors.black54)),
                     const SizedBox(height: 3),
                     Text(
                       value,
@@ -391,9 +372,7 @@ class _MetricCard extends StatelessWidget {
 }
 
 class _WeightChartCard extends StatelessWidget {
-  const _WeightChartCard({
-    required this.weights,
-  });
+  const _WeightChartCard({required this.weights});
 
   final List<AnimalWeightData> weights;
 
@@ -413,10 +392,7 @@ class _WeightChartCard extends StatelessWidget {
               SizedBox(height: 12),
               Text(
                 'Cadastre pelo menos duas pesagens',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 5),
               Text(
@@ -492,23 +468,15 @@ class _WeightChartPainter extends CustomPainter {
 
     for (var index = 0; index <= 4; index++) {
       final y = top + chartHeight * index / 4;
-      canvas.drawLine(
-        Offset(left, y),
-        Offset(left + chartWidth, y),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(left, y), Offset(left + chartWidth, y), gridPaint);
 
-      final value = maxWeight -
-          (maxWeight - minWeight) * index / 4;
+      final value = maxWeight - (maxWeight - minWeight) * index / 4;
 
       _drawText(
         canvas,
         '${value.toStringAsFixed(0)} kg',
         Offset(0, y - 8),
-        const TextStyle(
-          fontSize: 11,
-          color: Colors.black54,
-        ),
+        const TextStyle(fontSize: 11, color: Colors.black54),
       );
     }
 
@@ -530,8 +498,7 @@ class _WeightChartPainter extends CustomPainter {
           ? left + chartWidth / 2
           : left + chartWidth * index / (weights.length - 1);
       final normalized =
-          (weights[index].weight - minWeight) /
-              (maxWeight - minWeight);
+          (weights[index].weight - minWeight) / (maxWeight - minWeight);
       final y = top + chartHeight * (1 - normalized);
 
       if (index == 0) {
@@ -547,10 +514,7 @@ class _WeightChartPainter extends CustomPainter {
           canvas,
           weights[index].date,
           Offset(x - 28, top + chartHeight + 10),
-          const TextStyle(
-            fontSize: 10,
-            color: Colors.black54,
-          ),
+          const TextStyle(fontSize: 10, color: Colors.black54),
         );
       }
     }
@@ -558,12 +522,7 @@ class _WeightChartPainter extends CustomPainter {
     canvas.drawPath(path, linePaint);
   }
 
-  void _drawText(
-    Canvas canvas,
-    String text,
-    Offset offset,
-    TextStyle style,
-  ) {
+  void _drawText(Canvas canvas, String text, Offset offset, TextStyle style) {
     final painter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
@@ -579,9 +538,7 @@ class _WeightChartPainter extends CustomPainter {
 }
 
 class _ProjectionPanel extends StatelessWidget {
-  const _ProjectionPanel({
-    required this.data,
-  });
+  const _ProjectionPanel({required this.data});
 
   final AnimalZootechnicalDashboardData data;
 
@@ -603,28 +560,16 @@ class _ProjectionPanel extends StatelessWidget {
       spacing: 15,
       runSpacing: 15,
       children: [
-        _ProjectionCard(
-          period: '30 dias',
-          value: data.projectedWeight30Days!,
-        ),
-        _ProjectionCard(
-          period: '60 dias',
-          value: data.projectedWeight60Days!,
-        ),
-        _ProjectionCard(
-          period: '90 dias',
-          value: data.projectedWeight90Days!,
-        ),
+        _ProjectionCard(period: '30 dias', value: data.projectedWeight30Days!),
+        _ProjectionCard(period: '60 dias', value: data.projectedWeight60Days!),
+        _ProjectionCard(period: '90 dias', value: data.projectedWeight90Days!),
       ],
     );
   }
 }
 
 class _ProjectionCard extends StatelessWidget {
-  const _ProjectionCard({
-    required this.period,
-    required this.value,
-  });
+  const _ProjectionCard({required this.period, required this.value});
 
   final String period;
   final double value;
@@ -638,15 +583,9 @@ class _ProjectionCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const Icon(
-                Icons.auto_graph_outlined,
-                color: Color(0xFF1B5E20),
-              ),
+              const Icon(Icons.auto_graph_outlined, color: Color(0xFF1B5E20)),
               const SizedBox(height: 8),
-              Text(
-                period,
-                style: const TextStyle(color: Colors.black54),
-              ),
+              Text(period, style: const TextStyle(color: Colors.black54)),
               const SizedBox(height: 5),
               Text(
                 '${_weight(value)} kg',
@@ -664,9 +603,7 @@ class _ProjectionCard extends StatelessWidget {
 }
 
 class _TechnicalInterpretation extends StatelessWidget {
-  const _TechnicalInterpretation({
-    required this.data,
-  });
+  const _TechnicalInterpretation({required this.data});
 
   final AnimalZootechnicalDashboardData data;
 
@@ -694,9 +631,7 @@ class _TechnicalInterpretation extends StatelessWidget {
 
     if (data.groupRank > 0 && data.groupSize > 1) {
       if (data.percentile >= 75) {
-        observations.add(
-          'O animal está entre os melhores pesos do lote.',
-        );
+        observations.add('O animal está entre os melhores pesos do lote.');
       } else if (data.percentile <= 25) {
         observations.add(
           'O animal está entre os menores pesos do lote e merece acompanhamento.',
@@ -718,17 +653,11 @@ class _TechnicalInterpretation extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.psychology_alt_outlined,
-                  color: Color(0xFF1B5E20),
-                ),
+                Icon(Icons.psychology_alt_outlined, color: Color(0xFF1B5E20)),
                 SizedBox(width: 10),
                 Text(
                   'Interpretação técnica',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -756,10 +685,7 @@ class _TechnicalInterpretation extends StatelessWidget {
             const SizedBox(height: 5),
             const Text(
               'As projeções são lineares e servem como apoio à decisão, não como garantia de desempenho.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
           ],
         ),

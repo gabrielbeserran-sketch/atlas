@@ -10,11 +10,9 @@ class AtlasEnterpriseAuditRepository {
   static final AtlasEnterpriseAuditRepository instance =
       AtlasEnterpriseAuditRepository._();
 
-  static const String _storageKey =
-      'atlas_enterprise_24b_audit_log_v1';
+  static const String _storageKey = 'atlas_enterprise_24b_audit_log_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasEnterpriseAuditRecord>> loadAll() async {
     final raw = await _preferences.getString(_storageKey);
@@ -35,9 +33,7 @@ class AtlasEnterpriseAuditRepository {
     }
   }
 
-  Future<void> append(
-    AtlasEnterpriseAuditRecord record,
-  ) async {
+  Future<void> append(AtlasEnterpriseAuditRecord record) async {
     final values = await loadAll();
     values.add(record);
 

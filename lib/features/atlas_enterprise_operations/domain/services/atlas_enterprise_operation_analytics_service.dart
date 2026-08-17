@@ -52,8 +52,9 @@ class AtlasEnterpriseOperationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -86,16 +87,16 @@ class AtlasEnterpriseOperationAnalyticsService {
     final averageStockLevel = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.stockLevel)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.stockLevel)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -146,34 +147,30 @@ class AtlasEnterpriseOperationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasEnterpriseOperationModule.procurement => const [
-              'Compare preço, prazo, qualidade, frete, impostos e risco antes da aprovação.',
-              'Mantenha requisição, cotação, pedido, recebimento e conferência vinculados.',
-            ],
-          AtlasEnterpriseOperationModule.supplierPortal => const [
-              'Homologue fornecedores com documentos, referências, capacidade e histórico.',
-              'Acompanhe prazo, qualidade, divergências, comunicação e desempenho.',
-            ],
-          AtlasEnterpriseOperationModule.inventoryIntelligence => const [
-              'Defina estoque mínimo, ponto de reposição, validade e consumo previsto.',
-              'Investigue divergências de inventário e produtos sem movimentação.',
-            ],
-          AtlasEnterpriseOperationModule.maintenance => const [
-              'Priorize ativos críticos, manutenção preventiva e análise de falhas recorrentes.',
-              'Registre peças, mão de obra, tempo parado e custo total da ordem.',
-            ],
-          AtlasEnterpriseOperationModule.fieldService => const [
-              'Planeje responsável, deslocamento, materiais, checklist e evidências.',
-              'Feche o chamado com assinatura, resultado, pendências e satisfação.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasEnterpriseOperationModule.procurement => const [
+          'Compare preço, prazo, qualidade, frete, impostos e risco antes da aprovação.',
+          'Mantenha requisição, cotação, pedido, recebimento e conferência vinculados.',
+        ],
+        AtlasEnterpriseOperationModule.supplierPortal => const [
+          'Homologue fornecedores com documentos, referências, capacidade e histórico.',
+          'Acompanhe prazo, qualidade, divergências, comunicação e desempenho.',
+        ],
+        AtlasEnterpriseOperationModule.inventoryIntelligence => const [
+          'Defina estoque mínimo, ponto de reposição, validade e consumo previsto.',
+          'Investigue divergências de inventário e produtos sem movimentação.',
+        ],
+        AtlasEnterpriseOperationModule.maintenance => const [
+          'Priorize ativos críticos, manutenção preventiva e análise de falhas recorrentes.',
+          'Registre peças, mão de obra, tempo parado e custo total da ordem.',
+        ],
+        AtlasEnterpriseOperationModule.fieldService => const [
+          'Planeje responsável, deslocamento, materiais, checklist e evidências.',
+          'Feche o chamado com assinatura, resultado, pendências e satisfação.',
+        ],
+      });
     }
 
     return items;

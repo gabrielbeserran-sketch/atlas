@@ -3,10 +3,7 @@ import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_data.dart
 class AtlasBiService {
   const AtlasBiService();
 
-  AtlasBiData build({
-    required AtlasBiInput input,
-    DateTime? now,
-  }) {
+  AtlasBiData build({required AtlasBiInput input, DateTime? now}) {
     final indicators = input.indicators.map((item) {
       return _buildIndicator(item);
     }).toList();
@@ -35,45 +32,28 @@ class AtlasBiService {
     );
   }
 
-  AtlasBiIndicator _buildIndicator(
-    AtlasBiIndicatorInput input,
-  ) {
+  AtlasBiIndicator _buildIndicator(AtlasBiIndicatorInput input) {
     final orderedSeries = [...input.series]
-      ..sort(
-        (first, second) =>
-            first.recordedAt.compareTo(
-          second.recordedAt,
-        ),
-      );
+      ..sort((first, second) => first.recordedAt.compareTo(second.recordedAt));
 
-    final previousValue =
-        orderedSeries.length >= 2
-            ? orderedSeries[
-                    orderedSeries.length - 2]
-                .value
-            : null;
+    final previousValue = orderedSeries.length >= 2
+        ? orderedSeries[orderedSeries.length - 2].value
+        : null;
 
-    final variationPercent =
-        _variationPercent(
+    final variationPercent = _variationPercent(
       currentValue: input.currentValue,
       previousValue: previousValue,
     );
 
-    final achievement =
-        _targetAchievement(
+    final achievement = _targetAchievement(
       currentValue: input.currentValue,
       targetValue: input.targetValue,
-      higherIsBetter:
-          input.higherIsBetter,
+      higherIsBetter: input.higherIsBetter,
     );
 
-    final status =
-        _statusFromAchievement(achievement);
+    final status = _statusFromAchievement(achievement);
 
-    final trend = _trendFromVariation(
-      variationPercent,
-      previousValue != null,
-    );
+    final trend = _trendFromVariation(variationPercent, previousValue != null);
 
     return AtlasBiIndicator(
       id: input.id,
@@ -85,37 +65,24 @@ class AtlasBiService {
       currentValue: input.currentValue,
       previousValue: previousValue,
       targetValue: input.targetValue,
-      variationPercent:
-          variationPercent,
-      targetAchievementPercent:
-          achievement,
+      variationPercent: variationPercent,
+      targetAchievementPercent: achievement,
       trend: trend,
       status: status,
-      series: List.unmodifiable(
-        orderedSeries,
-      ),
+      series: List.unmodifiable(orderedSeries),
     );
   }
 
-  List<AtlasBiFarmRanking> _buildRankings(
-    List<AtlasBiIndicator> indicators,
-  ) {
-    final grouped =
-        <String, List<AtlasBiIndicator>>{};
+  List<AtlasBiFarmRanking> _buildRankings(List<AtlasBiIndicator> indicators) {
+    final grouped = <String, List<AtlasBiIndicator>>{};
 
     for (final indicator in indicators) {
-      grouped.putIfAbsent(
-        indicator.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(indicator.farmName, () => []);
 
-      grouped[indicator.farmName]!.add(
-        indicator,
-      );
+      grouped[indicator.farmName]!.add(indicator);
     }
 
-    final temporary =
-        <_FarmScore>[];
+    final temporary = <_FarmScore>[];
 
     for (final entry in grouped.entries) {
       final values = entry.value;
@@ -123,122 +90,83 @@ class AtlasBiService {
       final score = values.isEmpty
           ? 0.0
           : values.fold<double>(
-                0,
-                (sum, item) =>
-                    sum +
-                    item
-                        .targetAchievementPercent,
-              ) /
-              values.length;
+                  0,
+                  (sum, item) => sum + item.targetAchievementPercent,
+                ) /
+                values.length;
 
       final positive = values.where((item) {
-        return item.status ==
-                AtlasBiStatus.excellent ||
-            item.status ==
-                AtlasBiStatus.adequate;
+        return item.status == AtlasBiStatus.excellent ||
+            item.status == AtlasBiStatus.adequate;
       }).length;
 
       final critical = values.where((item) {
-        return item.status ==
-            AtlasBiStatus.critical;
+        return item.status == AtlasBiStatus.critical;
       }).length;
 
       temporary.add(
         _FarmScore(
           farmName: entry.key,
-          score: score
-              .clamp(0.0, 100.0)
-              .toDouble(),
+          score: score.clamp(0.0, 100.0).toDouble(),
           positiveIndicators: positive,
           criticalIndicators: critical,
         ),
       );
     }
 
-    temporary.sort(
-      (first, second) =>
-          second.score.compareTo(
-        first.score,
-      ),
-    );
+    temporary.sort((first, second) => second.score.compareTo(first.score));
 
-    return List.generate(
-      temporary.length,
-      (index) {
-        final item = temporary[index];
+    return List.generate(temporary.length, (index) {
+      final item = temporary[index];
 
-        return AtlasBiFarmRanking(
-          position: index + 1,
-          farmName: item.farmName,
-          score: item.score,
-          status:
-              _statusFromScore(item.score),
-          positiveIndicators:
-              item.positiveIndicators,
-          criticalIndicators:
-              item.criticalIndicators,
-        );
-      },
-    );
+      return AtlasBiFarmRanking(
+        position: index + 1,
+        farmName: item.farmName,
+        score: item.score,
+        status: _statusFromScore(item.score),
+        positiveIndicators: item.positiveIndicators,
+        criticalIndicators: item.criticalIndicators,
+      );
+    });
   }
 
-  List<AtlasBiInsight> _orderInsights(
-    List<AtlasBiInsight> insights,
-  ) {
+  List<AtlasBiInsight> _orderInsights(List<AtlasBiInsight> insights) {
     final result = [...insights];
 
     result.sort((first, second) {
-      final firstWeight =
-          _priorityWeight(first.priority);
+      final firstWeight = _priorityWeight(first.priority);
 
-      final secondWeight =
-          _priorityWeight(second.priority);
+      final secondWeight = _priorityWeight(second.priority);
 
       if (firstWeight != secondWeight) {
-        return secondWeight.compareTo(
-          firstWeight,
-        );
+        return secondWeight.compareTo(firstWeight);
       }
 
-      return second.confidencePercent
-          .compareTo(
-        first.confidencePercent,
-      );
+      return second.confidencePercent.compareTo(first.confidencePercent);
     });
 
     return result;
   }
 
-  double _operationScore(
-    List<AtlasBiFarmRanking> rankings,
-  ) {
+  double _operationScore(List<AtlasBiFarmRanking> rankings) {
     if (rankings.isEmpty) {
       return 0;
     }
 
-    final total = rankings.fold<double>(
-      0,
-      (sum, item) => sum + item.score,
-    );
+    final total = rankings.fold<double>(0, (sum, item) => sum + item.score);
 
-    return (total / rankings.length)
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return (total / rankings.length).clamp(0.0, 100.0).toDouble();
   }
 
   double _variationPercent({
     required double currentValue,
     required double? previousValue,
   }) {
-    if (previousValue == null ||
-        previousValue == 0) {
+    if (previousValue == null || previousValue == 0) {
       return 0;
     }
 
-    return ((currentValue -
-                previousValue) /
-            previousValue.abs() *
-            100)
+    return ((currentValue - previousValue) / previousValue.abs() * 100)
         .toDouble();
   }
 
@@ -254,19 +182,13 @@ class AtlasBiService {
     final value = higherIsBetter
         ? currentValue / targetValue * 100
         : currentValue <= 0
-            ? 120.0
-            : targetValue /
-                currentValue *
-                100;
+        ? 120.0
+        : targetValue / currentValue * 100;
 
-    return value
-        .clamp(0.0, 120.0)
-        .toDouble();
+    return value.clamp(0.0, 120.0).toDouble();
   }
 
-  AtlasBiStatus _statusFromAchievement(
-    double value,
-  ) {
+  AtlasBiStatus _statusFromAchievement(double value) {
     if (value >= 100) {
       return AtlasBiStatus.excellent;
     }
@@ -282,9 +204,7 @@ class AtlasBiService {
     return AtlasBiStatus.critical;
   }
 
-  AtlasBiStatus _statusFromScore(
-    double score,
-  ) {
+  AtlasBiStatus _statusFromScore(double score) {
     if (score >= 90) {
       return AtlasBiStatus.excellent;
     }
@@ -300,10 +220,7 @@ class AtlasBiService {
     return AtlasBiStatus.critical;
   }
 
-  AtlasBiTrend _trendFromVariation(
-    double variation,
-    bool hasPrevious,
-  ) {
+  AtlasBiTrend _trendFromVariation(double variation, bool hasPrevious) {
     if (!hasPrevious) {
       return AtlasBiTrend.unavailable;
     }
@@ -327,9 +244,7 @@ class AtlasBiService {
     return AtlasBiTrend.stable;
   }
 
-  int _priorityWeight(
-    AtlasBiPriority priority,
-  ) {
+  int _priorityWeight(AtlasBiPriority priority) {
     switch (priority) {
       case AtlasBiPriority.low:
         return 1;
@@ -348,23 +263,17 @@ class AtlasBiService {
   String _buildSummary({
     required double score,
     required AtlasBiStatus status,
-    required List<AtlasBiIndicator>
-        indicators,
-    required List<AtlasBiFarmRanking>
-        rankings,
-    required List<AtlasBiInsight>
-        insights,
+    required List<AtlasBiIndicator> indicators,
+    required List<AtlasBiFarmRanking> rankings,
+    required List<AtlasBiInsight> insights,
   }) {
     final critical = indicators.where((item) {
-      return item.status ==
-          AtlasBiStatus.critical;
+      return item.status == AtlasBiStatus.critical;
     }).length;
 
     final positive = indicators.where((item) {
-      return item.status ==
-              AtlasBiStatus.excellent ||
-          item.status ==
-              AtlasBiStatus.adequate;
+      return item.status == AtlasBiStatus.excellent ||
+          item.status == AtlasBiStatus.adequate;
     }).length;
 
     return 'O Atlas BI consolidou '

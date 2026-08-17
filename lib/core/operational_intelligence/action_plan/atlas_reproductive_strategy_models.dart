@@ -1,13 +1,6 @@
-enum AtlasReproductivePlanStatus {
-  planned,
-  active,
-  completed,
-  cancelled,
-}
+enum AtlasReproductivePlanStatus { planned, active, completed, cancelled }
 
-String atlasReproductivePlanStatusLabel(
-  AtlasReproductivePlanStatus value,
-) {
+String atlasReproductivePlanStatusLabel(AtlasReproductivePlanStatus value) {
   switch (value) {
     case AtlasReproductivePlanStatus.planned:
       return 'Planejado';
@@ -58,44 +51,37 @@ class AtlasReproductiveAnnualPlan {
       targetFemales <= 0 ? 0 : budget / targetFemales;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'year': year,
-        'targetFemales': targetFemales,
-        'targetPregnancyRatePercent':
-            targetPregnancyRatePercent,
-        'targetCalves': targetCalves,
-        'budget': budget,
-        'startAt': startAt.toIso8601String(),
-        'endAt': endAt.toIso8601String(),
-        'status': status.name,
-        'team': team,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'title': title,
+    'year': year,
+    'targetFemales': targetFemales,
+    'targetPregnancyRatePercent': targetPregnancyRatePercent,
+    'targetCalves': targetCalves,
+    'budget': budget,
+    'startAt': startAt.toIso8601String(),
+    'endAt': endAt.toIso8601String(),
+    'status': status.name,
+    'team': team,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasReproductiveAnnualPlan.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasReproductiveAnnualPlan.fromMap(Map<String, dynamic> map) {
     return AtlasReproductiveAnnualPlan(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       year: _readInt(map['year']),
       targetFemales: _readInt(map['targetFemales']),
-      targetPregnancyRatePercent:
-          _readDouble(map['targetPregnancyRatePercent']),
+      targetPregnancyRatePercent: _readDouble(
+        map['targetPregnancyRatePercent'],
+      ),
       targetCalves: _readInt(map['targetCalves']),
       budget: _readDouble(map['budget']),
-      startAt: DateTime.tryParse(
-            map['startAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(
-            map['endAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      status:
-          AtlasReproductivePlanStatus.values.firstWhere(
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ?? DateTime.now(),
+      status: AtlasReproductivePlanStatus.values.firstWhere(
         (value) => value.name == map['status']?.toString(),
         orElse: () => AtlasReproductivePlanStatus.planned,
       ),
@@ -147,10 +133,7 @@ class AtlasReproductiveSimulation {
       (females * expectedPregnancyRatePercent / 100).round();
 
   int get expectedCalves =>
-      (expectedPregnancies *
-              expectedCalfSurvivalPercent /
-              100)
-          .round();
+      (expectedPregnancies * expectedCalfSurvivalPercent / 100).round();
 
   double get totalCost => females * costPerFemale;
   double get expectedRevenue => expectedCalves * expectedCalfValue;
@@ -159,33 +142,30 @@ class AtlasReproductiveSimulation {
       totalCost <= 0 ? 0 : expectedResult / totalCost * 100;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'females': females,
-        'expectedPregnancyRatePercent':
-            expectedPregnancyRatePercent,
-        'expectedCalfSurvivalPercent':
-            expectedCalfSurvivalPercent,
-        'costPerFemale': costPerFemale,
-        'expectedCalfValue': expectedCalfValue,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'title': title,
+    'females': females,
+    'expectedPregnancyRatePercent': expectedPregnancyRatePercent,
+    'expectedCalfSurvivalPercent': expectedCalfSurvivalPercent,
+    'costPerFemale': costPerFemale,
+    'expectedCalfValue': expectedCalfValue,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasReproductiveSimulation.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasReproductiveSimulation.fromMap(Map<String, dynamic> map) {
     return AtlasReproductiveSimulation(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       females: _readInt(map['females']),
-      expectedPregnancyRatePercent:
-          _readDouble(map['expectedPregnancyRatePercent']),
-      expectedCalfSurvivalPercent:
-          _readDouble(map['expectedCalfSurvivalPercent']),
+      expectedPregnancyRatePercent: _readDouble(
+        map['expectedPregnancyRatePercent'],
+      ),
+      expectedCalfSurvivalPercent: _readDouble(
+        map['expectedCalfSurvivalPercent'],
+      ),
       costPerFemale: _readDouble(map['costPerFemale']),
-      expectedCalfValue:
-          _readDouble(map['expectedCalfValue']),
+      expectedCalfValue: _readDouble(map['expectedCalfValue']),
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

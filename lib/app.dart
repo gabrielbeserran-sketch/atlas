@@ -4,7 +4,7 @@ import 'package:projeto_atlas/core/operational_intelligence/atlas_command_center
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_runtime.dart';
 import 'package:projeto_atlas/features/unified_workflow/domain/services/atlas_unified_workflow_engine.dart';
 
-import 'features/authentication/presentation/screens/login_screen.dart';
+import 'core/session/atlas_session_gate.dart';
 import 'shared/theme/app_theme.dart';
 
 class AtlasApp extends StatefulWidget {
@@ -40,7 +40,7 @@ class _AtlasAppState extends State<AtlasApp> {
         title: 'Projeto Atlas',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const LoginScreen(),
+        home: const AtlasSessionGate(),
       ),
     );
   }

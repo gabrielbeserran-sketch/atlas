@@ -16,6 +16,7 @@ import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 enum AnimalOperationsView {
   validation,
@@ -51,12 +52,10 @@ class _AnimalOperationsCenterScreenState
       AnimalOperationalTaskStorageService();
   final AnimalDocumentStorageService documentStorage =
       AnimalDocumentStorageService();
-  final AnimalHealthStorageService healthStorage =
-      AnimalHealthStorageService();
+  final AnimalHealthStorageService healthStorage = AnimalHealthStorageService();
   final AnimalReproductionStorageService reproductionStorage =
       AnimalReproductionStorageService();
-  final AnimalWeightStorageService weightStorage =
-      AnimalWeightStorageService();
+  final AnimalWeightStorageService weightStorage = AnimalWeightStorageService();
   final AnimalNutritionStorageService nutritionStorage =
       AnimalNutritionStorageService();
   final AnimalEnterpriseService animalEnterpriseService =
@@ -150,8 +149,7 @@ class _AnimalOperationsCenterScreenState
       tasks = localResults[0] as List<AnimalOperationalTask>;
       documents = localResults[1] as List<AnimalDocumentData>;
       health = localResults[2] as List<AnimalHealthData>;
-      reproduction =
-          localResults[3] as List<AnimalReproductionData>;
+      reproduction = localResults[3] as List<AnimalReproductionData>;
       weights = localResults[4] as List<AnimalWeightData>;
       nutrition = localResults[5] as List<AnimalNutritionPlan>;
       farmAnimals = animals;
@@ -199,8 +197,7 @@ class _AnimalOperationsCenterScreenState
     if (health.isEmpty) {
       items.add('Completar o histórico sanitário.');
     }
-    if (reproduction.isEmpty &&
-        widget.animal.sex.toLowerCase().contains('f')) {
+    if (reproduction.isEmpty && widget.animal.sex.toLowerCase().contains('f')) {
       items.add('Cadastrar a situação reprodutiva.');
     }
     if (nutrition.isEmpty) {
@@ -211,9 +208,7 @@ class _AnimalOperationsCenterScreenState
     }
 
     for (final document in documentAlerts) {
-      items.add(
-        '${document.title}: ${document.expirationStatus}.',
-      );
+      items.add('${document.title}: ${document.expirationStatus}.');
     }
 
     return items;
@@ -257,9 +252,9 @@ class _AnimalOperationsCenterScreenState
         ).compareTo(parseEnterpriseDate(second.date)),
       );
 
-    final days = parseEnterpriseDate(sorted.last.date)
-        .difference(parseEnterpriseDate(sorted.first.date))
-        .inDays;
+    final days = parseEnterpriseDate(
+      sorted.last.date,
+    ).difference(parseEnterpriseDate(sorted.first.date)).inDays;
 
     if (days <= 0) return null;
 
@@ -287,8 +282,7 @@ class _AnimalOperationsCenterScreenState
     setState(() {
       tasks[index] = task.copyWith(
         completed: completed,
-        completedAt:
-            completed ? DateTime.now().toIso8601String() : '',
+        completedAt: completed ? DateTime.now().toIso8601String() : '',
       );
     });
 
@@ -304,17 +298,12 @@ class _AnimalOperationsCenterScreenState
 
   String viewTitle() {
     return switch (selectedView) {
-      AnimalOperationsView.validation =>
-        'Validação integral dos módulos',
+      AnimalOperationsView.validation => 'Validação integral dos módulos',
       AnimalOperationsView.agenda => 'Agenda inteligente',
-      AnimalOperationsView.pending =>
-        'Central de pendências',
-      AnimalOperationsView.integration =>
-        'Integração Enterprise',
-      AnimalOperationsView.farmDashboard =>
-        'Dashboard da fazenda',
-      AnimalOperationsView.companyDashboard =>
-        'Dashboard da empresa',
+      AnimalOperationsView.pending => 'Central de pendências',
+      AnimalOperationsView.integration => 'Integração Enterprise',
+      AnimalOperationsView.farmDashboard => 'Dashboard da fazenda',
+      AnimalOperationsView.companyDashboard => 'Dashboard da empresa',
     };
   }
 
@@ -331,14 +320,13 @@ class _AnimalOperationsCenterScreenState
           ),
         ],
       ),
-      floatingActionButton:
-          selectedView == AnimalOperationsView.agenda
-              ? FloatingActionButton.extended(
-                  onPressed: loading ? null : createTask,
-                  icon: const Icon(Icons.add_task),
-                  label: const Text('Nova tarefa'),
-                )
-              : null,
+      floatingActionButton: selectedView == AnimalOperationsView.agenda
+          ? FloatingActionButton.extended(
+              onPressed: loading ? null : createTask,
+              icon: const Icon(Icons.add_task),
+              label: const Text('Nova tarefa'),
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -375,16 +363,12 @@ class _AnimalOperationsCenterScreenState
 
   Widget _buildSelectedView() {
     return switch (selectedView) {
-      AnimalOperationsView.validation =>
-        _buildValidation(),
+      AnimalOperationsView.validation => _buildValidation(),
       AnimalOperationsView.agenda => _buildAgenda(),
       AnimalOperationsView.pending => _buildPending(),
-      AnimalOperationsView.integration =>
-        _buildIntegration(),
-      AnimalOperationsView.farmDashboard =>
-        _buildFarmDashboard(),
-      AnimalOperationsView.companyDashboard =>
-        _buildCompanyDashboard(),
+      AnimalOperationsView.integration => _buildIntegration(),
+      AnimalOperationsView.farmDashboard => _buildFarmDashboard(),
+      AnimalOperationsView.companyDashboard => _buildCompanyDashboard(),
     };
   }
 
@@ -402,7 +386,8 @@ class _AnimalOperationsCenterScreenState
       ),
       (
         title: 'Reprodução Enterprise',
-        ok: reproduction.isNotEmpty ||
+        ok:
+            reproduction.isNotEmpty ||
             !widget.animal.sex.toLowerCase().contains('f'),
         detail: '${reproduction.length} registros reprodutivos',
       ),
@@ -521,9 +506,7 @@ class _AnimalOperationsCenterScreenState
           const Card(
             child: ListTile(
               title: Text('Nenhuma tarefa aberta.'),
-              subtitle: Text(
-                'Clique em Nova tarefa para criar a agenda.',
-              ),
+              subtitle: Text('Clique em Nova tarefa para criar a agenda.'),
             ),
           )
         else
@@ -594,9 +577,7 @@ class _AnimalOperationsCenterScreenState
           title: 'Central de atenção',
           icon: Icons.priority_high_outlined,
           items: all.isEmpty
-              ? const [
-                  'Nenhuma pendência prioritária foi identificada.',
-                ]
+              ? const ['Nenhuma pendência prioritária foi identificada.']
               : all,
         ),
       ],
@@ -651,19 +632,14 @@ class _AnimalOperationsCenterScreenState
   }
 
   Widget _buildFarmDashboard() {
-    final totalAnimals =
-        farmAnimals.isEmpty ? 1 : farmAnimals.length;
+    final totalAnimals = farmAnimals.isEmpty ? 1 : farmAnimals.length;
     final activeAnimals = farmAnimals.isEmpty
         ? (_isAnimalActive(widget.animal) ? 1 : 0)
         : farmAnimals.where(_isAnimalActive).length;
     final totalWeight = farmAnimals.isEmpty
         ? latestWeight
-        : farmAnimals.fold<double>(
-            0,
-            (total, animal) => total + animal.weight,
-          );
-    final averageWeight =
-        totalAnimals == 0 ? 0 : totalWeight / totalAnimals;
+        : farmAnimals.fold<double>(0, (total, animal) => total + animal.weight);
+    final averageWeight = totalAnimals == 0 ? 0 : totalWeight / totalAnimals;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,7 +654,7 @@ class _AnimalOperationsCenterScreenState
               subtitle: backendAvailable
                   ? 'Cadastro Enterprise da fazenda'
                   : 'Recorte local disponível',
-              icon: Icons.pets_outlined,
+              icon: AtlasLivestockIcons.cow,
             ),
             EnterpriseMetricCard(
               title: 'Ativos',
@@ -746,9 +722,7 @@ class _AnimalOperationsCenterScreenState
             ),
             EnterpriseMetricCard(
               title: 'Risco operacional',
-              value: automaticPendingItems.isEmpty
-                  ? 'Controlado'
-                  : 'Atenção',
+              value: automaticPendingItems.isEmpty ? 'Controlado' : 'Atenção',
               subtitle:
                   '${automaticPendingItems.length} pendências automáticas',
               icon: Icons.shield_outlined,
@@ -773,10 +747,7 @@ class _AnimalOperationsCenterScreenState
 }
 
 class _ViewSelector extends StatelessWidget {
-  const _ViewSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ViewSelector({required this.selected, required this.onSelected});
 
   final AnimalOperationsView selected;
   final ValueChanged<AnimalOperationsView> onSelected;
@@ -784,30 +755,12 @@ class _ViewSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = [
-      (
-        view: AnimalOperationsView.validation,
-        label: 'Validação',
-      ),
-      (
-        view: AnimalOperationsView.agenda,
-        label: 'Agenda',
-      ),
-      (
-        view: AnimalOperationsView.pending,
-        label: 'Pendências',
-      ),
-      (
-        view: AnimalOperationsView.integration,
-        label: 'Integração',
-      ),
-      (
-        view: AnimalOperationsView.farmDashboard,
-        label: 'Fazenda',
-      ),
-      (
-        view: AnimalOperationsView.companyDashboard,
-        label: 'Empresa',
-      ),
+      (view: AnimalOperationsView.validation, label: 'Validação'),
+      (view: AnimalOperationsView.agenda, label: 'Agenda'),
+      (view: AnimalOperationsView.pending, label: 'Pendências'),
+      (view: AnimalOperationsView.integration, label: 'Integração'),
+      (view: AnimalOperationsView.farmDashboard, label: 'Fazenda'),
+      (view: AnimalOperationsView.companyDashboard, label: 'Empresa'),
     ];
 
     return Card(
@@ -819,17 +772,12 @@ class _ViewSelector extends StatelessWidget {
 
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(
-                  right: item == items.last ? 0 : 8,
-                ),
+                padding: EdgeInsets.only(right: item == items.last ? 0 : 8),
                 child: FilledButton.tonal(
                   onPressed: () => onSelected(item.view),
                   style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
                   ),
                   child: Text(
                     item.label,
@@ -867,16 +815,11 @@ class _TaskCard extends StatelessWidget {
 
     return Card(
       child: ListTile(
-        leading: Checkbox(
-          value: task.completed,
-          onChanged: (_) => onToggle(),
-        ),
+        leading: Checkbox(value: task.completed, onChanged: (_) => onToggle()),
         title: Text(
           task.title,
           style: TextStyle(
-            decoration: task.completed
-                ? TextDecoration.lineThrough
-                : null,
+            decoration: task.completed ? TextDecoration.lineThrough : null,
           ),
         ),
         subtitle: Text(
@@ -899,8 +842,7 @@ class _TaskFormDialog extends StatefulWidget {
   const _TaskFormDialog();
 
   @override
-  State<_TaskFormDialog> createState() =>
-      _TaskFormDialogState();
+  State<_TaskFormDialog> createState() => _TaskFormDialogState();
 }
 
 class _TaskFormDialogState extends State<_TaskFormDialog> {
@@ -911,9 +853,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
 
   String category = 'Geral';
   String priority = 'Média';
-  DateTime dueDate = DateTime.now().add(
-    const Duration(days: 7),
-  );
+  DateTime dueDate = DateTime.now().add(const Duration(days: 7));
 
   @override
   void dispose() {
@@ -927,12 +867,8 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
     final selected = await showDatePicker(
       context: context,
       initialDate: dueDate,
-      firstDate: DateTime.now().subtract(
-        const Duration(days: 365),
-      ),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -972,9 +908,7 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
               children: [
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -986,30 +920,27 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
                   controller: description,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Descrição'),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: category,
-                  decoration: const InputDecoration(
-                    labelText: 'Categoria',
-                  ),
-                  items: const [
-                    'Geral',
-                    'Sanidade',
-                    'Reprodução',
-                    'Pesagem',
-                    'Nutrição',
-                    'Documentos',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(),
+                  decoration: const InputDecoration(labelText: 'Categoria'),
+                  items:
+                      const [
+                            'Geral',
+                            'Sanidade',
+                            'Reprodução',
+                            'Pesagem',
+                            'Nutrição',
+                            'Documentos',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => category = value);
@@ -1018,15 +949,11 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
                   items: const ['Baixa', 'Média', 'Alta']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(),
                   onChanged: (value) {
@@ -1037,18 +964,14 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Data prevista'),
                   subtitle: Text(enterpriseDate(dueDate)),
-                  trailing: const Icon(
-                    Icons.calendar_month_outlined,
-                  ),
+                  trailing: const Icon(Icons.calendar_month_outlined),
                   onTap: chooseDate,
                 ),
               ],
@@ -1061,15 +984,11 @@ class _TaskFormDialogState extends State<_TaskFormDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
-
 
 bool _isAnimalActive(AnimalData animal) {
   final normalizedStatus = animal.status.trim().toLowerCase();
@@ -1081,17 +1000,11 @@ bool _isAnimalActive(AnimalData animal) {
 
 IconData _viewIcon(AnimalOperationsView view) {
   return switch (view) {
-    AnimalOperationsView.validation =>
-      Icons.fact_check_outlined,
-    AnimalOperationsView.agenda =>
-      Icons.calendar_month_outlined,
-    AnimalOperationsView.pending =>
-      Icons.notification_important_outlined,
-    AnimalOperationsView.integration =>
-      Icons.sync_alt_outlined,
-    AnimalOperationsView.farmDashboard =>
-      Icons.agriculture_outlined,
-    AnimalOperationsView.companyDashboard =>
-      Icons.domain_outlined,
+    AnimalOperationsView.validation => Icons.fact_check_outlined,
+    AnimalOperationsView.agenda => Icons.calendar_month_outlined,
+    AnimalOperationsView.pending => Icons.notification_important_outlined,
+    AnimalOperationsView.integration => Icons.sync_alt_outlined,
+    AnimalOperationsView.farmDashboard => Icons.agriculture_outlined,
+    AnimalOperationsView.companyDashboard => Icons.domain_outlined,
   };
 }

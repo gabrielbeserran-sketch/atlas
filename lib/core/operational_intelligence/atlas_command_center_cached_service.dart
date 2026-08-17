@@ -6,10 +6,9 @@ class AtlasCommandCenterCachedService {
   AtlasCommandCenterCachedService({
     AtlasCommandCenterService? commandCenterService,
     AtlasCommandCenterCacheService? cacheService,
-  })  : _commandCenterService =
-            commandCenterService ?? AtlasCommandCenterService(),
-        _cacheService =
-            cacheService ?? AtlasCommandCenterCacheService();
+  }) : _commandCenterService =
+           commandCenterService ?? AtlasCommandCenterService(),
+       _cacheService = cacheService ?? AtlasCommandCenterCacheService();
 
   final AtlasCommandCenterService _commandCenterService;
   final AtlasCommandCenterCacheService _cacheService;
@@ -25,12 +24,8 @@ class AtlasCommandCenterCachedService {
     int insightLimit = 20,
     bool forceRefresh = false,
   }) async {
-    if (!forceRefresh &&
-        startDate == null &&
-        endDate == null) {
-      final cached = _cacheService.get(
-        farmName: farmName,
-      );
+    if (!forceRefresh && startDate == null && endDate == null) {
+      final cached = _cacheService.get(farmName: farmName);
 
       if (cached != null) {
         return cached;
@@ -47,10 +42,7 @@ class AtlasCommandCenterCachedService {
     );
 
     if (startDate == null && endDate == null) {
-      _cacheService.put(
-        farmName: farmName,
-        snapshot: snapshot,
-      );
+      _cacheService.put(farmName: farmName, snapshot: snapshot);
     }
 
     return snapshot;

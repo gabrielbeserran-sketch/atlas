@@ -183,9 +183,7 @@ class _AtlasCommandCenterActionPlanScreenState
               IconButton(
                 tooltip: 'Resultados e inteligência financeira',
                 onPressed: _openResultsIntelligence,
-                icon: const Icon(
-                  Icons.insights_outlined,
-                ),
+                icon: const Icon(Icons.insights_outlined),
               ),
               IconButton(
                 tooltip: 'Metas e desempenho',
@@ -215,36 +213,28 @@ class _AtlasCommandCenterActionPlanScreenState
                 onPressed: controller.actions.isEmpty
                     ? null
                     : _openDecisionMonitoring,
-                icon: const Icon(
-                  Icons.gavel_outlined,
-                ),
+                icon: const Icon(Icons.gavel_outlined),
               ),
               IconButton(
                 tooltip: 'Reuniões de execução',
                 onPressed: controller.actions.isEmpty
                     ? null
                     : _openExecutionMeetings,
-                icon: const Icon(
-                  Icons.groups_outlined,
-                ),
+                icon: const Icon(Icons.groups_outlined),
               ),
               IconButton(
                 tooltip: 'Revisão semanal',
                 onPressed: controller.actions.isEmpty
                     ? null
                     : _openWeeklyReview,
-                icon: const Icon(
-                  Icons.calendar_view_week_outlined,
-                ),
+                icon: const Icon(Icons.calendar_view_week_outlined),
               ),
               IconButton(
                 tooltip: 'Central de atenção',
                 onPressed: controller.actions.isEmpty
                     ? null
                     : _openAttentionCenter,
-                icon: const Icon(
-                  Icons.notification_important_outlined,
-                ),
+                icon: const Icon(Icons.notification_important_outlined),
               ),
               IconButton(
                 tooltip: 'Atualizar',
@@ -413,10 +403,8 @@ class _AtlasCommandCenterActionPlanScreenState
                       action: action,
                       onStatusChanged: (status) =>
                           controller.updateStatus(action, status),
-                      lastUpdateAt:
-                          controller.latestUpdateFor(action.id),
-                      needsFollowUp:
-                          controller.isWithoutRecentFollowUp(action),
+                      lastUpdateAt: controller.latestUpdateFor(action.id),
+                      needsFollowUp: controller.isWithoutRecentFollowUp(action),
                       onEditExecution: () => _editExecution(action),
                       onAddFollowUp: () => _addFollowUp(action),
                       onOpenHistory: () => _openHistory(action),
@@ -432,9 +420,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openAdvancedEconomicScenarios() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasEconomicScenarioScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasEconomicScenarioScreen(actionController: controller),
       ),
     );
   }
@@ -442,9 +429,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openExecutive360() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasExecutive360Screen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasExecutive360Screen(actionController: controller),
       ),
     );
   }
@@ -452,9 +437,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openPeopleManagement() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasPeopleManagementScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasPeopleManagementScreen(actionController: controller),
       ),
     );
   }
@@ -462,9 +446,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openCommercialIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasCommercialScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasCommercialScreen(actionController: controller),
       ),
     );
   }
@@ -472,9 +454,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openClimateIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasClimateScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasClimateScreen(actionController: controller),
       ),
     );
   }
@@ -482,9 +462,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openEsg() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasEsgScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasEsgScreen(actionController: controller),
       ),
     );
   }
@@ -492,9 +470,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openPastureStrategy() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasPastureStrategyScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasPastureStrategyScreen(actionController: controller),
       ),
     );
   }
@@ -502,9 +479,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openAgriculture() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasAgricultureScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasAgricultureScreen(actionController: controller),
       ),
     );
   }
@@ -512,9 +487,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openHealthStrategy() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasHealthStrategyScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasHealthStrategyScreen(actionController: controller),
       ),
     );
   }
@@ -522,9 +495,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openNutritionStrategy() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasNutritionStrategyScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasNutritionStrategyScreen(actionController: controller),
       ),
     );
   }
@@ -532,9 +504,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openEconomicIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasEconomicIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasEconomicIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -542,9 +513,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openReproductiveStrategy() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasReproductiveStrategyScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasReproductiveStrategyScreen(actionController: controller),
       ),
     );
   }
@@ -552,9 +522,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openAssetMaintenance() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasAssetMaintenanceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasAssetMaintenanceScreen(actionController: controller),
       ),
     );
   }
@@ -562,9 +531,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openInventoryManagement() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasInventoryManagementScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasInventoryManagementScreen(actionController: controller),
       ),
     );
   }
@@ -572,9 +540,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openPastureManagement() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasPastureManagementScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasPastureManagementScreen(actionController: controller),
       ),
     );
   }
@@ -582,9 +549,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openNutritionIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasNutritionIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasNutritionIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -592,9 +558,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openHealthIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasHealthIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasHealthIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -602,9 +567,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openReproductiveIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasReproductiveIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasReproductiveIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -612,9 +576,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openFinancialManagement() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasFinancialManagementScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasFinancialManagementScreen(actionController: controller),
       ),
     );
   }
@@ -622,9 +585,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openExecutiveIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasExecutiveIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasExecutiveIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -632,9 +594,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openResultsIntelligence() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasResultsIntelligenceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasResultsIntelligenceScreen(actionController: controller),
       ),
     );
   }
@@ -642,9 +603,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openStrategyPerformance() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasStrategyPerformanceScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasStrategyPerformanceScreen(actionController: controller),
       ),
     );
   }
@@ -652,9 +612,7 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openTeamManagement() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasTeamManagementScreen(
-          actionController: controller,
-        ),
+        builder: (_) => AtlasTeamManagementScreen(actionController: controller),
       ),
     );
   }
@@ -662,9 +620,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openDecisionMonitoring() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasMeetingDecisionMonitoringScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasMeetingDecisionMonitoringScreen(actionController: controller),
       ),
     );
   }
@@ -672,9 +629,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openExecutionMeetings() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasExecutionMeetingScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasExecutionMeetingScreen(actionController: controller),
       ),
     );
   }
@@ -682,9 +638,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openWeeklyReview() {
     return Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasExecutionWeeklyReviewScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasExecutionWeeklyReviewScreen(actionController: controller),
       ),
     );
   }
@@ -692,9 +647,8 @@ class _AtlasCommandCenterActionPlanScreenState
   Future<void> _openAttentionCenter() async {
     final actionId = await Navigator.of(context).push<String>(
       MaterialPageRoute<String>(
-        builder: (_) => AtlasActionAttentionScreen(
-          actionController: controller,
-        ),
+        builder: (_) =>
+            AtlasActionAttentionScreen(actionController: controller),
       ),
     );
 
@@ -713,10 +667,7 @@ class _AtlasCommandCenterActionPlanScreenState
     final action = controller.actions
         .where((item) => item.id == actionId)
         .cast<AtlasCommandCenterAction?>()
-        .firstWhere(
-          (item) => item != null,
-          orElse: () => null,
-        );
+        .firstWhere((item) => item != null, orElse: () => null);
 
     if (action != null) {
       searchController.text = action.title;
@@ -757,16 +708,15 @@ class _AtlasCommandCenterActionPlanScreenState
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
-                      final selected =
-                          await Navigator.of(dialogContext)
-                              .push<AtlasTeamMember?>(
-                        MaterialPageRoute<AtlasTeamMember?>(
-                          builder: (_) => AtlasTeamMemberSelector(
-                            farmName: controller.farmName,
-                            selectedMemberId: responsibleId,
-                          ),
-                        ),
-                      );
+                      final selected = await Navigator.of(dialogContext)
+                          .push<AtlasTeamMember?>(
+                            MaterialPageRoute<AtlasTeamMember?>(
+                              builder: (_) => AtlasTeamMemberSelector(
+                                farmName: controller.farmName,
+                                selectedMemberId: responsibleId,
+                              ),
+                            ),
+                          );
 
                       if (!dialogContext.mounted) {
                         return;
@@ -894,9 +844,8 @@ class _AtlasCommandCenterActionPlanScreenState
       notes: result.notes,
     );
   }
-  Future<void> _addFollowUp(
-    AtlasCommandCenterAction action,
-  ) async {
+
+  Future<void> _addFollowUp(AtlasCommandCenterAction action) async {
     final noteController = TextEditingController();
 
     final note = await showDialog<String>(
@@ -921,8 +870,7 @@ class _AtlasCommandCenterActionPlanScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             FilledButton.icon(
@@ -949,27 +897,18 @@ class _AtlasCommandCenterActionPlanScreenState
       return;
     }
 
-    await controller.addFollowUp(
-      action: action,
-      note: note,
-    );
+    await controller.addFollowUp(action: action, note: note);
 
     if (!mounted) {
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Acompanhamento registrado com sucesso.',
-        ),
-      ),
+      const SnackBar(content: Text('Acompanhamento registrado com sucesso.')),
     );
   }
 
-  Future<void> _openHistory(
-    AtlasCommandCenterAction action,
-  ) async {
+  Future<void> _openHistory(AtlasCommandCenterAction action) async {
     final updates = await controller.loadUpdates(action);
 
     if (!mounted) {
@@ -986,25 +925,19 @@ class _AtlasCommandCenterActionPlanScreenState
             height: 460,
             child: updates.isEmpty
                 ? const Center(
-                    child: Text(
-                      'Nenhum acompanhamento foi registrado.',
-                    ),
+                    child: Text('Nenhum acompanhamento foi registrado.'),
                   )
                 : ListView.separated(
                     itemCount: updates.length,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 24),
+                    separatorBuilder: (_, __) => const Divider(height: 24),
                     itemBuilder: (context, index) {
-                      return _ActionUpdateTile(
-                        update: updates[index],
-                      );
+                      return _ActionUpdateTile(update: updates[index]);
                     },
                   ),
           ),
           actions: [
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Fechar'),
             ),
           ],
@@ -1012,14 +945,10 @@ class _AtlasCommandCenterActionPlanScreenState
       },
     );
   }
-
 }
 
-
 class _ActionUpdateTile extends StatelessWidget {
-  const _ActionUpdateTile({
-    required this.update,
-  });
+  const _ActionUpdateTile({required this.update});
 
   final AtlasCommandCenterActionUpdate update;
 
@@ -1027,14 +956,10 @@ class _ActionUpdateTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        child: Text('${update.progressPercent}%'),
-      ),
+      leading: CircleAvatar(child: Text('${update.progressPercent}%')),
       title: Text(
         update.note,
-        style: const TextStyle(
-          fontWeight: FontWeight.w700,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 6),

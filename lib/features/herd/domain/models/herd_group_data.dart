@@ -79,7 +79,8 @@ class HerdGroupData {
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
       category: map['category']?.toString() ?? '',
-      capacity: (map['capacity'] as num?)?.toInt() ??
+      capacity:
+          (map['capacity'] as num?)?.toInt() ??
           (map['animals'] as num?)?.toInt() ??
           0,
       paddock: map['paddock']?.toString() ?? '',

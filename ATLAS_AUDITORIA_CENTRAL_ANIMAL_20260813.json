@@ -1,0 +1,21 @@
+{
+  "date": "2026-08-13",
+  "issue": "Central do Animal permanecia em carregamento indefinido",
+  "root_cause": "Future.wait único sem isolamento por fonte; uma chamada lenta bloqueava toda a Central",
+  "fixes": [
+    "safe load por fonte com timeout e fallback",
+    "try/catch/finally garantindo isLoading=false",
+    "renderização não bloqueante durante atualização",
+    "aviso de carregamento parcial com retry",
+    "farmId propagado para Sanidade",
+    "contrato de regressão adicionado ao auditor"
+  ],
+  "validations": {
+    "atlas_audit": "OK",
+    "python_compileall": "OK",
+    "unique_table_names": 221,
+    "route_declarations": 490,
+    "duplicate_route_declarations": 0,
+    "animal_central_contract_errors": 0
+  }
+}

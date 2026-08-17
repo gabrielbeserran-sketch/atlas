@@ -68,25 +68,18 @@ class AtlasStrategicScenario {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       horizonYears: horizonYears ?? this.horizonYears,
-      initialInvestment:
-          initialInvestment ?? this.initialInvestment,
+      initialInvestment: initialInvestment ?? this.initialInvestment,
       workingCapital: workingCapital ?? this.workingCapital,
       annualAdditionalRevenue:
-          annualAdditionalRevenue ??
-          this.annualAdditionalRevenue,
-      annualAdditionalCost:
-          annualAdditionalCost ?? this.annualAdditionalCost,
+          annualAdditionalRevenue ?? this.annualAdditionalRevenue,
+      annualAdditionalCost: annualAdditionalCost ?? this.annualAdditionalCost,
       residualValue: residualValue ?? this.residualValue,
-      discountRatePercent:
-          discountRatePercent ?? this.discountRatePercent,
+      discountRatePercent: discountRatePercent ?? this.discountRatePercent,
       priceSensitivityPercent:
-          priceSensitivityPercent ??
-          this.priceSensitivityPercent,
+          priceSensitivityPercent ?? this.priceSensitivityPercent,
       costSensitivityPercent:
-          costSensitivityPercent ??
-          this.costSensitivityPercent,
-      productiveImpacts:
-          productiveImpacts ?? this.productiveImpacts,
+          costSensitivityPercent ?? this.costSensitivityPercent,
+      productiveImpacts: productiveImpacts ?? this.productiveImpacts,
       risks: risks ?? this.risks,
     );
   }
@@ -114,9 +107,7 @@ class AtlasStrategicScenario {
     };
   }
 
-  factory AtlasStrategicScenario.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasStrategicScenario.fromJson(Map<String, dynamic> json) {
     return AtlasStrategicScenario(
       id: json['id'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
@@ -125,54 +116,33 @@ class AtlasStrategicScenario {
       description: json['description'] as String? ?? '',
       type: AtlasStrategicScenarioType.values.firstWhere(
         (item) => item.name == json['type'],
-        orElse: () =>
-            AtlasStrategicScenarioType.pastureIntensification,
+        orElse: () => AtlasStrategicScenarioType.pastureIntensification,
       ),
-      createdAt: DateTime.tryParse(
-            json['createdAt'] as String? ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
-      horizonYears:
-          (json['horizonYears'] as num?)?.toInt() ?? 5,
-      initialInvestment:
-          (json['initialInvestment'] as num?)
-                  ?.toDouble() ??
-              0,
-      workingCapital:
-          (json['workingCapital'] as num?)?.toDouble() ??
-              0,
+      horizonYears: (json['horizonYears'] as num?)?.toInt() ?? 5,
+      initialInvestment: (json['initialInvestment'] as num?)?.toDouble() ?? 0,
+      workingCapital: (json['workingCapital'] as num?)?.toDouble() ?? 0,
       annualAdditionalRevenue:
-          (json['annualAdditionalRevenue'] as num?)
-                  ?.toDouble() ??
-              0,
+          (json['annualAdditionalRevenue'] as num?)?.toDouble() ?? 0,
       annualAdditionalCost:
-          (json['annualAdditionalCost'] as num?)
-                  ?.toDouble() ??
-              0,
-      residualValue:
-          (json['residualValue'] as num?)?.toDouble() ?? 0,
+          (json['annualAdditionalCost'] as num?)?.toDouble() ?? 0,
+      residualValue: (json['residualValue'] as num?)?.toDouble() ?? 0,
       discountRatePercent:
-          (json['discountRatePercent'] as num?)
-                  ?.toDouble() ??
-              10,
+          (json['discountRatePercent'] as num?)?.toDouble() ?? 10,
       priceSensitivityPercent:
-          (json['priceSensitivityPercent'] as num?)
-                  ?.toDouble() ??
-              10,
+          (json['priceSensitivityPercent'] as num?)?.toDouble() ?? 10,
       costSensitivityPercent:
-          (json['costSensitivityPercent'] as num?)
-                  ?.toDouble() ??
-              10,
+          (json['costSensitivityPercent'] as num?)?.toDouble() ?? 10,
       productiveImpacts: AtlasProductiveImpacts.fromJson(
         Map<String, dynamic>.from(
-          json['productiveImpacts'] as Map? ??
-              const <String, dynamic>{},
+          json['productiveImpacts'] as Map? ?? const <String, dynamic>{},
         ),
       ),
       risks: AtlasScenarioRisks.fromJson(
         Map<String, dynamic>.from(
-          json['risks'] as Map? ??
-              const <String, dynamic>{},
+          json['risks'] as Map? ?? const <String, dynamic>{},
         ),
       ),
     );
@@ -205,43 +175,23 @@ class AtlasProductiveImpacts {
       'dailyGainChange': dailyGainChange,
       'stockingRateChange': stockingRateChange,
       'arrobasPerYearChange': arrobasPerYearChange,
-      'productivityPerHectareChange':
-          productivityPerHectareChange,
+      'productivityPerHectareChange': productivityPerHectareChange,
       'mortalityReduction': mortalityReduction,
     };
   }
 
-  factory AtlasProductiveImpacts.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasProductiveImpacts.fromJson(Map<String, dynamic> json) {
     return AtlasProductiveImpacts(
       pregnancyRateChange:
-          (json['pregnancyRateChange'] as num?)
-                  ?.toDouble() ??
-              0,
-      weaningRateChange:
-          (json['weaningRateChange'] as num?)
-                  ?.toDouble() ??
-              0,
-      dailyGainChange:
-          (json['dailyGainChange'] as num?)?.toDouble() ??
-              0,
-      stockingRateChange:
-          (json['stockingRateChange'] as num?)
-                  ?.toDouble() ??
-              0,
+          (json['pregnancyRateChange'] as num?)?.toDouble() ?? 0,
+      weaningRateChange: (json['weaningRateChange'] as num?)?.toDouble() ?? 0,
+      dailyGainChange: (json['dailyGainChange'] as num?)?.toDouble() ?? 0,
+      stockingRateChange: (json['stockingRateChange'] as num?)?.toDouble() ?? 0,
       arrobasPerYearChange:
-          (json['arrobasPerYearChange'] as num?)
-                  ?.toDouble() ??
-              0,
+          (json['arrobasPerYearChange'] as num?)?.toDouble() ?? 0,
       productivityPerHectareChange:
-          (json['productivityPerHectareChange'] as num?)
-                  ?.toDouble() ??
-              0,
-      mortalityReduction:
-          (json['mortalityReduction'] as num?)
-                  ?.toDouble() ??
-              0,
+          (json['productivityPerHectareChange'] as num?)?.toDouble() ?? 0,
+      mortalityReduction: (json['mortalityReduction'] as num?)?.toDouble() ?? 0,
     );
   }
 }
@@ -262,13 +212,7 @@ class AtlasScenarioRisks {
   final double market;
 
   double get average {
-    return (
-      climate +
-      sanitary +
-      financial +
-      operational +
-      market
-    ) / 5;
+    return (climate + sanitary + financial + operational + market) / 5;
   }
 
   Map<String, dynamic> toJson() {
@@ -281,20 +225,13 @@ class AtlasScenarioRisks {
     };
   }
 
-  factory AtlasScenarioRisks.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasScenarioRisks.fromJson(Map<String, dynamic> json) {
     return AtlasScenarioRisks(
-      climate:
-          (json['climate'] as num?)?.toDouble() ?? 50,
-      sanitary:
-          (json['sanitary'] as num?)?.toDouble() ?? 50,
-      financial:
-          (json['financial'] as num?)?.toDouble() ?? 50,
-      operational:
-          (json['operational'] as num?)?.toDouble() ?? 50,
-      market:
-          (json['market'] as num?)?.toDouble() ?? 50,
+      climate: (json['climate'] as num?)?.toDouble() ?? 50,
+      sanitary: (json['sanitary'] as num?)?.toDouble() ?? 50,
+      financial: (json['financial'] as num?)?.toDouble() ?? 50,
+      operational: (json['operational'] as num?)?.toDouble() ?? 50,
+      market: (json['market'] as num?)?.toDouble() ?? 50,
     );
   }
 }
@@ -314,9 +251,7 @@ enum AtlasStrategicScenarioType {
   custom,
 }
 
-String atlasStrategicScenarioTypeLabel(
-  AtlasStrategicScenarioType type,
-) {
+String atlasStrategicScenarioTypeLabel(AtlasStrategicScenarioType type) {
   switch (type) {
     case AtlasStrategicScenarioType.herdExpansion:
       return 'Expansão do rebanho';

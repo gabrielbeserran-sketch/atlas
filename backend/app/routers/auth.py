@@ -47,6 +47,9 @@ from ..security import (
     generate_opaque_token,
     generate_recovery_codes,
     generate_totp_secret,
+    consume_recovery_code,
+    decrypt_mfa_secret,
+    encrypt_mfa_secret,
     hash_password,
     provisioning_uri,
     token_digest,
@@ -167,6 +170,7 @@ def _issue_session(
         created_at=now,
     )
     db.add(session)
+    db.flush()
     record_security_event(
         db,
         event_type="session.created",
@@ -185,6 +189,7 @@ def _issue_session(
             company_id=company.id,
             tenant_id=company.tenant_id,
             role=membership.role,
+            extra={"session_id": session.id},
         ),
         refresh_token=refresh_token,
         expires_in_seconds=settings.atlas_access_token_minutes * 60,
@@ -212,7 +217,7 @@ def register(
 ) -> RegistrationResponse:
     if not payload.accept_terms:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="É necessário aceitar os termos.",
         )
     validate_password_strength(payload.password)
@@ -452,7 +457,14 @@ def complete_mfa_challenge(
         expected_type="mfa_challenge",
     )
     user = db.get(User, str(claims["sub"]))
-    if user is None:
+    company = db.get(Company, str(claims.get("company_id", "")))
+    if (
+        user is None
+        or not user.active
+        or company is None
+        or company.status != "active"
+        or claims.get("tenant_id") != company.tenant_id
+    ):
         raise HTTPException(status_code=401, detail="Desafio inválido.")
     credential = db.scalar(
         select(MfaCredential).where(
@@ -463,14 +475,16 @@ def complete_mfa_challenge(
     if credential is None:
         raise HTTPException(status_code=401, detail="MFA não configurado.")
 
-    code_hash = token_digest(payload.code.strip())
     recovery_hashes = list(credential.recovery_code_hashes or [])
-    valid_recovery = code_hash in recovery_hashes
-    if not verify_totp(credential.secret_encrypted, payload.code) and not valid_recovery:
+    valid_recovery, remaining_hashes = consume_recovery_code(
+        recovery_hashes,
+        payload.code,
+    )
+    secret = decrypt_mfa_secret(credential.secret_encrypted)
+    if not verify_totp(secret, payload.code) and not valid_recovery:
         raise HTTPException(status_code=401, detail="Código MFA inválido.")
     if valid_recovery:
-        recovery_hashes.remove(code_hash)
-        credential.recovery_code_hashes = recovery_hashes
+        credential.recovery_code_hashes = remaining_hashes
 
     membership = _membership_for_company(
         db,
@@ -505,6 +519,12 @@ def refresh(
         raise HTTPException(status_code=401, detail="Sessão inválida ou expirada.")
 
     user = db.get(User, session.user_id)
+    if user is None or not user.active:
+        session.revoked_at = now
+        db.commit()
+        raise HTTPException(status_code=401, detail="Sessão inválida ou expirada.")
+
+    session.last_used_at = now
     membership = _membership_for_company(
         db,
         user_id=session.user_id,
@@ -610,13 +630,22 @@ def request_password_reset(
         select(User).where(User.email == payload.email.strip().lower())
     )
     if user is not None:
+        now = datetime.now(timezone.utc)
+        db.execute(
+            update(PasswordResetToken)
+            .where(
+                PasswordResetToken.user_id == user.id,
+                PasswordResetToken.used_at.is_(None),
+            )
+            .values(used_at=now)
+        )
         raw_token = generate_opaque_token()
         db.add(
             PasswordResetToken(
                 id=new_id("password_reset"),
                 user_id=user.id,
                 token_hash=token_digest(raw_token),
-                expires_at=datetime.now(timezone.utc)
+                expires_at=now
                 + timedelta(minutes=settings.atlas_password_reset_minutes),
             )
         )
@@ -704,13 +733,13 @@ def setup_mfa(
         existing = MfaCredential(
             id=new_id("mfa"),
             user_id=principal.user.id,
-            secret_encrypted=secret,
+            secret_encrypted=encrypt_mfa_secret(secret),
             recovery_code_hashes=hashes,
             enabled=False,
         )
         db.add(existing)
     else:
-        existing.secret_encrypted = secret
+        existing.secret_encrypted = encrypt_mfa_secret(secret)
         existing.recovery_code_hashes = hashes
         existing.enabled = False
         existing.verified_at = None
@@ -737,7 +766,7 @@ def verify_mfa_setup(
         )
     )
     if credential is None or not verify_totp(
-        credential.secret_encrypted,
+        decrypt_mfa_secret(credential.secret_encrypted),
         payload.code,
     ):
         raise HTTPException(status_code=400, detail="Código MFA inválido.")
@@ -767,7 +796,7 @@ def disable_mfa(
         )
     )
     if credential is None or not verify_totp(
-        credential.secret_encrypted,
+        decrypt_mfa_secret(credential.secret_encrypted),
         payload.code,
     ):
         raise HTTPException(status_code=400, detail="Código MFA inválido.")

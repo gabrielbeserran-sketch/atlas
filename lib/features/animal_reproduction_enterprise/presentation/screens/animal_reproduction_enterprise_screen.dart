@@ -29,8 +29,7 @@ class _AnimalReproductionEnterpriseScreenState
   final AnimalReproductionStorageService storage =
       AnimalReproductionStorageService();
 
-  List<AnimalReproductionData> records =
-      <AnimalReproductionData>[];
+  List<AnimalReproductionData> records = <AnimalReproductionData>[];
   bool loading = true;
 
   @override
@@ -64,27 +63,21 @@ class _AnimalReproductionEnterpriseScreenState
     });
   }
 
-  int get services =>
-      records.where((record) => record.isInsemination).length;
+  int get services => records.where((record) => record.isInsemination).length;
 
-  int get positive => records
-      .where((record) => record.isPositivePregnancyDiagnosis)
-      .length;
+  int get positive =>
+      records.where((record) => record.isPositivePregnancyDiagnosis).length;
 
   int get diagnoses => records.where((record) {
-        return record.type == 'Diagnóstico de gestação';
-      }).length;
+    return record.type == 'Diagnóstico de gestação';
+  }).length;
 
-  double get conception =>
-      diagnoses == 0 ? 0 : positive * 100 / diagnoses;
+  double get conception => diagnoses == 0 ? 0 : positive * 100 / diagnoses;
 
-  AnimalReproductionData? get last =>
-      records.isEmpty ? null : records.first;
+  AnimalReproductionData? get last => records.isEmpty ? null : records.first;
 
   String get status {
-    if (records.any(
-      (record) => record.isPositivePregnancyDiagnosis,
-    )) {
+    if (records.any((record) => record.isPositivePregnancyDiagnosis)) {
       return 'Prenhe';
     }
 
@@ -137,8 +130,7 @@ class _AnimalReproductionEnterpriseScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title:
-                            'Reprodução de ${widget.animal.displayName}',
+                        title: 'Reprodução de ${widget.animal.displayName}',
                         subtitle:
                             'Protocolos, serviços, diagnósticos, previsão e eficiência reprodutiva.',
                         icon: Icons.favorite_outline,
@@ -170,8 +162,7 @@ class _AnimalReproductionEnterpriseScreenState
                             title: 'Concepção observada',
                             value:
                                 '${conception.toStringAsFixed(1).replaceAll('.', ',')}%',
-                            subtitle:
-                                'Diagnósticos positivos / diagnósticos',
+                            subtitle: 'Diagnósticos positivos / diagnósticos',
                             icon: Icons.analytics_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -216,24 +207,20 @@ class _AnimalReproductionEnterpriseScreenState
                       if (records.isEmpty)
                         const Card(
                           child: ListTile(
-                            title: Text(
-                              'Nenhum registro reprodutivo.',
-                            ),
+                            title: Text('Nenhum registro reprodutivo.'),
                           ),
                         )
                       else
-                        ...records.take(10).map(
+                        ...records
+                            .take(10)
+                            .map(
                               (record) => Card(
                                 child: ListTile(
                                   leading: const CircleAvatar(
-                                    child: Icon(
-                                      Icons.favorite_outline,
-                                    ),
+                                    child: Icon(Icons.favorite_outline),
                                   ),
                                   title: Text(record.type),
-                                  subtitle: Text(
-                                    _recordSubtitle(record),
-                                  ),
+                                  subtitle: Text(_recordSubtitle(record)),
                                 ),
                               ),
                             ),

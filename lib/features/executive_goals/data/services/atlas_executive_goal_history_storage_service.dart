@@ -28,14 +28,11 @@ class AtlasExecutiveGoalHistoryStorageService {
           )
           .where(
             (item) =>
-                item.id.trim().isNotEmpty &&
-                item.goalId.trim().isNotEmpty,
+                item.id.trim().isNotEmpty && item.goalId.trim().isNotEmpty,
           )
           .toList();
 
-      events.sort(
-        (a, b) => a.recordedAt.compareTo(b.recordedAt),
-      );
+      events.sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
 
       return events.length > maximumEvents
           ? events.sublist(events.length - maximumEvents)
@@ -45,14 +42,10 @@ class AtlasExecutiveGoalHistoryStorageService {
     }
   }
 
-  Future<void> save(
-    List<AtlasExecutiveGoalHistoryEvent> events,
-  ) async {
+  Future<void> save(List<AtlasExecutiveGoalHistoryEvent> events) async {
     final preferences = await SharedPreferences.getInstance();
     final ordered = [...events]
-      ..sort(
-        (a, b) => a.recordedAt.compareTo(b.recordedAt),
-      );
+      ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
 
     final limited = ordered.length > maximumEvents
         ? ordered.sublist(ordered.length - maximumEvents)
@@ -60,9 +53,7 @@ class AtlasExecutiveGoalHistoryStorageService {
 
     await preferences.setString(
       _key,
-      jsonEncode(
-        limited.map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(limited.map((item) => item.toJson()).toList()),
     );
   }
 

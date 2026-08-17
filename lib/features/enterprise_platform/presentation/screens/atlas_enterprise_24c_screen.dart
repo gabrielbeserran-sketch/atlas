@@ -20,27 +20,20 @@ class AtlasEnterprise24CScreen extends StatefulWidget {
       _AtlasEnterprise24CScreenState();
 }
 
-class _AtlasEnterprise24CScreenState
-    extends State<AtlasEnterprise24CScreen> {
-  final syncRepository =
-      AtlasEnterpriseSyncRepository.instance;
-  final versionRepository =
-      AtlasEnterpriseVersionRepository.instance;
-  final versionService =
-      AtlasEnterpriseVersionService.instance;
-  final authorization =
-      AtlasEnterpriseAuthorizationService.instance;
+class _AtlasEnterprise24CScreenState extends State<AtlasEnterprise24CScreen> {
+  final syncRepository = AtlasEnterpriseSyncRepository.instance;
+  final versionRepository = AtlasEnterpriseVersionRepository.instance;
+  final versionService = AtlasEnterpriseVersionService.instance;
+  final authorization = AtlasEnterpriseAuthorizationService.instance;
   final session = AtlasEnterpriseSessionService.instance;
   final syncEngine = AtlasEnterpriseSyncEngine24C();
-  final conflictResolver =
-      AtlasEnterpriseConflictResolutionService.instance;
+  final conflictResolver = AtlasEnterpriseConflictResolutionService.instance;
 
   List<AtlasVersionedEntitySnapshot> versions = [];
   List<AtlasEnterpriseSyncOperation> queue = [];
   List<AtlasEnterpriseSyncConflict> conflicts = [];
   AtlasEnterpriseSyncCheckpoint? checkpoint;
-  AtlasEnterpriseSyncSummary summary =
-      const AtlasEnterpriseSyncSummary(
+  AtlasEnterpriseSyncSummary summary = const AtlasEnterpriseSyncSummary(
     total: 0,
     pending: 0,
     syncing: 0,
@@ -70,36 +63,25 @@ class _AtlasEnterprise24CScreenState
 
     final scopedQueue = companyId == null
         ? <AtlasEnterpriseSyncOperation>[]
-        : allQueue
-            .where((item) => item.companyId == companyId)
-            .toList();
+        : allQueue.where((item) => item.companyId == companyId).toList();
 
     if (!mounted) return;
     setState(() {
-      versions = companyId == null
-          ? <AtlasVersionedEntitySnapshot>[]
-          : allVersions
-              .where(
-                (item) => item.companyId == companyId,
-              )
-              .toList()
-            ..sort(
-              (a, b) => b.createdAt.compareTo(a.createdAt),
-            );
-      queue = scopedQueue
-        ..sort(
-          (a, b) => b.createdAt.compareTo(a.createdAt),
-        );
-      conflicts = companyId == null
-          ? <AtlasEnterpriseSyncConflict>[]
-          : allConflicts
-              .where(
-                (item) => item.companyId == companyId,
-              )
-              .toList()
-            ..sort(
-              (a, b) => b.detectedAt.compareTo(a.detectedAt),
-            );
+      versions =
+          companyId == null
+                ? <AtlasVersionedEntitySnapshot>[]
+                : allVersions
+                      .where((item) => item.companyId == companyId)
+                      .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      queue = scopedQueue..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      conflicts =
+          companyId == null
+                ? <AtlasEnterpriseSyncConflict>[]
+                : allConflicts
+                      .where((item) => item.companyId == companyId)
+                      .toList()
+            ..sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
       checkpoint = loadedCheckpoint;
       summary = syncEngine.summarize(scopedQueue);
       loading = false;
@@ -107,18 +89,14 @@ class _AtlasEnterprise24CScreenState
   }
 
   Future<void> _synchronize() async {
-    await authorization.require(
-      'enterprise.sync.manage',
-    );
+    await authorization.require('enterprise.sync.manage');
     setState(() => loading = true);
     await syncEngine.synchronize(online: online);
     await _load();
   }
 
   Future<void> _createVersionTest() async {
-    await authorization.require(
-      'enterprise.versions.restore',
-    );
+    await authorization.require('enterprise.versions.restore');
 
     final companyId = session.currentCompanyId;
     if (companyId == null) return;
@@ -200,8 +178,7 @@ class _AtlasEnterprise24CScreenState
         ),
         actions: [
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Fechar'),
           ),
         ],
@@ -209,32 +186,22 @@ class _AtlasEnterprise24CScreenState
     );
   }
 
-  Future<void> _restoreVersion(
-    AtlasVersionedEntitySnapshot source,
-  ) async {
-    await authorization.require(
-      'enterprise.versions.restore',
-    );
+  Future<void> _restoreVersion(AtlasVersionedEntitySnapshot source) async {
+    await authorization.require('enterprise.versions.restore');
 
     await versionService.restore(
       source: source,
-      reason:
-          'Restauração manual pelo console Enterprise 24C.',
+      reason: 'Restauração manual pelo console Enterprise 24C.',
     );
     await _load();
   }
 
-  Future<void> _resolveConflict(
-    AtlasEnterpriseSyncConflict conflict,
-  ) async {
-    await authorization.require(
-      'enterprise.sync.conflicts.resolve',
-    );
+  Future<void> _resolveConflict(AtlasEnterpriseSyncConflict conflict) async {
+    await authorization.require('enterprise.sync.conflicts.resolve');
 
     if (!mounted) return;
 
-    final resolution =
-        await showDialog<AtlasEnterpriseConflictResolution>(
+    final resolution = await showDialog<AtlasEnterpriseConflictResolution>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Resolver conflito'),
@@ -245,21 +212,21 @@ class _AtlasEnterprise24CScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(
-              AtlasEnterpriseConflictResolution.keepRemote,
-            ),
+            onPressed: () => Navigator.of(
+              dialogContext,
+            ).pop(AtlasEnterpriseConflictResolution.keepRemote),
             child: const Text('Usar remoto'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(
-              AtlasEnterpriseConflictResolution.merge,
-            ),
+            onPressed: () => Navigator.of(
+              dialogContext,
+            ).pop(AtlasEnterpriseConflictResolution.merge),
             child: const Text('Mesclar'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(
-              AtlasEnterpriseConflictResolution.keepLocal,
-            ),
+            onPressed: () => Navigator.of(
+              dialogContext,
+            ).pop(AtlasEnterpriseConflictResolution.keepLocal),
             child: const Text('Usar local'),
           ),
         ],
@@ -268,18 +235,13 @@ class _AtlasEnterprise24CScreenState
 
     if (resolution == null) return;
 
-    await conflictResolver.resolve(
-      conflict: conflict,
-      resolution: resolution,
-    );
+    await conflictResolver.resolve(conflict: conflict, resolution: resolution);
     await _load();
   }
 
   Future<void> _open24D() {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const AtlasEnterprise24DScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const AtlasEnterprise24DScreen()),
     );
   }
 
@@ -325,22 +287,16 @@ class _AtlasEnterprise24CScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: loading ? null : _synchronize,
           icon: const Icon(Icons.sync),
           label: const Text('Sincronizar'),
         ),
         body: loading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
-                  _VersionsTab(
-                    versions: versions,
-                    onRestore: _restoreVersion,
-                  ),
+                  _VersionsTab(versions: versions, onRestore: _restoreVersion),
                   _QueueTab(queue: queue),
                   _ConflictsTab(
                     conflicts: conflicts,
@@ -364,10 +320,7 @@ class _AtlasEnterprise24CScreenState
 }
 
 class _VersionsTab extends StatelessWidget {
-  const _VersionsTab({
-    required this.versions,
-    required this.onRestore,
-  });
+  const _VersionsTab({required this.versions, required this.onRestore});
 
   final List<AtlasVersionedEntitySnapshot> versions;
   final ValueChanged<AtlasVersionedEntitySnapshot> onRestore;
@@ -375,16 +328,13 @@ class _VersionsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (versions.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma versão registrada.'),
-      );
+      return const Center(child: Text('Nenhuma versão registrada.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: versions.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = versions[index];
         return Card(
@@ -406,9 +356,7 @@ class _VersionsTab extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () => onRestore(item),
                   icon: const Icon(Icons.restore),
-                  label: const Text(
-                    'Restaurar como nova versão',
-                  ),
+                  label: const Text('Restaurar como nova versão'),
                 ),
               ),
             ],
@@ -427,24 +375,19 @@ class _QueueTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (queue.isEmpty) {
-      return const Center(
-        child: Text('Fila offline vazia.'),
-      );
+      return const Center(child: Text('Fila offline vazia.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: queue.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = queue[index];
         return Card(
           child: ListTile(
             leading: const Icon(Icons.outbox_outlined),
-            title: Text(
-              '${item.entityType}/${item.entityId}',
-            ),
+            title: Text('${item.entityType}/${item.entityId}'),
             subtitle: Text(
               '${item.operationType.name} • '
               'base v${item.baseVersion} • '
@@ -462,10 +405,7 @@ class _QueueTab extends StatelessWidget {
 }
 
 class _ConflictsTab extends StatelessWidget {
-  const _ConflictsTab({
-    required this.conflicts,
-    required this.onResolve,
-  });
+  const _ConflictsTab({required this.conflicts, required this.onResolve});
 
   final List<AtlasEnterpriseSyncConflict> conflicts;
   final ValueChanged<AtlasEnterpriseSyncConflict> onResolve;
@@ -475,31 +415,24 @@ class _ConflictsTab extends StatelessWidget {
     final unresolved = conflicts
         .where(
           (item) =>
-              item.resolution ==
-              AtlasEnterpriseConflictResolution.unresolved,
+              item.resolution == AtlasEnterpriseConflictResolution.unresolved,
         )
         .toList();
 
     if (unresolved.isEmpty) {
-      return const Center(
-        child: Text('Nenhum conflito pendente.'),
-      );
+      return const Center(child: Text('Nenhum conflito pendente.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: unresolved.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = unresolved[index];
         return Card(
           child: ListTile(
-            leading:
-                const Icon(Icons.compare_arrows_outlined),
-            title: Text(
-              '${item.entityType}/${item.entityId}',
-            ),
+            leading: const Icon(Icons.compare_arrows_outlined),
+            title: Text('${item.entityType}/${item.entityId}'),
             subtitle: Text(
               'Local v${item.localVersion} • '
               'Remoto v${item.remoteVersion}',
@@ -575,9 +508,7 @@ class _SyncTab extends StatelessWidget {
         title: Text(title),
         trailing: Text(
           '$value',
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
     );
@@ -603,25 +534,19 @@ class _TestsTab extends StatelessWidget {
         FilledButton.icon(
           onPressed: onCreateVersion,
           icon: const Icon(Icons.history),
-          label: const Text(
-            'Criar versão + enfileirar operação',
-          ),
+          label: const Text('Criar versão + enfileirar operação'),
         ),
         const SizedBox(height: 12),
         FilledButton.tonalIcon(
           onPressed: onConcurrency,
           icon: const Icon(Icons.compare),
-          label: const Text(
-            'Testar concorrência otimista',
-          ),
+          label: const Text('Testar concorrência otimista'),
         ),
         const SizedBox(height: 12),
         FilledButton.tonalIcon(
           onPressed: onSync,
           icon: const Icon(Icons.sync),
-          label: const Text(
-            'Executar sincronização incremental',
-          ),
+          label: const Text('Executar sincronização incremental'),
         ),
         const SizedBox(height: 18),
         const Card(

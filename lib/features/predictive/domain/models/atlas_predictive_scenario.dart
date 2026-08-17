@@ -146,8 +146,7 @@ class AtlasPredictiveFinancialImpact {
       'probableValue': probableValue,
       'optimisticValue': optimisticValue,
       'investmentValue': investmentValue,
-      'returnOnInvestmentPercent':
-          returnOnInvestmentPercent,
+      'returnOnInvestmentPercent': returnOnInvestmentPercent,
       'paybackDays': paybackDays,
     };
   }
@@ -244,21 +243,11 @@ enum AtlasPredictiveScenarioType {
   custom,
 }
 
-enum AtlasPredictiveProjectionKind {
-  conservative,
-  probable,
-  optimistic,
-}
+enum AtlasPredictiveProjectionKind { conservative, probable, optimistic }
 
-enum AtlasPredictiveEffort {
-  low,
-  medium,
-  high,
-}
+enum AtlasPredictiveEffort { low, medium, high }
 
-String atlasPredictiveScenarioTypeLabel(
-  AtlasPredictiveScenarioType type,
-) {
+String atlasPredictiveScenarioTypeLabel(AtlasPredictiveScenarioType type) {
   switch (type) {
     case AtlasPredictiveScenarioType.reduceCosts:
       return 'Redução de custos';
@@ -283,9 +272,7 @@ String atlasPredictiveScenarioTypeLabel(
   }
 }
 
-String atlasPredictiveEffortLabel(
-  AtlasPredictiveEffort effort,
-) {
+String atlasPredictiveEffortLabel(AtlasPredictiveEffort effort) {
   switch (effort) {
     case AtlasPredictiveEffort.low:
       return 'Baixo';

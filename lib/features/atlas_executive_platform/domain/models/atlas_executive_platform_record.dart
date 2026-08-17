@@ -11,149 +11,130 @@ enum AtlasExecutivePlatformModule {
   enterpriseCommandCenter,
 }
 
-extension AtlasExecutivePlatformModuleX
-    on AtlasExecutivePlatformModule {
+extension AtlasExecutivePlatformModuleX on AtlasExecutivePlatformModule {
   String get code => switch (this) {
-        AtlasExecutivePlatformModule.globalExecutiveDashboard =>
-          'global_executive_dashboard',
-        AtlasExecutivePlatformModule.farmBenchmarking =>
-          'farm_benchmarking',
-        AtlasExecutivePlatformModule.corporateGoals =>
-          'corporate_goals',
-        AtlasExecutivePlatformModule.unifiedAlerts =>
-          'unified_alerts',
-        AtlasExecutivePlatformModule.intelligentTasks =>
-          'intelligent_tasks',
-        AtlasExecutivePlatformModule.professionalReports =>
-          'professional_reports',
-        AtlasExecutivePlatformModule.exportAndSharing =>
-          'export_and_sharing',
-        AtlasExecutivePlatformModule.plansAndSubscriptions =>
-          'plans_and_subscriptions',
-        AtlasExecutivePlatformModule.platformAdminPanel =>
-          'platform_admin_panel',
-        AtlasExecutivePlatformModule.enterpriseCommandCenter =>
-          'enterprise_command_center',
-      };
+    AtlasExecutivePlatformModule.globalExecutiveDashboard =>
+      'global_executive_dashboard',
+    AtlasExecutivePlatformModule.farmBenchmarking => 'farm_benchmarking',
+    AtlasExecutivePlatformModule.corporateGoals => 'corporate_goals',
+    AtlasExecutivePlatformModule.unifiedAlerts => 'unified_alerts',
+    AtlasExecutivePlatformModule.intelligentTasks => 'intelligent_tasks',
+    AtlasExecutivePlatformModule.professionalReports => 'professional_reports',
+    AtlasExecutivePlatformModule.exportAndSharing => 'export_and_sharing',
+    AtlasExecutivePlatformModule.plansAndSubscriptions =>
+      'plans_and_subscriptions',
+    AtlasExecutivePlatformModule.platformAdminPanel => 'platform_admin_panel',
+    AtlasExecutivePlatformModule.enterpriseCommandCenter =>
+      'enterprise_command_center',
+  };
 
   String get title => switch (this) {
-        AtlasExecutivePlatformModule.globalExecutiveDashboard =>
-          'Dashboard Executivo Global',
-        AtlasExecutivePlatformModule.farmBenchmarking =>
-          'Comparação entre Fazendas',
-        AtlasExecutivePlatformModule.corporateGoals =>
-          'Metas Corporativas',
-        AtlasExecutivePlatformModule.unifiedAlerts =>
-          'Central de Alertas Unificada',
-        AtlasExecutivePlatformModule.intelligentTasks =>
-          'Central de Tarefas Inteligentes',
-        AtlasExecutivePlatformModule.professionalReports =>
-          'Relatórios Profissionais',
-        AtlasExecutivePlatformModule.exportAndSharing =>
-          'Exportação e Compartilhamento',
-        AtlasExecutivePlatformModule.plansAndSubscriptions =>
-          'Gestão de Planos e Assinaturas',
-        AtlasExecutivePlatformModule.platformAdminPanel =>
-          'Painel Administrativo da Plataforma',
-        AtlasExecutivePlatformModule.enterpriseCommandCenter =>
-          'Atlas Enterprise Command Center',
-      };
+    AtlasExecutivePlatformModule.globalExecutiveDashboard =>
+      'Dashboard Executivo Global',
+    AtlasExecutivePlatformModule.farmBenchmarking =>
+      'Comparação entre Fazendas',
+    AtlasExecutivePlatformModule.corporateGoals => 'Metas Corporativas',
+    AtlasExecutivePlatformModule.unifiedAlerts =>
+      'Central de Alertas Unificada',
+    AtlasExecutivePlatformModule.intelligentTasks =>
+      'Central de Tarefas Inteligentes',
+    AtlasExecutivePlatformModule.professionalReports =>
+      'Relatórios Profissionais',
+    AtlasExecutivePlatformModule.exportAndSharing =>
+      'Exportação e Compartilhamento',
+    AtlasExecutivePlatformModule.plansAndSubscriptions =>
+      'Gestão de Planos e Assinaturas',
+    AtlasExecutivePlatformModule.platformAdminPanel =>
+      'Painel Administrativo da Plataforma',
+    AtlasExecutivePlatformModule.enterpriseCommandCenter =>
+      'Atlas Enterprise Command Center',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasExecutivePlatformModule.globalExecutiveDashboard =>
-          'Pacote 241',
-        AtlasExecutivePlatformModule.farmBenchmarking =>
-          'Pacote 242',
-        AtlasExecutivePlatformModule.corporateGoals =>
-          'Pacote 243',
-        AtlasExecutivePlatformModule.unifiedAlerts =>
-          'Pacote 244',
-        AtlasExecutivePlatformModule.intelligentTasks =>
-          'Pacote 245',
-        AtlasExecutivePlatformModule.professionalReports =>
-          'Pacote 246',
-        AtlasExecutivePlatformModule.exportAndSharing =>
-          'Pacote 247',
-        AtlasExecutivePlatformModule.plansAndSubscriptions =>
-          'Pacote 248',
-        AtlasExecutivePlatformModule.platformAdminPanel =>
-          'Pacote 249',
-        AtlasExecutivePlatformModule.enterpriseCommandCenter =>
-          'Pacote 250',
-      };
+    AtlasExecutivePlatformModule.globalExecutiveDashboard => 'Pacote 241',
+    AtlasExecutivePlatformModule.farmBenchmarking => 'Pacote 242',
+    AtlasExecutivePlatformModule.corporateGoals => 'Pacote 243',
+    AtlasExecutivePlatformModule.unifiedAlerts => 'Pacote 244',
+    AtlasExecutivePlatformModule.intelligentTasks => 'Pacote 245',
+    AtlasExecutivePlatformModule.professionalReports => 'Pacote 246',
+    AtlasExecutivePlatformModule.exportAndSharing => 'Pacote 247',
+    AtlasExecutivePlatformModule.plansAndSubscriptions => 'Pacote 248',
+    AtlasExecutivePlatformModule.platformAdminPanel => 'Pacote 249',
+    AtlasExecutivePlatformModule.enterpriseCommandCenter => 'Pacote 250',
+  };
 
   List<String> get features => switch (this) {
-        AtlasExecutivePlatformModule.globalExecutiveDashboard => const [
-            'Indicadores globais',
-            'Visão por fazenda',
-            'Riscos prioritários',
-            'Resultados',
-            'Resumo executivo',
-          ],
-        AtlasExecutivePlatformModule.farmBenchmarking => const [
-            'Produtividade',
-            'Custos',
-            'Reprodução',
-            'Sanidade',
-            'Eficiência comparativa',
-          ],
-        AtlasExecutivePlatformModule.corporateGoals => const [
-            'Objetivos',
-            'Indicadores-chave',
-            'Metas',
-            'Responsáveis',
-            'Resultados',
-          ],
-        AtlasExecutivePlatformModule.unifiedAlerts => const [
-            'Consolidação',
-            'Severidade',
-            'Prioridade',
-            'Responsável',
-            'Tratamento',
-          ],
-        AtlasExecutivePlatformModule.intelligentTasks => const [
-            'Origem automática',
-            'Responsável',
-            'Prazo',
-            'Dependências',
-            'Conclusão',
-          ],
-        AtlasExecutivePlatformModule.professionalReports => const [
-            'Relatório técnico',
-            'Relatório gerencial',
-            'Relatório financeiro',
-            'Relatório executivo',
-            'Histórico de versões',
-          ],
-        AtlasExecutivePlatformModule.exportAndSharing => const [
-            'PDF',
-            'CSV',
-            'Planilha',
-            'Compartilhamento',
-            'Controle de acesso',
-          ],
-        AtlasExecutivePlatformModule.plansAndSubscriptions => const [
-            'Planos',
-            'Limites de uso',
-            'Recursos',
-            'Cobrança',
-            'Renovação',
-          ],
-        AtlasExecutivePlatformModule.platformAdminPanel => const [
-            'Usuários',
-            'Empresas',
-            'Assinaturas',
-            'Suporte',
-            'Métricas da plataforma',
-          ],
-        AtlasExecutivePlatformModule.enterpriseCommandCenter => const [
-            'Operações',
-            'Inteligência',
-            'Finanças',
-            'Riscos e alertas',
-            'Desempenho global',
-          ],
-      };
+    AtlasExecutivePlatformModule.globalExecutiveDashboard => const [
+      'Indicadores globais',
+      'Visão por fazenda',
+      'Riscos prioritários',
+      'Resultados',
+      'Resumo executivo',
+    ],
+    AtlasExecutivePlatformModule.farmBenchmarking => const [
+      'Produtividade',
+      'Custos',
+      'Reprodução',
+      'Sanidade',
+      'Eficiência comparativa',
+    ],
+    AtlasExecutivePlatformModule.corporateGoals => const [
+      'Objetivos',
+      'Indicadores-chave',
+      'Metas',
+      'Responsáveis',
+      'Resultados',
+    ],
+    AtlasExecutivePlatformModule.unifiedAlerts => const [
+      'Consolidação',
+      'Severidade',
+      'Prioridade',
+      'Responsável',
+      'Tratamento',
+    ],
+    AtlasExecutivePlatformModule.intelligentTasks => const [
+      'Origem automática',
+      'Responsável',
+      'Prazo',
+      'Dependências',
+      'Conclusão',
+    ],
+    AtlasExecutivePlatformModule.professionalReports => const [
+      'Relatório técnico',
+      'Relatório gerencial',
+      'Relatório financeiro',
+      'Relatório executivo',
+      'Histórico de versões',
+    ],
+    AtlasExecutivePlatformModule.exportAndSharing => const [
+      'PDF',
+      'CSV',
+      'Planilha',
+      'Compartilhamento',
+      'Controle de acesso',
+    ],
+    AtlasExecutivePlatformModule.plansAndSubscriptions => const [
+      'Planos',
+      'Limites de uso',
+      'Recursos',
+      'Cobrança',
+      'Renovação',
+    ],
+    AtlasExecutivePlatformModule.platformAdminPanel => const [
+      'Usuários',
+      'Empresas',
+      'Assinaturas',
+      'Suporte',
+      'Métricas da plataforma',
+    ],
+    AtlasExecutivePlatformModule.enterpriseCommandCenter => const [
+      'Operações',
+      'Inteligência',
+      'Finanças',
+      'Riscos e alertas',
+      'Desempenho global',
+    ],
+  };
 }
 
 class AtlasExecutivePlatformRecord {
@@ -232,41 +213,37 @@ class AtlasExecutivePlatformRecord {
   double get gap => currentValue - targetValue;
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'dueDate': dueDate,
-        'status': status,
-        'priority': priority,
-        'farmName': farmName,
-        'companyName': companyName,
-        'ownerName': ownerName,
-        'metricName': metricName,
-        'currentValue': currentValue,
-        'targetValue': targetValue,
-        'referenceValue': referenceValue,
-        'unit': unit,
-        'progressPercent': progressPercent,
-        'confidencePercent': confidencePercent,
-        'riskPercent': riskPercent,
-        'alertCount': alertCount,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'dueDate': dueDate,
+    'status': status,
+    'priority': priority,
+    'farmName': farmName,
+    'companyName': companyName,
+    'ownerName': ownerName,
+    'metricName': metricName,
+    'currentValue': currentValue,
+    'targetValue': targetValue,
+    'referenceValue': referenceValue,
+    'unit': unit,
+    'progressPercent': progressPercent,
+    'confidencePercent': confidencePercent,
+    'riskPercent': riskPercent,
+    'alertCount': alertCount,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasExecutivePlatformRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutivePlatformRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasExecutivePlatformModule.values.firstWhere(
+    final module = AtlasExecutivePlatformModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasExecutivePlatformModule.globalExecutiveDashboard,
+      orElse: () => AtlasExecutivePlatformModule.globalExecutiveDashboard,
     );
 
     return AtlasExecutivePlatformRecord(
@@ -282,21 +259,14 @@ class AtlasExecutivePlatformRecord {
       companyName: map['companyName']?.toString() ?? '',
       ownerName: map['ownerName']?.toString() ?? '',
       metricName: map['metricName']?.toString() ?? '',
-      currentValue:
-          (map['currentValue'] as num?)?.toDouble() ?? 0,
-      targetValue:
-          (map['targetValue'] as num?)?.toDouble() ?? 0,
-      referenceValue:
-          (map['referenceValue'] as num?)?.toDouble() ?? 0,
+      currentValue: (map['currentValue'] as num?)?.toDouble() ?? 0,
+      targetValue: (map['targetValue'] as num?)?.toDouble() ?? 0,
+      referenceValue: (map['referenceValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ?? 0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

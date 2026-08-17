@@ -3,10 +3,7 @@ import 'package:projeto_atlas/features/strategy_center/domain/models/atlas_strat
 class AtlasStrategyService {
   const AtlasStrategyService();
 
-  AtlasStrategyData build({
-    required AtlasStrategyInput input,
-    DateTime? now,
-  }) {
+  AtlasStrategyData build({required AtlasStrategyInput input, DateTime? now}) {
     final score = _score(input);
 
     return AtlasStrategyData(
@@ -20,51 +17,44 @@ class AtlasStrategyService {
       priorities: _priorities(input.priorities),
       initiatives: _initiatives(input.initiatives),
       risks: _risks(input.risks),
-      opportunities: _opportunities(
-        input.opportunities,
-      ),
+      opportunities: _opportunities(input.opportunities),
     );
   }
 
   double _score(AtlasStrategyInput input) {
     final objectiveScore = _average(
-      input.objectives
-          .map((item) => item.progressPercent)
-          .toList(),
+      input.objectives.map((item) => item.progressPercent).toList(),
     );
 
     final priorityScore = _average(
-      input.priorities
-          .map((item) => item.progressPercent)
-          .toList(),
+      input.priorities.map((item) => item.progressPercent).toList(),
     );
 
     final initiativeScore = _average(
-      input.initiatives
-          .map((item) => item.progressPercent)
-          .toList(),
+      input.initiatives.map((item) => item.progressPercent).toList(),
     );
 
-    final criticalRisks = input.risks.where(
-      (item) =>
-          item.probability ==
-              AtlasStrategyRiskLevel.critical ||
-          item.impact ==
-              AtlasStrategyRiskLevel.critical,
-    ).length;
+    final criticalRisks = input.risks
+        .where(
+          (item) =>
+              item.probability == AtlasStrategyRiskLevel.critical ||
+              item.impact == AtlasStrategyRiskLevel.critical,
+        )
+        .length;
 
-    final highRisks = input.risks.where(
-      (item) =>
-          item.probability ==
-              AtlasStrategyRiskLevel.high ||
-          item.impact ==
-              AtlasStrategyRiskLevel.high,
-    ).length;
+    final highRisks = input.risks
+        .where(
+          (item) =>
+              item.probability == AtlasStrategyRiskLevel.high ||
+              item.impact == AtlasStrategyRiskLevel.high,
+        )
+        .length;
 
     final opportunityBonus =
-        input.opportunities.where(
-      (item) => item.confidencePercent >= 70,
-    ).length * 2;
+        input.opportunities
+            .where((item) => item.confidencePercent >= 70)
+            .length *
+        2;
 
     final value =
         objectiveScore * 0.40 +
@@ -80,11 +70,7 @@ class AtlasStrategyService {
   double _average(List<double> values) {
     if (values.isEmpty) return 0;
 
-    return (values.fold<double>(
-              0,
-              (sum, value) => sum + value,
-            ) /
-            values.length)
+    return (values.fold<double>(0, (sum, value) => sum + value) / values.length)
         .clamp(0.0, 100.0)
         .toDouble();
   }
@@ -106,21 +92,13 @@ class AtlasStrategyService {
     List<AtlasStrategyObjective> values,
   ) {
     final result = [...values]
-      ..sort(
-        (a, b) => a.progressPercent.compareTo(
-          b.progressPercent,
-        ),
-      );
+      ..sort((a, b) => a.progressPercent.compareTo(b.progressPercent));
     return result;
   }
 
-  List<AtlasStrategyPriority> _priorities(
-    List<AtlasStrategyPriority> values,
-  ) {
+  List<AtlasStrategyPriority> _priorities(List<AtlasStrategyPriority> values) {
     final result = [...values]
-      ..sort(
-        (a, b) => a.deadline.compareTo(b.deadline),
-      );
+      ..sort((a, b) => a.deadline.compareTo(b.deadline));
     return result;
   }
 
@@ -128,21 +106,13 @@ class AtlasStrategyService {
     List<AtlasStrategyInitiative> values,
   ) {
     final result = [...values]
-      ..sort(
-        (a, b) => a.deadline.compareTo(b.deadline),
-      );
+      ..sort((a, b) => a.deadline.compareTo(b.deadline));
     return result;
   }
 
-  List<AtlasStrategyRisk> _risks(
-    List<AtlasStrategyRisk> values,
-  ) {
+  List<AtlasStrategyRisk> _risks(List<AtlasStrategyRisk> values) {
     final result = [...values]
-      ..sort(
-        (a, b) => b.priorityScore.compareTo(
-          a.priorityScore,
-        ),
-      );
+      ..sort((a, b) => b.priorityScore.compareTo(a.priorityScore));
     return result;
   }
 
@@ -150,25 +120,18 @@ class AtlasStrategyService {
     List<AtlasStrategyOpportunity> values,
   ) {
     final result = [...values]
-      ..sort(
-        (a, b) => b.confidencePercent.compareTo(
-          a.confidencePercent,
-        ),
-      );
+      ..sort((a, b) => b.confidencePercent.compareTo(a.confidencePercent));
     return result;
   }
 
-  String _summary(
-    AtlasStrategyInput input,
-    double score,
-  ) {
-    final criticalRisks = input.risks.where(
-      (item) =>
-          item.impact ==
-              AtlasStrategyRiskLevel.critical ||
-          item.probability ==
-              AtlasStrategyRiskLevel.critical,
-    ).length;
+  String _summary(AtlasStrategyInput input, double score) {
+    final criticalRisks = input.risks
+        .where(
+          (item) =>
+              item.impact == AtlasStrategyRiskLevel.critical ||
+              item.probability == AtlasStrategyRiskLevel.critical,
+        )
+        .length;
 
     return 'A estratégia possui score de '
         '${score.toStringAsFixed(0)}/100, '

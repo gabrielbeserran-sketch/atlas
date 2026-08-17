@@ -36,9 +36,7 @@ class _AtlasReproductiveStrategyScreenState
 
   Future<void> _load() async {
     setState(() => loading = true);
-    plans = await service.loadPlans(
-      farmName: widget.actionController.farmName,
-    );
+    plans = await service.loadPlans(farmName: widget.actionController.farmName);
     simulations = await service.loadSimulations(
       farmName: widget.actionController.farmName,
     );
@@ -78,8 +76,7 @@ class _AtlasReproductiveStrategyScreenState
     var end = DateTime(year, 12, 31);
     var status = AtlasReproductivePlanStatus.planned;
 
-    final result =
-        await showDialog<AtlasReproductiveAnnualPlan>(
+    final result = await showDialog<AtlasReproductiveAnnualPlan>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -114,38 +111,30 @@ class _AtlasReproductiveStrategyScreenState
                         title: const Text('Ano do planejamento'),
                         trailing: Text(
                           year.toString(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<
-                        AtlasReproductivePlanStatus>(
+                    DropdownButtonFormField<AtlasReproductivePlanStatus>(
                       initialValue: status,
                       decoration: const InputDecoration(
                         labelText: 'Situação',
                         border: OutlineInputBorder(),
                       ),
-                      items:
-                          AtlasReproductivePlanStatus.values
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(
-                                    atlasReproductivePlanStatusLabel(
-                                      value,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                      items: AtlasReproductivePlanStatus.values
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(
+                                atlasReproductivePlanStatusLabel(value),
+                              ),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => status = value,
-                          );
+                          setDialogState(() => status = value);
                         }
                       },
                     ),
@@ -186,8 +175,7 @@ class _AtlasReproductiveStrategyScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -195,23 +183,20 @@ class _AtlasReproductiveStrategyScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasReproductiveAnnualPlan(
-                        id: 'reproductive_plan_'
+                        id:
+                            'reproductive_plan_'
                             '${now.microsecondsSinceEpoch}',
                         title: title.text.trim(),
                         year: year,
-                        targetFemales:
-                            int.tryParse(females.text) ?? 0,
-                        targetPregnancyRatePercent:
-                            _double(rate.text),
-                        targetCalves:
-                            int.tryParse(calves.text) ?? 0,
+                        targetFemales: int.tryParse(females.text) ?? 0,
+                        targetPregnancyRatePercent: _double(rate.text),
+                        targetCalves: int.tryParse(calves.text) ?? 0,
                         budget: _double(budget.text),
                         startAt: start,
                         endAt: end,
                         status: status,
                         team: team.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -252,8 +237,7 @@ class _AtlasReproductiveStrategyScreenState
     final calfValue = TextEditingController();
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasReproductiveSimulation>(
+    final result = await showDialog<AtlasReproductiveSimulation>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
@@ -275,25 +259,13 @@ class _AtlasReproductiveStrategyScreenState
                   _number(females, 'Fêmeas'),
                   const SizedBox(height: 10),
                   _row(
-                    _number(
-                      pregnancyRate,
-                      'Prenhez esperada (%)',
-                    ),
-                    _number(
-                      survivalRate,
-                      'Sobrevivência de bezerros (%)',
-                    ),
+                    _number(pregnancyRate, 'Prenhez esperada (%)'),
+                    _number(survivalRate, 'Sobrevivência de bezerros (%)'),
                   ),
                   const SizedBox(height: 10),
                   _row(
-                    _number(
-                      cost,
-                      'Custo por fêmea',
-                    ),
-                    _number(
-                      calfValue,
-                      'Valor por bezerro',
-                    ),
+                    _number(cost, 'Custo por fêmea'),
+                    _number(calfValue, 'Valor por bezerro'),
                   ),
                   const SizedBox(height: 10),
                   TextField(
@@ -310,8 +282,7 @@ class _AtlasReproductiveStrategyScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             FilledButton(
@@ -319,20 +290,16 @@ class _AtlasReproductiveStrategyScreenState
                 final now = DateTime.now();
                 Navigator.of(dialogContext).pop(
                   AtlasReproductiveSimulation(
-                    id: 'reproductive_simulation_'
+                    id:
+                        'reproductive_simulation_'
                         '${now.microsecondsSinceEpoch}',
                     title: title.text.trim(),
-                    females:
-                        int.tryParse(females.text) ?? 0,
-                    expectedPregnancyRatePercent:
-                        _double(pregnancyRate.text),
-                    expectedCalfSurvivalPercent:
-                        _double(survivalRate.text),
+                    females: int.tryParse(females.text) ?? 0,
+                    expectedPregnancyRatePercent: _double(pregnancyRate.text),
+                    expectedCalfSurvivalPercent: _double(survivalRate.text),
                     costPerFemale: _double(cost.text),
-                    expectedCalfValue:
-                        _double(calfValue.text),
-                    farmName:
-                        widget.actionController.farmName,
+                    expectedCalfValue: _double(calfValue.text),
+                    farmName: widget.actionController.farmName,
                     notes: notes.text.trim(),
                   ),
                 );
@@ -397,43 +364,29 @@ class _AtlasReproductiveStrategyScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addPlan,
           icon: const Icon(Icons.add),
           label: const Text('Novo plano'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _ReproductiveDashboardTab(snapshot: current),
-                  _OperationalBridgeTab(
-                    onOpen: _openOperationalModule,
-                  ),
-                  _ReproductiveIndicatorsTab(
-                    snapshot: current,
-                  ),
-                  _GeneticsBridgeTab(
-                    onOpen: _openOperationalModule,
-                  ),
+                  _OperationalBridgeTab(onOpen: _openOperationalModule),
+                  _ReproductiveIndicatorsTab(snapshot: current),
+                  _GeneticsBridgeTab(onOpen: _openOperationalModule),
                   _ReproductiveAiTab(
                     snapshot: current,
                     intelligence: intelligence,
                   ),
-                  _ReproductiveAlertsTab(
-                    alerts: intelligence,
-                  ),
+                  _ReproductiveAlertsTab(alerts: intelligence),
                   _ReproductiveSimulationTab(
                     simulations: simulations,
                     onAdd: _addSimulation,
                   ),
-                  _AnnualPlansTab(
-                    plans: plans,
-                    onAdd: _addPlan,
-                  ),
+                  _AnnualPlansTab(plans: plans, onAdd: _addPlan),
                 ],
               ),
       ),
@@ -450,14 +403,10 @@ class _AtlasReproductiveStrategyScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -493,18 +442,14 @@ class _AtlasReproductiveStrategyScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
 }
 
 class _ReproductiveDashboardTab extends StatelessWidget {
-  const _ReproductiveDashboardTab({
-    required this.snapshot,
-  });
+  const _ReproductiveDashboardTab({required this.snapshot});
 
   final AtlasReproductiveExecutiveSnapshot? snapshot;
 
@@ -547,18 +492,14 @@ class _OperationalBridgeTab extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onOpen,
         icon: const Icon(Icons.open_in_new),
-        label: const Text(
-          'Abrir agenda, IATF, protocolos e diagnósticos',
-        ),
+        label: const Text('Abrir agenda, IATF, protocolos e diagnósticos'),
       ),
     );
   }
 }
 
 class _ReproductiveIndicatorsTab extends StatelessWidget {
-  const _ReproductiveIndicatorsTab({
-    required this.snapshot,
-  });
+  const _ReproductiveIndicatorsTab({required this.snapshot});
 
   final AtlasReproductiveExecutiveSnapshot? snapshot;
 
@@ -625,11 +566,7 @@ class _ReproductiveAiTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         if (snapshot != null)
-          _metric(
-            'Score reprodutivo',
-            snapshot!.reproductiveScore,
-            '/100',
-          ),
+          _metric('Score reprodutivo', snapshot!.reproductiveScore, '/100'),
         const SizedBox(height: 10),
         ...intelligence.map(
           (item) => Card(
@@ -645,9 +582,7 @@ class _ReproductiveAiTab extends StatelessWidget {
 }
 
 class _ReproductiveAlertsTab extends StatelessWidget {
-  const _ReproductiveAlertsTab({
-    required this.alerts,
-  });
+  const _ReproductiveAlertsTab({required this.alerts});
 
   final List<String> alerts;
 
@@ -693,14 +628,11 @@ class _ReproductiveSimulationTab extends StatelessWidget {
         ),
         Expanded(
           child: simulations.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma simulação cadastrada.'),
-                )
+              ? const Center(child: Text('Nenhuma simulação cadastrada.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: simulations.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = simulations[index];
                     return Card(
@@ -717,11 +649,7 @@ class _ReproductiveSimulationTab extends StatelessWidget {
                             item.expectedRevenue,
                             'R\$',
                           ),
-                          _metric(
-                            'Custo total',
-                            item.totalCost,
-                            'R\$',
-                          ),
+                          _metric('Custo total', item.totalCost, 'R\$'),
                           _metric(
                             'Resultado esperado',
                             item.expectedResult,
@@ -739,10 +667,7 @@ class _ReproductiveSimulationTab extends StatelessWidget {
 }
 
 class _AnnualPlansTab extends StatelessWidget {
-  const _AnnualPlansTab({
-    required this.plans,
-    required this.onAdd,
-  });
+  const _AnnualPlansTab({required this.plans, required this.onAdd});
 
   final List<AtlasReproductiveAnnualPlan> plans;
   final VoidCallback onAdd;
@@ -764,14 +689,11 @@ class _AnnualPlansTab extends StatelessWidget {
         ),
         Expanded(
           child: plans.isEmpty
-              ? const Center(
-                  child: Text('Nenhum plano anual cadastrado.'),
-                )
+              ? const Center(child: Text('Nenhum plano anual cadastrado.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: plans.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = plans[index];
                     return Card(
@@ -782,9 +704,7 @@ class _AnnualPlansTab extends StatelessWidget {
                           '${item.projectedPregnancies} prenhezes projetadas • '
                           '${atlasReproductivePlanStatusLabel(item.status)}',
                         ),
-                        trailing: Text(
-                          'R\$ ${item.budget.toStringAsFixed(2)}',
-                        ),
+                        trailing: Text('R\$ ${item.budget.toStringAsFixed(2)}'),
                       ),
                     );
                   },
@@ -808,11 +728,12 @@ Widget _card(String title, double value, String unit) {
             const SizedBox(height: 8),
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
-              '${unit == '%' ? '%' : unit == '/100' ? '/100' : ''}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              '${unit == '%'
+                  ? '%'
+                  : unit == '/100'
+                  ? '/100'
+                  : ''}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -828,11 +749,12 @@ Widget _metric(String title, double value, String unit) {
       trailing: Text(
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
-        '${unit == '%' ? '%' : unit == '/100' ? '/100' : ''}',
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-        ),
+        '${unit == '%'
+            ? '%'
+            : unit == '/100'
+            ? '/100'
+            : ''}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
       ),
     ),
   );

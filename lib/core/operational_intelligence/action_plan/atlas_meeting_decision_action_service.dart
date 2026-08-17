@@ -21,8 +21,7 @@ class AtlasMeetingDecisionActionService {
     required AtlasExecutionMeeting meeting,
     required AtlasExecutionMeetingDecision decision,
   }) async {
-    final existingLink =
-        await _linkService.findByDecision(decision.id);
+    final existingLink = await _linkService.findByDecision(decision.id);
 
     if (existingLink != null) {
       final actions = await _actionService.loadActions(
@@ -43,8 +42,7 @@ class AtlasMeetingDecisionActionService {
       description: decision.description.isEmpty
           ? 'Decisão registrada na reunião "${meeting.title}".'
           : decision.description,
-      recommendedAction:
-          'Executar a decisão definida na reunião.',
+      recommendedAction: 'Executar a decisão definida na reunião.',
       priority: AtlasCanonicalPriority.high,
       status: decision.completed
           ? AtlasCanonicalStatus.completed

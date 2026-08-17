@@ -165,7 +165,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
       const ExecutiveDecisionService();
 
   final dashboard_intelligence.AtlasOperationsIntelligenceService
-      atlasIntelligenceService =
+  atlasIntelligenceService =
       const dashboard_intelligence.AtlasOperationsIntelligenceService();
 
   final AtlasComparativeDiagnosticLoaderService comparativeLoaderService =
@@ -266,8 +266,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
   final AtlasEventAnalyticsService eventAnalyticsService =
       const AtlasEventAnalyticsService();
 
-  final AtlasEventAnalyticsBrainBridge
-      eventAnalyticsBrainBridge =
+  final AtlasEventAnalyticsBrainBridge eventAnalyticsBrainBridge =
       const AtlasEventAnalyticsBrainBridge();
 
   List<ReportActionItemData> actions = [];
@@ -320,8 +319,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
   bool isLoading = true;
   bool isExportingExcel = false;
 
-  final AtlasReactiveIntelligenceCoordinator
-      reactiveCoordinator =
+  final AtlasReactiveIntelligenceCoordinator reactiveCoordinator =
       AtlasReactiveRuntime.instance.coordinator;
 
   @override
@@ -331,8 +329,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
     AtlasReactiveRuntime.instance.start();
 
     reactiveCoordinator.registerHandler(
-      target:
-          AtlasReactiveTarget.executiveDashboard,
+      target: AtlasReactiveTarget.executiveDashboard,
       handler: _handleReactiveDashboardUpdate,
     );
 
@@ -351,18 +348,14 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
     AtlasReactiveUpdate update,
   ) async {
     if (!mounted ||
-        !update.targets.contains(
-          AtlasReactiveTarget.executiveDashboard,
-        )) {
+        !update.targets.contains(AtlasReactiveTarget.executiveDashboard)) {
       return;
     }
 
     await _refreshExecutiveChain(update);
   }
 
-  Future<void> _refreshExecutiveChain(
-    AtlasReactiveUpdate update,
-  ) async {
+  Future<void> _refreshExecutiveChain(AtlasReactiveUpdate update) async {
     if (!mounted || isLoading || isExportingExcel) {
       return;
     }
@@ -633,22 +626,18 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
 
     final canonicalDecisions = decisionV2Data.toCanonicalDecisions();
 
-    final baseExecutiveBrainData =
-        executiveBrainService.build(
+    final baseExecutiveBrainData = executiveBrainService.build(
       executiveCore: currentExecutiveCoreData,
       canonicalDecisions: canonicalDecisions,
     );
 
     await AtlasEventLogService.instance.load();
 
-    final currentEventAnalyticsData =
-        eventAnalyticsService.build(
-      entries:
-          AtlasEventLogService.instance.entries,
+    final currentEventAnalyticsData = eventAnalyticsService.build(
+      entries: AtlasEventLogService.instance.entries,
     );
 
-    final currentExecutiveBrainData =
-        eventAnalyticsBrainBridge.enrich(
+    final currentExecutiveBrainData = eventAnalyticsBrainBridge.enrich(
       brain: baseExecutiveBrainData,
       analytics: currentEventAnalyticsData,
     );
@@ -701,9 +690,6 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
     });
   }
 
-
-
-
   Future<void> openCommandCenter() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -743,9 +729,6 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
       ),
     );
   }
-
-
-
 
   Future<void> openReleaseCandidate() async {
     await Navigator.of(context).push(
@@ -1119,8 +1102,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
           return AtlasOsScreen(
             data: data,
             executiveBrainData: executiveBrainData,
-            onReactiveRefresh:
-                _refreshExecutiveChain,
+            onReactiveRefresh: _refreshExecutiveChain,
             onOpenExecutiveBrain: openExecutiveBrain,
             onOpenFarm: (farmName) {
               Navigator.of(screenContext).pop();
@@ -1189,8 +1171,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
           return AtlasMissionControlScreen(
             data: data,
             executiveBrainData: executiveBrainData,
-            onReactiveRefresh:
-                _refreshExecutiveChain,
+            onReactiveRefresh: _refreshExecutiveChain,
             onOpenExecutiveBrain: openExecutiveBrain,
             onOpenFarm: (farmName) {
               Navigator.of(screenContext).pop();
@@ -1503,8 +1484,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
           return AtlasCopilotScreen(
             operationBrief: brief,
             executiveBrainData: executiveBrainData,
-            onReactiveRefresh:
-                _refreshExecutiveChain,
+            onReactiveRefresh: _refreshExecutiveChain,
             onOpenExecutiveBrain: openExecutiveBrain,
             consultantName: 'Gabriel',
             onOpenIntelligence: () {
@@ -1545,8 +1525,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                     return AtlasCopilotScreen(
                       operationBrief: brief,
                       executiveBrainData: executiveBrainData,
-                                onReactiveRefresh:
-                          _refreshExecutiveChain,
+                      onReactiveRefresh: _refreshExecutiveChain,
                       onOpenExecutiveBrain: openExecutiveBrain,
                       consultantName: 'Gabriel',
                       onOpenIntelligence: () {
@@ -1690,51 +1669,33 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
           ),
           IconButton(
             tooltip: 'Auditoria Inteligente',
-            onPressed:
-                isLoading ? null : openFarmAudit,
-            icon: const Icon(
-              Icons.assignment_outlined,
-            ),
+            onPressed: isLoading ? null : openFarmAudit,
+            icon: const Icon(Icons.assignment_outlined),
           ),
           IconButton(
             tooltip: 'Consultor Autônomo',
-            onPressed:
-                isLoading ? null : openAutonomousConsultant,
-            icon: const Icon(
-              Icons.support_agent_outlined,
-            ),
+            onPressed: isLoading ? null : openAutonomousConsultant,
+            icon: const Icon(Icons.support_agent_outlined),
           ),
           IconButton(
             tooltip: 'Motor de Otimização',
-            onPressed:
-                isLoading ? null : openOptimizationEngine,
-            icon: const Icon(
-              Icons.auto_awesome_outlined,
-            ),
+            onPressed: isLoading ? null : openOptimizationEngine,
+            icon: const Icon(Icons.auto_awesome_outlined),
           ),
           IconButton(
             tooltip: 'Simulador de Cenários',
-            onPressed:
-                isLoading ? null : openScenarioSimulator,
-            icon: const Icon(
-              Icons.science_outlined,
-            ),
+            onPressed: isLoading ? null : openScenarioSimulator,
+            icon: const Icon(Icons.science_outlined),
           ),
           IconButton(
             tooltip: 'Gêmeo Digital',
-            onPressed:
-                isLoading ? null : openDigitalTwin,
-            icon: const Icon(
-              Icons.hub_outlined,
-            ),
+            onPressed: isLoading ? null : openDigitalTwin,
+            icon: const Icon(Icons.hub_outlined),
           ),
           IconButton(
             tooltip: 'Central de Eventos',
-            onPressed:
-                isLoading ? null : openEventCenter,
-            icon: const Icon(
-              Icons.event_note_outlined,
-            ),
+            onPressed: isLoading ? null : openEventCenter,
+            icon: const Icon(Icons.event_note_outlined),
           ),
           IconButton(
             tooltip: 'Executive Brain',
@@ -1912,8 +1873,8 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                             ),
                             const SizedBox(height: 18),
                             const AtlasCommandCenterModuleCard(
-                              module: AtlasCommandCenterModule
-                                  .executiveDashboard,
+                              module:
+                                  AtlasCommandCenterModule.executiveDashboard,
                             ),
                             const SizedBox(height: 24),
                             ExecutiveKpiGrid(
@@ -1964,7 +1925,6 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                             ),
                             const SizedBox(height: 28),
 
-
                             ExecutiveSectionTitle(
                               title: 'Central de Comando',
                               subtitle:
@@ -2005,9 +1965,6 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                               onOpen: openDataGovernance,
                             ),
                             const SizedBox(height: 28),
-
-
-
 
                             ExecutiveSectionTitle(
                               title: 'Release Candidate 1.0',
@@ -2169,7 +2126,9 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                                   'Simule mudanças produtivas, financeiras e operacionais antes de executá-las, com projeções, risco, confiança, ROI e payback.',
                             ),
                             const SizedBox(height: 14),
-                            ExecutivePredictiveAiAccessCard(onOpen: openPredictiveAi),
+                            ExecutivePredictiveAiAccessCard(
+                              onOpen: openPredictiveAi,
+                            ),
                             const SizedBox(height: 28),
                             ExecutiveSectionTitle(
                               title: 'Strategic Execution Engine',
@@ -2327,9 +2286,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
                                   'Avalie 12 áreas da fazenda, identifique gargalos, oportunidades e acompanhe o Atlas Farm Audit Index.',
                             ),
                             const SizedBox(height: 14),
-                            ExecutiveFarmAuditAccessCard(
-                              onOpen: openFarmAudit,
-                            ),
+                            ExecutiveFarmAuditAccessCard(onOpen: openFarmAudit),
                             const SizedBox(height: 28),
                             ExecutiveSectionTitle(
                               title: 'Consultor Autônomo',
@@ -2611,18 +2568,8 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
   }
 }
 
-
-
-
-
-
-
-
 class ExecutiveCommandCenterAccessCard extends StatelessWidget {
-  const ExecutiveCommandCenterAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveCommandCenterAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -2678,12 +2625,8 @@ class ExecutiveCommandCenterAccessCard extends StatelessWidget {
   }
 }
 
-
 class ExecutiveQualityCenterAccessCard extends StatelessWidget {
-  const ExecutiveQualityCenterAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveQualityCenterAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -2739,12 +2682,8 @@ class ExecutiveQualityCenterAccessCard extends StatelessWidget {
   }
 }
 
-
 class ExecutiveDataGovernanceAccessCard extends StatelessWidget {
-  const ExecutiveDataGovernanceAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveDataGovernanceAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -2800,7 +2739,6 @@ class ExecutiveDataGovernanceAccessCard extends StatelessWidget {
   }
 }
 
-
 class ExecutiveEnterprisePlatformAccessCard extends StatelessWidget {
   const ExecutiveEnterprisePlatformAccessCard({
     required this.onOpen,
@@ -2847,10 +2785,7 @@ class ExecutiveEnterprisePlatformAccessCard extends StatelessWidget {
                     SizedBox(height: 5),
                     Text(
                       'Administre empresas, usuários, planos, autenticação em duas etapas e rastreabilidade das alterações.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -2866,10 +2801,7 @@ class ExecutiveEnterprisePlatformAccessCard extends StatelessWidget {
 }
 
 class ExecutiveReportingAccessCard extends StatelessWidget {
-  const ExecutiveReportingAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveReportingAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -2911,10 +2843,7 @@ class ExecutiveReportingAccessCard extends StatelessWidget {
                     SizedBox(height: 5),
                     Text(
                       'Organize relatórios, pré-visualize documentos e prepare conteúdos técnicos da Beserra Consultoria Veterinária.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -2934,10 +2863,7 @@ class ExecutiveReportingAccessCard extends StatelessWidget {
 }
 
 class ExecutiveOfflineFieldAccessCard extends StatelessWidget {
-  const ExecutiveOfflineFieldAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveOfflineFieldAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -2979,10 +2905,7 @@ class ExecutiveOfflineFieldAccessCard extends StatelessWidget {
                     SizedBox(height: 5),
                     Text(
                       'Registre pesagens, manejos, ocorrências e observações mesmo sem sinal, mantendo uma fila local pronta para sincronização.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3002,10 +2925,7 @@ class ExecutiveOfflineFieldAccessCard extends StatelessWidget {
 }
 
 class ExecutiveConsultancyHubAccessCard extends StatelessWidget {
-  const ExecutiveConsultancyHubAccessCard({
-    super.key,
-    required this.onOpen,
-  });
+  const ExecutiveConsultancyHubAccessCard({super.key, required this.onOpen});
 
   final VoidCallback onOpen;
 
@@ -3062,10 +2982,7 @@ class ExecutiveConsultancyHubAccessCard extends StatelessWidget {
 }
 
 class ExecutiveIntegrationHubAccessCard extends StatelessWidget {
-  const ExecutiveIntegrationHubAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveIntegrationHubAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3099,7 +3016,10 @@ class ExecutiveIntegrationHubAccessCard extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       'Atlas Integration Hub',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -3124,10 +3044,7 @@ class ExecutiveIntegrationHubAccessCard extends StatelessWidget {
 }
 
 class ExecutiveUnifiedWorkflowAccessCard extends StatelessWidget {
-  const ExecutiveUnifiedWorkflowAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveUnifiedWorkflowAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3169,10 +3086,7 @@ class ExecutiveUnifiedWorkflowAccessCard extends StatelessWidget {
                     SizedBox(height: 5),
                     Text(
                       'Automatize respostas a eventos, conecte módulos e acompanhe cada ação executada pelo Atlas.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3226,7 +3140,10 @@ class ExecutiveFarmOperationsAccessCard extends StatelessWidget {
                   children: [
                     Text(
                       'Centro de Operações da Fazenda',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -3261,25 +3178,46 @@ class ExecutivePredictiveAiAccessCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: Row(children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: const Color(0xFF173E55).withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(16),
+        child: Row(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFF173E55).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.psychology_alt_outlined,
+                color: Color(0xFF173E55),
+                size: 30,
+              ),
             ),
-            child: const Icon(Icons.psychology_alt_outlined, color: Color(0xFF173E55), size: 30),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Predictive Analytics & AI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 5),
-            Text('Antecipe resultados, compare premissas e avalie retorno, risco e confiança antes de comprometer recursos.', style: TextStyle(color: Colors.black54, height: 1.35)),
-          ])),
-          const SizedBox(width: 12),
-          FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.arrow_forward), label: const Text('Simular')),
-        ]),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Predictive Analytics & AI',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Antecipe resultados, compare premissas e avalie retorno, risco e confiança antes de comprometer recursos.',
+                    style: TextStyle(color: Colors.black54, height: 1.35),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            FilledButton.icon(
+              onPressed: onOpen,
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text('Simular'),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -3323,7 +3261,10 @@ class ExecutivePerformanceIntelligenceAccessCard extends StatelessWidget {
                   children: [
                     Text(
                       'Performance Intelligence & KPI',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -3385,7 +3326,10 @@ class ExecutiveStrategicExecutionAccessCard extends StatelessWidget {
                   children: [
                     Text(
                       'Strategic Execution Engine',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -3410,10 +3354,7 @@ class ExecutiveStrategicExecutionAccessCard extends StatelessWidget {
 }
 
 class ExecutiveInvestmentCapitalAccessCard extends StatelessWidget {
-  const ExecutiveInvestmentCapitalAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveInvestmentCapitalAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3447,7 +3388,10 @@ class ExecutiveInvestmentCapitalAccessCard extends StatelessWidget {
                   children: [
                     Text(
                       'Investment & Capital Allocation',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
@@ -3471,8 +3415,7 @@ class ExecutiveInvestmentCapitalAccessCard extends StatelessWidget {
   }
 }
 
-class ExecutiveStrategicScenarioPlanningAccessCard
-    extends StatelessWidget {
+class ExecutiveStrategicScenarioPlanningAccessCard extends StatelessWidget {
   const ExecutiveStrategicScenarioPlanningAccessCard({
     required this.onOpen,
     super.key,
@@ -3494,10 +3437,8 @@ class ExecutiveStrategicScenarioPlanningAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00695C)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00695C).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.auto_graph_outlined,
@@ -3508,24 +3449,19 @@ class ExecutiveStrategicScenarioPlanningAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Strategic Scenario Planning',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Compare futuros possíveis com simulações econômicas, produtivas, riscos e análise de sensibilidade.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3533,9 +3469,7 @@ class ExecutiveStrategicScenarioPlanningAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Simular'),
               ),
             ],
@@ -3546,8 +3480,7 @@ class ExecutiveStrategicScenarioPlanningAccessCard
   }
 }
 
-class ExecutiveStrategicAlignmentAccessCard
-    extends StatelessWidget {
+class ExecutiveStrategicAlignmentAccessCard extends StatelessWidget {
   const ExecutiveStrategicAlignmentAccessCard({
     required this.onOpen,
     super.key,
@@ -3569,10 +3502,8 @@ class ExecutiveStrategicAlignmentAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF283593)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF283593).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.flag_outlined,
@@ -3583,24 +3514,19 @@ class ExecutiveStrategicAlignmentAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Strategic Alignment & OKR',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Conecte iniciativas aos objetivos estratégicos e acompanhe metas, resultados-chave e contribuição real.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3608,9 +3534,7 @@ class ExecutiveStrategicAlignmentAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Alinhar'),
               ),
             ],
@@ -3621,12 +3545,8 @@ class ExecutiveStrategicAlignmentAccessCard
   }
 }
 
-class ExecutiveStrategicCapacityAccessCard
-    extends StatelessWidget {
-  const ExecutiveStrategicCapacityAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveStrategicCapacityAccessCard extends StatelessWidget {
+  const ExecutiveStrategicCapacityAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3644,10 +3564,8 @@ class ExecutiveStrategicCapacityAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4527A0)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF4527A0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.hub_outlined,
@@ -3658,24 +3576,19 @@ class ExecutiveStrategicCapacityAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Strategic Capacity & Dependency',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Analise capacidade da equipe, conflitos, dependências, prazos e concorrência por recursos.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3683,9 +3596,7 @@ class ExecutiveStrategicCapacityAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Analisar'),
               ),
             ],
@@ -3696,8 +3607,7 @@ class ExecutiveStrategicCapacityAccessCard
   }
 }
 
-class ExecutivePortfolioManagementAccessCard
-    extends StatelessWidget {
+class ExecutivePortfolioManagementAccessCard extends StatelessWidget {
   const ExecutivePortfolioManagementAccessCard({
     required this.onOpen,
     super.key,
@@ -3719,8 +3629,7 @@ class ExecutivePortfolioManagementAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0D47A1)
-                      .withValues(alpha: 0.10),
+                  color: const Color(0xFF0D47A1).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -3744,10 +3653,7 @@ class ExecutivePortfolioManagementAccessCard
                     SizedBox(height: 5),
                     Text(
                       'Visão consolidada de estratégias, investimentos, capacidade, valor capturado e valor em risco.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3766,12 +3672,8 @@ class ExecutivePortfolioManagementAccessCard
   }
 }
 
-class ExecutiveValueGovernanceAccessCard
-    extends StatelessWidget {
-  const ExecutiveValueGovernanceAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveValueGovernanceAccessCard extends StatelessWidget {
+  const ExecutiveValueGovernanceAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3799,8 +3701,7 @@ class ExecutiveValueGovernanceAccessCard
   }
 }
 
-class ExecutiveBenefitsRealizationAccessCard
-    extends StatelessWidget {
+class ExecutiveBenefitsRealizationAccessCard extends StatelessWidget {
   const ExecutiveBenefitsRealizationAccessCard({
     required this.onOpen,
     super.key,
@@ -3822,10 +3723,8 @@ class ExecutiveBenefitsRealizationAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00695C)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00695C).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.insights_outlined,
@@ -3836,24 +3735,19 @@ class ExecutiveBenefitsRealizationAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Benefits Realization Engine',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Meça se as estratégias estão entregando o orçamento, ROI, progresso e benefícios prometidos.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3861,9 +3755,7 @@ class ExecutiveBenefitsRealizationAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Medir'),
               ),
             ],
@@ -3874,12 +3766,8 @@ class ExecutiveBenefitsRealizationAccessCard
   }
 }
 
-class ExecutiveStrategyExecutionAccessCard
-    extends StatelessWidget {
-  const ExecutiveStrategyExecutionAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveStrategyExecutionAccessCard extends StatelessWidget {
+  const ExecutiveStrategyExecutionAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -3897,8 +3785,7 @@ class ExecutiveStrategyExecutionAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1B5E20)
-                      .withValues(alpha: 0.10),
+                  color: const Color(0xFF1B5E20).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -3922,10 +3809,7 @@ class ExecutiveStrategyExecutionAccessCard
                     SizedBox(height: 5),
                     Text(
                       'Converta decisões aprovadas em fases, marcos, orçamento, responsáveis e gates de avanço.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -3944,8 +3828,7 @@ class ExecutiveStrategyExecutionAccessCard
   }
 }
 
-class ExecutiveDecisionIntelligenceLabAccessCard
-    extends StatelessWidget {
+class ExecutiveDecisionIntelligenceLabAccessCard extends StatelessWidget {
   const ExecutiveDecisionIntelligenceLabAccessCard({
     required this.onOpen,
     super.key,
@@ -3967,10 +3850,8 @@ class ExecutiveDecisionIntelligenceLabAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6A1B9A)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF6A1B9A).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.science_outlined,
@@ -3981,24 +3862,19 @@ class ExecutiveDecisionIntelligenceLabAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Decision Intelligence Lab',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Laboratório para testar cenários e comparar ROI, payback, risco, confiança e probabilidade de sucesso.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4006,9 +3882,7 @@ class ExecutiveDecisionIntelligenceLabAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Simular'),
               ),
             ],
@@ -4019,8 +3893,7 @@ class ExecutiveDecisionIntelligenceLabAccessCard
   }
 }
 
-class ExecutiveRecommendationIntelligenceAccessCard
-    extends StatelessWidget {
+class ExecutiveRecommendationIntelligenceAccessCard extends StatelessWidget {
   const ExecutiveRecommendationIntelligenceAccessCard({
     required this.onOpen,
     super.key,
@@ -4042,10 +3915,8 @@ class ExecutiveRecommendationIntelligenceAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00838F)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00838F).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.lightbulb_outline,
@@ -4056,24 +3927,19 @@ class ExecutiveRecommendationIntelligenceAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Recommendation Intelligence',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Recomendações priorizadas com confiança, casos semelhantes, taxa de sucesso, prazo e impacto esperado.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4081,9 +3947,7 @@ class ExecutiveRecommendationIntelligenceAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Recomendar'),
               ),
             ],
@@ -4094,12 +3958,8 @@ class ExecutiveRecommendationIntelligenceAccessCard
   }
 }
 
-class ExecutiveKnowledgeLearningAccessCard
-    extends StatelessWidget {
-  const ExecutiveKnowledgeLearningAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveKnowledgeLearningAccessCard extends StatelessWidget {
+  const ExecutiveKnowledgeLearningAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4117,8 +3977,7 @@ class ExecutiveKnowledgeLearningAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF5E35B1)
-                      .withValues(alpha: 0.10),
+                  color: const Color(0xFF5E35B1).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -4142,10 +4001,7 @@ class ExecutiveKnowledgeLearningAccessCard
                     SizedBox(height: 5),
                     Text(
                       'Memória técnica com casos, protocolos, lições aprendidas, taxa de sucesso e confiança das recomendações.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4164,8 +4020,7 @@ class ExecutiveKnowledgeLearningAccessCard
   }
 }
 
-class ExecutiveContinuousImprovementAccessCard
-    extends StatelessWidget {
+class ExecutiveContinuousImprovementAccessCard extends StatelessWidget {
   const ExecutiveContinuousImprovementAccessCard({
     required this.onOpen,
     super.key,
@@ -4187,10 +4042,8 @@ class ExecutiveContinuousImprovementAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00897B)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00897B).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.autorenew,
@@ -4201,24 +4054,19 @@ class ExecutiveContinuousImprovementAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Continuous Improvement Engine',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Compara execução e desempenho, identifica desvios e define o próximo ciclo de melhoria da fazenda.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4226,9 +4074,7 @@ class ExecutiveContinuousImprovementAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
+                icon: const Icon(Icons.arrow_forward),
                 label: const Text('Abrir'),
               ),
             ],
@@ -4260,21 +4106,38 @@ class ExecutivePerformanceCenterAccessCard extends StatelessWidget {
                   color: const Color(0xFF00838F).withValues(alpha: .10),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.insights_outlined, color: Color(0xFF00838F), size: 29),
+                child: const Icon(
+                  Icons.insights_outlined,
+                  color: Color(0xFF00838F),
+                  size: 29,
+                ),
               ),
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Atlas Performance Center', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Atlas Performance Center',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     SizedBox(height: 5),
-                    Text('KPIs, tendências, alertas, comparação antes × depois e score de execução.', style: TextStyle(color: Colors.black54, height: 1.35)),
+                    Text(
+                      'KPIs, tendências, alertas, comparação antes × depois e score de execução.',
+                      style: TextStyle(color: Colors.black54, height: 1.35),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.arrow_forward), label: const Text('Analisar')),
+              FilledButton.icon(
+                onPressed: onOpen,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Analisar'),
+              ),
             ],
           ),
         ),
@@ -4283,8 +4146,7 @@ class ExecutivePerformanceCenterAccessCard extends StatelessWidget {
   }
 }
 
-class ExecutiveActionPlanAccessCard
-    extends StatelessWidget {
+class ExecutiveActionPlanAccessCard extends StatelessWidget {
   const ExecutiveActionPlanAccessCard({required this.onOpen, super.key});
   final VoidCallback onOpen;
 
@@ -4305,21 +4167,38 @@ class ExecutiveActionPlanAccessCard
                   color: const Color(0xFF1565C0).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.flag_outlined, color: Color(0xFF1565C0), size: 29),
+                child: const Icon(
+                  Icons.flag_outlined,
+                  color: Color(0xFF1565C0),
+                  size: 29,
+                ),
               ),
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Atlas Action Plan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Atlas Action Plan',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     SizedBox(height: 5),
-                    Text('Plano mestre, missões, responsáveis, prazos, checklist e acompanhamento da execução.', style: TextStyle(color: Colors.black54, height: 1.35)),
+                    Text(
+                      'Plano mestre, missões, responsáveis, prazos, checklist e acompanhamento da execução.',
+                      style: TextStyle(color: Colors.black54, height: 1.35),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              FilledButton.icon(onPressed: onOpen, icon: const Icon(Icons.arrow_forward), label: const Text('Executar')),
+              FilledButton.icon(
+                onPressed: onOpen,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Executar'),
+              ),
             ],
           ),
         ),
@@ -4328,12 +4207,8 @@ class ExecutiveActionPlanAccessCard
   }
 }
 
-class ExecutiveFarmAuditAccessCard
-    extends StatelessWidget {
-  const ExecutiveFarmAuditAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveFarmAuditAccessCard extends StatelessWidget {
+  const ExecutiveFarmAuditAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4351,10 +4226,8 @@ class ExecutiveFarmAuditAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6A1B9A)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF6A1B9A).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.assignment_outlined,
@@ -4365,24 +4238,19 @@ class ExecutiveFarmAuditAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Farm Audit',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Auditoria técnica de 12 áreas, índice geral, ranking de problemas, oportunidades e evolução histórica.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4390,12 +4258,8 @@ class ExecutiveFarmAuditAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Auditar',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Auditar'),
               ),
             ],
           ),
@@ -4405,8 +4269,7 @@ class ExecutiveFarmAuditAccessCard
   }
 }
 
-class ExecutiveAutonomousConsultantAccessCard
-    extends StatelessWidget {
+class ExecutiveAutonomousConsultantAccessCard extends StatelessWidget {
   const ExecutiveAutonomousConsultantAccessCard({
     required this.onOpen,
     super.key,
@@ -4428,10 +4291,8 @@ class ExecutiveAutonomousConsultantAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00695C)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00695C).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.support_agent_outlined,
@@ -4442,24 +4303,19 @@ class ExecutiveAutonomousConsultantAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Autonomous Consultant',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Analisa riscos, identifica gargalos, prioriza ações e associa a melhor estratégia otimizada para a fazenda.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4467,12 +4323,8 @@ class ExecutiveAutonomousConsultantAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Consultar',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Consultar'),
               ),
             ],
           ),
@@ -4482,12 +4334,8 @@ class ExecutiveAutonomousConsultantAccessCard
   }
 }
 
-class ExecutiveOptimizationAccessCard
-    extends StatelessWidget {
-  const ExecutiveOptimizationAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveOptimizationAccessCard extends StatelessWidget {
+  const ExecutiveOptimizationAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4505,10 +4353,8 @@ class ExecutiveOptimizationAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF283593)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF283593).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.auto_awesome_outlined,
@@ -4519,24 +4365,19 @@ class ExecutiveOptimizationAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Optimization Engine',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Escolha um objetivo, defina limites e receba a estratégia com melhor combinação de retorno, risco e equilíbrio.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4544,12 +4385,8 @@ class ExecutiveOptimizationAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Otimizar',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Otimizar'),
               ),
             ],
           ),
@@ -4559,12 +4396,8 @@ class ExecutiveOptimizationAccessCard
   }
 }
 
-class ExecutiveScenarioSimulatorAccessCard
-    extends StatelessWidget {
-  const ExecutiveScenarioSimulatorAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveScenarioSimulatorAccessCard extends StatelessWidget {
+  const ExecutiveScenarioSimulatorAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4582,10 +4415,8 @@ class ExecutiveScenarioSimulatorAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6A1B9A)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF6A1B9A).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.science_outlined,
@@ -4596,24 +4427,19 @@ class ExecutiveScenarioSimulatorAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Scenario Simulator',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Crie hipóteses, projete resultados, compare scores, calcule ROI e identifique riscos antes de executar uma decisão real.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4621,12 +4447,8 @@ class ExecutiveScenarioSimulatorAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Simular',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Simular'),
               ),
             ],
           ),
@@ -4636,12 +4458,8 @@ class ExecutiveScenarioSimulatorAccessCard
   }
 }
 
-class ExecutiveDigitalTwinAccessCard
-    extends StatelessWidget {
-  const ExecutiveDigitalTwinAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveDigitalTwinAccessCard extends StatelessWidget {
+  const ExecutiveDigitalTwinAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4659,10 +4477,8 @@ class ExecutiveDigitalTwinAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00695C)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF00695C).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.hub_outlined,
@@ -4673,24 +4489,19 @@ class ExecutiveDigitalTwinAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Digital Twin',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Acompanhe o índice geral, scores por área, riscos consolidados, tendências e a timeline inteligente da fazenda.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4698,12 +4509,8 @@ class ExecutiveDigitalTwinAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Abrir gêmeo',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Abrir gêmeo'),
               ),
             ],
           ),
@@ -4713,12 +4520,8 @@ class ExecutiveDigitalTwinAccessCard
   }
 }
 
-class ExecutiveEventCenterAccessCard
-    extends StatelessWidget {
-  const ExecutiveEventCenterAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+class ExecutiveEventCenterAccessCard extends StatelessWidget {
+  const ExecutiveEventCenterAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -4736,10 +4539,8 @@ class ExecutiveEventCenterAccessCard
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1565C0)
-                      .withValues(alpha: 0.10),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.event_note_outlined,
@@ -4750,24 +4551,19 @@ class ExecutiveEventCenterAccessCard
               const SizedBox(width: 16),
               const Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Atlas Event Center',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       'Consulte pesagens, sanidade, reprodução, finanças, estoque, workflows, decisões e erros do sistema.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        height: 1.35,
-                      ),
+                      style: TextStyle(color: Colors.black54, height: 1.35),
                     ),
                   ],
                 ),
@@ -4775,12 +4571,8 @@ class ExecutiveEventCenterAccessCard
               const SizedBox(width: 12),
               FilledButton.icon(
                 onPressed: onOpen,
-                icon: const Icon(
-                  Icons.arrow_forward,
-                ),
-                label: const Text(
-                  'Abrir eventos',
-                ),
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Abrir eventos'),
               ),
             ],
           ),
@@ -9451,18 +9243,8 @@ Color executiveStatusColor(String status) {
   }
 }
 
-
-
-
-
-
-
-
 class ExecutiveReleaseCandidateAccessCard extends StatelessWidget {
-  const ExecutiveReleaseCandidateAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveReleaseCandidateAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9579,10 +9361,7 @@ class ExecutiveConsultancyWorkflowAccessCard extends StatelessWidget {
 }
 
 class ExecutiveSystemCenterAccessCard extends StatelessWidget {
-  const ExecutiveSystemCenterAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveSystemCenterAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9639,10 +9418,7 @@ class ExecutiveSystemCenterAccessCard extends StatelessWidget {
 }
 
 class ExecutiveFoundationCenterAccessCard extends StatelessWidget {
-  const ExecutiveFoundationCenterAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveFoundationCenterAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9699,10 +9475,7 @@ class ExecutiveFoundationCenterAccessCard extends StatelessWidget {
 }
 
 class ExecutiveOrchestratorAccessCard extends StatelessWidget {
-  const ExecutiveOrchestratorAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveOrchestratorAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9759,10 +9532,7 @@ class ExecutiveOrchestratorAccessCard extends StatelessWidget {
 }
 
 class ExecutiveObservabilityAccessCard extends StatelessWidget {
-  const ExecutiveObservabilityAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveObservabilityAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9819,10 +9589,7 @@ class ExecutiveObservabilityAccessCard extends StatelessWidget {
 }
 
 class ExecutiveIntegrationCoreAccessCard extends StatelessWidget {
-  const ExecutiveIntegrationCoreAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveIntegrationCoreAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 
@@ -9879,10 +9646,7 @@ class ExecutiveIntegrationCoreAccessCard extends StatelessWidget {
 }
 
 class ExecutiveSyncPlatformAccessCard extends StatelessWidget {
-  const ExecutiveSyncPlatformAccessCard({
-    required this.onOpen,
-    super.key,
-  });
+  const ExecutiveSyncPlatformAccessCard({required this.onOpen, super.key});
 
   final VoidCallback onOpen;
 

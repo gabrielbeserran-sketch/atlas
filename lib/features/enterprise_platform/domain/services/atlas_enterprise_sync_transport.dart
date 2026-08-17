@@ -35,9 +35,7 @@ class AtlasPushOperationResult {
 }
 
 abstract class AtlasEnterpriseSyncTransport {
-  Future<AtlasPushOperationResult> push(
-    AtlasEnterpriseSyncOperation operation,
-  );
+  Future<AtlasPushOperationResult> push(AtlasEnterpriseSyncOperation operation);
 
   Future<List<AtlasRemoteEntityState>> pull({
     required String companyId,
@@ -48,8 +46,7 @@ abstract class AtlasEnterpriseSyncTransport {
 /// Transporte local de validação.
 /// Não representa backend de produção. O 24D substituirá esta
 /// implementação por HTTP/API autenticada sem alterar o engine.
-class AtlasLocalLoopbackSyncTransport
-    implements AtlasEnterpriseSyncTransport {
+class AtlasLocalLoopbackSyncTransport implements AtlasEnterpriseSyncTransport {
   AtlasLocalLoopbackSyncTransport._();
 
   static final AtlasLocalLoopbackSyncTransport instance =
@@ -59,11 +56,7 @@ class AtlasLocalLoopbackSyncTransport
       <String, AtlasRemoteEntityState>{};
   int _cursor = 0;
 
-  String _key(
-    String companyId,
-    String entityType,
-    String entityId,
-  ) =>
+  String _key(String companyId, String entityType, String entityId) =>
       '$companyId|$entityType|$entityId';
 
   @override
@@ -83,8 +76,7 @@ class AtlasLocalLoopbackSyncTransport
         accepted: false,
         conflict: true,
         remoteVersion: currentVersion,
-        remotePayload:
-            current?.payload ?? const <String, dynamic>{},
+        remotePayload: current?.payload ?? const <String, dynamic>{},
         error:
             'baseVersion=${operation.baseVersion}; '
             'remoteVersion=$currentVersion',
@@ -98,8 +90,8 @@ class AtlasLocalLoopbackSyncTransport
       entityId: operation.entityId,
       version: nextVersion,
       payload: Map<String, dynamic>.from(operation.payload),
-      deleted: operation.operationType ==
-          AtlasEnterpriseSyncOperationType.delete,
+      deleted:
+          operation.operationType == AtlasEnterpriseSyncOperationType.delete,
       cursor: _cursor.toString(),
     );
 
@@ -107,8 +99,7 @@ class AtlasLocalLoopbackSyncTransport
       accepted: true,
       conflict: false,
       remoteVersion: nextVersion,
-      remotePayload:
-          Map<String, dynamic>.from(operation.payload),
+      remotePayload: Map<String, dynamic>.from(operation.payload),
       error: '',
     );
   }
@@ -126,14 +117,14 @@ class AtlasLocalLoopbackSyncTransport
           if (parts.isEmpty || parts.first != companyId) {
             return false;
           }
-          return (int.tryParse(entry.value.cursor) ?? 0) >
-              currentCursor;
+          return (int.tryParse(entry.value.cursor) ?? 0) > currentCursor;
         })
         .map((entry) => entry.value)
         .toList()
       ..sort(
-        (a, b) => (int.tryParse(a.cursor) ?? 0)
-            .compareTo(int.tryParse(b.cursor) ?? 0),
+        (a, b) => (int.tryParse(a.cursor) ?? 0).compareTo(
+          int.tryParse(b.cursor) ?? 0,
+        ),
       );
   }
 }

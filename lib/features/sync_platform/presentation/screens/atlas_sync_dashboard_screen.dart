@@ -7,7 +7,8 @@ class AtlasSyncDashboardScreen extends StatefulWidget {
   const AtlasSyncDashboardScreen({super.key});
 
   @override
-  State<AtlasSyncDashboardScreen> createState() => _AtlasSyncDashboardScreenState();
+  State<AtlasSyncDashboardScreen> createState() =>
+      _AtlasSyncDashboardScreenState();
 }
 
 class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
@@ -59,15 +60,20 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
     setState(() => _syncing = true);
     final Set<String> targets = only == null
         ? _items
-            .where((AtlasSyncItem item) => item.status != AtlasSyncStatus.synced)
-            .map((AtlasSyncItem item) => item.id)
-            .toSet()
+              .where(
+                (AtlasSyncItem item) => item.status != AtlasSyncStatus.synced,
+              )
+              .map((AtlasSyncItem item) => item.id)
+              .toSet()
         : <String>{only.id};
 
     setState(() {
       _items = _items.map((AtlasSyncItem item) {
         return targets.contains(item.id)
-            ? item.copyWith(status: AtlasSyncStatus.syncing, updatedAt: DateTime.now())
+            ? item.copyWith(
+                status: AtlasSyncStatus.syncing,
+                updatedAt: DateTime.now(),
+              )
             : item;
       }).toList();
     });
@@ -123,13 +129,21 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
       appBar: AppBar(
         title: const Text('Atlas Sync & Cloud Platform'),
         actions: <Widget>[
-          IconButton(onPressed: _loading ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Atualizar'),
+          IconButton(
+            onPressed: _loading ? null : _load,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Atualizar',
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _syncing ? null : _synchronize,
         icon: _syncing
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : const Icon(Icons.cloud_sync_outlined),
         label: const Text('Sincronizar agora'),
       ),
@@ -149,14 +163,27 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
                   Row(
                     children: <Widget>[
                       Expanded(
-                        child: Text('Fila centralizada', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Fila centralizada',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      TextButton.icon(onPressed: _addTestItem, icon: const Icon(Icons.add), label: const Text('Adicionar teste')),
+                      TextButton.icon(
+                        onPressed: _addTestItem,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Adicionar teste'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   if (_items.isEmpty)
-                    const Card(child: Padding(padding: EdgeInsets.all(24), child: Center(child: Text('A fila está vazia.'))))
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: Text('A fila está vazia.')),
+                      ),
+                    )
                   else
                     ..._engine.ordered(_items).map(_buildItemCard),
                 ],
@@ -173,20 +200,38 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
           children: <Widget>[
             CircleAvatar(
               radius: 26,
-              child: Icon(_settings.online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined),
+              child: Icon(
+                _settings.online
+                    ? Icons.cloud_done_outlined
+                    : Icons.cloud_off_outlined,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(_settings.online ? 'Conexão disponível' : 'Modo offline', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    _settings.online ? 'Conexão disponível' : 'Modo offline',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(_settings.lastSyncAt == null ? 'Nenhuma sincronização concluída.' : 'Última sincronização: ${_formatDate(_settings.lastSyncAt!)}'),
+                  Text(
+                    _settings.lastSyncAt == null
+                        ? 'Nenhuma sincronização concluída.'
+                        : 'Última sincronização: ${_formatDate(_settings.lastSyncAt!)}',
+                  ),
                 ],
               ),
             ),
-            Switch(value: _settings.online, onChanged: (bool value) => _saveSettings(_settings.copyWith(online: value))),
+            Switch(
+              value: _settings.online,
+              onChanged: (bool value) =>
+                  _saveSettings(_settings.copyWith(online: value)),
+            ),
           ],
         ),
       ),
@@ -201,18 +246,37 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text('Visão geral da sincronização', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Visão geral da sincronização',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 14),
             Wrap(
               spacing: 10,
               runSpacing: 10,
               children: <Widget>[
                 _metric('Pendentes', '${summary.pending}', Icons.schedule),
-                _metric('Sincronizados', '${summary.synced}', Icons.cloud_done_outlined),
+                _metric(
+                  'Sincronizados',
+                  '${summary.synced}',
+                  Icons.cloud_done_outlined,
+                ),
                 _metric('Falhas', '${summary.failed}', Icons.error_outline),
-                _metric('Conflitos', '${summary.conflicts}', Icons.compare_arrows),
-                _metric('Taxa de sucesso', '${summary.successRate.toStringAsFixed(0)}%', Icons.insights_outlined),
-                _metric('Módulos pendentes', '${summary.modulesWithPendingItems}', Icons.widgets_outlined),
+                _metric(
+                  'Conflitos',
+                  '${summary.conflicts}',
+                  Icons.compare_arrows,
+                ),
+                _metric(
+                  'Taxa de sucesso',
+                  '${summary.successRate.toStringAsFixed(0)}%',
+                  Icons.insights_outlined,
+                ),
+                _metric(
+                  'Módulos pendentes',
+                  '${summary.modulesWithPendingItems}',
+                  Icons.widgets_outlined,
+                ),
               ],
             ),
           ],
@@ -225,12 +289,29 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
     return Container(
       width: 160,
       padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor), borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Row(
         children: <Widget>[
           Icon(icon, size: 22),
           const SizedBox(width: 9),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text(label, style: const TextStyle(fontSize: 12))])),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(label, style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -242,16 +323,22 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
         children: <Widget>[
           SwitchListTile(
             title: const Text('Sincronização automática'),
-            subtitle: const Text('Processar a fila quando houver conexão disponível.'),
+            subtitle: const Text(
+              'Processar a fila quando houver conexão disponível.',
+            ),
             value: _settings.automaticSync,
-            onChanged: (bool value) => _saveSettings(_settings.copyWith(automaticSync: value)),
+            onChanged: (bool value) =>
+                _saveSettings(_settings.copyWith(automaticSync: value)),
           ),
           const Divider(height: 1),
           SwitchListTile(
             title: const Text('Somente por Wi-Fi'),
-            subtitle: const Text('Evitar consumo de dados móveis em sincronizações futuras.'),
+            subtitle: const Text(
+              'Evitar consumo de dados móveis em sincronizações futuras.',
+            ),
             value: _settings.wifiOnly,
-            onChanged: (bool value) => _saveSettings(_settings.copyWith(wifiOnly: value)),
+            onChanged: (bool value) =>
+                _saveSettings(_settings.copyWith(wifiOnly: value)),
           ),
         ],
       ),
@@ -262,11 +349,20 @@ class _AtlasSyncDashboardScreenState extends State<AtlasSyncDashboardScreen> {
     return Card(
       child: ListTile(
         leading: CircleAvatar(child: Icon(_statusIcon(item.status))),
-        title: Text('${item.module} • ${item.entityType}', style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('${_operationLabel(item.operation)} • ${_statusLabel(item.status)} • ${_formatDate(item.updatedAt)}'),
+        title: Text(
+          '${item.module} • ${item.entityType}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${_operationLabel(item.operation)} • ${_statusLabel(item.status)} • ${_formatDate(item.updatedAt)}',
+        ),
         trailing: item.status == AtlasSyncStatus.synced
             ? const Icon(Icons.check_circle_outline)
-            : IconButton(onPressed: _syncing ? null : () => _synchronize(only: item), icon: const Icon(Icons.sync), tooltip: 'Sincronizar item'),
+            : IconButton(
+                onPressed: _syncing ? null : () => _synchronize(only: item),
+                icon: const Icon(Icons.sync),
+                tooltip: 'Sincronizar item',
+              ),
       ),
     );
   }

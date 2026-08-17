@@ -1,6 +1,17 @@
 enum AtlasTenantStatus { active, trial, suspended }
+
 enum AtlasSubscriptionPlan { free, professional, enterprise }
-enum AtlasUserRole { administrator, consultant, veterinarian, technician, employee, producer, viewer }
+
+enum AtlasUserRole {
+  administrator,
+  consultant,
+  veterinarian,
+  technician,
+  employee,
+  producer,
+  viewer,
+}
+
 enum AtlasAuditAction { create, update, delete, approve, export, login }
 
 class AtlasTenant {
@@ -49,16 +60,16 @@ class AtlasTenant {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'document': document,
-        'status': status.name,
-        'plan': plan.name,
-        'createdAt': createdAt.toIso8601String(),
-        'trialEndsAt': trialEndsAt?.toIso8601String(),
-        'maxUsers': maxUsers,
-        'maxFarms': maxFarms,
-      };
+    'id': id,
+    'name': name,
+    'document': document,
+    'status': status.name,
+    'plan': plan.name,
+    'createdAt': createdAt.toIso8601String(),
+    'trialEndsAt': trialEndsAt?.toIso8601String(),
+    'maxUsers': maxUsers,
+    'maxFarms': maxFarms,
+  };
 
   factory AtlasTenant.fromJson(Map<String, dynamic> json) {
     return AtlasTenant(
@@ -71,7 +82,9 @@ class AtlasTenant {
       plan: AtlasSubscriptionPlan.values.byName(
         json['plan'] as String? ?? AtlasSubscriptionPlan.free.name,
       ),
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       trialEndsAt: DateTime.tryParse(json['trialEndsAt'] as String? ?? ''),
       maxUsers: (json['maxUsers'] as num?)?.toInt() ?? 3,
       maxFarms: (json['maxFarms'] as num?)?.toInt() ?? 1,
@@ -117,14 +130,14 @@ class AtlasEnterpriseUser {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'tenantId': tenantId,
-        'name': name,
-        'email': email,
-        'role': role.name,
-        'active': active,
-        'twoFactorEnabled': twoFactorEnabled,
-      };
+    'id': id,
+    'tenantId': tenantId,
+    'name': name,
+    'email': email,
+    'role': role.name,
+    'active': active,
+    'twoFactorEnabled': twoFactorEnabled,
+  };
 
   factory AtlasEnterpriseUser.fromJson(Map<String, dynamic> json) {
     return AtlasEnterpriseUser(
@@ -161,14 +174,14 @@ class AtlasAuditEntry {
   final DateTime createdAt;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'tenantId': tenantId,
-        'userName': userName,
-        'module': module,
-        'action': action.name,
-        'description': description,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'tenantId': tenantId,
+    'userName': userName,
+    'module': module,
+    'action': action.name,
+    'description': description,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory AtlasAuditEntry.fromJson(Map<String, dynamic> json) {
     return AtlasAuditEntry(
@@ -180,7 +193,9 @@ class AtlasAuditEntry {
         json['action'] as String? ?? AtlasAuditAction.update.name,
       ),
       description: json['description'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }

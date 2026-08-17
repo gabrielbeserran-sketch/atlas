@@ -19,6 +19,7 @@ import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalTimelineScreen extends StatefulWidget {
   const AnimalTimelineScreen({
@@ -33,31 +34,24 @@ class AnimalTimelineScreen extends StatefulWidget {
   final HerdGroupData group;
 
   @override
-  State<AnimalTimelineScreen> createState() =>
-      _AnimalTimelineScreenState();
+  State<AnimalTimelineScreen> createState() => _AnimalTimelineScreenState();
 }
 
-class _AnimalTimelineScreenState
-    extends State<AnimalTimelineScreen> {
-  final AnimalEventStorageService eventStorage =
-      AnimalEventStorageService();
+class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
+  final AnimalEventStorageService eventStorage = AnimalEventStorageService();
   final AnimalEnterpriseTimelineService enterpriseTimeline =
       AnimalEnterpriseTimelineService();
-  final AnimalWeightStorageService weightStorage =
-      AnimalWeightStorageService();
-  final AnimalHealthStorageService healthStorage =
-      AnimalHealthStorageService();
+  final AnimalWeightStorageService weightStorage = AnimalWeightStorageService();
+  final AnimalHealthStorageService healthStorage = AnimalHealthStorageService();
   final AnimalReproductionStorageService reproductionStorage =
       AnimalReproductionStorageService();
   final AnimalMovementStorageService movementStorage =
       AnimalMovementStorageService();
   final AnimalDocumentStorageService documentStorage =
       AnimalDocumentStorageService();
-  final AnimalPhotoStorageService photoStorage =
-      AnimalPhotoStorageService();
+  final AnimalPhotoStorageService photoStorage = AnimalPhotoStorageService();
 
-  final TextEditingController searchController =
-      TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   List<AnimalEventData> manualEvents = <AnimalEventData>[];
   List<TimelineItem> timelineItems = <TimelineItem>[];
@@ -89,32 +83,31 @@ class _AnimalTimelineScreenState
     final query = searchController.text.trim().toLowerCase();
     final threshold = selectedPeriod.threshold;
 
-    return timelineItems.where((item) {
-      final matchesCategory = selectedCategory == null ||
-          item.category == selectedCategory;
+    return timelineItems
+        .where((item) {
+          final matchesCategory =
+              selectedCategory == null || item.category == selectedCategory;
 
-      final matchesPeriod = threshold == null ||
-          !item.dateTime.isBefore(threshold);
+          final matchesPeriod =
+              threshold == null || !item.dateTime.isBefore(threshold);
 
-      final searchable = [
-        item.category,
-        item.title,
-        item.subtitle,
-        item.description,
-        item.date,
-      ].join(' ').toLowerCase();
+          final searchable = [
+            item.category,
+            item.title,
+            item.subtitle,
+            item.description,
+            item.date,
+          ].join(' ').toLowerCase();
 
-      final matchesSearch =
-          query.isEmpty || searchable.contains(query);
+          final matchesSearch = query.isEmpty || searchable.contains(query);
 
-      return matchesCategory && matchesPeriod && matchesSearch;
-    }).toList(growable: false);
+          return matchesCategory && matchesPeriod && matchesSearch;
+        })
+        .toList(growable: false);
   }
 
   int countCategory(String category) {
-    return timelineItems
-        .where((item) => item.category == category)
-        .length;
+    return timelineItems.where((item) => item.category == category).length;
   }
 
   int get alertCount {
@@ -122,11 +115,9 @@ class _AnimalTimelineScreenState
   }
 
   Future<List<AnimalEnterpriseTimelineData>>
-      loadEnterpriseTimelineSafely() async {
+  loadEnterpriseTimelineSafely() async {
     try {
-      return await enterpriseTimeline.loadTimeline(
-        widget.animal.id,
-      );
+      return await enterpriseTimeline.loadTimeline(widget.animal.id);
     } catch (_) {
       return <AnimalEnterpriseTimelineData>[];
     }
@@ -180,10 +171,8 @@ class _AnimalTimelineScreenState
       final events = results[0] as List<AnimalEventData>;
       final weights = results[1] as List<AnimalWeightData>;
       final healthRecords = results[2] as List<AnimalHealthData>;
-      final reproductionRecords =
-          results[3] as List<AnimalReproductionData>;
-      final movementRecords =
-          results[4] as List<AnimalMovementData>;
+      final reproductionRecords = results[3] as List<AnimalReproductionData>;
+      final movementRecords = results[4] as List<AnimalMovementData>;
       final documents = results[5] as List<AnimalDocumentData>;
       final photos = results[6] as List<AnimalPhotoData>;
       final enterpriseRecords =
@@ -193,9 +182,7 @@ class _AnimalTimelineScreenState
         ...events.map(TimelineItem.fromManualEvent),
         ...weights.map(TimelineItem.fromWeight),
         ...healthRecords.map(TimelineItem.fromHealth),
-        ...reproductionRecords.map(
-          TimelineItem.fromReproduction,
-        ),
+        ...reproductionRecords.map(TimelineItem.fromReproduction),
         ...movementRecords.map(TimelineItem.fromMovement),
         ...documents.map(TimelineItem.fromDocument),
         ...documents
@@ -206,8 +193,7 @@ class _AnimalTimelineScreenState
       ];
 
       items.sort((first, second) {
-        final dateComparison =
-            second.dateTime.compareTo(first.dateTime);
+        final dateComparison = second.dateTime.compareTo(first.dateTime);
         if (dateComparison != 0) return dateComparison;
         return second.id.compareTo(first.id);
       });
@@ -226,9 +212,7 @@ class _AnimalTimelineScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Não foi possível carregar toda a timeline: $error',
-          ),
+          content: Text('Não foi possível carregar toda a timeline: $error'),
         ),
       );
     }
@@ -260,30 +244,21 @@ class _AnimalTimelineScreenState
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Evento registrado na linha do tempo.',
-        ),
-      ),
+      const SnackBar(content: Text('Evento registrado na linha do tempo.')),
     );
   }
 
-  Future<void> editManualEvent(
-    AnimalEventData event,
-  ) async {
+  Future<void> editManualEvent(AnimalEventData event) async {
     final editedEvent = await Navigator.push<AnimalEventData>(
       context,
       MaterialPageRoute<AnimalEventData>(
-        builder: (context) =>
-            AnimalEventFormScreen(event: event),
+        builder: (context) => AnimalEventFormScreen(event: event),
       ),
     );
 
     if (editedEvent == null || !mounted) return;
 
-    final index = manualEvents.indexWhere(
-      (item) => item.id == event.id,
-    );
+    final index = manualEvents.indexWhere((item) => item.id == event.id);
     if (index == -1) return;
 
     manualEvents[index] = editedEvent;
@@ -292,33 +267,25 @@ class _AnimalTimelineScreenState
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Evento atualizado.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Evento atualizado.')));
   }
 
-  Future<void> deleteManualEvent(
-    AnimalEventData event,
-  ) async {
+  Future<void> deleteManualEvent(AnimalEventData event) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir evento'),
-        content: Text(
-          'Tem certeza de que deseja excluir ${event.title}?',
-        ),
+        content: Text('Tem certeza de que deseja excluir ${event.title}?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             child: const Text('Excluir'),
           ),
         ],
@@ -327,18 +294,16 @@ class _AnimalTimelineScreenState
 
     if (shouldDelete != true) return;
 
-    manualEvents.removeWhere(
-      (item) => item.id == event.id,
-    );
+    manualEvents.removeWhere((item) => item.id == event.id);
 
     await saveManualEvents();
     await loadTimeline();
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Evento excluído.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Evento excluído.')));
   }
 
   void handleItemTap(TimelineItem item) {
@@ -409,9 +374,7 @@ class _AnimalTimelineScreenState
                           alertCount: alertCount,
                         ),
                         const SizedBox(height: 18),
-                        TimelineSummary(
-                          timelineItems: timelineItems,
-                        ),
+                        TimelineSummary(timelineItems: timelineItems),
                         const SizedBox(height: 18),
                         TimelineSearchAndPeriod(
                           searchController: searchController,
@@ -447,9 +410,7 @@ class _AnimalTimelineScreenState
                             Text(
                               '${visibleItems.length} de '
                               '${timelineItems.length} registros',
-                              style: const TextStyle(
-                                color: Colors.black54,
-                              ),
+                              style: const TextStyle(color: Colors.black54),
                             ),
                           ],
                         ),
@@ -468,28 +429,20 @@ class _AnimalTimelineScreenState
                                 searchController.text.isNotEmpty,
                           )
                         else
-                          ...List.generate(
-                            visibleItems.length,
-                            (index) {
-                              final item = visibleItems[index];
-                              return TimelineRecord(
-                                item: item,
-                                isLast:
-                                    index == visibleItems.length - 1,
-                                onTap: () => handleItemTap(item),
-                                onEdit: item.manualEvent == null
-                                    ? null
-                                    : () => editManualEvent(
-                                          item.manualEvent!,
-                                        ),
-                                onDelete: item.manualEvent == null
-                                    ? null
-                                    : () => deleteManualEvent(
-                                          item.manualEvent!,
-                                        ),
-                              );
-                            },
-                          ),
+                          ...List.generate(visibleItems.length, (index) {
+                            final item = visibleItems[index];
+                            return TimelineRecord(
+                              item: item,
+                              isLast: index == visibleItems.length - 1,
+                              onTap: () => handleItemTap(item),
+                              onEdit: item.manualEvent == null
+                                  ? null
+                                  : () => editManualEvent(item.manualEvent!),
+                              onDelete: item.manualEvent == null
+                                  ? null
+                                  : () => deleteManualEvent(item.manualEvent!),
+                            );
+                          }),
                         const SizedBox(height: 90),
                       ],
                     ),
@@ -517,14 +470,10 @@ enum TimelinePeriod {
 
     return switch (this) {
       TimelinePeriod.all => null,
-      TimelinePeriod.thirtyDays =>
-        now.subtract(const Duration(days: 30)),
-      TimelinePeriod.ninetyDays =>
-        now.subtract(const Duration(days: 90)),
-      TimelinePeriod.sixMonths =>
-        now.subtract(const Duration(days: 183)),
-      TimelinePeriod.oneYear =>
-        now.subtract(const Duration(days: 365)),
+      TimelinePeriod.thirtyDays => now.subtract(const Duration(days: 30)),
+      TimelinePeriod.ninetyDays => now.subtract(const Duration(days: 90)),
+      TimelinePeriod.sixMonths => now.subtract(const Duration(days: 183)),
+      TimelinePeriod.oneYear => now.subtract(const Duration(days: 365)),
     };
   }
 }
@@ -553,10 +502,7 @@ class TimelineHeader extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF1B5E20),
-              Color(0xFF2E7D32),
-            ],
+            colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
           ),
         ),
         child: Wrap(
@@ -593,9 +539,7 @@ class TimelineHeader extends StatelessWidget {
                   const SizedBox(height: 5),
                   Text(
                     'Brinco ${animal.tag} • ${farm.name} • ${group.name}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -657,10 +601,7 @@ class TimelineHeaderCounter extends StatelessWidget {
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
           ),
         ],
       ),
@@ -669,17 +610,12 @@ class TimelineHeaderCounter extends StatelessWidget {
 }
 
 class TimelineSummary extends StatelessWidget {
-  const TimelineSummary({
-    required this.timelineItems,
-    super.key,
-  });
+  const TimelineSummary({required this.timelineItems, super.key});
 
   final List<TimelineItem> timelineItems;
 
   int count(String category) {
-    return timelineItems
-        .where((item) => item.category == category)
-        .length;
+    return timelineItems.where((item) => item.category == category).length;
   }
 
   @override
@@ -707,8 +643,7 @@ class TimelineSummary extends StatelessWidget {
       ),
       (
         label: 'Documentos',
-        value: count('Documentos') +
-            count('Vencimentos'),
+        value: count('Documentos') + count('Vencimentos'),
         icon: Icons.folder_outlined,
       ),
       (
@@ -721,52 +656,54 @@ class TimelineSummary extends StatelessWidget {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: summaries.map((summary) {
-        return SizedBox(
-          width: 175,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: const Color(0xFF1B5E20)
-                        .withValues(alpha: 0.10),
-                    child: Icon(
-                      summary.icon,
-                      color: const Color(0xFF1B5E20),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          summary.value.toString(),
-                          style: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
-                          ),
+      children: summaries
+          .map((summary) {
+            return SizedBox(
+              width: 175,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: const Color(
+                          0xFF1B5E20,
+                        ).withValues(alpha: 0.10),
+                        child: Icon(
+                          summary.icon,
+                          color: const Color(0xFF1B5E20),
+                          size: 20,
                         ),
-                        Text(
-                          summary.label,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.black54,
-                          ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              summary.value.toString(),
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              summary.label,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        );
-      }).toList(growable: false),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -815,12 +752,14 @@ class TimelineSearchAndPeriod extends StatelessWidget {
                 prefixIcon: Icon(Icons.date_range_outlined),
                 border: OutlineInputBorder(),
               ),
-              items: TimelinePeriod.values.map((item) {
-                return DropdownMenuItem(
-                  value: item,
-                  child: Text(item.label),
-                );
-              }).toList(growable: false),
+              items: TimelinePeriod.values
+                  .map((item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Text(item.label),
+                    );
+                  })
+                  .toList(growable: false),
               onChanged: (value) {
                 if (value != null) onPeriodChanged(value);
               },
@@ -828,11 +767,7 @@ class TimelineSearchAndPeriod extends StatelessWidget {
 
             if (compact) {
               return Column(
-                children: [
-                  search,
-                  const SizedBox(height: 12),
-                  period,
-                ],
+                children: [search, const SizedBox(height: 12), period],
               );
             }
 
@@ -892,9 +827,7 @@ class TimelineFilters extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
-                label: Text(
-                  '$category (${countCategory(category)})',
-                ),
+                label: Text('$category (${countCategory(category)})'),
                 selected: selectedCategory == category,
                 onSelected: (_) => onSelected(category),
               ),
@@ -939,18 +872,11 @@ class TimelineRecord extends StatelessWidget {
                     color: item.color,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    item.icon,
-                    color: Colors.white,
-                    size: 21,
-                  ),
+                  child: Icon(item.icon, color: Colors.white, size: 21),
                 ),
                 if (!isLast)
                   Expanded(
-                    child: Container(
-                      width: 2,
-                      color: const Color(0xFFD7E7D9),
-                    ),
+                    child: Container(width: 2, color: const Color(0xFFD7E7D9)),
                   ),
               ],
             ),
@@ -966,13 +892,11 @@ class TimelineRecord extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(18),
                     child: Row(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
@@ -981,25 +905,19 @@ class TimelineRecord extends StatelessWidget {
                                       item.title,
                                       style: const TextStyle(
                                         fontSize: 17,
-                                        fontWeight:
-                                            FontWeight.bold,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                   if (item.isAlert)
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(
-                                        left: 8,
-                                      ),
+                                      padding: const EdgeInsets.only(left: 8),
                                       child: Chip(
                                         avatar: const Icon(
                                           Icons.warning_amber,
                                           size: 16,
                                         ),
-                                        label: Text(
-                                          item.alertLabel,
-                                        ),
+                                        label: Text(item.alertLabel),
                                       ),
                                     ),
                                 ],
@@ -1016,21 +934,17 @@ class TimelineRecord extends StatelessWidget {
                                   ),
                                   TimelineTag(
                                     label: item.subtitle,
-                                    icon:
-                                        Icons.label_outline,
+                                    icon: Icons.label_outline,
                                     color: Colors.blueGrey,
                                   ),
                                   TimelineTag(
                                     label: item.date,
-                                    icon: Icons
-                                        .calendar_month_outlined,
+                                    icon: Icons.calendar_month_outlined,
                                     color: Colors.black54,
                                   ),
                                 ],
                               ),
-                              if (item.description
-                                  .trim()
-                                  .isNotEmpty) ...[
+                              if (item.description.trim().isNotEmpty) ...[
                                 const SizedBox(height: 12),
                                 Text(
                                   item.description,
@@ -1101,10 +1015,7 @@ class TimelineTag extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
@@ -1129,10 +1040,7 @@ class TimelineTag extends StatelessWidget {
 }
 
 class EmptyTimelineMessage extends StatelessWidget {
-  const EmptyTimelineMessage({
-    required this.hasFilter,
-    super.key,
-  });
+  const EmptyTimelineMessage({required this.hasFilter, super.key});
 
   final bool hasFilter;
 
@@ -1153,10 +1061,7 @@ class EmptyTimelineMessage extends StatelessWidget {
               hasFilter
                   ? 'Nenhum registro corresponde aos filtros'
                   : 'Nenhum registro na timeline',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 5),
             Text(
@@ -1202,9 +1107,7 @@ class TimelineItem {
   final bool isAlert;
   final String alertLabel;
 
-  factory TimelineItem.fromManualEvent(
-    AnimalEventData event,
-  ) {
+  factory TimelineItem.fromManualEvent(AnimalEventData event) {
     return TimelineItem(
       id: 'event_${event.id}',
       category: 'Eventos',
@@ -1219,9 +1122,7 @@ class TimelineItem {
     );
   }
 
-  factory TimelineItem.fromWeight(
-    AnimalWeightData weight,
-  ) {
+  factory TimelineItem.fromWeight(AnimalWeightData weight) {
     return TimelineItem(
       id: 'weight_${weight.id}',
       category: 'Pesagens',
@@ -1235,22 +1136,17 @@ class TimelineItem {
     );
   }
 
-  factory TimelineItem.fromHealth(
-    AnimalHealthData record,
-  ) {
+  factory TimelineItem.fromHealth(AnimalHealthData record) {
     final details = <String>[
-      if (record.product.trim().isNotEmpty)
-        'Produto: ${record.product.trim()}',
-      if (record.dose.trim().isNotEmpty)
-        'Dose: ${record.dose.trim()}',
+      if (record.product.trim().isNotEmpty) 'Produto: ${record.product.trim()}',
+      if (record.dose.trim().isNotEmpty) 'Dose: ${record.dose.trim()}',
       if (record.diagnosis.trim().isNotEmpty)
         'Diagnóstico: ${record.diagnosis.trim()}',
       if (record.responsible.trim().isNotEmpty)
         'Responsável: ${record.responsible.trim()}',
       if (record.nextDate.trim().isNotEmpty)
         'Próximo manejo: ${record.nextDate.trim()}',
-      if (record.notes.trim().isNotEmpty)
-        record.notes.trim(),
+      if (record.notes.trim().isNotEmpty) record.notes.trim(),
     ];
 
     return TimelineItem(
@@ -1258,9 +1154,7 @@ class TimelineItem {
       category: 'Sanidade',
       date: record.date,
       dateTime: parseTimelineDate(record.date),
-      title: record.product.trim().isEmpty
-          ? record.type
-          : record.product,
+      title: record.product.trim().isEmpty ? record.type : record.product,
       subtitle: record.type,
       description: details.join('\n'),
       icon: healthTimelineIcon(record.type),
@@ -1269,17 +1163,14 @@ class TimelineItem {
       alertLabel: record.isMortality
           ? 'Mortalidade'
           : record.isQuarantine
-              ? 'Quarentena'
-              : '',
+          ? 'Quarentena'
+          : '',
     );
   }
 
-  factory TimelineItem.fromReproduction(
-    AnimalReproductionData record,
-  ) {
+  factory TimelineItem.fromReproduction(AnimalReproductionData record) {
     final details = <String>[
-      if (record.result.trim().isNotEmpty)
-        'Resultado: ${record.result.trim()}',
+      if (record.result.trim().isNotEmpty) 'Resultado: ${record.result.trim()}',
       if (record.bullOrSemen.trim().isNotEmpty)
         'Touro ou sêmen: ${record.bullOrSemen.trim()}',
       if (record.protocolName.trim().isNotEmpty)
@@ -1288,8 +1179,7 @@ class TimelineItem {
         'Data prevista: ${record.expectedDate.trim()}',
       if (record.responsible.trim().isNotEmpty)
         'Responsável: ${record.responsible.trim()}',
-      if (record.notes.trim().isNotEmpty)
-        record.notes.trim(),
+      if (record.notes.trim().isNotEmpty) record.notes.trim(),
     ];
 
     return TimelineItem(
@@ -1307,19 +1197,15 @@ class TimelineItem {
     );
   }
 
-  factory TimelineItem.fromMovement(
-    AnimalMovementData record,
-  ) {
+  factory TimelineItem.fromMovement(AnimalMovementData record) {
     final route = '${record.origin} → ${record.destination}';
 
     final details = <String>[
       route,
-      if (record.reason.trim().isNotEmpty)
-        'Motivo: ${record.reason.trim()}',
+      if (record.reason.trim().isNotEmpty) 'Motivo: ${record.reason.trim()}',
       if (record.responsible.trim().isNotEmpty)
         'Responsável: ${record.responsible.trim()}',
-      if (record.notes.trim().isNotEmpty)
-        record.notes.trim(),
+      if (record.notes.trim().isNotEmpty) record.notes.trim(),
     ];
 
     return TimelineItem(
@@ -1335,14 +1221,11 @@ class TimelineItem {
     );
   }
 
-  factory TimelineItem.fromPhoto(
-    AnimalPhotoData photo,
-  ) {
+  factory TimelineItem.fromPhoto(AnimalPhotoData photo) {
     final details = <String>[
       if (photo.reference.trim().isNotEmpty)
         'Arquivo: ${photo.reference.trim()}',
-      if (photo.notes.trim().isNotEmpty)
-        photo.notes.trim(),
+      if (photo.notes.trim().isNotEmpty) photo.notes.trim(),
     ];
 
     return TimelineItem(
@@ -1350,31 +1233,22 @@ class TimelineItem {
       category: 'Fotos',
       date: photo.date,
       dateTime: parseTimelineDate(photo.date),
-      title: photo.title.trim().isEmpty
-          ? 'Registro fotográfico'
-          : photo.title,
-      subtitle: photo.isPrimary
-          ? 'Foto principal'
-          : 'Registro fotográfico',
+      title: photo.title.trim().isEmpty ? 'Registro fotográfico' : photo.title,
+      subtitle: photo.isPrimary ? 'Foto principal' : 'Registro fotográfico',
       description: details.join('\n'),
-      icon: photo.isPrimary
-          ? Icons.star_outline
-          : Icons.photo_outlined,
+      icon: photo.isPrimary ? Icons.star_outline : Icons.photo_outlined,
       color: const Color(0xFF00838F),
     );
   }
 
-  factory TimelineItem.fromDocument(
-    AnimalDocumentData document,
-  ) {
+  factory TimelineItem.fromDocument(AnimalDocumentData document) {
     final details = <String>[
       'Categoria: ${document.category}',
       if (document.issuer.trim().isNotEmpty)
         'Emissor: ${document.issuer.trim()}',
       if (document.reference.trim().isNotEmpty)
         'Anexo: ${document.reference.trim()}',
-      if (document.notes.trim().isNotEmpty)
-        document.notes.trim(),
+      if (document.notes.trim().isNotEmpty) document.notes.trim(),
     ];
 
     return TimelineItem(
@@ -1392,39 +1266,33 @@ class TimelineItem {
     );
   }
 
-  factory TimelineItem.fromDocumentExpiration(
-    AnimalDocumentData document,
-  ) {
+  factory TimelineItem.fromDocumentExpiration(AnimalDocumentData document) {
     return TimelineItem(
       id: 'expiration_${document.id}',
       category: 'Vencimentos',
       date: document.expirationDate,
-      dateTime:
-          parseTimelineDate(document.expirationDate),
+      dateTime: parseTimelineDate(document.expirationDate),
       title: 'Vencimento: ${document.title}',
       subtitle: document.expirationStatus,
-      description:
-          '${document.type} • ${document.category}',
+      description: '${document.type} • ${document.category}',
       icon: document.isExpired
           ? Icons.event_busy_outlined
           : Icons.event_available_outlined,
       color: document.isExpired
           ? const Color(0xFFC62828)
           : document.expiresSoon
-              ? const Color(0xFFEF6C00)
-              : const Color(0xFF2E7D32),
+          ? const Color(0xFFEF6C00)
+          : const Color(0xFF2E7D32),
       isAlert: document.isExpired || document.expiresSoon,
       alertLabel: document.isExpired
           ? 'Vencido'
           : document.expiresSoon
-              ? 'Vence em breve'
-              : '',
+          ? 'Vence em breve'
+          : '',
     );
   }
 
-  factory TimelineItem.fromEnterprise(
-    AnimalEnterpriseTimelineData record,
-  ) {
+  factory TimelineItem.fromEnterprise(AnimalEnterpriseTimelineData record) {
     final occurredAt = record.occurredAt.toLocal();
 
     final icon = switch (record.action) {
@@ -1505,7 +1373,7 @@ IconData manualEventIcon(String type) {
     case 'Diagnóstico':
       return Icons.monitor_heart_outlined;
     case 'Parto':
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     default:
       return Icons.event_note_outlined;
   }
@@ -1541,7 +1409,7 @@ IconData reproductionTimelineIcon(String type) {
     case 'Diagnóstico de gestação':
       return Icons.monitor_heart_outlined;
     case 'Parto':
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     default:
       return Icons.replay_outlined;
   }

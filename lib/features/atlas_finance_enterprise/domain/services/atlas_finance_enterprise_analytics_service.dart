@@ -68,18 +68,12 @@ class AtlasFinanceEnterpriseAnalyticsService {
     final alerts = moduleRecords.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasFinanceEnterpriseRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasFinanceEnterpriseRecord) selector) {
       if (moduleRecords.isEmpty) return 0.0;
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
@@ -100,20 +94,16 @@ class AtlasFinanceEnterpriseAnalyticsService {
       (total, record) => total + record.referenceValue,
     );
 
-    final averageRisk =
-        averageOf((record) => record.riskPercent);
-    final averageConfidence =
-        averageOf((record) => record.confidencePercent);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
+    final averageRisk = averageOf((record) => record.riskPercent);
+    final averageConfidence = averageOf((record) => record.confidencePercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
     score += math.min(20, operational * 4);
-    score += math.min(
-      15,
-      averageConfidence.round() * 15 ~/ 100,
-    );
+    score += math.min(15, averageConfidence.round() * 15 ~/ 100);
     score += math.min(10, averageProgress.round() ~/ 10);
     score -= math.min(25, alerts * 5);
     score -= math.min(15, averageRisk.round() * 15 ~/ 100);
@@ -162,66 +152,52 @@ class AtlasFinanceEnterpriseAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasFinanceEnterpriseModule.projectedCashFlow =>
-          const [
-            'Atualize premissas de receitas, despesas e datas de realização.',
-            'Destaque períodos com necessidade de caixa e baixa liquidez.',
-          ],
-        AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
-          const [
-            'Evite duplicidade ao consolidar empresas e fazendas.',
-            'Separe caixa operacional, investimentos e financiamentos.',
-          ],
-        AtlasFinanceEnterpriseModule.annualBudget =>
-          const [
-            'Registre premissas e responsáveis por cada centro de custo.',
-            'Faça revisões periódicas sem apagar o orçamento original.',
-          ],
-        AtlasFinanceEnterpriseModule.actualVsPlanned =>
-          const [
-            'Priorize desvios materiais e recorrentes.',
-            'Associe cada desvio relevante a causa e plano corretivo.',
-          ],
-        AtlasFinanceEnterpriseModule.economicSimulations =>
-          const [
-            'Documente claramente premissas de cada cenário.',
-            'Teste sensibilidade de preço, produção, custo e juros.',
-          ],
-        AtlasFinanceEnterpriseModule.bankingIndicators =>
-          const [
-            'Acompanhe endividamento, cobertura e capacidade de pagamento.',
-            'Compare indicadores internos com condições contratadas.',
-          ],
-        AtlasFinanceEnterpriseModule.roi =>
-          const [
-            'Considere fluxo de caixa, prazo e valor do dinheiro no tempo.',
-            'Compare alternativas com o mesmo horizonte e premissas.',
-          ],
-        AtlasFinanceEnterpriseModule.ebitda =>
-          const [
-            'Padronize classificação de receitas, custos e despesas.',
-            'Separe itens recorrentes de ajustes extraordinários.',
-          ],
-        AtlasFinanceEnterpriseModule.assetValuation =>
-          const [
-            'Registre fonte, data e método de avaliação dos ativos.',
-            'Revise valor patrimonial após mudanças relevantes.',
-          ],
-        AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
-          const [
-            'Centralize alertas de liquidez, orçamento e endividamento.',
-            'Priorize decisões por impacto, risco e prazo.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasFinanceEnterpriseModule.projectedCashFlow => const [
+        'Atualize premissas de receitas, despesas e datas de realização.',
+        'Destaque períodos com necessidade de caixa e baixa liquidez.',
+      ],
+      AtlasFinanceEnterpriseModule.consolidatedCashFlow => const [
+        'Evite duplicidade ao consolidar empresas e fazendas.',
+        'Separe caixa operacional, investimentos e financiamentos.',
+      ],
+      AtlasFinanceEnterpriseModule.annualBudget => const [
+        'Registre premissas e responsáveis por cada centro de custo.',
+        'Faça revisões periódicas sem apagar o orçamento original.',
+      ],
+      AtlasFinanceEnterpriseModule.actualVsPlanned => const [
+        'Priorize desvios materiais e recorrentes.',
+        'Associe cada desvio relevante a causa e plano corretivo.',
+      ],
+      AtlasFinanceEnterpriseModule.economicSimulations => const [
+        'Documente claramente premissas de cada cenário.',
+        'Teste sensibilidade de preço, produção, custo e juros.',
+      ],
+      AtlasFinanceEnterpriseModule.bankingIndicators => const [
+        'Acompanhe endividamento, cobertura e capacidade de pagamento.',
+        'Compare indicadores internos com condições contratadas.',
+      ],
+      AtlasFinanceEnterpriseModule.roi => const [
+        'Considere fluxo de caixa, prazo e valor do dinheiro no tempo.',
+        'Compare alternativas com o mesmo horizonte e premissas.',
+      ],
+      AtlasFinanceEnterpriseModule.ebitda => const [
+        'Padronize classificação de receitas, custos e despesas.',
+        'Separe itens recorrentes de ajustes extraordinários.',
+      ],
+      AtlasFinanceEnterpriseModule.assetValuation => const [
+        'Registre fonte, data e método de avaliação dos ativos.',
+        'Revise valor patrimonial após mudanças relevantes.',
+      ],
+      AtlasFinanceEnterpriseModule.enterpriseFinanceCenter => const [
+        'Centralize alertas de liquidez, orçamento e endividamento.',
+        'Priorize decisões por impacto, risco e prazo.',
+      ],
+    });
 
     return items;
   }

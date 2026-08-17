@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 
 import 'package:projeto_atlas/features/atlas_livestock_integration/domain/models/atlas_livestock_integration_record.dart';
@@ -49,15 +48,12 @@ class AtlasLivestockIntegrationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        items.where((record) => record.isOperational).length;
+    final operational = items.where((record) => record.isOperational).length;
 
     final alerts = items.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
     final pending = items.fold<int>(
@@ -70,16 +66,12 @@ class AtlasLivestockIntegrationAnalyticsService {
     ) {
       if (items.isEmpty) return 0;
 
-      return items.map(selector).reduce((a, b) => a + b) /
-          items.length;
+      return items.map(selector).reduce((a, b) => a + b) / items.length;
     }
 
-    final progress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final success =
-        averageOf((record) => record.successRatePercent);
-    final risk =
-        averageOf((record) => record.riskPercent);
+    final progress = averageOf((record) => record.progressPercent.toDouble());
+    final success = averageOf((record) => record.successRatePercent);
+    final risk = averageOf((record) => record.riskPercent);
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -93,8 +85,7 @@ class AtlasLivestockIntegrationAnalyticsService {
 
     final recommendations = <String>[
       for (final feature in module.features)
-        if (!represented.contains(feature))
-          'Implantar ou registrar: $feature.',
+        if (!represented.contains(feature)) 'Implantar ou registrar: $feature.',
       if (alerts > 0)
         'Existem $alerts alertas de integração; revise falhas, duplicidades e dependências.',
       if (pending > 0)

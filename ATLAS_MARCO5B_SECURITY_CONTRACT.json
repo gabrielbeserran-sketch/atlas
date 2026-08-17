@@ -1,0 +1,33 @@
+{
+  "status": "OK",
+  "checks": {
+    "bootstrap_blocked_production_like": true,
+    "docs_blocked_in_production": true,
+    "https_public_url_required": true,
+    "local_public_host_blocked_in_production": true,
+    "mfa_encryption_key_strength_required": true,
+    "iot_secret_strength_required": true,
+    "cors_https_required": true,
+    "forwarded_headers_default_untrusted": true,
+    "trusted_proxy_cidrs_required": true,
+    "xff_only_from_trusted_peer": true,
+    "iot_constant_time_compare": true,
+    "root_does_not_force_docs": true,
+    "production_redis_required": true,
+    "production_env_template": true,
+    "regression_tests_present": true
+  },
+  "errors": [],
+  "resolved_blockers": [
+    "SEC-003",
+    "SEC-004",
+    "SEC-005",
+    "SEC-006",
+    "NET-003"
+  ],
+  "remaining_next": [
+    "NET-002 rate limit compartilhado/distribuído",
+    "ATT-001/ATT-002 Fotos e Documentos remotos",
+    "BKP-002 restauração homologada"
+  ]
+}

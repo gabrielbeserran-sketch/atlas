@@ -9,16 +9,14 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_co
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_decision_action_auto_sync_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/atlas_operational_priority.dart';
 
-class AtlasCommandCenterActionController
-    extends ChangeNotifier {
+class AtlasCommandCenterActionController extends ChangeNotifier {
   AtlasCommandCenterActionController({
     AtlasCommandCenterActionService? service,
     AtlasCommandCenterActionAnalyticsService analyticsService =
         const AtlasCommandCenterActionAnalyticsService(),
     this.farmName,
-  })  : _service =
-            service ?? AtlasCommandCenterActionService.instance,
-        _analyticsService = analyticsService;
+  }) : _service = service ?? AtlasCommandCenterActionService.instance,
+       _analyticsService = analyticsService;
 
   final AtlasCommandCenterActionService _service;
   final AtlasCommandCenterActionAnalyticsService _analyticsService;
@@ -31,8 +29,7 @@ class AtlasCommandCenterActionController
   Map<String, DateTime> _latestUpdateDates = <String, DateTime>{};
   final String? farmName;
 
-  List<AtlasCommandCenterAction> _actions =
-      <AtlasCommandCenterAction>[];
+  List<AtlasCommandCenterAction> _actions = <AtlasCommandCenterAction>[];
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -46,23 +43,17 @@ class AtlasCommandCenterActionController
   AtlasCommandCenterActionAnalytics get analytics =>
       _analyticsService.build(_actions);
 
-  DateTime? latestUpdateFor(String actionId) =>
-      _latestUpdateDates[actionId];
+  DateTime? latestUpdateFor(String actionId) => _latestUpdateDates[actionId];
 
   Map<String, DateTime> get latestUpdateDates =>
-      Map<String, DateTime>.unmodifiable(
-        _latestUpdateDates,
-      );
+      Map<String, DateTime>.unmodifiable(_latestUpdateDates);
 
-  bool isWithoutRecentFollowUp(
-    AtlasCommandCenterAction action,
-  ) {
+  bool isWithoutRecentFollowUp(AtlasCommandCenterAction action) {
     if (!action.isOpen) {
       return false;
     }
 
-    final reference =
-        latestUpdateFor(action.id) ?? action.updatedAt;
+    final reference = latestUpdateFor(action.id) ?? action.updatedAt;
 
     return DateTime.now().difference(reference).inDays >= 7;
   }
@@ -71,21 +62,17 @@ class AtlasCommandCenterActionController
       .where(
         (action) =>
             action.status == AtlasCanonicalStatus.pending ||
-            action.status ==
-                AtlasCanonicalStatus.inProgress ||
+            action.status == AtlasCanonicalStatus.inProgress ||
             action.status == AtlasCanonicalStatus.blocked,
       )
       .length;
 
-  int get overdueCount =>
-      _actions.where((action) => action.isOverdue).length;
+  int get overdueCount => _actions.where((action) => action.isOverdue).length;
 
   Future<void> load() async {
     if (!_hasStartedAutoSync) {
       _hasStartedAutoSync = true;
-      _autoSyncService.start(
-        farmName: farmName,
-      );
+      _autoSyncService.start(farmName: farmName);
     }
 
     _isLoading = true;
@@ -93,11 +80,8 @@ class AtlasCommandCenterActionController
     notifyListeners();
 
     try {
-      _actions = await _service.loadActions(
-        farmName: farmName,
-      );
-      _latestUpdateDates =
-          await _updateService.loadLatestDates();
+      _actions = await _service.loadActions(farmName: farmName);
+      _latestUpdateDates = await _updateService.loadLatestDates();
     } catch (error) {
       _errorMessage = error.toString();
     } finally {
@@ -109,16 +93,13 @@ class AtlasCommandCenterActionController
   Future<AtlasCommandCenterAction> createFromPriority(
     AtlasOperationalPriority priority,
   ) async {
-    final action = await _service.createFromPriority(
-      priority: priority,
-    );
+    final action = await _service.createFromPriority(priority: priority);
 
     await load();
     return action;
   }
 
-  Future<List<AtlasCommandCenterActionUpdate>>
-      loadUpdates(
+  Future<List<AtlasCommandCenterActionUpdate>> loadUpdates(
     AtlasCommandCenterAction action,
   ) {
     return _updateService.loadForAction(action.id);
@@ -135,8 +116,7 @@ class AtlasCommandCenterActionController
       responsibleName: action.responsibleName,
     );
 
-    _latestUpdateDates =
-        await _updateService.loadLatestDates();
+    _latestUpdateDates = await _updateService.loadLatestDates();
     notifyListeners();
   }
 
@@ -148,12 +128,10 @@ class AtlasCommandCenterActionController
       action.copyWith(
         status: status,
         updatedAt: DateTime.now(),
-        completedAt:
-            status == AtlasCanonicalStatus.completed
-                ? DateTime.now()
-                : null,
-        clearCompletedAt:
-            status != AtlasCanonicalStatus.completed,
+        completedAt: status == AtlasCanonicalStatus.completed
+            ? DateTime.now()
+            : null,
+        clearCompletedAt: status != AtlasCanonicalStatus.completed,
       ),
     );
 
@@ -174,8 +152,7 @@ class AtlasCommandCenterActionController
 
     if (progress == 100) {
       status = AtlasCanonicalStatus.completed;
-    } else if (progress > 0 &&
-        status == AtlasCanonicalStatus.pending) {
+    } else if (progress > 0 && status == AtlasCanonicalStatus.pending) {
       status = AtlasCanonicalStatus.inProgress;
     }
 
@@ -193,8 +170,7 @@ class AtlasCommandCenterActionController
         completedAt: status == AtlasCanonicalStatus.completed
             ? DateTime.now()
             : null,
-        clearCompletedAt:
-            status != AtlasCanonicalStatus.completed,
+        clearCompletedAt: status != AtlasCanonicalStatus.completed,
         updatedAt: DateTime.now(),
       ),
     );
@@ -206,18 +182,13 @@ class AtlasCommandCenterActionController
     String notes,
   ) async {
     await _service.saveAction(
-      action.copyWith(
-        notes: notes,
-        updatedAt: DateTime.now(),
-      ),
+      action.copyWith(notes: notes, updatedAt: DateTime.now()),
     );
 
     await load();
   }
 
-  Future<void> delete(
-    AtlasCommandCenterAction action,
-  ) async {
+  Future<void> delete(AtlasCommandCenterAction action) async {
     await _service.deleteAction(action.id);
     await _updateService.deleteForAction(action.id);
     await load();

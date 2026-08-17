@@ -123,10 +123,12 @@ class _AtlasEnterprisePlatformScreenState
   }
 
   Future<void> _editTenant([AtlasTenant? current]) async {
-    final TextEditingController nameController =
-        TextEditingController(text: current?.name ?? '');
-    final TextEditingController documentController =
-        TextEditingController(text: current?.document ?? '');
+    final TextEditingController nameController = TextEditingController(
+      text: current?.name ?? '',
+    );
+    final TextEditingController documentController = TextEditingController(
+      text: current?.document ?? '',
+    );
     AtlasSubscriptionPlan plan =
         current?.plan ?? AtlasSubscriptionPlan.professional;
     AtlasTenantStatus status = current?.status ?? AtlasTenantStatus.trial;
@@ -170,9 +172,9 @@ class _AtlasEnterprisePlatformScreenState
                             .map(
                               (AtlasSubscriptionPlan item) =>
                                   DropdownMenuItem<AtlasSubscriptionPlan>(
-                                value: item,
-                                child: Text(_planLabel(item)),
-                              ),
+                                    value: item,
+                                    child: Text(_planLabel(item)),
+                                  ),
                             )
                             .toList(),
                         onChanged: (AtlasSubscriptionPlan? value) {
@@ -194,9 +196,9 @@ class _AtlasEnterprisePlatformScreenState
                             .map(
                               (AtlasTenantStatus item) =>
                                   DropdownMenuItem<AtlasTenantStatus>(
-                                value: item,
-                                child: Text(_statusLabel(item)),
-                              ),
+                                    value: item,
+                                    child: Text(_statusLabel(item)),
+                                  ),
                             )
                             .toList(),
                         onChanged: (AtlasTenantStatus? value) {
@@ -233,14 +235,16 @@ class _AtlasEnterprisePlatformScreenState
                     };
                     Navigator.of(dialogContext).pop(
                       AtlasTenant(
-                        id: current?.id ??
+                        id:
+                            current?.id ??
                             DateTime.now().microsecondsSinceEpoch.toString(),
                         name: nameController.text.trim(),
                         document: documentController.text.trim(),
                         status: status,
                         plan: plan,
                         createdAt: current?.createdAt ?? DateTime.now(),
-                        trialEndsAt: current?.trialEndsAt ??
+                        trialEndsAt:
+                            current?.trialEndsAt ??
                             DateTime.now().add(const Duration(days: 30)),
                         maxUsers: users,
                         maxFarms: farms,
@@ -264,7 +268,9 @@ class _AtlasEnterprisePlatformScreenState
     }
 
     final List<AtlasTenant> tenants = <AtlasTenant>[..._state!.tenants];
-    final int index = tenants.indexWhere((AtlasTenant item) => item.id == result.id);
+    final int index = tenants.indexWhere(
+      (AtlasTenant item) => item.id == result.id,
+    );
     if (index < 0) {
       tenants.add(result);
     } else {
@@ -280,7 +286,9 @@ class _AtlasEnterprisePlatformScreenState
             tenantId: result.id,
             userName: 'Administrador',
             module: 'Empresas',
-            action: index < 0 ? AtlasAuditAction.create : AtlasAuditAction.update,
+            action: index < 0
+                ? AtlasAuditAction.create
+                : AtlasAuditAction.update,
             description: index < 0
                 ? 'Empresa ${result.name} cadastrada.'
                 : 'Cadastro de ${result.name} atualizado.',
@@ -299,10 +307,12 @@ class _AtlasEnterprisePlatformScreenState
       return;
     }
 
-    final TextEditingController nameController =
-        TextEditingController(text: current?.name ?? '');
-    final TextEditingController emailController =
-        TextEditingController(text: current?.email ?? '');
+    final TextEditingController nameController = TextEditingController(
+      text: current?.name ?? '',
+    );
+    final TextEditingController emailController = TextEditingController(
+      text: current?.email ?? '',
+    );
     AtlasUserRole role = current?.role ?? AtlasUserRole.consultant;
     bool active = current?.active ?? true;
     bool twoFactorEnabled = current?.twoFactorEnabled ?? false;
@@ -344,10 +354,11 @@ class _AtlasEnterprisePlatformScreenState
                         ),
                         items: AtlasUserRole.values
                             .map(
-                              (AtlasUserRole item) => DropdownMenuItem<AtlasUserRole>(
-                                value: item,
-                                child: Text(_roleLabel(item)),
-                              ),
+                              (AtlasUserRole item) =>
+                                  DropdownMenuItem<AtlasUserRole>(
+                                    value: item,
+                                    child: Text(_roleLabel(item)),
+                                  ),
                             )
                             .toList(),
                         onChanged: (AtlasUserRole? value) {
@@ -395,7 +406,8 @@ class _AtlasEnterprisePlatformScreenState
                     }
                     Navigator.of(dialogContext).pop(
                       AtlasEnterpriseUser(
-                        id: current?.id ??
+                        id:
+                            current?.id ??
                             DateTime.now().microsecondsSinceEpoch.toString(),
                         tenantId: tenant.id,
                         name: nameController.text.trim(),
@@ -422,8 +434,12 @@ class _AtlasEnterprisePlatformScreenState
       return;
     }
 
-    final List<AtlasEnterpriseUser> users = <AtlasEnterpriseUser>[..._state!.users];
-    final int index = users.indexWhere((AtlasEnterpriseUser item) => item.id == result.id);
+    final List<AtlasEnterpriseUser> users = <AtlasEnterpriseUser>[
+      ..._state!.users,
+    ];
+    final int index = users.indexWhere(
+      (AtlasEnterpriseUser item) => item.id == result.id,
+    );
     if (index < 0) {
       users.add(result);
     } else {
@@ -439,7 +455,9 @@ class _AtlasEnterprisePlatformScreenState
             tenantId: tenant.id,
             userName: 'Administrador',
             module: 'Usuários e permissões',
-            action: index < 0 ? AtlasAuditAction.create : AtlasAuditAction.update,
+            action: index < 0
+                ? AtlasAuditAction.create
+                : AtlasAuditAction.update,
             description: index < 0
                 ? 'Usuário ${result.name} cadastrado.'
                 : 'Permissões de ${result.name} atualizadas.',
@@ -462,10 +480,26 @@ class _AtlasEnterprisePlatformScreenState
           spacing: 12,
           runSpacing: 12,
           children: <Widget>[
-            _MetricCard('Empresas', '${summary.tenants}', Icons.business_outlined),
-            _MetricCard('Usuários ativos', '${summary.activeUsers}', Icons.people_outline),
-            _MetricCard('Com 2 etapas', '${summary.twoFactorUsers}', Icons.security_outlined),
-            _MetricCard('Auditorias', '${summary.auditEntries}', Icons.fact_check_outlined),
+            _MetricCard(
+              'Empresas',
+              '${summary.tenants}',
+              Icons.business_outlined,
+            ),
+            _MetricCard(
+              'Usuários ativos',
+              '${summary.activeUsers}',
+              Icons.people_outline,
+            ),
+            _MetricCard(
+              'Com 2 etapas',
+              '${summary.twoFactorUsers}',
+              Icons.security_outlined,
+            ),
+            _MetricCard(
+              'Auditorias',
+              '${summary.auditEntries}',
+              Icons.fact_check_outlined,
+            ),
             _MetricCard(
               'Segurança',
               '${summary.securityScore.toStringAsFixed(0)}%',
@@ -523,10 +557,7 @@ class _AtlasEnterprisePlatformScreenState
                             ? 'Não aplicável'
                             : _formatDate(tenant.trialEndsAt!),
                       ),
-                      _Detail(
-                        'Criado em',
-                        _formatDate(tenant.createdAt),
-                      ),
+                      _Detail('Criado em', _formatDate(tenant.createdAt)),
                     ],
                   ),
                 ],
@@ -615,8 +646,8 @@ class _AtlasEnterprisePlatformScreenState
     final List<AtlasEnterpriseUser> users = tenant == null
         ? <AtlasEnterpriseUser>[]
         : state.users
-            .where((AtlasEnterpriseUser user) => user.tenantId == tenant.id)
-            .toList();
+              .where((AtlasEnterpriseUser user) => user.tenantId == tenant.id)
+              .toList();
     return ListView(
       padding: const EdgeInsets.all(20),
       children: <Widget>[
@@ -633,7 +664,9 @@ class _AtlasEnterprisePlatformScreenState
           const Card(
             child: Padding(
               padding: EdgeInsets.all(28),
-              child: Center(child: Text('Nenhum usuário cadastrado nesta empresa.')),
+              child: Center(
+                child: Text('Nenhum usuário cadastrado nesta empresa.'),
+              ),
             ),
           )
         else
@@ -641,7 +674,9 @@ class _AtlasEnterprisePlatformScreenState
             (AtlasEnterpriseUser user) => Card(
               child: ListTile(
                 leading: CircleAvatar(
-                  child: Text(user.name.isEmpty ? '?' : user.name[0].toUpperCase()),
+                  child: Text(
+                    user.name.isEmpty ? '?' : user.name[0].toUpperCase(),
+                  ),
                 ),
                 title: Text(user.name),
                 subtitle: Text('${user.email}\n${_roleLabel(user.role)}'),
@@ -650,13 +685,18 @@ class _AtlasEnterprisePlatformScreenState
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: <Widget>[
                     Icon(
-                      user.twoFactorEnabled ? Icons.security : Icons.security_outlined,
-                      color: user.twoFactorEnabled ? Colors.green : Colors.orange,
+                      user.twoFactorEnabled
+                          ? Icons.security
+                          : Icons.security_outlined,
+                      color: user.twoFactorEnabled
+                          ? Colors.green
+                          : Colors.orange,
                     ),
                     Switch(
                       value: user.active,
                       onChanged: (bool value) {
-                        final List<AtlasEnterpriseUser> updatedUsers = state.users
+                        final List<AtlasEnterpriseUser> updatedUsers = state
+                            .users
                             .map(
                               (AtlasEnterpriseUser item) => item.id == user.id
                                   ? item.copyWith(active: value)
@@ -705,14 +745,18 @@ class _AtlasEnterprisePlatformScreenState
           const Card(
             child: Padding(
               padding: EdgeInsets.all(28),
-              child: Center(child: Text('Nenhum evento de auditoria registrado.')),
+              child: Center(
+                child: Text('Nenhum evento de auditoria registrado.'),
+              ),
             ),
           )
         else
           ...state.audit.map(
             (AtlasAuditEntry item) => Card(
               child: ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.history_outlined)),
+                leading: const CircleAvatar(
+                  child: Icon(Icons.history_outlined),
+                ),
                 title: Text('${_auditLabel(item.action)} • ${item.module}'),
                 subtitle: Text(
                   '${item.description}\n${item.userName} • ${_formatDate(item.createdAt)}',
@@ -805,7 +849,10 @@ class _MetricCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 value,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               Text(label, style: const TextStyle(color: Colors.black54)),

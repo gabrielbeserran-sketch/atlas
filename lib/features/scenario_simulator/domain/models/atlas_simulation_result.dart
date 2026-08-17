@@ -43,16 +43,9 @@ class AtlasSimulationResult {
   }
 }
 
-enum AtlasSimulationRiskLevel {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasSimulationRiskLevel { low, moderate, high, critical }
 
-String atlasSimulationRiskLevelLabel(
-  AtlasSimulationRiskLevel level,
-) {
+String atlasSimulationRiskLevelLabel(AtlasSimulationRiskLevel level) {
   switch (level) {
     case AtlasSimulationRiskLevel.low:
       return 'Baixo';

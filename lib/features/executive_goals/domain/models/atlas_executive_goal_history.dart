@@ -14,12 +14,7 @@ enum AtlasExecutiveGoalHistoryEventType {
   deleted,
 }
 
-enum AtlasExecutiveGoalRiskLevel {
-  onTrack,
-  attention,
-  high,
-  completed,
-}
+enum AtlasExecutiveGoalRiskLevel { onTrack, attention, high, completed }
 
 class AtlasExecutiveGoalHistoryEvent {
   const AtlasExecutiveGoalHistoryEvent({
@@ -49,22 +44,20 @@ class AtlasExecutiveGoalHistoryEvent {
   final AtlasExecutiveGoalStatus status;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'goalId': goalId,
-        'farmName': farmName,
-        'kpiTitle': kpiTitle,
-        'type': type.name,
-        'recordedAt': recordedAt.toIso8601String(),
-        'description': description,
-        'progressPercent': progressPercent,
-        'currentValue': currentValue,
-        'targetValue': targetValue,
-        'status': status.name,
-      };
+    'id': id,
+    'goalId': goalId,
+    'farmName': farmName,
+    'kpiTitle': kpiTitle,
+    'type': type.name,
+    'recordedAt': recordedAt.toIso8601String(),
+    'description': description,
+    'progressPercent': progressPercent,
+    'currentValue': currentValue,
+    'targetValue': targetValue,
+    'status': status.name,
+  };
 
-  factory AtlasExecutiveGoalHistoryEvent.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasExecutiveGoalHistoryEvent.fromJson(Map<String, dynamic> json) {
     return AtlasExecutiveGoalHistoryEvent(
       id: json['id']?.toString() ?? '',
       goalId: json['goalId']?.toString() ?? '',
@@ -74,9 +67,8 @@ class AtlasExecutiveGoalHistoryEvent {
         (item) => item.name == json['type'],
         orElse: () => AtlasExecutiveGoalHistoryEventType.updated,
       ),
-      recordedAt: DateTime.tryParse(
-            json['recordedAt']?.toString() ?? '',
-          ) ??
+      recordedAt:
+          DateTime.tryParse(json['recordedAt']?.toString() ?? '') ??
           DateTime.now(),
       description: json['description']?.toString() ?? '',
       progressPercent: _double(json['progressPercent']),
@@ -141,9 +133,7 @@ class AtlasExecutiveGoalHistorySummary {
   bool get hasHistory => series.isNotEmpty;
 }
 
-String atlasExecutiveGoalRiskLevelLabel(
-  AtlasExecutiveGoalRiskLevel level,
-) {
+String atlasExecutiveGoalRiskLevelLabel(AtlasExecutiveGoalRiskLevel level) {
   switch (level) {
     case AtlasExecutiveGoalRiskLevel.onTrack:
       return 'No ritmo esperado';

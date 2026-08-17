@@ -92,7 +92,9 @@ class AtlasModuleRegistry {
       List<AtlasIntegrationModule>.unmodifiable(_modules);
 
   void toggle(String id) {
-    final int index = _modules.indexWhere((AtlasIntegrationModule item) => item.id == id);
+    final int index = _modules.indexWhere(
+      (AtlasIntegrationModule item) => item.id == id,
+    );
     if (index < 0) {
       return;
     }

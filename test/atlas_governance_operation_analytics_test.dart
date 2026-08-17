@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_governance_operations/domain/models
 import 'package:projeto_atlas/features/atlas_governance_operations/domain/services/atlas_governance_operation_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasGovernanceOperationAnalyticsService();
+  const service = AtlasGovernanceOperationAnalyticsService();
 
   test('calculates governance analytics', () {
     final records = [
       AtlasGovernanceOperationRecord(
         id: '1',
-        module:
-            AtlasGovernanceOperationModule.qualityManagement,
+        module: AtlasGovernanceOperationModule.qualityManagement,
         feature: 'Padrões e procedimentos',
         title: 'Procedimento de manejo',
         date: '04/08/2026',
@@ -32,8 +30,7 @@ void main() {
       ),
       AtlasGovernanceOperationRecord(
         id: '2',
-        module:
-            AtlasGovernanceOperationModule.qualityManagement,
+        module: AtlasGovernanceOperationModule.qualityManagement,
         feature: 'Não conformidades',
         title: 'Ação pendente',
         date: '04/08/2026',
@@ -55,8 +52,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasGovernanceOperationModule.qualityManagement,
+      module: AtlasGovernanceOperationModule.qualityManagement,
       records: records,
     );
 

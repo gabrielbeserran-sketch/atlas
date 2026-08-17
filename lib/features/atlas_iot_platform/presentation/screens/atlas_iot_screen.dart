@@ -26,8 +26,7 @@ class AtlasIotScreen extends StatefulWidget {
 }
 
 class _AtlasIotScreenState extends State<AtlasIotScreen> {
-  final AtlasIotStorageService storage =
-      AtlasIotStorageService();
+  final AtlasIotStorageService storage = AtlasIotStorageService();
   final AtlasIotAnalyticsService analyticsService =
       const AtlasIotAnalyticsService();
 
@@ -74,28 +73,26 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
   }
 
   List<AtlasIotRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
   Future<void> openForm([AtlasIotRecord? current]) async {
     final result = await showDialog<AtlasIotRecord>(
       context: context,
-      builder: (context) => _AtlasIotForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _AtlasIotForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -117,13 +114,11 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -165,12 +160,9 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -187,9 +179,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 23 — Internet das Coisas',
-                          ),
+                          title: Text('Fase 23 — Internet das Coisas'),
                           subtitle: Text(
                             'A entrega organiza dispositivos e leituras. '
                             'Integrações reais dependem de hardware, protocolos, gateways, APIs e credenciais.',
@@ -262,8 +252,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                           ),
                           EnterpriseMetricCard(
                             title: 'Métrica média',
-                            value:
-                                analytics.averageMetric.toStringAsFixed(2),
+                            value: analytics.averageMetric.toStringAsFixed(2),
                             subtitle: 'Leitura consolidada',
                             icon: Icons.analytics_outlined,
                           ),
@@ -291,12 +280,8 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro dispositivo ou leitura.',
                             ),
@@ -307,8 +292,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -322,10 +306,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasIotModule selected;
   final ValueChanged<AtlasIotModule> onSelected;
@@ -338,20 +319,20 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasIotModule.values.map((module) {
-            final active = module == selected;
-            return FilledButton.tonalIcon(
-              onPressed: () => onSelected(module),
-              style: FilledButton.styleFrom(
-                backgroundColor:
-                    active ? const Color(0xFF1B5E20) : null,
-                foregroundColor:
-                    active ? Colors.white : null,
-              ),
-              icon: Icon(_moduleIcon(module)),
-              label: Text(module.packageLabel),
-            );
-          }).toList(growable: false),
+          children: AtlasIotModule.values
+              .map((module) {
+                final active = module == selected;
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -374,15 +355,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -401,24 +382,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Falha' || 'Desconectado' || 'Crítico' =>
-        Colors.red.shade800,
+      'Falha' || 'Desconectado' || 'Crítico' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Sincronizado' ||
-      'Monitorado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Sincronizado' ||
+      'Monitorado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -434,14 +411,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -450,17 +421,13 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _AtlasIotForm extends StatefulWidget {
-  const _AtlasIotForm({
-    required this.module,
-    this.current,
-  });
+  const _AtlasIotForm({required this.module, this.current});
 
   final AtlasIotModule module;
   final AtlasIotRecord? current;
 
   @override
-  State<_AtlasIotForm> createState() =>
-      _AtlasIotFormState();
+  State<_AtlasIotForm> createState() => _AtlasIotFormState();
 }
 
 class _AtlasIotFormState extends State<_AtlasIotForm> {
@@ -490,30 +457,19 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
     feature = current?.feature ?? widget.module.features.first;
     status = current?.status ?? 'Planejado';
 
-    title = TextEditingController(
-      text: current?.title ?? '',
-    );
+    title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasIotDate(DateTime.now()),
+      text: current?.date ?? formatAtlasIotDate(DateTime.now()),
     );
-    deviceId = TextEditingController(
-      text: current?.deviceId ?? '',
-    );
-    location = TextEditingController(
-      text: current?.location ?? '',
-    );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    deviceId = TextEditingController(text: current?.deviceId ?? '');
+    location = TextEditingController(text: current?.location ?? '');
+    metricName = TextEditingController(text: current?.metricName ?? '');
     metricValue = TextEditingController(
       text: current == null || current.metricValue == 0
           ? ''
           : current.metricValue.toString(),
     );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
+    unit = TextEditingController(text: current?.unit ?? '');
     signalPercent = TextEditingController(
       text: current == null || current.signalPercent == 0
           ? ''
@@ -529,12 +485,8 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
           ? ''
           : current.alertCount.toString(),
     );
-    lastSync = TextEditingController(
-      text: current?.lastSync ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    lastSync = TextEditingController(text: current?.lastSync ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -555,10 +507,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -574,18 +523,13 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasIotDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -604,8 +548,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
     Navigator.pop(
       context,
       AtlasIotRecord(
-        id: current?.id ??
-            'iot_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'iot_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -630,11 +573,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -649,10 +588,8 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -663,12 +600,9 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -680,35 +614,32 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em configuração',
-                    'Ativo',
-                    'Sincronizado',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Desconectado',
-                    'Falha',
-                    'Crítico',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em configuração',
+                            'Ativo',
+                            'Sincronizado',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Desconectado',
+                            'Falha',
+                            'Crítico',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -723,9 +654,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                 ),
                 TextFormField(
                   controller: location,
-                  decoration: const InputDecoration(
-                    labelText: 'Localização',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Localização'),
                 ),
                 TextFormField(
                   controller: metricName,
@@ -735,8 +664,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                 ),
                 TextFormField(
                   controller: metricValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -745,14 +673,11 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 TextFormField(
                   controller: signalPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -761,8 +686,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                 ),
                 TextFormField(
                   controller: batteryPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -786,9 +710,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -800,10 +722,7 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -811,25 +730,15 @@ class _AtlasIotFormState extends State<_AtlasIotForm> {
 
 IconData _moduleIcon(AtlasIotModule module) {
   return switch (module) {
-    AtlasIotModule.smartScales =>
-      Icons.monitor_weight_outlined,
-    AtlasIotModule.rfidTags =>
-      Icons.nfc_outlined,
-    AtlasIotModule.smartCollars =>
-      Icons.sensors_outlined,
-    AtlasIotModule.environmentalSensors =>
-      Icons.device_thermostat_outlined,
-    AtlasIotModule.waterSensors =>
-      Icons.water_drop_outlined,
-    AtlasIotModule.energySensors =>
-      Icons.bolt_outlined,
-    AtlasIotModule.weatherStations =>
-      Icons.cloud_outlined,
-    AtlasIotModule.drones =>
-      Icons.flight_outlined,
-    AtlasIotModule.satellites =>
-      Icons.satellite_alt_outlined,
-    AtlasIotModule.iotCommandCenter =>
-      Icons.hub_outlined,
+    AtlasIotModule.smartScales => Icons.monitor_weight_outlined,
+    AtlasIotModule.rfidTags => Icons.nfc_outlined,
+    AtlasIotModule.smartCollars => Icons.sensors_outlined,
+    AtlasIotModule.environmentalSensors => Icons.device_thermostat_outlined,
+    AtlasIotModule.waterSensors => Icons.water_drop_outlined,
+    AtlasIotModule.energySensors => Icons.bolt_outlined,
+    AtlasIotModule.weatherStations => Icons.cloud_outlined,
+    AtlasIotModule.drones => Icons.flight_outlined,
+    AtlasIotModule.satellites => Icons.satellite_alt_outlined,
+    AtlasIotModule.iotCommandCenter => Icons.hub_outlined,
   };
 }

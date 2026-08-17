@@ -26,35 +26,19 @@ class AtlasImprovementCycle {
   final DateTime nextReviewDate;
 
   int get criticalDecisions => decisions
-      .where(
-        (item) =>
-            item.priority ==
-            AtlasFarmAuditPriority.critical,
-      )
+      .where((item) => item.priority == AtlasFarmAuditPriority.critical)
       .length;
 
   int get recalibrationDecisions => decisions
-      .where(
-        (item) =>
-            item.type ==
-            AtlasImprovementDecisionType.recalibrate,
-      )
+      .where((item) => item.type == AtlasImprovementDecisionType.recalibrate)
       .length;
 
   int get correctionDecisions => decisions
-      .where(
-        (item) =>
-            item.type ==
-            AtlasImprovementDecisionType.correct,
-      )
+      .where((item) => item.type == AtlasImprovementDecisionType.correct)
       .length;
 
   int get maintainDecisions => decisions
-      .where(
-        (item) =>
-            item.type ==
-            AtlasImprovementDecisionType.maintain,
-      )
+      .where((item) => item.type == AtlasImprovementDecisionType.maintain)
       .length;
 
   Map<String, dynamic> toJson() {
@@ -67,47 +51,36 @@ class AtlasImprovementCycle {
       'auditIndex': auditIndex,
       'classification': classification.name,
       'summary': summary,
-      'decisions':
-          decisions.map((item) => item.toJson()).toList(),
+      'decisions': decisions.map((item) => item.toJson()).toList(),
       'nextReviewDate': nextReviewDate.toIso8601String(),
     };
   }
 
-  factory AtlasImprovementCycle.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasImprovementCycle.fromJson(Map<String, dynamic> json) {
     return AtlasImprovementCycle(
       id: json['id'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
       farmName: json['farmName'] as String? ?? 'Fazenda',
-      generatedAt: DateTime.tryParse(
-            json['generatedAt'] as String? ?? '',
-          ) ??
+      generatedAt:
+          DateTime.tryParse(json['generatedAt'] as String? ?? '') ??
           DateTime.now(),
-      executionScore:
-          (json['executionScore'] as num?)?.toDouble() ?? 0,
-      auditIndex:
-          (json['auditIndex'] as num?)?.toDouble() ?? 0,
-      classification:
-          AtlasImprovementCycleClassification.values
-              .firstWhere(
+      executionScore: (json['executionScore'] as num?)?.toDouble() ?? 0,
+      auditIndex: (json['auditIndex'] as num?)?.toDouble() ?? 0,
+      classification: AtlasImprovementCycleClassification.values.firstWhere(
         (item) => item.name == json['classification'],
-        orElse: () =>
-            AtlasImprovementCycleClassification.attention,
+        orElse: () => AtlasImprovementCycleClassification.attention,
       ),
       summary: json['summary'] as String? ?? '',
-      decisions:
-          (json['decisions'] as List? ?? const <dynamic>[])
-              .whereType<Map>()
-              .map(
-                (item) => AtlasImprovementDecision.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(),
-      nextReviewDate: DateTime.tryParse(
-            json['nextReviewDate'] as String? ?? '',
-          ) ??
+      decisions: (json['decisions'] as List? ?? const <dynamic>[])
+          .whereType<Map>()
+          .map(
+            (item) => AtlasImprovementDecision.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+      nextReviewDate:
+          DateTime.tryParse(json['nextReviewDate'] as String? ?? '') ??
           DateTime.now().add(const Duration(days: 30)),
     );
   }
@@ -153,9 +126,7 @@ class AtlasImprovementDecision {
     };
   }
 
-  factory AtlasImprovementDecision.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasImprovementDecision.fromJson(Map<String, dynamic> json) {
     return AtlasImprovementDecision(
       id: json['id'] as String? ?? '',
       area: AtlasFarmAuditArea.values.firstWhere(
@@ -166,31 +137,21 @@ class AtlasImprovementDecision {
       explanation: json['explanation'] as String? ?? '',
       type: AtlasImprovementDecisionType.values.firstWhere(
         (item) => item.name == json['type'],
-        orElse: () =>
-            AtlasImprovementDecisionType.monitor,
+        orElse: () => AtlasImprovementDecisionType.monitor,
       ),
       priority: AtlasFarmAuditPriority.values.firstWhere(
         (item) => item.name == json['priority'],
         orElse: () => AtlasFarmAuditPriority.moderate,
       ),
-      currentValue:
-          (json['currentValue'] as num?)?.toDouble() ?? 0,
-      targetValue:
-          (json['targetValue'] as num?)?.toDouble() ?? 85,
-      deadlineDays:
-          (json['deadlineDays'] as num?)?.toInt() ?? 30,
-      expectedGain:
-          (json['expectedGain'] as num?)?.toDouble() ?? 0,
+      currentValue: (json['currentValue'] as num?)?.toDouble() ?? 0,
+      targetValue: (json['targetValue'] as num?)?.toDouble() ?? 85,
+      deadlineDays: (json['deadlineDays'] as num?)?.toInt() ?? 30,
+      expectedGain: (json['expectedGain'] as num?)?.toDouble() ?? 0,
     );
   }
 }
 
-enum AtlasImprovementDecisionType {
-  maintain,
-  monitor,
-  correct,
-  recalibrate,
-}
+enum AtlasImprovementDecisionType { maintain, monitor, correct, recalibrate }
 
 enum AtlasImprovementCycleClassification {
   excellent,
@@ -199,9 +160,7 @@ enum AtlasImprovementCycleClassification {
   critical,
 }
 
-String atlasImprovementDecisionTypeLabel(
-  AtlasImprovementDecisionType type,
-) {
+String atlasImprovementDecisionTypeLabel(AtlasImprovementDecisionType type) {
   switch (type) {
     case AtlasImprovementDecisionType.maintain:
       return 'Manter';

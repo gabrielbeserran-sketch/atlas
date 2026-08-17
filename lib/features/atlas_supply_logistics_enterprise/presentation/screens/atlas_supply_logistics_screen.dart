@@ -29,8 +29,7 @@ class AtlasSupplyLogisticsScreen extends StatefulWidget {
 class _AtlasSupplyLogisticsScreenState
     extends State<AtlasSupplyLogisticsScreen> {
   final storage = AtlasSupplyLogisticsStorageService();
-  final analyticsService =
-      const AtlasSupplyLogisticsAnalyticsService();
+  final analyticsService = const AtlasSupplyLogisticsAnalyticsService();
 
   late AtlasSupplyLogisticsModule selectedModule;
   List<AtlasSupplyLogisticsRecord> records = [];
@@ -53,8 +52,8 @@ class _AtlasSupplyLogisticsScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasSupplyDate(b.date)
-          .compareTo(parseAtlasSupplyDate(a.date)),
+      (a, b) =>
+          parseAtlasSupplyDate(b.date).compareTo(parseAtlasSupplyDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,27 +65,22 @@ class _AtlasSupplyLogisticsScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasSupplyLogisticsRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasSupplyLogisticsRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasSupplyLogisticsRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasSupplyLogisticsRecord? current]) async {
     final result = await showDialog<AtlasSupplyLogisticsRecord>(
       context: context,
-      builder: (_) => _SupplyForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) => _SupplyForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -105,9 +99,7 @@ class _AtlasSupplyLogisticsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasSupplyLogisticsRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasSupplyLogisticsRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -257,8 +249,7 @@ class _AtlasSupplyLogisticsScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Quantidade',
-                            value:
-                                analytics.totalQuantity.toStringAsFixed(2),
+                            value: analytics.totalQuantity.toStringAsFixed(2),
                             subtitle: 'Total consolidado',
                             icon: Icons.inventory_2_outlined,
                           ),
@@ -333,9 +324,7 @@ class _AtlasSupplyLogisticsScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira compra, movimentação, entrega ou abastecimento.',
                             ),
@@ -388,10 +377,7 @@ class _AtlasSupplyLogisticsScreenState
 }
 
 class _SupplyForm extends StatefulWidget {
-  const _SupplyForm({
-    required this.module,
-    this.current,
-  });
+  const _SupplyForm({required this.module, this.current});
 
   final AtlasSupplyLogisticsModule module;
   final AtlasSupplyLogisticsRecord? current;
@@ -439,21 +425,16 @@ class _SupplyFormState extends State<_SupplyForm> {
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasSupplyDate(DateTime.now()),
+      text: current?.date ?? formatAtlasSupplyDate(DateTime.now()),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
     farmName = TextEditingController(text: current?.farmName ?? '');
-    supplierName =
-        TextEditingController(text: current?.supplierName ?? '');
-    warehouseName =
-        TextEditingController(text: current?.warehouseName ?? '');
+    supplierName = TextEditingController(text: current?.supplierName ?? '');
+    warehouseName = TextEditingController(text: current?.warehouseName ?? '');
     itemName = TextEditingController(text: current?.itemName ?? '');
     batchCode = TextEditingController(text: current?.batchCode ?? '');
-    vehicleName =
-        TextEditingController(text: current?.vehicleName ?? '');
-    driverName =
-        TextEditingController(text: current?.driverName ?? '');
+    vehicleName = TextEditingController(text: current?.vehicleName ?? '');
+    driverName = TextEditingController(text: current?.driverName ?? '');
     quantity = TextEditingController(
       text: current == null || current.quantity == 0
           ? ''
@@ -481,9 +462,7 @@ class _SupplyFormState extends State<_SupplyForm> {
           : current.actualValue.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     qualityPercent = TextEditingController(
       text: current == null || current.qualityPercent == 0
@@ -528,26 +507,18 @@ class _SupplyFormState extends State<_SupplyForm> {
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasSupplyDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -566,8 +537,7 @@ class _SupplyFormState extends State<_SupplyForm> {
     Navigator.pop(
       context,
       AtlasSupplyLogisticsRecord(
-        id: current?.id ??
-            'supply_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'supply_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -588,12 +558,9 @@ class _SupplyFormState extends State<_SupplyForm> {
         freightCost: decimal(freightCost),
         plannedValue: decimal(plannedValue),
         actualValue: decimal(actualValue),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        qualityPercent:
-            decimal(qualityPercent).clamp(0, 100),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        qualityPercent: decimal(qualityPercent).clamp(0, 100),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -604,11 +571,7 @@ class _SupplyFormState extends State<_SupplyForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -623,10 +586,8 @@ class _SupplyFormState extends State<_SupplyForm> {
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -637,13 +598,10 @@ class _SupplyFormState extends State<_SupplyForm> {
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -651,9 +609,7 @@ class _SupplyFormState extends State<_SupplyForm> {
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 TextFormField(
@@ -662,35 +618,32 @@ class _SupplyFormState extends State<_SupplyForm> {
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou validade',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Aprovado',
-                    'Em trânsito',
-                    'Concluído',
-                    'Atenção',
-                    'Atrasado',
-                    'Crítico',
-                    'Bloqueado',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Aprovado',
+                            'Em trânsito',
+                            'Concluído',
+                            'Atenção',
+                            'Atrasado',
+                            'Crítico',
+                            'Bloqueado',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -699,20 +652,11 @@ class _SupplyFormState extends State<_SupplyForm> {
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -733,9 +677,7 @@ class _SupplyFormState extends State<_SupplyForm> {
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 ...[
@@ -748,13 +690,10 @@ class _SupplyFormState extends State<_SupplyForm> {
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -775,9 +714,7 @@ class _SupplyFormState extends State<_SupplyForm> {
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -789,31 +726,22 @@ class _SupplyFormState extends State<_SupplyForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasSupplyLogisticsModule module,
-) {
+IconData _moduleIcon(AtlasSupplyLogisticsModule module) {
   return switch (module) {
     AtlasSupplyLogisticsModule.intelligentPurchasing =>
       Icons.shopping_cart_checkout_outlined,
-    AtlasSupplyLogisticsModule.supplierManagement =>
-      Icons.handshake_outlined,
+    AtlasSupplyLogisticsModule.supplierManagement => Icons.handshake_outlined,
     AtlasSupplyLogisticsModule.automatedQuotation =>
       Icons.compare_arrows_outlined,
-    AtlasSupplyLogisticsModule.purchaseApproval =>
-      Icons.approval_outlined,
-    AtlasSupplyLogisticsModule.multiWarehouseStock =>
-      Icons.warehouse_outlined,
-    AtlasSupplyLogisticsModule.batchesAndExpiry =>
-      Icons.qr_code_2_outlined,
+    AtlasSupplyLogisticsModule.purchaseApproval => Icons.approval_outlined,
+    AtlasSupplyLogisticsModule.multiWarehouseStock => Icons.warehouse_outlined,
+    AtlasSupplyLogisticsModule.batchesAndExpiry => Icons.qr_code_2_outlined,
     AtlasSupplyLogisticsModule.intelligentInventory =>
       Icons.inventory_2_outlined,
     AtlasSupplyLogisticsModule.transportLogistics =>

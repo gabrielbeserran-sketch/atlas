@@ -7,10 +7,9 @@ class AtlasRemoteReproductionRepository {
     AtlasHttpClient? httpClient,
     AtlasLocalDatabase? localDatabase,
     AtlasSyncEngine? syncEngine,
-  })  : _http = httpClient ?? AtlasHttpClient(),
-        _database =
-            localDatabase ?? AtlasLocalDatabase.instance,
-        _sync = syncEngine ?? AtlasSyncEngine();
+  }) : _http = httpClient ?? AtlasHttpClient(),
+       _database = localDatabase ?? AtlasLocalDatabase.instance,
+       _sync = syncEngine ?? AtlasSyncEngine();
 
   final AtlasHttpClient _http;
   final AtlasLocalDatabase _database;
@@ -94,8 +93,7 @@ class AtlasRemoteReproductionRepository {
         companyId: companyId,
         farmId: farmId,
         method: 'POST',
-        endpoint:
-            '/livestock/animals/$animalId/reproduction',
+        endpoint: '/livestock/animals/$animalId/reproduction',
         entityType: 'reproduction_event',
         entityId: localId,
         payload: payload,

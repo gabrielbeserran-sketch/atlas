@@ -1,0 +1,10 @@
+ATLAS ANDROID 1.0 - CORREÇÃO POWERSHELL LASTEXITCODE
+
+Correções aplicadas:
+- 09_prepare_first_android_run.ps1 não consulta LASTEXITCODE após chamar outro script PowerShell.
+- 00_android_first_device.ps1 recebeu a mesma proteção preventiva.
+- Chamadas entre scripts usam try/catch e $?.
+- LASTEXITCODE fica restrito a comandos externos, como adb/flutter, onde ele é definido corretamente.
+
+Resultado esperado do passo 09:
+PASSOS 13-15 OK: Android preparado e túnel USB ativo.

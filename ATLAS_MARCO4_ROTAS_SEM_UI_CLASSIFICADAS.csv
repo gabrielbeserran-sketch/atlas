@@ -1,0 +1,204 @@
+﻿route,category,reason
+POST /advanced/farms/{farm_id}/geo-assets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /advanced/farms/{farm_id}/geo/import,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /advanced/farms/{farm_id}/pasture,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /advanced/farms/{farm_id}/agriculture,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PUT /advanced/farms/{farm_id}/genetics,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /advanced/farms/{farm_id}/genetics/{animal_id}/pedigree,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /advanced/farms/{farm_id}/genetics/mating-simulator,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /ai/recommendations/{recommendation_id}/review,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /ai-operational/automations/{automation_id}/approve,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /ai-operational/governance/models,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /ai-operational/governance/models/{model_id}/approve,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /analytics/facts,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /analytics/goals/recalculate,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /analytics/benchmarks/{metric_key},platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /analytics/benchmarks,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+PUT /animal-media/{animal_id}/{media_id}/content,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /animal-media/{animal_id}/{media_id}/content,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /atlas-ai/sessions,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-ai/sessions,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-ai/sessions/{session_id}/messages,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /atlas-ai/memories,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-ai/memories,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+PATCH /atlas-ai/recommendations/{recommendation_id}/status,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /atlas-ai/knowledge/documents,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-ai/knowledge/documents,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-brain/readiness,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /atlas-vision/readiness,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /auth/sessions,marco5_security,Endpoint de segurança/autenticação a homologar no Marco 5.
+DELETE /auth/sessions/{session_id},marco5_security,Endpoint de segurança/autenticação a homologar no Marco 5.
+GET /auth/security-events,marco5_security,Endpoint de segurança/autenticação a homologar no Marco 5.
+POST /automation/events/execute,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /automation/workflows,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /automation/workflows,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /automation/workflows/{workflow_id}/start,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /automation/executive-digests,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /backups/{filename}/verify-restore,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /billing/readiness,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /business/commercial/dashboard,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/consulting/visits,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /business/consulting/visits,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/consulting/actions,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /business/consulting/actions/{action_id}/complete,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /business/consulting/dashboard,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/workflows,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/workflows/start,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/workflows/{instance_id}/decision,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/api-keys,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/webhooks,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /business/enterprise/readiness,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/bi/snapshots,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /business/subscriptions,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /cloud-operations/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /commercial/proposals,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /commercial/proposals,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /commercial/proposals/{proposal_id}/status,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /commercial/contracts,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /commercial/contracts/{contract_id}/sign,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /commercial/subscriptions,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /commercial/subscriptions,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /commercial/invoices/{invoice_id}/pay,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /commercial/notifications/due,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /core-validation/farms/{farm_id},advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /corporate-intelligence/plans,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /corporate-intelligence/scenarios,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /corporate-intelligence/executive-board,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /data-platform/events,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/events/publish,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/warehouse/dimensions,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/warehouse/facts,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/kpis/observations,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/benchmarks/cohorts,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/cache,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+GET /data-platform/cache/{key},platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/jobs,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /data-platform/jobs/claim,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
+POST /ecosystem/partners,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /ecosystem/partners,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ecosystem/support,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /ecosystem/dashboard,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /enterprise-analytics/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /enterprise-operations/workflows/{definition_id}/start,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/billing/subscriptions,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/billing/webhooks/{provider},advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/public-api/apps,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /sprints-16-20/public-api/openapi-contract,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/analytics/datasets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/analytics/facts,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/ml/models,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /sprints-16-20/ml/models/{model_id}/approve,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/ml/models/{model_id}/predict,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints-16-20/enterprise/releases,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /enterprise-release/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /farm-operations/farms/{farm_id}/work-orders,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /farm-operations/work-orders/{work_order_id}/complete,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /farm-operations/farms/{farm_id}/assets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /farm-operations/farms/{farm_id}/work-orders,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+DELETE /farm-operations/work-orders/{work_order_id},advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /finance-enterprise/farms/{farm_id}/budgets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /finance-enterprise/farms/{farm_id}/dashboard,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PUT /global-platform/localization,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /global-platform/certifications,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /global-platform/training,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /global-platform/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/policies,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /governance/policies,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/quality/rules,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/quality/assets/{asset_id}/run,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /governance/quality/runs,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/compliance/controls,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /governance/compliance/controls,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/compliance/controls/{control_id}/assess,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /governance/health/snapshots,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /health/live,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /health-intelligence/farms/{farm_id}/medicines,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /health-intelligence/farms/{farm_id}/occurrences,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/brain/farms/{farm_id}/agents/{agent},advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/brain/farms/{farm_id}/simulate,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/brain/farms/{farm_id}/memory,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/vision/farms/{farm_id}/analyze,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /sprints/vision/farms/{farm_id}/analyses,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/iot/farms/{farm_id}/devices,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/iot/devices/{device_id}/telemetry,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /sprints/cloud/jobs,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PUT /sprints/web/workspace,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /integrations/sync-jobs/{job_id}/complete,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /integrations/webhooks/events,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /integrations/usage,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /integrations/usage/summary,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /inventory-enterprise/farms/{farm_id}/counts,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /inventory-enterprise/farms/{farm_id}/dashboard,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /iot/telemetry/ingest,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /iot/devices/{device_id}/commands,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /iot/automation-rules,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /iot/automation-rules,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /iot-platform/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /livestock/health/protocols/{protocol_id}/apply,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+POST /livestock/inventory/products/{product_id}/movements,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+GET /livestock/dashboard,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+GET /livestock/inventory/products/{product_id}/movements,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+PATCH /livestock/finance/{entry_id}/settle,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+GET /livestock/finance/cash-flow,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+GET /machine-learning-registry/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /members/{membership_id}/reset-password,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ml/features,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /ml/features,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ml/training-runs,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /ml/training-runs/{run_id}/complete,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /ml/training-runs,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ml/deployments/{deployment_id}/predict,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ml/predictions/{prediction_id}/feedback,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /ml/deployments/{deployment_id}/drift,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /ml/deployments/{deployment_id}/drift,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /nutrition-intelligence/farms/{farm_id}/simulations,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /operations/conflicts/{entity_type}/{entity_id}/resolve,backend_capability,Capacidade operacional backend para automação/exportação/ações internas.
+GET /operations/exports/{dataset}.csv,backend_capability,Capacidade operacional backend para automação/exportação/ações internas.
+GET /platform/ai/recommendations/farms/{farm_id},advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /platform/security/permission-matrix,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/adapters,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/devices,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/rfid-bindings,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/devices/{device_id}/telemetry,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/geofences,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/geo-assets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/vision,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/vision/{analysis_id}/review,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-hub/farms/{farm_id}/remote-sensing/scenes,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /precision-livestock/farms/{farm_id}/assessments,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /public-api/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /quality/ready,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /realtime/publish,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /realtime/events,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /realtime/subscriptions,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /release-engineering/builds/{build_id}/complete,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /release-engineering/deployments/{deployment_id}/complete,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-engineering/feature-flags,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /release-engineering/feature-flags,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /release-engineering/change-approvals/{approval_id}/decision,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-engineering/readiness-checks,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+PATCH /release-engineering/readiness-checks/{check_id}/complete,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+GET /release-engineering/readiness,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-engineering/metrics,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/mobile-profiles,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/web-releases,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/learning-paths,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/documentation,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/growth-experiments,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/capability-reviews,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /release-growth/roadmaps,admin_or_business_api,"API administrativa/comercial, não dependente da UI pecuária principal."
+POST /reproduction-advanced/farms/{farm_id}/protocols,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /reproduction-advanced/farms/{farm_id}/protocols,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /reproduction-advanced/farms/{farm_id}/seasons,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /saas-growth/communications/deliveries,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-compliance/availability-targets,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-compliance/translations,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-compliance/regional-policies,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /security-enterprise/access-reviews/{review_id}/complete,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-enterprise/privacy/consents,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /security-enterprise/privacy/consents,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-enterprise/continuity/exercises,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /security-enterprise/continuity/exercises/{exercise_id}/complete,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+POST /security-enterprise/posture/snapshots,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /system/metrics,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /web-platform/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.

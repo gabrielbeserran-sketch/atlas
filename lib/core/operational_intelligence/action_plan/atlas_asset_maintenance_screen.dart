@@ -23,18 +23,12 @@ class _AtlasAssetMaintenanceScreenState
       AtlasAssetMaintenanceService.instance;
 
   List<AtlasFarmAsset> assets = <AtlasFarmAsset>[];
-  List<AtlasMaintenanceOrder> orders =
-      <AtlasMaintenanceOrder>[];
-  List<AtlasAssetUsageRecord> usage =
-      <AtlasAssetUsageRecord>[];
+  List<AtlasMaintenanceOrder> orders = <AtlasMaintenanceOrder>[];
+  List<AtlasAssetUsageRecord> usage = <AtlasAssetUsageRecord>[];
   bool isLoading = false;
 
   AtlasAssetMaintenanceSummary get summary =>
-      service.buildSummary(
-        assets: assets,
-        orders: orders,
-        usage: usage,
-      );
+      service.buildSummary(assets: assets, orders: orders, usage: usage);
 
   @override
   void initState() {
@@ -51,29 +45,19 @@ class _AtlasAssetMaintenanceScreenState
     orders = await service.loadOrders(
       farmName: widget.actionController.farmName,
     );
-    usage = await service.loadUsage(
-      farmName: widget.actionController.farmName,
-    );
+    usage = await service.loadUsage(farmName: widget.actionController.farmName);
 
     if (mounted) {
       setState(() => isLoading = false);
     }
   }
 
-  Future<void> _editAsset({
-    AtlasFarmAsset? asset,
-  }) async {
-    final code =
-        TextEditingController(text: asset?.code ?? '');
-    final name =
-        TextEditingController(text: asset?.name ?? '');
-    final brand =
-        TextEditingController(text: asset?.brand ?? '');
-    final model =
-        TextEditingController(text: asset?.model ?? '');
-    final serial = TextEditingController(
-      text: asset?.serialNumber ?? '',
-    );
+  Future<void> _editAsset({AtlasFarmAsset? asset}) async {
+    final code = TextEditingController(text: asset?.code ?? '');
+    final name = TextEditingController(text: asset?.name ?? '');
+    final brand = TextEditingController(text: asset?.brand ?? '');
+    final model = TextEditingController(text: asset?.model ?? '');
+    final serial = TextEditingController(text: asset?.serialNumber ?? '');
     final year = TextEditingController(
       text: asset?.year == 0 ? '' : asset?.year.toString(),
     );
@@ -89,18 +73,14 @@ class _AtlasAssetMaintenanceScreenState
     final odometer = TextEditingController(
       text: asset?.odometerKm.toString() ?? '',
     );
-    final location = TextEditingController(
-      text: asset?.location ?? '',
-    );
+    final location = TextEditingController(text: asset?.location ?? '');
     final responsible = TextEditingController(
       text: asset?.responsibleName ?? '',
     );
-    final notes =
-        TextEditingController(text: asset?.notes ?? '');
+    final notes = TextEditingController(text: asset?.notes ?? '');
 
     var type = asset?.type ?? AtlasAssetType.tractor;
-    var status =
-        asset?.status ?? AtlasAssetStatus.available;
+    var status = asset?.status ?? AtlasAssetStatus.available;
     var active = asset?.active ?? true;
     DateTime? purchaseAt = asset?.purchaseAt;
 
@@ -110,11 +90,7 @@ class _AtlasAssetMaintenanceScreenState
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(
-                asset == null
-                    ? 'Novo ativo'
-                    : 'Editar ativo',
-              ),
+              title: Text(asset == null ? 'Novo ativo' : 'Editar ativo'),
               content: SizedBox(
                 width: 700,
                 height: 650,
@@ -123,16 +99,14 @@ class _AtlasAssetMaintenanceScreenState
                     _row(
                       TextField(
                         controller: code,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Código',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       TextField(
                         controller: name,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Nome',
                           border: OutlineInputBorder(),
                         ),
@@ -140,8 +114,7 @@ class _AtlasAssetMaintenanceScreenState
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      DropdownButtonFormField<
-                          AtlasAssetType>(
+                      DropdownButtonFormField<AtlasAssetType>(
                         initialValue: type,
                         decoration: const InputDecoration(
                           labelText: 'Tipo',
@@ -151,22 +124,17 @@ class _AtlasAssetMaintenanceScreenState
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(
-                                  atlasAssetTypeLabel(value),
-                                ),
+                                child: Text(atlasAssetTypeLabel(value)),
                               ),
                             )
                             .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => type = value,
-                            );
+                            setDialogState(() => type = value);
                           }
                         },
                       ),
-                      DropdownButtonFormField<
-                          AtlasAssetStatus>(
+                      DropdownButtonFormField<AtlasAssetStatus>(
                         initialValue: status,
                         decoration: const InputDecoration(
                           labelText: 'Situação',
@@ -176,19 +144,13 @@ class _AtlasAssetMaintenanceScreenState
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(
-                                  atlasAssetStatusLabel(
-                                    value,
-                                  ),
-                                ),
+                                child: Text(atlasAssetStatusLabel(value)),
                               ),
                             )
                             .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => status = value,
-                            );
+                            setDialogState(() => status = value);
                           }
                         },
                       ),
@@ -197,16 +159,14 @@ class _AtlasAssetMaintenanceScreenState
                     _row(
                       TextField(
                         controller: brand,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Marca',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       TextField(
                         controller: model,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Modelo',
                           border: OutlineInputBorder(),
                         ),
@@ -216,8 +176,7 @@ class _AtlasAssetMaintenanceScreenState
                     _row(
                       TextField(
                         controller: serial,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Número de série',
                           border: OutlineInputBorder(),
                         ),
@@ -226,40 +185,26 @@ class _AtlasAssetMaintenanceScreenState
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        purchaseValue,
-                        'Valor de compra',
-                      ),
-                      _number(
-                        currentValue,
-                        'Valor atual',
-                      ),
+                      _number(purchaseValue, 'Valor de compra'),
+                      _number(currentValue, 'Valor atual'),
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        hourMeter,
-                        'Horímetro',
-                      ),
-                      _number(
-                        odometer,
-                        'Odômetro (km)',
-                      ),
+                      _number(hourMeter, 'Horímetro'),
+                      _number(odometer, 'Odômetro (km)'),
                     ),
                     const SizedBox(height: 10),
                     _row(
                       TextField(
                         controller: location,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Localização',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       TextField(
                         controller: responsible,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Responsável',
                           border: OutlineInputBorder(),
                         ),
@@ -269,18 +214,14 @@ class _AtlasAssetMaintenanceScreenState
                       title: 'Data de aquisição',
                       date: purchaseAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
-                          initialDate:
-                              purchaseAt ?? DateTime.now(),
+                          initialDate: purchaseAt ?? DateTime.now(),
                           firstDate: DateTime(1950),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () => purchaseAt = selected,
-                          );
+                          setDialogState(() => purchaseAt = selected);
                         }
                       },
                     ),
@@ -296,9 +237,7 @@ class _AtlasAssetMaintenanceScreenState
                       title: const Text('Ativo'),
                       value: active,
                       onChanged: (value) {
-                        setDialogState(
-                          () => active = value,
-                        );
+                        setDialogState(() => active = value);
                       },
                     ),
                   ],
@@ -306,8 +245,7 @@ class _AtlasAssetMaintenanceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -318,7 +256,8 @@ class _AtlasAssetMaintenanceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasFarmAsset(
-                        id: asset?.id ??
+                        id:
+                            asset?.id ??
                             'farm_asset_'
                                 '${now.microsecondsSinceEpoch}',
                         code: code.text.trim(),
@@ -327,25 +266,17 @@ class _AtlasAssetMaintenanceScreenState
                         status: status,
                         brand: brand.text.trim(),
                         model: model.text.trim(),
-                        serialNumber:
-                            serial.text.trim(),
+                        serialNumber: serial.text.trim(),
                         year: int.tryParse(year.text) ?? 0,
                         purchaseAt: purchaseAt,
-                        purchaseValue:
-                            _double(purchaseValue.text),
-                        currentValue:
-                            _double(currentValue.text),
-                        hourMeter:
-                            _double(hourMeter.text),
-                        odometerKm:
-                            _double(odometer.text),
-                        location:
-                            location.text.trim(),
-                        responsibleName:
-                            responsible.text.trim(),
+                        purchaseValue: _double(purchaseValue.text),
+                        currentValue: _double(currentValue.text),
+                        hourMeter: _double(hourMeter.text),
+                        odometerKm: _double(odometer.text),
+                        location: location.text.trim(),
+                        responsibleName: responsible.text.trim(),
                         notes: notes.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                         active: active,
                       ),
                     );
@@ -392,28 +323,19 @@ class _AtlasAssetMaintenanceScreenState
     }
 
     var assetId = order?.assetId ?? assets.first.id;
-    var type = order?.type ??
-        initialType ??
-        AtlasMaintenanceType.preventive;
-    var status = order?.status ??
-        AtlasMaintenanceStatus.planned;
-    var scheduledAt =
-        order?.scheduledAt ?? DateTime.now();
+    var type = order?.type ?? initialType ?? AtlasMaintenanceType.preventive;
+    var status = order?.status ?? AtlasMaintenanceStatus.planned;
+    var scheduledAt = order?.scheduledAt ?? DateTime.now();
     DateTime? startedAt = order?.startedAt;
     DateTime? completedAt = order?.completedAt;
     DateTime? nextServiceAt = order?.nextServiceAt;
 
-    final title =
-        TextEditingController(text: order?.title ?? '');
-    final description = TextEditingController(
-      text: order?.description ?? '',
-    );
+    final title = TextEditingController(text: order?.title ?? '');
+    final description = TextEditingController(text: order?.description ?? '');
     final responsible = TextEditingController(
       text: order?.responsibleName ?? '',
     );
-    final supplier = TextEditingController(
-      text: order?.supplierName ?? '',
-    );
+    final supplier = TextEditingController(text: order?.supplierName ?? '');
     final laborCost = TextEditingController(
       text: order?.laborCost.toString() ?? '',
     );
@@ -433,14 +355,11 @@ class _AtlasAssetMaintenanceScreenState
       text: order?.nextServiceHourMeter.toString() ?? '',
     );
     final nextOdometer = TextEditingController(
-      text:
-          order?.nextServiceOdometerKm.toString() ?? '',
+      text: order?.nextServiceOdometerKm.toString() ?? '',
     );
-    final notes =
-        TextEditingController(text: order?.notes ?? '');
+    final notes = TextEditingController(text: order?.notes ?? '');
 
-    final result =
-        await showDialog<AtlasMaintenanceOrder>(
+    final result = await showDialog<AtlasMaintenanceOrder>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -472,16 +391,13 @@ class _AtlasAssetMaintenanceScreenState
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => assetId = value,
-                          );
+                          setDialogState(() => assetId = value);
                         }
                       },
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      DropdownButtonFormField<
-                          AtlasMaintenanceType>(
+                      DropdownButtonFormField<AtlasMaintenanceType>(
                         initialValue: type,
                         decoration: const InputDecoration(
                           labelText: 'Tipo',
@@ -491,48 +407,33 @@ class _AtlasAssetMaintenanceScreenState
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(
-                                  atlasMaintenanceTypeLabel(
-                                    value,
-                                  ),
-                                ),
+                                child: Text(atlasMaintenanceTypeLabel(value)),
                               ),
                             )
                             .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => type = value,
-                            );
+                            setDialogState(() => type = value);
                           }
                         },
                       ),
-                      DropdownButtonFormField<
-                          AtlasMaintenanceStatus>(
+                      DropdownButtonFormField<AtlasMaintenanceStatus>(
                         initialValue: status,
                         decoration: const InputDecoration(
                           labelText: 'Situação',
                           border: OutlineInputBorder(),
                         ),
-                        items:
-                            AtlasMaintenanceStatus.values
-                                .map(
-                                  (value) =>
-                                      DropdownMenuItem(
-                                    value: value,
-                                    child: Text(
-                                      atlasMaintenanceStatusLabel(
-                                        value,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                        items: AtlasMaintenanceStatus.values
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(atlasMaintenanceStatusLabel(value)),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => status = value,
-                            );
+                            setDialogState(() => status = value);
                           }
                         },
                       ),
@@ -558,16 +459,14 @@ class _AtlasAssetMaintenanceScreenState
                     _row(
                       TextField(
                         controller: responsible,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Responsável',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       TextField(
                         controller: supplier,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Oficina/fornecedor',
                           border: OutlineInputBorder(),
                         ),
@@ -575,46 +474,28 @@ class _AtlasAssetMaintenanceScreenState
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        laborCost,
-                        'Custo de mão de obra',
-                      ),
-                      _number(
-                        partsCost,
-                        'Custo de peças',
-                      ),
+                      _number(laborCost, 'Custo de mão de obra'),
+                      _number(partsCost, 'Custo de peças'),
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        downtime,
-                        'Horas parado',
-                      ),
-                      _number(
-                        hourMeter,
-                        'Horímetro na manutenção',
-                      ),
+                      _number(downtime, 'Horas parado'),
+                      _number(hourMeter, 'Horímetro na manutenção'),
                     ),
                     const SizedBox(height: 10),
-                    _number(
-                      odometer,
-                      'Odômetro na manutenção',
-                    ),
+                    _number(odometer, 'Odômetro na manutenção'),
                     _DateSelector(
                       title: 'Data programada',
                       date: scheduledAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
                           initialDate: scheduledAt,
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () => scheduledAt = selected,
-                          );
+                          setDialogState(() => scheduledAt = selected);
                         }
                       },
                     ),
@@ -622,18 +503,14 @@ class _AtlasAssetMaintenanceScreenState
                       title: 'Início',
                       date: startedAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
-                          initialDate:
-                              startedAt ?? scheduledAt,
+                          initialDate: startedAt ?? scheduledAt,
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () => startedAt = selected,
-                          );
+                          setDialogState(() => startedAt = selected);
                         }
                       },
                     ),
@@ -641,59 +518,42 @@ class _AtlasAssetMaintenanceScreenState
                       title: 'Conclusão',
                       date: completedAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
-                          initialDate:
-                              completedAt ?? DateTime.now(),
+                          initialDate: completedAt ?? DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () => completedAt = selected,
-                          );
+                          setDialogState(() => completedAt = selected);
                         }
                       },
                     ),
                     const Divider(),
                     const Text(
                       'Próxima revisão',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     _DateSelector(
                       title: 'Próxima data',
                       date: nextServiceAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
-                          initialDate: nextServiceAt ??
-                              DateTime.now().add(
-                                const Duration(days: 180),
-                              ),
+                          initialDate:
+                              nextServiceAt ??
+                              DateTime.now().add(const Duration(days: 180)),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () =>
-                                nextServiceAt = selected,
-                          );
+                          setDialogState(() => nextServiceAt = selected);
                         }
                       },
                     ),
                     _row(
-                      _number(
-                        nextHourMeter,
-                        'Próximo horímetro',
-                      ),
-                      _number(
-                        nextOdometer,
-                        'Próximo odômetro',
-                      ),
+                      _number(nextHourMeter, 'Próximo horímetro'),
+                      _number(nextOdometer, 'Próximo odômetro'),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -709,8 +569,7 @@ class _AtlasAssetMaintenanceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -721,46 +580,32 @@ class _AtlasAssetMaintenanceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasMaintenanceOrder(
-                        id: order?.id ??
+                        id:
+                            order?.id ??
                             'maintenance_order_'
                                 '${now.microsecondsSinceEpoch}',
                         assetId: assetId,
                         type: type,
                         status: status,
                         title: title.text.trim(),
-                        description:
-                            description.text.trim(),
+                        description: description.text.trim(),
                         scheduledAt: scheduledAt,
                         startedAt: startedAt,
-                        completedAt:
-                            status ==
-                                    AtlasMaintenanceStatus
-                                        .completed
-                                ? completedAt ?? now
-                                : completedAt,
-                        responsibleName:
-                            responsible.text.trim(),
-                        supplierName:
-                            supplier.text.trim(),
-                        laborCost:
-                            _double(laborCost.text),
-                        partsCost:
-                            _double(partsCost.text),
-                        downtimeHours:
-                            _double(downtime.text),
-                        hourMeterAtService:
-                            _double(hourMeter.text),
-                        odometerAtServiceKm:
-                            _double(odometer.text),
-                        nextServiceAt:
-                            nextServiceAt,
-                        nextServiceHourMeter:
-                            _double(nextHourMeter.text),
-                        nextServiceOdometerKm:
-                            _double(nextOdometer.text),
+                        completedAt: status == AtlasMaintenanceStatus.completed
+                            ? completedAt ?? now
+                            : completedAt,
+                        responsibleName: responsible.text.trim(),
+                        supplierName: supplier.text.trim(),
+                        laborCost: _double(laborCost.text),
+                        partsCost: _double(partsCost.text),
+                        downtimeHours: _double(downtime.text),
+                        hourMeterAtService: _double(hourMeter.text),
+                        odometerAtServiceKm: _double(odometer.text),
+                        nextServiceAt: nextServiceAt,
+                        nextServiceHourMeter: _double(nextHourMeter.text),
+                        nextServiceOdometerKm: _double(nextOdometer.text),
                         notes: notes.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                       ),
                     );
                   },
@@ -796,23 +641,16 @@ class _AtlasAssetMaintenanceScreenState
     }
   }
 
-  Future<void> _editUsage({
-    AtlasAssetUsageRecord? record,
-  }) async {
+  Future<void> _editUsage({AtlasAssetUsageRecord? record}) async {
     if (assets.isEmpty) {
       return;
     }
 
     var assetId = record?.assetId ?? assets.first.id;
-    var occurredAt =
-        record?.occurredAt ?? DateTime.now();
+    var occurredAt = record?.occurredAt ?? DateTime.now();
 
-    final operator = TextEditingController(
-      text: record?.operatorName ?? '',
-    );
-    final activity = TextEditingController(
-      text: record?.activity ?? '',
-    );
+    final operator = TextEditingController(text: record?.operatorName ?? '');
+    final activity = TextEditingController(text: record?.activity ?? '');
     final startHour = TextEditingController(
       text: record?.startHourMeter.toString() ?? '',
     );
@@ -834,11 +672,9 @@ class _AtlasAssetMaintenanceScreenState
     final area = TextEditingController(
       text: record?.areaWorkedHectares.toString() ?? '',
     );
-    final notes =
-        TextEditingController(text: record?.notes ?? '');
+    final notes = TextEditingController(text: record?.notes ?? '');
 
-    final result =
-        await showDialog<AtlasAssetUsageRecord>(
+    final result = await showDialog<AtlasAssetUsageRecord>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -870,9 +706,7 @@ class _AtlasAssetMaintenanceScreenState
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => assetId = value,
-                          );
+                          setDialogState(() => assetId = value);
                         }
                       },
                     ),
@@ -880,16 +714,14 @@ class _AtlasAssetMaintenanceScreenState
                     _row(
                       TextField(
                         controller: operator,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Operador',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       TextField(
                         controller: activity,
-                        decoration:
-                            const InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Atividade',
                           border: OutlineInputBorder(),
                         ),
@@ -897,57 +729,33 @@ class _AtlasAssetMaintenanceScreenState
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        startHour,
-                        'Horímetro inicial',
-                      ),
-                      _number(
-                        endHour,
-                        'Horímetro final',
-                      ),
+                      _number(startHour, 'Horímetro inicial'),
+                      _number(endHour, 'Horímetro final'),
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        startKm,
-                        'Odômetro inicial',
-                      ),
-                      _number(
-                        endKm,
-                        'Odômetro final',
-                      ),
+                      _number(startKm, 'Odômetro inicial'),
+                      _number(endKm, 'Odômetro final'),
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        fuel,
-                        'Combustível (L)',
-                      ),
-                      _number(
-                        lubricant,
-                        'Lubrificante (L)',
-                      ),
+                      _number(fuel, 'Combustível (L)'),
+                      _number(lubricant, 'Lubrificante (L)'),
                     ),
                     const SizedBox(height: 10),
-                    _number(
-                      area,
-                      'Área trabalhada (ha)',
-                    ),
+                    _number(area, 'Área trabalhada (ha)'),
                     _DateSelector(
                       title: 'Data',
                       date: occurredAt,
                       onSelect: () async {
-                        final selected =
-                            await showDatePicker(
+                        final selected = await showDatePicker(
                           context: dialogContext,
                           initialDate: occurredAt,
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
                         if (selected != null) {
-                          setDialogState(
-                            () => occurredAt = selected,
-                          );
+                          setDialogState(() => occurredAt = selected);
                         }
                       },
                     ),
@@ -964,8 +772,7 @@ class _AtlasAssetMaintenanceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -973,32 +780,23 @@ class _AtlasAssetMaintenanceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasAssetUsageRecord(
-                        id: record?.id ??
+                        id:
+                            record?.id ??
                             'asset_usage_'
                                 '${now.microsecondsSinceEpoch}',
                         assetId: assetId,
                         occurredAt: occurredAt,
-                        operatorName:
-                            operator.text.trim(),
-                        activity:
-                            activity.text.trim(),
-                        startHourMeter:
-                            _double(startHour.text),
-                        endHourMeter:
-                            _double(endHour.text),
-                        startOdometerKm:
-                            _double(startKm.text),
-                        endOdometerKm:
-                            _double(endKm.text),
-                        fuelLiters:
-                            _double(fuel.text),
-                        lubricantLiters:
-                            _double(lubricant.text),
-                        areaWorkedHectares:
-                            _double(area.text),
+                        operatorName: operator.text.trim(),
+                        activity: activity.text.trim(),
+                        startHourMeter: _double(startHour.text),
+                        endHourMeter: _double(endHour.text),
+                        startOdometerKm: _double(startKm.text),
+                        endOdometerKm: _double(endKm.text),
+                        fuelLiters: _double(fuel.text),
+                        lubricantLiters: _double(lubricant.text),
+                        areaWorkedHectares: _double(area.text),
                         notes: notes.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                       ),
                     );
                   },
@@ -1034,30 +832,22 @@ class _AtlasAssetMaintenanceScreenState
 
   @override
   Widget build(BuildContext context) {
-    final alerts = service.buildAlerts(
-      assets: assets,
-      orders: orders,
-    );
+    final alerts = service.buildAlerts(assets: assets, orders: orders);
     final costByAsset = service.maintenanceCostByAsset(
       assets: assets,
       orders: orders,
     );
-    final fuelByAsset =
-        service.fuelConsumptionByAsset(
+    final fuelByAsset = service.fuelConsumptionByAsset(
       assets: assets,
       usage: usage,
     );
-    final preventivePlan = service.preventivePlan(
-      orders: orders,
-    );
+    final preventivePlan = service.preventivePlan(orders: orders);
 
     return DefaultTabController(
       length: 8,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Máquinas, equipamentos e manutenção',
-          ),
+          title: const Text('Máquinas, equipamentos e manutenção'),
           actions: [
             IconButton(
               tooltip: 'Atualizar',
@@ -1068,85 +858,57 @@ class _AtlasAssetMaintenanceScreenState
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(
-                text: 'Painel',
-                icon: Icon(Icons.dashboard_outlined),
-              ),
-              Tab(
-                text: 'Ativos',
-                icon: Icon(Icons.agriculture_outlined),
-              ),
+              Tab(text: 'Painel', icon: Icon(Icons.dashboard_outlined)),
+              Tab(text: 'Ativos', icon: Icon(Icons.agriculture_outlined)),
               Tab(
                 text: 'Preventiva',
                 icon: Icon(Icons.event_available_outlined),
               ),
-              Tab(
-                text: 'Ordens',
-                icon: Icon(Icons.build_outlined),
-              ),
-              Tab(
-                text: 'Uso',
-                icon: Icon(Icons.timer_outlined),
-              ),
+              Tab(text: 'Ordens', icon: Icon(Icons.build_outlined)),
+              Tab(text: 'Uso', icon: Icon(Icons.timer_outlined)),
               Tab(
                 text: 'Combustível',
                 icon: Icon(Icons.local_gas_station_outlined),
               ),
-              Tab(
-                text: 'Custos',
-                icon: Icon(Icons.attach_money),
-              ),
-              Tab(
-                text: 'Alertas',
-                icon: Icon(Icons.warning_amber),
-              ),
+              Tab(text: 'Custos', icon: Icon(Icons.attach_money)),
+              Tab(text: 'Alertas', icon: Icon(Icons.warning_amber)),
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _editOrder(),
           icon: const Icon(Icons.add),
           label: const Text('Nova manutenção'),
         ),
-        body: isLoading &&
-                assets.isEmpty &&
-                orders.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+        body: isLoading && assets.isEmpty && orders.isEmpty
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _AssetSummaryTab(summary: summary),
                   _AssetsTab(
                     assets: assets,
                     onAdd: () => _editAsset(),
-                    onEdit: (asset) =>
-                        _editAsset(asset: asset),
+                    onEdit: (asset) => _editAsset(asset: asset),
                   ),
                   _PreventiveTab(
                     orders: preventivePlan,
                     assets: assets,
                     onAdd: () => _editOrder(
-                      initialType:
-                          AtlasMaintenanceType.preventive,
+                      initialType: AtlasMaintenanceType.preventive,
                     ),
-                    onEdit: (order) =>
-                        _editOrder(order: order),
+                    onEdit: (order) => _editOrder(order: order),
                   ),
                   _OrdersTab(
                     orders: orders,
                     assets: assets,
                     onAdd: () => _editOrder(),
-                    onEdit: (order) =>
-                        _editOrder(order: order),
+                    onEdit: (order) => _editOrder(order: order),
                   ),
                   _UsageTab(
                     usage: usage,
                     assets: assets,
                     onAdd: () => _editUsage(),
-                    onEdit: (record) =>
-                        _editUsage(record: record),
+                    onEdit: (record) => _editUsage(record: record),
                   ),
                   _FuelTab(
                     usage: usage,
@@ -1175,16 +937,10 @@ class _AtlasAssetMaintenanceScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -1195,9 +951,7 @@ class _AtlasAssetMaintenanceScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -1220,9 +974,7 @@ class _DateSelector extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(title),
       subtitle: Text(
-        date == null
-            ? 'Não informada'
-            : DateFormat('dd/MM/yyyy').format(date!),
+        date == null ? 'Não informada' : DateFormat('dd/MM/yyyy').format(date!),
       ),
       trailing: const Icon(Icons.calendar_month),
       onTap: onSelect,
@@ -1231,9 +983,7 @@ class _DateSelector extends StatelessWidget {
 }
 
 class _AssetSummaryTab extends StatelessWidget {
-  const _AssetSummaryTab({
-    required this.summary,
-  });
+  const _AssetSummaryTab({required this.summary});
 
   final AtlasAssetMaintenanceSummary summary;
 
@@ -1253,20 +1003,17 @@ class _AssetSummaryTab extends StatelessWidget {
             ),
             _MetricCard(
               title: 'Disponíveis',
-              value:
-                  summary.availableAssets.toDouble(),
+              value: summary.availableAssets.toDouble(),
               unit: '',
             ),
             _MetricCard(
               title: 'Em manutenção',
-              value: summary.assetsInMaintenance
-                  .toDouble(),
+              value: summary.assetsInMaintenance.toDouble(),
               unit: '',
             ),
             _MetricCard(
               title: 'Parados',
-              value:
-                  summary.stoppedAssets.toDouble(),
+              value: summary.stoppedAssets.toDouble(),
               unit: '',
             ),
             _MetricCard(
@@ -1276,38 +1023,32 @@ class _AssetSummaryTab extends StatelessWidget {
             ),
             _MetricCard(
               title: 'Ordens atrasadas',
-              value:
-                  summary.overdueOrders.toDouble(),
+              value: summary.overdueOrders.toDouble(),
               unit: '',
             ),
             _MetricCard(
               title: 'Custo mensal',
-              value:
-                  summary.monthlyMaintenanceCost,
+              value: summary.monthlyMaintenanceCost,
               unit: 'R\$',
             ),
             _MetricCard(
               title: 'Horas paradas',
-              value:
-                  summary.totalDowntimeHours,
+              value: summary.totalDowntimeHours,
               unit: 'h',
             ),
             _MetricCard(
               title: 'Combustível no mês',
-              value:
-                  summary.monthlyFuelLiters,
+              value: summary.monthlyFuelLiters,
               unit: 'L',
             ),
             _MetricCard(
               title: 'Consumo médio',
-              value:
-                  summary.averageFuelPerHour,
+              value: summary.averageFuelPerHour,
               unit: 'L/h',
             ),
             _MetricCard(
               title: 'Valor dos ativos',
-              value:
-                  summary.totalCurrentAssetValue,
+              value: summary.totalCurrentAssetValue,
               unit: 'R\$',
             ),
           ],
@@ -1345,21 +1086,11 @@ class _AssetsTab extends StatelessWidget {
         ),
         Expanded(
           child: assets.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum ativo cadastrado.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum ativo cadastrado.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: assets.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final asset = assets[index];
                     return Card(
@@ -1378,9 +1109,7 @@ class _AssetsTab extends StatelessWidget {
                         ),
                         trailing: Text(
                           'R\$ ${asset.currentValue.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ),
                     );
@@ -1432,37 +1161,25 @@ class _PreventiveTab extends StatelessWidget {
         Expanded(
           child: orders.isEmpty
               ? const Center(
-                  child: Text(
-                    'Nenhuma manutenção preventiva programada.',
-                  ),
+                  child: Text('Nenhuma manutenção preventiva programada.'),
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: orders.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final order = orders[index];
                     return Card(
                       child: ListTile(
                         onTap: () => onEdit(order),
-                        leading: const Icon(
-                          Icons.event_available_outlined,
-                        ),
+                        leading: const Icon(Icons.event_available_outlined),
                         title: Text(order.title),
                         subtitle: Text(
                           '${assetName(order.assetId)} • '
                           '${DateFormat('dd/MM/yyyy').format(order.scheduledAt)}',
                         ),
                         trailing: Text(
-                          atlasMaintenanceStatusLabel(
-                            order.status,
-                          ),
+                          atlasMaintenanceStatusLabel(order.status),
                         ),
                       ),
                     );
@@ -1513,29 +1230,17 @@ class _OrdersTab extends StatelessWidget {
         ),
         Expanded(
           child: orders.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhuma ordem de manutenção.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhuma ordem de manutenção.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: orders.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final order = orders[index];
                     return Card(
                       child: ListTile(
                         onTap: () => onEdit(order),
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.build),
-                        ),
+                        leading: const CircleAvatar(child: Icon(Icons.build)),
                         title: Text(order.title),
                         subtitle: Text(
                           '${assetName(order.assetId)} • '
@@ -1547,9 +1252,7 @@ class _OrdersTab extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             color: order.isOverdue
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .error
+                                ? Theme.of(context).colorScheme.error
                                 : null,
                           ),
                         ),
@@ -1602,21 +1305,11 @@ class _UsageTab extends StatelessWidget {
         ),
         Expanded(
           child: usage.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum registro de uso.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum registro de uso.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: usage.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final record = usage[index];
                     return Card(
@@ -1657,42 +1350,28 @@ class _FuelTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ordered = fuelByAsset.entries.toList()
-      ..sort(
-        (first, second) =>
-            second.value.compareTo(first.value),
-      );
+      ..sort((first, second) => second.value.compareTo(first.value));
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         const Text(
           'Consumo por ativo',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 8),
         if (ordered.isEmpty)
           const Card(
-            child: ListTile(
-              title: Text(
-                'Nenhum consumo registrado.',
-              ),
-            ),
+            child: ListTile(title: Text('Nenhum consumo registrado.')),
           ),
         ...ordered.map(
           (entry) => Card(
             child: ListTile(
-              leading: const Icon(
-                Icons.local_gas_station_outlined,
-              ),
+              leading: const Icon(Icons.local_gas_station_outlined),
               title: Text(entry.key),
               trailing: Text(
                 '${entry.value.toStringAsFixed(2)} L',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w900),
               ),
             ),
           ),
@@ -1700,23 +1379,22 @@ class _FuelTab extends StatelessWidget {
         const SizedBox(height: 18),
         const Text(
           'Eficiência recente',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 8),
-        ...usage.take(20).map(
-          (record) => Card(
-            child: ListTile(
-              title: Text(record.activity),
-              subtitle: Text(
-                '${record.litersPerHour.toStringAsFixed(2)} L/h • '
-                '${record.litersPerHectare.toStringAsFixed(2)} L/ha',
+        ...usage
+            .take(20)
+            .map(
+              (record) => Card(
+                child: ListTile(
+                  title: Text(record.activity),
+                  subtitle: Text(
+                    '${record.litersPerHour.toStringAsFixed(2)} L/h • '
+                    '${record.litersPerHectare.toStringAsFixed(2)} L/ha',
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
       ],
     );
   }
@@ -1736,10 +1414,7 @@ class _CostsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ordered = costByAsset.entries.toList()
-      ..sort(
-        (first, second) =>
-            second.value.compareTo(first.value),
-      );
+      ..sort((first, second) => second.value.compareTo(first.value));
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -1750,20 +1425,17 @@ class _CostsTab extends StatelessWidget {
           children: [
             _MetricCard(
               title: 'Manutenção no mês',
-              value:
-                  summary.monthlyMaintenanceCost,
+              value: summary.monthlyMaintenanceCost,
               unit: 'R\$',
             ),
             _MetricCard(
               title: 'Valor atual dos ativos',
-              value:
-                  summary.totalCurrentAssetValue,
+              value: summary.totalCurrentAssetValue,
               unit: 'R\$',
             ),
             _MetricCard(
               title: 'Horas improdutivas',
-              value:
-                  summary.totalDowntimeHours,
+              value: summary.totalDowntimeHours,
               unit: 'h',
             ),
           ],
@@ -1771,29 +1443,18 @@ class _CostsTab extends StatelessWidget {
         const SizedBox(height: 18),
         const Text(
           'Custos acumulados por ativo',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 8),
         if (ordered.isEmpty)
-          const Card(
-            child: ListTile(
-              title: Text(
-                'Nenhum custo registrado.',
-              ),
-            ),
-          ),
+          const Card(child: ListTile(title: Text('Nenhum custo registrado.'))),
         ...ordered.map(
           (entry) => Card(
             child: ListTile(
               title: Text(entry.key),
               trailing: Text(
                 'R\$ ${entry.value.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w900),
               ),
             ),
           ),
@@ -1801,10 +1462,7 @@ class _CostsTab extends StatelessWidget {
         const SizedBox(height: 18),
         const Text(
           'Depreciação patrimonial',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 8),
         ...assets.map(
@@ -1826,9 +1484,7 @@ class _CostsTab extends StatelessWidget {
 }
 
 class _AlertsTab extends StatelessWidget {
-  const _AlertsTab({
-    required this.alerts,
-  });
+  const _AlertsTab({required this.alerts});
 
   final List<String> alerts;
 
@@ -1837,13 +1493,10 @@ class _AlertsTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: alerts.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) => Card(
         child: ListTile(
-          leading: const Icon(
-            Icons.warning_amber_rounded,
-          ),
+          leading: const Icon(Icons.warning_amber_rounded),
           title: Text(alerts[index]),
         ),
       ),
@@ -1870,8 +1523,7 @@ class _MetricCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title),
               const SizedBox(height: 8),

@@ -30,14 +30,14 @@ class AtlasQualityCheck {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'description': description,
-        'category': category,
-        'completed': completed,
-        'critical': critical,
-        'completedAt': completedAt?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'category': category,
+    'completed': completed,
+    'critical': critical,
+    'completedAt': completedAt?.toIso8601String(),
+  };
 
   factory AtlasQualityCheck.fromJson(Map<String, dynamic> json) {
     return AtlasQualityCheck(
@@ -89,15 +89,15 @@ class AtlasQualityIncident {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'description': description,
-        'module': module,
-        'severity': severity,
-        'createdAt': createdAt.toIso8601String(),
-        'resolved': resolved,
-        'resolvedAt': resolvedAt?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'module': module,
+    'severity': severity,
+    'createdAt': createdAt.toIso8601String(),
+    'resolved': resolved,
+    'resolvedAt': resolvedAt?.toIso8601String(),
+  };
 
   factory AtlasQualityIncident.fromJson(Map<String, dynamic> json) {
     return AtlasQualityIncident(

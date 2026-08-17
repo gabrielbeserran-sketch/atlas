@@ -1,66 +1,57 @@
-enum AtlasAutomationModule {
-  drone,
-  iot,
-  managementAutomation,
-  workflow,
-}
+enum AtlasAutomationModule { drone, iot, managementAutomation, workflow }
 
 extension AtlasAutomationModuleX on AtlasAutomationModule {
   String get code => switch (this) {
-        AtlasAutomationModule.drone => 'drone',
-        AtlasAutomationModule.iot => 'iot',
-        AtlasAutomationModule.managementAutomation =>
-          'management_automation',
-        AtlasAutomationModule.workflow => 'workflow',
-      };
+    AtlasAutomationModule.drone => 'drone',
+    AtlasAutomationModule.iot => 'iot',
+    AtlasAutomationModule.managementAutomation => 'management_automation',
+    AtlasAutomationModule.workflow => 'workflow',
+  };
 
   String get title => switch (this) {
-        AtlasAutomationModule.drone => 'Drone Enterprise',
-        AtlasAutomationModule.iot => 'IoT Enterprise',
-        AtlasAutomationModule.managementAutomation =>
-          'Automação de Manejos',
-        AtlasAutomationModule.workflow =>
-          'Workflow Operacional',
-      };
+    AtlasAutomationModule.drone => 'Drone Enterprise',
+    AtlasAutomationModule.iot => 'IoT Enterprise',
+    AtlasAutomationModule.managementAutomation => 'Automação de Manejos',
+    AtlasAutomationModule.workflow => 'Workflow Operacional',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasAutomationModule.drone => 'Pacote 59',
-        AtlasAutomationModule.iot => 'Pacote 60',
-        AtlasAutomationModule.managementAutomation =>
-          'Pacote 61',
-        AtlasAutomationModule.workflow => 'Pacote 62',
-      };
+    AtlasAutomationModule.drone => 'Pacote 59',
+    AtlasAutomationModule.iot => 'Pacote 60',
+    AtlasAutomationModule.managementAutomation => 'Pacote 61',
+    AtlasAutomationModule.workflow => 'Pacote 62',
+  };
 
   List<String> get features => switch (this) {
-        AtlasAutomationModule.drone => const [
-            'Planejamento de voos',
-            'Contagem automática de animais',
-            'Inspeção de cercas',
-            'Inspeção de bebedouros',
-            'Mapeamento de pastagens',
-          ],
-        AtlasAutomationModule.iot => const [
-            'Sensores ambientais',
-            'Sensores de água',
-            'Sensores de ração',
-            'Colares inteligentes',
-            'Gateway IoT Atlas',
-          ],
-        AtlasAutomationModule.managementAutomation => const [
-            'Automação de manejos',
-            'Agenda automática',
-            'Protocolos inteligentes',
-            'Checklist digital',
-            'Aprovação eletrônica',
-          ],
-        AtlasAutomationModule.workflow => const [
-            'Workflow operacional',
-            'Auditoria automática',
-            'Controle de qualidade',
-            'Indicadores Lean',
-            'Gestão de processos',
-          ],
-      };
+    AtlasAutomationModule.drone => const [
+      'Planejamento de voos',
+      'Contagem automática de animais',
+      'Inspeção de cercas',
+      'Inspeção de bebedouros',
+      'Mapeamento de pastagens',
+    ],
+    AtlasAutomationModule.iot => const [
+      'Sensores ambientais',
+      'Sensores de água',
+      'Sensores de ração',
+      'Colares inteligentes',
+      'Gateway IoT Atlas',
+    ],
+    AtlasAutomationModule.managementAutomation => const [
+      'Automação de manejos',
+      'Agenda automática',
+      'Protocolos inteligentes',
+      'Checklist digital',
+      'Aprovação eletrônica',
+    ],
+    AtlasAutomationModule.workflow => const [
+      'Workflow operacional',
+      'Auditoria automática',
+      'Controle de qualidade',
+      'Indicadores Lean',
+      'Gestão de processos',
+    ],
+  };
 }
 
 class AtlasAutomationRecord {
@@ -133,9 +124,7 @@ class AtlasAutomationRecord {
     };
   }
 
-  factory AtlasAutomationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasAutomationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasAutomationModule.values.firstWhere(
@@ -150,18 +139,13 @@ class AtlasAutomationRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      deviceOrResponsible:
-          map['deviceOrResponsible']?.toString() ?? '',
+      deviceOrResponsible: map['deviceOrResponsible']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

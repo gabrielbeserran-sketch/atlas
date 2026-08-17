@@ -26,8 +26,7 @@ class AtlasRuralBusinessScreen extends StatefulWidget {
       _AtlasRuralBusinessScreenState();
 }
 
-class _AtlasRuralBusinessScreenState
-    extends State<AtlasRuralBusinessScreen> {
+class _AtlasRuralBusinessScreenState extends State<AtlasRuralBusinessScreen> {
   final AtlasRuralBusinessStorageService storage =
       AtlasRuralBusinessStorageService();
   final AtlasRuralBusinessAnalyticsService analyticsService =
@@ -78,30 +77,26 @@ class _AtlasRuralBusinessScreenState
   }
 
   List<AtlasRuralBusinessRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasRuralBusinessRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasRuralBusinessRecord? current]) async {
     final result = await showDialog<AtlasRuralBusinessRecord>(
       context: context,
-      builder: (context) => _RuralBusinessForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _RuralBusinessForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +110,7 @@ class _AtlasRuralBusinessScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasRuralBusinessRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasRuralBusinessRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +118,11 @@ class _AtlasRuralBusinessScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -173,12 +164,9 @@ class _AtlasRuralBusinessScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -223,8 +211,7 @@ class _AtlasRuralBusinessScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -245,8 +232,7 @@ class _AtlasRuralBusinessScreenState
                           EnterpriseMetricCard(
                             title: 'Operacionais',
                             value: '${analytics.operationalCount}',
-                            subtitle:
-                                'Aprovados, assinados ou concluídos',
+                            subtitle: 'Aprovados, assinados ou concluídos',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -258,8 +244,7 @@ class _AtlasRuralBusinessScreenState
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Vencimentos e situações críticas',
+                            subtitle: 'Vencimentos e situações críticas',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -275,8 +260,7 @@ class _AtlasRuralBusinessScreenState
                             value:
                                 'R\$ ${analytics.netAmount.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Após custos informados',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -309,12 +293,8 @@ class _AtlasRuralBusinessScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro processo ou negociação.',
                             ),
@@ -325,8 +305,7 @@ class _AtlasRuralBusinessScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -340,10 +319,7 @@ class _AtlasRuralBusinessScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasRuralBusinessModule selected;
   final ValueChanged<AtlasRuralBusinessModule> onSelected;
@@ -354,34 +330,32 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasRuralBusinessModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasRuralBusinessModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right:
-                        module == AtlasRuralBusinessModule.values.last
-                            ? 0
-                            : 8,
-                  ),
-                  child: FilledButton.tonalIcon(
-                    onPressed: () => onSelected(module),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: active
-                          ? const Color(0xFF1B5E20)
-                          : null,
-                      foregroundColor:
-                          active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasRuralBusinessModule.values.last
+                          ? 0
+                          : 8,
                     ),
-                    icon: Icon(_moduleIcon(module)),
-                    label: Text(module.packageLabel),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                ),
-              );
-            },
-          ).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -406,13 +380,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -431,24 +407,21 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Rejeitado' || 'Vencido' || 'Cancelado' =>
-        Colors.red.shade800,
+      'Rejeitado' || 'Vencido' || 'Cancelado' => Colors.red.shade800,
       'Atenção' || 'Sinistro' => Colors.orange.shade800,
-      'Aprovado' || 'Contratado' || 'Assinado' ||
-      'Publicado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Aprovado' ||
+      'Contratado' ||
+      'Assinado' ||
+      'Publicado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -465,14 +438,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -481,21 +448,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _RuralBusinessForm extends StatefulWidget {
-  const _RuralBusinessForm({
-    required this.module,
-    this.current,
-  });
+  const _RuralBusinessForm({required this.module, this.current});
 
   final AtlasRuralBusinessModule module;
   final AtlasRuralBusinessRecord? current;
 
   @override
-  State<_RuralBusinessForm> createState() =>
-      _RuralBusinessFormState();
+  State<_RuralBusinessForm> createState() => _RuralBusinessFormState();
 }
 
-class _RuralBusinessFormState
-    extends State<_RuralBusinessForm> {
+class _RuralBusinessFormState extends State<_RuralBusinessForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -526,15 +488,10 @@ class _RuralBusinessFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasRuralBusinessDate(DateTime.now()),
+      text: current?.date ?? formatAtlasRuralBusinessDate(DateTime.now()),
     );
-    counterparty = TextEditingController(
-      text: current?.counterparty ?? '',
-    );
-    externalId = TextEditingController(
-      text: current?.externalId ?? '',
-    );
+    counterparty = TextEditingController(text: current?.counterparty ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
     amount = TextEditingController(
       text: current == null || current.amount == 0
           ? ''
@@ -556,24 +513,16 @@ class _RuralBusinessFormState
           : current.termDays.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -595,37 +544,27 @@ class _RuralBusinessFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
-    final parsed =
-        parseAtlasRuralBusinessDate(controller.text);
+  Future<void> chooseDate(TextEditingController controller) async {
+    final parsed = parseAtlasRuralBusinessDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasRuralBusinessDate(selected);
+      controller.text = formatAtlasRuralBusinessDate(selected);
     });
   }
 
@@ -638,7 +577,8 @@ class _RuralBusinessFormState
     Navigator.pop(
       context,
       AtlasRuralBusinessRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'rural_business_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -651,8 +591,7 @@ class _RuralBusinessFormState
         costAmount: decimal(costAmount),
         quantity: _maxZero(integer(quantity)),
         termDays: _maxZero(integer(termDays)),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -668,11 +607,7 @@ class _RuralBusinessFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -687,10 +622,8 @@ class _RuralBusinessFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -701,12 +634,9 @@ class _RuralBusinessFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -718,38 +648,35 @@ class _RuralBusinessFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Em negociação',
-                    'Aprovado',
-                    'Contratado',
-                    'Assinado',
-                    'Publicado',
-                    'Concluído',
-                    'Atenção',
-                    'Rejeitado',
-                    'Vencido',
-                    'Cancelado',
-                    'Sinistro',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Em negociação',
+                            'Aprovado',
+                            'Contratado',
+                            'Assinado',
+                            'Publicado',
+                            'Concluído',
+                            'Atenção',
+                            'Rejeitado',
+                            'Vencido',
+                            'Cancelado',
+                            'Sinistro',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -766,14 +693,12 @@ class _RuralBusinessFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Proposta, contrato, apólice ou anúncio',
+                    labelText: 'Proposta, contrato, apólice ou anúncio',
                   ),
                 ),
                 TextFormField(
                   controller: amount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -782,21 +707,18 @@ class _RuralBusinessFormState
                 ),
                 TextFormField(
                   controller: costAmount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Custos, juros, prêmio ou taxas (R\$)',
+                    labelText: 'Custos, juros, prêmio ou taxas (R\$)',
                   ),
                 ),
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Quantidade de itens, animais ou parcelas',
+                    labelText: 'Quantidade de itens, animais ou parcelas',
                   ),
                 ),
                 TextFormField(
@@ -826,25 +748,20 @@ class _RuralBusinessFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Vencimento ou prazo',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, arquivo, link ou referência',
+                    labelText: 'Documento, arquivo, link ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -856,26 +773,17 @@ class _RuralBusinessFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasRuralBusinessModule module,
-) {
+IconData _moduleIcon(AtlasRuralBusinessModule module) {
   return switch (module) {
-    AtlasRuralBusinessModule.ruralCredit =>
-      Icons.request_quote_outlined,
-    AtlasRuralBusinessModule.ruralInsurance =>
-      Icons.shield_outlined,
-    AtlasRuralBusinessModule.digitalContracts =>
-      Icons.draw_outlined,
-    AtlasRuralBusinessModule.livestockMarketplace =>
-      Icons.storefront_outlined,
+    AtlasRuralBusinessModule.ruralCredit => Icons.request_quote_outlined,
+    AtlasRuralBusinessModule.ruralInsurance => Icons.shield_outlined,
+    AtlasRuralBusinessModule.digitalContracts => Icons.draw_outlined,
+    AtlasRuralBusinessModule.livestockMarketplace => Icons.storefront_outlined,
   };
 }

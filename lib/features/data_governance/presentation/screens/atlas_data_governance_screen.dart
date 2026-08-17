@@ -85,7 +85,9 @@ class _AtlasDataGovernanceScreenState extends State<AtlasDataGovernanceScreen> {
     setState(() => _working = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Backup restaurado. Reabra as telas para atualizar os dados.'),
+        content: Text(
+          'Backup restaurado. Reabra as telas para atualizar os dados.',
+        ),
       ),
     );
   }
@@ -143,8 +145,8 @@ class _AtlasDataGovernanceScreenState extends State<AtlasDataGovernanceScreen> {
                   Text(
                     'Histórico de backups',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   if (_backups.isEmpty)
@@ -219,7 +221,10 @@ class _AtlasDataGovernanceScreenState extends State<AtlasDataGovernanceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 3),
           Text(label),
         ],
@@ -243,7 +248,9 @@ class _AtlasDataGovernanceScreenState extends State<AtlasDataGovernanceScreen> {
               (check) => ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(
-                  check.passed ? Icons.check_circle : Icons.warning_amber_rounded,
+                  check.passed
+                      ? Icons.check_circle
+                      : Icons.warning_amber_rounded,
                   color: check.passed ? Colors.green : Colors.orange,
                 ),
                 title: Text(check.title),

@@ -1,9 +1,4 @@
-enum AtlasWorkShiftStatus {
-  planned,
-  completed,
-  absent,
-  cancelled,
-}
+enum AtlasWorkShiftStatus { planned, completed, absent, cancelled }
 
 String atlasWorkShiftStatusLabel(AtlasWorkShiftStatus value) {
   switch (value) {
@@ -41,33 +36,28 @@ class AtlasWorkShift {
   final String? farmName;
   final String notes;
 
-  double get plannedHours =>
-      endAt.difference(startAt).inMinutes / 60;
+  double get plannedHours => endAt.difference(startAt).inMinutes / 60;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'memberId': memberId,
-        'startAt': startAt.toIso8601String(),
-        'endAt': endAt.toIso8601String(),
-        'activity': activity,
-        'location': location,
-        'status': status.name,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'memberId': memberId,
+    'startAt': startAt.toIso8601String(),
+    'endAt': endAt.toIso8601String(),
+    'activity': activity,
+    'location': location,
+    'status': status.name,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
   factory AtlasWorkShift.fromMap(Map<String, dynamic> map) {
     return AtlasWorkShift(
       id: map['id']?.toString() ?? '',
       memberId: map['memberId']?.toString() ?? '',
-      startAt: DateTime.tryParse(
-            map['startAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(
-            map['endAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ?? DateTime.now(),
       activity: map['activity']?.toString() ?? '',
       location: map['location']?.toString() ?? '',
       status: AtlasWorkShiftStatus.values.firstWhere(
@@ -107,31 +97,27 @@ class AtlasTrainingRecord {
       validUntil != null && validUntil!.isBefore(DateTime.now());
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'memberId': memberId,
-        'title': title,
-        'completedAt': completedAt.toIso8601String(),
-        'validUntil': validUntil?.toIso8601String(),
-        'scorePercent': scorePercent,
-        'certificate': certificate,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'memberId': memberId,
+    'title': title,
+    'completedAt': completedAt.toIso8601String(),
+    'validUntil': validUntil?.toIso8601String(),
+    'scorePercent': scorePercent,
+    'certificate': certificate,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
   factory AtlasTrainingRecord.fromMap(Map<String, dynamic> map) {
     return AtlasTrainingRecord(
       id: map['id']?.toString() ?? '',
       memberId: map['memberId']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
-      completedAt: DateTime.tryParse(
-            map['completedAt']?.toString() ?? '',
-          ) ??
+      completedAt:
+          DateTime.tryParse(map['completedAt']?.toString() ?? '') ??
           DateTime.now(),
-      validUntil: DateTime.tryParse(
-        map['validUntil']?.toString() ?? '',
-      ),
-      scorePercent:
-          (map['scorePercent'] as num?)?.toDouble() ?? 0,
+      validUntil: DateTime.tryParse(map['validUntil']?.toString() ?? ''),
+      scorePercent: (map['scorePercent'] as num?)?.toDouble() ?? 0,
       certificate: map['certificate']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
@@ -163,36 +149,29 @@ class AtlasPerformanceReview {
   final String? farmName;
 
   double get overallScore =>
-      (productivityPercent +
-          qualityPercent +
-          safetyPercent +
-          teamworkPercent) /
+      (productivityPercent + qualityPercent + safetyPercent + teamworkPercent) /
       4;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'memberId': memberId,
-        'reviewedAt': reviewedAt.toIso8601String(),
-        'productivityPercent': productivityPercent,
-        'qualityPercent': qualityPercent,
-        'safetyPercent': safetyPercent,
-        'teamworkPercent': teamworkPercent,
-        'managerNotes': managerNotes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'memberId': memberId,
+    'reviewedAt': reviewedAt.toIso8601String(),
+    'productivityPercent': productivityPercent,
+    'qualityPercent': qualityPercent,
+    'safetyPercent': safetyPercent,
+    'teamworkPercent': teamworkPercent,
+    'managerNotes': managerNotes,
+    'farmName': farmName,
+  };
 
-  factory AtlasPerformanceReview.fromMap(
-    Map<String, dynamic> map,
-  ) {
-    double value(String key) =>
-        (map[key] as num?)?.toDouble() ?? 0;
+  factory AtlasPerformanceReview.fromMap(Map<String, dynamic> map) {
+    double value(String key) => (map[key] as num?)?.toDouble() ?? 0;
 
     return AtlasPerformanceReview(
       id: map['id']?.toString() ?? '',
       memberId: map['memberId']?.toString() ?? '',
-      reviewedAt: DateTime.tryParse(
-            map['reviewedAt']?.toString() ?? '',
-          ) ??
+      reviewedAt:
+          DateTime.tryParse(map['reviewedAt']?.toString() ?? '') ??
           DateTime.now(),
       productivityPercent: value('productivityPercent'),
       qualityPercent: value('qualityPercent'),

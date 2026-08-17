@@ -8,11 +8,7 @@ enum AtlasActionAttentionType {
   blocked,
 }
 
-enum AtlasActionAttentionSeverity {
-  information,
-  warning,
-  critical,
-}
+enum AtlasActionAttentionSeverity { information, warning, critical }
 
 class AtlasActionAttention {
   const AtlasActionAttention({
@@ -36,9 +32,7 @@ class AtlasActionAttention {
   final DateTime detectedAt;
 }
 
-String atlasActionAttentionTypeLabel(
-  AtlasActionAttentionType type,
-) {
+String atlasActionAttentionTypeLabel(AtlasActionAttentionType type) {
   switch (type) {
     case AtlasActionAttentionType.overdue:
       return 'Atrasada';

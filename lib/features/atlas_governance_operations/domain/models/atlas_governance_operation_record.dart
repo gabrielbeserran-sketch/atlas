@@ -6,83 +6,69 @@ enum AtlasGovernanceOperationModule {
   trainingAcademy,
 }
 
-extension AtlasGovernanceOperationModuleX
-    on AtlasGovernanceOperationModule {
+extension AtlasGovernanceOperationModuleX on AtlasGovernanceOperationModule {
   String get code => switch (this) {
-        AtlasGovernanceOperationModule.qualityManagement =>
-          'quality_management',
-        AtlasGovernanceOperationModule.compliance => 'compliance',
-        AtlasGovernanceOperationModule.projectPortfolio =>
-          'project_portfolio',
-        AtlasGovernanceOperationModule.workforceManagement =>
-          'workforce_management',
-        AtlasGovernanceOperationModule.trainingAcademy =>
-          'training_academy',
-      };
+    AtlasGovernanceOperationModule.qualityManagement => 'quality_management',
+    AtlasGovernanceOperationModule.compliance => 'compliance',
+    AtlasGovernanceOperationModule.projectPortfolio => 'project_portfolio',
+    AtlasGovernanceOperationModule.workforceManagement =>
+      'workforce_management',
+    AtlasGovernanceOperationModule.trainingAcademy => 'training_academy',
+  };
 
   String get title => switch (this) {
-        AtlasGovernanceOperationModule.qualityManagement =>
-          'Gestão da Qualidade',
-        AtlasGovernanceOperationModule.compliance =>
-          'Compliance Enterprise',
-        AtlasGovernanceOperationModule.projectPortfolio =>
-          'Portfólio de Projetos',
-        AtlasGovernanceOperationModule.workforceManagement =>
-          'Gestão de Equipes',
-        AtlasGovernanceOperationModule.trainingAcademy =>
-          'Academia Atlas',
-      };
+    AtlasGovernanceOperationModule.qualityManagement => 'Gestão da Qualidade',
+    AtlasGovernanceOperationModule.compliance => 'Compliance Enterprise',
+    AtlasGovernanceOperationModule.projectPortfolio => 'Portfólio de Projetos',
+    AtlasGovernanceOperationModule.workforceManagement => 'Gestão de Equipes',
+    AtlasGovernanceOperationModule.trainingAcademy => 'Academia Atlas',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasGovernanceOperationModule.qualityManagement =>
-          'Pacote 84',
-        AtlasGovernanceOperationModule.compliance =>
-          'Pacote 85',
-        AtlasGovernanceOperationModule.projectPortfolio =>
-          'Pacote 86',
-        AtlasGovernanceOperationModule.workforceManagement =>
-          'Pacote 87',
-        AtlasGovernanceOperationModule.trainingAcademy =>
-          'Pacote 88',
-      };
+    AtlasGovernanceOperationModule.qualityManagement => 'Pacote 84',
+    AtlasGovernanceOperationModule.compliance => 'Pacote 85',
+    AtlasGovernanceOperationModule.projectPortfolio => 'Pacote 86',
+    AtlasGovernanceOperationModule.workforceManagement => 'Pacote 87',
+    AtlasGovernanceOperationModule.trainingAcademy => 'Pacote 88',
+  };
 
   List<String> get features => switch (this) {
-        AtlasGovernanceOperationModule.qualityManagement => const [
-            'Padrões e procedimentos',
-            'Inspeções e auditorias',
-            'Não conformidades',
-            'Ações corretivas',
-            'Indicadores da qualidade',
-          ],
-        AtlasGovernanceOperationModule.compliance => const [
-            'Políticas e controles',
-            'Mapa de riscos',
-            'Evidências e auditoria',
-            'Planos de adequação',
-            'Canal de ocorrências',
-          ],
-        AtlasGovernanceOperationModule.projectPortfolio => const [
-            'Ideias e demandas',
-            'Planejamento de projetos',
-            'Marcos e entregas',
-            'Orçamento e recursos',
-            'Riscos e benefícios',
-          ],
-        AtlasGovernanceOperationModule.workforceManagement => const [
-            'Cadastro de equipes',
-            'Escalas e jornadas',
-            'Metas e desempenho',
-            'Ocorrências e feedback',
-            'Capacidade operacional',
-          ],
-        AtlasGovernanceOperationModule.trainingAcademy => const [
-            'Trilhas de aprendizagem',
-            'Cursos e conteúdos',
-            'Avaliações e provas',
-            'Certificados',
-            'Plano de desenvolvimento',
-          ],
-      };
+    AtlasGovernanceOperationModule.qualityManagement => const [
+      'Padrões e procedimentos',
+      'Inspeções e auditorias',
+      'Não conformidades',
+      'Ações corretivas',
+      'Indicadores da qualidade',
+    ],
+    AtlasGovernanceOperationModule.compliance => const [
+      'Políticas e controles',
+      'Mapa de riscos',
+      'Evidências e auditoria',
+      'Planos de adequação',
+      'Canal de ocorrências',
+    ],
+    AtlasGovernanceOperationModule.projectPortfolio => const [
+      'Ideias e demandas',
+      'Planejamento de projetos',
+      'Marcos e entregas',
+      'Orçamento e recursos',
+      'Riscos e benefícios',
+    ],
+    AtlasGovernanceOperationModule.workforceManagement => const [
+      'Cadastro de equipes',
+      'Escalas e jornadas',
+      'Metas e desempenho',
+      'Ocorrências e feedback',
+      'Capacidade operacional',
+    ],
+    AtlasGovernanceOperationModule.trainingAcademy => const [
+      'Trilhas de aprendizagem',
+      'Cursos e conteúdos',
+      'Avaliações e provas',
+      'Certificados',
+      'Plano de desenvolvimento',
+    ],
+  };
 }
 
 class AtlasGovernanceOperationRecord {
@@ -178,16 +164,12 @@ class AtlasGovernanceOperationRecord {
     };
   }
 
-  factory AtlasGovernanceOperationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasGovernanceOperationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasGovernanceOperationModule.values.firstWhere(
+    final module = AtlasGovernanceOperationModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasGovernanceOperationModule.qualityManagement,
+      orElse: () => AtlasGovernanceOperationModule.qualityManagement,
     );
 
     return AtlasGovernanceOperationRecord(
@@ -200,15 +182,11 @@ class AtlasGovernanceOperationRecord {
       responsible: map['responsible']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-      costAmount:
-          (map['costAmount'] as num?)?.toDouble() ?? 0.0,
+      costAmount: (map['costAmount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      scoreValue:
-          (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      scoreValue: (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

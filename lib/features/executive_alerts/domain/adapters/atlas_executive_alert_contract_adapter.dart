@@ -15,10 +15,8 @@ class AtlasExecutiveAlertContractAdapter {
   }) {
     return summary.alerts
         .map(
-          (alert) => fromAlert(
-            alert,
-            farmId: farmIdsByName[alert.farmName] ?? '',
-          ),
+          (alert) =>
+              fromAlert(alert, farmId: farmIdsByName[alert.farmName] ?? ''),
         )
         .toList(growable: false);
   }
@@ -29,9 +27,7 @@ class AtlasExecutiveAlertContractAdapter {
   }) {
     final dueAt = alert.responseDeadlineDays < 0
         ? null
-        : alert.generatedAt.add(
-            Duration(days: alert.responseDeadlineDays),
-          );
+        : alert.generatedAt.add(Duration(days: alert.responseDeadlineDays));
 
     return AtlasAlertContract(
       id: alert.id,

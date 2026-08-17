@@ -33,13 +33,7 @@ String atlasAssetTypeLabel(AtlasAssetType type) {
   }
 }
 
-enum AtlasAssetStatus {
-  available,
-  inUse,
-  maintenance,
-  stopped,
-  retired,
-}
+enum AtlasAssetStatus { available, inUse, maintenance, stopped, retired }
 
 String atlasAssetStatusLabel(AtlasAssetStatus status) {
   switch (status) {
@@ -102,9 +96,8 @@ class AtlasFarmAsset {
   double get depreciationValue =>
       (purchaseValue - currentValue).clamp(0, double.infinity);
 
-  double get depreciationPercent => purchaseValue <= 0
-      ? 0
-      : depreciationValue / purchaseValue * 100;
+  double get depreciationPercent =>
+      purchaseValue <= 0 ? 0 : depreciationValue / purchaseValue * 100;
 
   AtlasFarmAsset copyWith({
     String? code,
@@ -136,8 +129,7 @@ class AtlasFarmAsset {
       model: model ?? this.model,
       serialNumber: serialNumber ?? this.serialNumber,
       year: year ?? this.year,
-      purchaseAt:
-          clearPurchaseAt ? null : purchaseAt ?? this.purchaseAt,
+      purchaseAt: clearPurchaseAt ? null : purchaseAt ?? this.purchaseAt,
       purchaseValue: purchaseValue ?? this.purchaseValue,
       currentValue: currentValue ?? this.currentValue,
       hourMeter: hourMeter ?? this.hourMeter,
@@ -151,26 +143,26 @@ class AtlasFarmAsset {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'code': code,
-        'name': name,
-        'type': type.name,
-        'status': status.name,
-        'brand': brand,
-        'model': model,
-        'serialNumber': serialNumber,
-        'year': year,
-        'purchaseAt': purchaseAt?.toIso8601String(),
-        'purchaseValue': purchaseValue,
-        'currentValue': currentValue,
-        'hourMeter': hourMeter,
-        'odometerKm': odometerKm,
-        'location': location,
-        'responsibleName': responsibleName,
-        'notes': notes,
-        'farmName': farmName,
-        'active': active,
-      };
+    'id': id,
+    'code': code,
+    'name': name,
+    'type': type.name,
+    'status': status.name,
+    'brand': brand,
+    'model': model,
+    'serialNumber': serialNumber,
+    'year': year,
+    'purchaseAt': purchaseAt?.toIso8601String(),
+    'purchaseValue': purchaseValue,
+    'currentValue': currentValue,
+    'hourMeter': hourMeter,
+    'odometerKm': odometerKm,
+    'location': location,
+    'responsibleName': responsibleName,
+    'notes': notes,
+    'farmName': farmName,
+    'active': active,
+  };
 
   factory AtlasFarmAsset.fromMap(Map<String, dynamic> map) {
     return AtlasFarmAsset(
@@ -189,16 +181,13 @@ class AtlasFarmAsset {
       model: map['model']?.toString() ?? '',
       serialNumber: map['serialNumber']?.toString() ?? '',
       year: _readInt(map['year']),
-      purchaseAt: DateTime.tryParse(
-        map['purchaseAt']?.toString() ?? '',
-      ),
+      purchaseAt: DateTime.tryParse(map['purchaseAt']?.toString() ?? ''),
       purchaseValue: _readDouble(map['purchaseValue']),
       currentValue: _readDouble(map['currentValue']),
       hourMeter: _readDouble(map['hourMeter']),
       odometerKm: _readDouble(map['odometerKm']),
       location: map['location']?.toString() ?? '',
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
@@ -255,9 +244,7 @@ enum AtlasMaintenanceStatus {
   overdue,
 }
 
-String atlasMaintenanceStatusLabel(
-  AtlasMaintenanceStatus status,
-) {
+String atlasMaintenanceStatusLabel(AtlasMaintenanceStatus status) {
   switch (status) {
     case AtlasMaintenanceStatus.planned:
       return 'Planejada';
@@ -330,32 +317,30 @@ class AtlasMaintenanceOrder {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'assetId': assetId,
-        'type': type.name,
-        'status': status.name,
-        'title': title,
-        'description': description,
-        'scheduledAt': scheduledAt.toIso8601String(),
-        'startedAt': startedAt?.toIso8601String(),
-        'completedAt': completedAt?.toIso8601String(),
-        'responsibleName': responsibleName,
-        'supplierName': supplierName,
-        'laborCost': laborCost,
-        'partsCost': partsCost,
-        'downtimeHours': downtimeHours,
-        'hourMeterAtService': hourMeterAtService,
-        'odometerAtServiceKm': odometerAtServiceKm,
-        'nextServiceAt': nextServiceAt?.toIso8601String(),
-        'nextServiceHourMeter': nextServiceHourMeter,
-        'nextServiceOdometerKm': nextServiceOdometerKm,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'assetId': assetId,
+    'type': type.name,
+    'status': status.name,
+    'title': title,
+    'description': description,
+    'scheduledAt': scheduledAt.toIso8601String(),
+    'startedAt': startedAt?.toIso8601String(),
+    'completedAt': completedAt?.toIso8601String(),
+    'responsibleName': responsibleName,
+    'supplierName': supplierName,
+    'laborCost': laborCost,
+    'partsCost': partsCost,
+    'downtimeHours': downtimeHours,
+    'hourMeterAtService': hourMeterAtService,
+    'odometerAtServiceKm': odometerAtServiceKm,
+    'nextServiceAt': nextServiceAt?.toIso8601String(),
+    'nextServiceHourMeter': nextServiceHourMeter,
+    'nextServiceOdometerKm': nextServiceOdometerKm,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasMaintenanceOrder.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasMaintenanceOrder.fromMap(Map<String, dynamic> map) {
     return AtlasMaintenanceOrder(
       id: map['id']?.toString() ?? '',
       assetId: map['assetId']?.toString() ?? '',
@@ -369,33 +354,21 @@ class AtlasMaintenanceOrder {
       ),
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      scheduledAt: DateTime.tryParse(
-            map['scheduledAt']?.toString() ?? '',
-          ) ??
+      scheduledAt:
+          DateTime.tryParse(map['scheduledAt']?.toString() ?? '') ??
           DateTime.now(),
-      startedAt: DateTime.tryParse(
-        map['startedAt']?.toString() ?? '',
-      ),
-      completedAt: DateTime.tryParse(
-        map['completedAt']?.toString() ?? '',
-      ),
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      startedAt: DateTime.tryParse(map['startedAt']?.toString() ?? ''),
+      completedAt: DateTime.tryParse(map['completedAt']?.toString() ?? ''),
+      responsibleName: map['responsibleName']?.toString() ?? '',
       supplierName: map['supplierName']?.toString() ?? '',
       laborCost: _readDouble(map['laborCost']),
       partsCost: _readDouble(map['partsCost']),
       downtimeHours: _readDouble(map['downtimeHours']),
-      hourMeterAtService:
-          _readDouble(map['hourMeterAtService']),
-      odometerAtServiceKm:
-          _readDouble(map['odometerAtServiceKm']),
-      nextServiceAt: DateTime.tryParse(
-        map['nextServiceAt']?.toString() ?? '',
-      ),
-      nextServiceHourMeter:
-          _readDouble(map['nextServiceHourMeter']),
-      nextServiceOdometerKm:
-          _readDouble(map['nextServiceOdometerKm']),
+      hourMeterAtService: _readDouble(map['hourMeterAtService']),
+      odometerAtServiceKm: _readDouble(map['odometerAtServiceKm']),
+      nextServiceAt: DateTime.tryParse(map['nextServiceAt']?.toString() ?? ''),
+      nextServiceHourMeter: _readDouble(map['nextServiceHourMeter']),
+      nextServiceOdometerKm: _readDouble(map['nextServiceOdometerKm']),
       notes: map['notes']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
     );
@@ -446,42 +419,36 @@ class AtlasAssetUsageRecord {
       (endHourMeter - startHourMeter).clamp(0, double.infinity);
 
   double get traveledKm =>
-      (endOdometerKm - startOdometerKm)
-          .clamp(0, double.infinity);
+      (endOdometerKm - startOdometerKm).clamp(0, double.infinity);
 
-  double get litersPerHour =>
-      workedHours <= 0 ? 0 : fuelLiters / workedHours;
+  double get litersPerHour => workedHours <= 0 ? 0 : fuelLiters / workedHours;
 
-  double get litersPerHectare => areaWorkedHectares <= 0
-      ? 0
-      : fuelLiters / areaWorkedHectares;
+  double get litersPerHectare =>
+      areaWorkedHectares <= 0 ? 0 : fuelLiters / areaWorkedHectares;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'assetId': assetId,
-        'occurredAt': occurredAt.toIso8601String(),
-        'operatorName': operatorName,
-        'activity': activity,
-        'startHourMeter': startHourMeter,
-        'endHourMeter': endHourMeter,
-        'startOdometerKm': startOdometerKm,
-        'endOdometerKm': endOdometerKm,
-        'fuelLiters': fuelLiters,
-        'lubricantLiters': lubricantLiters,
-        'areaWorkedHectares': areaWorkedHectares,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'assetId': assetId,
+    'occurredAt': occurredAt.toIso8601String(),
+    'operatorName': operatorName,
+    'activity': activity,
+    'startHourMeter': startHourMeter,
+    'endHourMeter': endHourMeter,
+    'startOdometerKm': startOdometerKm,
+    'endOdometerKm': endOdometerKm,
+    'fuelLiters': fuelLiters,
+    'lubricantLiters': lubricantLiters,
+    'areaWorkedHectares': areaWorkedHectares,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasAssetUsageRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasAssetUsageRecord.fromMap(Map<String, dynamic> map) {
     return AtlasAssetUsageRecord(
       id: map['id']?.toString() ?? '',
       assetId: map['assetId']?.toString() ?? '',
-      occurredAt: DateTime.tryParse(
-            map['occurredAt']?.toString() ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
           DateTime.now(),
       operatorName: map['operatorName']?.toString() ?? '',
       activity: map['activity']?.toString() ?? '',
@@ -491,8 +458,7 @@ class AtlasAssetUsageRecord {
       endOdometerKm: _readDouble(map['endOdometerKm']),
       fuelLiters: _readDouble(map['fuelLiters']),
       lubricantLiters: _readDouble(map['lubricantLiters']),
-      areaWorkedHectares:
-          _readDouble(map['areaWorkedHectares']),
+      areaWorkedHectares: _readDouble(map['areaWorkedHectares']),
       notes: map['notes']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
     );

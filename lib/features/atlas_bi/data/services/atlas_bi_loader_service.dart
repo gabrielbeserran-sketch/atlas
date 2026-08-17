@@ -16,10 +16,7 @@ class AtlasBiLoaderService {
     required AtlasStrategyData strategy,
   }) {
     return AtlasBiInput(
-      indicators: _buildIndicators(
-        kpis: kpis,
-        history: kpiHistory,
-      ),
+      indicators: _buildIndicators(kpis: kpis, history: kpiHistory),
       insights: _buildInsights(
         kpis: kpis,
         kpiHistory: kpiHistory,
@@ -40,21 +37,16 @@ class AtlasBiLoaderService {
     };
 
     return kpis.kpis.map((kpi) {
-      final series = historyByKey[
-          '${kpi.farmName}::${kpi.id}'];
+      final series = historyByKey['${kpi.farmName}::${kpi.id}'];
 
-      final points = series?.points.map((point) {
+      final points =
+          series?.points.map((point) {
             return AtlasBiSeriesPoint(
               recordedAt: point.recordedAt,
               value: point.value,
             );
           }).toList() ??
-          [
-            AtlasBiSeriesPoint(
-              recordedAt: kpi.generatedAt,
-              value: kpi.value,
-            ),
-          ];
+          [AtlasBiSeriesPoint(recordedAt: kpi.generatedAt, value: kpi.value)];
 
       return AtlasBiIndicatorInput(
         id: kpi.id,
@@ -66,8 +58,7 @@ class AtlasBiLoaderService {
         currentValue: kpi.value,
         targetValue: kpi.targetValue,
         higherIsBetter:
-            kpi.direction !=
-                AtlasExecutiveKpiDirection.lowerIsBetter,
+            kpi.direction != AtlasExecutiveKpiDirection.lowerIsBetter,
         series: points,
       );
     }).toList();
@@ -104,20 +95,17 @@ class AtlasBiLoaderService {
     for (final series in kpiHistory.worseningSeries.take(10)) {
       insights.add(
         AtlasBiInsight(
-          id:
-              'trend_${series.farmName}_${series.kpiId}',
+          id: 'trend_${series.farmName}_${series.kpiId}',
           title: 'Tendência de queda — ${series.title}',
           description:
               'O indicador variou '
               '${series.variationPercent.toStringAsFixed(1)}% em relação ao registro anterior.',
-          category:
-              _categoryFromKpi(series.category),
+          category: _categoryFromKpi(series.category),
           type: AtlasBiInsightType.trend,
           priority: series.variationPercent <= -10
               ? AtlasBiPriority.critical
               : AtlasBiPriority.high,
-          confidencePercent:
-              series.hasHistory ? 88 : 60,
+          confidencePercent: series.hasHistory ? 88 : 60,
           recommendation:
               'Investigar o período da queda, comparar eventos operacionais e acompanhar o próximo registro.',
           farmName: series.farmName,
@@ -144,26 +132,26 @@ class AtlasBiLoaderService {
       );
     }
 
-    for (final goal in goals.goals.where((goal) {
-      return goal.status ==
-              AtlasExecutiveGoalStatus.overdue ||
-          goal.status ==
-              AtlasExecutiveGoalStatus.atRisk;
-    }).take(8)) {
+    for (final goal
+        in goals.goals
+            .where((goal) {
+              return goal.status == AtlasExecutiveGoalStatus.overdue ||
+                  goal.status == AtlasExecutiveGoalStatus.atRisk;
+            })
+            .take(8)) {
       insights.add(
         AtlasBiInsight(
           id: 'goal_${goal.id}',
-          title: 'Meta ${atlasExecutiveGoalStatusLabel(goal.status).toLowerCase()} — ${goal.kpiTitle}',
+          title:
+              'Meta ${atlasExecutiveGoalStatusLabel(goal.status).toLowerCase()} — ${goal.kpiTitle}',
           description:
               '${goal.farmName}: progresso atual de '
               '${goal.progressPercent.toStringAsFixed(0)}%.',
           category: _categoryFromKpi(goal.category),
           type: AtlasBiInsightType.recommendation,
-          priority:
-              goal.status ==
-                      AtlasExecutiveGoalStatus.overdue
-                  ? AtlasBiPriority.critical
-                  : AtlasBiPriority.high,
+          priority: goal.status == AtlasExecutiveGoalStatus.overdue
+              ? AtlasBiPriority.critical
+              : AtlasBiPriority.high,
           confidencePercent: 92,
           recommendation:
               'Reavaliar prazo, recursos, responsável e próximos passos da meta.',
@@ -172,15 +160,16 @@ class AtlasBiLoaderService {
       );
     }
 
-    for (final series in goalHistory.series.where((item) {
-      return item.riskLevel ==
-          AtlasExecutiveGoalRiskLevel.high;
-    }).take(8)) {
+    for (final series
+        in goalHistory.series
+            .where((item) {
+              return item.riskLevel == AtlasExecutiveGoalRiskLevel.high;
+            })
+            .take(8)) {
       insights.add(
         AtlasBiInsight(
           id: 'goal_risk_${series.goalId}',
-          title:
-              'Risco de não conclusão — ${series.kpiTitle}',
+          title: 'Risco de não conclusão — ${series.kpiTitle}',
           description:
               '${series.farmName}: a velocidade atual não sustenta uma conclusão segura.',
           category: AtlasBiCategory.management,
@@ -200,8 +189,7 @@ class AtlasBiLoaderService {
           id: 'strategy_risk_${risk.id}',
           title: 'Risco estratégico — ${risk.title}',
           description: risk.description,
-          category:
-              _categoryFromStrategy(risk.category),
+          category: _categoryFromStrategy(risk.category),
           type: AtlasBiInsightType.risk,
           priority: _priorityFromRisk(risk.impact),
           confidencePercent: 85,
@@ -211,23 +199,17 @@ class AtlasBiLoaderService {
       );
     }
 
-    for (final opportunity
-        in strategy.opportunities.take(8)) {
+    for (final opportunity in strategy.opportunities.take(8)) {
       insights.add(
         AtlasBiInsight(
           id: 'strategy_opportunity_${opportunity.id}',
-          title:
-              'Oportunidade estratégica — ${opportunity.title}',
+          title: 'Oportunidade estratégica — ${opportunity.title}',
           description: opportunity.description,
-          category: _categoryFromStrategy(
-            opportunity.category,
-          ),
+          category: _categoryFromStrategy(opportunity.category),
           type: AtlasBiInsightType.opportunity,
           priority: AtlasBiPriority.medium,
-          confidencePercent:
-              opportunity.confidencePercent,
-          recommendation:
-              opportunity.recommendation,
+          confidencePercent: opportunity.confidencePercent,
+          recommendation: opportunity.recommendation,
           farmName: opportunity.farmName,
         ),
       );
@@ -242,9 +224,7 @@ class AtlasBiLoaderService {
     return unique.values.toList();
   }
 
-  AtlasBiCategory _categoryFromKpi(
-    AtlasExecutiveKpiCategory category,
-  ) {
+  AtlasBiCategory _categoryFromKpi(AtlasExecutiveKpiCategory category) {
     switch (category) {
       case AtlasExecutiveKpiCategory.production:
         return AtlasBiCategory.production;
@@ -266,9 +246,7 @@ class AtlasBiLoaderService {
     }
   }
 
-  AtlasBiCategory _categoryFromStrategy(
-    AtlasStrategyCategory category,
-  ) {
+  AtlasBiCategory _categoryFromStrategy(AtlasStrategyCategory category) {
     switch (category) {
       case AtlasStrategyCategory.production:
         return AtlasBiCategory.production;
@@ -295,9 +273,7 @@ class AtlasBiLoaderService {
     }
   }
 
-  AtlasBiPriority _priorityFromRisk(
-    AtlasStrategyRiskLevel level,
-  ) {
+  AtlasBiPriority _priorityFromRisk(AtlasStrategyRiskLevel level) {
     switch (level) {
       case AtlasStrategyRiskLevel.low:
         return AtlasBiPriority.low;

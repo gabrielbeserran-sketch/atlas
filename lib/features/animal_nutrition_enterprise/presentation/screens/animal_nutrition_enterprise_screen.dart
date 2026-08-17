@@ -25,8 +25,7 @@ class AnimalNutritionEnterpriseScreen extends StatefulWidget {
 
 class _AnimalNutritionEnterpriseScreenState
     extends State<AnimalNutritionEnterpriseScreen> {
-  final AnimalNutritionStorageService storage =
-      AnimalNutritionStorageService();
+  final AnimalNutritionStorageService storage = AnimalNutritionStorageService();
 
   List<AnimalNutritionPlan> plans = <AnimalNutritionPlan>[];
   bool loading = true;
@@ -78,9 +77,7 @@ class _AnimalNutritionEnterpriseScreenState
 
     if (result == null || !mounted) return;
 
-    final index = plans.indexWhere(
-      (current) => current.id == result.id,
-    );
+    final index = plans.indexWhere((current) => current.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -99,18 +96,14 @@ class _AnimalNutritionEnterpriseScreenState
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir dieta'),
-        content: Text(
-          'Deseja excluir o plano "${plan.dietName}"?',
-        ),
+        content: Text('Deseja excluir o plano "${plan.dietName}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -166,8 +159,7 @@ class _AnimalNutritionEnterpriseScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title:
-                            'Nutrição de ${widget.animal.displayName}',
+                        title: 'Nutrição de ${widget.animal.displayName}',
                         subtitle:
                             'Dieta, consumo, matéria seca, custo e meta de ganho.',
                         icon: Icons.restaurant_outlined,
@@ -179,10 +171,8 @@ class _AnimalNutritionEnterpriseScreenState
                         children: [
                           EnterpriseMetricCard(
                             title: 'Dieta ativa',
-                            value:
-                                current?.dietName ?? 'Não cadastrada',
-                            subtitle:
-                                current?.status ?? 'Cadastre um plano',
+                            value: current?.dietName ?? 'Não cadastrada',
+                            subtitle: current?.status ?? 'Cadastre um plano',
                             icon: Icons.menu_book_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -235,14 +225,11 @@ class _AnimalNutritionEnterpriseScreenState
                         items: [
                           if (current == null)
                             'Cadastre uma dieta para calcular consumo, matéria seca, custo e meta de ganho.',
-                          if (current != null &&
-                              current.dryMatterKg <= 0)
+                          if (current != null && current.dryMatterKg <= 0)
                             'Revise o consumo e o percentual de matéria seca.',
-                          if (current != null &&
-                              current.dailyCost > 0)
+                          if (current != null && current.dailyCost > 0)
                             'O custo projetado em 90 dias é ${_money(current.dailyCost * 90)}.',
-                          if (current != null &&
-                              current.targetGainKg <= 0)
+                          if (current != null && current.targetGainKg <= 0)
                             'Defina uma meta de ganho diário para medir eficiência.',
                           if (current != null)
                             'Compare a meta de ${_decimal(current.targetGainKg, 3)} kg/dia com o GMD real das pesagens.',
@@ -257,9 +244,7 @@ class _AnimalNutritionEnterpriseScreenState
                       if (plans.isEmpty)
                         const Card(
                           child: ListTile(
-                            title: Text(
-                              'Nenhuma dieta cadastrada.',
-                            ),
+                            title: Text('Nenhuma dieta cadastrada.'),
                           ),
                         )
                       else
@@ -267,9 +252,7 @@ class _AnimalNutritionEnterpriseScreenState
                           (plan) => Card(
                             child: ListTile(
                               leading: const CircleAvatar(
-                                child: Icon(
-                                  Icons.restaurant_outlined,
-                                ),
+                                child: Icon(Icons.restaurant_outlined),
                               ),
                               title: Text(plan.dietName),
                               subtitle: Text(
@@ -309,9 +292,7 @@ class _AnimalNutritionEnterpriseScreenState
   }
 
   String _decimal(double value, int decimals) {
-    return value
-        .toStringAsFixed(decimals)
-        .replaceAll('.', ',');
+    return value.toStringAsFixed(decimals).replaceAll('.', ',');
   }
 
   String _money(double value) {
@@ -320,9 +301,7 @@ class _AnimalNutritionEnterpriseScreenState
 }
 
 class _NutritionForm extends StatefulWidget {
-  const _NutritionForm({
-    this.plan,
-  });
+  const _NutritionForm({this.plan});
 
   final AnimalNutritionPlan? plan;
 
@@ -352,9 +331,7 @@ class _NutritionFormState extends State<_NutritionForm> {
     dateController = TextEditingController(
       text: plan?.date ?? enterpriseDate(DateTime.now()),
     );
-    dietController = TextEditingController(
-      text: plan?.dietName ?? '',
-    );
+    dietController = TextEditingController(text: plan?.dietName ?? '');
     intakeController = TextEditingController(
       text: plan?.dailyIntakeKg.toString() ?? '',
     );
@@ -367,9 +344,7 @@ class _NutritionFormState extends State<_NutritionForm> {
     targetController = TextEditingController(
       text: plan?.targetGainKg.toString() ?? '',
     );
-    notesController = TextEditingController(
-      text: plan?.notes ?? '',
-    );
+    notesController = TextEditingController(text: plan?.notes ?? '');
     status = plan?.status ?? 'Ativa';
   }
 
@@ -386,10 +361,7 @@ class _NutritionFormState extends State<_NutritionForm> {
   }
 
   double number(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   void save() {
@@ -398,7 +370,8 @@ class _NutritionFormState extends State<_NutritionForm> {
     Navigator.pop(
       context,
       AnimalNutritionPlan(
-        id: widget.plan?.id ??
+        id:
+            widget.plan?.id ??
             'nutrition_${DateTime.now().microsecondsSinceEpoch}',
         date: dateController.text.trim(),
         dietName: dietController.text.trim(),
@@ -415,9 +388,7 @@ class _NutritionFormState extends State<_NutritionForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.plan == null ? 'Nova dieta' : 'Editar dieta',
-      ),
+      title: Text(widget.plan == null ? 'Nova dieta' : 'Editar dieta'),
       content: SizedBox(
         width: 620,
         child: Form(
@@ -427,9 +398,7 @@ class _NutritionFormState extends State<_NutritionForm> {
               children: [
                 TextFormField(
                   controller: dietController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome da dieta',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Nome da dieta'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Obrigatório';
@@ -439,9 +408,7 @@ class _NutritionFormState extends State<_NutritionForm> {
                 ),
                 TextFormField(
                   controller: dateController,
-                  decoration: const InputDecoration(
-                    labelText: 'Data',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Data'),
                 ),
                 TextFormField(
                   controller: intakeController,
@@ -496,17 +463,13 @@ class _NutritionFormState extends State<_NutritionForm> {
                       setState(() => status = value);
                     }
                   },
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Situação'),
                 ),
                 TextFormField(
                   controller: notesController,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -518,10 +481,7 @@ class _NutritionFormState extends State<_NutritionForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }

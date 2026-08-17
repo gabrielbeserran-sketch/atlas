@@ -1,0 +1,30 @@
+{
+  "status": "OK",
+  "checks": {
+    "backend_media_table": true,
+    "migration_0040": true,
+    "tenant_company_animal_scope": true,
+    "authenticated_binary_download": true,
+    "authenticated_upload": true,
+    "file_type_and_size_validation": true,
+    "persistent_docker_volume": true,
+    "photo_remote_authority": true,
+    "document_remote_authority": true,
+    "flutter_binary_upload_download": true,
+    "shared_preferences_only_cache": true,
+    "regression_tests": true,
+    "tests_create_own_livestock_preconditions": true
+  },
+  "errors": [],
+  "resolved_blockers": [
+    "ATT-001",
+    "ATT-002"
+  ],
+  "remaining_production_blockers": [
+    "NET-002 rate limit distribuído",
+    "BKP-002 restauração homologada"
+  ],
+  "android_deferred": [
+    "ATT-003 seleção/abertura nativa Android permanece no Marco 6"
+  ]
+}

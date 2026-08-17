@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_meeting_decision_action_sync_controller.dart';
 
-class AtlasMeetingDecisionActionSyncCard
-    extends StatefulWidget {
+class AtlasMeetingDecisionActionSyncCard extends StatefulWidget {
   const AtlasMeetingDecisionActionSyncCard({
     this.farmName,
     this.onSynchronized,
@@ -26,8 +25,7 @@ class _AtlasMeetingDecisionActionSyncCardState
   void initState() {
     super.initState();
 
-    controller =
-        AtlasMeetingDecisionActionSyncController(
+    controller = AtlasMeetingDecisionActionSyncController(
       farmName: widget.farmName,
     );
   }
@@ -57,8 +55,7 @@ class _AtlasMeetingDecisionActionSyncCardState
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
@@ -67,27 +64,17 @@ class _AtlasMeetingDecisionActionSyncCardState
                     Expanded(
                       child: Text(
                         'Sincronização reunião ↔ plano',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                              fontWeight:
-                                  FontWeight.w800,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                     ),
                     FilledButton.tonalIcon(
-                      onPressed: controller.isSyncing
-                          ? null
-                          : _sync,
+                      onPressed: controller.isSyncing ? null : _sync,
                       icon: controller.isSyncing
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.sync),
                       label: const Text('Sincronizar'),
@@ -101,9 +88,7 @@ class _AtlasMeetingDecisionActionSyncCardState
                 ),
                 if (controller.errorMessage != null) ...[
                   const SizedBox(height: 10),
-                  Text(
-                    'Falha: ${controller.errorMessage}',
-                  ),
+                  Text('Falha: ${controller.errorMessage}'),
                 ],
                 if (result != null) ...[
                   const SizedBox(height: 12),
@@ -111,11 +96,7 @@ class _AtlasMeetingDecisionActionSyncCardState
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      Chip(
-                        label: Text(
-                          '${result.checkedLinks} vínculo(s)',
-                        ),
-                      ),
+                      Chip(label: Text('${result.checkedLinks} vínculo(s)')),
                       Chip(
                         label: Text(
                           '${result.updatedDecisions} decisão(ões) atualizada(s)',
@@ -138,9 +119,7 @@ class _AtlasMeetingDecisionActionSyncCardState
                             Icons.build_circle_outlined,
                             size: 17,
                           ),
-                          label: Text(
-                            '${result.repairedLinks} reparado(s)',
-                          ),
+                          label: Text('${result.repairedLinks} reparado(s)'),
                         ),
                     ],
                   ),
@@ -148,9 +127,7 @@ class _AtlasMeetingDecisionActionSyncCardState
                   Text(
                     'Última sincronização: '
                     '${DateFormat('dd/MM/yyyy HH:mm').format(result.syncedAt)}',
-                    style: const TextStyle(
-                      color: Colors.black54,
-                    ),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                 ],
               ],

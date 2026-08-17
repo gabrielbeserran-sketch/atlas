@@ -1,48 +1,39 @@
-enum AtlasAutonomousEnterpriseModule {
-  aiOrchestrator,
-  enterpriseReleaseCenter,
-}
+enum AtlasAutonomousEnterpriseModule { aiOrchestrator, enterpriseReleaseCenter }
 
-extension AtlasAutonomousEnterpriseModuleX
-    on AtlasAutonomousEnterpriseModule {
+extension AtlasAutonomousEnterpriseModuleX on AtlasAutonomousEnterpriseModule {
   String get code => switch (this) {
-        AtlasAutonomousEnterpriseModule.aiOrchestrator =>
-          'ai_orchestrator',
-        AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
-          'enterprise_release_center',
-      };
+    AtlasAutonomousEnterpriseModule.aiOrchestrator => 'ai_orchestrator',
+    AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
+      'enterprise_release_center',
+  };
 
   String get title => switch (this) {
-        AtlasAutonomousEnterpriseModule.aiOrchestrator =>
-          'Orquestrador Atlas AI',
-        AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
-          'Centro de Finalização Enterprise',
-      };
+    AtlasAutonomousEnterpriseModule.aiOrchestrator => 'Orquestrador Atlas AI',
+    AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
+      'Centro de Finalização Enterprise',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasAutonomousEnterpriseModule.aiOrchestrator =>
-          'Pacote 99',
-        AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
-          'Pacote 100',
-      };
+    AtlasAutonomousEnterpriseModule.aiOrchestrator => 'Pacote 99',
+    AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter => 'Pacote 100',
+  };
 
   List<String> get features => switch (this) {
-        AtlasAutonomousEnterpriseModule.aiOrchestrator => const [
-            'Fila de decisões',
-            'Regras e políticas',
-            'Aprovação humana',
-            'Execução e acompanhamento',
-            'Memória e aprendizado',
-          ],
-        AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter =>
-          const [
-            'Checklist de produção',
-            'Qualidade e testes',
-            'Segurança e conformidade',
-            'Publicação e rollback',
-            'Pós-lançamento e suporte',
-          ],
-      };
+    AtlasAutonomousEnterpriseModule.aiOrchestrator => const [
+      'Fila de decisões',
+      'Regras e políticas',
+      'Aprovação humana',
+      'Execução e acompanhamento',
+      'Memória e aprendizado',
+    ],
+    AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter => const [
+      'Checklist de produção',
+      'Qualidade e testes',
+      'Segurança e conformidade',
+      'Publicação e rollback',
+      'Pós-lançamento e suporte',
+    ],
+  };
 }
 
 class AtlasAutonomousEnterpriseRecord {
@@ -138,16 +129,12 @@ class AtlasAutonomousEnterpriseRecord {
     };
   }
 
-  factory AtlasAutonomousEnterpriseRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasAutonomousEnterpriseRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasAutonomousEnterpriseModule.values.firstWhere(
+    final module = AtlasAutonomousEnterpriseModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasAutonomousEnterpriseModule.aiOrchestrator,
+      orElse: () => AtlasAutonomousEnterpriseModule.aiOrchestrator,
     );
 
     return AtlasAutonomousEnterpriseRecord(
@@ -160,19 +147,12 @@ class AtlasAutonomousEnterpriseRecord {
       owner: map['owner']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
       priority: (map['priority'] as num?)?.toInt() ?? 0,
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ??
-              0.0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
-      financialImpact:
-          (map['financialImpact'] as num?)?.toDouble() ??
-              0.0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0.0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
+      financialImpact: (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

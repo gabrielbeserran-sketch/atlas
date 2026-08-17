@@ -40,9 +40,7 @@ class AtlasEnterprise24AMigrationService {
         memberships: snapshot.memberships.length,
         farms: snapshot.farms.length,
         consultantLinks: snapshot.consultantLinks.length,
-        messages: const <String>[
-          'A migração 24A já foi aplicada.',
-        ],
+        messages: const <String>['A migração 24A já foi aplicada.'],
       );
     }
 
@@ -50,19 +48,14 @@ class AtlasEnterprise24AMigrationService {
     final messages = <String>[];
 
     if (snapshot.companies.isEmpty) {
-      throw StateError(
-        'Não foi possível determinar a empresa inicial.',
-      );
+      throw StateError('Não foi possível determinar a empresa inicial.');
     }
 
     final session = snapshot.session;
-    final companyId =
-        session?.companyId ?? snapshot.companies.first.id;
-    final actorUserId =
-        session?.userId ?? 'legacy_migration';
+    final companyId = session?.companyId ?? snapshot.companies.first.id;
+    final actorUserId = session?.userId ?? 'legacy_migration';
 
-    final legacyFarms =
-        await FarmStorageService().loadFarmsUnscoped();
+    final legacyFarms = await FarmStorageService().loadFarmsUnscoped();
 
     for (final farm in legacyFarms) {
       await repository.ensureFarm(
@@ -78,8 +71,7 @@ class AtlasEnterprise24AMigrationService {
 
     final consultants = snapshot.memberships.where(
       (item) =>
-          item.role == AtlasEnterpriseMembershipRole.consultant &&
-          item.active,
+          item.role == AtlasEnterpriseMembershipRole.consultant && item.active,
     );
 
     for (final consultant in consultants) {
@@ -104,9 +96,7 @@ class AtlasEnterprise24AMigrationService {
     await repository.setMigrationVersion(targetVersion);
     snapshot = await repository.load();
 
-    messages.add(
-      '${snapshot.companies.length} empresa(s) no modelo canônico.',
-    );
+    messages.add('${snapshot.companies.length} empresa(s) no modelo canônico.');
     messages.add(
       '${snapshot.farms.length} fazenda(s) vinculada(s) por companyId/tenantId.',
     );

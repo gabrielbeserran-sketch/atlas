@@ -6,17 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasEsgService {
   AtlasEsgService._();
 
-  static final AtlasEsgService instance =
-      AtlasEsgService._();
+  static final AtlasEsgService instance = AtlasEsgService._();
 
   static const String _recordsKey = 'atlas_esg_records_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasEsgRecord>> loadRecords({
-    String? farmName,
-  }) async {
+  Future<List<AtlasEsgRecord>> loadRecords({String? farmName}) async {
     final raw = await _preferences.getString(_recordsKey);
     if (raw == null || raw.trim().isEmpty) {
       return <AtlasEsgRecord>[];
@@ -25,25 +21,19 @@ class AtlasEsgService {
     try {
       final values = (jsonDecode(raw) as List)
           .map(
-            (item) => AtlasEsgRecord.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasEsgRecord.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
       final normalized = farmName?.trim().toLowerCase();
-      final filtered =
-          normalized == null || normalized.isEmpty
-              ? values
-              : values
-                  .where(
-                    (item) =>
-                        item.farmName?.trim().toLowerCase() ==
-                        normalized,
-                  )
-                  .toList();
-      filtered.sort(
-        (a, b) => b.occurredAt.compareTo(a.occurredAt),
-      );
+      final filtered = normalized == null || normalized.isEmpty
+          ? values
+          : values
+                .where(
+                  (item) => item.farmName?.trim().toLowerCase() == normalized,
+                )
+                .toList();
+      filtered.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
       return filtered;
     } catch (_) {
       return <AtlasEsgRecord>[];
@@ -55,15 +45,14 @@ class AtlasEsgService {
     final values = raw == null || raw.trim().isEmpty
         ? <AtlasEsgRecord>[]
         : (jsonDecode(raw) as List)
-            .map(
-              (item) => AtlasEsgRecord.fromMap(
-                Map<String, dynamic>.from(item as Map),
-              ),
-            )
-            .toList();
+              .map(
+                (item) => AtlasEsgRecord.fromMap(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList();
 
-    final index =
-        values.indexWhere((item) => item.id == record.id);
+    final index = values.indexWhere((item) => item.id == record.id);
     if (index == -1) {
       values.add(record);
     } else {
@@ -76,9 +65,7 @@ class AtlasEsgService {
     );
   }
 
-  Future<AtlasEsgExecutiveSnapshot> buildSnapshot({
-    String? farmName,
-  }) async {
+  Future<AtlasEsgExecutiveSnapshot> buildSnapshot({String? farmName}) async {
     final records = await loadRecords(farmName: farmName);
 
     double total(AtlasEsgCategory category, String unit) {
@@ -86,13 +73,9 @@ class AtlasEsgService {
           .where(
             (item) =>
                 item.category == category &&
-                item.unit.trim().toLowerCase() ==
-                    unit.toLowerCase(),
+                item.unit.trim().toLowerCase() == unit.toLowerCase(),
           )
-          .fold<double>(
-            0,
-            (sum, item) => sum + item.value,
-          );
+          .fold<double>(0, (sum, item) => sum + item.value);
     }
 
     final enteric = records
@@ -128,9 +111,7 @@ class AtlasEsgService {
           (item) =>
               item.category == AtlasEsgCategory.carbon &&
               (item.title.toLowerCase().contains('solo') ||
-                  item.title
-                      .toLowerCase()
-                      .contains('fertilizante')),
+                  item.title.toLowerCase().contains('fertilizante')),
         )
         .fold<double>(0, (sum, item) => sum + item.value);
     final sequestration = records
@@ -150,13 +131,11 @@ class AtlasEsgService {
               item.title.toLowerCase().contains('renovável'),
         )
         .fold<double>(0, (sum, item) => sum + item.value);
-    final preservedArea =
-        total(AtlasEsgCategory.preservation, 'ha');
+    final preservedArea = total(AtlasEsgCategory.preservation, 'ha');
     final recoveredArea = records
         .where(
           (item) =>
-              item.category ==
-                  AtlasEsgCategory.preservation &&
+              item.category == AtlasEsgCategory.preservation &&
               item.title.toLowerCase().contains('recuper'),
         )
         .fold<double>(0, (sum, item) => sum + item.value);
@@ -167,28 +146,24 @@ class AtlasEsgService {
     final wasteRecovered = wasteRecords.isEmpty
         ? 0.0
         : wasteRecords
-                .where(
-                  (item) =>
-                      item.title.toLowerCase().contains('recic') ||
-                      item.title.toLowerCase().contains('reaprov'),
-                )
-                .fold<double>(0, (sum, item) => sum + item.value) /
-            wasteRecords.fold<double>(
-              0,
-              (sum, item) => sum + item.value,
-            ) *
-            100;
+                  .where(
+                    (item) =>
+                        item.title.toLowerCase().contains('recic') ||
+                        item.title.toLowerCase().contains('reaprov'),
+                  )
+                  .fold<double>(0, (sum, item) => sum + item.value) /
+              wasteRecords.fold<double>(0, (sum, item) => sum + item.value) *
+              100;
 
-    final socialRecords =
-        records.where((item) => item.category == AtlasEsgCategory.social);
+    final socialRecords = records.where(
+      (item) => item.category == AtlasEsgCategory.social,
+    );
     final governanceRecords = records.where(
       (item) => item.category == AtlasEsgCategory.governance,
     );
 
-    final socialScore =
-        (50 + socialRecords.length * 8).clamp(0, 100);
-    final governanceScore =
-        (50 + governanceRecords.length * 8).clamp(0, 100);
+    final socialScore = (50 + socialRecords.length * 8).clamp(0, 100);
+    final governanceScore = (50 + governanceRecords.length * 8).clamp(0, 100);
 
     final carbonInventory = AtlasCarbonInventory(
       entericMethaneTco2e: enteric,
@@ -215,14 +190,10 @@ class AtlasEsgService {
       carbonInventory: carbonInventory,
       waterConsumptionM3: water,
       energyConsumptionKwh: energy,
-      renewableEnergyPercent: energy <= 0
-          ? 0
-          : renewableEnergy / energy * 100,
+      renewableEnergyPercent: energy <= 0 ? 0 : renewableEnergy / energy * 100,
       preservedAreaHectares: preservedArea,
       recoveredAreaHectares: recoveredArea,
-      wasteRecoveredPercent: wasteRecovered.isFinite
-          ? wasteRecovered
-          : 0,
+      wasteRecoveredPercent: wasteRecovered.isFinite ? wasteRecovered : 0,
       socialScore: socialScore.toDouble(),
       governanceScore: governanceScore.toDouble(),
       esgScore: score.clamp(0, 100),

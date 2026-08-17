@@ -19,44 +19,38 @@ class AtlasOperationalPriorityService {
 
     final now = referenceDate ?? DateTime.now();
 
-    final priorities = entries.map((entry) {
-      final score = _score(entry, now);
-      final canonicalPriority = _priorityFromScore(score);
+    final priorities =
+        entries.map((entry) {
+          final score = _score(entry, now);
+          final canonicalPriority = _priorityFromScore(score);
 
-      return AtlasOperationalPriority(
-        id: 'priority_${entry.eventId}',
-        title: entry.title,
-        description: entry.description,
-        priority: canonicalPriority,
-        score: score,
-        recommendedAction: _recommendedAction(
-          entry,
-          canonicalPriority,
-        ),
-        sourceModule: entry.sourceModule,
-        farmName: entry.farmName,
-        entityId: entry.entityId,
-        occurredAt: entry.occurredAt,
-        event: entry,
-      );
-    }).toList()
-      ..sort((first, second) {
-        final scoreComparison = second.score.compareTo(first.score);
+          return AtlasOperationalPriority(
+            id: 'priority_${entry.eventId}',
+            title: entry.title,
+            description: entry.description,
+            priority: canonicalPriority,
+            score: score,
+            recommendedAction: _recommendedAction(entry, canonicalPriority),
+            sourceModule: entry.sourceModule,
+            farmName: entry.farmName,
+            entityId: entry.entityId,
+            occurredAt: entry.occurredAt,
+            event: entry,
+          );
+        }).toList()..sort((first, second) {
+          final scoreComparison = second.score.compareTo(first.score);
 
-        if (scoreComparison != 0) {
-          return scoreComparison;
-        }
+          if (scoreComparison != 0) {
+            return scoreComparison;
+          }
 
-        return second.occurredAt.compareTo(first.occurredAt);
-      });
+          return second.occurredAt.compareTo(first.occurredAt);
+        });
 
     return priorities.take(maxItems).toList(growable: false);
   }
 
-  double _score(
-    AtlasOperationalMemoryEntry entry,
-    DateTime now,
-  ) {
+  double _score(AtlasOperationalMemoryEntry entry, DateTime now) {
     var score = _priorityBase(entry.priority);
 
     final age = now.difference(entry.occurredAt);

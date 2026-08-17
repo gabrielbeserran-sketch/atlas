@@ -6,84 +6,68 @@ enum AtlasPlatformResilienceModule {
   digitalTwin,
 }
 
-extension AtlasPlatformResilienceModuleX
-    on AtlasPlatformResilienceModule {
+extension AtlasPlatformResilienceModuleX on AtlasPlatformResilienceModule {
   String get code => switch (this) {
-        AtlasPlatformResilienceModule.dataGovernance =>
-          'data_governance',
-        AtlasPlatformResilienceModule.integrationHub =>
-          'integration_hub',
-        AtlasPlatformResilienceModule.cybersecurity =>
-          'cybersecurity',
-        AtlasPlatformResilienceModule.observability =>
-          'observability',
-        AtlasPlatformResilienceModule.digitalTwin =>
-          'digital_twin',
-      };
+    AtlasPlatformResilienceModule.dataGovernance => 'data_governance',
+    AtlasPlatformResilienceModule.integrationHub => 'integration_hub',
+    AtlasPlatformResilienceModule.cybersecurity => 'cybersecurity',
+    AtlasPlatformResilienceModule.observability => 'observability',
+    AtlasPlatformResilienceModule.digitalTwin => 'digital_twin',
+  };
 
   String get title => switch (this) {
-        AtlasPlatformResilienceModule.dataGovernance =>
-          'Governança de Dados',
-        AtlasPlatformResilienceModule.integrationHub =>
-          'Integration Hub',
-        AtlasPlatformResilienceModule.cybersecurity =>
-          'Cibersegurança Atlas',
-        AtlasPlatformResilienceModule.observability =>
-          'Observabilidade Enterprise',
-        AtlasPlatformResilienceModule.digitalTwin =>
-          'Gêmeo Digital da Fazenda',
-      };
+    AtlasPlatformResilienceModule.dataGovernance => 'Governança de Dados',
+    AtlasPlatformResilienceModule.integrationHub => 'Integration Hub',
+    AtlasPlatformResilienceModule.cybersecurity => 'Cibersegurança Atlas',
+    AtlasPlatformResilienceModule.observability => 'Observabilidade Enterprise',
+    AtlasPlatformResilienceModule.digitalTwin => 'Gêmeo Digital da Fazenda',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasPlatformResilienceModule.dataGovernance =>
-          'Pacote 94',
-        AtlasPlatformResilienceModule.integrationHub =>
-          'Pacote 95',
-        AtlasPlatformResilienceModule.cybersecurity =>
-          'Pacote 96',
-        AtlasPlatformResilienceModule.observability =>
-          'Pacote 97',
-        AtlasPlatformResilienceModule.digitalTwin =>
-          'Pacote 98',
-      };
+    AtlasPlatformResilienceModule.dataGovernance => 'Pacote 94',
+    AtlasPlatformResilienceModule.integrationHub => 'Pacote 95',
+    AtlasPlatformResilienceModule.cybersecurity => 'Pacote 96',
+    AtlasPlatformResilienceModule.observability => 'Pacote 97',
+    AtlasPlatformResilienceModule.digitalTwin => 'Pacote 98',
+  };
 
   List<String> get features => switch (this) {
-        AtlasPlatformResilienceModule.dataGovernance => const [
-            'Catálogo de dados',
-            'Qualidade e completude',
-            'Responsáveis e domínios',
-            'Linhas de origem',
-            'Retenção e classificação',
-          ],
-        AtlasPlatformResilienceModule.integrationHub => const [
-            'Conectores e APIs',
-            'Filas e eventos',
-            'Mapeamento de dados',
-            'Sincronização e reprocessamento',
-            'Status das integrações',
-          ],
-        AtlasPlatformResilienceModule.cybersecurity => const [
-            'Identidades e acessos',
-            'Riscos e vulnerabilidades',
-            'Incidentes de segurança',
-            'Controles e evidências',
-            'Planos de resposta',
-          ],
-        AtlasPlatformResilienceModule.observability => const [
-            'Métricas de serviço',
-            'Logs e rastreamento',
-            'Disponibilidade e latência',
-            'Alertas e incidentes',
-            'SLA e capacidade',
-          ],
-        AtlasPlatformResilienceModule.digitalTwin => const [
-            'Modelo digital da fazenda',
-            'Ativos e áreas',
-            'Estados operacionais',
-            'Cenários e simulações',
-            'Sincronização físico-digital',
-          ],
-      };
+    AtlasPlatformResilienceModule.dataGovernance => const [
+      'Catálogo de dados',
+      'Qualidade e completude',
+      'Responsáveis e domínios',
+      'Linhas de origem',
+      'Retenção e classificação',
+    ],
+    AtlasPlatformResilienceModule.integrationHub => const [
+      'Conectores e APIs',
+      'Filas e eventos',
+      'Mapeamento de dados',
+      'Sincronização e reprocessamento',
+      'Status das integrações',
+    ],
+    AtlasPlatformResilienceModule.cybersecurity => const [
+      'Identidades e acessos',
+      'Riscos e vulnerabilidades',
+      'Incidentes de segurança',
+      'Controles e evidências',
+      'Planos de resposta',
+    ],
+    AtlasPlatformResilienceModule.observability => const [
+      'Métricas de serviço',
+      'Logs e rastreamento',
+      'Disponibilidade e latência',
+      'Alertas e incidentes',
+      'SLA e capacidade',
+    ],
+    AtlasPlatformResilienceModule.digitalTwin => const [
+      'Modelo digital da fazenda',
+      'Ativos e áreas',
+      'Estados operacionais',
+      'Cenários e simulações',
+      'Sincronização físico-digital',
+    ],
+  };
 }
 
 class AtlasPlatformResilienceRecord {
@@ -148,8 +132,7 @@ class AtlasPlatformResilienceRecord {
   bool get isOverdue {
     final parsed = parseAtlasPlatformDate(dueDate);
     if (parsed.year == 1900) return false;
-    return parsed.isBefore(DateTime.now()) &&
-        status != 'Concluído';
+    return parsed.isBefore(DateTime.now()) && status != 'Concluído';
   }
 
   Map<String, dynamic> toMap() {
@@ -177,16 +160,12 @@ class AtlasPlatformResilienceRecord {
     };
   }
 
-  factory AtlasPlatformResilienceRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPlatformResilienceRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasPlatformResilienceModule.values.firstWhere(
+    final module = AtlasPlatformResilienceModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasPlatformResilienceModule.dataGovernance,
+      orElse: () => AtlasPlatformResilienceModule.dataGovernance,
     );
 
     return AtlasPlatformResilienceRecord(
@@ -198,19 +177,13 @@ class AtlasPlatformResilienceRecord {
       status: map['status']?.toString() ?? 'Planejado',
       owner: map['owner']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0.0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0.0,
-      financialImpact:
-          (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0.0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0.0,
+      financialImpact: (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      scoreValue:
-          (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      scoreValue: (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

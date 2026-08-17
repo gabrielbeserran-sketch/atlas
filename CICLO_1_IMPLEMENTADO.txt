@@ -1,0 +1,1 @@
+Ciclo 1 — Sprints 131 a 135 implementado sobre a versão Flutter enviada em 2026-08-06.

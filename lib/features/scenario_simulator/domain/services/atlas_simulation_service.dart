@@ -9,33 +9,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasSimulationService {
   AtlasSimulationService._();
 
-  static final AtlasSimulationService instance =
-      AtlasSimulationService._();
+  static final AtlasSimulationService instance = AtlasSimulationService._();
 
-  static const String _storageKey =
-      'atlas_scenario_simulations_v1';
+  static const String _storageKey = 'atlas_scenario_simulations_v1';
 
-  final AtlasScenarioEngine engine =
-      const AtlasScenarioEngine();
+  final AtlasScenarioEngine engine = const AtlasScenarioEngine();
 
-  final List<AtlasSimulation> _simulations =
-      <AtlasSimulation>[];
+  final List<AtlasSimulation> _simulations = <AtlasSimulation>[];
 
   bool _loaded = false;
 
   List<AtlasSimulation> get simulations {
-    final result =
-        List<AtlasSimulation>.from(_simulations)
-          ..sort(
-            (first, second) =>
-                second.createdAt.compareTo(
-              first.createdAt,
-            ),
-          );
+    final result = List<AtlasSimulation>.from(_simulations)
+      ..sort((first, second) => second.createdAt.compareTo(first.createdAt));
 
-    return List<AtlasSimulation>.unmodifiable(
-      result,
-    );
+    return List<AtlasSimulation>.unmodifiable(result);
   }
 
   Future<void> load() async {
@@ -43,25 +31,20 @@ class AtlasSimulationService {
       return;
     }
 
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final stored =
-        preferences.getString(_storageKey);
+    final stored = preferences.getString(_storageKey);
 
     _simulations.clear();
 
-    if (stored != null &&
-        stored.trim().isNotEmpty) {
+    if (stored != null && stored.trim().isNotEmpty) {
       try {
         final decoded = jsonDecode(stored);
 
         if (decoded is List) {
           for (final raw in decoded.whereType<Map>()) {
             _simulations.add(
-              AtlasSimulation.fromJson(
-                Map<String, dynamic>.from(raw),
-              ),
+              AtlasSimulation.fromJson(Map<String, dynamic>.from(raw)),
             );
           }
         }
@@ -79,28 +62,19 @@ class AtlasSimulationService {
   }) async {
     await load();
 
-    _simulations.removeWhere(
-      (item) => item.id == simulation.id,
-    );
+    _simulations.removeWhere((item) => item.id == simulation.id);
 
     _simulations.insert(0, simulation);
 
     await _save();
 
-    return engine.execute(
-      currentTwin: currentTwin,
-      simulation: simulation,
-    );
+    return engine.execute(currentTwin: currentTwin, simulation: simulation);
   }
 
-  Future<void> delete(
-    String simulationId,
-  ) async {
+  Future<void> delete(String simulationId) async {
     await load();
 
-    _simulations.removeWhere(
-      (item) => item.id == simulationId,
-    );
+    _simulations.removeWhere((item) => item.id == simulationId);
 
     await _save();
   }
@@ -108,23 +82,17 @@ class AtlasSimulationService {
   Future<void> clear() async {
     _simulations.clear();
 
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.remove(_storageKey);
   }
 
   Future<void> _save() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        _simulations
-            .map((item) => item.toJson())
-            .toList(),
-      ),
+      jsonEncode(_simulations.map((item) => item.toJson()).toList()),
     );
   }
 }

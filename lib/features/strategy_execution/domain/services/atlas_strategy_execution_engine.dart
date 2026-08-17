@@ -4,27 +4,20 @@ import 'package:projeto_atlas/features/strategy_execution/domain/models/atlas_st
 class AtlasStrategyExecutionEngine {
   const AtlasStrategyExecutionEngine();
 
-  AtlasStrategyExecutionPlan create(
-    AtlasDecisionScenarioResult scenario,
-  ) {
+  AtlasStrategyExecutionPlan create(AtlasDecisionScenarioResult scenario) {
     final now = DateTime.now();
-    final totalDays =
-        (scenario.input.horizonMonths * 30).clamp(90, 1080);
+    final totalDays = (scenario.input.horizonMonths * 30).clamp(90, 1080);
     final targetDate = now.add(Duration(days: totalDays));
 
-    final preparationEnd =
-        now.add(Duration(days: (totalDays * 0.15).round()));
-    final pilotEnd =
-        now.add(Duration(days: (totalDays * 0.45).round()));
-    final scaleEnd =
-        now.add(Duration(days: (totalDays * 0.78).round()));
+    final preparationEnd = now.add(Duration(days: (totalDays * 0.15).round()));
+    final pilotEnd = now.add(Duration(days: (totalDays * 0.45).round()));
+    final scaleEnd = now.add(Duration(days: (totalDays * 0.78).round()));
 
     final phases = <AtlasStrategyExecutionPhase>[
       _phase(
         id: 'prepare',
         title: 'Fase 1 — Preparação',
-        objective:
-            'Validar premissas, recursos, responsáveis e linha de base.',
+        objective: 'Validar premissas, recursos, responsáveis e linha de base.',
         start: now,
         end: preparationEnd,
         budget: scenario.input.investment * 0.15,
@@ -199,28 +192,24 @@ class AtlasStrategyExecutionEngine {
     required String responsible,
     required List<_MilestoneTemplate> milestones,
   }) {
-    final durationDays =
-        end.difference(start).inDays.clamp(1, 10000);
+    final durationDays = end.difference(start).inDays.clamp(1, 10000);
 
-    final generated = milestones.asMap().entries.map(
-      (entry) {
-        final fraction =
-            (entry.key + 1) / milestones.length;
-        final dueDate = start.add(
-          Duration(days: (durationDays * fraction).round()),
-        );
-        final template = entry.value;
+    final generated = milestones.asMap().entries.map((entry) {
+      final fraction = (entry.key + 1) / milestones.length;
+      final dueDate = start.add(
+        Duration(days: (durationDays * fraction).round()),
+      );
+      final template = entry.value;
 
-        return AtlasStrategyMilestone(
-          id: '${id}_${entry.key + 1}',
-          title: template.title,
-          description: template.description,
-          dueDate: dueDate,
-          successCriterion: template.successCriterion,
-          status: AtlasStrategyMilestoneStatus.pending,
-        );
-      },
-    ).toList();
+      return AtlasStrategyMilestone(
+        id: '${id}_${entry.key + 1}',
+        title: template.title,
+        description: template.description,
+        dueDate: dueDate,
+        successCriterion: template.successCriterion,
+        status: AtlasStrategyMilestoneStatus.pending,
+      );
+    }).toList();
 
     return AtlasStrategyExecutionPhase(
       id: id,
@@ -236,11 +225,7 @@ class AtlasStrategyExecutionEngine {
 }
 
 class _MilestoneTemplate {
-  const _MilestoneTemplate(
-    this.title,
-    this.description,
-    this.successCriterion,
-  );
+  const _MilestoneTemplate(this.title, this.description, this.successCriterion);
 
   final String title;
   final String description;

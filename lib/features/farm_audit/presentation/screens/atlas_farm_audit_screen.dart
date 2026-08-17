@@ -9,9 +9,7 @@ import 'package:projeto_atlas/features/farm_audit/domain/models/atlas_farm_audit
 import 'package:projeto_atlas/features/farm_audit/domain/services/atlas_farm_audit_engine.dart';
 
 class AtlasFarmAuditScreen extends StatefulWidget {
-  const AtlasFarmAuditScreen({
-    super.key,
-  });
+  const AtlasFarmAuditScreen({super.key});
 
   @override
   State<AtlasFarmAuditScreen> createState() {
@@ -19,10 +17,8 @@ class AtlasFarmAuditScreen extends StatefulWidget {
   }
 }
 
-class _AtlasFarmAuditScreenState
-    extends State<AtlasFarmAuditScreen> {
-  final AtlasFarmAuditEngine engine =
-      const AtlasFarmAuditEngine();
+class _AtlasFarmAuditScreenState extends State<AtlasFarmAuditScreen> {
+  final AtlasFarmAuditEngine engine = const AtlasFarmAuditEngine();
 
   final AtlasAutonomousConsultantService consultantService =
       const AtlasAutonomousConsultantService();
@@ -46,23 +42,20 @@ class _AtlasFarmAuditScreenState
       return null;
     }
 
-    return AtlasDigitalTwinService.instance
-        .byFarmId(farmId);
+    return AtlasDigitalTwinService.instance.byFarmId(farmId);
   }
 
   Future<void> _load() async {
     await AtlasDigitalTwinService.instance.load();
 
-    final twins =
-        AtlasDigitalTwinService.instance.twins;
+    final twins = AtlasDigitalTwinService.instance.twins;
 
     if (!mounted) {
       return;
     }
 
     setState(() {
-      selectedFarmId =
-          twins.isEmpty ? null : twins.first.farmId;
+      selectedFarmId = twins.isEmpty ? null : twins.first.farmId;
       isLoading = false;
     });
 
@@ -86,9 +79,7 @@ class _AtlasFarmAuditScreenState
       return;
     }
 
-    final loaded =
-        await AtlasFarmAuditHistoryService.instance
-            .byFarmId(farmId);
+    final loaded = await AtlasFarmAuditHistoryService.instance.byFarmId(farmId);
 
     if (!mounted) {
       return;
@@ -111,20 +102,18 @@ class _AtlasFarmAuditScreenState
     });
 
     try {
-      await Future<void>.delayed(
-        const Duration(milliseconds: 250),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 250));
 
-      final AtlasConsultantReport consultantReport =
-          consultantService.analyze(twin: twin);
+      final AtlasConsultantReport consultantReport = consultantService.analyze(
+        twin: twin,
+      );
 
       final generated = engine.execute(
         twin: twin,
         consultantReport: consultantReport,
       );
 
-      await AtlasFarmAuditHistoryService.instance
-          .save(generated);
+      await AtlasFarmAuditHistoryService.instance.save(generated);
 
       await _loadHistory();
 
@@ -146,8 +135,7 @@ class _AtlasFarmAuditScreenState
 
   @override
   Widget build(BuildContext context) {
-    final twins =
-        AtlasDigitalTwinService.instance.twins;
+    final twins = AtlasDigitalTwinService.instance.twins;
     final currentAudit = audit;
 
     return Scaffold(
@@ -155,171 +143,131 @@ class _AtlasFarmAuditScreenState
       appBar: AppBar(
         title: const Text(
           'Atlas Farm Audit',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
             tooltip: 'Abrir plano de ação',
-            onPressed: currentAudit == null ? null : () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => AtlasActionPlanScreen(farmId: currentAudit.farmId),
-                ),
-              );
-            },
+            onPressed: currentAudit == null
+                ? null
+                : () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) =>
+                            AtlasActionPlanScreen(farmId: currentAudit.farmId),
+                      ),
+                    );
+                  },
             icon: const Icon(Icons.flag_outlined),
           ),
           IconButton(
             tooltip: 'Gerar nova auditoria',
-            onPressed:
-                isGenerating ? null : _generateAudit,
+            onPressed: isGenerating ? null : _generateAudit,
             icon: const Icon(Icons.refresh),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : selectedTwin == null
-              ? const _EmptyAuditView()
-              : currentAudit == null
-                  ? const Center(
-                      child:
-                          CircularProgressIndicator(),
-                    )
-                  : SafeArea(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints:
-                              const BoxConstraints(
-                            maxWidth: 1180,
-                          ),
-                          child: ListView(
-                            padding:
-                                const EdgeInsets.all(22),
-                            children: [
-                              if (twins.length > 1) ...[
-                                _FarmSelector(
-                                  twins: twins,
-                                  selectedFarmId:
-                                      selectedFarmId,
-                                  onChanged:
-                                      (value) async {
-                                    setState(() {
-                                      selectedFarmId =
-                                          value;
-                                      audit = null;
-                                      history =
-                                          <AtlasFarmAudit>[];
-                                    });
+          ? const _EmptyAuditView()
+          : currentAudit == null
+          ? const Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1180),
+                  child: ListView(
+                    padding: const EdgeInsets.all(22),
+                    children: [
+                      if (twins.length > 1) ...[
+                        _FarmSelector(
+                          twins: twins,
+                          selectedFarmId: selectedFarmId,
+                          onChanged: (value) async {
+                            setState(() {
+                              selectedFarmId = value;
+                              audit = null;
+                              history = <AtlasFarmAudit>[];
+                            });
 
-                                    await _loadHistory();
+                            await _loadHistory();
 
-                                    if (history.isNotEmpty) {
-                                      setState(() {
-                                        audit =
-                                            history.first;
-                                      });
-                                    } else {
-                                      await _generateAudit();
-                                    }
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                              ],
-                              _AuditHero(
-                                audit: currentAudit,
-                              ),
-                              const SizedBox(height: 20),
-                              _DiagnosisCard(
-                                audit: currentAudit,
-                              ),
-                              const SizedBox(height: 24),
-                              const _SectionTitle(
-                                title:
-                                    'Avaliação por área',
-                                subtitle:
-                                    'Pontuação técnica das 12 áreas da consultoria veterinária.',
-                              ),
-                              const SizedBox(height: 12),
-                              _AreaGrid(
-                                results:
-                                    currentAudit.areaResults,
-                              ),
-                              const SizedBox(height: 24),
-                              const _SectionTitle(
-                                title:
-                                    'Ranking de problemas',
-                                subtitle:
-                                    'Gargalos organizados pela prioridade e pelo impacto econômico estimado.',
-                              ),
-                              const SizedBox(height: 12),
-                              _ProblemList(
-                                problems:
-                                    currentAudit.problems,
-                              ),
-                              const SizedBox(height: 24),
-                              const _SectionTitle(
-                                title: 'Oportunidades',
-                                subtitle:
-                                    'Possíveis investimentos classificados pelo retorno estimado.',
-                              ),
-                              const SizedBox(height: 12),
-                              _OpportunityList(
-                                opportunities:
-                                    currentAudit
-                                        .opportunities,
-                              ),
-                              if (history.length > 1) ...[
-                                const SizedBox(height: 24),
-                                const _SectionTitle(
-                                  title:
-                                      'Evolução histórica',
-                                  subtitle:
-                                      'Comparação das últimas auditorias armazenadas.',
-                                ),
-                                const SizedBox(height: 12),
-                                _HistoryCard(
-                                  history: history,
-                                ),
-                              ],
-                              const SizedBox(height: 30),
-                            ],
-                          ),
+                            if (history.isNotEmpty) {
+                              setState(() {
+                                audit = history.first;
+                              });
+                            } else {
+                              await _generateAudit();
+                            }
+                          },
                         ),
+                        const SizedBox(height: 16),
+                      ],
+                      _AuditHero(audit: currentAudit),
+                      const SizedBox(height: 20),
+                      _DiagnosisCard(audit: currentAudit),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Avaliação por área',
+                        subtitle:
+                            'Pontuação técnica das 12 áreas da consultoria veterinária.',
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      _AreaGrid(results: currentAudit.areaResults),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Ranking de problemas',
+                        subtitle:
+                            'Gargalos organizados pela prioridade e pelo impacto econômico estimado.',
+                      ),
+                      const SizedBox(height: 12),
+                      _ProblemList(problems: currentAudit.problems),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Oportunidades',
+                        subtitle:
+                            'Possíveis investimentos classificados pelo retorno estimado.',
+                      ),
+                      const SizedBox(height: 12),
+                      _OpportunityList(
+                        opportunities: currentAudit.opportunities,
+                      ),
+                      if (history.length > 1) ...[
+                        const SizedBox(height: 24),
+                        const _SectionTitle(
+                          title: 'Evolução histórica',
+                          subtitle:
+                              'Comparação das últimas auditorias armazenadas.',
+                        ),
+                        const SizedBox(height: 12),
+                        _HistoryCard(history: history),
+                      ],
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }
 
 class _AuditHero extends StatelessWidget {
-  const _AuditHero({
-    required this.audit,
-  });
+  const _AuditHero({required this.audit});
 
   final AtlasFarmAudit audit;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _classificationColor(audit.classification);
+    final color = _classificationColor(audit.classification);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF07111F),
-            Color(0xFF17384D),
-            Color(0xFF236075),
-          ],
+          colors: [Color(0xFF07111F), Color(0xFF17384D), Color(0xFF236075)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
@@ -351,14 +299,11 @@ class _AuditHero extends StatelessWidget {
           const SizedBox(width: 22),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Atlas Farm Audit Index',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -374,10 +319,7 @@ class _AuditHero extends StatelessWidget {
                   '${atlasFarmAuditClassificationLabel(audit.classification)} · '
                   '${audit.problems.length} problemas · '
                   '${audit.opportunities.length} oportunidades',
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -389,9 +331,7 @@ class _AuditHero extends StatelessWidget {
 }
 
 class _DiagnosisCard extends StatelessWidget {
-  const _DiagnosisCard({
-    required this.audit,
-  });
+  const _DiagnosisCard({required this.audit});
 
   final AtlasFarmAudit audit;
 
@@ -401,8 +341,7 @@ class _DiagnosisCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
@@ -410,20 +349,12 @@ class _DiagnosisCard extends StatelessWidget {
                 SizedBox(width: 8),
                 Text(
                   'Parecer técnico',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              audit.diagnosis,
-              style: const TextStyle(
-                height: 1.5,
-              ),
-            ),
+            Text(audit.diagnosis, style: const TextStyle(height: 1.5)),
           ],
         ),
       ),
@@ -432,9 +363,7 @@ class _DiagnosisCard extends StatelessWidget {
 }
 
 class _AreaGrid extends StatelessWidget {
-  const _AreaGrid({
-    required this.results,
-  });
+  const _AreaGrid({required this.results});
 
   final List<AtlasFarmAuditAreaResult> results;
 
@@ -442,51 +371,39 @@ class _AreaGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns =
-            constraints.maxWidth >= 900 ? 3 : 2;
+        final columns = constraints.maxWidth >= 900 ? 3 : 2;
 
-        final width = (
-          constraints.maxWidth -
-          (columns - 1) * 12
-        ) / columns;
+        final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
 
         return Wrap(
           spacing: 12,
           runSpacing: 12,
           children: results.map((result) {
-            final color =
-                _statusColor(result.status);
+            final color = _statusColor(result.status);
 
             return SizedBox(
               width: width,
               child: Card(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              atlasFarmAuditAreaLabel(
-                                result.area,
-                              ),
+                              atlasFarmAuditAreaLabel(result.area),
                               style: const TextStyle(
-                                fontWeight:
-                                    FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
-                            result.score
-                                .toStringAsFixed(1),
+                            result.score.toStringAsFixed(1),
                             style: TextStyle(
                               color: color,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -499,13 +416,10 @@ class _AreaGrid extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        atlasFarmAuditAreaStatusLabel(
-                          result.status,
-                        ),
+                        atlasFarmAuditAreaStatusLabel(result.status),
                         style: TextStyle(
                           color: color,
-                          fontWeight:
-                              FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -521,9 +435,7 @@ class _AreaGrid extends StatelessWidget {
 }
 
 class _ProblemList extends StatelessWidget {
-  const _ProblemList({
-    required this.problems,
-  });
+  const _ProblemList({required this.problems});
 
   final List<AtlasFarmAuditProblem> problems;
 
@@ -532,37 +444,25 @@ class _ProblemList extends StatelessWidget {
     if (problems.isEmpty) {
       return const Card(
         child: ListTile(
-          leading: Icon(
-            Icons.verified_outlined,
-            color: Color(0xFF2E7D32),
-          ),
-          title: Text(
-            'Nenhum problema relevante identificado.',
-          ),
+          leading: Icon(Icons.verified_outlined, color: Color(0xFF2E7D32)),
+          title: Text('Nenhum problema relevante identificado.'),
         ),
       );
     }
 
     return Column(
       children: problems.map((problem) {
-        final color =
-            _priorityColor(problem.priority);
+        final color = _priorityColor(problem.priority);
 
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(alpha: 0.12),
-              child: Icon(
-                Icons.warning_amber_outlined,
-                color: color,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
+              child: Icon(Icons.warning_amber_outlined, color: color),
             ),
             title: Text(
               problem.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${problem.description}\n'
@@ -570,28 +470,17 @@ class _ProblemList extends StatelessWidget {
             ),
             isThreeLine: true,
             trailing: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              crossAxisAlignment:
-                  CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  atlasFarmAuditPriorityLabel(
-                    problem.priority,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  atlasFarmAuditPriorityLabel(problem.priority),
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _formatCurrency(
-                    problem.estimatedAnnualImpact,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
+                  _formatCurrency(problem.estimatedAnnualImpact),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -603,12 +492,9 @@ class _ProblemList extends StatelessWidget {
 }
 
 class _OpportunityList extends StatelessWidget {
-  const _OpportunityList({
-    required this.opportunities,
-  });
+  const _OpportunityList({required this.opportunities});
 
-  final List<AtlasFarmAuditOpportunity>
-      opportunities;
+  final List<AtlasFarmAuditOpportunity> opportunities;
 
   @override
   Widget build(BuildContext context) {
@@ -617,33 +503,21 @@ class _OpportunityList extends StatelessWidget {
         return Card(
           child: ExpansionTile(
             leading: const CircleAvatar(
-              child: Icon(
-                Icons.trending_up_outlined,
-              ),
+              child: Icon(Icons.trending_up_outlined),
             ),
             title: Text(
               opportunity.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasFarmAuditAreaLabel(opportunity.area)} · '
               'ROI ${opportunity.roiPercent.toStringAsFixed(1)}%',
             ),
-            childrenPadding:
-                const EdgeInsets.fromLTRB(
-              18,
-              0,
-              18,
-              18,
-            ),
+            childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  opportunity.description,
-                ),
+                child: Text(opportunity.description),
               ),
               const SizedBox(height: 12),
               Row(
@@ -651,26 +525,19 @@ class _OpportunityList extends StatelessWidget {
                   Expanded(
                     child: _FinancialMetric(
                       label: 'Investimento',
-                      value: _formatCurrency(
-                        opportunity
-                            .estimatedInvestment,
-                      ),
+                      value: _formatCurrency(opportunity.estimatedInvestment),
                     ),
                   ),
                   Expanded(
                     child: _FinancialMetric(
                       label: 'Retorno estimado',
-                      value: _formatCurrency(
-                        opportunity
-                            .estimatedReturn,
-                      ),
+                      value: _formatCurrency(opportunity.estimatedReturn),
                     ),
                   ),
                   Expanded(
                     child: _FinancialMetric(
                       label: 'ROI',
-                      value:
-                          '${opportunity.roiPercent.toStringAsFixed(1)}%',
+                      value: '${opportunity.roiPercent.toStringAsFixed(1)}%',
                     ),
                   ),
                 ],
@@ -684,10 +551,7 @@ class _OpportunityList extends StatelessWidget {
 }
 
 class _FinancialMetric extends StatelessWidget {
-  const _FinancialMetric({
-    required this.label,
-    required this.value,
-  });
+  const _FinancialMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -695,31 +559,18 @@ class _FinancialMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: Colors.black54)),
         const SizedBox(height: 3),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }
 }
 
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({
-    required this.history,
-  });
+  const _HistoryCard({required this.history});
 
   final List<AtlasFarmAudit> history;
 
@@ -733,15 +584,10 @@ class _HistoryCard extends StatelessWidget {
         child: Column(
           children: visible.map((item) {
             return Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      _formatDate(item.generatedAt),
-                    ),
-                  ),
+                  Expanded(child: Text(_formatDate(item.generatedAt))),
                   Expanded(
                     flex: 2,
                     child: LinearProgressIndicator(
@@ -751,11 +597,8 @@ class _HistoryCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    item.overallIndex
-                        .toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    item.overallIndex.toStringAsFixed(1),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -803,10 +646,7 @@ class _FarmSelector extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -814,23 +654,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -847,25 +678,17 @@ class _EmptyAuditView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.assignment_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.assignment_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Nenhum Digital Twin está disponível.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Registre eventos da fazenda antes de gerar a auditoria.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -874,9 +697,7 @@ class _EmptyAuditView extends StatelessWidget {
   }
 }
 
-Color _classificationColor(
-  AtlasFarmAuditClassification classification,
-) {
+Color _classificationColor(AtlasFarmAuditClassification classification) {
   switch (classification) {
     case AtlasFarmAuditClassification.excellent:
       return const Color(0xFF66BB6A);
@@ -902,9 +723,7 @@ Color _statusColor(AtlasFarmAuditAreaStatus status) {
   }
 }
 
-Color _priorityColor(
-  AtlasFarmAuditPriority priority,
-) {
+Color _priorityColor(AtlasFarmAuditPriority priority) {
   switch (priority) {
     case AtlasFarmAuditPriority.low:
       return const Color(0xFF2E7D32);

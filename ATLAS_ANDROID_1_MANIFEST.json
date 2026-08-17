@@ -1,0 +1,9 @@
+{
+  "milestone": "Atlas Android 1.0 - Primeiro Dispositivo Real",
+  "version": "1.0.0+2",
+  "application_id": "br.com.projetoatlas.app",
+  "steps": 20,
+  "apk_expected_path": "dist/android/atlas-android-1.0.0-release.apk",
+  "production_ready": false,
+  "requires_real_device_acceptance": true
+}

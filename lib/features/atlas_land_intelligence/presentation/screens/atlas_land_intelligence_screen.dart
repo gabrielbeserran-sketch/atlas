@@ -28,8 +28,7 @@ class AtlasLandIntelligenceScreen extends StatefulWidget {
 
 class _AtlasLandIntelligenceScreenState
     extends State<AtlasLandIntelligenceScreen> {
-  final AtlasLandStorageService storage =
-      AtlasLandStorageService();
+  final AtlasLandStorageService storage = AtlasLandStorageService();
   final AtlasLandAnalyticsService analyticsService =
       const AtlasLandAnalyticsService();
 
@@ -78,28 +77,26 @@ class _AtlasLandIntelligenceScreenState
   }
 
   List<AtlasLandRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatch = record.module == selectedModule;
-      final featureMatch = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatch && featureMatch;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatch = record.module == selectedModule;
+          final featureMatch =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatch && featureMatch;
+        })
+        .toList(growable: false);
   }
 
   Future<void> openForm([AtlasLandRecord? current]) async {
     final result = await showDialog<AtlasLandRecord>(
       context: context,
-      builder: (context) => _AtlasLandRecordForm(
-        module: selectedModule,
-        record: current,
-      ),
+      builder: (context) =>
+          _AtlasLandRecordForm(module: selectedModule, record: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -121,13 +118,11 @@ class _AtlasLandIntelligenceScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -201,8 +196,7 @@ class _AtlasLandIntelligenceScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -265,12 +259,8 @@ class _AtlasLandIntelligenceScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro registro para '
                               'iniciar os indicadores.',
@@ -282,8 +272,7 @@ class _AtlasLandIntelligenceScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -297,10 +286,7 @@ class _AtlasLandIntelligenceScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasLandModule selected;
   final ValueChanged<AtlasLandModule> onSelected;
@@ -311,31 +297,30 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasLandModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasLandModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: module == AtlasLandModule.values.last
-                      ? 0
-                      : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasLandModule.values.last ? 0 : 8,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -360,13 +345,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: feature == selected,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: feature == selected,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -394,12 +381,8 @@ class _RecordCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              statusColor.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: statusColor,
-          ),
+          backgroundColor: statusColor.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: statusColor),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -415,14 +398,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -431,21 +408,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _AtlasLandRecordForm extends StatefulWidget {
-  const _AtlasLandRecordForm({
-    required this.module,
-    this.record,
-  });
+  const _AtlasLandRecordForm({required this.module, this.record});
 
   final AtlasLandModule module;
   final AtlasLandRecord? record;
 
   @override
-  State<_AtlasLandRecordForm> createState() =>
-      _AtlasLandRecordFormState();
+  State<_AtlasLandRecordForm> createState() => _AtlasLandRecordFormState();
 }
 
-class _AtlasLandRecordFormState
-    extends State<_AtlasLandRecordForm> {
+class _AtlasLandRecordFormState extends State<_AtlasLandRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -466,18 +438,13 @@ class _AtlasLandRecordFormState
     status = record?.status ?? 'Planejado';
     title = TextEditingController(text: record?.title ?? '');
     date = TextEditingController(
-      text: record?.date ??
-          formatAtlasLandDate(DateTime.now()),
+      text: record?.date ?? formatAtlasLandDate(DateTime.now()),
     );
     primary = TextEditingController(
-      text: record == null
-          ? ''
-          : record.primaryValue.toString(),
+      text: record == null ? '' : record.primaryValue.toString(),
     );
     secondary = TextEditingController(
-      text: record == null
-          ? ''
-          : record.secondaryValue.toString(),
+      text: record == null ? '' : record.secondaryValue.toString(),
     );
     unit = TextEditingController(text: record?.unit ?? '');
     notes = TextEditingController(text: record?.notes ?? '');
@@ -495,10 +462,7 @@ class _AtlasLandRecordFormState
   }
 
   double number(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   Future<void> chooseDate() async {
@@ -508,9 +472,7 @@ class _AtlasLandRecordFormState
           ? DateTime.now()
           : parseAtlasLandDate(date.text),
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -526,8 +488,7 @@ class _AtlasLandRecordFormState
     Navigator.pop(
       context,
       AtlasLandRecord(
-        id: current?.id ??
-            'land_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'land_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -546,11 +507,7 @@ class _AtlasLandRecordFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.record == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.record == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 650,
         child: Form(
@@ -565,10 +522,8 @@ class _AtlasLandRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -579,9 +534,7 @@ class _AtlasLandRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -595,30 +548,27 @@ class _AtlasLandRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em andamento',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em andamento',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -627,8 +577,7 @@ class _AtlasLandRecordFormState
                 ),
                 TextFormField(
                   controller: primary,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -637,8 +586,7 @@ class _AtlasLandRecordFormState
                 ),
                 TextFormField(
                   controller: secondary,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -670,10 +618,7 @@ class _AtlasLandRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }

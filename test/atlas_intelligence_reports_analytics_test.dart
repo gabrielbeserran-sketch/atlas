@@ -1,18 +1,15 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_reports_experience/domain/models/atlas_intelligence_reports_record.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_reports_experience/domain/services/atlas_intelligence_reports_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasIntelligenceReportsAnalyticsService();
+  const service = AtlasIntelligenceReportsAnalyticsService();
 
   test('calculates intelligence reports analytics', () {
     const records = [
       AtlasIntelligenceReportsRecord(
         id: '1',
-        module:
-            AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
+        module: AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
         feature: 'Fórmula',
         title: 'Indicador de eficiência',
         date: '04/08/2026',
@@ -36,8 +33,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
+      module: AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
       records: records,
     );
 

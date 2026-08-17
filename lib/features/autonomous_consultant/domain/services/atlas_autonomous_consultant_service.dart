@@ -8,35 +8,28 @@ import 'package:projeto_atlas/features/optimization_engine/domain/services/atlas
 
 class AtlasAutonomousConsultantService {
   const AtlasAutonomousConsultantService({
-    this.optimizationEngine =
-        const AtlasOptimizationEngine(),
+    this.optimizationEngine = const AtlasOptimizationEngine(),
   });
 
   final AtlasOptimizationEngine optimizationEngine;
 
-  AtlasConsultantReport analyze({
-    required AtlasDigitalTwin twin,
-  }) {
+  AtlasConsultantReport analyze({required AtlasDigitalTwin twin}) {
     final objective = _selectObjective(twin);
 
     final request = AtlasOptimizationRequest(
-      id:
-          'consultant_optimization_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'consultant_optimization_${DateTime.now().microsecondsSinceEpoch}',
       farmId: twin.farmId,
       farmName: twin.farmName,
       objective: objective,
       horizonMonths: 12,
       maxInvestment: _recommendedInvestmentLimit(twin),
-      maxRisk:
-          AtlasOptimizationRiskTolerance.moderate,
-      maxHerdExpansion:
-          _recommendedHerdExpansion(twin),
+      maxRisk: AtlasOptimizationRiskTolerance.moderate,
+      maxHerdExpansion: _recommendedHerdExpansion(twin),
       minimumScore: 50,
       generatedAt: DateTime.now(),
     );
 
-    final optimizationResult =
-        optimizationEngine.optimize(
+    final optimizationResult = optimizationEngine.optimize(
       currentTwin: twin,
       request: request,
     );
@@ -46,17 +39,14 @@ class AtlasAutonomousConsultantService {
       optimizationResult: optimizationResult,
     );
 
-    final overallPriority =
-        _overallPriority(actions);
+    final overallPriority = _overallPriority(actions);
 
     return AtlasConsultantReport(
-      id:
-          'consultant_report_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'consultant_report_${DateTime.now().microsecondsSinceEpoch}',
       farmId: twin.farmId,
       farmName: twin.farmName,
       generatedAt: DateTime.now(),
-      executiveDiagnosis:
-          _buildExecutiveDiagnosis(
+      executiveDiagnosis: _buildExecutiveDiagnosis(
         twin: twin,
         actions: actions,
       ),
@@ -65,64 +55,44 @@ class AtlasAutonomousConsultantService {
       trend: twin.trend,
       actions: actions,
       optimizationResult: optimizationResult,
-      strategicSummary:
-          _buildStrategicSummary(
+      strategicSummary: _buildStrategicSummary(
         twin: twin,
         actions: actions,
-        bestStrategy:
-            optimizationResult.bestCandidate.name,
+        bestStrategy: optimizationResult.bestCandidate.name,
       ),
     );
   }
 
-  AtlasOptimizationObjective _selectObjective(
-    AtlasDigitalTwin twin,
-  ) {
+  AtlasOptimizationObjective _selectObjective(AtlasDigitalTwin twin) {
     final scores = <AtlasDigitalTwinArea, double>{
-      AtlasDigitalTwinArea.animal:
-          twin.health.animal,
-      AtlasDigitalTwinArea.sanitary:
-          twin.health.sanitary,
-      AtlasDigitalTwinArea.reproductive:
-          twin.health.reproductive,
-      AtlasDigitalTwinArea.financial:
-          twin.health.financial,
-      AtlasDigitalTwinArea.inventory:
-          twin.health.inventory,
-      AtlasDigitalTwinArea.operational:
-          twin.health.operational,
+      AtlasDigitalTwinArea.animal: twin.health.animal,
+      AtlasDigitalTwinArea.sanitary: twin.health.sanitary,
+      AtlasDigitalTwinArea.reproductive: twin.health.reproductive,
+      AtlasDigitalTwinArea.financial: twin.health.financial,
+      AtlasDigitalTwinArea.inventory: twin.health.inventory,
+      AtlasDigitalTwinArea.operational: twin.health.operational,
     };
 
     final weakest = scores.entries.reduce(
-      (first, second) =>
-          first.value <= second.value
-              ? first
-              : second,
+      (first, second) => first.value <= second.value ? first : second,
     );
 
     switch (weakest.key) {
       case AtlasDigitalTwinArea.sanitary:
-        return AtlasOptimizationObjective
-            .improveSanitary;
+        return AtlasOptimizationObjective.improveSanitary;
       case AtlasDigitalTwinArea.reproductive:
-        return AtlasOptimizationObjective
-            .improveReproduction;
+        return AtlasOptimizationObjective.improveReproduction;
       case AtlasDigitalTwinArea.financial:
-        return AtlasOptimizationObjective
-            .maximizeProfit;
+        return AtlasOptimizationObjective.maximizeProfit;
       case AtlasDigitalTwinArea.inventory:
       case AtlasDigitalTwinArea.operational:
-        return AtlasOptimizationObjective
-            .improveOperations;
+        return AtlasOptimizationObjective.improveOperations;
       case AtlasDigitalTwinArea.animal:
-        return AtlasOptimizationObjective
-            .balancedGrowth;
+        return AtlasOptimizationObjective.balancedGrowth;
     }
   }
 
-  double _recommendedInvestmentLimit(
-    AtlasDigitalTwin twin,
-  ) {
+  double _recommendedInvestmentLimit(AtlasDigitalTwin twin) {
     final financial = twin.health.financial;
 
     if (financial >= 80) {
@@ -140,13 +110,8 @@ class AtlasAutonomousConsultantService {
     return 30000;
   }
 
-  int _recommendedHerdExpansion(
-    AtlasDigitalTwin twin,
-  ) {
-    final capacity = math.min(
-      twin.health.inventory,
-      twin.health.operational,
-    );
+  int _recommendedHerdExpansion(AtlasDigitalTwin twin) {
+    final capacity = math.min(twin.health.inventory, twin.health.operational);
 
     if (capacity >= 85) {
       return 120;
@@ -170,65 +135,42 @@ class AtlasAutonomousConsultantService {
     final actions = <AtlasConsultantAction>[];
 
     for (final risk in twin.risks.take(5)) {
-      actions.add(
-        _actionFromRisk(risk),
-      );
+      actions.add(_actionFromRisk(risk));
     }
 
-    final areaScores =
-        <AtlasDigitalTwinArea, double>{
-      AtlasDigitalTwinArea.animal:
-          twin.health.animal,
-      AtlasDigitalTwinArea.sanitary:
-          twin.health.sanitary,
-      AtlasDigitalTwinArea.reproductive:
-          twin.health.reproductive,
-      AtlasDigitalTwinArea.financial:
-          twin.health.financial,
-      AtlasDigitalTwinArea.inventory:
-          twin.health.inventory,
-      AtlasDigitalTwinArea.operational:
-          twin.health.operational,
+    final areaScores = <AtlasDigitalTwinArea, double>{
+      AtlasDigitalTwinArea.animal: twin.health.animal,
+      AtlasDigitalTwinArea.sanitary: twin.health.sanitary,
+      AtlasDigitalTwinArea.reproductive: twin.health.reproductive,
+      AtlasDigitalTwinArea.financial: twin.health.financial,
+      AtlasDigitalTwinArea.inventory: twin.health.inventory,
+      AtlasDigitalTwinArea.operational: twin.health.operational,
     };
 
     final ordered = areaScores.entries.toList()
-      ..sort(
-        (first, second) =>
-            first.value.compareTo(second.value),
-      );
+      ..sort((first, second) => first.value.compareTo(second.value));
 
     for (final entry in ordered.take(3)) {
       if (entry.value < 72) {
-        actions.add(
-          _actionFromWeakArea(
-            area: entry.key,
-            score: entry.value,
-          ),
-        );
+        actions.add(_actionFromWeakArea(area: entry.key, score: entry.value));
       }
     }
 
     actions.add(
       AtlasConsultantAction(
-        id:
-            'strategy_${DateTime.now().microsecondsSinceEpoch}',
-        title:
-            'Preparar plano piloto da estratégia otimizada',
+        id: 'strategy_${DateTime.now().microsecondsSinceEpoch}',
+        title: 'Preparar plano piloto da estratégia otimizada',
         description:
             'Transformar a estratégia “${optimizationResult.bestCandidate.name}” em uma execução controlada.',
         justification:
             'O Optimization Engine comparou diferentes alternativas e classificou esta como a melhor combinação entre objetivo, retorno, risco e equilíbrio.',
-        area:
-            AtlasDigitalTwinArea.operational,
-        priority:
-            AtlasConsultantPriority.moderate,
+        area: AtlasDigitalTwinArea.operational,
+        priority: AtlasConsultantPriority.moderate,
         deadlineDays: 30,
         expectedScoreImpact:
-            optimizationResult.bestCandidate.result
-                .scoreVariation,
+            optimizationResult.bestCandidate.result.scoreVariation,
         estimatedEconomicImpact:
-            optimizationResult.bestCandidate.result
-                .projectedNetResult,
+            optimizationResult.bestCandidate.result.projectedNetResult,
         riskOfInaction:
             'Manter a operação sem um plano estruturado pode prolongar gargalos e reduzir o ganho potencial.',
         indicators: const <String>[
@@ -251,28 +193,21 @@ class AtlasAutonomousConsultantService {
     final unique = <String, AtlasConsultantAction>{};
 
     for (final action in actions) {
-      unique[
-        '${action.area.name}_${action.title}'
-      ] = action;
+      unique['${action.area.name}_${action.title}'] = action;
     }
 
     final result = unique.values.toList()
       ..sort(
-        (first, second) =>
-            _priorityWeight(second.priority)
-                .compareTo(
-          _priorityWeight(first.priority),
-        ),
+        (first, second) => _priorityWeight(
+          second.priority,
+        ).compareTo(_priorityWeight(first.priority)),
       );
 
     return result.take(8).toList();
   }
 
-  AtlasConsultantAction _actionFromRisk(
-    AtlasFarmRisk risk,
-  ) {
-    final priority =
-        _priorityFromRiskLevel(risk.level);
+  AtlasConsultantAction _actionFromRisk(AtlasFarmRisk risk) {
+    final priority = _priorityFromRiskLevel(risk.level);
 
     return AtlasConsultantAction(
       id: 'risk_action_${risk.id}',
@@ -283,20 +218,12 @@ class AtlasAutonomousConsultantService {
           '${risk.description} O risco apresenta score ${risk.score.toStringAsFixed(0)} e classificação ${atlasFarmRiskLevelLabel(risk.level)}.',
       area: risk.area,
       priority: priority,
-      deadlineDays:
-          _deadlineForPriority(priority),
-      expectedScoreImpact:
-          (risk.score / 12)
-              .clamp(2.0, 10.0)
-              .toDouble(),
-      estimatedEconomicImpact:
-          risk.score * 750,
-      riskOfInaction:
-          _riskOfInactionForArea(risk.area),
-      indicators:
-          _indicatorsForArea(risk.area),
-      steps:
-          _stepsForArea(risk.area),
+      deadlineDays: _deadlineForPriority(priority),
+      expectedScoreImpact: (risk.score / 12).clamp(2.0, 10.0).toDouble(),
+      estimatedEconomicImpact: risk.score * 750,
+      riskOfInaction: _riskOfInactionForArea(risk.area),
+      indicators: _indicatorsForArea(risk.area),
+      steps: _stepsForArea(risk.area),
     );
   }
 
@@ -307,35 +234,23 @@ class AtlasAutonomousConsultantService {
     final priority = score < 45
         ? AtlasConsultantPriority.critical
         : score < 60
-            ? AtlasConsultantPriority.high
-            : AtlasConsultantPriority.moderate;
+        ? AtlasConsultantPriority.high
+        : AtlasConsultantPriority.moderate;
 
     return AtlasConsultantAction(
-      id:
-          'weak_area_${area.name}_${DateTime.now().microsecondsSinceEpoch}',
-      title:
-          'Recuperar ${atlasDigitalTwinAreaLabel(area).toLowerCase()}',
+      id: 'weak_area_${area.name}_${DateTime.now().microsecondsSinceEpoch}',
+      title: 'Recuperar ${atlasDigitalTwinAreaLabel(area).toLowerCase()}',
       description:
           'Criar um plano específico para elevar o indicador atualmente em ${score.toStringAsFixed(1)} pontos.',
       justification:
           'Este é um dos menores scores do Digital Twin e limita o desempenho consolidado da fazenda.',
       area: area,
       priority: priority,
-      deadlineDays:
-          _deadlineForPriority(priority),
-      expectedScoreImpact:
-          (75 - score)
-              .clamp(3.0, 15.0)
-              .toDouble(),
-      estimatedEconomicImpact:
-          (75 - score)
-              .clamp(0.0, 40.0)
-              .toDouble() *
-          2500,
-      riskOfInaction:
-          _riskOfInactionForArea(area),
-      indicators:
-          _indicatorsForArea(area),
+      deadlineDays: _deadlineForPriority(priority),
+      expectedScoreImpact: (75 - score).clamp(3.0, 15.0).toDouble(),
+      estimatedEconomicImpact: (75 - score).clamp(0.0, 40.0).toDouble() * 2500,
+      riskOfInaction: _riskOfInactionForArea(area),
+      indicators: _indicatorsForArea(area),
       steps: _stepsForArea(area),
     );
   }
@@ -344,25 +259,17 @@ class AtlasAutonomousConsultantService {
     List<AtlasConsultantAction> actions,
   ) {
     if (actions.any(
-      (item) =>
-          item.priority ==
-          AtlasConsultantPriority.critical,
+      (item) => item.priority == AtlasConsultantPriority.critical,
     )) {
       return AtlasConsultantPriority.critical;
     }
 
-    if (actions.any(
-      (item) =>
-          item.priority ==
-          AtlasConsultantPriority.high,
-    )) {
+    if (actions.any((item) => item.priority == AtlasConsultantPriority.high)) {
       return AtlasConsultantPriority.high;
     }
 
     if (actions.any(
-      (item) =>
-          item.priority ==
-          AtlasConsultantPriority.moderate,
+      (item) => item.priority == AtlasConsultantPriority.moderate,
     )) {
       return AtlasConsultantPriority.moderate;
     }
@@ -370,9 +277,7 @@ class AtlasAutonomousConsultantService {
     return AtlasConsultantPriority.low;
   }
 
-  AtlasConsultantPriority _priorityFromRiskLevel(
-    AtlasFarmRiskLevel level,
-  ) {
+  AtlasConsultantPriority _priorityFromRiskLevel(AtlasFarmRiskLevel level) {
     switch (level) {
       case AtlasFarmRiskLevel.low:
         return AtlasConsultantPriority.low;
@@ -385,9 +290,7 @@ class AtlasAutonomousConsultantService {
     }
   }
 
-  int _priorityWeight(
-    AtlasConsultantPriority priority,
-  ) {
+  int _priorityWeight(AtlasConsultantPriority priority) {
     switch (priority) {
       case AtlasConsultantPriority.low:
         return 1;
@@ -400,9 +303,7 @@ class AtlasAutonomousConsultantService {
     }
   }
 
-  int _deadlineForPriority(
-    AtlasConsultantPriority priority,
-  ) {
+  int _deadlineForPriority(AtlasConsultantPriority priority) {
     switch (priority) {
       case AtlasConsultantPriority.critical:
         return 3;
@@ -415,9 +316,7 @@ class AtlasAutonomousConsultantService {
     }
   }
 
-  String _riskOfInactionForArea(
-    AtlasDigitalTwinArea area,
-  ) {
+  String _riskOfInactionForArea(AtlasDigitalTwinArea area) {
     switch (area) {
       case AtlasDigitalTwinArea.animal:
         return 'Perda de desempenho, pior conversão e redução do valor produzido por animal.';
@@ -434,9 +333,7 @@ class AtlasAutonomousConsultantService {
     }
   }
 
-  List<String> _indicatorsForArea(
-    AtlasDigitalTwinArea area,
-  ) {
+  List<String> _indicatorsForArea(AtlasDigitalTwinArea area) {
     switch (area) {
       case AtlasDigitalTwinArea.animal:
         return const <String>[
@@ -483,9 +380,7 @@ class AtlasAutonomousConsultantService {
     }
   }
 
-  List<String> _stepsForArea(
-    AtlasDigitalTwinArea area,
-  ) {
+  List<String> _stepsForArea(AtlasDigitalTwinArea area) {
     switch (area) {
       case AtlasDigitalTwinArea.animal:
         return const <String>[
@@ -537,34 +432,13 @@ class AtlasAutonomousConsultantService {
     required List<AtlasConsultantAction> actions,
   }) {
     final weakest = <MapEntry<String, double>>[
-      MapEntry(
-        'desempenho animal',
-        twin.health.animal,
-      ),
-      MapEntry(
-        'sanidade',
-        twin.health.sanitary,
-      ),
-      MapEntry(
-        'reprodução',
-        twin.health.reproductive,
-      ),
-      MapEntry(
-        'financeiro',
-        twin.health.financial,
-      ),
-      MapEntry(
-        'estoque',
-        twin.health.inventory,
-      ),
-      MapEntry(
-        'operacional',
-        twin.health.operational,
-      ),
-    ]..sort(
-        (first, second) =>
-            first.value.compareTo(second.value),
-      );
+      MapEntry('desempenho animal', twin.health.animal),
+      MapEntry('sanidade', twin.health.sanitary),
+      MapEntry('reprodução', twin.health.reproductive),
+      MapEntry('financeiro', twin.health.financial),
+      MapEntry('estoque', twin.health.inventory),
+      MapEntry('operacional', twin.health.operational),
+    ]..sort((first, second) => first.value.compareTo(second.value));
 
     final mainArea = weakest.first;
 
@@ -583,10 +457,8 @@ class AtlasAutonomousConsultantService {
   }) {
     final urgent = actions.where(
       (item) =>
-          item.priority ==
-              AtlasConsultantPriority.critical ||
-          item.priority ==
-              AtlasConsultantPriority.high,
+          item.priority == AtlasConsultantPriority.critical ||
+          item.priority == AtlasConsultantPriority.high,
     );
 
     if (urgent.isNotEmpty) {

@@ -2,20 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/sync/atlas_sync_engine.dart';
 
 class AtlasSyncStatusButton extends StatefulWidget {
-  const AtlasSyncStatusButton({
-    this.engine,
-    super.key,
-  });
+  const AtlasSyncStatusButton({this.engine, super.key});
 
   final AtlasSyncEngine? engine;
 
   @override
-  State<AtlasSyncStatusButton> createState() =>
-      _AtlasSyncStatusButtonState();
+  State<AtlasSyncStatusButton> createState() => _AtlasSyncStatusButtonState();
 }
 
-class _AtlasSyncStatusButtonState
-    extends State<AtlasSyncStatusButton> {
+class _AtlasSyncStatusButtonState extends State<AtlasSyncStatusButton> {
   late final AtlasSyncEngine engine;
   bool syncing = false;
   int pending = 0;
@@ -72,9 +67,7 @@ class _AtlasSyncStatusButtonState
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             : Icon(
                 pending == 0

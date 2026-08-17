@@ -3,8 +3,7 @@ import 'package:projeto_atlas/features/atlas_official_integrations/domain/models
 import 'package:projeto_atlas/features/atlas_official_integrations/domain/services/atlas_official_integration_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasOfficialIntegrationAnalyticsService();
+  const service = AtlasOfficialIntegrationAnalyticsService();
 
   test('calculates official integration coverage', () {
     final records = [

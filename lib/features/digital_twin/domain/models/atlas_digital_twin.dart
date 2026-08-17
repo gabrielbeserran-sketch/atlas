@@ -77,8 +77,7 @@ class AtlasDigitalTwin {
       health: health ?? this.health,
       risks: risks ?? this.risks,
       timeline: timeline ?? this.timeline,
-      totalProcessedEvents:
-          totalProcessedEvents ?? this.totalProcessedEvents,
+      totalProcessedEvents: totalProcessedEvents ?? this.totalProcessedEvents,
       lastEventId: lastEventId ?? this.lastEventId,
     );
   }
@@ -99,22 +98,17 @@ class AtlasDigitalTwin {
     };
   }
 
-  factory AtlasDigitalTwin.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasDigitalTwin.fromJson(Map<String, dynamic> json) {
     return AtlasDigitalTwin(
       farmId: json['farmId'] as String? ?? 'global',
       farmName: json['farmName'] as String? ?? 'Operação',
-      createdAt: DateTime.tryParse(
-            json['createdAt'] as String? ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            json['updatedAt'] as String? ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.now(),
-      overallScore:
-          (json['overallScore'] as num?)?.toDouble() ?? 75,
+      overallScore: (json['overallScore'] as num?)?.toDouble() ?? 75,
       trend: AtlasDigitalTwinTrend.values.firstWhere(
         (item) => item.name == json['trend'],
         orElse: () => AtlasDigitalTwinTrend.stable,
@@ -127,9 +121,7 @@ class AtlasDigitalTwin {
       risks: (json['risks'] as List? ?? const <dynamic>[])
           .whereType<Map>()
           .map(
-            (item) => AtlasFarmRisk.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => AtlasFarmRisk.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList(),
       timeline: (json['timeline'] as List? ?? const <dynamic>[])
@@ -140,8 +132,7 @@ class AtlasDigitalTwin {
             ),
           )
           .toList(),
-      totalProcessedEvents:
-          json['totalProcessedEvents'] as int? ?? 0,
+      totalProcessedEvents: json['totalProcessedEvents'] as int? ?? 0,
       lastEventId: json['lastEventId'] as String?,
     );
   }
@@ -193,20 +184,14 @@ class AtlasFarmHealth {
     };
   }
 
-  factory AtlasFarmHealth.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmHealth.fromJson(Map<String, dynamic> json) {
     return AtlasFarmHealth(
       animal: (json['animal'] as num?)?.toDouble() ?? 75,
       sanitary: (json['sanitary'] as num?)?.toDouble() ?? 75,
-      reproductive:
-          (json['reproductive'] as num?)?.toDouble() ?? 75,
-      financial:
-          (json['financial'] as num?)?.toDouble() ?? 75,
-      inventory:
-          (json['inventory'] as num?)?.toDouble() ?? 75,
-      operational:
-          (json['operational'] as num?)?.toDouble() ?? 75,
+      reproductive: (json['reproductive'] as num?)?.toDouble() ?? 75,
+      financial: (json['financial'] as num?)?.toDouble() ?? 75,
+      inventory: (json['inventory'] as num?)?.toDouble() ?? 75,
+      operational: (json['operational'] as num?)?.toDouble() ?? 75,
     );
   }
 }
@@ -245,9 +230,7 @@ class AtlasFarmRisk {
     };
   }
 
-  factory AtlasFarmRisk.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmRisk.fromJson(Map<String, dynamic> json) {
     return AtlasFarmRisk(
       id: json['id'] as String? ?? 'risk_unknown',
       area: AtlasDigitalTwinArea.values.firstWhere(
@@ -261,12 +244,10 @@ class AtlasFarmRisk {
         (item) => item.name == json['level'],
         orElse: () => AtlasFarmRiskLevel.low,
       ),
-      updatedAt: DateTime.tryParse(
-            json['updatedAt'] as String? ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.now(),
-      sourceEventType:
-          json['sourceEventType'] as String? ?? 'unknown',
+      sourceEventType: json['sourceEventType'] as String? ?? 'unknown',
     );
   }
 }
@@ -308,9 +289,7 @@ class AtlasFarmTimelineEvent {
     };
   }
 
-  factory AtlasFarmTimelineEvent.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmTimelineEvent.fromJson(Map<String, dynamic> json) {
     return AtlasFarmTimelineEvent(
       id: json['id'] as String? ?? 'timeline_unknown',
       eventId: json['eventId'] as String? ?? 'event_unknown',
@@ -324,14 +303,11 @@ class AtlasFarmTimelineEvent {
         (item) => item.name == json['impact'],
         orElse: () => AtlasDigitalTwinImpact.neutral,
       ),
-      occurredAt: DateTime.tryParse(
-            json['occurredAt'] as String? ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(json['occurredAt'] as String? ?? '') ??
           DateTime.now(),
-      scoreBefore:
-          (json['scoreBefore'] as num?)?.toDouble() ?? 0,
-      scoreAfter:
-          (json['scoreAfter'] as num?)?.toDouble() ?? 0,
+      scoreBefore: (json['scoreBefore'] as num?)?.toDouble() ?? 0,
+      scoreAfter: (json['scoreAfter'] as num?)?.toDouble() ?? 0,
     );
   }
 }
@@ -345,29 +321,13 @@ enum AtlasDigitalTwinArea {
   operational,
 }
 
-enum AtlasDigitalTwinTrend {
-  improving,
-  stable,
-  worsening,
-}
+enum AtlasDigitalTwinTrend { improving, stable, worsening }
 
-enum AtlasDigitalTwinImpact {
-  positive,
-  neutral,
-  negative,
-  critical,
-}
+enum AtlasDigitalTwinImpact { positive, neutral, negative, critical }
 
-enum AtlasFarmRiskLevel {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasFarmRiskLevel { low, moderate, high, critical }
 
-String atlasDigitalTwinAreaLabel(
-  AtlasDigitalTwinArea area,
-) {
+String atlasDigitalTwinAreaLabel(AtlasDigitalTwinArea area) {
   switch (area) {
     case AtlasDigitalTwinArea.animal:
       return 'Desempenho animal';
@@ -384,9 +344,7 @@ String atlasDigitalTwinAreaLabel(
   }
 }
 
-String atlasDigitalTwinTrendLabel(
-  AtlasDigitalTwinTrend trend,
-) {
+String atlasDigitalTwinTrendLabel(AtlasDigitalTwinTrend trend) {
   switch (trend) {
     case AtlasDigitalTwinTrend.improving:
       return 'Melhorando';
@@ -397,9 +355,7 @@ String atlasDigitalTwinTrendLabel(
   }
 }
 
-String atlasFarmRiskLevelLabel(
-  AtlasFarmRiskLevel level,
-) {
+String atlasFarmRiskLevelLabel(AtlasFarmRiskLevel level) {
   switch (level) {
     case AtlasFarmRiskLevel.low:
       return 'Baixo';

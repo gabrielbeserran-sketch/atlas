@@ -4,23 +4,17 @@ import 'package:projeto_atlas/features/value_governance/domain/models/atlas_valu
 class AtlasValueGovernanceEngine {
   const AtlasValueGovernanceEngine();
 
-  AtlasValueGovernanceDecision govern(
-    AtlasBenefitRealization realization,
-  ) {
+  AtlasValueGovernanceDecision govern(AtlasBenefitRealization realization) {
     final financial = _financial(realization);
     final execution = _execution(realization);
     final risk = _risk(realization);
 
-    final valueScore = (
-      financial * 0.42 +
-      execution * 0.33 +
-      (100 - risk) * 0.25
-    ).clamp(0.0, 100.0).toDouble();
+    final valueScore =
+        (financial * 0.42 + execution * 0.33 + (100 - risk) * 0.25)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
-    final decision = _decision(
-      valueScore,
-      realization.status,
-    );
+    final decision = _decision(valueScore, realization.status);
 
     return AtlasValueGovernanceDecision(
       id: 'governance_${realization.strategyPlanId}',
@@ -47,40 +41,29 @@ class AtlasValueGovernanceEngine {
         ...realization.correctiveActions,
         _mainAction(decision),
       }.toList(),
-      nextReviewAt: DateTime.now().add(
-        Duration(days: _reviewDays(decision)),
-      ),
+      nextReviewAt: DateTime.now().add(Duration(days: _reviewDays(decision))),
     );
   }
 
   double _financial(AtlasBenefitRealization item) {
-    final achievement =
-        item.benefitAchievement.clamp(0.0, 120.0).toDouble();
-    final roi = (50 + item.roiVariance)
-        .clamp(0.0, 100.0)
-        .toDouble();
+    final achievement = item.benefitAchievement.clamp(0.0, 120.0).toDouble();
+    final roi = (50 + item.roiVariance).clamp(0.0, 100.0).toDouble();
     final budgetPenalty = item.plannedBudget <= 0
         ? 0.0
         : (item.budgetVariance / item.plannedBudget * 100)
-            .clamp(0.0, 60.0)
-            .toDouble();
+              .clamp(0.0, 60.0)
+              .toDouble();
 
-    return (
-      achievement * 0.55 +
-      roi * 0.30 +
-      (100 - budgetPenalty) * 0.15
-    ).clamp(0.0, 100.0).toDouble();
+    return (achievement * 0.55 + roi * 0.30 + (100 - budgetPenalty) * 0.15)
+        .clamp(0.0, 100.0)
+        .toDouble();
   }
 
   double _execution(AtlasBenefitRealization item) {
-    final progress =
-        (100 + item.progressVariance).clamp(0.0, 100.0);
-    final indicator =
-        (100 + item.indicatorVariance).clamp(0.0, 100.0);
+    final progress = (100 + item.progressVariance).clamp(0.0, 100.0);
+    final indicator = (100 + item.indicatorVariance).clamp(0.0, 100.0);
 
-    return (progress * 0.55 + indicator * 0.45)
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return (progress * 0.55 + indicator * 0.45).clamp(0.0, 100.0).toDouble();
   }
 
   double _risk(AtlasBenefitRealization item) {
@@ -100,12 +83,10 @@ class AtlasValueGovernanceEngine {
     double score,
     AtlasBenefitRealizationStatus status,
   ) {
-    if (status == AtlasBenefitRealizationStatus.critical ||
-        score < 25) {
+    if (status == AtlasBenefitRealizationStatus.critical || score < 25) {
       return AtlasValueGovernanceDecisionType.terminate;
     }
-    if (status == AtlasBenefitRealizationStatus.offTrack ||
-        score < 45) {
+    if (status == AtlasBenefitRealizationStatus.offTrack || score < 45) {
       return AtlasValueGovernanceDecisionType.pause;
     }
     if (score < 65) {
@@ -129,9 +110,7 @@ class AtlasValueGovernanceEngine {
     ];
   }
 
-  String _mainAction(
-    AtlasValueGovernanceDecisionType decision,
-  ) {
+  String _mainAction(AtlasValueGovernanceDecisionType decision) {
     switch (decision) {
       case AtlasValueGovernanceDecisionType.approve:
         return 'Autorizar continuidade conforme o plano.';
@@ -146,9 +125,7 @@ class AtlasValueGovernanceEngine {
     }
   }
 
-  int _reviewDays(
-    AtlasValueGovernanceDecisionType decision,
-  ) {
+  int _reviewDays(AtlasValueGovernanceDecisionType decision) {
     switch (decision) {
       case AtlasValueGovernanceDecisionType.approve:
         return 30;

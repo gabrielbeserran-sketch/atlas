@@ -33,18 +33,15 @@ class AtlasEnterpriseAuditService {
     final session = AtlasEnterpriseSessionService.instance;
     await session.ensureInitialized();
 
-    final resolvedCompanyId =
-        companyId ?? session.currentCompanyId ?? '';
-    final resolvedFarmId =
-        farmId ?? session.currentFarmId;
-    final resolvedUserId =
-        userId ?? session.currentUserId ?? 'anonymous';
+    final resolvedCompanyId = companyId ?? session.currentCompanyId ?? '';
+    final resolvedFarmId = farmId ?? session.currentFarmId;
+    final resolvedUserId = userId ?? session.currentUserId ?? 'anonymous';
 
     final all = await _repository.loadAll();
-    final previousHash =
-        all.isEmpty ? 'GENESIS' : all.last.integrityHash;
+    final previousHash = all.isEmpty ? 'GENESIS' : all.last.integrityHash;
     final now = DateTime.now();
-    final id = 'audit_${now.microsecondsSinceEpoch}_'
+    final id =
+        'audit_${now.microsecondsSinceEpoch}_'
         '${all.length + 1}';
 
     final canonical = <String, dynamic>{
@@ -68,8 +65,7 @@ class AtlasEnterpriseAuditService {
       'previousHash': previousHash,
     };
 
-    final integrityHash =
-        _fnv1a64('$previousHash|${jsonEncode(canonical)}');
+    final integrityHash = _fnv1a64('$previousHash|${jsonEncode(canonical)}');
 
     await _repository.append(
       AtlasEnterpriseAuditRecord(
@@ -106,20 +102,18 @@ class AtlasEnterpriseAuditService {
     String? result,
   }) async {
     final all = await _repository.loadAll();
-    final filtered = all.where((item) {
-      return (companyId == null || item.companyId == companyId) &&
-          (farmId == null || item.farmId == farmId) &&
-          (userId == null || item.userId == userId) &&
-          (module == null || item.module == module) &&
-          (entityType == null ||
-              item.entityType == entityType) &&
-          (action == null || item.action == action) &&
-          (result == null || item.result == result);
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.occurredAt.compareTo(first.occurredAt),
-      );
+    final filtered =
+        all.where((item) {
+          return (companyId == null || item.companyId == companyId) &&
+              (farmId == null || item.farmId == farmId) &&
+              (userId == null || item.userId == userId) &&
+              (module == null || item.module == module) &&
+              (entityType == null || item.entityType == entityType) &&
+              (action == null || item.action == action) &&
+              (result == null || item.result == result);
+        }).toList()..sort(
+          (first, second) => second.occurredAt.compareTo(first.occurredAt),
+        );
     return filtered;
   }
 
@@ -157,8 +151,7 @@ class AtlasEnterpriseAuditService {
         'previousHash': item.previousHash,
       };
 
-      final expected =
-          _fnv1a64('$previous|${jsonEncode(canonical)}');
+      final expected = _fnv1a64('$previous|${jsonEncode(canonical)}');
 
       if (expected != item.integrityHash) {
         return AtlasAuditIntegrityResult(

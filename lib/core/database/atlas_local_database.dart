@@ -6,8 +6,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 class AtlasLocalDatabase {
   AtlasLocalDatabase._();
 
-  static final AtlasLocalDatabase instance =
-      AtlasLocalDatabase._();
+  static final AtlasLocalDatabase instance = AtlasLocalDatabase._();
 
   Database? _database;
 
@@ -18,8 +17,7 @@ class AtlasLocalDatabase {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
 
-    final folder =
-        await databaseFactory.getDatabasesPath();
+    final folder = await databaseFactory.getDatabasesPath();
 
     final opened = await databaseFactory.openDatabase(
       path.join(folder, 'atlas_offline.db'),
@@ -100,23 +98,18 @@ class AtlasLocalDatabase {
     String? remoteVersion,
   }) async {
     final db = await database;
-    final cacheKey =
-        '$entityType::$companyId::${farmId ?? ''}::$entityId';
+    final cacheKey = '$entityType::$companyId::${farmId ?? ''}::$entityId';
 
-    await db.insert(
-      'cached_entities',
-      {
-        'cache_key': cacheKey,
-        'entity_type': entityType,
-        'company_id': companyId,
-        'farm_id': farmId,
-        'entity_id': entityId,
-        'payload_json': jsonEncode(payload),
-        'remote_version': remoteVersion,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('cached_entities', {
+      'cache_key': cacheKey,
+      'entity_type': entityType,
+      'company_id': companyId,
+      'farm_id': farmId,
+      'entity_id': entityId,
+      'payload_json': jsonEncode(payload),
+      'remote_version': remoteVersion,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> cachedEntities({
@@ -140,8 +133,7 @@ class AtlasLocalDatabase {
     return rows
         .map(
           (row) => Map<String, dynamic>.from(
-            jsonDecode(row['payload_json']! as String)
-                as Map,
+            jsonDecode(row['payload_json']! as String) as Map,
           ),
         )
         .toList();
@@ -158,9 +150,7 @@ class AtlasLocalDatabase {
     await db.delete(
       'cached_entities',
       where: 'cache_key = ?',
-      whereArgs: [
-        '$entityType::$companyId::${farmId ?? ''}::$entityId',
-      ],
+      whereArgs: ['$entityType::$companyId::${farmId ?? ''}::$entityId'],
     );
   }
 

@@ -68,13 +68,9 @@ class AtlasOperationalMetricsService {
         continue;
       }
 
-      final sum = bucket.value.fold<double>(
-        0,
-        (total, value) => total + value,
-      );
+      final sum = bucket.value.fold<double>(0, (total, value) => total + value);
 
-      numericIndicators[bucket.key] =
-          sum / math.max(1, bucket.value.length);
+      numericIndicators[bucket.key] = sum / math.max(1, bucket.value.length);
     }
 
     return AtlasOperationalMetrics(
@@ -87,10 +83,8 @@ class AtlasOperationalMetricsService {
       highPriorityEvents: highPriorityEvents,
       activeModules: eventsByModule.length,
       eventsByModule: Map<String, int>.unmodifiable(eventsByModule),
-      eventsByEntityType:
-          Map<String, int>.unmodifiable(eventsByEntityType),
-      numericIndicators:
-          Map<String, double>.unmodifiable(numericIndicators),
+      eventsByEntityType: Map<String, int>.unmodifiable(eventsByEntityType),
+      numericIndicators: Map<String, double>.unmodifiable(numericIndicators),
     );
   }
 
@@ -102,9 +96,7 @@ class AtlasOperationalMetricsService {
       final value = entry.value;
 
       if (value is num) {
-        buckets
-            .putIfAbsent(entry.key, () => <double>[])
-            .add(value.toDouble());
+        buckets.putIfAbsent(entry.key, () => <double>[]).add(value.toDouble());
       }
     }
   }

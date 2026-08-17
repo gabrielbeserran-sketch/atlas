@@ -10,9 +10,7 @@ class AtlasWorkflowEventService {
 
   final AtlasEventFactory eventFactory;
 
-  Future<void> publishWorkflowCreated({
-    required AtlasWorkflow workflow,
-  }) async {
+  Future<void> publishWorkflowCreated({required AtlasWorkflow workflow}) async {
     final events = <AtlasEvent>[
       _workflowEvent(
         type: AtlasEventType.workflowCreated,
@@ -50,8 +48,7 @@ class AtlasWorkflowEventService {
         workflow: updatedWorkflow,
         extraPayload: <String, dynamic>{
           'previousStatus': previousWorkflow.status.name,
-          'previousProgressPercent':
-              previousWorkflow.progressPercent,
+          'previousProgressPercent': previousWorkflow.progressPercent,
         },
       ),
     );
@@ -59,10 +56,7 @@ class AtlasWorkflowEventService {
     for (final updatedTask in updatedWorkflow.tasks) {
       final previousTask = previousWorkflow.tasks
           .cast<AtlasWorkflowTask?>()
-          .firstWhere(
-            (item) => item?.id == updatedTask.id,
-            orElse: () => null,
-          );
+          .firstWhere((item) => item?.id == updatedTask.id, orElse: () => null);
 
       if (previousTask == null) {
         events.add(
@@ -76,10 +70,7 @@ class AtlasWorkflowEventService {
         continue;
       }
 
-      if (!_taskChanged(
-        previousTask,
-        updatedTask,
-      )) {
+      if (!_taskChanged(previousTask, updatedTask)) {
         continue;
       }
 
@@ -96,12 +87,9 @@ class AtlasWorkflowEventService {
           task: updatedTask,
           extraPayload: <String, dynamic>{
             'previousStatus': previousTask.status.name,
-            'previousProgressPercent':
-                previousTask.progressPercent,
-            'previousResponsibleName':
-                previousTask.responsibleName,
-            'previousDeadline':
-                previousTask.deadline.toIso8601String(),
+            'previousProgressPercent': previousTask.progressPercent,
+            'previousResponsibleName': previousTask.responsibleName,
+            'previousDeadline': previousTask.deadline.toIso8601String(),
           },
         ),
       );
@@ -114,17 +102,13 @@ class AtlasWorkflowEventService {
     required AtlasWorkflow previousWorkflow,
     required AtlasWorkflow updatedWorkflow,
   }) {
-    if (updatedWorkflow.status ==
-            AtlasWorkflowStatus.completed &&
-        previousWorkflow.status !=
-            AtlasWorkflowStatus.completed) {
+    if (updatedWorkflow.status == AtlasWorkflowStatus.completed &&
+        previousWorkflow.status != AtlasWorkflowStatus.completed) {
       return AtlasEventType.workflowCompleted;
     }
 
-    if (updatedWorkflow.status ==
-            AtlasWorkflowStatus.delayed &&
-        previousWorkflow.status !=
-            AtlasWorkflowStatus.delayed) {
+    if (updatedWorkflow.status == AtlasWorkflowStatus.delayed &&
+        previousWorkflow.status != AtlasWorkflowStatus.delayed) {
       return AtlasEventType.workflowDelayed;
     }
 
@@ -135,17 +119,13 @@ class AtlasWorkflowEventService {
     required AtlasWorkflowTask previousTask,
     required AtlasWorkflowTask updatedTask,
   }) {
-    if (updatedTask.status ==
-            AtlasWorkflowTaskStatus.completed &&
-        previousTask.status !=
-            AtlasWorkflowTaskStatus.completed) {
+    if (updatedTask.status == AtlasWorkflowTaskStatus.completed &&
+        previousTask.status != AtlasWorkflowTaskStatus.completed) {
       return AtlasEventType.taskCompleted;
     }
 
-    if (updatedTask.status ==
-            AtlasWorkflowTaskStatus.delayed &&
-        previousTask.status !=
-            AtlasWorkflowTaskStatus.delayed) {
+    if (updatedTask.status == AtlasWorkflowTaskStatus.delayed &&
+        previousTask.status != AtlasWorkflowTaskStatus.delayed) {
       return AtlasEventType.taskDelayed;
     }
 
@@ -156,8 +136,7 @@ class AtlasWorkflowEventService {
     required AtlasEventType type,
     required String title,
     required AtlasWorkflow workflow,
-    Map<String, dynamic> extraPayload =
-        const <String, dynamic>{},
+    Map<String, dynamic> extraPayload = const <String, dynamic>{},
   }) {
     return eventFactory.create(
       type: type,
@@ -184,11 +163,7 @@ class AtlasWorkflowEventService {
         'bottleneckCount': workflow.bottlenecks.length,
         ...extraPayload,
       },
-      tags: <String>[
-        'workflow',
-        workflow.status.name,
-        workflow.category.name,
-      ],
+      tags: <String>['workflow', workflow.status.name, workflow.category.name],
     );
   }
 
@@ -197,8 +172,7 @@ class AtlasWorkflowEventService {
     required String title,
     required AtlasWorkflow workflow,
     required AtlasWorkflowTask task,
-    Map<String, dynamic> extraPayload =
-        const <String, dynamic>{},
+    Map<String, dynamic> extraPayload = const <String, dynamic>{},
   }) {
     return eventFactory.create(
       type: type,
@@ -228,40 +202,26 @@ class AtlasWorkflowEventService {
         'notes': task.notes,
         ...extraPayload,
       },
-      tags: <String>[
-        'workflow',
-        'task',
-        task.status.name,
-      ],
+      tags: <String>['workflow', 'task', task.status.name],
     );
   }
 
-  bool _taskChanged(
-    AtlasWorkflowTask previous,
-    AtlasWorkflowTask updated,
-  ) {
+  bool _taskChanged(AtlasWorkflowTask previous, AtlasWorkflowTask updated) {
     return previous.status != updated.status ||
-        previous.progressPercent !=
-            updated.progressPercent ||
-        previous.responsibleName !=
-            updated.responsibleName ||
+        previous.progressPercent != updated.progressPercent ||
+        previous.responsibleName != updated.responsibleName ||
         previous.deadline != updated.deadline ||
         previous.startDate != updated.startDate ||
         previous.notes != updated.notes;
   }
 
-  AtlasEventPriority _workflowPriority(
-    AtlasWorkflow workflow,
-  ) {
-    if (workflow.status ==
-        AtlasWorkflowStatus.delayed) {
+  AtlasEventPriority _workflowPriority(AtlasWorkflow workflow) {
+    if (workflow.status == AtlasWorkflowStatus.delayed) {
       return AtlasEventPriority.high;
     }
 
     if (workflow.bottlenecks.any(
-      (item) =>
-          item.severity ==
-          AtlasWorkflowBottleneckSeverity.critical,
+      (item) => item.severity == AtlasWorkflowBottleneckSeverity.critical,
     )) {
       return AtlasEventPriority.critical;
     }
@@ -269,25 +229,19 @@ class AtlasWorkflowEventService {
     return AtlasEventPriority.normal;
   }
 
-  AtlasEventPriority _taskPriority(
-    AtlasWorkflowTask task,
-  ) {
-    if (task.status ==
-        AtlasWorkflowTaskStatus.delayed) {
+  AtlasEventPriority _taskPriority(AtlasWorkflowTask task) {
+    if (task.status == AtlasWorkflowTaskStatus.delayed) {
       return AtlasEventPriority.high;
     }
 
-    if (task.status ==
-        AtlasWorkflowTaskStatus.blocked) {
+    if (task.status == AtlasWorkflowTaskStatus.blocked) {
       return AtlasEventPriority.high;
     }
 
     return AtlasEventPriority.normal;
   }
 
-  String _workflowTitle(
-    AtlasEventType type,
-  ) {
+  String _workflowTitle(AtlasEventType type) {
     switch (type) {
       case AtlasEventType.workflowCompleted:
         return 'Workflow concluído';
@@ -300,9 +254,7 @@ class AtlasWorkflowEventService {
     }
   }
 
-  String _taskTitle(
-    AtlasEventType type,
-  ) {
+  String _taskTitle(AtlasEventType type) {
     switch (type) {
       case AtlasEventType.taskCompleted:
         return 'Tarefa concluída';

@@ -121,7 +121,8 @@ class AnimalDocumentData {
     return AnimalDocumentData(
       id: map['id']?.toString() ?? '',
       type: map['type']?.toString() ?? 'Outro',
-      category: map['category']?.toString() ??
+      category:
+          map['category']?.toString() ??
           inferDocumentCategory(map['type']?.toString() ?? ''),
       title: map['title']?.toString() ?? 'Documento',
       date: map['date']?.toString() ?? '',

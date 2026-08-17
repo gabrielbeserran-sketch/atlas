@@ -29,22 +29,15 @@ class AtlasEnvironmentalAiResult {
 class AtlasEnvironmentalAiEngine {
   const AtlasEnvironmentalAiEngine();
 
-  AtlasEnvironmentalAiResult evaluate(
-    AtlasEnvironmentalAiRecord record,
-  ) {
+  AtlasEnvironmentalAiResult evaluate(AtlasEnvironmentalAiRecord record) {
     return switch (record.module) {
-      AtlasEnvironmentalAiModule.climate =>
-        _climate(record),
-      AtlasEnvironmentalAiModule.pasture =>
-        _pasture(record),
-      AtlasEnvironmentalAiModule.satellite =>
-        _satellite(record),
+      AtlasEnvironmentalAiModule.climate => _climate(record),
+      AtlasEnvironmentalAiModule.pasture => _pasture(record),
+      AtlasEnvironmentalAiModule.satellite => _satellite(record),
     };
   }
 
-  AtlasEnvironmentalAiResult _climate(
-    AtlasEnvironmentalAiRecord record,
-  ) {
+  AtlasEnvironmentalAiResult _climate(AtlasEnvironmentalAiRecord record) {
     var score = 75;
     final recommendations = <String>[];
     final explanations = <String>[];
@@ -81,31 +74,22 @@ class AtlasEnvironmentalAiEngine {
       explanations.add('Precipitação acumulada elevada.');
     }
 
-    if (record.humidityPercent >= 85 &&
-        record.temperatureCelsius >= 28) {
+    if (record.humidityPercent >= 85 && record.temperatureCelsius >= 28) {
       score -= 15;
       recommendations.add(
         'Intensificar prevenção contra estresse térmico e doenças associadas.',
       );
-      explanations.add(
-        'Combinação de calor e umidade desfavorável.',
-      );
+      explanations.add('Combinação de calor e umidade desfavorável.');
     }
 
     final weightImpactPercent = math.max(
       -25.0,
-      math.min(
-        10.0,
-        (score - 70) * 0.5,
-      ),
+      math.min(10.0, (score - 70) * 0.5),
     );
 
     final reproductiveImpactPercent = math.max(
       -30.0,
-      math.min(
-        8.0,
-        (score - 70) * 0.6,
-      ),
+      math.min(8.0, (score - 70) * 0.6),
     );
 
     if (recommendations.isEmpty) {
@@ -122,8 +106,7 @@ class AtlasEnvironmentalAiEngine {
       primaryProjection: weightImpactPercent,
       secondaryProjection: reproductiveImpactPercent,
       primaryLabel: 'Impacto estimado no ganho (%)',
-      secondaryLabel:
-          'Impacto estimado na reprodução (%)',
+      secondaryLabel: 'Impacto estimado na reprodução (%)',
       confidencePercent: _confidence(record),
       recommendations: recommendations,
       explanations: [
@@ -135,9 +118,7 @@ class AtlasEnvironmentalAiEngine {
     );
   }
 
-  AtlasEnvironmentalAiResult _pasture(
-    AtlasEnvironmentalAiRecord record,
-  ) {
+  AtlasEnvironmentalAiResult _pasture(AtlasEnvironmentalAiRecord record) {
     final degradationIndex = record.primaryValue;
     final forageMass = record.secondaryValue;
     final currentStocking = record.stockingRateUaHa;
@@ -174,13 +155,9 @@ class AtlasEnvironmentalAiEngine {
     }
 
     final double availabilityDays =
-        currentStocking > 0 &&
-                forageMass > 0 &&
-                area > 0
-            ? (forageMass * area) /
-                (currentStocking * area * 450.0) *
-                30.0
-            : 0.0;
+        currentStocking > 0 && forageMass > 0 && area > 0
+        ? (forageMass * area) / (currentStocking * area * 450.0) * 30.0
+        : 0.0;
 
     if (availabilityDays > 0 && availabilityDays < 20) {
       score -= 15;
@@ -203,14 +180,12 @@ class AtlasEnvironmentalAiEngine {
       primaryProjection: idealStocking,
       secondaryProjection: availabilityDays,
       primaryLabel: 'Lotação ideal estimada (UA/ha)',
-      secondaryLabel:
-          'Disponibilidade estimada (dias)',
+      secondaryLabel: 'Disponibilidade estimada (dias)',
       confidencePercent: _confidence(record),
       recommendations: recommendations,
       explanations: [
         ...explanations,
-        if (area > 0)
-          'Área analisada: ${area.toStringAsFixed(2)} ha.',
+        if (area > 0) 'Área analisada: ${area.toStringAsFixed(2)} ha.',
         if (forageMass > 0)
           'Massa de forragem informada: '
               '${forageMass.toStringAsFixed(0)} kg MS/ha.',
@@ -218,9 +193,7 @@ class AtlasEnvironmentalAiEngine {
     );
   }
 
-  AtlasEnvironmentalAiResult _satellite(
-    AtlasEnvironmentalAiRecord record,
-  ) {
+  AtlasEnvironmentalAiResult _satellite(AtlasEnvironmentalAiRecord record) {
     final ndvi = record.primaryValue;
     final moisture = record.secondaryValue;
 
@@ -245,9 +218,7 @@ class AtlasEnvironmentalAiEngine {
       explanations.add('NDVI baixo.');
     } else {
       score -= 15;
-      recommendations.add(
-        'Informe um NDVI válido entre -1 e 1.',
-      );
+      recommendations.add('Informe um NDVI válido entre -1 e 1.');
     }
 
     if (moisture < 20 && moisture > 0) {

@@ -46,9 +46,7 @@ class AtlasIntelligentRecommendation {
   final List<String> evidence;
 
   double get expectedScoreGain {
-    return (targetScore - currentScore)
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return (targetScore - currentScore).clamp(0.0, 100.0).toDouble();
   }
 }
 
@@ -69,11 +67,7 @@ class AtlasRecommendationPortfolio {
 
   int get criticalRecommendations {
     return recommendations
-        .where(
-          (item) =>
-              item.priority ==
-              AtlasFarmAuditPriority.critical,
-        )
+        .where((item) => item.priority == AtlasFarmAuditPriority.critical)
         .length;
   }
 
@@ -97,9 +91,6 @@ class AtlasRecommendationPortfolio {
   }
 
   int get evidenceCases {
-    return recommendations.fold<int>(
-      0,
-      (sum, item) => sum + item.similarCases,
-    );
+    return recommendations.fold<int>(0, (sum, item) => sum + item.similarCases);
   }
 }

@@ -11,8 +11,7 @@ class AtlasSystemCenterRepository {
   static const String _lastInspectionKey = 'atlas_system_last_inspection';
 
   Future<AtlasSystemSnapshot> load() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     final Set<String> keys = preferences.getKeys();
 
     return AtlasSystemSnapshot(
@@ -34,24 +33,16 @@ class AtlasSystemCenterRepository {
   }
 
   Future<void> saveSettings(AtlasSystemSettings settings) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_automaticSyncKey, settings.automaticSync);
     await preferences.setBool(_wifiOnlyKey, settings.wifiOnly);
-    await preferences.setBool(
-      _notificationsKey,
-      settings.notificationsEnabled,
-    );
-    await preferences.setBool(
-      _diagnosticsKey,
-      settings.diagnosticsEnabled,
-    );
+    await preferences.setBool(_notificationsKey, settings.notificationsEnabled);
+    await preferences.setBool(_diagnosticsKey, settings.diagnosticsEnabled);
     await preferences.setBool(_compactModeKey, settings.compactMode);
   }
 
   Future<DateTime> registerInspection() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     final DateTime now = DateTime.now();
     await preferences.setString(_lastInspectionKey, now.toIso8601String());
     return now;

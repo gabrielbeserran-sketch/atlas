@@ -19,17 +19,11 @@ class AtlasExecutiveCoreService {
       intelligence: intelligence,
     );
 
-    final risks = _buildRisks(
-      atlasOs,
-    );
+    final risks = _buildRisks(atlasOs);
 
-    final opportunities = _buildOpportunities(
-      intelligence,
-    );
+    final opportunities = _buildOpportunities(intelligence);
 
-    final bestDecision = _buildBestDecision(
-      intelligence,
-    );
+    final bestDecision = _buildBestDecision(intelligence);
 
     final nextMission = _buildNextMission(
       bestDecision: bestDecision,
@@ -52,18 +46,14 @@ class AtlasExecutiveCoreService {
       risks: risks,
     );
 
-    final operationalIndex = _operationalIndex(
-      atlasOs,
-    );
+    final operationalIndex = _operationalIndex(atlasOs);
 
     final strategicIndex = _strategicIndex(
       atlasOs: atlasOs,
       priorities: priorities,
     );
 
-    final predictiveIndex = _predictiveIndex(
-      intelligence,
-    );
+    final predictiveIndex = _predictiveIndex(intelligence);
 
     final healthIndex = _healthIndex(
       atlasOs: atlasOs,
@@ -83,9 +73,7 @@ class AtlasExecutiveCoreService {
       priorities: priorities,
     );
 
-    final status = _status(
-      executiveScore,
-    );
+    final status = _status(executiveScore);
 
     return AtlasExecutiveCoreData(
       generatedAt: currentTime,
@@ -129,28 +117,14 @@ class AtlasExecutiveCoreService {
           description: item.description,
           farmName: item.farmName,
           score:
-              _priorityWeightFromIntelligence(
-                    item.priority,
-                  ) *
-                  18 +
+              _priorityWeightFromIntelligence(item.priority) * 18 +
               item.confidencePercent * 0.35 +
-              math.min(
-                    item.expectedFinancialImpact.abs() /
-                        1000,
-                    25,
-                  ),
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              item.expectedFinancialImpact,
-          deadlineHours:
-              item.deadlineHours,
-          priority:
-              _priorityFromIntelligence(
-            item.priority,
-          ),
-          source:
-              'Atlas Intelligence Engine',
+              math.min(item.expectedFinancialImpact.abs() / 1000, 25),
+          confidencePercent: item.confidencePercent,
+          expectedFinancialImpact: item.expectedFinancialImpact,
+          deadlineHours: item.deadlineHours,
+          priority: _priorityFromIntelligence(item.priority),
+          source: 'Atlas Intelligence Engine',
         ),
       );
     }
@@ -163,255 +137,165 @@ class AtlasExecutiveCoreService {
           description: item.description,
           farmName: item.farmName,
           score:
-              _priorityWeightFromOs(
-                    item.priority,
-                  ) *
-                  17 +
+              _priorityWeightFromOs(item.priority) * 17 +
               math.min(
-                item.deadlineHours <= 0
-                    ? 20
-                    : 140 / item.deadlineHours,
+                item.deadlineHours <= 0 ? 20 : 140 / item.deadlineHours,
                 20,
               ) +
-              math.min(
-                _moneyFromText(
-                      item.expectedImpact,
-                    ) /
-                    1000,
-                20,
-              ),
+              math.min(_moneyFromText(item.expectedImpact) / 1000, 20),
           confidencePercent: 92,
-          expectedFinancialImpact:
-              _moneyFromText(
-            item.expectedImpact,
-          ),
-          deadlineHours:
-              item.deadlineHours,
-          priority:
-              _priorityFromOs(
-            item.priority,
-          ),
+          expectedFinancialImpact: _moneyFromText(item.expectedImpact),
+          deadlineHours: item.deadlineHours,
+          priority: _priorityFromOs(item.priority),
           source: item.source,
         ),
       );
     }
 
-    candidates.sort(
-      (first, second) =>
-          second.score.compareTo(
-        first.score,
-      ),
-    );
+    candidates.sort((first, second) => second.score.compareTo(first.score));
 
-    final selected =
-        candidates.take(20).toList();
+    final selected = candidates.take(20).toList();
 
-    return List.generate(
-      selected.length,
-      (index) {
-        final item = selected[index];
+    return List.generate(selected.length, (index) {
+      final item = selected[index];
 
-        return AtlasExecutiveCorePriority(
-          position: index + 1,
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          farmName: item.farmName,
-          priority: item.priority,
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              item.expectedFinancialImpact,
-          deadlineHours:
-              item.deadlineHours,
-          source: item.source,
-        );
-      },
-    );
+      return AtlasExecutiveCorePriority(
+        position: index + 1,
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        farmName: item.farmName,
+        priority: item.priority,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        deadlineHours: item.deadlineHours,
+        source: item.source,
+      );
+    });
   }
 
-  List<AtlasExecutiveCoreRisk> _buildRisks(
-    AtlasOsData atlasOs,
-  ) {
-    final items =
-        atlasOs.criticalItems.toList()
-          ..sort(
-            (first, second) {
-              final severityComparison =
-                  _severityWeightFromOs(
-                    second.severity,
-                  ).compareTo(
-                    _severityWeightFromOs(
-                      first.severity,
-                    ),
-                  );
+  List<AtlasExecutiveCoreRisk> _buildRisks(AtlasOsData atlasOs) {
+    final items = atlasOs.criticalItems.toList()
+      ..sort((first, second) {
+        final severityComparison = _severityWeightFromOs(
+          second.severity,
+        ).compareTo(_severityWeightFromOs(first.severity));
 
-              if (severityComparison != 0) {
-                return severityComparison;
-              }
+        if (severityComparison != 0) {
+          return severityComparison;
+        }
 
-              return second.probabilityPercent
-                  .compareTo(
-                first.probabilityPercent,
-              );
-            },
-          );
+        return second.probabilityPercent.compareTo(first.probabilityPercent);
+      });
 
-    return List.generate(
-      math.min(items.length, 15),
-      (index) {
-        final item = items[index];
+    return List.generate(math.min(items.length, 15), (index) {
+      final item = items[index];
 
-        return AtlasExecutiveCoreRisk(
-          position: index + 1,
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          farmName: item.farmName,
-          severity:
-              _severityFromOs(
-            item.severity,
-          ),
-          probabilityPercent:
-              item.probabilityPercent,
-          expectedFinancialImpact:
-              item.expectedFinancialImpact,
-          recommendation:
-              item.recommendation,
-        );
-      },
-    );
+      return AtlasExecutiveCoreRisk(
+        position: index + 1,
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        farmName: item.farmName,
+        severity: _severityFromOs(item.severity),
+        probabilityPercent: item.probabilityPercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        recommendation: item.recommendation,
+      );
+    });
   }
 
-  List<AtlasExecutiveCoreOpportunity>
-      _buildOpportunities(
+  List<AtlasExecutiveCoreOpportunity> _buildOpportunities(
     AtlasIntelligenceData intelligence,
   ) {
-    final items = intelligence.recommendations
-        .where((item) {
+    final items =
+        intelligence.recommendations.where((item) {
           return item.expectedFinancialImpact > 0;
-        })
-        .toList()
-      ..sort(
-        (first, second) =>
-            second.expectedFinancialImpact.compareTo(
-          first.expectedFinancialImpact,
-        ),
-      );
-
-    return List.generate(
-      math.min(items.length, 12),
-      (index) {
-        final item = items[index];
-
-        final investment =
-            item.expectedFinancialImpact * 0.25;
-
-        final expectedReturn =
-            item.expectedFinancialImpact;
-
-        final roi = investment <= 0
-            ? 0.0
-            : expectedReturn /
-                investment *
-                100;
-
-        return AtlasExecutiveCoreOpportunity(
-          position: index + 1,
-          id: 'opportunity_${item.id}',
-          title: item.title,
-          description: item.description,
-          farmName: item.farmName,
-          expectedReturn:
-              expectedReturn,
-          investmentValue: investment,
-          roiPercent:
-              roi.clamp(0.0, 500.0).toDouble(),
-          confidencePercent:
-              item.confidencePercent,
-          recommendation:
-              item.reasoning,
+        }).toList()..sort(
+          (first, second) => second.expectedFinancialImpact.compareTo(
+            first.expectedFinancialImpact,
+          ),
         );
-      },
-    );
+
+    return List.generate(math.min(items.length, 12), (index) {
+      final item = items[index];
+
+      final investment = item.expectedFinancialImpact * 0.25;
+
+      final expectedReturn = item.expectedFinancialImpact;
+
+      final roi = investment <= 0 ? 0.0 : expectedReturn / investment * 100;
+
+      return AtlasExecutiveCoreOpportunity(
+        position: index + 1,
+        id: 'opportunity_${item.id}',
+        title: item.title,
+        description: item.description,
+        farmName: item.farmName,
+        expectedReturn: expectedReturn,
+        investmentValue: investment,
+        roiPercent: roi.clamp(0.0, 500.0).toDouble(),
+        confidencePercent: item.confidencePercent,
+        recommendation: item.reasoning,
+      );
+    });
   }
 
   AtlasExecutiveCoreDecision? _buildBestDecision(
     AtlasIntelligenceData intelligence,
   ) {
-    final item =
-        intelligence.primaryRecommendation;
+    final item = intelligence.primaryRecommendation;
 
     if (item == null) {
       return null;
     }
 
     final score =
-        _priorityWeightFromIntelligence(
-              item.priority,
-            ) *
-            20 +
+        _priorityWeightFromIntelligence(item.priority) * 20 +
         item.confidencePercent * 0.40 +
-        math.min(
-          item.expectedFinancialImpact.abs() /
-              1000,
-          20,
-        );
+        math.min(item.expectedFinancialImpact.abs() / 1000, 20);
 
     return AtlasExecutiveCoreDecision(
       id: 'decision_${item.id}',
       title: item.title,
       description: item.description,
       farmName: item.farmName,
-      score:
-          score.clamp(0.0, 100.0).toDouble(),
-      confidencePercent:
-          item.confidencePercent,
-      expectedFinancialImpact:
-          item.expectedFinancialImpact,
-      deadlineHours:
-          item.deadlineHours,
+      score: score.clamp(0.0, 100.0).toDouble(),
+      confidencePercent: item.confidencePercent,
+      expectedFinancialImpact: item.expectedFinancialImpact,
+      deadlineHours: item.deadlineHours,
       reasoning: item.reasoning,
       actions: item.actions,
     );
   }
 
   AtlasExecutiveCoreMission? _buildNextMission({
-    required AtlasExecutiveCoreDecision?
-        bestDecision,
-    required List<AtlasExecutiveCorePriority>
-        priorities,
+    required AtlasExecutiveCoreDecision? bestDecision,
+    required List<AtlasExecutiveCorePriority> priorities,
   }) {
-    if (bestDecision == null &&
-        priorities.isEmpty) {
+    if (bestDecision == null && priorities.isEmpty) {
       return null;
     }
 
-    final title =
-        bestDecision?.title ??
-            priorities.first.title;
+    final title = bestDecision?.title ?? priorities.first.title;
 
     final description =
-        bestDecision?.description ??
-            priorities.first.description;
+        bestDecision?.description ?? priorities.first.description;
 
-    final farmName =
-        bestDecision?.farmName ??
-            priorities.first.farmName;
+    final farmName = bestDecision?.farmName ?? priorities.first.farmName;
 
     final impact =
         bestDecision?.expectedFinancialImpact ??
-            priorities.first.expectedFinancialImpact;
+        priorities.first.expectedFinancialImpact;
 
     final confidence =
-        bestDecision?.confidencePercent ??
-            priorities.first.confidencePercent;
+        bestDecision?.confidencePercent ?? priorities.first.confidencePercent;
 
     final deadlineHours =
-        bestDecision?.deadlineHours ??
-            priorities.first.deadlineHours;
+        bestDecision?.deadlineHours ?? priorities.first.deadlineHours;
 
-    final steps = bestDecision?.actions ??
+    final steps =
+        bestDecision?.actions ??
         const [
           'Validar a prioridade em campo.',
           'Definir responsável.',
@@ -420,58 +304,43 @@ class AtlasExecutiveCoreService {
         ];
 
     return AtlasExecutiveCoreMission(
-      id:
-          'mission_${title.hashCode}_${farmName.hashCode}',
+      id: 'mission_${title.hashCode}_${farmName.hashCode}',
       title: 'Missão executiva: $title',
       description: description,
       farmName: farmName,
       objective:
           'Transformar a recomendação prioritária em resultado mensurável.',
-      deadlineDays:
-          math.max(
-        1,
-        (deadlineHours / 24).ceil(),
-      ),
-      expectedImpact:
-          impact > 0
-              ? 'Impacto financeiro esperado de '
-                  'R\$ ${impact.toStringAsFixed(2)}.'
-              : 'Redução de risco e melhoria da execução.',
-      successProbabilityPercent:
-          confidence.clamp(0.0, 100.0).toDouble(),
+      deadlineDays: math.max(1, (deadlineHours / 24).ceil()),
+      expectedImpact: impact > 0
+          ? 'Impacto financeiro esperado de '
+                'R\$ ${impact.toStringAsFixed(2)}.'
+          : 'Redução de risco e melhoria da execução.',
+      successProbabilityPercent: confidence.clamp(0.0, 100.0).toDouble(),
       steps: steps,
     );
   }
 
-  List<AtlasExecutiveMemoryRecord>
-      _buildMemoryRecords({
+  List<AtlasExecutiveMemoryRecord> _buildMemoryRecords({
     required DateTime now,
     required AtlasIntelligenceData intelligence,
     required List<AtlasExecutiveCoreRisk> risks,
-    required List<AtlasExecutiveCoreOpportunity>
-        opportunities,
+    required List<AtlasExecutiveCoreOpportunity> opportunities,
     required AtlasExecutiveCoreDecision? bestDecision,
     required AtlasExecutiveCoreMission? nextMission,
   }) {
-    final result =
-        <AtlasExecutiveMemoryRecord>[];
+    final result = <AtlasExecutiveMemoryRecord>[];
 
-    for (final pattern
-        in intelligence.patterns.take(8)) {
+    for (final pattern in intelligence.patterns.take(8)) {
       result.add(
         AtlasExecutiveMemoryRecord(
           id: 'memory_pattern_${pattern.id}',
           recordedAt: now,
           title: pattern.title,
-          description:
-              pattern.description,
-          type:
-              AtlasExecutiveMemoryType.pattern,
+          description: pattern.description,
+          type: AtlasExecutiveMemoryType.pattern,
           farmName: 'Operação',
-          relevanceScore:
-              pattern.strengthScore,
-          relatedEntityIds:
-              pattern.relatedSignalIds,
+          relevanceScore: pattern.strengthScore,
+          relatedEntityIds: pattern.relatedSignalIds,
         ),
       );
     }
@@ -482,39 +351,26 @@ class AtlasExecutiveCoreService {
           id: 'memory_risk_${risk.id}',
           recordedAt: now,
           title: risk.title,
-          description:
-              risk.description,
-          type:
-              AtlasExecutiveMemoryType.risk,
+          description: risk.description,
+          type: AtlasExecutiveMemoryType.risk,
           farmName: risk.farmName,
-          relevanceScore:
-              risk.probabilityPercent,
-          relatedEntityIds: [
-            risk.id,
-          ],
+          relevanceScore: risk.probabilityPercent,
+          relatedEntityIds: [risk.id],
         ),
       );
     }
 
-    for (final opportunity
-        in opportunities.take(5)) {
+    for (final opportunity in opportunities.take(5)) {
       result.add(
         AtlasExecutiveMemoryRecord(
-          id:
-              'memory_opportunity_${opportunity.id}',
+          id: 'memory_opportunity_${opportunity.id}',
           recordedAt: now,
           title: opportunity.title,
-          description:
-              opportunity.description,
-          type:
-              AtlasExecutiveMemoryType.opportunity,
-          farmName:
-              opportunity.farmName,
-          relevanceScore:
-              opportunity.confidencePercent,
-          relatedEntityIds: [
-            opportunity.id,
-          ],
+          description: opportunity.description,
+          type: AtlasExecutiveMemoryType.opportunity,
+          farmName: opportunity.farmName,
+          relevanceScore: opportunity.confidencePercent,
+          relatedEntityIds: [opportunity.id],
         ),
       );
     }
@@ -522,21 +378,14 @@ class AtlasExecutiveCoreService {
     if (bestDecision != null) {
       result.add(
         AtlasExecutiveMemoryRecord(
-          id:
-              'memory_decision_${bestDecision.id}',
+          id: 'memory_decision_${bestDecision.id}',
           recordedAt: now,
           title: bestDecision.title,
-          description:
-              bestDecision.description,
-          type:
-              AtlasExecutiveMemoryType.decision,
-          farmName:
-              bestDecision.farmName,
-          relevanceScore:
-              bestDecision.score,
-          relatedEntityIds: [
-            bestDecision.id,
-          ],
+          description: bestDecision.description,
+          type: AtlasExecutiveMemoryType.decision,
+          farmName: bestDecision.farmName,
+          relevanceScore: bestDecision.score,
+          relatedEntityIds: [bestDecision.id],
         ),
       );
     }
@@ -544,30 +393,20 @@ class AtlasExecutiveCoreService {
     if (nextMission != null) {
       result.add(
         AtlasExecutiveMemoryRecord(
-          id:
-              'memory_mission_${nextMission.id}',
+          id: 'memory_mission_${nextMission.id}',
           recordedAt: now,
           title: nextMission.title,
-          description:
-              nextMission.description,
-          type:
-              AtlasExecutiveMemoryType.mission,
-          farmName:
-              nextMission.farmName,
-          relevanceScore:
-              nextMission.successProbabilityPercent,
-          relatedEntityIds: [
-            nextMission.id,
-          ],
+          description: nextMission.description,
+          type: AtlasExecutiveMemoryType.mission,
+          farmName: nextMission.farmName,
+          relevanceScore: nextMission.successProbabilityPercent,
+          relatedEntityIds: [nextMission.id],
         ),
       );
     }
 
     result.sort(
-      (first, second) =>
-          second.relevanceScore.compareTo(
-        first.relevanceScore,
-      ),
+      (first, second) => second.relevanceScore.compareTo(first.relevanceScore),
     );
 
     return result.take(25).toList();
@@ -576,35 +415,22 @@ class AtlasExecutiveCoreService {
   double _financialIndex({
     required AtlasOsData atlasOs,
     required AtlasIntelligenceData intelligence,
-    required List<AtlasExecutiveCoreOpportunity>
-        opportunities,
+    required List<AtlasExecutiveCoreOpportunity> opportunities,
     required List<AtlasExecutiveCoreRisk> risks,
   }) {
-    final opportunityValue =
-        opportunities.fold<double>(
+    final opportunityValue = opportunities.fold<double>(
       0,
-      (sum, item) =>
-          sum + item.expectedReturn,
+      (sum, item) => sum + item.expectedReturn,
     );
 
-    final riskValue =
-        risks.fold<double>(
+    final riskValue = risks.fold<double>(
       0,
-      (sum, item) =>
-          sum + item.expectedFinancialImpact,
+      (sum, item) => sum + item.expectedFinancialImpact,
     );
 
-    final opportunityComponent =
-        math.min(
-      opportunityValue / 1000,
-      100,
-    );
+    final opportunityComponent = math.min(opportunityValue / 1000, 100);
 
-    final riskPenalty =
-        math.min(
-      riskValue / 1500,
-      50,
-    );
+    final riskPenalty = math.min(riskValue / 1500, 50);
 
     return (atlasOs.healthScore * 0.35 +
             intelligence.intelligenceScore * 0.25 +
@@ -614,64 +440,44 @@ class AtlasExecutiveCoreService {
         .toDouble();
   }
 
-  double _operationalIndex(
-    AtlasOsData atlasOs,
-  ) {
-    final moduleAverage =
-        atlasOs.modules.isEmpty
-            ? atlasOs.executionPercent
-            : atlasOs.modules.fold<double>(
-                      0,
-                      (sum, item) =>
-                          sum + item.score,
-                    ) /
-                    atlasOs.modules.length;
+  double _operationalIndex(AtlasOsData atlasOs) {
+    final moduleAverage = atlasOs.modules.isEmpty
+        ? atlasOs.executionPercent
+        : atlasOs.modules.fold<double>(0, (sum, item) => sum + item.score) /
+              atlasOs.modules.length;
 
-    return (atlasOs.executionPercent * 0.60 +
-            moduleAverage * 0.40)
+    return (atlasOs.executionPercent * 0.60 + moduleAverage * 0.40)
         .clamp(0.0, 100.0)
         .toDouble();
   }
 
   double _strategicIndex({
     required AtlasOsData atlasOs,
-    required List<AtlasExecutiveCorePriority>
-        priorities,
+    required List<AtlasExecutiveCorePriority> priorities,
   }) {
-    final criticalCount =
-        priorities.where((item) {
-      return item.priority ==
-          AtlasExecutiveCorePriorityLevel
-              .critical;
+    final criticalCount = priorities.where((item) {
+      return item.priority == AtlasExecutiveCorePriorityLevel.critical;
     }).length;
 
-    return (atlasOs.goalProbabilityPercent *
-                0.75 +
+    return (atlasOs.goalProbabilityPercent * 0.75 +
             atlasOs.healthScore * 0.25 -
             criticalCount * 4)
         .clamp(0.0, 100.0)
         .toDouble();
   }
 
-  double _predictiveIndex(
-    AtlasIntelligenceData intelligence,
-  ) {
-    final patternAverage =
-        intelligence.patterns.isEmpty
-            ? intelligence.confidencePercent
-            : intelligence.patterns.fold<double>(
-                      0,
-                      (sum, item) =>
-                          sum +
-                          item.confidencePercent,
-                    ) /
-                    intelligence.patterns.length;
+  double _predictiveIndex(AtlasIntelligenceData intelligence) {
+    final patternAverage = intelligence.patterns.isEmpty
+        ? intelligence.confidencePercent
+        : intelligence.patterns.fold<double>(
+                0,
+                (sum, item) => sum + item.confidencePercent,
+              ) /
+              intelligence.patterns.length;
 
-    return (intelligence.confidencePercent *
-                0.55 +
+    return (intelligence.confidencePercent * 0.55 +
             patternAverage * 0.25 +
-            intelligence.intelligenceScore *
-                0.20)
+            intelligence.intelligenceScore * 0.20)
         .clamp(0.0, 100.0)
         .toDouble();
   }
@@ -680,9 +486,7 @@ class AtlasExecutiveCoreService {
     required AtlasOsData atlasOs,
     required AtlasIntelligenceData intelligence,
   }) {
-    return (atlasOs.healthScore * 0.60 +
-            intelligence.intelligenceScore *
-                0.40)
+    return (atlasOs.healthScore * 0.60 + intelligence.intelligenceScore * 0.40)
         .clamp(0.0, 100.0)
         .toDouble();
   }
@@ -705,8 +509,7 @@ class AtlasExecutiveCoreService {
 
   double _confidence({
     required AtlasIntelligenceData intelligence,
-    required List<AtlasExecutiveCorePriority>
-        priorities,
+    required List<AtlasExecutiveCorePriority> priorities,
   }) {
     if (priorities.isEmpty) {
       return intelligence.confidencePercent;
@@ -714,22 +517,17 @@ class AtlasExecutiveCoreService {
 
     final priorityAverage =
         priorities.fold<double>(
-              0,
-              (sum, item) =>
-                  sum + item.confidencePercent,
-            ) /
-            priorities.length;
+          0,
+          (sum, item) => sum + item.confidencePercent,
+        ) /
+        priorities.length;
 
-    return (intelligence.confidencePercent *
-                0.55 +
-            priorityAverage * 0.45)
+    return (intelligence.confidencePercent * 0.55 + priorityAverage * 0.45)
         .clamp(0.0, 100.0)
         .toDouble();
   }
 
-  AtlasExecutiveCoreStatus _status(
-    double score,
-  ) {
+  AtlasExecutiveCoreStatus _status(double score) {
     if (score >= 80) {
       return AtlasExecutiveCoreStatus.excellent;
     }
@@ -745,8 +543,7 @@ class AtlasExecutiveCoreService {
     return AtlasExecutiveCoreStatus.critical;
   }
 
-  AtlasExecutiveCorePriorityLevel
-      _priorityFromIntelligence(
+  AtlasExecutiveCorePriorityLevel _priorityFromIntelligence(
     AtlasIntelligencePriority priority,
   ) {
     switch (priority) {
@@ -760,15 +557,11 @@ class AtlasExecutiveCoreService {
         return AtlasExecutiveCorePriorityLevel.high;
 
       case AtlasIntelligencePriority.critical:
-        return AtlasExecutiveCorePriorityLevel
-            .critical;
+        return AtlasExecutiveCorePriorityLevel.critical;
     }
   }
 
-  AtlasExecutiveCorePriorityLevel
-      _priorityFromOs(
-    AtlasOsPriority priority,
-  ) {
+  AtlasExecutiveCorePriorityLevel _priorityFromOs(AtlasOsPriority priority) {
     switch (priority) {
       case AtlasOsPriority.low:
         return AtlasExecutiveCorePriorityLevel.low;
@@ -780,14 +573,11 @@ class AtlasExecutiveCoreService {
         return AtlasExecutiveCorePriorityLevel.high;
 
       case AtlasOsPriority.critical:
-        return AtlasExecutiveCorePriorityLevel
-            .critical;
+        return AtlasExecutiveCorePriorityLevel.critical;
     }
   }
 
-  AtlasExecutiveCoreSeverity _severityFromOs(
-    AtlasOsSeverity severity,
-  ) {
+  AtlasExecutiveCoreSeverity _severityFromOs(AtlasOsSeverity severity) {
     switch (severity) {
       case AtlasOsSeverity.low:
         return AtlasExecutiveCoreSeverity.low;
@@ -803,9 +593,7 @@ class AtlasExecutiveCoreService {
     }
   }
 
-  int _priorityWeightFromIntelligence(
-    AtlasIntelligencePriority priority,
-  ) {
+  int _priorityWeightFromIntelligence(AtlasIntelligencePriority priority) {
     switch (priority) {
       case AtlasIntelligencePriority.low:
         return 1;
@@ -821,9 +609,7 @@ class AtlasExecutiveCoreService {
     }
   }
 
-  int _priorityWeightFromOs(
-    AtlasOsPriority priority,
-  ) {
+  int _priorityWeightFromOs(AtlasOsPriority priority) {
     switch (priority) {
       case AtlasOsPriority.low:
         return 1;
@@ -839,9 +625,7 @@ class AtlasExecutiveCoreService {
     }
   }
 
-  int _severityWeightFromOs(
-    AtlasOsSeverity severity,
-  ) {
+  int _severityWeightFromOs(AtlasOsSeverity severity) {
     switch (severity) {
       case AtlasOsSeverity.low:
         return 1;
@@ -857,12 +641,8 @@ class AtlasExecutiveCoreService {
     }
   }
 
-  double _moneyFromText(
-    String value,
-  ) {
-    final match = RegExp(
-      r'R\$\s*([0-9.,]+)',
-    ).firstMatch(value);
+  double _moneyFromText(String value) {
+    final match = RegExp(r'R\$\s*([0-9.,]+)').firstMatch(value);
 
     if (match == null) {
       return 0;
@@ -874,31 +654,23 @@ class AtlasExecutiveCoreService {
       return 0;
     }
 
-    final normalized = raw
-        .replaceAll('.', '')
-        .replaceAll(',', '.');
+    final normalized = raw.replaceAll('.', '').replaceAll(',', '.');
 
     return double.tryParse(normalized) ?? 0;
   }
 
   String _summary({
-    required List<AtlasExecutiveCorePriority>
-        priorities,
+    required List<AtlasExecutiveCorePriority> priorities,
     required List<AtlasExecutiveCoreRisk> risks,
-    required List<AtlasExecutiveCoreOpportunity>
-        opportunities,
+    required List<AtlasExecutiveCoreOpportunity> opportunities,
     required double executiveScore,
     required double confidence,
     required AtlasExecutiveCoreDecision? bestDecision,
     required AtlasExecutiveCoreMission? nextMission,
   }) {
-    final decisionTitle =
-        bestDecision?.title ??
-            'nenhuma decisão principal';
+    final decisionTitle = bestDecision?.title ?? 'nenhuma decisão principal';
 
-    final missionTitle =
-        nextMission?.title ??
-            'nenhuma missão recomendada';
+    final missionTitle = nextMission?.title ?? 'nenhuma missão recomendada';
 
     return 'O Executive Core consolidou '
         '${priorities.length} prioridades, '

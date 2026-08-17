@@ -24,14 +24,14 @@ class AtlasEventCorrelationService {
     final correlations = <AtlasEventCorrelation>[];
     final usedKeys = <String>{};
 
-    for (var firstIndex = 0;
-        firstIndex < ordered.length - 1;
-        firstIndex++) {
+    for (var firstIndex = 0; firstIndex < ordered.length - 1; firstIndex++) {
       final first = ordered[firstIndex];
 
-      for (var secondIndex = firstIndex + 1;
-          secondIndex < ordered.length;
-          secondIndex++) {
+      for (
+        var secondIndex = firstIndex + 1;
+        secondIndex < ordered.length;
+        secondIndex++
+      ) {
         final second = ordered[secondIndex];
         final distance = second.occurredAt.difference(first.occurredAt);
 
@@ -98,16 +98,17 @@ class AtlasEventCorrelationService {
       return false;
     }
 
-    final sameEntity = first.entityId != null &&
+    final sameEntity =
+        first.entityId != null &&
         second.entityId != null &&
         first.entityId == second.entityId;
 
     final sharedTag = first.tags.any(second.tags.contains);
     final relevantPriority =
         first.priority == AtlasEventPriority.high ||
-            first.priority == AtlasEventPriority.critical ||
-            second.priority == AtlasEventPriority.high ||
-            second.priority == AtlasEventPriority.critical;
+        first.priority == AtlasEventPriority.critical ||
+        second.priority == AtlasEventPriority.high ||
+        second.priority == AtlasEventPriority.critical;
 
     return sameEntity || sharedTag || relevantPriority;
   }
@@ -129,24 +130,28 @@ class AtlasEventCorrelationService {
     required Duration distance,
     required Duration maximumDistance,
   }) {
-    final sameEntity = first.entityId != null &&
+    final sameEntity =
+        first.entityId != null &&
         second.entityId != null &&
         first.entityId == second.entityId;
     final sharedTags = first.tags.where(second.tags.contains).length;
-    final criticalWeight = _priorityWeight(first.priority) +
-        _priorityWeight(second.priority);
-    final proximity = 1 -
-        (distance.inMinutes /
-                math.max(1, maximumDistance.inMinutes))
-            .clamp(0.0, 1.0);
+    final criticalWeight =
+        _priorityWeight(first.priority) + _priorityWeight(second.priority);
+    final proximity =
+        1 -
+        (distance.inMinutes / math.max(1, maximumDistance.inMinutes)).clamp(
+          0.0,
+          1.0,
+        );
 
-    final confidence = (
-      35 +
-      proximity * 30 +
-      (sameEntity ? 20 : 0) +
-      math.min(10, sharedTags * 5) +
-      criticalWeight * 2.5
-    ).clamp(0.0, 99.0).toDouble();
+    final confidence =
+        (35 +
+                proximity * 30 +
+                (sameEntity ? 20 : 0) +
+                math.min(10, sharedTags * 5) +
+                criticalWeight * 2.5)
+            .clamp(0.0, 99.0)
+            .toDouble();
 
     final priority = _highestPriority(first.priority, second.priority);
     final farmName = first.farmName ?? second.farmName ?? 'Operação';
@@ -188,8 +193,6 @@ class AtlasEventCorrelationService {
     AtlasEventPriority first,
     AtlasEventPriority second,
   ) {
-    return _priorityWeight(first) >= _priorityWeight(second)
-        ? first
-        : second;
+    return _priorityWeight(first) >= _priorityWeight(second) ? first : second;
   }
 }

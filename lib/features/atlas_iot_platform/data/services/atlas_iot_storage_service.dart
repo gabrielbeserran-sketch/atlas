@@ -4,20 +4,13 @@ import 'package:projeto_atlas/features/atlas_iot_platform/domain/models/atlas_io
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtlasIotStorageService {
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_iot_'
         '${_normalize(farmName)}_'
         '${_normalize(animalId)}';
@@ -28,10 +21,7 @@ class AtlasIotStorageService {
     required String animalId,
   }) async {
     final raw = await _preferences.getString(
-      _key(
-        farmName: farmName,
-        animalId: animalId,
-      ),
+      _key(farmName: farmName, animalId: animalId),
     );
 
     if (raw == null || raw.trim().isEmpty) return [];
@@ -39,9 +29,8 @@ class AtlasIotStorageService {
     try {
       return (jsonDecode(raw) as List<dynamic>)
           .map(
-            (item) => AtlasIotRecord.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasIotRecord.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {
@@ -55,13 +44,8 @@ class AtlasIotStorageService {
     required List<AtlasIotRecord> records,
   }) async {
     await _preferences.setString(
-      _key(
-        farmName: farmName,
-        animalId: animalId,
-      ),
-      jsonEncode(
-        records.map((record) => record.toMap()).toList(),
-      ),
+      _key(farmName: farmName, animalId: animalId),
+      jsonEncode(records.map((record) => record.toMap()).toList()),
     );
   }
 }

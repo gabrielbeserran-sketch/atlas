@@ -80,16 +80,16 @@ class AtlasSaasPlatformAnalyticsService {
     final double averageUsage = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.usagePercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.usagePercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final double averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coveragePercent.round() * 30 ~/ 100);
@@ -139,55 +139,50 @@ class AtlasSaasPlatformAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasSaasPlatformModule.accessControl => const [
-              'Aplique menor privilégio e revise permissões periodicamente.',
-              'Registre alterações de acesso e encerre sessões suspeitas.',
-            ],
-          AtlasSaasPlatformModule.multiCompany => const [
-              'Isole dados e configurações por empresa.',
-              'Defina administradores e regras de consolidação.',
-            ],
-          AtlasSaasPlatformModule.multiFarm => const [
-              'Associe cada usuário apenas às fazendas autorizadas.',
-              'Padronize indicadores antes de comparar propriedades.',
-            ],
-          AtlasSaasPlatformModule.subscriptions => const [
-              'Defina claramente limites, benefícios e regras de renovação.',
-              'Mantenha histórico de mudanças de plano.',
-            ],
-          AtlasSaasPlatformModule.billing => const [
-              'Concilie faturas, recebimentos e inadimplência.',
-              'Automatize lembretes sem perder a revisão financeira.',
-            ],
-          AtlasSaasPlatformModule.pixPayments => const [
-              'Valide valor, recebedor e identificador antes da cobrança.',
-              'Mantenha conciliação e devoluções auditáveis.',
-            ],
-          AtlasSaasPlatformModule.cardPayments => const [
-              'Nunca armazene dados sensíveis de cartão diretamente.',
-              'Trate estornos e chargebacks com trilha de auditoria.',
-            ],
-          AtlasSaasPlatformModule.licensing => const [
-              'Acompanhe expiração, consumo e exceções de uso.',
-              'Evite bloqueios inesperados com alertas antecipados.',
-            ],
-          AtlasSaasPlatformModule.consultantMarketplace =>
-            const [
-              'Valide identidade, especialidade e reputação dos consultores.',
-              'Registre escopo, proposta, aceite e avaliação.',
-            ],
-          AtlasSaasPlatformModule.producerPortal => const [
-              'Mostre apenas dados autorizados ao produtor.',
-              'Centralize documentos, solicitações e indicadores compartilhados.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasSaasPlatformModule.accessControl => const [
+          'Aplique menor privilégio e revise permissões periodicamente.',
+          'Registre alterações de acesso e encerre sessões suspeitas.',
+        ],
+        AtlasSaasPlatformModule.multiCompany => const [
+          'Isole dados e configurações por empresa.',
+          'Defina administradores e regras de consolidação.',
+        ],
+        AtlasSaasPlatformModule.multiFarm => const [
+          'Associe cada usuário apenas às fazendas autorizadas.',
+          'Padronize indicadores antes de comparar propriedades.',
+        ],
+        AtlasSaasPlatformModule.subscriptions => const [
+          'Defina claramente limites, benefícios e regras de renovação.',
+          'Mantenha histórico de mudanças de plano.',
+        ],
+        AtlasSaasPlatformModule.billing => const [
+          'Concilie faturas, recebimentos e inadimplência.',
+          'Automatize lembretes sem perder a revisão financeira.',
+        ],
+        AtlasSaasPlatformModule.pixPayments => const [
+          'Valide valor, recebedor e identificador antes da cobrança.',
+          'Mantenha conciliação e devoluções auditáveis.',
+        ],
+        AtlasSaasPlatformModule.cardPayments => const [
+          'Nunca armazene dados sensíveis de cartão diretamente.',
+          'Trate estornos e chargebacks com trilha de auditoria.',
+        ],
+        AtlasSaasPlatformModule.licensing => const [
+          'Acompanhe expiração, consumo e exceções de uso.',
+          'Evite bloqueios inesperados com alertas antecipados.',
+        ],
+        AtlasSaasPlatformModule.consultantMarketplace => const [
+          'Valide identidade, especialidade e reputação dos consultores.',
+          'Registre escopo, proposta, aceite e avaliação.',
+        ],
+        AtlasSaasPlatformModule.producerPortal => const [
+          'Mostre apenas dados autorizados ao produtor.',
+          'Centralize documentos, solicitações e indicadores compartilhados.',
+        ],
+      });
     }
 
     return items;

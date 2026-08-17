@@ -3,10 +3,7 @@ import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_data.dart
 import 'package:projeto_atlas/features/atlas_bi/domain/models/atlas_bi_management_summary.dart';
 
 class AtlasBiManagementDashboardScreen extends StatelessWidget {
-  const AtlasBiManagementDashboardScreen({
-    required this.data,
-    super.key,
-  });
+  const AtlasBiManagementDashboardScreen({required this.data, super.key});
 
   final AtlasBiManagementSummary data;
 
@@ -244,7 +241,10 @@ class _PriorityCard extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: const CircleAvatar(child: Icon(Icons.flag_outlined)),
-        title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(
+          item.title,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Text('${item.description}\nAção: ${item.recommendedAction}'),
@@ -283,7 +283,10 @@ class _SectionTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
         const SizedBox(height: 4),
         Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],

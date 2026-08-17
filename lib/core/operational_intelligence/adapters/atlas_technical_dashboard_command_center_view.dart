@@ -27,9 +27,7 @@ class AtlasTechnicalDashboardCommandCenterView {
       eventsLast7Days: metrics.eventsLast7Days,
       criticalEvents: metrics.criticalEvents,
       highPriorityEvents: metrics.highPriorityEvents,
-      eventsByModule: Map<String, int>.unmodifiable(
-        metrics.eventsByModule,
-      ),
+      eventsByModule: Map<String, int>.unmodifiable(metrics.eventsByModule),
       eventsByEntityType: Map<String, int>.unmodifiable(
         metrics.eventsByEntityType,
       ),

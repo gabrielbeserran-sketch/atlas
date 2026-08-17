@@ -9,9 +9,8 @@ import 'package:projeto_atlas/core/reactivity/atlas_reactive_policy.dart';
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_target.dart';
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_update.dart';
 
-typedef AtlasReactiveHandler = Future<void> Function(
-  AtlasReactiveUpdate update,
-);
+typedef AtlasReactiveHandler =
+    Future<void> Function(AtlasReactiveUpdate update);
 
 class AtlasReactiveIntelligenceCoordinator {
   AtlasReactiveIntelligenceCoordinator({
@@ -19,10 +18,10 @@ class AtlasReactiveIntelligenceCoordinator {
     AtlasReactivePolicy policy = const AtlasReactivePolicy(),
     AtlasReactiveDiagnosticsService? diagnosticsService,
     this.debounceDuration = const Duration(milliseconds: 500),
-  })  : _eventBus = eventBus ?? AtlasEventBus.instance,
-        _policy = policy,
-        _diagnostics =
-            diagnosticsService ?? AtlasReactiveDiagnosticsService.instance;
+  }) : _eventBus = eventBus ?? AtlasEventBus.instance,
+       _policy = policy,
+       _diagnostics =
+           diagnosticsService ?? AtlasReactiveDiagnosticsService.instance;
 
   final AtlasEventBus _eventBus;
   final AtlasReactivePolicy _policy;
@@ -46,9 +45,9 @@ class AtlasReactiveIntelligenceCoordinator {
   int get pendingEventCount => _pending.length;
 
   AtlasReactiveDiagnostics get diagnostics => _diagnostics.snapshot(
-        isRunning: isRunning,
-        pendingEvents: pendingEventCount,
-      );
+    isRunning: isRunning,
+    pendingEvents: pendingEventCount,
+  );
 
   String registerHandler({
     required AtlasReactiveTarget target,
@@ -71,9 +70,7 @@ class AtlasReactiveIntelligenceCoordinator {
     return registrationId;
   }
 
-  void unregisterHandler(
-    AtlasReactiveTarget target,
-  ) {
+  void unregisterHandler(AtlasReactiveTarget target) {
     final removedHandlers = _handlers.remove(target);
 
     if (removedHandlers == null) {
@@ -143,9 +140,7 @@ class AtlasReactiveIntelligenceCoordinator {
     await _executePending();
   }
 
-  Future<void> _receive(
-    AtlasEvent event,
-  ) async {
+  Future<void> _receive(AtlasEvent event) async {
     _diagnostics.recordReceivedEvent();
 
     if (!_pendingEventIds.add(event.id)) {
@@ -162,10 +157,7 @@ class AtlasReactiveIntelligenceCoordinator {
     }
 
     _timer?.cancel();
-    _timer = Timer(
-      debounceDuration,
-      () => unawaited(_executePending()),
-    );
+    _timer = Timer(debounceDuration, () => unawaited(_executePending()));
   }
 
   Future<void> _executePending() async {
@@ -200,9 +192,7 @@ class AtlasReactiveIntelligenceCoordinator {
           continue;
         }
 
-        final handlers = Map<String, AtlasReactiveHandler>.from(
-          targetHandlers,
-        );
+        final handlers = Map<String, AtlasReactiveHandler>.from(targetHandlers);
 
         for (final handler in handlers.values) {
           final targetStopwatch = Stopwatch()..start();
@@ -238,9 +228,7 @@ class AtlasReactiveIntelligenceCoordinator {
     }
   }
 
-  AtlasReactiveUpdate _buildUpdate(
-    List<AtlasEvent> events,
-  ) {
+  AtlasReactiveUpdate _buildUpdate(List<AtlasEvent> events) {
     final targets = <AtlasReactiveTarget>{};
     var priority = AtlasEventPriority.low;
 
@@ -266,9 +254,7 @@ class AtlasReactiveIntelligenceCoordinator {
     );
   }
 
-  int _weight(
-    AtlasEventPriority priority,
-  ) {
+  int _weight(AtlasEventPriority priority) {
     switch (priority) {
       case AtlasEventPriority.low:
         return 1;

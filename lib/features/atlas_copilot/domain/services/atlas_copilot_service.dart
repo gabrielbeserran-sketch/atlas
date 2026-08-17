@@ -16,9 +16,7 @@ class AtlasCopilotService {
     required AtlasBiAnalyticsData analytics,
     DateTime? now,
   }) {
-    final mainProblem = _mainProblem(
-      analytics,
-    );
+    final mainProblem = _mainProblem(analytics);
 
     final topPriority = _topPriority(
       analytics: analytics,
@@ -26,14 +24,9 @@ class AtlasCopilotService {
       benchmark: benchmark,
     );
 
-    final actions = _actions(
-      analytics: analytics,
-      forecast: forecast,
-    );
+    final actions = _actions(analytics: analytics, forecast: forecast);
 
-    final investments = _investments(
-      analytics,
-    );
+    final investments = _investments(analytics);
 
     final alerts = _alerts(
       bi: bi,
@@ -56,8 +49,7 @@ class AtlasCopilotService {
       analytics: analytics,
     );
 
-    final maturityLevel =
-        _maturityLevel(maturityScore);
+    final maturityLevel = _maturityLevel(maturityScore);
 
     final checklist = _checklist(
       mainProblem: mainProblem,
@@ -86,9 +78,7 @@ class AtlasCopilotService {
     );
   }
 
-  AtlasCopilotIssue? _mainProblem(
-    AtlasBiAnalyticsData analytics,
-  ) {
+  AtlasCopilotIssue? _mainProblem(AtlasBiAnalyticsData analytics) {
     final bottleneck = analytics.mainBottleneck;
 
     if (bottleneck == null) {
@@ -99,18 +89,13 @@ class AtlasCopilotService {
       id: 'issue_${bottleneck.id}',
       farmName: bottleneck.farmName,
       title: bottleneck.indicatorTitle,
-      description:
-          'Este é o gargalo com maior impacto estimado na operação.',
+      description: 'Este é o gargalo com maior impacto estimado na operação.',
       category: bottleneck.category,
-      severity: _severity(
-        bottleneck.severity,
-      ),
+      severity: _severity(bottleneck.severity),
       impactScore: bottleneck.priorityScore,
-      financialImpactValue:
-          bottleneck.financialImpactValue,
+      financialImpactValue: bottleneck.financialImpactValue,
       cause: bottleneck.cause,
-      recommendation:
-          bottleneck.recommendation,
+      recommendation: bottleneck.recommendation,
     );
   }
 
@@ -125,49 +110,35 @@ class AtlasCopilotService {
       return AtlasCopilotPriority(
         id: 'priority_${bottleneck.id}',
         farmName: bottleneck.farmName,
-        title:
-            'Atacar ${bottleneck.indicatorTitle}',
-        description:
-            bottleneck.recommendation,
+        title: 'Atacar ${bottleneck.indicatorTitle}',
+        description: bottleneck.recommendation,
         category: bottleneck.category,
-        priority:
-            bottleneck.severity ==
-                    AtlasBiAnalyticsSeverity.critical
-                ? AtlasCopilotPriorityLevel.critical
-                : AtlasCopilotPriorityLevel.high,
+        priority: bottleneck.severity == AtlasBiAnalyticsSeverity.critical
+            ? AtlasCopilotPriorityLevel.critical
+            : AtlasCopilotPriorityLevel.high,
         confidencePercent: 92,
         expectedResult:
             'Reduzir a lacuna de desempenho e recuperar o impacto econômico estimado.',
-        deadlineDays:
-            bottleneck.severity ==
-                    AtlasBiAnalyticsSeverity.critical
-                ? 15
-                : 30,
+        deadlineDays: bottleneck.severity == AtlasBiAnalyticsSeverity.critical
+            ? 15
+            : 30,
       );
     }
 
-    final forecastPriority =
-        forecast.priorityForecast;
+    final forecastPriority = forecast.priorityForecast;
 
     if (forecastPriority != null) {
       return AtlasCopilotPriority(
-        id:
-            'priority_forecast_${forecastPriority.indicatorId}',
+        id: 'priority_forecast_${forecastPriority.indicatorId}',
         farmName: forecastPriority.farmName,
-        title:
-            'Reverter risco em ${forecastPriority.title}',
-        description:
-            forecastPriority.recommendation,
+        title: 'Reverter risco em ${forecastPriority.title}',
+        description: forecastPriority.recommendation,
         category: forecastPriority.category,
-        priority:
-            forecastPriority.risk ==
-                    AtlasBiForecastRisk.critical
-                ? AtlasCopilotPriorityLevel.critical
-                : AtlasCopilotPriorityLevel.high,
-        confidencePercent:
-            forecastPriority.confidencePercent,
-        expectedResult:
-            'Aumentar a probabilidade de atingir a meta.',
+        priority: forecastPriority.risk == AtlasBiForecastRisk.critical
+            ? AtlasCopilotPriorityLevel.critical
+            : AtlasCopilotPriorityLevel.high,
+        confidencePercent: forecastPriority.confidencePercent,
+        expectedResult: 'Aumentar a probabilidade de atingir a meta.',
         deadlineDays: 30,
       );
     }
@@ -176,18 +147,15 @@ class AtlasCopilotService {
       final lastFarm = benchmark.farms.last;
 
       return AtlasCopilotPriority(
-        id:
-            'priority_benchmark_${lastFarm.farmName}',
+        id: 'priority_benchmark_${lastFarm.farmName}',
         farmName: lastFarm.farmName,
-        title:
-            'Reduzir distância para a fazenda líder',
+        title: 'Reduzir distância para a fazenda líder',
         description:
             'Comparar práticas com ${benchmark.leadingFarmName ?? 'a referência interna'} e priorizar os maiores gaps.',
         category: AtlasBiCategory.management,
         priority: AtlasCopilotPriorityLevel.medium,
         confidencePercent: 80,
-        expectedResult:
-            'Melhorar o score comparativo da fazenda.',
+        expectedResult: 'Melhorar o score comparativo da fazenda.',
         deadlineDays: 60,
       );
     }
@@ -201,56 +169,45 @@ class AtlasCopilotService {
   }) {
     final result = <AtlasCopilotAction>[];
 
-    for (final bottleneck
-        in analytics.bottlenecks.take(5)) {
+    for (final bottleneck in analytics.bottlenecks.take(5)) {
       result.add(
         AtlasCopilotAction(
           position: result.length + 1,
           farmName: bottleneck.farmName,
-          title:
-              'Plano para ${bottleneck.indicatorTitle}',
-          description:
-              bottleneck.recommendation,
+          title: 'Plano para ${bottleneck.indicatorTitle}',
+          description: bottleneck.recommendation,
           category: bottleneck.category,
-          priority:
-              bottleneck.severity ==
-                      AtlasBiAnalyticsSeverity.critical
-                  ? AtlasCopilotPriorityLevel.critical
-                  : AtlasCopilotPriorityLevel.high,
-          deadlineDays:
-              bottleneck.severity ==
-                      AtlasBiAnalyticsSeverity.critical
-                  ? 15
-                  : 30,
+          priority: bottleneck.severity == AtlasBiAnalyticsSeverity.critical
+              ? AtlasCopilotPriorityLevel.critical
+              : AtlasCopilotPriorityLevel.high,
+          deadlineDays: bottleneck.severity == AtlasBiAnalyticsSeverity.critical
+              ? 15
+              : 30,
           expectedResult:
               'Reduzir ${bottleneck.performanceGapPercent.toStringAsFixed(1)}% da lacuna atual.',
         ),
       );
     }
 
-    for (final item in forecast.forecasts
-        .where((forecast) {
-      return forecast.risk ==
-              AtlasBiForecastRisk.critical ||
-          forecast.risk ==
-              AtlasBiForecastRisk.high;
-    }).take(3)) {
+    for (final item
+        in forecast.forecasts
+            .where((forecast) {
+              return forecast.risk == AtlasBiForecastRisk.critical ||
+                  forecast.risk == AtlasBiForecastRisk.high;
+            })
+            .take(3)) {
       result.add(
         AtlasCopilotAction(
           position: result.length + 1,
           farmName: item.farmName,
-          title:
-              'Revisar previsão de ${item.title}',
+          title: 'Revisar previsão de ${item.title}',
           description: item.recommendation,
           category: item.category,
-          priority:
-              item.risk ==
-                      AtlasBiForecastRisk.critical
-                  ? AtlasCopilotPriorityLevel.critical
-                  : AtlasCopilotPriorityLevel.high,
+          priority: item.risk == AtlasBiForecastRisk.critical
+              ? AtlasCopilotPriorityLevel.critical
+              : AtlasCopilotPriorityLevel.high,
           deadlineDays: 14,
-          expectedResult:
-              'Elevar a chance de atingir a meta acima de 70%.',
+          expectedResult: 'Elevar a chance de atingir a meta acima de 70%.',
         ),
       );
     }
@@ -258,35 +215,23 @@ class AtlasCopilotService {
     return result.take(8).toList();
   }
 
-  List<AtlasCopilotInvestment> _investments(
-    AtlasBiAnalyticsData analytics,
-  ) {
-    return List.generate(
-      math.min(
-        analytics.investments.length,
-        6,
-      ),
-      (index) {
-        final item = analytics.investments[index];
+  List<AtlasCopilotInvestment> _investments(AtlasBiAnalyticsData analytics) {
+    return List.generate(math.min(analytics.investments.length, 6), (index) {
+      final item = analytics.investments[index];
 
-        return AtlasCopilotInvestment(
-          position: index + 1,
-          farmName: item.farmName,
-          title: item.title,
-          category: item.category,
-          investmentValue:
-              item.investmentValue,
-          expectedReturnValue:
-              item.expectedReturnValue,
-          roiPercent: item.roiPercent,
-          paybackDays: item.paybackDays,
-          confidencePercent:
-              item.confidencePercent,
-          recommendation:
-              item.recommendation,
-        );
-      },
-    );
+      return AtlasCopilotInvestment(
+        position: index + 1,
+        farmName: item.farmName,
+        title: item.title,
+        category: item.category,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
+        roiPercent: item.roiPercent,
+        paybackDays: item.paybackDays,
+        confidencePercent: item.confidencePercent,
+        recommendation: item.recommendation,
+      );
+    });
   }
 
   List<AtlasCopilotAlert> _alerts({
@@ -297,53 +242,42 @@ class AtlasCopilotService {
   }) {
     final result = <AtlasCopilotAlert>[];
 
-    for (final indicator
-        in bi.criticalIndicators.take(5)) {
+    for (final indicator in bi.criticalIndicators.take(5)) {
       result.add(
         AtlasCopilotAlert(
-          id:
-              'alert_indicator_${indicator.farmName}_${indicator.id}',
+          id: 'alert_indicator_${indicator.farmName}_${indicator.id}',
           farmName: indicator.farmName,
-          title:
-              'Indicador crítico — ${indicator.title}',
+          title: 'Indicador crítico — ${indicator.title}',
           description:
               'O indicador atingiu ${indicator.targetAchievementPercent.toStringAsFixed(0)}% da meta.',
           category: indicator.category,
           severity: AtlasCopilotSeverity.critical,
-          source:
-              AtlasCopilotAlertSource.indicator,
-          recommendation:
-              'Investigar a causa e criar ação corretiva.',
+          source: AtlasCopilotAlertSource.indicator,
+          recommendation: 'Investigar a causa e criar ação corretiva.',
         ),
       );
     }
 
-    for (final item in forecast.forecasts
-        .where((forecast) {
-      return forecast.risk ==
-              AtlasBiForecastRisk.critical ||
-          forecast.risk ==
-              AtlasBiForecastRisk.high;
-    }).take(5)) {
+    for (final item
+        in forecast.forecasts
+            .where((forecast) {
+              return forecast.risk == AtlasBiForecastRisk.critical ||
+                  forecast.risk == AtlasBiForecastRisk.high;
+            })
+            .take(5)) {
       result.add(
         AtlasCopilotAlert(
-          id:
-              'alert_forecast_${item.farmName}_${item.indicatorId}',
+          id: 'alert_forecast_${item.farmName}_${item.indicatorId}',
           farmName: item.farmName,
-          title:
-              'Risco futuro — ${item.title}',
+          title: 'Risco futuro — ${item.title}',
           description:
               'Chance atual da meta: ${item.targetProbabilityPercent.toStringAsFixed(0)}%.',
           category: item.category,
-          severity:
-              item.risk ==
-                      AtlasBiForecastRisk.critical
-                  ? AtlasCopilotSeverity.critical
-                  : AtlasCopilotSeverity.high,
-          source:
-              AtlasCopilotAlertSource.forecast,
-          recommendation:
-              item.recommendation,
+          severity: item.risk == AtlasBiForecastRisk.critical
+              ? AtlasCopilotSeverity.critical
+              : AtlasCopilotSeverity.high,
+          source: AtlasCopilotAlertSource.forecast,
+          recommendation: item.recommendation,
         ),
       );
     }
@@ -353,84 +287,67 @@ class AtlasCopilotService {
 
       result.add(
         AtlasCopilotAlert(
-          id:
-              'alert_benchmark_${lastFarm.farmName}',
+          id: 'alert_benchmark_${lastFarm.farmName}',
           farmName: lastFarm.farmName,
-          title:
-              'Maior distância no benchmarking',
+          title: 'Maior distância no benchmarking',
           description:
               '${lastFarm.distanceFromLeader.toStringAsFixed(1)} pontos abaixo da líder.',
           category: AtlasBiCategory.management,
           severity: lastFarm.distanceFromLeader >= 25
               ? AtlasCopilotSeverity.high
               : AtlasCopilotSeverity.medium,
-          source:
-              AtlasCopilotAlertSource.benchmark,
+          source: AtlasCopilotAlertSource.benchmark,
           recommendation:
               'Comparar os indicadores com a fazenda líder e priorizar os maiores gaps.',
         ),
       );
     }
 
-    for (final bottleneck
-        in analytics.bottlenecks.take(3)) {
+    for (final bottleneck in analytics.bottlenecks.take(3)) {
       result.add(
         AtlasCopilotAlert(
-          id:
-              'alert_analytics_${bottleneck.id}',
+          id: 'alert_analytics_${bottleneck.id}',
           farmName: bottleneck.farmName,
-          title:
-              'Gargalo econômico — ${bottleneck.indicatorTitle}',
+          title: 'Gargalo econômico — ${bottleneck.indicatorTitle}',
           description:
               'Impacto estimado de R\$ ${bottleneck.financialImpactValue.toStringAsFixed(2)}.',
           category: bottleneck.category,
-          severity:
-              _severity(bottleneck.severity),
-          source:
-              AtlasCopilotAlertSource.analytics,
-          recommendation:
-              bottleneck.recommendation,
+          severity: _severity(bottleneck.severity),
+          source: AtlasCopilotAlertSource.analytics,
+          recommendation: bottleneck.recommendation,
         ),
       );
     }
 
     result.sort((first, second) {
-      return _severityWeight(second.severity)
-          .compareTo(
-        _severityWeight(first.severity),
-      );
+      return _severityWeight(
+        second.severity,
+      ).compareTo(_severityWeight(first.severity));
     });
 
     return result.take(12).toList();
   }
 
-  List<AtlasCopilotRecommendation>
-      _recommendations({
+  List<AtlasCopilotRecommendation> _recommendations({
     required AtlasBiData bi,
     required AtlasBiForecastDashboardData forecast,
     required AtlasBiBenchmarkData benchmark,
     required AtlasBiAnalyticsData analytics,
   }) {
-    final result =
-        <AtlasCopilotRecommendation>[];
+    final result = <AtlasCopilotRecommendation>[];
 
-    for (final item
-        in analytics.investments.take(5)) {
+    for (final item in analytics.investments.take(5)) {
       result.add(
         AtlasCopilotRecommendation(
-          id:
-              'recommendation_investment_${item.id}',
+          id: 'recommendation_investment_${item.id}',
           farmName: item.farmName,
           title: item.title,
-          description:
-              item.recommendation,
+          description: item.recommendation,
           category: item.category,
-          priority:
-              item.impactScore >= 75
-                  ? AtlasCopilotPriorityLevel.high
-                  : AtlasCopilotPriorityLevel.medium,
-          confidencePercent:
-              item.confidencePercent,
+          priority: item.impactScore >= 75
+              ? AtlasCopilotPriorityLevel.high
+              : AtlasCopilotPriorityLevel.medium,
+          confidencePercent: item.confidencePercent,
           expectedImpact:
               'ROI estimado de ${item.roiPercent.toStringAsFixed(1)}%.',
         ),
@@ -440,20 +357,14 @@ class AtlasCopilotService {
     for (final insight in bi.insights.take(5)) {
       result.add(
         AtlasCopilotRecommendation(
-          id:
-              'recommendation_bi_${insight.id}',
-          farmName:
-              insight.farmName ?? 'Operação',
+          id: 'recommendation_bi_${insight.id}',
+          farmName: insight.farmName ?? 'Operação',
           title: insight.title,
-          description:
-              insight.recommendation,
+          description: insight.recommendation,
           category: insight.category,
-          priority:
-              _priorityFromBi(insight.priority),
-          confidencePercent:
-              insight.confidencePercent,
-          expectedImpact:
-              insight.description,
+          priority: _priorityFromBi(insight.priority),
+          confidencePercent: insight.confidencePercent,
+          expectedImpact: insight.description,
         ),
       );
     }
@@ -462,18 +373,14 @@ class AtlasCopilotService {
       result.add(
         AtlasCopilotRecommendation(
           id: 'recommendation_benchmark',
-          farmName:
-              benchmark.leadingFarmName!,
-          title:
-              'Replicar práticas da fazenda líder',
+          farmName: benchmark.leadingFarmName!,
+          title: 'Replicar práticas da fazenda líder',
           description:
               'Documentar os processos responsáveis pelo melhor score e avaliar sua aplicação nas demais propriedades.',
           category: AtlasBiCategory.management,
-          priority:
-              AtlasCopilotPriorityLevel.medium,
+          priority: AtlasCopilotPriorityLevel.medium,
           confidencePercent: 82,
-          expectedImpact:
-              'Reduzir a distância média entre fazendas.',
+          expectedImpact: 'Reduzir a distância média entre fazendas.',
         ),
       );
     }
@@ -483,16 +390,13 @@ class AtlasCopilotService {
         AtlasCopilotRecommendation(
           id: 'recommendation_forecast',
           farmName: 'Operação',
-          title:
-              'Revisar tendências negativas',
+          title: 'Revisar tendências negativas',
           description:
               'Priorizar os indicadores com queda e risco alto nas próximas reuniões de gestão.',
           category: AtlasBiCategory.intelligence,
-          priority:
-              AtlasCopilotPriorityLevel.high,
+          priority: AtlasCopilotPriorityLevel.high,
           confidencePercent: 88,
-          expectedImpact:
-              'Reduzir o risco futuro dos indicadores.',
+          expectedImpact: 'Reduzir o risco futuro dos indicadores.',
         ),
       );
     }
@@ -510,29 +414,19 @@ class AtlasCopilotService {
 
     final forecastScore = forecast.forecasts.isEmpty
         ? 0.0
-        : (100 -
-                forecast.highRiskCount /
-                    forecast.forecasts.length *
-                    100) *
-            0.20;
+        : (100 - forecast.highRiskCount / forecast.forecasts.length * 100) *
+              0.20;
 
-    final benchmarkScore =
-        benchmark.averageScore * 0.20;
+    final benchmarkScore = benchmark.averageScore * 0.20;
 
-    final analyticsScore =
-        analytics.score * 0.30;
+    final analyticsScore = analytics.score * 0.30;
 
-    return (dataScore +
-            forecastScore +
-            benchmarkScore +
-            analyticsScore)
+    return (dataScore + forecastScore + benchmarkScore + analyticsScore)
         .clamp(0.0, 100.0)
         .toDouble();
   }
 
-  AtlasCopilotMaturityLevel _maturityLevel(
-    double score,
-  ) {
+  AtlasCopilotMaturityLevel _maturityLevel(double score) {
     if (score >= 90) {
       return AtlasCopilotMaturityLevel.excellent;
     }
@@ -557,19 +451,15 @@ class AtlasCopilotService {
     required AtlasCopilotPriority? topPriority,
     required List<AtlasCopilotAlert> alerts,
   }) {
-    final result =
-        <AtlasCopilotChecklistItem>[];
+    final result = <AtlasCopilotChecklistItem>[];
 
     if (mainProblem != null) {
       result.add(
         AtlasCopilotChecklistItem(
           id: 'check_main_problem',
-          title:
-              'Validar o principal gargalo',
-          description:
-              'Confirmar em campo as causas de ${mainProblem.title}.',
-          priority:
-              AtlasCopilotPriorityLevel.critical,
+          title: 'Validar o principal gargalo',
+          description: 'Confirmar em campo as causas de ${mainProblem.title}.',
+          priority: AtlasCopilotPriorityLevel.critical,
           completed: false,
         ),
       );
@@ -579,10 +469,8 @@ class AtlasCopilotService {
       result.add(
         AtlasCopilotChecklistItem(
           id: 'check_top_priority',
-          title:
-              'Definir responsável pela prioridade',
-          description:
-              'Nomear responsável e prazo para ${topPriority.title}.',
+          title: 'Definir responsável pela prioridade',
+          description: 'Nomear responsável e prazo para ${topPriority.title}.',
           priority: topPriority.priority,
           completed: false,
         ),
@@ -593,12 +481,9 @@ class AtlasCopilotService {
       result.add(
         const AtlasCopilotChecklistItem(
           id: 'check_alerts',
-          title:
-              'Revisar alertas executivos',
-          description:
-              'Analisar os alertas críticos e registrar decisões.',
-          priority:
-              AtlasCopilotPriorityLevel.high,
+          title: 'Revisar alertas executivos',
+          description: 'Analisar os alertas críticos e registrar decisões.',
+          priority: AtlasCopilotPriorityLevel.high,
           completed: false,
         ),
       );
@@ -607,12 +492,9 @@ class AtlasCopilotService {
     result.add(
       const AtlasCopilotChecklistItem(
         id: 'check_meeting',
-        title:
-            'Realizar reunião de acompanhamento',
-        description:
-            'Revisar KPIs, metas, Forecast e plano de ação.',
-        priority:
-            AtlasCopilotPriorityLevel.medium,
+        title: 'Realizar reunião de acompanhamento',
+        description: 'Revisar KPIs, metas, Forecast e plano de ação.',
+        priority: AtlasCopilotPriorityLevel.medium,
         completed: false,
       ),
     );
@@ -620,9 +502,7 @@ class AtlasCopilotService {
     return result;
   }
 
-  AtlasCopilotSeverity _severity(
-    AtlasBiAnalyticsSeverity severity,
-  ) {
+  AtlasCopilotSeverity _severity(AtlasBiAnalyticsSeverity severity) {
     switch (severity) {
       case AtlasBiAnalyticsSeverity.low:
         return AtlasCopilotSeverity.low;
@@ -638,9 +518,7 @@ class AtlasCopilotService {
     }
   }
 
-  AtlasCopilotPriorityLevel _priorityFromBi(
-    AtlasBiPriority priority,
-  ) {
+  AtlasCopilotPriorityLevel _priorityFromBi(AtlasBiPriority priority) {
     switch (priority) {
       case AtlasBiPriority.low:
         return AtlasCopilotPriorityLevel.low;
@@ -656,9 +534,7 @@ class AtlasCopilotService {
     }
   }
 
-  int _severityWeight(
-    AtlasCopilotSeverity severity,
-  ) {
+  int _severityWeight(AtlasCopilotSeverity severity) {
     switch (severity) {
       case AtlasCopilotSeverity.low:
         return 1;

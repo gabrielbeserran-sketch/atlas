@@ -34,15 +34,15 @@ class TechnicalDashboardService {
     FarmFinanceStorageService? financeStorage,
     FarmInventoryStorageService? inventoryStorage,
     AnimalWeightStorageService? weightStorage,
-  })  : _herdStorage = herdStorage ?? HerdStorageService(),
-        _animalStorage = animalStorage ?? AnimalStorageService(),
-        _healthStorage = healthStorage ?? AnimalHealthStorageService(),
-        _reproductionStorage =
-            reproductionStorage ?? AnimalReproductionStorageService(),
-        _nutritionStorage = nutritionStorage ?? NutritionStorageService(),
-        _financeStorage = financeStorage ?? FarmFinanceStorageService(),
-        _inventoryStorage = inventoryStorage ?? FarmInventoryStorageService(),
-        _weightStorage = weightStorage ?? AnimalWeightStorageService();
+  }) : _herdStorage = herdStorage ?? HerdStorageService(),
+       _animalStorage = animalStorage ?? AnimalStorageService(),
+       _healthStorage = healthStorage ?? AnimalHealthStorageService(),
+       _reproductionStorage =
+           reproductionStorage ?? AnimalReproductionStorageService(),
+       _nutritionStorage = nutritionStorage ?? NutritionStorageService(),
+       _financeStorage = financeStorage ?? FarmFinanceStorageService(),
+       _inventoryStorage = inventoryStorage ?? FarmInventoryStorageService(),
+       _weightStorage = weightStorage ?? AnimalWeightStorageService();
 
   final HerdStorageService _herdStorage;
   final AnimalStorageService _animalStorage;
@@ -94,9 +94,7 @@ class TechnicalDashboardService {
           animalId: animal.id,
         );
         for (final weight in weights) {
-          weightEntries.add(
-            _WeightEntry(animalId: animal.id, data: weight),
-          );
+          weightEntries.add(_WeightEntry(animalId: animal.id, data: weight));
         }
       }
     }
@@ -192,13 +190,21 @@ class TechnicalDashboardService {
   }) {
     final now = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(now.year, now.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(now.year, now.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        now.year,
+        now.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        now.year,
+        now.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(now.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleHistoryMonth(finances, now),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleHistoryMonth(
+        finances,
+        now,
+      ),
     };
 
     final points = <TechnicalFinancialSeriesPoint>[];
@@ -211,7 +217,9 @@ class TechnicalDashboardService {
       for (final record in finances) {
         if (record.status == 'Cancelado') continue;
         final date = _parseFinanceDate(record.date);
-        if (date == null || date.isBefore(cursor) || !date.isBefore(nextMonth)) {
+        if (date == null ||
+            date.isBefore(cursor) ||
+            !date.isBefore(nextMonth)) {
           continue;
         }
         if (record.isIncome) {
@@ -240,24 +248,36 @@ class TechnicalDashboardService {
     required TechnicalDashboardPeriod period,
     required DateTime referenceDate,
   }) {
-    final validEntries = entries
-        .map((entry) => (entry: entry, date: _parseWeightDate(entry.data.date)))
-        .where((item) => item.date != null)
-        .map((item) => (entry: item.entry, date: item.date!))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final validEntries =
+        entries
+            .map(
+              (entry) =>
+                  (entry: entry, date: _parseWeightDate(entry.data.date)),
+            )
+            .where((item) => item.date != null)
+            .map((item) => (entry: item.entry, date: item.date!))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     if (validEntries.isEmpty) return const [];
 
     final currentMonth = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(currentMonth.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleWeightMonth(validEntries.first.date, currentMonth),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleWeightMonth(
+        validEntries.first.date,
+        currentMonth,
+      ),
     };
 
     final points = <TechnicalWeightSeriesPoint>[];
@@ -265,8 +285,10 @@ class TechnicalDashboardService {
     while (!cursor.isAfter(currentMonth)) {
       final nextMonth = DateTime(cursor.year, cursor.month + 1, 1);
       final monthEntries = validEntries
-          .where((item) =>
-              !item.date.isBefore(cursor) && item.date.isBefore(nextMonth))
+          .where(
+            (item) =>
+                !item.date.isBefore(cursor) && item.date.isBefore(nextMonth),
+          )
           .toList();
 
       if (monthEntries.isNotEmpty) {
@@ -293,30 +315,41 @@ class TechnicalDashboardService {
     return points;
   }
 
-
   List<TechnicalReproductionSeriesPoint> _buildReproductionSeries({
     required List<AnimalReproductionData> records,
     required TechnicalDashboardPeriod period,
     required DateTime referenceDate,
   }) {
-    final validRecords = records
-        .map((record) => (record: record, date: _parseReproductionDate(record.date)))
-        .where((item) => item.date != null)
-        .map((item) => (record: item.record, date: item.date!))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final validRecords =
+        records
+            .map(
+              (record) =>
+                  (record: record, date: _parseReproductionDate(record.date)),
+            )
+            .where((item) => item.date != null)
+            .map((item) => (record: item.record, date: item.date!))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     if (validRecords.isEmpty) return const [];
 
     final currentMonth = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(currentMonth.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleReproductionMonth(validRecords.first.date, currentMonth),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleReproductionMonth(
+        validRecords.first.date,
+        currentMonth,
+      ),
     };
 
     final points = <TechnicalReproductionSeriesPoint>[];
@@ -324,14 +357,19 @@ class TechnicalDashboardService {
     while (!cursor.isAfter(currentMonth)) {
       final nextMonth = DateTime(cursor.year, cursor.month + 1, 1);
       final monthRecords = validRecords
-          .where((item) =>
-              !item.date.isBefore(cursor) && item.date.isBefore(nextMonth))
+          .where(
+            (item) =>
+                !item.date.isBefore(cursor) && item.date.isBefore(nextMonth),
+          )
           .map((item) => item.record)
           .toList();
 
-      final inseminations = monthRecords.where((record) => record.isInsemination).length;
-      final positivePregnancies =
-          monthRecords.where((record) => record.isPositivePregnancyDiagnosis).length;
+      final inseminations = monthRecords
+          .where((record) => record.isInsemination)
+          .length;
+      final positivePregnancies = monthRecords
+          .where((record) => record.isPositivePregnancyDiagnosis)
+          .length;
       final births = monthRecords.where((record) {
         final type = record.type.toLowerCase();
         return type.contains('parto') || type.contains('nascimento');
@@ -358,24 +396,35 @@ class TechnicalDashboardService {
     required TechnicalDashboardPeriod period,
     required DateTime referenceDate,
   }) {
-    final validRecords = records
-        .map((record) => (record: record, date: _parseHealthDate(record.date)))
-        .where((item) => item.date != null)
-        .map((item) => (record: item.record, date: item.date!))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final validRecords =
+        records
+            .map(
+              (record) => (record: record, date: _parseHealthDate(record.date)),
+            )
+            .where((item) => item.date != null)
+            .map((item) => (record: item.record, date: item.date!))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     if (validRecords.isEmpty) return const [];
 
     final currentMonth = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(currentMonth.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleHealthMonth(validRecords.first.date, currentMonth),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleHealthMonth(
+        validRecords.first.date,
+        currentMonth,
+      ),
     };
 
     final points = <TechnicalHealthSeriesPoint>[];
@@ -383,8 +432,10 @@ class TechnicalDashboardService {
     while (!cursor.isAfter(currentMonth)) {
       final nextMonth = DateTime(cursor.year, cursor.month + 1, 1);
       final monthRecords = validRecords
-          .where((item) =>
-              !item.date.isBefore(cursor) && item.date.isBefore(nextMonth))
+          .where(
+            (item) =>
+                !item.date.isBefore(cursor) && item.date.isBefore(nextMonth),
+          )
           .map((item) => item.record)
           .toList();
 
@@ -434,13 +485,21 @@ class TechnicalDashboardService {
 
     final currentMonth = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(currentMonth.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleInventoryMonth(movements.first.date, currentMonth),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleInventoryMonth(
+        movements.first.date,
+        currentMonth,
+      ),
     };
 
     final points = <TechnicalInventorySeriesPoint>[];
@@ -485,37 +544,49 @@ class TechnicalDashboardService {
     return points;
   }
 
-
   List<TechnicalNutritionSeriesPoint> _buildNutritionSeries({
     required List<NutritionPlanData> plans,
     required TechnicalDashboardPeriod period,
     required DateTime referenceDate,
   }) {
-    final datedPlans = plans
-        .map((plan) => (plan: plan, date: _parseNutritionDate(plan.startDate)))
-        .where((item) => item.date != null)
-        .map((item) => (plan: item.plan, date: item.date!))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final datedPlans =
+        plans
+            .map(
+              (plan) => (plan: plan, date: _parseNutritionDate(plan.startDate)),
+            )
+            .where((item) => item.date != null)
+            .map((item) => (plan: item.plan, date: item.date!))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
 
     if (datedPlans.isEmpty) return const [];
 
     final currentMonth = DateTime(referenceDate.year, referenceDate.month, 1);
     final firstMonth = switch (period) {
-      TechnicalDashboardPeriod.last30Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
-      TechnicalDashboardPeriod.last90Days =>
-        DateTime(currentMonth.year, currentMonth.month - 5, 1),
+      TechnicalDashboardPeriod.last30Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
+      TechnicalDashboardPeriod.last90Days => DateTime(
+        currentMonth.year,
+        currentMonth.month - 5,
+        1,
+      ),
       TechnicalDashboardPeriod.currentYear => DateTime(currentMonth.year, 1, 1),
-      TechnicalDashboardPeriod.allHistory =>
-        _firstVisibleNutritionMonth(datedPlans.first.date, currentMonth),
+      TechnicalDashboardPeriod.allHistory => _firstVisibleNutritionMonth(
+        datedPlans.first.date,
+        currentMonth,
+      ),
     };
 
     final points = <TechnicalNutritionSeriesPoint>[];
     var cursor = firstMonth;
     while (!cursor.isAfter(currentMonth)) {
       final nextMonth = DateTime(cursor.year, cursor.month + 1, 1);
-      final activePlans = datedPlans.where((item) => item.date.isBefore(nextMonth));
+      final activePlans = datedPlans.where(
+        (item) => item.date.isBefore(nextMonth),
+      );
       var planCount = 0;
       var animalCount = 0;
       var dailyFeedKg = 0.0;
@@ -548,8 +619,11 @@ class TechnicalDashboardService {
     DateTime oldestPlan,
     DateTime currentMonth,
   ) {
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     final oldest = DateTime(oldestPlan.year, oldestPlan.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
   }
@@ -572,8 +646,11 @@ class TechnicalDashboardService {
     DateTime oldestMovement,
     DateTime currentMonth,
   ) {
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     final oldest = DateTime(oldestMovement.year, oldestMovement.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
   }
@@ -596,8 +673,11 @@ class TechnicalDashboardService {
     DateTime oldestRecord,
     DateTime currentMonth,
   ) {
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     final oldest = DateTime(oldestRecord.year, oldestRecord.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
   }
@@ -620,8 +700,11 @@ class TechnicalDashboardService {
     DateTime oldestRecord,
     DateTime currentMonth,
   ) {
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     final oldest = DateTime(oldestRecord.year, oldestRecord.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
   }
@@ -644,8 +727,11 @@ class TechnicalDashboardService {
     DateTime oldestWeight,
     DateTime currentMonth,
   ) {
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     final oldest = DateTime(oldestWeight.year, oldestWeight.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
   }
@@ -668,13 +754,17 @@ class TechnicalDashboardService {
     List<FarmFinanceData> finances,
     DateTime currentMonth,
   ) {
-    final validDates = finances
-        .map((record) => _parseFinanceDate(record.date))
-        .whereType<DateTime>()
-        .toList()
-      ..sort();
-    final twelveMonthsAgo =
-        DateTime(currentMonth.year, currentMonth.month - 11, 1);
+    final validDates =
+        finances
+            .map((record) => _parseFinanceDate(record.date))
+            .whereType<DateTime>()
+            .toList()
+          ..sort();
+    final twelveMonthsAgo = DateTime(
+      currentMonth.year,
+      currentMonth.month - 11,
+      1,
+    );
     if (validDates.isEmpty) return twelveMonthsAgo;
     final oldest = DateTime(validDates.first.year, validDates.first.month, 1);
     return oldest.isBefore(twelveMonthsAgo) ? twelveMonthsAgo : oldest;
@@ -696,13 +786,21 @@ class TechnicalDashboardService {
 
   String _monthLabel(DateTime date) {
     const months = <String>[
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
     ];
     return '${months[date.month - 1]}/${date.year.toString().substring(2)}';
   }
-
-
 }
 
 class _WeightEntry {

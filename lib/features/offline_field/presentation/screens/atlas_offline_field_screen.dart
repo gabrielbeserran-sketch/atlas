@@ -6,10 +6,7 @@ import '../../domain/models/atlas_offline_sync_summary.dart';
 import '../../domain/services/atlas_offline_sync_engine.dart';
 
 class AtlasOfflineFieldScreen extends StatefulWidget {
-  const AtlasOfflineFieldScreen({
-    super.key,
-    this.farmId,
-  });
+  const AtlasOfflineFieldScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -89,8 +86,10 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
       _syncing = true;
     });
 
-    final List<AtlasOfflineRecord> synchronized =
-        await _engine.synchronize(records: _records, online: _online);
+    final List<AtlasOfflineRecord> synchronized = await _engine.synchronize(
+      records: _records,
+      online: _online,
+    );
     await _repository.saveRecords(synchronized);
 
     if (!mounted) {
@@ -103,9 +102,7 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Dados locais sincronizados com sucesso.'),
-      ),
+      const SnackBar(content: Text('Dados locais sincronizados com sucesso.')),
     );
   }
 
@@ -141,14 +138,14 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                           labelText: 'Categoria',
                           prefixIcon: Icon(Icons.category_outlined),
                         ),
-                        items: AtlasOfflineRecordType.values.map(
-                          (AtlasOfflineRecordType type) {
-                            return DropdownMenuItem<AtlasOfflineRecordType>(
-                              value: type,
-                              child: Text(_typeLabel(type)),
-                            );
-                          },
-                        ).toList(),
+                        items: AtlasOfflineRecordType.values.map((
+                          AtlasOfflineRecordType type,
+                        ) {
+                          return DropdownMenuItem<AtlasOfflineRecordType>(
+                            value: type,
+                            child: Text(_typeLabel(type)),
+                          );
+                        }).toList(),
                         onChanged: (AtlasOfflineRecordType? value) {
                           if (value == null) {
                             return;
@@ -268,9 +265,9 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
       return;
     }
 
-    final List<AtlasOfflineRecord> updated = _records.where(
-      (AtlasOfflineRecord item) => item.id != record.id,
-    ).toList();
+    final List<AtlasOfflineRecord> updated = _records
+        .where((AtlasOfflineRecord item) => item.id != record.id)
+        .toList();
     await _repository.saveRecords(updated);
 
     if (!mounted) {
@@ -339,8 +336,9 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AtlasOfflineSyncSummary summary =
-        AtlasOfflineSyncSummary.fromRecords(_records);
+    final AtlasOfflineSyncSummary summary = AtlasOfflineSyncSummary.fromRecords(
+      _records,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
@@ -379,8 +377,9 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: (_online ? Colors.green : Colors.orange)
-                                      .withValues(alpha: 0.12),
+                                  color:
+                                      (_online ? Colors.green : Colors.orange)
+                                          .withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: Icon(
@@ -413,10 +412,7 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                                   ],
                                 ),
                               ),
-                              Switch(
-                                value: _online,
-                                onChanged: _setOnline,
-                              ),
+                              Switch(value: _online, onChanged: _setOnline),
                             ],
                           ),
                           const Divider(height: 28),
@@ -434,7 +430,8 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: FilledButton.icon(
-                              onPressed: _online && !_syncing && summary.pending > 0
+                              onPressed:
+                                  _online && !_syncing && summary.pending > 0
                                   ? _synchronize
                                   : null,
                               icon: _syncing
@@ -487,10 +484,7 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                   const SizedBox(height: 24),
                   const Text(
                     'Fila de registros de campo',
-                    style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   if (_records.isEmpty)
@@ -511,7 +505,10 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                           contentPadding: const EdgeInsets.all(16),
                           leading: CircleAvatar(
                             backgroundColor: color.withValues(alpha: 0.12),
-                            child: Icon(Icons.description_outlined, color: color),
+                            child: Icon(
+                              Icons.description_outlined,
+                              color: color,
+                            ),
                           ),
                           title: Text(
                             record.title,
@@ -536,7 +533,10 @@ class _AtlasOfflineFieldScreenState extends State<AtlasOfflineFieldScreen> {
                                   value: 'delete',
                                   child: Row(
                                     children: <Widget>[
-                                      Icon(Icons.delete_outline, color: Colors.red),
+                                      Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.red,
+                                      ),
                                       SizedBox(width: 10),
                                       Text(
                                         'Excluir',
@@ -590,10 +590,7 @@ class _OfflineMetric extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.black54),
-              ),
+              Text(label, style: const TextStyle(color: Colors.black54)),
             ],
           ),
         ),

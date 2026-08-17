@@ -1,0 +1,10 @@
+{
+  "date": "2026-08-13",
+  "scope": "Rebanho + Central do Animal + núcleo pecuário",
+  "herd_n_plus_one_removed": true,
+  "all_farm_animals_single_request": true,
+  "unassigned_animals_preserved": true,
+  "farm_area_preserved": true,
+  "herd_source_timeouts": true,
+  "central_animal_resilient": true
+}

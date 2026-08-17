@@ -6,8 +6,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ex
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_executive_intelligence_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_operational_goal_service.dart';
 
-class AtlasExecutiveIntelligenceScreen
-    extends StatefulWidget {
+class AtlasExecutiveIntelligenceScreen extends StatefulWidget {
   const AtlasExecutiveIntelligenceScreen({
     required this.actionController,
     super.key,
@@ -87,34 +86,28 @@ class _AtlasExecutiveIntelligenceScreenState
           ),
         ),
         body: isLoading && snapshot == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : snapshot == null
-                ? const Center(
-                    child: Text(
-                      'Não foi possível gerar a inteligência executiva.',
-                    ),
-                  )
-                : TabBarView(
-                    children: [
-                      _OverviewTab(snapshot: snapshot!),
-                      _GoalsTab(items: snapshot!.goalProjections),
-                      _DecisionTreeTab(snapshot: snapshot!),
-                      _ScenariosTab(items: snapshot!.scenarios),
-                      _BottlenecksTab(items: snapshot!.bottlenecks),
-                      _StrategyTab(snapshot: snapshot!),
-                    ],
-                  ),
+            ? const Center(
+                child: Text('Não foi possível gerar a inteligência executiva.'),
+              )
+            : TabBarView(
+                children: [
+                  _OverviewTab(snapshot: snapshot!),
+                  _GoalsTab(items: snapshot!.goalProjections),
+                  _DecisionTreeTab(snapshot: snapshot!),
+                  _ScenariosTab(items: snapshot!.scenarios),
+                  _BottlenecksTab(items: snapshot!.bottlenecks),
+                  _StrategyTab(snapshot: snapshot!),
+                ],
+              ),
       ),
     );
   }
 }
 
 class _OverviewTab extends StatelessWidget {
-  const _OverviewTab({
-    required this.snapshot,
-  });
+  const _OverviewTab({required this.snapshot});
 
   final AtlasExecutiveIntelligenceSnapshot snapshot;
 
@@ -132,17 +125,15 @@ class _OverviewTab extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   snapshot.scores.overall.toStringAsFixed(0),
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayMedium
-                      ?.copyWith(fontWeight: FontWeight.w900),
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 Text(
                   snapshot.scores.status,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -165,15 +156,18 @@ class _OverviewTab extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(kpi.title),
                           const SizedBox(height: 8),
                           Text(
                             '${kpi.unit == 'R\$' ? 'R\$ ' : ''}'
                             '${kpi.value.toStringAsFixed(1)}'
-                            '${kpi.unit == '%' ? '%' : kpi.unit == 'pontos' ? ' pts' : ''}',
+                            '${kpi.unit == '%'
+                                ? '%'
+                                : kpi.unit == 'pontos'
+                                ? ' pts'
+                                : ''}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
@@ -196,43 +190,32 @@ class _OverviewTab extends StatelessWidget {
           title: 'Score operacional',
           value: snapshot.scores.operational,
         ),
-        _ScoreRow(
-          title: 'Score econômico',
-          value: snapshot.scores.economic,
-        ),
+        _ScoreRow(title: 'Score econômico', value: snapshot.scores.economic),
         _ScoreRow(
           title: 'Score zootécnico',
           value: snapshot.scores.zootechnical,
         ),
-        _ScoreRow(
-          title: 'Score sanitário',
-          value: snapshot.scores.sanitary,
-        ),
+        _ScoreRow(title: 'Score sanitário', value: snapshot.scores.sanitary),
       ],
     );
   }
 }
 
 class _GoalsTab extends StatelessWidget {
-  const _GoalsTab({
-    required this.items,
-  });
+  const _GoalsTab({required this.items});
 
   final List<AtlasSmartGoalProjection> items;
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma meta ativa para projetar.'),
-      );
+      return const Center(child: Text('Nenhuma meta ativa para projetar.'));
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final item = items[index];
 
@@ -240,15 +223,12 @@ class _GoalsTab extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Icon(
-                      item.onTrack
-                          ? Icons.trending_up
-                          : Icons.trending_down,
+                      item.onTrack ? Icons.trending_up : Icons.trending_down,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -260,13 +240,7 @@ class _GoalsTab extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Chip(
-                      label: Text(
-                        item.onTrack
-                            ? 'No ritmo'
-                            : 'Em risco',
-                      ),
-                    ),
+                    Chip(label: Text(item.onTrack ? 'No ritmo' : 'Em risco')),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -276,15 +250,11 @@ class _GoalsTab extends StatelessWidget {
                   'Projeção: '
                   '${item.projectedProgressPercent.toStringAsFixed(1)}%',
                 ),
-                Text(
-                  '${item.daysRemaining} dia(s) restante(s).',
-                ),
+                Text('${item.daysRemaining} dia(s) restante(s).'),
                 const SizedBox(height: 8),
                 Text(
                   item.recommendation,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -296,9 +266,7 @@ class _GoalsTab extends StatelessWidget {
 }
 
 class _DecisionTreeTab extends StatelessWidget {
-  const _DecisionTreeTab({
-    required this.snapshot,
-  });
+  const _DecisionTreeTab({required this.snapshot});
 
   final AtlasExecutiveIntelligenceSnapshot snapshot;
 
@@ -316,10 +284,7 @@ class _DecisionTreeTab extends StatelessWidget {
               children: [
                 const Text(
                   'Decisão estratégica selecionada',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 17,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
                 ),
                 const SizedBox(height: 8),
                 Text(topScenario.title),
@@ -329,15 +294,11 @@ class _DecisionTreeTab extends StatelessWidget {
                   (impact) => Card(
                     child: ListTile(
                       leading: const Icon(Icons.hub_outlined),
-                      title: Text(
-                        '${impact.area.name} — ${impact.direction}',
-                      ),
+                      title: Text('${impact.area.name} — ${impact.direction}'),
                       subtitle: Text(impact.explanation),
                       trailing: Text(
                         '${impact.impactPercent.toStringAsFixed(0)}%',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
@@ -352,9 +313,7 @@ class _DecisionTreeTab extends StatelessWidget {
 }
 
 class _ScenariosTab extends StatelessWidget {
-  const _ScenariosTab({
-    required this.items,
-  });
+  const _ScenariosTab({required this.items});
 
   final List<AtlasWhatIfScenario> items;
 
@@ -363,8 +322,7 @@ class _ScenariosTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final item = items[index];
 
@@ -380,9 +338,7 @@ class _ScenariosTab extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   Chip(
-                    label: Text(
-                      'Atual ${item.baseScore.toStringAsFixed(0)}',
-                    ),
+                    label: Text('Atual ${item.baseScore.toStringAsFixed(0)}'),
                   ),
                   Chip(
                     label: Text(
@@ -406,13 +362,9 @@ class _ScenariosTab extends StatelessWidget {
                 (impact) => ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.arrow_forward),
-                  title: Text(
-                    '${impact.area.name}: ${impact.direction}',
-                  ),
+                  title: Text('${impact.area.name}: ${impact.direction}'),
                   subtitle: Text(impact.explanation),
-                  trailing: Text(
-                    '${impact.impactPercent.toStringAsFixed(0)}%',
-                  ),
+                  trailing: Text('${impact.impactPercent.toStringAsFixed(0)}%'),
                 ),
               ),
             ],
@@ -424,9 +376,7 @@ class _ScenariosTab extends StatelessWidget {
 }
 
 class _BottlenecksTab extends StatelessWidget {
-  const _BottlenecksTab({
-    required this.items,
-  });
+  const _BottlenecksTab({required this.items});
 
   final List<AtlasExecutiveBottleneck> items;
 
@@ -435,27 +385,19 @@ class _BottlenecksTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final item = items[index];
 
         return Card(
           child: ListTile(
-            leading: CircleAvatar(
-              child: Text('${index + 1}'),
-            ),
+            leading: CircleAvatar(child: Text('${index + 1}')),
             title: Text(item.title),
-            subtitle: Text(
-              '${item.description}\n${item.recommendation}',
-            ),
+            subtitle: Text('${item.description}\n${item.recommendation}'),
             isThreeLine: true,
             trailing: Text(
               item.impactScore.toStringAsFixed(0),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -465,9 +407,7 @@ class _BottlenecksTab extends StatelessWidget {
 }
 
 class _StrategyTab extends StatelessWidget {
-  const _StrategyTab({
-    required this.snapshot,
-  });
+  const _StrategyTab({required this.snapshot});
 
   final AtlasExecutiveIntelligenceSnapshot snapshot;
 
@@ -478,18 +418,13 @@ class _StrategyTab extends StatelessWidget {
       children: [
         const Text(
           'Prioridades estratégicas',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 10),
         ...snapshot.strategicPriorities.asMap().entries.map(
           (entry) => Card(
             child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${entry.key + 1}'),
-              ),
+              leading: CircleAvatar(child: Text('${entry.key + 1}')),
               title: Text(entry.value),
             ),
           ),
@@ -497,38 +432,20 @@ class _StrategyTab extends StatelessWidget {
         const SizedBox(height: 16),
         const Text(
           'Painel estratégico integrado',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 10),
-        _ScoreRow(
-          title: 'Operacional',
-          value: snapshot.scores.operational,
-        ),
-        _ScoreRow(
-          title: 'Econômico',
-          value: snapshot.scores.economic,
-        ),
-        _ScoreRow(
-          title: 'Zootécnico',
-          value: snapshot.scores.zootechnical,
-        ),
-        _ScoreRow(
-          title: 'Sanitário',
-          value: snapshot.scores.sanitary,
-        ),
+        _ScoreRow(title: 'Operacional', value: snapshot.scores.operational),
+        _ScoreRow(title: 'Econômico', value: snapshot.scores.economic),
+        _ScoreRow(title: 'Zootécnico', value: snapshot.scores.zootechnical),
+        _ScoreRow(title: 'Sanitário', value: snapshot.scores.sanitary),
       ],
     );
   }
 }
 
 class _ScoreRow extends StatelessWidget {
-  const _ScoreRow({
-    required this.title,
-    required this.value,
-  });
+  const _ScoreRow({required this.title, required this.value});
 
   final String title;
   final double value;
@@ -548,9 +465,7 @@ class _ScoreRow extends StatelessWidget {
         ),
         trailing: Text(
           '${value.toStringAsFixed(0)}%',
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
     );

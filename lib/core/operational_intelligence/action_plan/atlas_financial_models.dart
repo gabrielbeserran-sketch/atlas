@@ -1,14 +1,6 @@
-enum AtlasFinancialAccountType {
-  asset,
-  liability,
-  revenue,
-  expense,
-  equity,
-}
+enum AtlasFinancialAccountType { asset, liability, revenue, expense, equity }
 
-String atlasFinancialAccountTypeLabel(
-  AtlasFinancialAccountType type,
-) {
+String atlasFinancialAccountTypeLabel(AtlasFinancialAccountType type) {
   switch (type) {
     case AtlasFinancialAccountType.asset:
       return 'Ativo';
@@ -51,9 +43,7 @@ class AtlasFinancialAccount {
     };
   }
 
-  factory AtlasFinancialAccount.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasFinancialAccount.fromMap(Map<String, dynamic> map) {
     return AtlasFinancialAccount(
       id: map['id']?.toString() ?? '',
       code: map['code']?.toString() ?? '',
@@ -68,10 +58,7 @@ class AtlasFinancialAccount {
   }
 }
 
-enum AtlasFinancialTransactionType {
-  income,
-  expense,
-}
+enum AtlasFinancialTransactionType { income, expense }
 
 enum AtlasFinancialTransactionStatus {
   pending,
@@ -149,11 +136,8 @@ class AtlasFinancialTransaction {
       status: status ?? this.status,
       amount: amount ?? this.amount,
       dueAt: dueAt ?? this.dueAt,
-      paidAt:
-          clearPaidAt ? null : paidAt ?? this.paidAt,
-      accountId: clearAccountId
-          ? null
-          : accountId ?? this.accountId,
+      paidAt: clearPaidAt ? null : paidAt ?? this.paidAt,
+      accountId: clearAccountId ? null : accountId ?? this.accountId,
       costCenterId: clearCostCenterId
           ? null
           : costCenterId ?? this.costCenterId,
@@ -186,9 +170,7 @@ class AtlasFinancialTransaction {
     };
   }
 
-  factory AtlasFinancialTransaction.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasFinancialTransaction.fromMap(Map<String, dynamic> map) {
     return AtlasFinancialTransaction(
       id: map['id']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
@@ -196,32 +178,23 @@ class AtlasFinancialTransaction {
         (value) => value.name == map['type']?.toString(),
         orElse: () => AtlasFinancialTransactionType.expense,
       ),
-      status:
-          AtlasFinancialTransactionStatus.values.firstWhere(
-        (value) =>
-            value.name == map['status']?.toString(),
-        orElse: () =>
-            AtlasFinancialTransactionStatus.pending,
+      status: AtlasFinancialTransactionStatus.values.firstWhere(
+        (value) => value.name == map['status']?.toString(),
+        orElse: () => AtlasFinancialTransactionStatus.pending,
       ),
       amount: _readDouble(map['amount']),
-      dueAt: DateTime.tryParse(
-            map['dueAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      paidAt: DateTime.tryParse(
-        map['paidAt']?.toString() ?? '',
-      ),
+      dueAt:
+          DateTime.tryParse(map['dueAt']?.toString() ?? '') ?? DateTime.now(),
+      paidAt: DateTime.tryParse(map['paidAt']?.toString() ?? ''),
       accountId: map['accountId']?.toString(),
       costCenterId: map['costCenterId']?.toString(),
       lotName: map['lotName']?.toString() ?? '',
       animalId: map['animalId']?.toString() ?? '',
-      counterparty:
-          map['counterparty']?.toString() ?? '',
+      counterparty: map['counterparty']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }
@@ -260,14 +233,11 @@ class AtlasCostCenter {
     };
   }
 
-  factory AtlasCostCenter.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCostCenter.fromMap(Map<String, dynamic> map) {
     return AtlasCostCenter(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
-      description:
-          map['description']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
     );

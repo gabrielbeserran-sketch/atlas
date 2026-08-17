@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/core/sync/atlas_conflict_resolver.dart';
 

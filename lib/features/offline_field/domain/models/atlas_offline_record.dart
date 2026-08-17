@@ -9,12 +9,7 @@ enum AtlasOfflineRecordType {
   note,
 }
 
-enum AtlasOfflineRecordStatus {
-  pending,
-  syncing,
-  synchronized,
-  failed,
-}
+enum AtlasOfflineRecordStatus { pending, syncing, synchronized, failed }
 
 class AtlasOfflineRecord {
   const AtlasOfflineRecord({
@@ -92,9 +87,11 @@ class AtlasOfflineRecord {
         (AtlasOfflineRecordStatus value) => value.name == json['status'],
         orElse: () => AtlasOfflineRecordStatus.pending,
       ),
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.now(),
       payload: Map<String, dynamic>.from(
         json['payload'] as Map? ?? const <String, dynamic>{},

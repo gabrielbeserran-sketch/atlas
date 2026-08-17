@@ -4,12 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/executive_kpis/domain/models/atlas_executive_kpi.dart';
 import 'package:projeto_atlas/features/executive_kpis/domain/models/atlas_executive_kpi_history.dart';
 
-class AtlasExecutiveKpiHistoryScreen
-    extends StatefulWidget {
-  const AtlasExecutiveKpiHistoryScreen({
-    required this.history,
-    super.key,
-  });
+class AtlasExecutiveKpiHistoryScreen extends StatefulWidget {
+  const AtlasExecutiveKpiHistoryScreen({required this.history, super.key});
 
   final AtlasExecutiveKpiHistorySummary history;
 
@@ -23,97 +19,78 @@ class _AtlasExecutiveKpiHistoryScreenState
     extends State<AtlasExecutiveKpiHistoryScreen> {
   String? selectedFarm;
   AtlasExecutiveKpiCategory? selectedCategory;
-  _KpiHistoryPeriod selectedPeriod =
-      _KpiHistoryPeriod.all;
+  _KpiHistoryPeriod selectedPeriod = _KpiHistoryPeriod.all;
 
-  AtlasExecutiveKpiHistorySummary get history =>
-      widget.history;
+  AtlasExecutiveKpiHistorySummary get history => widget.history;
 
   List<String> get farmNames {
-    final names = history.series
-        .map((item) => item.farmName)
-        .toSet()
-        .toList()
+    final names = history.series.map((item) => item.farmName).toSet().toList()
       ..sort();
 
     return names;
   }
 
-  List<AtlasExecutiveKpiHistorySeries>
-      get filteredSeries {
+  List<AtlasExecutiveKpiHistorySeries> get filteredSeries {
     final now = DateTime.now();
 
-    return history.series.where((series) {
-      if (selectedFarm != null &&
-          series.farmName != selectedFarm) {
-        return false;
-      }
+    return history.series
+        .where((series) {
+          if (selectedFarm != null && series.farmName != selectedFarm) {
+            return false;
+          }
 
-      if (selectedCategory != null &&
-          series.category != selectedCategory) {
-        return false;
-      }
+          if (selectedCategory != null && series.category != selectedCategory) {
+            return false;
+          }
 
-      final firstDate = _periodStart(
-        selectedPeriod,
-        now,
-      );
+          final firstDate = _periodStart(selectedPeriod, now);
 
-      if (firstDate == null) {
-        return true;
-      }
+          if (firstDate == null) {
+            return true;
+          }
 
-      return series.points.any((point) {
-        return !point.recordedAt.isBefore(firstDate);
-      });
-    }).map((series) {
-      final firstDate = _periodStart(
-        selectedPeriod,
-        now,
-      );
+          return series.points.any((point) {
+            return !point.recordedAt.isBefore(firstDate);
+          });
+        })
+        .map((series) {
+          final firstDate = _periodStart(selectedPeriod, now);
 
-      if (firstDate == null) {
-        return series;
-      }
+          if (firstDate == null) {
+            return series;
+          }
 
-      final points = series.points.where((point) {
-        return !point.recordedAt.isBefore(firstDate);
-      }).toList();
+          final points = series.points.where((point) {
+            return !point.recordedAt.isBefore(firstDate);
+          }).toList();
 
-      if (points.isEmpty) {
-        return series;
-      }
+          if (points.isEmpty) {
+            return series;
+          }
 
-      final current = points.last;
-      final previous =
-          points.length > 1 ? points[points.length - 2] : null;
+          final current = points.last;
+          final previous = points.length > 1 ? points[points.length - 2] : null;
 
-      final variation = previous == null ||
-              previous.value == 0
-          ? 0.0
-          : (current.value - previous.value) /
-              previous.value.abs() *
-              100;
+          final variation = previous == null || previous.value == 0
+              ? 0.0
+              : (current.value - previous.value) / previous.value.abs() * 100;
 
-      return AtlasExecutiveKpiHistorySeries(
-        kpiId: series.kpiId,
-        farmName: series.farmName,
-        title: series.title,
-        category: series.category,
-        unit: series.unit,
-        points: points,
-        currentValue: current.value,
-        previousValue: previous?.value,
-        variationPercent: variation,
-        trend: _trendFromVariation(
-          variation,
-          previous != null,
-        ),
-      );
-    }).toList()
+          return AtlasExecutiveKpiHistorySeries(
+            kpiId: series.kpiId,
+            farmName: series.farmName,
+            title: series.title,
+            category: series.category,
+            unit: series.unit,
+            points: points,
+            currentValue: current.value,
+            previousValue: previous?.value,
+            variationPercent: variation,
+            trend: _trendFromVariation(variation, previous != null),
+          );
+        })
+        .toList()
       ..sort(
-        (first, second) =>
-            second.variationPercent.abs().compareTo(
+        (first, second) => second.variationPercent.abs().compareTo(
           first.variationPercent.abs(),
         ),
       );
@@ -128,17 +105,13 @@ class _AtlasExecutiveKpiHistoryScreenState
       appBar: AppBar(
         title: const Text(
           'Evolução dos Indicadores',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: history.hasHistory
                 ? ListView(
                     padding: const EdgeInsets.all(22),
@@ -148,8 +121,7 @@ class _AtlasExecutiveKpiHistoryScreenState
                       _HistoryFilters(
                         farms: farmNames,
                         selectedFarm: selectedFarm,
-                        selectedCategory:
-                            selectedCategory,
+                        selectedCategory: selectedCategory,
                         selectedPeriod: selectedPeriod,
                         onFarmChanged: (value) {
                           setState(() {
@@ -179,13 +151,8 @@ class _AtlasExecutiveKpiHistoryScreenState
                       else
                         ...series.map((item) {
                           return Padding(
-                            padding:
-                                const EdgeInsets.only(
-                              bottom: 14,
-                            ),
-                            child: _HistorySeriesCard(
-                              series: item,
-                            ),
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _HistorySeriesCard(series: item),
                           );
                         }),
                       const SizedBox(height: 30),
@@ -198,20 +165,13 @@ class _AtlasExecutiveKpiHistoryScreenState
     );
   }
 
-  DateTime? _periodStart(
-    _KpiHistoryPeriod period,
-    DateTime now,
-  ) {
+  DateTime? _periodStart(_KpiHistoryPeriod period, DateTime now) {
     switch (period) {
       case _KpiHistoryPeriod.days30:
-        return now.subtract(
-          const Duration(days: 30),
-        );
+        return now.subtract(const Duration(days: 30));
 
       case _KpiHistoryPeriod.days90:
-        return now.subtract(
-          const Duration(days: 90),
-        );
+        return now.subtract(const Duration(days: 90));
 
       case _KpiHistoryPeriod.year:
         return DateTime(now.year, 1, 1);
@@ -223,9 +183,7 @@ class _AtlasExecutiveKpiHistoryScreenState
 }
 
 class _HistoryHero extends StatelessWidget {
-  const _HistoryHero({
-    required this.history,
-  });
+  const _HistoryHero({required this.history});
 
   final AtlasExecutiveKpiHistorySummary history;
 
@@ -235,17 +193,12 @@ class _HistoryHero extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF17324D),
-            Color(0xFF244F73),
-            Color(0xFF326C91),
-          ],
+          colors: [Color(0xFF17324D), Color(0xFF244F73), Color(0xFF326C91)],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
@@ -270,32 +223,17 @@ class _HistoryHero extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             history.summary,
-            style: const TextStyle(
-              color: Colors.white70,
-              height: 1.45,
-            ),
+            style: const TextStyle(color: Colors.white70, height: 1.45),
           ),
           const SizedBox(height: 15),
           Wrap(
             spacing: 9,
             runSpacing: 9,
             children: [
-              _HeroMetric(
-                label: 'Séries',
-                value: history.series.length,
-              ),
-              _HeroMetric(
-                label: 'Em melhora',
-                value: history.improvingCount,
-              ),
-              _HeroMetric(
-                label: 'Estáveis',
-                value: history.stableCount,
-              ),
-              _HeroMetric(
-                label: 'Em piora',
-                value: history.worseningCount,
-              ),
+              _HeroMetric(label: 'Séries', value: history.series.length),
+              _HeroMetric(label: 'Em melhora', value: history.improvingCount),
+              _HeroMetric(label: 'Estáveis', value: history.stableCount),
+              _HeroMetric(label: 'Em piora', value: history.worseningCount),
             ],
           ),
         ],
@@ -317,15 +255,12 @@ class _HistoryFilters extends StatelessWidget {
 
   final List<String> farms;
   final String? selectedFarm;
-  final AtlasExecutiveKpiCategory?
-      selectedCategory;
+  final AtlasExecutiveKpiCategory? selectedCategory;
   final _KpiHistoryPeriod selectedPeriod;
 
   final ValueChanged<String?> onFarmChanged;
-  final ValueChanged<AtlasExecutiveKpiCategory?>
-      onCategoryChanged;
-  final ValueChanged<_KpiHistoryPeriod>
-      onPeriodChanged;
+  final ValueChanged<AtlasExecutiveKpiCategory?> onCategoryChanged;
+  final ValueChanged<_KpiHistoryPeriod> onPeriodChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -338,27 +273,19 @@ class _HistoryFilters extends StatelessWidget {
           children: [
             SizedBox(
               width: 270,
-              child: DropdownButtonFormField<
-                  String?>(
+              child: DropdownButtonFormField<String?>(
                 initialValue: selectedFarm,
                 decoration: const InputDecoration(
                   labelText: 'Fazenda',
-                  prefixIcon: Icon(
-                    Icons.agriculture_outlined,
-                  ),
+                  prefixIcon: Icon(Icons.agriculture_outlined),
                 ),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as fazendas',
-                    ),
+                    child: Text('Todas as fazendas'),
                   ),
                   ...farms.map((farm) {
-                    return DropdownMenuItem(
-                      value: farm,
-                      child: Text(farm),
-                    );
+                    return DropdownMenuItem(value: farm, child: Text(farm));
                   }),
                 ],
                 onChanged: onFarmChanged,
@@ -366,32 +293,21 @@ class _HistoryFilters extends StatelessWidget {
             ),
             SizedBox(
               width: 250,
-              child: DropdownButtonFormField<
-                  AtlasExecutiveKpiCategory?>(
+              child: DropdownButtonFormField<AtlasExecutiveKpiCategory?>(
                 initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Categoria',
-                  prefixIcon: Icon(
-                    Icons.category_outlined,
-                  ),
+                  prefixIcon: Icon(Icons.category_outlined),
                 ),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as categorias',
-                    ),
+                    child: Text('Todas as categorias'),
                   ),
-                  ...AtlasExecutiveKpiCategory
-                      .values
-                      .map((category) {
+                  ...AtlasExecutiveKpiCategory.values.map((category) {
                     return DropdownMenuItem(
                       value: category,
-                      child: Text(
-                        atlasExecutiveKpiCategoryLabel(
-                          category,
-                        ),
-                      ),
+                      child: Text(atlasExecutiveKpiCategoryLabel(category)),
                     );
                   }),
                 ],
@@ -400,22 +316,16 @@ class _HistoryFilters extends StatelessWidget {
             ),
             SizedBox(
               width: 220,
-              child: DropdownButtonFormField<
-                  _KpiHistoryPeriod>(
+              child: DropdownButtonFormField<_KpiHistoryPeriod>(
                 initialValue: selectedPeriod,
                 decoration: const InputDecoration(
                   labelText: 'Período',
-                  prefixIcon: Icon(
-                    Icons.date_range_outlined,
-                  ),
+                  prefixIcon: Icon(Icons.date_range_outlined),
                 ),
-                items: _KpiHistoryPeriod.values
-                    .map((period) {
+                items: _KpiHistoryPeriod.values.map((period) {
                   return DropdownMenuItem(
                     value: period,
-                    child: Text(
-                      _periodLabel(period),
-                    ),
+                    child: Text(_periodLabel(period)),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -432,11 +342,8 @@ class _HistoryFilters extends StatelessWidget {
   }
 }
 
-class _HistorySeriesCard
-    extends StatelessWidget {
-  const _HistorySeriesCard({
-    required this.series,
-  });
+class _HistorySeriesCard extends StatelessWidget {
+  const _HistorySeriesCard({required this.series});
 
   final AtlasExecutiveKpiHistorySeries series;
 
@@ -448,8 +355,7 @@ class _HistorySeriesCard
       child: Padding(
         padding: const EdgeInsets.all(17),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -457,29 +363,19 @@ class _HistorySeriesCard
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: color.withValues(
-                      alpha: 0.10,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    color: color.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    _trendIcon(series.trend),
-                    color: color,
-                  ),
+                  child: Icon(_trendIcon(series.trend), color: color),
                 ),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         series.title,
-                        style: const TextStyle(
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 3),
                       Text(
@@ -488,33 +384,27 @@ class _HistorySeriesCard
                         style: TextStyle(
                           color: color,
                           fontSize: 11,
-                          fontWeight:
-                              FontWeight.w700,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _formatValue(
-                        series.currentValue,
-                        series.unit,
-                      ),
+                      _formatValue(series.currentValue, series.unit),
                       style: TextStyle(
                         color: color,
                         fontSize: 20,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       series.hasHistory
                           ? '${series.variationPercent >= 0 ? '+' : ''}'
-                              '${series.variationPercent.toStringAsFixed(1)}%'
+                                '${series.variationPercent.toStringAsFixed(1)}%'
                           : 'Sem comparação',
                       style: const TextStyle(
                         color: Colors.black45,
@@ -542,15 +432,11 @@ class _HistorySeriesCard
               runSpacing: 8,
               children: [
                 _HistoryChip(
-                  label:
-                      '${series.points.length} registros',
+                  label: '${series.points.length} registros',
                   color: const Color(0xFF1565C0),
                 ),
                 _HistoryChip(
-                  label:
-                      atlasExecutiveKpiTrendLabel(
-                    series.trend,
-                  ),
+                  label: atlasExecutiveKpiTrendLabel(series.trend),
                   color: color,
                 ),
                 if (series.firstRecordedAt != null)
@@ -569,22 +455,14 @@ class _HistorySeriesCard
   }
 }
 
-class _KpiLineChartPainter
-    extends CustomPainter {
-  const _KpiLineChartPainter({
-    required this.points,
-    required this.lineColor,
-  });
+class _KpiLineChartPainter extends CustomPainter {
+  const _KpiLineChartPainter({required this.points, required this.lineColor});
 
-  final List<AtlasExecutiveKpiHistoryPoint>
-      points;
+  final List<AtlasExecutiveKpiHistoryPoint> points;
   final Color lineColor;
 
   @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
+  void paint(Canvas canvas, Size size) {
     final axisPaint = Paint()
       ..color = Colors.black12
       ..strokeWidth = 1;
@@ -601,14 +479,11 @@ class _KpiLineChartPainter
       ..style = PaintingStyle.fill;
 
     final padding = 14.0;
-    final chartWidth =
-        math.max(1.0, size.width - padding * 2);
-    final chartHeight =
-        math.max(1.0, size.height - padding * 2);
+    final chartWidth = math.max(1.0, size.width - padding * 2);
+    final chartHeight = math.max(1.0, size.height - padding * 2);
 
     for (var index = 0; index <= 4; index++) {
-      final y =
-          padding + chartHeight * index / 4;
+      final y = padding + chartHeight * index / 4;
       canvas.drawLine(
         Offset(padding, y),
         Offset(size.width - padding, y),
@@ -620,8 +495,7 @@ class _KpiLineChartPainter
       return;
     }
 
-    final values =
-        points.map((item) => item.value).toList();
+    final values = points.map((item) => item.value).toList();
 
     var minValue = values.reduce(math.min);
     var maxValue = values.reduce(math.max);
@@ -633,22 +507,15 @@ class _KpiLineChartPainter
 
     final path = Path();
 
-    for (var index = 0;
-        index < points.length;
-        index++) {
+    for (var index = 0; index < points.length; index++) {
       final x = points.length == 1
           ? size.width / 2
-          : padding +
-              chartWidth *
-                  index /
-                  (points.length - 1);
+          : padding + chartWidth * index / (points.length - 1);
 
       final normalized =
-          (points[index].value - minValue) /
-              (maxValue - minValue);
+          (points[index].value - minValue) / (maxValue - minValue);
 
-      final y = padding +
-          chartHeight * (1 - normalized);
+      final y = padding + chartHeight * (1 - normalized);
 
       if (index == 0) {
         path.moveTo(x, y);
@@ -656,11 +523,7 @@ class _KpiLineChartPainter
         path.lineTo(x, y);
       }
 
-      canvas.drawCircle(
-        Offset(x, y),
-        4,
-        dotPaint,
-      );
+      canvas.drawCircle(Offset(x, y), 4, dotPaint);
     }
 
     if (points.length > 1) {
@@ -669,19 +532,13 @@ class _KpiLineChartPainter
   }
 
   @override
-  bool shouldRepaint(
-    covariant _KpiLineChartPainter oldDelegate,
-  ) {
-    return oldDelegate.points != points ||
-        oldDelegate.lineColor != lineColor;
+  bool shouldRepaint(covariant _KpiLineChartPainter oldDelegate) {
+    return oldDelegate.points != points || oldDelegate.lineColor != lineColor;
   }
 }
 
 class _HistoryChip extends StatelessWidget {
-  const _HistoryChip({
-    required this.label,
-    required this.color,
-  });
+  const _HistoryChip({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -689,10 +546,7 @@ class _HistoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
@@ -710,10 +564,7 @@ class _HistoryChip extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -721,14 +572,9 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
+        color: Colors.white.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -744,10 +590,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -755,30 +598,20 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
-class _EmptyFilteredHistory
-    extends StatelessWidget {
+class _EmptyFilteredHistory extends StatelessWidget {
   const _EmptyFilteredHistory();
 
   @override
@@ -789,9 +622,7 @@ class _EmptyFilteredHistory
         child: Center(
           child: Text(
             'Nenhuma série encontrada com os filtros atuais.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -810,26 +641,17 @@ class _EmptyHistoryView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.show_chart_outlined,
-              size: 58,
-              color: Colors.black38,
-            ),
+            Icon(Icons.show_chart_outlined, size: 58, color: Colors.black38),
             SizedBox(height: 14),
             Text(
               'Histórico ainda insuficiente',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 7),
             Text(
               'É necessário registrar KPIs em pelo menos dois dias para gerar gráficos de evolução.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -838,16 +660,9 @@ class _EmptyHistoryView extends StatelessWidget {
   }
 }
 
-enum _KpiHistoryPeriod {
-  days30,
-  days90,
-  year,
-  all,
-}
+enum _KpiHistoryPeriod { days30, days90, year, all }
 
-String _periodLabel(
-  _KpiHistoryPeriod period,
-) {
+String _periodLabel(_KpiHistoryPeriod period) {
   switch (period) {
     case _KpiHistoryPeriod.days30:
       return 'Últimos 30 dias';
@@ -863,10 +678,7 @@ String _periodLabel(
   }
 }
 
-AtlasExecutiveKpiTrend _trendFromVariation(
-  double variation,
-  bool hasPrevious,
-) {
+AtlasExecutiveKpiTrend _trendFromVariation(double variation, bool hasPrevious) {
   if (!hasPrevious) {
     return AtlasExecutiveKpiTrend.unavailable;
   }
@@ -890,9 +702,7 @@ AtlasExecutiveKpiTrend _trendFromVariation(
   return AtlasExecutiveKpiTrend.stable;
 }
 
-Color _trendColor(
-  AtlasExecutiveKpiTrend trend,
-) {
+Color _trendColor(AtlasExecutiveKpiTrend trend) {
   switch (trend) {
     case AtlasExecutiveKpiTrend.strongUp:
     case AtlasExecutiveKpiTrend.up:
@@ -910,9 +720,7 @@ Color _trendColor(
   }
 }
 
-IconData _trendIcon(
-  AtlasExecutiveKpiTrend trend,
-) {
+IconData _trendIcon(AtlasExecutiveKpiTrend trend) {
   switch (trend) {
     case AtlasExecutiveKpiTrend.strongUp:
     case AtlasExecutiveKpiTrend.up:
@@ -932,18 +740,13 @@ IconData _trendIcon(
 
 String _formatDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
-  final month =
-      date.month.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
 
   return '$day/$month/${date.year}';
 }
 
-String _formatValue(
-  double value,
-  String unit,
-) {
-  final decimals =
-      value == value.roundToDouble() ? 0 : 1;
+String _formatValue(double value, String unit) {
+  final decimals = value == value.roundToDouble() ? 0 : 1;
 
   if (unit == 'R\$') {
     return 'R\$ ${value.toStringAsFixed(2)}';

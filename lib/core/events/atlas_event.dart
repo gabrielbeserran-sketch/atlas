@@ -92,9 +92,7 @@ class AtlasEvent {
     };
   }
 
-  factory AtlasEvent.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasEvent.fromJson(Map<String, dynamic> json) {
     return AtlasEvent(
       id: json['id'] as String,
       type: AtlasEventType.values.firstWhere(
@@ -104,9 +102,7 @@ class AtlasEvent {
       sourceModule: json['sourceModule'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      occurredAt: DateTime.parse(
-        json['occurredAt'] as String,
-      ),
+      occurredAt: DateTime.parse(json['occurredAt'] as String),
       priority: AtlasEventPriority.values.firstWhere(
         (item) => item.name == json['priority'],
         orElse: () => AtlasEventPriority.normal,
@@ -116,13 +112,9 @@ class AtlasEvent {
       entityId: json['entityId'] as String?,
       entityType: json['entityType'] as String?,
       payload: Map<String, dynamic>.from(
-        json['payload'] as Map? ??
-            const <String, dynamic>{},
+        json['payload'] as Map? ?? const <String, dynamic>{},
       ),
-      tags: List<String>.from(
-        json['tags'] as List? ??
-            const <String>[],
-      ),
+      tags: List<String>.from(json['tags'] as List? ?? const <String>[]),
     );
   }
 }
@@ -184,16 +176,9 @@ enum AtlasEventType {
   systemError,
 }
 
-enum AtlasEventPriority {
-  low,
-  normal,
-  high,
-  critical,
-}
+enum AtlasEventPriority { low, normal, high, critical }
 
-String atlasEventTypeLabel(
-  AtlasEventType type,
-) {
+String atlasEventTypeLabel(AtlasEventType type) {
   switch (type) {
     case AtlasEventType.animalCreated:
       return 'Animal criado';
@@ -329,9 +314,7 @@ String atlasEventTypeLabel(
   }
 }
 
-String atlasEventPriorityLabel(
-  AtlasEventPriority priority,
-) {
+String atlasEventPriorityLabel(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return 'Baixa';

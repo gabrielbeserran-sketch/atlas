@@ -41,9 +41,7 @@ class AtlasExecutionAuditEntry {
     };
   }
 
-  factory AtlasExecutionAuditEntry.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutionAuditEntry.fromMap(Map<String, dynamic> map) {
     return AtlasExecutionAuditEntry(
       id: map['id']?.toString() ?? '',
       entityType: map['entityType']?.toString() ?? '',
@@ -52,12 +50,10 @@ class AtlasExecutionAuditEntry {
       fieldName: map['fieldName']?.toString() ?? '',
       oldValue: map['oldValue']?.toString() ?? '',
       newValue: map['newValue']?.toString() ?? '',
-      changedAt: DateTime.tryParse(
-            map['changedAt']?.toString() ?? '',
-          ) ??
+      changedAt:
+          DateTime.tryParse(map['changedAt']?.toString() ?? '') ??
           DateTime.now(),
-      changedBy:
-          map['changedBy']?.toString() ?? 'Usuário local',
+      changedBy: map['changedBy']?.toString() ?? 'Usuário local',
       source: map['source']?.toString() ?? 'atlas',
       farmName: map['farmName']?.toString(),
     );

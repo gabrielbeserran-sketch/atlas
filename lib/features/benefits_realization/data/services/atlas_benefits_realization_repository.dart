@@ -9,8 +9,7 @@ class AtlasBenefitsRealizationRepository {
   static final AtlasBenefitsRealizationRepository instance =
       AtlasBenefitsRealizationRepository._();
 
-  static const String _storageKey =
-      'atlas_benefits_realization_v1';
+  static const String _storageKey = 'atlas_benefits_realization_v1';
 
   Future<List<AtlasBenefitRealization>> loadAll() async {
     final preferences = await SharedPreferences.getInstance();
@@ -37,8 +36,7 @@ class AtlasBenefitsRealizationRepository {
           .toList();
 
       results.sort(
-        (first, second) =>
-            second.measuredAt.compareTo(first.measuredAt),
+        (first, second) => second.measuredAt.compareTo(first.measuredAt),
       );
 
       return results;
@@ -47,9 +45,7 @@ class AtlasBenefitsRealizationRepository {
     }
   }
 
-  Future<void> save(
-    AtlasBenefitRealization result,
-  ) async {
+  Future<void> save(AtlasBenefitRealization result) async {
     final current = await loadAll();
     final index = current.indexWhere(
       (item) => item.strategyPlanId == result.strategyPlanId,
@@ -65,9 +61,7 @@ class AtlasBenefitsRealizationRepository {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        current.take(100).map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(current.take(100).map((item) => item.toJson()).toList()),
     );
   }
 }

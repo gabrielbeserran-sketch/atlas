@@ -30,8 +30,7 @@ class _AtlasCommercialEnterpriseScreenState
     extends State<AtlasCommercialEnterpriseScreen> {
   final AtlasCommercialEnterpriseStorageService storage =
       AtlasCommercialEnterpriseStorageService();
-  final AtlasCommercialEnterpriseAnalyticsService
-      analyticsService =
+  final AtlasCommercialEnterpriseAnalyticsService analyticsService =
       const AtlasCommercialEnterpriseAnalyticsService();
 
   late AtlasCommercialEnterpriseModule selectedModule;
@@ -77,31 +76,26 @@ class _AtlasCommercialEnterpriseScreenState
   }
 
   List<AtlasCommercialEnterpriseRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasCommercialEnterpriseRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasCommercialEnterpriseRecord>(
+  Future<void> openForm([AtlasCommercialEnterpriseRecord? current]) async {
+    final result = await showDialog<AtlasCommercialEnterpriseRecord>(
       context: context,
-      builder: (context) => _CommercialEnterpriseForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _CommercialEnterpriseForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +109,7 @@ class _AtlasCommercialEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasCommercialEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasCommercialEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +117,11 @@ class _AtlasCommercialEnterpriseScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -173,12 +163,9 @@ class _AtlasCommercialEnterpriseScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -195,9 +182,7 @@ class _AtlasCommercialEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 28 — Comercial Enterprise',
-                          ),
+                          title: Text('Fase 28 — Comercial Enterprise'),
                           subtitle: Text(
                             'A entrega organiza clientes, pipeline, contratos e receita. '
                             'Assinaturas, leilões e pagamentos reais exigem provedores e validação jurídica.',
@@ -320,12 +305,8 @@ class _AtlasCommercialEnterpriseScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro cliente, oportunidade ou contrato.',
                             ),
@@ -336,8 +317,7 @@ class _AtlasCommercialEnterpriseScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -351,14 +331,10 @@ class _AtlasCommercialEnterpriseScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasCommercialEnterpriseModule selected;
-  final ValueChanged<AtlasCommercialEnterpriseModule>
-      onSelected;
+  final ValueChanged<AtlasCommercialEnterpriseModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -368,24 +344,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasCommercialEnterpriseModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasCommercialEnterpriseModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -408,15 +381,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -435,24 +408,21 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Perdido' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Perdido' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Aprovado' || 'Assinado' ||
-      'Concluído' || 'Ganho' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Aprovado' ||
+      'Assinado' ||
+      'Concluído' ||
+      'Ganho' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -469,14 +439,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -485,10 +449,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _CommercialEnterpriseForm extends StatefulWidget {
-  const _CommercialEnterpriseForm({
-    required this.module,
-    this.current,
-  });
+  const _CommercialEnterpriseForm({required this.module, this.current});
 
   final AtlasCommercialEnterpriseModule module;
   final AtlasCommercialEnterpriseRecord? current;
@@ -498,8 +459,7 @@ class _CommercialEnterpriseForm extends StatefulWidget {
       _CommercialEnterpriseFormState();
 }
 
-class _CommercialEnterpriseFormState
-    extends State<_CommercialEnterpriseForm> {
+class _CommercialEnterpriseFormState extends State<_CommercialEnterpriseForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -531,24 +491,13 @@ class _CommercialEnterpriseFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasCommercialDate(DateTime.now()),
+      text: current?.date ?? formatAtlasCommercialDate(DateTime.now()),
     );
-    customerName = TextEditingController(
-      text: current?.customerName ?? '',
-    );
-    companyName = TextEditingController(
-      text: current?.companyName ?? '',
-    );
-    referenceId = TextEditingController(
-      text: current?.referenceId ?? '',
-    );
-    stage = TextEditingController(
-      text: current?.stage ?? '',
-    );
-    owner = TextEditingController(
-      text: current?.owner ?? '',
-    );
+    customerName = TextEditingController(text: current?.customerName ?? '');
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    referenceId = TextEditingController(text: current?.referenceId ?? '');
+    stage = TextEditingController(text: current?.stage ?? '');
+    owner = TextEditingController(text: current?.owner ?? '');
     potentialValue = TextEditingController(
       text: current == null || current.potentialValue == 0
           ? ''
@@ -560,19 +509,15 @@ class _CommercialEnterpriseFormState
           : current.actualValue.toString(),
     );
     probabilityPercent = TextEditingController(
-      text: current == null ||
-              current.probabilityPercent == 0
+      text: current == null || current.probabilityPercent == 0
           ? ''
           : current.probabilityPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     satisfactionPercent = TextEditingController(
-      text: current == null ||
-              current.satisfactionPercent == 0
+      text: current == null || current.satisfactionPercent == 0
           ? ''
           : current.satisfactionPercent.toString(),
     );
@@ -581,12 +526,8 @@ class _CommercialEnterpriseFormState
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -610,10 +551,7 @@ class _CommercialEnterpriseFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -629,26 +567,20 @@ class _CommercialEnterpriseFormState
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasCommercialDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasCommercialDate(selected);
+      controller.text = formatAtlasCommercialDate(selected);
     });
   }
 
@@ -661,7 +593,8 @@ class _CommercialEnterpriseFormState
     Navigator.pop(
       context,
       AtlasCommercialEnterpriseRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'commercial_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -675,12 +608,9 @@ class _CommercialEnterpriseFormState
         owner: owner.text.trim(),
         potentialValue: decimal(potentialValue),
         actualValue: decimal(actualValue),
-        probabilityPercent:
-            percent(probabilityPercent),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        satisfactionPercent:
-            percent(satisfactionPercent),
+        probabilityPercent: percent(probabilityPercent),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        satisfactionPercent: percent(satisfactionPercent),
         alertCount: nonNegative(alertCount),
         dueDate: dueDate.text.trim(),
         notes: notes.text.trim(),
@@ -693,11 +623,7 @@ class _CommercialEnterpriseFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -712,10 +638,8 @@ class _CommercialEnterpriseFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -726,12 +650,9 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -743,36 +664,33 @@ class _CommercialEnterpriseFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Aprovado',
-                    'Assinado',
-                    'Concluído',
-                    'Ganho',
-                    'Atenção',
-                    'Perdido',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Aprovado',
+                            'Assinado',
+                            'Concluído',
+                            'Ganho',
+                            'Atenção',
+                            'Perdido',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -787,22 +705,17 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: companyName,
-                  decoration: const InputDecoration(
-                    labelText: 'Empresa',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Empresa'),
                 ),
                 TextFormField(
                   controller: referenceId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Oportunidade, contrato, lote ou referência',
+                    labelText: 'Oportunidade, contrato, lote ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: stage,
-                  decoration: const InputDecoration(
-                    labelText: 'Etapa ou fase',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Etapa ou fase'),
                 ),
                 TextFormField(
                   controller: owner,
@@ -812,8 +725,7 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: potentialValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -822,8 +734,7 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: actualValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -832,13 +743,11 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: probabilityPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Probabilidade (0 a 100%)',
+                    labelText: 'Probabilidade (0 a 100%)',
                   ),
                 ),
                 TextFormField(
@@ -850,13 +759,11 @@ class _CommercialEnterpriseFormState
                 ),
                 TextFormField(
                   controller: satisfactionPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Satisfação (0 a 100%)',
+                    labelText: 'Satisfação (0 a 100%)',
                   ),
                 ),
                 TextFormField(
@@ -872,18 +779,14 @@ class _CommercialEnterpriseFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou vencimento',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -895,37 +798,27 @@ class _CommercialEnterpriseFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasCommercialEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasCommercialEnterpriseModule module) {
   return switch (module) {
-    AtlasCommercialEnterpriseModule.premiumCrm =>
-      Icons.contacts_outlined,
+    AtlasCommercialEnterpriseModule.premiumCrm => Icons.contacts_outlined,
     AtlasCommercialEnterpriseModule.intelligentPipeline =>
       Icons.filter_alt_outlined,
     AtlasCommercialEnterpriseModule.digitalContracts =>
       Icons.description_outlined,
-    AtlasCommercialEnterpriseModule.electronicSignature =>
-      Icons.draw_outlined,
-    AtlasCommercialEnterpriseModule.customerManagement =>
-      Icons.groups_outlined,
-    AtlasCommercialEnterpriseModule.afterSales =>
-      Icons.support_agent_outlined,
+    AtlasCommercialEnterpriseModule.electronicSignature => Icons.draw_outlined,
+    AtlasCommercialEnterpriseModule.customerManagement => Icons.groups_outlined,
+    AtlasCommercialEnterpriseModule.afterSales => Icons.support_agent_outlined,
     AtlasCommercialEnterpriseModule.commercialIndicators =>
       Icons.insights_outlined,
     AtlasCommercialEnterpriseModule.servicesMarketplace =>
       Icons.storefront_outlined,
-    AtlasCommercialEnterpriseModule.auctions =>
-      Icons.gavel_outlined,
+    AtlasCommercialEnterpriseModule.auctions => Icons.gavel_outlined,
     AtlasCommercialEnterpriseModule.commercialCenter =>
       Icons.dashboard_outlined,
   };

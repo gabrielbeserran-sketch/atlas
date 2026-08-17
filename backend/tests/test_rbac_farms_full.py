@@ -135,3 +135,41 @@ def test_farm_scope_blocks_direct_access_to_other_farm(client):
     )
     assert foreign_update.status_code == 403
     assert "carteira autorizada" in foreign_update.json()["detail"]
+
+
+
+def test_farm_operational_fields_are_persisted(client):
+    admin = _login(client, "admin@test.local", "Test@123456")
+    headers = _auth(admin["access_token"])
+
+    created = client.post(
+        "/api/v1/farms",
+        headers=headers,
+        json={
+            "name": "Fazenda Persistencia",
+            "city": "Sobradinho",
+            "state": "GO",
+            "animals": 42,
+            "area": 1850,
+        },
+    )
+    assert created.status_code == 200
+    farm = created.json()
+    assert farm["animals"] == 42
+    assert farm["area"] == 1850
+
+    updated = client.patch(
+        f"/api/v1/farms/{farm['id']}",
+        headers=headers,
+        json={"animals": 57, "area": 1900},
+    )
+    assert updated.status_code == 200
+    body = updated.json()
+    assert body["animals"] == 57
+    assert body["area"] == 1900
+
+    reloaded = client.get(f"/api/v1/farms/{farm['id']}", headers=headers)
+    assert reloaded.status_code == 200
+    body = reloaded.json()
+    assert body["animals"] == 57
+    assert body["area"] == 1900

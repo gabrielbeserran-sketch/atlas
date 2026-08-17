@@ -222,9 +222,7 @@ class AtlasCopilotChecklistItem {
   final AtlasCopilotPriorityLevel priority;
   final bool completed;
 
-  AtlasCopilotChecklistItem copyWith({
-    bool? completed,
-  }) {
+  AtlasCopilotChecklistItem copyWith({bool? completed}) {
     return AtlasCopilotChecklistItem(
       id: id,
       title: title,
@@ -243,19 +241,9 @@ enum AtlasCopilotMaturityLevel {
   excellent,
 }
 
-enum AtlasCopilotSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasCopilotSeverity { low, medium, high, critical }
 
-enum AtlasCopilotPriorityLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasCopilotPriorityLevel { low, medium, high, critical }
 
 enum AtlasCopilotAlertSource {
   indicator,
@@ -266,9 +254,7 @@ enum AtlasCopilotAlertSource {
   goal,
 }
 
-String atlasCopilotMaturityLevelLabel(
-  AtlasCopilotMaturityLevel level,
-) {
+String atlasCopilotMaturityLevelLabel(AtlasCopilotMaturityLevel level) {
   switch (level) {
     case AtlasCopilotMaturityLevel.initial:
       return 'Inicial';
@@ -287,9 +273,7 @@ String atlasCopilotMaturityLevelLabel(
   }
 }
 
-String atlasCopilotSeverityLabel(
-  AtlasCopilotSeverity severity,
-) {
+String atlasCopilotSeverityLabel(AtlasCopilotSeverity severity) {
   switch (severity) {
     case AtlasCopilotSeverity.low:
       return 'Baixa';
@@ -305,9 +289,7 @@ String atlasCopilotSeverityLabel(
   }
 }
 
-String atlasCopilotPriorityLabel(
-  AtlasCopilotPriorityLevel priority,
-) {
+String atlasCopilotPriorityLabel(AtlasCopilotPriorityLevel priority) {
   switch (priority) {
     case AtlasCopilotPriorityLevel.low:
       return 'Baixa';
@@ -323,9 +305,7 @@ String atlasCopilotPriorityLabel(
   }
 }
 
-String atlasCopilotAlertSourceLabel(
-  AtlasCopilotAlertSource source,
-) {
+String atlasCopilotAlertSourceLabel(AtlasCopilotAlertSource source) {
   switch (source) {
     case AtlasCopilotAlertSource.indicator:
       return 'Indicador';

@@ -68,35 +68,25 @@ class AtlasReproductivePredictionCase {
     };
   }
 
-  factory AtlasReproductivePredictionCase.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasReproductivePredictionCase.fromMap(Map<String, dynamic> map) {
     return AtlasReproductivePredictionCase(
       id: map['id']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Em avaliação',
       category: map['category']?.toString() ?? 'Matriz',
-      bodyConditionScore:
-          (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
-      daysPostpartum:
-          (map['daysPostpartum'] as num?)?.toInt() ?? 0,
-      daysSinceLastService:
-          (map['daysSinceLastService'] as num?)?.toInt() ?? 0,
-      serviceCount:
-          (map['serviceCount'] as num?)?.toInt() ?? 0,
+      bodyConditionScore: (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
+      daysPostpartum: (map['daysPostpartum'] as num?)?.toInt() ?? 0,
+      daysSinceLastService: (map['daysSinceLastService'] as num?)?.toInt() ?? 0,
+      serviceCount: (map['serviceCount'] as num?)?.toInt() ?? 0,
       cycleRegular: map['cycleRegular'] == true,
       heatSigns: map['heatSigns'] == true,
-      previousPregnancyLoss:
-          map['previousPregnancyLoss'] == true,
-      protocolType:
-          map['protocolType']?.toString() ?? 'Não informado',
-      semenQuality:
-          map['semenQuality']?.toString() ?? 'Não informado',
+      previousPregnancyLoss: map['previousPregnancyLoss'] == true,
+      protocolType: map['protocolType']?.toString() ?? 'Não informado',
+      semenQuality: map['semenQuality']?.toString() ?? 'Não informado',
       technicianExperience:
           map['technicianExperience']?.toString() ?? 'Intermediária',
-      healthRisk:
-          map['healthRisk']?.toString() ?? 'Baixo',
+      healthRisk: map['healthRisk']?.toString() ?? 'Baixo',
       notes: map['notes']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

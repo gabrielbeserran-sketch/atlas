@@ -11,12 +11,10 @@ class AtlasCommandCenterReactiveRuntime {
     AtlasCommandCenterVersionService? versionService,
     AtlasOperationalInvalidationService invalidationService =
         const AtlasOperationalInvalidationService(),
-  })  : _eventBus = eventBus ?? AtlasEventBus.instance,
-        cacheService =
-            cacheService ?? AtlasCommandCenterCacheService(),
-        versionService =
-            versionService ?? AtlasCommandCenterVersionService(),
-        _invalidationService = invalidationService;
+  }) : _eventBus = eventBus ?? AtlasEventBus.instance,
+       cacheService = cacheService ?? AtlasCommandCenterCacheService(),
+       versionService = versionService ?? AtlasCommandCenterVersionService(),
+       _invalidationService = invalidationService;
 
   final AtlasEventBus _eventBus;
   final AtlasOperationalInvalidationService _invalidationService;
@@ -50,11 +48,8 @@ class AtlasCommandCenterReactiveRuntime {
     _subscriptionId = null;
   }
 
-  Future<void> _handleEvent(
-    AtlasEvent event,
-  ) async {
-    final invalidation =
-        _invalidationService.fromEvent(event);
+  Future<void> _handleEvent(AtlasEvent event) async {
+    final invalidation = _invalidationService.fromEvent(event);
 
     cacheService.invalidate(invalidation);
     versionService.advance(invalidation);

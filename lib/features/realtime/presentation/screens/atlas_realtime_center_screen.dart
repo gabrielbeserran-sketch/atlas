@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -21,8 +20,7 @@ class AtlasRealtimeCenterScreen extends StatefulWidget {
       _AtlasRealtimeCenterScreenState();
 }
 
-class _AtlasRealtimeCenterScreenState
-    extends State<AtlasRealtimeCenterScreen> {
+class _AtlasRealtimeCenterScreenState extends State<AtlasRealtimeCenterScreen> {
   final repository = AtlasRealtimeRepository();
   StreamSubscription<Map<String, dynamic>>? subscription;
 
@@ -37,10 +35,7 @@ class _AtlasRealtimeCenterScreenState
     super.initState();
     load();
     subscription = repository
-        .connect(
-          baseWsUrl: widget.baseWsUrl,
-          companyId: widget.companyId,
-        )
+        .connect(baseWsUrl: widget.baseWsUrl, companyId: widget.companyId)
         .listen(
           onRealtimeEvent,
           onError: (Object value) {
@@ -67,10 +62,7 @@ class _AtlasRealtimeCenterScreenState
       if (event['type'] == 'notification') {
         final value = event['notification'];
         if (value is Map) {
-          notifications.insert(
-            0,
-            Map<String, dynamic>.from(value),
-          );
+          notifications.insert(0, Map<String, dynamic>.from(value));
         }
       }
     });
@@ -83,15 +75,12 @@ class _AtlasRealtimeCenterScreenState
     });
     try {
       final values = await Future.wait([
-        repository.notifications(
-          farmId: widget.farmId,
-        ),
+        repository.notifications(farmId: widget.farmId),
         repository.metrics(),
       ]);
       if (!mounted) return;
       setState(() {
-        notifications =
-            values[0] as List<Map<String, dynamic>>;
+        notifications = values[0] as List<Map<String, dynamic>>;
         metrics = values[1] as Map<String, dynamic>;
       });
     } catch (exception) {
@@ -102,9 +91,7 @@ class _AtlasRealtimeCenterScreenState
     }
   }
 
-  Future<void> markRead(
-    Map<String, dynamic> notification,
-  ) async {
+  Future<void> markRead(Map<String, dynamic> notification) async {
     final id = notification['id']?.toString();
     if (id == null) return;
     await repository.markRead(id);
@@ -120,111 +107,81 @@ class _AtlasRealtimeCenterScreenState
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Icon(
-              connected
-                  ? Icons.cloud_done_outlined
-                  : Icons.cloud_off_outlined,
+              connected ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
             ),
           ),
-          IconButton(
-            onPressed: load,
-            icon: const Icon(Icons.refresh),
-          ),
+          IconButton(onPressed: load, icon: const Icon(Icons.refresh)),
         ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null && notifications.isEmpty
-              ? Center(child: Text(error!))
-              : ListView(
-                  padding: const EdgeInsets.all(20),
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _Metric(
-                          label: 'Conexões',
-                          value:
-                              '${metrics['connections'] ?? 0}',
-                        ),
-                        _Metric(
-                          label: 'Salas',
-                          value: '${metrics['rooms'] ?? 0}',
-                        ),
-                        _Metric(
-                          label: 'Eventos',
-                          value:
-                              '${metrics['published_events'] ?? 0}',
-                        ),
-                        _Metric(
-                          label: 'Notificações',
-                          value: '${notifications.length}',
-                        ),
-                      ],
+                    _Metric(
+                      label: 'Conexões',
+                      value: '${metrics['connections'] ?? 0}',
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Notificações',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall,
+                    _Metric(label: 'Salas', value: '${metrics['rooms'] ?? 0}'),
+                    _Metric(
+                      label: 'Eventos',
+                      value: '${metrics['published_events'] ?? 0}',
                     ),
-                    const SizedBox(height: 10),
-                    if (notifications.isEmpty)
-                      const Card(
-                        child: ListTile(
-                          title: Text(
-                            'Nenhuma notificação encontrada.',
-                          ),
-                        ),
-                      )
-                    else
-                      ...notifications.map(
-                        (item) => Card(
-                          child: ListTile(
-                            leading: Icon(
-                              item['severity'] == 'critical'
-                                  ? Icons.error_outline
-                                  : item['severity'] == 'high'
-                                      ? Icons.warning_amber
-                                      : Icons
-                                          .notifications_outlined,
-                            ),
-                            title: Text(
-                              item['title']?.toString() ??
-                                  '',
-                            ),
-                            subtitle: Text(
-                              item['message']?.toString() ??
-                                  '',
-                            ),
-                            trailing: item['read_at'] == null
-                                ? IconButton(
-                                    tooltip:
-                                        'Marcar como lida',
-                                    onPressed: () =>
-                                        markRead(item),
-                                    icon: const Icon(
-                                      Icons.done,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.done_all,
-                                  ),
-                          ),
-                        ),
-                      ),
+                    _Metric(
+                      label: 'Notificações',
+                      value: '${notifications.length}',
+                    ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  'Notificações',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 10),
+                if (notifications.isEmpty)
+                  const Card(
+                    child: ListTile(
+                      title: Text('Nenhuma notificação encontrada.'),
+                    ),
+                  )
+                else
+                  ...notifications.map(
+                    (item) => Card(
+                      child: ListTile(
+                        leading: Icon(
+                          item['severity'] == 'critical'
+                              ? Icons.error_outline
+                              : item['severity'] == 'high'
+                              ? Icons.warning_amber
+                              : Icons.notifications_outlined,
+                        ),
+                        title: Text(item['title']?.toString() ?? ''),
+                        subtitle: Text(item['message']?.toString() ?? ''),
+                        trailing: item['read_at'] == null
+                            ? IconButton(
+                                tooltip: 'Marcar como lida',
+                                onPressed: () => markRead(item),
+                                icon: const Icon(Icons.done),
+                              )
+                            : const Icon(Icons.done_all),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -237,16 +194,11 @@ class _Metric extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label),
               const SizedBox(height: 8),
-              Text(
-                value,
-                style:
-                    Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(value, style: Theme.of(context).textTheme.headlineSmall),
             ],
           ),
         ),

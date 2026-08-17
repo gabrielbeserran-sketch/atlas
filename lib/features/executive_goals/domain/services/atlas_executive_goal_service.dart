@@ -42,17 +42,12 @@ class AtlasExecutiveGoalService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    final kpisById = {
-      for (final kpi in kpis)
-        kpi.id: kpi,
-    };
+    final kpisById = {for (final kpi in kpis) kpi.id: kpi};
 
     return goals.map((goal) {
       final kpi = kpisById[goal.kpiId];
 
-      if (kpi == null ||
-          goal.status ==
-              AtlasExecutiveGoalStatus.cancelled) {
+      if (kpi == null || goal.status == AtlasExecutiveGoalStatus.cancelled) {
         return goal;
       }
 
@@ -61,10 +56,7 @@ class AtlasExecutiveGoalService {
         updatedAt: currentTime,
       );
 
-      return _evaluateGoal(
-        updated,
-        now: currentTime,
-      );
+      return _evaluateGoal(updated, now: currentTime);
     }).toList();
   }
 
@@ -86,19 +78,14 @@ class AtlasExecutiveGoalService {
       notes: notes,
       status: status,
       updatedAt: currentTime,
-      completedAt:
-          status == AtlasExecutiveGoalStatus.completed
-              ? currentTime
-              : null,
-      clearCompletedAt:
-          status != AtlasExecutiveGoalStatus.completed,
+      completedAt: status == AtlasExecutiveGoalStatus.completed
+          ? currentTime
+          : null,
+      clearCompletedAt: status != AtlasExecutiveGoalStatus.completed,
     );
 
     if (status == null) {
-      updated = _evaluateGoal(
-        updated,
-        now: currentTime,
-      );
+      updated = _evaluateGoal(updated, now: currentTime);
     }
 
     return updated;
@@ -111,32 +98,24 @@ class AtlasExecutiveGoalService {
     final currentTime = now ?? DateTime.now();
 
     final evaluated = goals.map((goal) {
-      return _evaluateGoal(
-        goal,
-        now: currentTime,
-      );
-    }).toList()
-      ..sort(_compareGoals);
+      return _evaluateGoal(goal, now: currentTime);
+    }).toList()..sort(_compareGoals);
 
-    final progress =
-        _calculateProgress(evaluated);
+    final progress = _calculateProgress(evaluated);
 
-    final farms =
-        _buildFarmSummaries(evaluated);
+    final farms = _buildFarmSummaries(evaluated);
 
-    final priorityGoals = evaluated.where((goal) {
-      return goal.status !=
-              AtlasExecutiveGoalStatus.completed &&
-          goal.status !=
-              AtlasExecutiveGoalStatus.cancelled;
-    }).take(10).toList();
+    final priorityGoals = evaluated
+        .where((goal) {
+          return goal.status != AtlasExecutiveGoalStatus.completed &&
+              goal.status != AtlasExecutiveGoalStatus.cancelled;
+        })
+        .take(10)
+        .toList();
 
     return AtlasExecutiveGoalDashboardData(
       generatedAt: currentTime,
-      summary: _buildSummary(
-        progress: progress,
-        priorityGoals: priorityGoals,
-      ),
+      summary: _buildSummary(progress: progress, priorityGoals: priorityGoals),
       progress: progress,
       goals: evaluated,
       priorityGoals: priorityGoals,
@@ -148,10 +127,8 @@ class AtlasExecutiveGoalService {
     AtlasExecutiveGoal goal, {
     required DateTime now,
   }) {
-    if (goal.status ==
-            AtlasExecutiveGoalStatus.cancelled ||
-        goal.status ==
-            AtlasExecutiveGoalStatus.completed) {
+    if (goal.status == AtlasExecutiveGoalStatus.cancelled ||
+        goal.status == AtlasExecutiveGoalStatus.completed) {
       return goal;
     }
 
@@ -170,21 +147,16 @@ class AtlasExecutiveGoalService {
       );
     }
 
-    final totalDays = goal.deadline
-        .difference(goal.createdAt)
-        .inDays;
+    final totalDays = goal.deadline.difference(goal.createdAt).inDays;
 
-    final elapsedDays = now
-        .difference(goal.createdAt)
-        .inDays;
+    final elapsedDays = now.difference(goal.createdAt).inDays;
 
     final expectedProgress = totalDays <= 0
         ? 100.0
         : elapsedDays / totalDays * 100;
 
     final isAtRisk =
-        goal.progressPercent + 15 <
-            expectedProgress.clamp(0.0, 100.0);
+        goal.progressPercent + 15 < expectedProgress.clamp(0.0, 100.0);
 
     return goal.copyWith(
       status: isAtRisk
@@ -198,38 +170,29 @@ class AtlasExecutiveGoalService {
     List<AtlasExecutiveGoal> goals,
   ) {
     final active = goals.where((goal) {
-      return goal.status ==
-          AtlasExecutiveGoalStatus.active;
+      return goal.status == AtlasExecutiveGoalStatus.active;
     }).length;
 
     final atRisk = goals.where((goal) {
-      return goal.status ==
-          AtlasExecutiveGoalStatus.atRisk;
+      return goal.status == AtlasExecutiveGoalStatus.atRisk;
     }).length;
 
     final overdue = goals.where((goal) {
-      return goal.status ==
-          AtlasExecutiveGoalStatus.overdue;
+      return goal.status == AtlasExecutiveGoalStatus.overdue;
     }).length;
 
     final completed = goals.where((goal) {
-      return goal.status ==
-          AtlasExecutiveGoalStatus.completed;
+      return goal.status == AtlasExecutiveGoalStatus.completed;
     }).length;
 
     final valid = goals.where((goal) {
-      return goal.status !=
-          AtlasExecutiveGoalStatus.cancelled;
+      return goal.status != AtlasExecutiveGoalStatus.cancelled;
     }).toList();
 
     final averageProgress = valid.isEmpty
         ? 0.0
-        : valid.fold<double>(
-              0,
-              (sum, goal) =>
-                  sum + goal.progressPercent,
-            ) /
-            valid.length;
+        : valid.fold<double>(0, (sum, goal) => sum + goal.progressPercent) /
+              valid.length;
 
     final completionPercent = valid.isEmpty
         ? 0.0
@@ -241,70 +204,47 @@ class AtlasExecutiveGoalService {
       atRisk: atRisk,
       overdue: overdue,
       completed: completed,
-      averageProgressPercent:
-          averageProgress.clamp(
-        0.0,
-        100.0,
-      ).toDouble(),
-      completionPercent:
-          completionPercent.clamp(
-        0.0,
-        100.0,
-      ).toDouble(),
+      averageProgressPercent: averageProgress.clamp(0.0, 100.0).toDouble(),
+      completionPercent: completionPercent.clamp(0.0, 100.0).toDouble(),
     );
   }
 
-  List<AtlasExecutiveFarmGoalSummary>
-      _buildFarmSummaries(
+  List<AtlasExecutiveFarmGoalSummary> _buildFarmSummaries(
     List<AtlasExecutiveGoal> goals,
   ) {
-    final grouped =
-        <String, List<AtlasExecutiveGoal>>{};
+    final grouped = <String, List<AtlasExecutiveGoal>>{};
 
     for (final goal in goals) {
-      grouped.putIfAbsent(
-        goal.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(goal.farmName, () => []);
 
       grouped[goal.farmName]!.add(goal);
     }
 
-    final result =
-        <AtlasExecutiveFarmGoalSummary>[];
+    final result = <AtlasExecutiveFarmGoalSummary>[];
 
     for (final entry in grouped.entries) {
-      final items = entry.value
-        ..sort(_compareGoals);
+      final items = entry.value..sort(_compareGoals);
 
       final active = items.where((goal) {
-        return goal.status ==
-            AtlasExecutiveGoalStatus.active;
+        return goal.status == AtlasExecutiveGoalStatus.active;
       }).length;
 
       final atRisk = items.where((goal) {
-        return goal.status ==
-            AtlasExecutiveGoalStatus.atRisk;
+        return goal.status == AtlasExecutiveGoalStatus.atRisk;
       }).length;
 
       final overdue = items.where((goal) {
-        return goal.status ==
-            AtlasExecutiveGoalStatus.overdue;
+        return goal.status == AtlasExecutiveGoalStatus.overdue;
       }).length;
 
       final completed = items.where((goal) {
-        return goal.status ==
-            AtlasExecutiveGoalStatus.completed;
+        return goal.status == AtlasExecutiveGoalStatus.completed;
       }).length;
 
       final average = items.isEmpty
           ? 0.0
-          : items.fold<double>(
-                0,
-                (sum, goal) =>
-                    sum + goal.progressPercent,
-              ) /
-              items.length;
+          : items.fold<double>(0, (sum, goal) => sum + goal.progressPercent) /
+                items.length;
 
       result.add(
         AtlasExecutiveFarmGoalSummary(
@@ -314,34 +254,22 @@ class AtlasExecutiveGoalService {
           atRisk: atRisk,
           overdue: overdue,
           completed: completed,
-          averageProgressPercent:
-              average.clamp(
-            0.0,
-            100.0,
-          ).toDouble(),
-          mainGoalTitle:
-              items.isEmpty
-                  ? null
-                  : items.first.kpiTitle,
+          averageProgressPercent: average.clamp(0.0, 100.0).toDouble(),
+          mainGoalTitle: items.isEmpty ? null : items.first.kpiTitle,
         ),
       );
     }
 
     result.sort((first, second) {
       if (first.overdue != second.overdue) {
-        return second.overdue.compareTo(
-          first.overdue,
-        );
+        return second.overdue.compareTo(first.overdue);
       }
 
       if (first.atRisk != second.atRisk) {
-        return second.atRisk.compareTo(
-          first.atRisk,
-        );
+        return second.atRisk.compareTo(first.atRisk);
       }
 
-      return first.averageProgressPercent
-          .compareTo(
+      return first.averageProgressPercent.compareTo(
         second.averageProgressPercent,
       );
     });
@@ -349,9 +277,7 @@ class AtlasExecutiveGoalService {
     return result;
   }
 
-  AtlasExecutiveGoalPriority _priorityFromKpi(
-    AtlasExecutiveKpi kpi,
-  ) {
+  AtlasExecutiveGoalPriority _priorityFromKpi(AtlasExecutiveKpi kpi) {
     switch (kpi.status) {
       case AtlasExecutiveKpiStatus.critical:
         return AtlasExecutiveGoalPriority.critical;
@@ -367,40 +293,27 @@ class AtlasExecutiveGoalService {
     }
   }
 
-  int _compareGoals(
-    AtlasExecutiveGoal first,
-    AtlasExecutiveGoal second,
-  ) {
-    final firstWeight =
-        _statusWeight(first.status);
+  int _compareGoals(AtlasExecutiveGoal first, AtlasExecutiveGoal second) {
+    final firstWeight = _statusWeight(first.status);
 
-    final secondWeight =
-        _statusWeight(second.status);
+    final secondWeight = _statusWeight(second.status);
 
     if (firstWeight != secondWeight) {
       return secondWeight.compareTo(firstWeight);
     }
 
-    final firstPriority =
-        _priorityWeight(first.priority);
+    final firstPriority = _priorityWeight(first.priority);
 
-    final secondPriority =
-        _priorityWeight(second.priority);
+    final secondPriority = _priorityWeight(second.priority);
 
     if (firstPriority != secondPriority) {
-      return secondPriority.compareTo(
-        firstPriority,
-      );
+      return secondPriority.compareTo(firstPriority);
     }
 
-    return first.deadline.compareTo(
-      second.deadline,
-    );
+    return first.deadline.compareTo(second.deadline);
   }
 
-  int _statusWeight(
-    AtlasExecutiveGoalStatus status,
-  ) {
+  int _statusWeight(AtlasExecutiveGoalStatus status) {
     switch (status) {
       case AtlasExecutiveGoalStatus.overdue:
         return 5;
@@ -419,9 +332,7 @@ class AtlasExecutiveGoalService {
     }
   }
 
-  int _priorityWeight(
-    AtlasExecutiveGoalPriority priority,
-  ) {
+  int _priorityWeight(AtlasExecutiveGoalPriority priority) {
     switch (priority) {
       case AtlasExecutiveGoalPriority.critical:
         return 4;
@@ -438,10 +349,8 @@ class AtlasExecutiveGoalService {
   }
 
   String _buildSummary({
-    required AtlasExecutiveGoalProgress
-        progress,
-    required List<AtlasExecutiveGoal>
-        priorityGoals,
+    required AtlasExecutiveGoalProgress progress,
+    required List<AtlasExecutiveGoal> priorityGoals,
   }) {
     if (!progress.hasGoals) {
       return 'Ainda não existem metas executivas cadastradas.';

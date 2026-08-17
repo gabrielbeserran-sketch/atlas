@@ -8,24 +8,19 @@ class AtlasEventFactory {
     required String sourceModule,
     required String title,
     required String description,
-    AtlasEventPriority priority =
-        AtlasEventPriority.normal,
+    AtlasEventPriority priority = AtlasEventPriority.normal,
     String? farmId,
     String? farmName,
     String? entityId,
     String? entityType,
-    Map<String, dynamic> payload =
-        const <String, dynamic>{},
-    List<String> tags =
-        const <String>[],
+    Map<String, dynamic> payload = const <String, dynamic>{},
+    List<String> tags = const <String>[],
     DateTime? occurredAt,
   }) {
-    final timestamp =
-        occurredAt ?? DateTime.now();
+    final timestamp = occurredAt ?? DateTime.now();
 
     return AtlasEvent(
-      id:
-          'event_${timestamp.microsecondsSinceEpoch}',
+      id: 'event_${timestamp.microsecondsSinceEpoch}',
       type: type,
       sourceModule: sourceModule,
       title: title,
@@ -50,8 +45,7 @@ class AtlasEventFactory {
     DateTime? occurredAt,
   }) {
     return create(
-      type:
-          AtlasEventType.animalWeightRecorded,
+      type: AtlasEventType.animalWeightRecorded,
       sourceModule: 'animal_weight',
       title: 'Nova pesagem registrada',
       description:
@@ -66,11 +60,7 @@ class AtlasEventFactory {
         'animalName': animalName,
         'weightKg': weightKg,
       },
-      tags: const <String>[
-        'animal',
-        'weight',
-        'indicator',
-      ],
+      tags: const <String>['animal', 'weight', 'indicator'],
       occurredAt: occurredAt,
     );
   }
@@ -84,8 +74,7 @@ class AtlasEventFactory {
     DateTime? occurredAt,
   }) {
     return create(
-      type:
-          AtlasEventType.vaccinationRecorded,
+      type: AtlasEventType.vaccinationRecorded,
       sourceModule: 'animal_health',
       title: 'Vacinação registrada',
       description:
@@ -100,11 +89,7 @@ class AtlasEventFactory {
         'animalName': animalName,
         'vaccineName': vaccineName,
       },
-      tags: const <String>[
-        'animal',
-        'health',
-        'vaccination',
-      ],
+      tags: const <String>['animal', 'health', 'vaccination'],
       occurredAt: occurredAt,
     );
   }
@@ -129,15 +114,8 @@ class AtlasEventFactory {
       farmName: farmName,
       entityId: animalId,
       entityType: 'animal',
-      payload: <String, dynamic>{
-        'animalName': animalName,
-        'calfId': calfId,
-      },
-      tags: const <String>[
-        'animal',
-        'reproduction',
-        'calving',
-      ],
+      payload: <String, dynamic>{'animalName': animalName, 'calfId': calfId},
+      tags: const <String>['animal', 'reproduction', 'calving'],
       occurredAt: occurredAt,
     );
   }
@@ -156,21 +134,14 @@ class AtlasEventFactory {
       description:
           'A meta $title está atrasada há '
           '$delayedDays dias.',
-      priority:
-          delayedDays >= 7
-              ? AtlasEventPriority.critical
-              : AtlasEventPriority.high,
+      priority: delayedDays >= 7
+          ? AtlasEventPriority.critical
+          : AtlasEventPriority.high,
       farmName: farmName,
       entityId: goalId,
       entityType: 'executive_goal',
-      payload: <String, dynamic>{
-        'delayedDays': delayedDays,
-      },
-      tags: const <String>[
-        'goal',
-        'delay',
-        'executive',
-      ],
+      payload: <String, dynamic>{'delayedDays': delayedDays},
+      tags: const <String>['goal', 'delay', 'executive'],
       occurredAt: occurredAt,
     );
   }
@@ -185,17 +156,12 @@ class AtlasEventFactory {
       type: AtlasEventType.taskCompleted,
       sourceModule: 'workflow_engine',
       title: 'Tarefa concluída',
-      description:
-          'A tarefa $title foi concluída.',
+      description: 'A tarefa $title foi concluída.',
       priority: AtlasEventPriority.normal,
       farmName: farmName,
       entityId: taskId,
       entityType: 'workflow_task',
-      tags: const <String>[
-        'workflow',
-        'task',
-        'completed',
-      ],
+      tags: const <String>['workflow', 'task', 'completed'],
       occurredAt: occurredAt,
     );
   }
@@ -207,27 +173,18 @@ class AtlasEventFactory {
     DateTime? occurredAt,
   }) {
     return create(
-      type:
-          AtlasEventType.executiveBrainUpdated,
+      type: AtlasEventType.executiveBrainUpdated,
       sourceModule: 'executive_brain',
-      title:
-          'Executive Brain atualizado',
-      description:
-          'Uma nova decisão oficial foi consolidada.',
+      title: 'Executive Brain atualizado',
+      description: 'Uma nova decisão oficial foi consolidada.',
       priority: AtlasEventPriority.high,
       entityType: 'executive_brain',
       payload: <String, dynamic>{
         'score': score,
-        'confidencePercent':
-            confidencePercent,
-        'officialDecision':
-            officialDecision,
+        'confidencePercent': confidencePercent,
+        'officialDecision': officialDecision,
       },
-      tags: const <String>[
-        'executive',
-        'brain',
-        'decision',
-      ],
+      tags: const <String>['executive', 'brain', 'decision'],
       occurredAt: occurredAt,
     );
   }

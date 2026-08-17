@@ -18,6 +18,5 @@ class AtlasReactiveUpdate {
   final AtlasEventPriority priority;
   final String reason;
 
-  bool get isCritical =>
-      priority == AtlasEventPriority.critical;
+  bool get isCritical => priority == AtlasEventPriority.critical;
 }

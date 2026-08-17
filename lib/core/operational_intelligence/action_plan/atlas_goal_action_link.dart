@@ -25,9 +25,7 @@ class AtlasGoalActionLink {
     };
   }
 
-  factory AtlasGoalActionLink.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasGoalActionLink.fromMap(Map<String, dynamic> map) {
     return AtlasGoalActionLink(
       id: map['id']?.toString() ?? '',
       goalId: map['goalId']?.toString() ?? '',
@@ -36,9 +34,8 @@ class AtlasGoalActionLink {
         (value) => value.name == map['area']?.toString(),
         orElse: () => AtlasOperationalArea.general,
       ),
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

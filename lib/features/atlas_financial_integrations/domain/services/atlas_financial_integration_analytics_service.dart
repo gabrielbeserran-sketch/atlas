@@ -48,8 +48,9 @@ class AtlasFinancialIntegrationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -77,9 +78,9 @@ class AtlasFinancialIntegrationAnalyticsService {
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -128,32 +129,26 @@ class AtlasFinancialIntegrationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasFinancialIntegrationModule.receitaFederal =>
-            const [
-              'Confirme cadastro fiscal, competência, documentos e obrigações com o responsável tributário.',
-              'Mantenha protocolos e comprovantes associados a cada processo.',
-            ],
-          AtlasFinancialIntegrationModule.bancoBrasil =>
-            const [
-              'Concilie extratos, tarifas, pagamentos e recebimentos diariamente.',
-              'Use credenciais segregadas, limites e aprovação em duas etapas.',
-            ],
-          AtlasFinancialIntegrationModule.pix => const [
-              'Valide chave, valor, vencimento, recebedor e identificador antes da cobrança.',
-              'Faça conciliação por identificador e registre devoluções de forma auditável.',
-            ],
-          AtlasFinancialIntegrationModule.nfe => const [
-              'Revise destinatário, itens, tributação, transporte e totais antes da autorização.',
-              'Armazene XML, protocolo e eventos de cancelamento ou correção.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasFinancialIntegrationModule.receitaFederal => const [
+          'Confirme cadastro fiscal, competência, documentos e obrigações com o responsável tributário.',
+          'Mantenha protocolos e comprovantes associados a cada processo.',
+        ],
+        AtlasFinancialIntegrationModule.bancoBrasil => const [
+          'Concilie extratos, tarifas, pagamentos e recebimentos diariamente.',
+          'Use credenciais segregadas, limites e aprovação em duas etapas.',
+        ],
+        AtlasFinancialIntegrationModule.pix => const [
+          'Valide chave, valor, vencimento, recebedor e identificador antes da cobrança.',
+          'Faça conciliação por identificador e registre devoluções de forma auditável.',
+        ],
+        AtlasFinancialIntegrationModule.nfe => const [
+          'Revise destinatário, itens, tributação, transporte e totais antes da autorização.',
+          'Armazene XML, protocolo e eventos de cancelamento ou correção.',
+        ],
+      });
     }
 
     return items;

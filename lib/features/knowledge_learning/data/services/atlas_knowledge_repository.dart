@@ -12,16 +12,23 @@ class AtlasKnowledgeRepository {
 
   Future<List<AtlasKnowledgeCase>> loadCases() async {
     final preferences = await SharedPreferences.getInstance();
-    final raw = preferences.getString(_storageKey) ?? preferences.getString(_legacyStorageKey);
+    final raw =
+        preferences.getString(_storageKey) ??
+        preferences.getString(_legacyStorageKey);
     if (raw == null || raw.isEmpty) return <AtlasKnowledgeCase>[];
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return <AtlasKnowledgeCase>[];
-      final result = decoded
-          .whereType<Map>()
-          .map((item) => AtlasKnowledgeCase.fromJson(Map<String, dynamic>.from(item)))
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final result =
+          decoded
+              .whereType<Map>()
+              .map(
+                (item) => AtlasKnowledgeCase.fromJson(
+                  Map<String, dynamic>.from(item),
+                ),
+              )
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return result;
     } catch (_) {
       return <AtlasKnowledgeCase>[];

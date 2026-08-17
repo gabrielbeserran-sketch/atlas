@@ -46,10 +46,7 @@ class _AtlasPlatformDashboardScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             ...lines.map(
               (line) => Padding(
@@ -80,9 +77,7 @@ class _AtlasPlatformDashboardScreenState
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -126,42 +121,30 @@ class _AtlasPlatformDashboardScreenState
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               children: [
-                _buildCard(
-                  'Rebanho',
-                  [
-                    'Animais: ${_value(data.herd, 'animals')}',
-                    'Lotes: ${_value(data.herd, 'lots')}',
-                    'Peso médio: ${_value(data.herd, 'average_weight')} kg',
-                    'Sem lote: ${_value(data.herd, 'without_lot')}',
-                  ],
-                ),
-                _buildCard(
-                  'Reprodução e sanidade',
-                  [
-                    'Taxa de prenhez: ${_value(data.reproduction, 'pregnancy_rate')}%',
-                    'Ações reprodutivas: ${_value(data.reproduction, 'scheduled_actions')}',
-                    'Sanidade em 7 dias: ${_value(data.health, 'events_due_7d')}',
-                    'Quarentenas: ${_value(data.health, 'quarantines')}',
-                  ],
-                ),
-                _buildCard(
-                  'Nutrição e estoque',
-                  [
-                    'Consumo: ${_value(data.nutrition, 'total_quantity')}',
-                    'Custo alimentar: ${_value(data.nutrition, 'total_cost')}',
-                    'Estoque crítico: ${_value(data.inventory, 'low_stock')}',
-                    'Validade em 30 dias: ${_value(data.inventory, 'expiring_30d')}',
-                  ],
-                ),
-                _buildCard(
-                  'Financeiro',
-                  [
-                    'Receitas: ${_value(data.financial, 'income')}',
-                    'Despesas: ${_value(data.financial, 'expense')}',
-                    'Saldo projetado: ${_value(data.financial, 'projected_balance')}',
-                    'ROI: ${_value(data.financial, 'roi_percent')}%',
-                  ],
-                ),
+                _buildCard('Rebanho', [
+                  'Animais: ${_value(data.herd, 'animals')}',
+                  'Lotes: ${_value(data.herd, 'lots')}',
+                  'Peso médio: ${_value(data.herd, 'average_weight')} kg',
+                  'Sem lote: ${_value(data.herd, 'without_lot')}',
+                ]),
+                _buildCard('Reprodução e sanidade', [
+                  'Taxa de prenhez: ${_value(data.reproduction, 'pregnancy_rate')}%',
+                  'Ações reprodutivas: ${_value(data.reproduction, 'scheduled_actions')}',
+                  'Sanidade em 7 dias: ${_value(data.health, 'events_due_7d')}',
+                  'Quarentenas: ${_value(data.health, 'quarantines')}',
+                ]),
+                _buildCard('Nutrição e estoque', [
+                  'Consumo: ${_value(data.nutrition, 'total_quantity')}',
+                  'Custo alimentar: ${_value(data.nutrition, 'total_cost')}',
+                  'Estoque crítico: ${_value(data.inventory, 'low_stock')}',
+                  'Validade em 30 dias: ${_value(data.inventory, 'expiring_30d')}',
+                ]),
+                _buildCard('Financeiro', [
+                  'Receitas: ${_value(data.financial, 'income')}',
+                  'Despesas: ${_value(data.financial, 'expense')}',
+                  'Saldo projetado: ${_value(data.financial, 'projected_balance')}',
+                  'ROI: ${_value(data.financial, 'roi_percent')}%',
+                ]),
                 const SizedBox(height: 8),
                 Text(
                   'Recomendações',
@@ -188,9 +171,7 @@ class _AtlasPlatformDashboardScreenState
                           'Ação: ${recommendation.recommendedAction}',
                         ),
                         isThreeLine: true,
-                        trailing: Chip(
-                          label: Text(recommendation.priority),
-                        ),
+                        trailing: Chip(label: Text(recommendation.priority)),
                       ),
                     ),
                   ),

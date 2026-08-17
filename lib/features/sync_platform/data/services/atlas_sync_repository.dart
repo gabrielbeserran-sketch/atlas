@@ -19,7 +19,10 @@ class AtlasSyncRepository {
     } else {
       final List<dynamic> decoded = jsonDecode(rawItems) as List<dynamic>;
       items = decoded
-          .map((dynamic value) => AtlasSyncItem.fromJson(Map<String, dynamic>.from(value as Map)))
+          .map(
+            (dynamic value) =>
+                AtlasSyncItem.fromJson(Map<String, dynamic>.from(value as Map)),
+          )
           .toList();
     }
 

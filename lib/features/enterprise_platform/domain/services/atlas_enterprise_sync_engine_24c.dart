@@ -7,10 +7,8 @@ import 'atlas_enterprise_sync_transport.dart';
 import 'atlas_enterprise_version_service.dart';
 
 class AtlasEnterpriseSyncEngine24C {
-  AtlasEnterpriseSyncEngine24C({
-    AtlasEnterpriseSyncTransport? transport,
-  }) : transport =
-            transport ?? AtlasLocalLoopbackSyncTransport.instance;
+  AtlasEnterpriseSyncEngine24C({AtlasEnterpriseSyncTransport? transport})
+    : transport = transport ?? AtlasLocalLoopbackSyncTransport.instance;
 
   final AtlasEnterpriseSyncTransport transport;
   final AtlasEnterpriseSyncRepository repository =
@@ -75,8 +73,7 @@ class AtlasEnterpriseSyncEngine24C {
   }) async {
     final session = AtlasEnterpriseSessionService.instance;
     await session.ensureInitialized();
-    final resolvedCompanyId =
-        companyId ?? session.currentCompanyId;
+    final resolvedCompanyId = companyId ?? session.currentCompanyId;
 
     if (resolvedCompanyId == null) {
       return const AtlasEnterpriseSyncSummary(
@@ -91,9 +88,7 @@ class AtlasEnterpriseSyncEngine24C {
 
     final queue = await repository.loadQueue();
     final scoped = queue
-        .where(
-          (item) => item.companyId == resolvedCompanyId,
-        )
+        .where((item) => item.companyId == resolvedCompanyId)
         .toList();
 
     if (!online) {
@@ -101,10 +96,8 @@ class AtlasEnterpriseSyncEngine24C {
     }
 
     for (final operation in scoped) {
-      if (operation.status ==
-              AtlasEnterpriseSyncStatus.synchronized ||
-          operation.status ==
-              AtlasEnterpriseSyncStatus.conflict) {
+      if (operation.status == AtlasEnterpriseSyncStatus.synchronized ||
+          operation.status == AtlasEnterpriseSyncStatus.conflict) {
         continue;
       }
 
@@ -120,8 +113,7 @@ class AtlasEnterpriseSyncEngine24C {
         final result = await transport.push(syncing);
 
         if (result.conflict) {
-          final conflict =
-              AtlasEnterpriseSyncConflict(
+          final conflict = AtlasEnterpriseSyncConflict(
             id: 'conflict_${DateTime.now().microsecondsSinceEpoch}',
             operationId: operation.operationId,
             companyId: operation.companyId,
@@ -133,8 +125,7 @@ class AtlasEnterpriseSyncEngine24C {
             localPayload: operation.payload,
             remotePayload: result.remotePayload,
             detectedAt: DateTime.now(),
-            resolution:
-                AtlasEnterpriseConflictResolution.unresolved,
+            resolution: AtlasEnterpriseConflictResolution.unresolved,
             resolvedAt: null,
             resolvedBy: null,
           );
@@ -150,8 +141,7 @@ class AtlasEnterpriseSyncEngine24C {
             module: 'sync',
             entityType: operation.entityType,
             entityId: operation.entityId,
-            description:
-                'Conflito detectado durante sincronização.',
+            description: 'Conflito detectado durante sincronização.',
             companyId: operation.companyId,
             farmId: operation.farmId,
             after: conflict.toMap(),
@@ -172,8 +162,7 @@ class AtlasEnterpriseSyncEngine24C {
 
         await repository.saveOperation(
           syncing.copyWith(
-            status:
-                AtlasEnterpriseSyncStatus.synchronized,
+            status: AtlasEnterpriseSyncStatus.synchronized,
             lastError: '',
           ),
         );
@@ -190,17 +179,14 @@ class AtlasEnterpriseSyncEngine24C {
     await _pullIncremental(resolvedCompanyId);
 
     final refreshed = (await repository.loadQueue())
-        .where(
-          (item) => item.companyId == resolvedCompanyId,
-        )
+        .where((item) => item.companyId == resolvedCompanyId)
         .toList();
 
     return summarize(refreshed);
   }
 
   Future<void> _pullIncremental(String companyId) async {
-    final checkpoint =
-        await repository.checkpoint(companyId);
+    final checkpoint = await repository.checkpoint(companyId);
     final changes = await transport.pull(
       companyId: companyId,
       cursor: checkpoint.cursor,
@@ -216,8 +202,7 @@ class AtlasEnterpriseSyncEngine24C {
         entityType: change.entityType,
         entityId: change.entityId,
       );
-      final currentVersion =
-          latest.isEmpty ? 0 : latest.first.version;
+      final currentVersion = latest.isEmpty ? 0 : latest.first.version;
 
       if (currentVersion >= change.version) {
         continue;
@@ -258,10 +243,8 @@ class AtlasEnterpriseSyncEngine24C {
       total: values.length,
       pending: count(AtlasEnterpriseSyncStatus.pending),
       syncing: count(AtlasEnterpriseSyncStatus.syncing),
-      synchronized:
-          count(AtlasEnterpriseSyncStatus.synchronized),
-      conflicts:
-          count(AtlasEnterpriseSyncStatus.conflict),
+      synchronized: count(AtlasEnterpriseSyncStatus.synchronized),
+      conflicts: count(AtlasEnterpriseSyncStatus.conflict),
       errors: count(AtlasEnterpriseSyncStatus.error),
     );
   }

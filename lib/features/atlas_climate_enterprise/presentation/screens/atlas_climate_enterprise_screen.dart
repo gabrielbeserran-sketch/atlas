@@ -29,8 +29,7 @@ class AtlasClimateEnterpriseScreen extends StatefulWidget {
 class _AtlasClimateEnterpriseScreenState
     extends State<AtlasClimateEnterpriseScreen> {
   final storage = AtlasClimateEnterpriseStorageService();
-  final analyticsService =
-      const AtlasClimateEnterpriseAnalyticsService();
+  final analyticsService = const AtlasClimateEnterpriseAnalyticsService();
 
   late AtlasClimateEnterpriseModule selectedModule;
   List<AtlasClimateEnterpriseRecord> records = [];
@@ -53,8 +52,9 @@ class _AtlasClimateEnterpriseScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasClimateDate(b.date)
-          .compareTo(parseAtlasClimateDate(a.date)),
+      (a, b) => parseAtlasClimateDate(
+        b.date,
+      ).compareTo(parseAtlasClimateDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,27 +66,22 @@ class _AtlasClimateEnterpriseScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasClimateEnterpriseRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasClimateEnterpriseRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasClimateEnterpriseRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasClimateEnterpriseRecord? current]) async {
     final result = await showDialog<AtlasClimateEnterpriseRecord>(
       context: context,
-      builder: (_) => _ClimateForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) => _ClimateForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -105,9 +100,7 @@ class _AtlasClimateEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasClimateEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasClimateEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -250,15 +243,15 @@ class _AtlasClimateEnterpriseScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor atual médio',
-                            value:
-                                analytics.averageCurrent.toStringAsFixed(2),
+                            value: analytics.averageCurrent.toStringAsFixed(2),
                             subtitle: 'Métrica observada',
                             icon: Icons.assessment_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor projetado médio',
-                            value:
-                                analytics.averageProjected.toStringAsFixed(2),
+                            value: analytics.averageProjected.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Métrica projetada',
                             icon: Icons.auto_graph_outlined,
                           ),
@@ -326,9 +319,7 @@ class _AtlasClimateEnterpriseScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira análise, previsão ou indicador.',
                             ),
@@ -383,10 +374,7 @@ class _AtlasClimateEnterpriseScreenState
 }
 
 class _ClimateForm extends StatefulWidget {
-  const _ClimateForm({
-    required this.module,
-    this.current,
-  });
+  const _ClimateForm({required this.module, this.current});
 
   final AtlasClimateEnterpriseModule module;
   final AtlasClimateEnterpriseRecord? current;
@@ -429,18 +417,11 @@ class _ClimateFormState extends State<_ClimateForm> {
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasClimateDate(DateTime.now()),
+      text: current?.date ?? formatAtlasClimateDate(DateTime.now()),
     );
-    farmName = TextEditingController(
-      text: current?.farmName ?? '',
-    );
-    areaName = TextEditingController(
-      text: current?.areaName ?? '',
-    );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    farmName = TextEditingController(text: current?.farmName ?? '');
+    areaName = TextEditingController(text: current?.areaName ?? '');
+    metricName = TextEditingController(text: current?.metricName ?? '');
     currentValue = TextEditingController(
       text: current == null || current.currentValue == 0
           ? ''
@@ -473,9 +454,7 @@ class _ClimateFormState extends State<_ClimateForm> {
           : current.riskPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -487,15 +466,9 @@ class _ClimateFormState extends State<_ClimateForm> {
           ? ''
           : current.horizonDays.toString(),
     );
-    source = TextEditingController(
-      text: current?.source ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    source = TextEditingController(text: current?.source ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -526,10 +499,7 @@ class _ClimateFormState extends State<_ClimateForm> {
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
@@ -544,12 +514,9 @@ class _ClimateFormState extends State<_ClimateForm> {
     final parsed = parseAtlasClimateDate(date.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -567,8 +534,7 @@ class _ClimateFormState extends State<_ClimateForm> {
     Navigator.pop(
       context,
       AtlasClimateEnterpriseRecord(
-        id: current?.id ??
-            'climate_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'climate_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -599,11 +565,7 @@ class _ClimateFormState extends State<_ClimateForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -618,10 +580,8 @@ class _ClimateFormState extends State<_ClimateForm> {
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -632,13 +592,10 @@ class _ClimateFormState extends State<_ClimateForm> {
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -646,35 +603,32 @@ class _ClimateFormState extends State<_ClimateForm> {
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Alto risco',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Alto risco',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -683,9 +637,7 @@ class _ClimateFormState extends State<_ClimateForm> {
                 ),
                 TextFormField(
                   controller: farmName,
-                  decoration: const InputDecoration(
-                    labelText: 'Fazenda',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Fazenda'),
                 ),
                 TextFormField(
                   controller: areaName,
@@ -709,21 +661,16 @@ class _ClimateFormState extends State<_ClimateForm> {
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                       signed: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 ...[
                   (progressPercent, 'Progresso (0 a 100%)'),
@@ -733,9 +680,7 @@ class _ClimateFormState extends State<_ClimateForm> {
                   (item) => TextFormField(
                     controller: item.$1,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -746,17 +691,13 @@ class _ClimateFormState extends State<_ClimateForm> {
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -768,31 +709,23 @@ class _ClimateFormState extends State<_ClimateForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasClimateEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasClimateEnterpriseModule module) {
   return switch (module) {
-    AtlasClimateEnterpriseModule.climateIntelligence =>
-      Icons.cloud_outlined,
+    AtlasClimateEnterpriseModule.climateIntelligence => Icons.cloud_outlined,
     AtlasClimateEnterpriseModule.advancedMeteorology =>
       Icons.thunderstorm_outlined,
     AtlasClimateEnterpriseModule.intelligentForagePlanning =>
       Icons.grass_outlined,
-    AtlasClimateEnterpriseModule.aiPastureManagement =>
-      Icons.eco_outlined,
+    AtlasClimateEnterpriseModule.aiPastureManagement => Icons.eco_outlined,
     AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
       Icons.analytics_outlined,
-    AtlasClimateEnterpriseModule.climateRiskManagement =>
-      Icons.shield_outlined,
+    AtlasClimateEnterpriseModule.climateRiskManagement => Icons.shield_outlined,
     AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
       Icons.auto_graph_outlined,
     AtlasClimateEnterpriseModule.intelligentClimateAlerts =>

@@ -9,8 +9,7 @@ void main() {
     final records = [
       AtlasClimateEnterpriseRecord(
         id: '1',
-        module:
-            AtlasClimateEnterpriseModule.climateIntelligence,
+        module: AtlasClimateEnterpriseModule.climateIntelligence,
         feature: 'Tendências',
         title: 'Tendência de chuva',
         date: '04/08/2026',
@@ -36,8 +35,7 @@ void main() {
       ),
       AtlasClimateEnterpriseRecord(
         id: '2',
-        module:
-            AtlasClimateEnterpriseModule.climateIntelligence,
+        module: AtlasClimateEnterpriseModule.climateIntelligence,
         feature: 'Impactos produtivos',
         title: 'Déficit hídrico',
         date: '04/08/2026',
@@ -64,8 +62,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasClimateEnterpriseModule.climateIntelligence,
+      module: AtlasClimateEnterpriseModule.climateIntelligence,
       records: records,
     );
 

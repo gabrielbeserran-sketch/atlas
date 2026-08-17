@@ -1,10 +1,14 @@
+name: projetosatlas
+
 services:
   db:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: atlas
       POSTGRES_USER: atlas
-      POSTGRES_PASSWORD: atlas
+      POSTGRES_PASSWORD: atlas_local_change_me
+    ports:
+      - "5432:5432"
     volumes:
       - atlas_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -12,31 +16,57 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    restart: unless-stopped
+
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - atlas_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
 
   backend:
     build:
       context: ./backend
     env_file:
       - ./backend/.env
+    environment:
+      ATLAS_DATABASE_URL: postgresql+psycopg://atlas:atlas_local_change_me@db:5432/atlas
+      ATLAS_ATTACHMENT_DIR: /data/attachments
+      ATLAS_REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     volumes:
       - atlas_backups:/data/backups
+      - atlas_attachments:/data/attachments
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
   backup-worker:
     build:
       context: ./backend
     env_file:
       - ./backend/.env
+    environment:
+      ATLAS_DATABASE_URL: postgresql+psycopg://atlas:atlas_local_change_me@db:5432/atlas
     command: ["python", "-m", "scripts.backup_loop"]
     volumes:
       - atlas_backups:/data/backups
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   admin-portal:
     build:
@@ -45,7 +75,10 @@ services:
       - "8088:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   atlas_postgres_data:
   atlas_backups:
+  atlas_attachments:
+  atlas_redis_data:

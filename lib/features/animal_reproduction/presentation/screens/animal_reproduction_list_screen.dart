@@ -6,18 +6,21 @@ import 'package:projeto_atlas/features/animal_reproduction/domain/services/anima
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_form_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalReproductionListScreen extends StatefulWidget {
   const AnimalReproductionListScreen({
     required this.animal,
     required this.farm,
     required this.group,
+    this.autoOpenCreate = false,
     super.key,
   });
 
   final AnimalData animal;
   final FarmData farm;
   final HerdGroupData group;
+  final bool autoOpenCreate;
 
   @override
   State<AnimalReproductionListScreen> createState() {
@@ -40,6 +43,11 @@ class _AnimalReproductionListScreenState
   void initState() {
     super.initState();
     loadRecords();
+    if (widget.autoOpenCreate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) await openReproductionForm();
+      });
+    }
   }
 
   int get inseminationCount {
@@ -74,7 +82,9 @@ class _AnimalReproductionListScreenState
   }
 
   String get conceptionRate {
-    if (diagnosisCount == 0) return '—';
+    if (diagnosisCount == 0) {
+      return '—';
+    }
     final rate = pregnancyCount * 100 / diagnosisCount;
     return '${rate.toStringAsFixed(1)}%';
   }
@@ -83,13 +93,16 @@ class _AnimalReproductionListScreenState
     final now = DateTime.now();
     final limit = now.add(const Duration(days: 45));
     final result = records.where((record) {
-      if (record.expectedDate.isEmpty) return false;
+      if (record.expectedDate.isEmpty) {
+        return false;
+      }
       final date = parseDate(record.expectedDate);
       return !date.isBefore(DateTime(now.year, now.month, now.day)) &&
           !date.isAfter(limit);
     }).toList();
-    result.sort((a, b) =>
-        parseDate(a.expectedDate).compareTo(parseDate(b.expectedDate)));
+    result.sort(
+      (a, b) => parseDate(a.expectedDate).compareTo(parseDate(b.expectedDate)),
+    );
     return result;
   }
 
@@ -118,7 +131,12 @@ class _AnimalReproductionListScreenState
       animalId: widget.animal.id,
       records: records,
     );
-    if (mounted) setState(() { records = saved; sortRecords(); });
+    if (mounted) {
+      setState(() {
+        records = saved;
+        sortRecords();
+      });
+    }
   }
 
   void sortRecords() {
@@ -155,18 +173,25 @@ class _AnimalReproductionListScreenState
       return;
     }
 
+    final savedRecord = await storage.createRecord(
+      farmName: widget.farm.name,
+      groupName: widget.group.name,
+      animalId: widget.animal.id,
+      record: newRecord,
+    );
+
+    if (!mounted) return;
     setState(() {
-      records.add(newRecord);
+      records.removeWhere((item) => item.id == savedRecord.id);
+      records.add(savedRecord);
       sortRecords();
     });
-
-    await saveRecords();
 
     await eventService.publishRecordCreated(
       farmName: widget.farm.name,
       animalId: widget.animal.id,
       animalName: widget.animal.displayName,
-      record: newRecord,
+      record: savedRecord,
     );
 
     if (!mounted) {
@@ -204,12 +229,18 @@ class _AnimalReproductionListScreenState
       return;
     }
 
+    final savedRecord = await storage.updateRecord(
+      farmName: widget.farm.name,
+      groupName: widget.group.name,
+      animalId: widget.animal.id,
+      record: editedRecord,
+    );
+
+    if (!mounted) return;
     setState(() {
-      records[recordIndex] = editedRecord;
+      records[recordIndex] = savedRecord;
       sortRecords();
     });
-
-    await saveRecords();
 
     if (!mounted) {
       return;
@@ -258,11 +289,17 @@ class _AnimalReproductionListScreenState
       return;
     }
 
+    await storage.deleteRecord(
+      farmName: widget.farm.name,
+      groupName: widget.group.name,
+      animalId: widget.animal.id,
+      recordId: reproductionRecord.id,
+    );
+
+    if (!mounted) return;
     setState(() {
       records.removeWhere((item) => item.id == reproductionRecord.id);
     });
-
-    await saveRecords();
 
     if (!mounted) {
       return;
@@ -362,7 +399,7 @@ class _AnimalReproductionListScreenState
                           ReproductionSummaryCard(
                             title: 'Partos',
                             value: birthCount.toString(),
-                            icon: Icons.pets_outlined,
+                            icon: AtlasLivestockIcons.cow,
                           ),
                           ReproductionSummaryCard(
                             title: 'Taxa de concepção',
@@ -570,7 +607,7 @@ class ReproductionRecordCard extends StatelessWidget {
                         ),
                         if (record.bullOrSemen.isNotEmpty)
                           ReproductionInformation(
-                            icon: Icons.pets_outlined,
+                            icon: AtlasLivestockIcons.cow,
                             text: record.bullOrSemen,
                           ),
                         if (record.responsible.isNotEmpty)
@@ -613,7 +650,11 @@ class ReproductionRecordCard extends StatelessWidget {
                           if (record.pregnancyDays > 0)
                             Chip(label: Text('${record.pregnancyDays} dias')),
                           if (record.birthType.isNotEmpty)
-                            Chip(label: Text('Parto ${record.birthType.toLowerCase()}')),
+                            Chip(
+                              label: Text(
+                                'Parto ${record.birthType.toLowerCase()}',
+                              ),
+                            ),
                           if (record.calfId.isNotEmpty)
                             Chip(label: Text('Cria ${record.calfId}')),
                           if (record.calfSex.isNotEmpty)
@@ -700,7 +741,7 @@ class ReproductionRecordCard extends StatelessWidget {
       case 'IATF':
         return Icons.schedule_outlined;
       case 'Monta natural':
-        return Icons.pets_outlined;
+        return AtlasLivestockIcons.cow;
       case 'Diagnóstico de gestação':
         return Icons.monitor_heart_outlined;
       case 'Parto':

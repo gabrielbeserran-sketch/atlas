@@ -52,8 +52,7 @@ class AtlasExecutionWeeklyReview {
       'overdueActions': overdueActions,
       'blockedActions': blockedActions,
       'actionsWithoutResponsible': actionsWithoutResponsible,
-      'actionsWithoutRecentFollowUp':
-          actionsWithoutRecentFollowUp,
+      'actionsWithoutRecentFollowUp': actionsWithoutRecentFollowUp,
       'averageProgressPercent': averageProgressPercent,
       'executionHealthPercent': executionHealthPercent,
       'expectedFinancialImpact': expectedFinancialImpact,
@@ -63,9 +62,7 @@ class AtlasExecutionWeeklyReview {
     };
   }
 
-  factory AtlasExecutionWeeklyReview.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutionWeeklyReview.fromMap(Map<String, dynamic> map) {
     return AtlasExecutionWeeklyReview(
       id: map['id']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
@@ -74,26 +71,16 @@ class AtlasExecutionWeeklyReview {
       periodEnd: _readDate(map['periodEnd']),
       totalActions: _readInt(map['totalActions']),
       openActions: _readInt(map['openActions']),
-      completedInPeriod: _readInt(
-        map['completedInPeriod'],
-      ),
+      completedInPeriod: _readInt(map['completedInPeriod']),
       overdueActions: _readInt(map['overdueActions']),
       blockedActions: _readInt(map['blockedActions']),
-      actionsWithoutResponsible: _readInt(
-        map['actionsWithoutResponsible'],
-      ),
+      actionsWithoutResponsible: _readInt(map['actionsWithoutResponsible']),
       actionsWithoutRecentFollowUp: _readInt(
         map['actionsWithoutRecentFollowUp'],
       ),
-      averageProgressPercent: _readDouble(
-        map['averageProgressPercent'],
-      ),
-      executionHealthPercent: _readDouble(
-        map['executionHealthPercent'],
-      ),
-      expectedFinancialImpact: _readDouble(
-        map['expectedFinancialImpact'],
-      ),
+      averageProgressPercent: _readDouble(map['averageProgressPercent']),
+      executionHealthPercent: _readDouble(map['executionHealthPercent']),
+      expectedFinancialImpact: _readDouble(map['expectedFinancialImpact']),
       achievements: _readStrings(map['achievements']),
       bottlenecks: _readStrings(map['bottlenecks']),
       focusActions: _readStrings(map['focusActions']),
@@ -101,8 +88,7 @@ class AtlasExecutionWeeklyReview {
   }
 
   static DateTime _readDate(dynamic value) {
-    return DateTime.tryParse(value?.toString() ?? '') ??
-        DateTime.now();
+    return DateTime.tryParse(value?.toString() ?? '') ?? DateTime.now();
   }
 
   static int _readInt(dynamic value) {
@@ -126,8 +112,6 @@ class AtlasExecutionWeeklyReview {
       return <String>[];
     }
 
-    return value
-        .map((item) => item.toString())
-        .toList(growable: false);
+    return value.map((item) => item.toString()).toList(growable: false);
   }
 }

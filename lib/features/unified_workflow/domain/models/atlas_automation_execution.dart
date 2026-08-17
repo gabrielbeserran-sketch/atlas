@@ -22,16 +22,16 @@ class AtlasAutomationExecution {
   final String message;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'ruleId': ruleId,
-        'ruleTitle': ruleTitle,
-        'eventId': eventId,
-        'eventTitle': eventTitle,
-        'actionTitle': actionTitle,
-        'executedAt': executedAt.toIso8601String(),
-        'success': success,
-        'message': message,
-      };
+    'id': id,
+    'ruleId': ruleId,
+    'ruleTitle': ruleTitle,
+    'eventId': eventId,
+    'eventTitle': eventTitle,
+    'actionTitle': actionTitle,
+    'executedAt': executedAt.toIso8601String(),
+    'success': success,
+    'message': message,
+  };
 
   factory AtlasAutomationExecution.fromJson(Map<String, dynamic> json) {
     return AtlasAutomationExecution(

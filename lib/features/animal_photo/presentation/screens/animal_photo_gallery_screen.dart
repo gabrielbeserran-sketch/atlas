@@ -25,10 +25,8 @@ class AnimalPhotoGalleryScreen extends StatefulWidget {
       _AnimalPhotoGalleryScreenState();
 }
 
-class _AnimalPhotoGalleryScreenState
-    extends State<AnimalPhotoGalleryScreen> {
-  final AnimalPhotoStorageService storage =
-      AnimalPhotoStorageService();
+class _AnimalPhotoGalleryScreenState extends State<AnimalPhotoGalleryScreen> {
+  final AnimalPhotoStorageService storage = AnimalPhotoStorageService();
 
   List<AnimalPhotoData> photos = [];
   final Set<String> selectedForComparison = {};
@@ -78,9 +76,7 @@ class _AnimalPhotoGalleryScreenState
 
     setState(() {
       if (photo.isPrimary) {
-        photos = photos
-            .map((item) => item.copyWith(isPrimary: false))
-            .toList();
+        photos = photos.map((item) => item.copyWith(isPrimary: false)).toList();
       }
       photos.add(photo);
     });
@@ -90,8 +86,7 @@ class _AnimalPhotoGalleryScreenState
   }
 
   Future<void> editPhoto(AnimalPhotoData photo) async {
-    final updated = await Navigator.of(context)
-        .push<AnimalPhotoData>(
+    final updated = await Navigator.of(context).push<AnimalPhotoData>(
       MaterialPageRoute<AnimalPhotoData>(
         builder: (context) => AnimalPhotoFormScreen(photo: photo),
       ),
@@ -101,9 +96,7 @@ class _AnimalPhotoGalleryScreenState
 
     setState(() {
       if (updated.isPrimary) {
-        photos = photos
-            .map((item) => item.copyWith(isPrimary: false))
-            .toList();
+        photos = photos.map((item) => item.copyWith(isPrimary: false)).toList();
       }
 
       final index = photos.indexWhere((item) => item.id == photo.id);
@@ -117,11 +110,7 @@ class _AnimalPhotoGalleryScreenState
   Future<void> setPrimary(AnimalPhotoData photo) async {
     setState(() {
       photos = photos
-          .map(
-            (item) => item.copyWith(
-              isPrimary: item.id == photo.id,
-            ),
-          )
+          .map((item) => item.copyWith(isPrimary: item.id == photo.id))
           .toList();
     });
 
@@ -169,9 +158,7 @@ class _AnimalPhotoGalleryScreenState
         selectedForComparison.add(photo.id);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Selecione somente duas fotos.'),
-          ),
+          const SnackBar(content: Text('Selecione somente duas fotos.')),
         );
       }
     });
@@ -249,10 +236,7 @@ class _AnimalPhotoGalleryScreenState
                   const SizedBox(height: 15),
                   const Text(
                     'Nenhuma foto cadastrada',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 7),
                   const Text(
@@ -287,17 +271,12 @@ class _AnimalPhotoGalleryScreenState
           photos: photos,
           primary: primary,
           selectedCount: selectedForComparison.length,
-          onCompare: selectedForComparison.length == 2
-              ? openComparison
-              : null,
+          onCompare: selectedForComparison.length == 2 ? openComparison : null,
         ),
         const SizedBox(height: 20),
         const Text(
           'Linha fotográfica',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         const Text(
@@ -310,8 +289,8 @@ class _AnimalPhotoGalleryScreenState
             final columns = constraints.maxWidth >= 1000
                 ? 3
                 : constraints.maxWidth >= 650
-                    ? 2
-                    : 1;
+                ? 2
+                : 1;
 
             return GridView.builder(
               itemCount: photos.length,
@@ -476,9 +455,7 @@ class _PhotoCard extends StatelessWidget {
                               : photo.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -495,10 +472,7 @@ class _PhotoCard extends StatelessWidget {
                       if (value == 'delete') onDelete();
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Text('Editar'),
-                      ),
+                      const PopupMenuItem(value: 'edit', child: Text('Editar')),
                       if (!photo.isPrimary)
                         const PopupMenuItem(
                           value: 'primary',
@@ -521,9 +495,7 @@ class _PhotoCard extends StatelessWidget {
 }
 
 class _PhotoPreview extends StatelessWidget {
-  const _PhotoPreview({
-    required this.reference,
-  });
+  const _PhotoPreview({required this.reference});
 
   final String reference;
 
@@ -590,10 +562,7 @@ class AnimalPhotoComparisonScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Comparação visual por data',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 5),
                 const Text(
@@ -639,10 +608,7 @@ class AnimalPhotoComparisonScreen extends StatelessWidget {
 }
 
 class ExpandedPhoto extends StatelessWidget {
-  const ExpandedPhoto({
-    required this.photo,
-    super.key,
-  });
+  const ExpandedPhoto({required this.photo, super.key});
 
   final AnimalPhotoData photo;
 

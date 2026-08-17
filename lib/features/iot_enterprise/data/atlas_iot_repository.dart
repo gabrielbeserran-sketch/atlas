@@ -1,16 +1,12 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasIotRepository {
-  AtlasIotRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasIotRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
-  Future<List<Map<String, dynamic>>> gateways(
-    String farmId,
-  ) async {
+  Future<List<Map<String, dynamic>>> gateways(String farmId) async {
     final response = await _client.send(
       'GET',
       '/iot/gateways',
@@ -36,9 +32,7 @@ class AtlasIotRepository {
     return response.asMapList();
   }
 
-  Future<Map<String, dynamic>> dashboard(
-    String farmId,
-  ) async {
+  Future<Map<String, dynamic>> dashboard(String farmId) async {
     final response = await _client.send(
       'GET',
       '/iot/dashboard',
@@ -70,10 +64,7 @@ class AtlasIotRepository {
     final response = await _client.send(
       'POST',
       '/iot/devices/$deviceId/commands',
-      body: {
-        'command_type': commandType,
-        'payload': payload,
-      },
+      body: {'command_type': commandType, 'payload': payload},
     );
     return response.asMap();
   }

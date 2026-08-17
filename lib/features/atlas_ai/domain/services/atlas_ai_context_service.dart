@@ -23,15 +23,11 @@ class AtlasAiContextService {
         diagnostic: diagnostic,
         predictiveRanking: predictiveRanking,
       ),
-      simpleSummary: _buildSimpleSummary(
-        diagnostic: diagnostic,
-      ),
+      simpleSummary: _buildSimpleSummary(diagnostic: diagnostic),
       mainPriority: AtlasAiPriorityContext(
         title: diagnostic.mainPriority.title,
-        description:
-            diagnostic.mainPriority.description,
-        recommendation:
-            diagnostic.mainPriority.recommendation,
+        description: diagnostic.mainPriority.description,
+        recommendation: diagnostic.mainPriority.recommendation,
         area: diagnostic.mainPriority.area,
         level: diagnostic.mainPriority.level,
         score: diagnostic.mainPriority.score,
@@ -47,18 +43,12 @@ class AtlasAiContextService {
         );
       }).toList(),
       risks: _mapInsights(diagnostic.risks),
-      bottlenecks:
-          _mapInsights(diagnostic.bottlenecks),
-      opportunities:
-          _mapInsights(diagnostic.opportunities),
-      strengths:
-          _mapInsights(diagnostic.strengths),
-      shortTermActions:
-          _mapActions(diagnostic.plan7Days),
-      mediumTermActions:
-          _mapActions(diagnostic.plan30Days),
-      longTermActions:
-          _mapActions(diagnostic.plan90Days),
+      bottlenecks: _mapInsights(diagnostic.bottlenecks),
+      opportunities: _mapInsights(diagnostic.opportunities),
+      strengths: _mapInsights(diagnostic.strengths),
+      shortTermActions: _mapActions(diagnostic.plan7Days),
+      mediumTermActions: _mapActions(diagnostic.plan30Days),
+      longTermActions: _mapActions(diagnostic.plan90Days),
       predictiveScenarios: predictive.map((item) {
         return AtlasAiPredictiveContext(
           title: item.request.title,
@@ -66,10 +56,8 @@ class AtlasAiContextService {
           type: item.request.type,
           projectedScore: item.projectedScore,
           scoreVariation: item.scoreVariation,
-          financialImpact:
-              item.financialImpact.probableValue,
-          riskReductionPercent:
-              item.riskReductionPercent,
+          financialImpact: item.financialImpact.probableValue,
+          riskReductionPercent: item.riskReductionPercent,
           confidence: item.confidence,
           effort: item.effort,
           recommendation: item.recommendation,
@@ -98,9 +86,7 @@ class AtlasAiContextService {
     }).toList();
   }
 
-  List<AtlasAiActionContext> _mapActions(
-    List<AtlasDiagnosticAction> source,
-  ) {
+  List<AtlasAiActionContext> _mapActions(List<AtlasDiagnosticAction> source) {
     return source.map((item) {
       return AtlasAiActionContext(
         position: item.position,
@@ -116,8 +102,7 @@ class AtlasAiContextService {
 
   String _buildExecutiveSummary({
     required AtlasDiagnosticData diagnostic,
-    required AtlasPredictiveScenarioRanking?
-        predictiveRanking,
+    required AtlasPredictiveScenarioRanking? predictiveRanking,
   }) {
     final buffer = StringBuffer();
 
@@ -146,12 +131,8 @@ class AtlasAiContextService {
     return buffer.toString().trim();
   }
 
-  String _buildSimpleSummary({
-    required AtlasDiagnosticData diagnostic,
-  }) {
-    final level =
-        atlasDiagnosticLevelLabel(diagnostic.level)
-            .toLowerCase();
+  String _buildSimpleSummary({required AtlasDiagnosticData diagnostic}) {
+    final level = atlasDiagnosticLevelLabel(diagnostic.level).toLowerCase();
 
     final buffer = StringBuffer();
 
@@ -176,8 +157,7 @@ class AtlasAiContextService {
   List<String> _buildSuggestedQuestions({
     required AtlasFarmIntelligenceData intelligence,
     required AtlasDiagnosticData diagnostic,
-    required AtlasPredictiveScenarioRanking?
-        predictiveRanking,
+    required AtlasPredictiveScenarioRanking? predictiveRanking,
   }) {
     final questions = <String>[
       'Qual é o maior problema da fazenda hoje?',
@@ -188,33 +168,22 @@ class AtlasAiContextService {
     ];
 
     if (intelligence.finance.balance < 0) {
-      questions.add(
-        'Por que o resultado financeiro está negativo?',
-      );
+      questions.add('Por que o resultado financeiro está negativo?');
     } else {
-      questions.add(
-        'Como posso melhorar ainda mais o resultado financeiro?',
-      );
+      questions.add('Como posso melhorar ainda mais o resultado financeiro?');
     }
 
     if (intelligence.agenda.overdueCount > 0) {
-      questions.add(
-        'Quais atrasos precisam ser resolvidos primeiro?',
-      );
+      questions.add('Quais atrasos precisam ser resolvidos primeiro?');
     }
 
     if (intelligence.inventory.expiredCount > 0 ||
-        intelligence.inventory.nearExpirationCount >
-            0) {
-      questions.add(
-        'Como reduzir as perdas no estoque?',
-      );
+        intelligence.inventory.nearExpirationCount > 0) {
+      questions.add('Como reduzir as perdas no estoque?');
     }
 
     if (intelligence.herd.registrationCoverage < 95) {
-      questions.add(
-        'Quais dados do rebanho precisam ser completados?',
-      );
+      questions.add('Quais dados do rebanho precisam ser completados?');
     }
 
     if (predictiveRanking?.bestScenario != null) {
@@ -226,15 +195,10 @@ class AtlasAiContextService {
     }
 
     final weakestAreas = [...diagnostic.areas]
-      ..sort(
-        (first, second) =>
-            first.score.compareTo(second.score),
-      );
+      ..sort((first, second) => first.score.compareTo(second.score));
 
     if (weakestAreas.isNotEmpty) {
-      questions.add(
-        'Como melhorar ${weakestAreas.first.title.toLowerCase()}?',
-      );
+      questions.add('Como melhorar ${weakestAreas.first.title.toLowerCase()}?');
     }
 
     return questions.take(10).toList();

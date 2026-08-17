@@ -6,6 +6,7 @@ import 'package:projeto_atlas/features/digital_twin/domain/services/atlas_digita
 import 'package:projeto_atlas/features/scenario_simulator/domain/models/atlas_simulation.dart';
 import 'package:projeto_atlas/features/scenario_simulator/domain/services/atlas_simulation_service.dart';
 import 'package:projeto_atlas/features/scenario_simulator/presentation/screens/atlas_scenario_result_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasScenarioSimulatorScreen extends StatefulWidget {
   const AtlasScenarioSimulatorScreen({super.key});
@@ -236,9 +237,7 @@ class _AtlasScenarioSimulatorScreenState
                 ),
               );
             },
-            icon: const Icon(
-              Icons.auto_awesome_outlined,
-            ),
+            icon: const Icon(Icons.auto_awesome_outlined),
           ),
           const SizedBox(width: 8),
         ],
@@ -568,7 +567,7 @@ class _ScoreChangesCard extends StatelessWidget {
             ),
             _ScoreSlider(
               label: 'Reprodução',
-              icon: Icons.pets_outlined,
+              icon: AtlasLivestockIcons.cow,
               value: reproductiveChange,
               onChanged: onReproductiveChanged,
             ),
@@ -696,7 +695,7 @@ class _FinancialInputsCard extends StatelessWidget {
                     labelText: 'Alteração no número de animais',
                     hintText: 'Ex.: 50 ou -30',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.pets_outlined),
+                    prefixIcon: Icon(AtlasLivestockIcons.cow),
                   ),
                 ),
               ),

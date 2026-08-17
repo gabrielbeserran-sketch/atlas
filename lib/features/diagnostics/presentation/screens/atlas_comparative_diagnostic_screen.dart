@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/diagnostics/domain/models/atlas_comparative_diagnostic_data.dart';
 import 'package:projeto_atlas/features/diagnostics/domain/models/atlas_diagnostic_data.dart';
 import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intelligence_service.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasComparativeDiagnosticScreen extends StatelessWidget {
   const AtlasComparativeDiagnosticScreen({
@@ -1146,7 +1147,7 @@ IconData comparativeAreaIcon(AtlasFarmAnalysisArea area) {
       return Icons.account_balance_wallet_outlined;
 
     case AtlasFarmAnalysisArea.herd:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
 
     case AtlasFarmAnalysisArea.paddock:
       return Icons.grid_view_outlined;

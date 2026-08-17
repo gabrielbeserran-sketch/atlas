@@ -10,11 +10,9 @@ class AtlasEnterpriseVersionRepository {
   static final AtlasEnterpriseVersionRepository instance =
       AtlasEnterpriseVersionRepository._();
 
-  static const String _storageKey =
-      'atlas_enterprise_24c_versions_v1';
+  static const String _storageKey = 'atlas_enterprise_24c_versions_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasVersionedEntitySnapshot>> loadAll() async {
     final raw = await _preferences.getString(_storageKey);
@@ -25,8 +23,7 @@ class AtlasEnterpriseVersionRepository {
     try {
       return (jsonDecode(raw) as List<dynamic>)
           .map(
-            (item) =>
-                AtlasVersionedEntitySnapshot.fromMap(
+            (item) => AtlasVersionedEntitySnapshot.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -50,10 +47,7 @@ class AtlasEnterpriseVersionRepository {
               item.entityId == entityId,
         )
         .toList()
-      ..sort(
-        (first, second) =>
-            second.version.compareTo(first.version),
-      );
+      ..sort((first, second) => second.version.compareTo(first.version));
   }
 
   Future<AtlasVersionedEntitySnapshot?> latest({
@@ -69,9 +63,7 @@ class AtlasEnterpriseVersionRepository {
     return values.isEmpty ? null : values.first;
   }
 
-  Future<void> append(
-    AtlasVersionedEntitySnapshot snapshot,
-  ) async {
+  Future<void> append(AtlasVersionedEntitySnapshot snapshot) async {
     final values = await loadAll();
 
     final duplicate = values.any(

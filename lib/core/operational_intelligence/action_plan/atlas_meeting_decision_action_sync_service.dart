@@ -21,8 +21,7 @@ class AtlasMeetingDecisionActionSyncService {
       AtlasExecutionMeetingService.instance;
   final AtlasCommandCenterActionService _actionService =
       AtlasCommandCenterActionService.instance;
-  final AtlasMeetingDecisionActionService
-      _decisionActionService =
+  final AtlasMeetingDecisionActionService _decisionActionService =
       AtlasMeetingDecisionActionService.instance;
 
   Future<AtlasMeetingDecisionActionSyncResult> synchronize({
@@ -30,12 +29,8 @@ class AtlasMeetingDecisionActionSyncService {
     bool repairBrokenLinks = false,
   }) async {
     final links = await _linkService.loadAll();
-    final meetings = await _meetingService.load(
-      farmName: farmName,
-    );
-    final actions = await _actionService.loadActions(
-      farmName: farmName,
-    );
+    final meetings = await _meetingService.load(farmName: farmName);
+    final actions = await _actionService.loadActions(farmName: farmName);
 
     final meetingsById = <String, AtlasExecutionMeeting>{
       for (final meeting in meetings) meeting.id: meeting,
@@ -82,8 +77,7 @@ class AtlasMeetingDecisionActionSyncService {
         }
       }
 
-      final actionIsCompleted =
-          action.status == AtlasCanonicalStatus.completed;
+      final actionIsCompleted = action.status == AtlasCanonicalStatus.completed;
 
       final syncedDecision = decision.copyWith(
         responsibleName: action.responsibleName,
@@ -110,29 +104,18 @@ class AtlasMeetingDecisionActionSyncService {
         status: syncedStatus,
         progressPercent: syncedProgress,
         completedAt: syncedCompletedAt,
-        clearCompletedAt:
-            syncedStatus != AtlasCanonicalStatus.completed,
+        clearCompletedAt: syncedStatus != AtlasCanonicalStatus.completed,
         updatedAt: DateTime.now(),
       );
 
-      if (!_sameDecision(
-        decision,
-        syncedDecision,
-      )) {
+      if (!_sameDecision(decision, syncedDecision)) {
         meeting = meeting.copyWith(
           decisions: meeting.decisions
-              .map(
-                (item) => item.id == decision.id
-                    ? syncedDecision
-                    : item,
-              )
+              .map((item) => item.id == decision.id ? syncedDecision : item)
               .toList(growable: false),
         );
 
-        await _meetingService.save(
-          meeting,
-          source: 'sincronização automática',
-        );
+        await _meetingService.save(meeting, source: 'sincronização automática');
         meetingsById[meeting.id] = meeting;
         updatedDecisions += 1;
       }

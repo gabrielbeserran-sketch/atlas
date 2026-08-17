@@ -11,13 +11,10 @@ class AtlasReproductiveStrategyService {
   static final AtlasReproductiveStrategyService instance =
       AtlasReproductiveStrategyService._();
 
-  static const String _plansKey =
-      'atlas_reproductive_annual_plans_v1';
-  static const String _simulationsKey =
-      'atlas_reproductive_simulations_v1';
+  static const String _plansKey = 'atlas_reproductive_annual_plans_v1';
+  static const String _simulationsKey = 'atlas_reproductive_simulations_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasReproductiveAnnualPlan>> loadPlans({
     String? farmName,
@@ -26,46 +23,31 @@ class AtlasReproductiveStrategyService {
       _plansKey,
       AtlasReproductiveAnnualPlan.fromMap,
     );
-    final filtered = _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    )..sort((a, b) => b.year.compareTo(a.year));
+    final filtered = _filterFarm(values, farmName, (item) => item.farmName)
+      ..sort((a, b) => b.year.compareTo(a.year));
     return filtered;
   }
 
-  Future<void> savePlan(
-    AtlasReproductiveAnnualPlan plan,
-  ) async {
+  Future<void> savePlan(AtlasReproductiveAnnualPlan plan) async {
     final values = await _decodeList(
       _plansKey,
       AtlasReproductiveAnnualPlan.fromMap,
     );
     _upsert(values, plan, (item) => item.id);
-    await _saveList(
-      _plansKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_plansKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasReproductiveSimulation>>
-      loadSimulations({
+  Future<List<AtlasReproductiveSimulation>> loadSimulations({
     String? farmName,
   }) async {
     final values = await _decodeList(
       _simulationsKey,
       AtlasReproductiveSimulation.fromMap,
     );
-    return _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    );
+    return _filterFarm(values, farmName, (item) => item.farmName);
   }
 
-  Future<void> saveSimulation(
-    AtlasReproductiveSimulation simulation,
-  ) async {
+  Future<void> saveSimulation(AtlasReproductiveSimulation simulation) async {
     final values = await _decodeList(
       _simulationsKey,
       AtlasReproductiveSimulation.fromMap,
@@ -81,9 +63,7 @@ class AtlasReproductiveStrategyService {
     String? farmName,
   }) async {
     final service = AtlasReproductiveService.instance;
-    final events = await service.loadEvents(
-      farmName: farmName,
-    );
+    final events = await service.loadEvents(farmName: farmName);
 
     final totalEvents = events.length;
     final inseminations = events.where((item) {
@@ -92,20 +72,17 @@ class AtlasReproductiveStrategyService {
     }).length;
 
     final diagnoses = events.where((item) {
-      return item.type ==
-          AtlasReproductiveEventType.pregnancyDiagnosis;
+      return item.type == AtlasReproductiveEventType.pregnancyDiagnosis;
     }).toList();
 
     final positive = diagnoses.where((item) {
       final result = item.result.toLowerCase();
-      return result.contains('posit') ||
-          result.contains('prenhe');
+      return result.contains('posit') || result.contains('prenhe');
     }).length;
 
     final negative = diagnoses.where((item) {
       final result = item.result.toLowerCase();
-      return result.contains('negat') ||
-          result.contains('vazia');
+      return result.contains('negat') || result.contains('vazia');
     }).length;
 
     final births = events.where((item) {
@@ -125,12 +102,9 @@ class AtlasReproductiveStrategyService {
         : positive / inseminations * 100;
 
     final lossesBase = births + abortions;
-    final lossRate = lossesBase <= 0
-        ? 0.0
-        : abortions / lossesBase * 100;
+    final lossRate = lossesBase <= 0 ? 0.0 : abortions / lossesBase * 100;
 
-    final projectedBirths =
-        (positive * (1 - lossRate / 100)).round();
+    final projectedBirths = (positive * (1 - lossRate / 100)).round();
 
     var score = 50.0;
     score += (pregnancyRate - 50) * 0.4;
@@ -181,8 +155,9 @@ class AtlasReproductiveStrategyService {
       );
     }
 
-    final events = await AtlasReproductiveService.instance
-        .loadEvents(farmName: farmName);
+    final events = await AtlasReproductiveService.instance.loadEvents(
+      farmName: farmName,
+    );
     final pendingDiagnosis = events.where((item) {
       final age = DateTime.now().difference(item.occurredAt).inDays;
       final isInsemination =
@@ -216,32 +191,19 @@ class AtlasReproductiveStrategyService {
     try {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {
@@ -259,8 +221,7 @@ class AtlasReproductiveStrategyService {
       return values;
     }
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

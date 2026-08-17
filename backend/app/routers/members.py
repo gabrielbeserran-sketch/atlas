@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from ..authz import (
@@ -10,7 +12,7 @@ from ..authz import (
     resolve_permissions,
 )
 from ..database import get_db
-from ..models import Farm, Membership, User, new_id
+from ..models import Farm, Membership, RefreshSession, User, new_id
 from ..schemas import (
     MemberCreateRequest,
     MemberPasswordResetRequest,
@@ -30,7 +32,7 @@ def _validate_role(role: str) -> str:
     normalized = role.strip()
     if normalized not in MANAGEABLE_ROLES:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="Perfil de acesso inválido.",
         )
     return normalized
@@ -41,12 +43,12 @@ def _validate_overrides(overrides: dict[str, str]) -> dict[str, str]:
     for permission, effect in overrides.items():
         if permission not in KNOWN_PERMISSIONS:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail=f"Permissão desconhecida: {permission}",
             )
         if effect not in {"allow", "deny"}:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail=(
                     f"Override inválido para {permission}. "
                     "Use allow ou deny."
@@ -76,7 +78,7 @@ def _validate_farms(
 
     if set(found) != set(unique):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="Uma ou mais fazendas não pertencem à empresa ativa.",
         )
     return unique
@@ -197,7 +199,7 @@ def create_member(
 
     if not name or "@" not in email:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="Informe nome e e-mail válidos.",
         )
 
@@ -206,7 +208,7 @@ def create_member(
         password = request.password or ""
         if len(password) < 8:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="A senha inicial deve possuir ao menos 8 caracteres.",
             )
         user = User(
@@ -372,12 +374,25 @@ def reset_member_password(
 
     if len(request.password) < 8:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="A nova senha deve possuir ao menos 8 caracteres.",
         )
 
+    now = datetime.now(timezone.utc)
     user.password_hash = hash_password(request.password)
+    user.password_changed_at = now
+    user.failed_login_attempts = 0
+    user.locked_until = None
     user.active = True
+
+    db.execute(
+        update(RefreshSession)
+        .where(
+            RefreshSession.user_id == user.id,
+            RefreshSession.revoked_at.is_(None),
+        )
+        .values(revoked_at=now)
+    )
 
     record_audit(
         db,

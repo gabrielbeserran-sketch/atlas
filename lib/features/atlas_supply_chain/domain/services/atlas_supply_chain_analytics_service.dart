@@ -44,18 +44,17 @@ class AtlasSupplyChainAnalyticsService {
         ? 0.0
         : represented.length * 100 / module.features.length;
 
-    final completed =
-        moduleRecords.where((record) => record.isCompleted).length;
-    final alerts =
-        moduleRecords.where((record) => record.isCritical).length;
+    final completed = moduleRecords
+        .where((record) => record.isCompleted)
+        .length;
+    final alerts = moduleRecords.where((record) => record.isCritical).length;
 
     final total = moduleRecords.fold<double>(
       0,
       (sum, record) => sum + record.totalValue,
     );
 
-    final average =
-        moduleRecords.isEmpty ? 0.0 : total / moduleRecords.length;
+    final average = moduleRecords.isEmpty ? 0.0 : total / moduleRecords.length;
 
     var score = 35;
     score += math.min(35, coverage.round() * 35 ~/ 100);
@@ -107,22 +106,20 @@ class AtlasSupplyChainAnalyticsService {
         'para iniciar os indicadores.',
       );
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasSupplyChainModule.purchases => const [
-              'Compare pelo menos três fornecedores quando o valor justificar a cotação.',
-              'Vincule aprovação, recebimento e histórico de preço à mesma compra.',
-            ],
-          AtlasSupplyChainModule.commercialization => const [
-              'Compare peso, preço por unidade e custos para apurar a margem real da venda.',
-              'Mantenha contratos, romaneios e recebimentos vinculados ao negócio.',
-            ],
-          AtlasSupplyChainModule.logistics => const [
-              'Confirme GTA, capacidade do veículo, origem, destino e janela de transporte.',
-              'Compare custo por quilômetro e por animal entre rotas e transportadores.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasSupplyChainModule.purchases => const [
+          'Compare pelo menos três fornecedores quando o valor justificar a cotação.',
+          'Vincule aprovação, recebimento e histórico de preço à mesma compra.',
+        ],
+        AtlasSupplyChainModule.commercialization => const [
+          'Compare peso, preço por unidade e custos para apurar a margem real da venda.',
+          'Mantenha contratos, romaneios e recebimentos vinculados ao negócio.',
+        ],
+        AtlasSupplyChainModule.logistics => const [
+          'Confirme GTA, capacidade do veículo, origem, destino e janela de transporte.',
+          'Compare custo por quilômetro e por animal entre rotas e transportadores.',
+        ],
+      });
     }
 
     return items;

@@ -1,12 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
+import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
+import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
-import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
+import 'package:projeto_atlas/features/animal/presentation/screens/animal_detail_screen.dart';
+import 'package:projeto_atlas/features/animal/presentation/screens/animal_form_screen.dart';
+import 'package:projeto_atlas/features/animal_movement/presentation/screens/animal_movement_list_screen.dart';
+import 'package:projeto_atlas/features/animal_weight/presentation/screens/animal_weight_list_screen.dart';
+import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
-import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
-import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
+import 'package:projeto_atlas/features/herd/data/services/herd_enterprise_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
-import 'package:projeto_atlas/features/herd/presentation/screens/herd_list_screen.dart';
+import 'package:projeto_atlas/features/herd/domain/models/herd_workspace_data.dart';
+import 'package:projeto_atlas/features/herd/presentation/screens/herd_group_form_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class HerdOverviewScreen extends StatefulWidget {
   const HerdOverviewScreen({super.key});
@@ -16,565 +24,999 @@ class HerdOverviewScreen extends StatefulWidget {
 }
 
 class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
-  final FarmStorageService farmStorage = FarmStorageService();
-  final HerdStorageService herdStorage = HerdStorageService();
-  final AnimalStorageService animalStorage = AnimalStorageService();
+  final HerdEnterpriseService herdService = HerdEnterpriseService();
+  final AnimalEnterpriseService animalService = AnimalEnterpriseService();
+  final TextEditingController searchController = TextEditingController();
 
-  List<HerdFarmOverview> overviews = [];
+  HerdWorkspaceData workspace = const HerdWorkspaceData(
+    groups: [],
+    records: [],
+  );
   bool isLoading = true;
-
-  int get totalFarms => overviews.length;
-
-  int get totalGroups {
-    return overviews.fold(0, (total, overview) => total + overview.groups);
-  }
-
-  int get totalAnimals {
-    return overviews.fold(0, (total, overview) => total + overview.animals);
-  }
-
-  int get totalActiveAnimals {
-    return overviews.fold(
-      0,
-      (total, overview) => total + overview.activeAnimals,
-    );
-  }
-
-  double get averageWeight {
-    var totalWeight = 0.0;
-    var animalsWithWeight = 0;
-
-    for (final overview in overviews) {
-      totalWeight += overview.totalWeight;
-      animalsWithWeight += overview.animalsWithWeight;
-    }
-
-    if (animalsWithWeight == 0) {
-      return 0;
-    }
-
-    return totalWeight / animalsWithWeight;
-  }
+  String errorMessage = '';
+  List<String> loadWarnings = <String>[];
+  String selectedLotId = '';
+  String selectedStatus = '';
+  String selectedSex = '';
+  String loadedFarmId = '';
 
   @override
   void initState() {
     super.initState();
-    loadOverview();
+    searchController.addListener(_refreshFilters);
+    WidgetsBinding.instance.addPostFrameCallback((_) => loadWorkspace());
   }
 
-  Future<void> loadOverview() async {
-    if (mounted) {
-      setState(() {
-        isLoading = true;
-      });
+  @override
+  void dispose() {
+    searchController
+      ..removeListener(_refreshFilters)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _refreshFilters() {
+    if (mounted) setState(() {});
+  }
+
+  FarmData _farmData(BuildContext context) {
+    final remote = AtlasSessionScope.read(context).activeFarm!;
+    return FarmData(
+      id: remote.id,
+      name: remote.name,
+      city: remote.city,
+      state: remote.state,
+      animals: workspace.totalAnimals,
+      area: remote.area.round(),
+    );
+  }
+
+  Future<List<T>> _safeLoad<T>({
+    required String label,
+    required Future<List<T>> Function() loader,
+    required List<String> warnings,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    try {
+      return await loader().timeout(timeout);
+    } catch (error) {
+      warnings.add('$label indisponível');
+      debugPrint('ATLAS Rebanho [$label]: $error');
+      return <T>[];
     }
+  }
 
-    final farms = await farmStorage.loadFarms();
-    final loadedOverviews = <HerdFarmOverview>[];
-
-    for (final farm in farms) {
-      final groups = await herdStorage.loadGroups(farm.name);
-      final animals = <AnimalData>[];
-
-      for (final group in groups) {
-        final groupAnimals = await animalStorage.loadAnimals(
-          farmName: farm.name,
-          groupName: group.name,
-        );
-        animals.addAll(groupAnimals);
-      }
-
-      loadedOverviews.add(
-        HerdFarmOverview.fromData(
-          farm: farm,
-          groups: groups,
-          animals: animals,
-        ),
+  HerdGroupData _groupForAnimal(
+    AnimalData animal,
+    Map<String, HerdGroupData> groupsById,
+  ) {
+    final lotId = animal.lotId.trim();
+    if (lotId.isNotEmpty && groupsById[lotId] != null) {
+      return groupsById[lotId]!;
+    }
+    if (lotId.isNotEmpty) {
+      return HerdGroupData(
+        id: lotId,
+        name: 'Lote indisponível',
+        category: animal.category,
+        capacity: 0,
+        paddock: 'Não informado',
+        notes: 'O animal referencia um lote que não está na carteira ativa.',
       );
     }
+    return HerdGroupData(
+      name: 'Sem lote',
+      category: animal.category,
+      capacity: 0,
+      paddock: 'Não informado',
+      notes: 'Animal sem lote associado.',
+    );
+  }
 
-    loadedOverviews.sort((first, second) {
-      return second.animals.compareTo(first.animals);
-    });
-
-    if (!mounted) {
+  Future<void> loadWorkspace() async {
+    final session = AtlasSessionScope.read(context);
+    final farm = session.activeFarm;
+    if (farm == null) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          errorMessage = 'Selecione uma fazenda para consultar o rebanho.';
+          loadWarnings = <String>[];
+        });
+      }
       return;
     }
 
-    setState(() {
-      overviews = loadedOverviews;
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        errorMessage = '';
+        loadWarnings = <String>[];
+        loadedFarmId = farm.id;
+      });
+    }
+
+    final warnings = <String>[];
+    try {
+      final results = await Future.wait<dynamic>([
+        _safeLoad<HerdGroupData>(
+          label: 'Lotes',
+          warnings: warnings,
+          loader: () => herdService.listGroups(farm.id),
+        ),
+        _safeLoad<AnimalData>(
+          label: 'Animais',
+          warnings: warnings,
+          loader: () => animalService.listAnimals(farmId: farm.id, lotId: ''),
+        ),
+      ]);
+
+      final groups = results[0] as List<HerdGroupData>;
+      final animals = results[1] as List<AnimalData>;
+      final groupsById = <String, HerdGroupData>{
+        for (final group in groups) group.id: group,
+      };
+      final records =
+          animals
+              .map(
+                (animal) => HerdAnimalRecord(
+                  animal: animal,
+                  group: _groupForAnimal(animal, groupsById),
+                ),
+              )
+              .toList(growable: false)
+            ..sort(
+              (first, second) => first.animal.tag.compareTo(second.animal.tag),
+            );
+
+      if (!mounted) return;
+      setState(() {
+        workspace = HerdWorkspaceData(groups: groups, records: records);
+        loadWarnings = List<String>.unmodifiable(warnings);
+        if (selectedLotId.isNotEmpty &&
+            groups.every((group) => group.id != selectedLotId)) {
+          selectedLotId = '';
+        }
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = 'Não foi possível carregar o rebanho: $error';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
-  Future<void> openFarm(HerdFarmOverview overview) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return HerdListScreen(farm: overview.farm);
-        },
-      ),
-    );
-
-    await loadOverview();
+  Future<void> _ensureCurrentFarm() async {
+    final farmId = AtlasSessionScope.read(context).activeFarm?.id ?? '';
+    if (farmId != loadedFarmId && farmId.isNotEmpty) {
+      await loadWorkspace();
+    }
   }
 
-  Future<void> openFarms() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return const FarmListScreen();
-        },
-      ),
-    );
-
-    await loadOverview();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
-        title: const Text('Rebanho'),
+  Future<HerdGroupData?> _selectLot({String title = 'Selecionar lote'}) {
+    if (workspace.groups.isEmpty) return Future.value(null);
+    return showDialog<HerdGroupData>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: SizedBox(
+          width: 520,
+          child: ListView(
+            shrinkWrap: true,
+            children: workspace.groups
+                .map(
+                  (group) => ListTile(
+                    leading: const Icon(Icons.groups_outlined),
+                    title: Text(group.name),
+                    subtitle: Text('${group.category} • ${group.paddock}'),
+                    onTap: () => Navigator.pop(dialogContext, group),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ),
         actions: [
-          IconButton(
-            tooltip: 'Atualizar rebanho',
-            onPressed: isLoading ? null : loadOverview,
-            icon: const Icon(Icons.refresh_outlined),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
           ),
         ],
       ),
-      body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: loadOverview,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const HerdOverviewHeader(),
-                            const SizedBox(height: 24),
-                            Wrap(
-                              spacing: 16,
-                              runSpacing: 16,
-                              children: [
-                                HerdOverviewIndicator(
-                                  title: 'Fazendas',
-                                  value: totalFarms.toString(),
-                                  subtitle: 'Propriedades com gestão disponível',
-                                  icon: Icons.landscape_outlined,
-                                ),
-                                HerdOverviewIndicator(
-                                  title: 'Lotes',
-                                  value: totalGroups.toString(),
-                                  subtitle: 'Grupos de manejo cadastrados',
-                                  icon: Icons.groups_outlined,
-                                ),
-                                HerdOverviewIndicator(
-                                  title: 'Animais',
-                                  value: totalAnimals.toString(),
-                                  subtitle: 'Cadastros individuais no Atlas',
-                                  icon: Icons.pets_outlined,
-                                ),
-                                HerdOverviewIndicator(
-                                  title: 'Ativos',
-                                  value: totalActiveAnimals.toString(),
-                                  subtitle: 'Animais atualmente no rebanho',
-                                  icon: Icons.check_circle_outline,
-                                ),
-                                HerdOverviewIndicator(
-                                  title: 'Peso médio',
-                                  value: totalAnimals == 0
-                                      ? '—'
-                                      : '${averageWeight.toStringAsFixed(0)} kg',
-                                  subtitle: 'Média dos animais com peso',
-                                  icon: Icons.monitor_weight_outlined,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Rebanho por fazenda',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(height: 5),
-                                      Text(
-                                        'Escolha uma propriedade para gerenciar lotes e animais.',
-                                        style: TextStyle(color: Colors.black54),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                FilledButton.icon(
-                                  onPressed: openFarms,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1B5E20),
-                                  ),
-                                  icon: const Icon(Icons.add_business_outlined),
-                                  label: const Text('Gerenciar fazendas'),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
-                            if (overviews.isEmpty)
-                              EmptyHerdOverview(onOpenFarms: openFarms)
-                            else
-                              ...overviews.map(
-                                (overview) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: HerdFarmCard(
-                                    overview: overview,
-                                    onOpen: () {
-                                      openFarm(overview);
-                                    },
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      ),
     );
   }
-}
 
-class HerdFarmOverview {
-  const HerdFarmOverview({
-    required this.farm,
-    required this.groups,
-    required this.animals,
-    required this.activeAnimals,
-    required this.females,
-    required this.males,
-    required this.totalWeight,
-    required this.animalsWithWeight,
-  });
-
-  final FarmData farm;
-  final int groups;
-  final int animals;
-  final int activeAnimals;
-  final int females;
-  final int males;
-  final double totalWeight;
-  final int animalsWithWeight;
-
-  double get averageWeight {
-    if (animalsWithWeight == 0) {
-      return 0;
+  Future<void> createLot() async {
+    final controller = AtlasSessionScope.read(context);
+    if (!controller.allows('animals.create') &&
+        !controller.allows('farms.update')) {
+      _showMessage('Seu perfil não permite cadastrar lotes.');
+      return;
     }
-
-    return totalWeight / animalsWithWeight;
-  }
-
-  factory HerdFarmOverview.fromData({
-    required FarmData farm,
-    required List<HerdGroupData> groups,
-    required List<AnimalData> animals,
-  }) {
-    final activeAnimals = animals.where((animal) {
-      return animal.status == 'Ativo';
-    }).length;
-    final females = animals.where((animal) {
-      return animal.sex == 'Fêmea';
-    }).length;
-    final males = animals.where((animal) {
-      return animal.sex == 'Macho';
-    }).length;
-    final animalsWithWeight = animals.where((animal) {
-      return animal.weight > 0;
-    }).toList();
-
-    return HerdFarmOverview(
-      farm: farm,
-      groups: groups.length,
-      animals: animals.length,
-      activeAnimals: activeAnimals,
-      females: females,
-      males: males,
-      totalWeight: animalsWithWeight.fold<double>(
-        0,
-        (total, animal) => total + animal.weight,
-      ),
-      animalsWithWeight: animalsWithWeight.length,
+    final draft = await Navigator.push<HerdGroupData>(
+      context,
+      MaterialPageRoute(builder: (_) => const HerdGroupFormScreen()),
     );
+    if (draft == null || !mounted) return;
+    try {
+      await herdService.createGroup(
+        farmId: controller.activeFarm!.id,
+        group: draft,
+      );
+      await loadWorkspace();
+      _showMessage('Lote cadastrado com sucesso.');
+    } on AtlasEnterpriseApiException catch (error) {
+      _showMessage(error.message);
+    }
   }
-}
 
-class HerdOverviewHeader extends StatelessWidget {
-  const HerdOverviewHeader({super.key});
+  Future<void> editLot(HerdGroupData group) async {
+    final controller = AtlasSessionScope.read(context);
+    if (!controller.allows('animals.update') &&
+        !controller.allows('farms.update')) {
+      _showMessage('Seu perfil não permite editar lotes.');
+      return;
+    }
+    final draft = await Navigator.push<HerdGroupData>(
+      context,
+      MaterialPageRoute(builder: (_) => HerdGroupFormScreen(group: group)),
+    );
+    if (draft == null || !mounted) return;
+    try {
+      await herdService.updateGroup(draft);
+      await loadWorkspace();
+      _showMessage('Lote atualizado com sucesso.');
+    } on AtlasEnterpriseApiException catch (error) {
+      _showMessage(error.message);
+    }
+  }
+
+  Future<void> createAnimal() async {
+    final controller = AtlasSessionScope.read(context);
+    if (!controller.allows('animals.create')) {
+      _showMessage('Seu perfil não permite cadastrar animais.');
+      return;
+    }
+    if (workspace.groups.isEmpty) {
+      _showMessage('Cadastre um lote antes de incluir animais.');
+      return;
+    }
+    final group = await _selectLot(title: 'Lote do novo animal');
+    if (group == null || !mounted) return;
+    final draft = await Navigator.push<AnimalData>(
+      context,
+      MaterialPageRoute(builder: (_) => const AnimalFormScreen()),
+    );
+    if (draft == null || !mounted) return;
+    try {
+      await animalService.createAnimal(
+        farmId: controller.activeFarm!.id,
+        lotId: group.id,
+        animal: draft,
+      );
+      await loadWorkspace();
+      _showMessage('Animal cadastrado com sucesso.');
+    } on AtlasEnterpriseApiException catch (error) {
+      _showMessage(error.message);
+    }
+  }
+
+  Future<void> editAnimal(HerdAnimalRecord record) async {
+    final controller = AtlasSessionScope.read(context);
+    if (!controller.allows('animals.update')) {
+      _showMessage('Seu perfil não permite editar animais.');
+      return;
+    }
+    final draft = await Navigator.push<AnimalData>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AnimalFormScreen(animal: record.animal),
+      ),
+    );
+    if (draft == null || !mounted) return;
+    final selectedGroup = await _selectLot(title: 'Confirmar lote do animal');
+    if (selectedGroup == null || !mounted) return;
+    try {
+      await animalService.updateAnimal(lotId: selectedGroup.id, animal: draft);
+      await loadWorkspace();
+      _showMessage('Animal atualizado com sucesso.');
+    } on AtlasEnterpriseApiException catch (error) {
+      _showMessage(error.message);
+    }
+  }
+
+  Future<void> deleteAnimal(HerdAnimalRecord record) async {
+    final controller = AtlasSessionScope.read(context);
+    if (!controller.allows('animals.delete')) {
+      _showMessage('Seu perfil não permite excluir animais.');
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Excluir animal'),
+        content: Text('Confirma a exclusão de ${record.animal.displayName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await animalService.deleteAnimal(record.animal.id);
+      await loadWorkspace();
+      _showMessage('Animal excluído com sucesso.');
+    } on AtlasEnterpriseApiException catch (error) {
+      _showMessage(error.message);
+    }
+  }
+
+  Future<void> openDetail(HerdAnimalRecord record) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AnimalDetailScreen(
+          animal: record.animal,
+          farm: _farmData(context),
+          group: record.group,
+        ),
+      ),
+    );
+    if (mounted) await loadWorkspace();
+  }
+
+  Future<void> openWeights(HerdAnimalRecord record) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AnimalWeightListScreen(
+          animal: record.animal,
+          farm: _farmData(context),
+          group: record.group,
+        ),
+      ),
+    );
+    if (mounted) await loadWorkspace();
+  }
+
+  Future<void> openMovements(HerdAnimalRecord record) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AnimalMovementListScreen(
+          animal: record.animal,
+          farm: _farmData(context),
+          group: record.group,
+        ),
+      ),
+    );
+    if (mounted) await loadWorkspace();
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(26),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+    unawaited(_ensureCurrentFarm());
+    final controller = AtlasSessionScope.of(context);
+    final farm = controller.activeFarm;
+    final filtered = workspace.filter(
+      query: searchController.text,
+      lotId: selectedLotId,
+      status: selectedStatus,
+      sex: selectedSex,
+    );
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F7F9),
+      floatingActionButton: farm == null
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: createAnimal,
+              icon: const Icon(Icons.add),
+              label: const Text('Novo animal'),
+            ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: loadWorkspace,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1320),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _Header(
+                        farmName: farm?.name ?? 'Nenhuma fazenda selecionada',
+                        onRefresh: isLoading ? null : loadWorkspace,
+                        onCreateLot: farm == null ? null : createLot,
+                      ),
+                      const SizedBox(height: 20),
+                      if (isLoading)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(64),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      else if (errorMessage.isNotEmpty)
+                        _ErrorState(
+                          message: errorMessage,
+                          onRetry: loadWorkspace,
+                        )
+                      else ...[
+                        if (loadWarnings.isNotEmpty) ...[
+                          _HerdLoadWarning(
+                            warnings: loadWarnings,
+                            onRetry: loadWorkspace,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        _Indicators(workspace: workspace),
+                        const SizedBox(height: 20),
+                        _Filters(
+                          searchController: searchController,
+                          groups: workspace.groups,
+                          selectedLotId: selectedLotId,
+                          selectedStatus: selectedStatus,
+                          selectedSex: selectedSex,
+                          onLotChanged: (value) =>
+                              setState(() => selectedLotId = value ?? ''),
+                          onStatusChanged: (value) =>
+                              setState(() => selectedStatus = value ?? ''),
+                          onSexChanged: (value) =>
+                              setState(() => selectedSex = value ?? ''),
+                          onClear: () {
+                            searchController.clear();
+                            setState(() {
+                              selectedLotId = '';
+                              selectedStatus = '';
+                              selectedSex = '';
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        _LotsSection(
+                          groups: workspace.groups,
+                          records: workspace.records,
+                          onEdit: editLot,
+                          onFilter: (group) =>
+                              setState(() => selectedLotId = group.id),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Animais (${filtered.length})',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        if (filtered.isEmpty)
+                          const _EmptyAnimals()
+                        else
+                          ...filtered.map(
+                            (record) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _AnimalCard(
+                                record: record,
+                                onOpen: () => openDetail(record),
+                                onEdit: () => editAnimal(record),
+                                onDelete: () => deleteAnimal(record),
+                                onWeights: () => openWeights(record),
+                                onMovements: () => openMovements(record),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 80),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        borderRadius: BorderRadius.circular(24),
       ),
-      child: const Row(
-        children: [
-          Icon(Icons.pets_outlined, color: Colors.white, size: 52),
-          SizedBox(width: 20),
-          Expanded(
-            child: Column(
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({
+    required this.farmName,
+    required this.onRefresh,
+    required this.onCreateLot,
+  });
+  final String farmName;
+  final VoidCallback? onRefresh;
+  final VoidCallback? onCreateLot;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gestão do rebanho',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(farmName, style: const TextStyle(color: Colors.black54)),
+          ],
+        ),
+      ),
+      OutlinedButton.icon(
+        onPressed: onRefresh,
+        icon: const Icon(Icons.refresh),
+        label: const Text('Atualizar'),
+      ),
+      const SizedBox(width: 10),
+      FilledButton.icon(
+        onPressed: onCreateLot,
+        icon: const Icon(Icons.add_box_outlined),
+        label: const Text('Novo lote'),
+      ),
+    ],
+  );
+}
+
+class _Indicators extends StatelessWidget {
+  const _Indicators({required this.workspace});
+  final HerdWorkspaceData workspace;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: 12,
+    runSpacing: 12,
+    children: [
+      _Indicator(
+        label: 'Lotes',
+        value: workspace.groups.length.toString(),
+        icon: Icons.groups_outlined,
+      ),
+      _Indicator(
+        label: 'Animais',
+        value: workspace.totalAnimals.toString(),
+        icon: AtlasLivestockIcons.cow,
+      ),
+      _Indicator(
+        label: 'Ativos',
+        value: workspace.activeAnimals.toString(),
+        icon: Icons.check_circle_outline,
+      ),
+      _Indicator(
+        label: 'Fêmeas',
+        value: workspace.females.toString(),
+        icon: Icons.female,
+      ),
+      _Indicator(
+        label: 'Machos',
+        value: workspace.males.toString(),
+        icon: Icons.male,
+      ),
+      _Indicator(
+        label: 'Peso médio',
+        value: workspace.averageWeight == 0
+            ? '—'
+            : '${workspace.averageWeight.toStringAsFixed(0)} kg',
+        icon: Icons.monitor_weight_outlined,
+      ),
+    ],
+  );
+}
+
+class _Indicator extends StatelessWidget {
+  const _Indicator({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 190,
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Central de Gestão do Rebanho',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 27,
+                  value,
+                  style: const TextStyle(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 7),
-                Text(
-                  'Controle lotes, animais, pesos e histórico por propriedade.',
-                  style: TextStyle(color: Colors.white70, fontSize: 15),
-                ),
+                Text(label, style: const TextStyle(color: Colors.black54)),
               ],
             ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _Filters extends StatelessWidget {
+  const _Filters({
+    required this.searchController,
+    required this.groups,
+    required this.selectedLotId,
+    required this.selectedStatus,
+    required this.selectedSex,
+    required this.onLotChanged,
+    required this.onStatusChanged,
+    required this.onSexChanged,
+    required this.onClear,
+  });
+  final TextEditingController searchController;
+  final List<HerdGroupData> groups;
+  final String selectedLotId;
+  final String selectedStatus;
+  final String selectedSex;
+  final ValueChanged<String?> onLotChanged;
+  final ValueChanged<String?> onStatusChanged;
+  final ValueChanged<String?> onSexChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          SizedBox(
+            width: 360,
+            child: TextField(
+              controller: searchController,
+              decoration: const InputDecoration(
+                labelText: 'Buscar por brinco, SISBOV, nome ou raça',
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 210,
+            child: DropdownButtonFormField<String>(
+              initialValue: selectedLotId,
+              decoration: const InputDecoration(labelText: 'Lote'),
+              items: [
+                const DropdownMenuItem(
+                  value: '',
+                  child: Text('Todos os lotes'),
+                ),
+                ...groups.map(
+                  (group) => DropdownMenuItem(
+                    value: group.id,
+                    child: Text(group.name),
+                  ),
+                ),
+              ],
+              onChanged: onLotChanged,
+            ),
+          ),
+          SizedBox(
+            width: 170,
+            child: DropdownButtonFormField<String>(
+              initialValue: selectedStatus,
+              decoration: const InputDecoration(labelText: 'Situação'),
+              items: const [
+                DropdownMenuItem(value: '', child: Text('Todas')),
+                DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
+                DropdownMenuItem(value: 'Vendido', child: Text('Vendido')),
+                DropdownMenuItem(value: 'Morto', child: Text('Morto')),
+                DropdownMenuItem(value: 'Inativo', child: Text('Inativo')),
+              ],
+              onChanged: onStatusChanged,
+            ),
+          ),
+          SizedBox(
+            width: 160,
+            child: DropdownButtonFormField<String>(
+              initialValue: selectedSex,
+              decoration: const InputDecoration(labelText: 'Sexo'),
+              items: const [
+                DropdownMenuItem(value: '', child: Text('Todos')),
+                DropdownMenuItem(value: 'Fêmea', child: Text('Fêmea')),
+                DropdownMenuItem(value: 'Macho', child: Text('Macho')),
+              ],
+              onChanged: onSexChanged,
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onClear,
+            icon: const Icon(Icons.clear_all),
+            label: const Text('Limpar'),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
-class HerdOverviewIndicator extends StatelessWidget {
-  const HerdOverviewIndicator({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    super.key,
+class _LotsSection extends StatelessWidget {
+  const _LotsSection({
+    required this.groups,
+    required this.records,
+    required this.onEdit,
+    required this.onFilter,
   });
-
-  final String title;
-  final String value;
-  final String subtitle;
-  final IconData icon;
+  final List<HerdGroupData> groups;
+  final List<HerdAnimalRecord> records;
+  final ValueChanged<HerdGroupData> onEdit;
+  final ValueChanged<HerdGroupData> onFilter;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 210,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(17),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: const Color(0xFF1B5E20), size: 29),
-              const SizedBox(height: 12),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 5),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.black54, fontSize: 12),
-              ),
-            ],
-          ),
+    if (groups.isEmpty) return const _EmptyLots();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Lotes',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
-      ),
-    );
-  }
-}
-
-class HerdFarmCard extends StatelessWidget {
-  const HerdFarmCard({
-    required this.overview,
-    required this.onOpen,
-    super.key,
-  });
-
-  final HerdFarmOverview overview;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: const Icon(
-                  Icons.landscape_outlined,
-                  color: Color(0xFF1B5E20),
-                  size: 34,
-                ),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      overview.farm.name,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 150,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: groups.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final group = groups[index];
+              final count = records
+                  .where((record) => record.group.id == group.id)
+                  .length;
+              final occupancy = group.capacity <= 0
+                  ? null
+                  : count / group.capacity;
+              return SizedBox(
+                width: 280,
+                child: Card(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => onFilter(group),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  group.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'Editar lote',
+                                onPressed: () => onEdit(group),
+                                icon: const Icon(Icons.edit_outlined),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '${group.category} • ${group.paddock}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Spacer(),
+                          Text(
+                            group.capacity <= 0
+                                ? '$count animais'
+                                : '$count de ${group.capacity} animais',
+                          ),
+                          if (occupancy != null) ...[
+                            const SizedBox(height: 6),
+                            LinearProgressIndicator(
+                              value: occupancy.clamp(0, 1).toDouble(),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${overview.farm.city} - ${overview.farm.state}',
-                      style: const TextStyle(color: Colors.black54),
-                    ),
-                    const SizedBox(height: 13),
-                    Wrap(
-                      spacing: 18,
-                      runSpacing: 8,
-                      children: [
-                        HerdFarmMetric(
-                          icon: Icons.groups_outlined,
-                          label: '${overview.groups} lotes',
-                        ),
-                        HerdFarmMetric(
-                          icon: Icons.pets_outlined,
-                          label: '${overview.animals} animais',
-                        ),
-                        HerdFarmMetric(
-                          icon: Icons.check_circle_outline,
-                          label: '${overview.activeAnimals} ativos',
-                        ),
-                        HerdFarmMetric(
-                          icon: Icons.female_outlined,
-                          label: '${overview.females} fêmeas',
-                        ),
-                        HerdFarmMetric(
-                          icon: Icons.male_outlined,
-                          label: '${overview.males} machos',
-                        ),
-                        HerdFarmMetric(
-                          icon: Icons.monitor_weight_outlined,
-                          label: overview.animalsWithWeight == 0
-                              ? 'Sem pesos cadastrados'
-                              : '${overview.averageWeight.toStringAsFixed(0)} kg de média',
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.chevron_right, color: Colors.black54),
-            ],
+              );
+            },
           ),
         ),
-      ),
-    );
-  }
-}
-
-class HerdFarmMetric extends StatelessWidget {
-  const HerdFarmMetric({
-    required this.icon,
-    required this.label,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 17, color: const Color(0xFF1B5E20)),
-        const SizedBox(width: 5),
-        Text(label, style: const TextStyle(fontSize: 13)),
       ],
     );
   }
 }
 
-class EmptyHerdOverview extends StatelessWidget {
-  const EmptyHerdOverview({required this.onOpenFarms, super.key});
-
-  final VoidCallback onOpenFarms;
+class _AnimalCard extends StatelessWidget {
+  const _AnimalCard({
+    required this.record,
+    required this.onOpen,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onWeights,
+    required this.onMovements,
+  });
+  final HerdAnimalRecord record;
+  final VoidCallback onOpen;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onWeights;
+  final VoidCallback onMovements;
 
   @override
   Widget build(BuildContext context) {
+    final animal = record.animal;
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Center(
-          child: Column(
-            children: [
-              const Icon(
-                Icons.landscape_outlined,
-                size: 52,
-                color: Color(0xFF1B5E20),
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Nenhuma fazenda cadastrada',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 7),
-              const Text(
-                'Cadastre uma propriedade para começar a gestão do rebanho.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: onOpenFarms,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B5E20),
-                ),
-                icon: const Icon(Icons.add),
-                label: const Text('Cadastrar fazenda'),
-              ),
-            ],
+      child: ListTile(
+        onTap: onOpen,
+        leading: CircleAvatar(
+          child: Text(
+            animal.tag.isEmpty
+                ? '?'
+                : animal.tag.characters.first.toUpperCase(),
           ),
+        ),
+        title: Text(
+          animal.displayName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${animal.tag} • ${animal.sex} • ${animal.breed} • ${record.group.name}',
+        ),
+        trailing: Wrap(
+          spacing: 4,
+          children: [
+            if (animal.weight > 0)
+              Chip(label: Text('${animal.weight.toStringAsFixed(0)} kg')),
+            IconButton(
+              tooltip: 'Pesagens',
+              onPressed: onWeights,
+              icon: const Icon(Icons.monitor_weight_outlined),
+            ),
+            IconButton(
+              tooltip: 'Movimentações',
+              onPressed: onMovements,
+              icon: const Icon(Icons.swap_horiz),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') onEdit();
+                if (value == 'delete') onDelete();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'edit', child: Text('Editar')),
+                PopupMenuItem(value: 'delete', child: Text('Excluir')),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _HerdLoadWarning extends StatelessWidget {
+  const _HerdLoadWarning({required this.warnings, required this.onRetry});
+
+  final List<String> warnings;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Rebanho carregado parcialmente: ${warnings.join(', ')}.',
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.message, required this.onRetry});
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          const Icon(Icons.cloud_off_outlined, size: 48),
+          const SizedBox(height: 12),
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _EmptyLots extends StatelessWidget {
+  const _EmptyLots();
+  @override
+  Widget build(BuildContext context) => const Card(
+    child: Padding(
+      padding: EdgeInsets.all(28),
+      child: Row(
+        children: [
+          Icon(Icons.groups_outlined, size: 42),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Nenhum lote cadastrado. Use “Novo lote” para iniciar a organização do rebanho.',
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _EmptyAnimals extends StatelessWidget {
+  const _EmptyAnimals();
+  @override
+  Widget build(BuildContext context) => const Card(
+    child: Padding(
+      padding: EdgeInsets.all(32),
+      child: Center(
+        child: Text('Nenhum animal encontrado para os filtros selecionados.'),
+      ),
+    ),
+  );
 }

@@ -8,10 +8,12 @@ class AtlasIntegrationCoreScreen extends StatefulWidget {
   const AtlasIntegrationCoreScreen({super.key});
 
   @override
-  State<AtlasIntegrationCoreScreen> createState() => _AtlasIntegrationCoreScreenState();
+  State<AtlasIntegrationCoreScreen> createState() =>
+      _AtlasIntegrationCoreScreenState();
 }
 
-class _AtlasIntegrationCoreScreenState extends State<AtlasIntegrationCoreScreen> {
+class _AtlasIntegrationCoreScreenState
+    extends State<AtlasIntegrationCoreScreen> {
   final AtlasIntegrationCore _core = AtlasIntegrationCore.instance;
   late AtlasIntegrationSnapshot _snapshot;
   bool _checking = false;
@@ -165,10 +167,26 @@ class _AtlasIntegrationCoreScreenState extends State<AtlasIntegrationCoreScreen>
       crossAxisSpacing: 10,
       childAspectRatio: 1.8,
       children: <Widget>[
-        _metric('Módulos ativos', '${_snapshot.activeModules}', Icons.widgets_outlined),
-        _metric('Módulos saudáveis', '${_snapshot.healthyModules}', Icons.verified_outlined),
-        _metric('Eventos pendentes', '${_snapshot.pendingEvents}', Icons.bolt_outlined),
-        _metric('Eventos registrados', '${_snapshot.events.length}', Icons.receipt_long_outlined),
+        _metric(
+          'Módulos ativos',
+          '${_snapshot.activeModules}',
+          Icons.widgets_outlined,
+        ),
+        _metric(
+          'Módulos saudáveis',
+          '${_snapshot.healthyModules}',
+          Icons.verified_outlined,
+        ),
+        _metric(
+          'Eventos pendentes',
+          '${_snapshot.pendingEvents}',
+          Icons.bolt_outlined,
+        ),
+        _metric(
+          'Eventos registrados',
+          '${_snapshot.events.length}',
+          Icons.receipt_long_outlined,
+        ),
       ],
     );
   }
@@ -186,7 +204,13 @@ class _AtlasIntegrationCoreScreenState extends State<AtlasIntegrationCoreScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               ),
@@ -207,9 +231,16 @@ class _AtlasIntegrationCoreScreenState extends State<AtlasIntegrationCoreScreen>
           _refresh();
         },
         secondary: CircleAvatar(
-          child: Icon(module.isHealthy ? Icons.check_rounded : Icons.warning_amber_rounded),
+          child: Icon(
+            module.isHealthy
+                ? Icons.check_rounded
+                : Icons.warning_amber_rounded,
+          ),
         ),
-        title: Text(module.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          module.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Text(
           '${module.category} • ${module.description}\n${module.pendingEvents} evento(s) pendente(s)',
         ),

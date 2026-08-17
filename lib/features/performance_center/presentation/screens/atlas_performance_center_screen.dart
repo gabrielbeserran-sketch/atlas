@@ -61,7 +61,8 @@ class _AtlasPerformanceCenterScreenState
     }
 
     final farmId = widget.farmId;
-    final hasRelevantEvent = farmId == null ||
+    final hasRelevantEvent =
+        farmId == null ||
         update.events.any((event) {
           final eventFarmId = event.farmId?.trim();
           return eventFarmId == null ||
@@ -90,37 +91,37 @@ class _AtlasPerformanceCenterScreenState
 
     try {
       final audits = await AtlasFarmAuditHistoryService.instance.loadAll();
-    final filtered = widget.farmId == null
-        ? audits
-        : audits.where((audit) => audit.farmId == widget.farmId).toList();
-    if (filtered.isEmpty) {
-      if (mounted) {
-        setState(() {
-          loading = false;
-          snapshot = null;
-          plan = null;
-        });
-      }
+      final filtered = widget.farmId == null
+          ? audits
+          : audits.where((audit) => audit.farmId == widget.farmId).toList();
+      if (filtered.isEmpty) {
+        if (mounted) {
+          setState(() {
+            loading = false;
+            snapshot = null;
+            plan = null;
+          });
+        }
 
-      return;
-    }
-    final current = filtered.first;
-    final previous = filtered.length > 1 ? filtered[1] : null;
-    final loadedPlan = await AtlasActionPlanStorageService.instance
-        .latestForFarm(current.farmId);
-    if (!mounted) return;
-    setState(() {
-      plan = loadedPlan;
-      snapshot = loadedPlan == null
-          ? null
-          : const AtlasPerformanceEngine().generate(
-              plan: loadedPlan,
-              currentAudit: current,
-              previousAudit: previous,
-            );
-      loading = false;
-    });
-  } finally {
+        return;
+      }
+      final current = filtered.first;
+      final previous = filtered.length > 1 ? filtered[1] : null;
+      final loadedPlan = await AtlasActionPlanStorageService.instance
+          .latestForFarm(current.farmId);
+      if (!mounted) return;
+      setState(() {
+        plan = loadedPlan;
+        snapshot = loadedPlan == null
+            ? null
+            : const AtlasPerformanceEngine().generate(
+                plan: loadedPlan,
+                currentAudit: current,
+                previousAudit: previous,
+              );
+        loading = false;
+      });
+    } finally {
       refreshing = false;
 
       if (refreshRequested && mounted) {

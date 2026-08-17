@@ -11,83 +11,77 @@ class AtlasCapacityDependencyEngine {
     final activePlans = plans
         .where(
           (plan) =>
-              plan.status ==
-                  AtlasStrategyExecutionStatus.active ||
-              plan.status ==
-                  AtlasStrategyExecutionStatus.planned ||
-              plan.status ==
-                  AtlasStrategyExecutionStatus.paused,
+              plan.status == AtlasStrategyExecutionStatus.active ||
+              plan.status == AtlasStrategyExecutionStatus.planned ||
+              plan.status == AtlasStrategyExecutionStatus.paused,
         )
         .toList();
 
-    final items = activePlans.map((plan) {
-      final remainingMilestones = plan.phases.fold<int>(
-        0,
-        (sum, phase) =>
-            sum +
-            phase.milestones
-                .where(
-                  (milestone) =>
-                      milestone.status !=
-                      AtlasStrategyMilestoneStatus.completed,
-                )
-                .length,
-      );
+    final items =
+        activePlans.map((plan) {
+          final remainingMilestones = plan.phases.fold<int>(
+            0,
+            (sum, phase) =>
+                sum +
+                phase.milestones
+                    .where(
+                      (milestone) =>
+                          milestone.status !=
+                          AtlasStrategyMilestoneStatus.completed,
+                    )
+                    .length,
+          );
 
-      final remainingDays = plan.targetDate
-          .difference(DateTime.now())
-          .inDays
-          .clamp(1, 10000);
+          final remainingDays = plan.targetDate
+              .difference(DateTime.now())
+              .inDays
+              .clamp(1, 10000);
 
-      final requiredHours = (
-        remainingMilestones * 6 +
-        plan.gates
-                .where(
-                  (gate) =>
-                      gate.decision ==
-                      AtlasStrategyGateDecision.pending,
-                )
-                .length *
-            4 +
-        _riskLoad(plan) +
-        _deadlinePressure(remainingDays)
-      ).clamp(0.0, 300.0).toDouble();
+          final requiredHours =
+              (remainingMilestones * 6 +
+                      plan.gates
+                              .where(
+                                (gate) =>
+                                    gate.decision ==
+                                    AtlasStrategyGateDecision.pending,
+                              )
+                              .length *
+                          4 +
+                      _riskLoad(plan) +
+                      _deadlinePressure(remainingDays))
+                  .clamp(0.0, 300.0)
+                  .toDouble();
 
-      final teamLoadPercent = availableWeeklyHours <= 0
-          ? 100.0
-          : requiredHours / availableWeeklyHours * 100;
+          final teamLoadPercent = availableWeeklyHours <= 0
+              ? 100.0
+              : requiredHours / availableWeeklyHours * 100;
 
-      final overloaded = teamLoadPercent > 35 ||
-          remainingMilestones >= 8 ||
-          remainingDays < 30 && remainingMilestones >= 4;
+          final overloaded =
+              teamLoadPercent > 35 ||
+              remainingMilestones >= 8 ||
+              remainingDays < 30 && remainingMilestones >= 4;
 
-      return AtlasCapacityItem(
-        plan: plan,
-        requiredHours: requiredHours,
-        teamLoadPercent: teamLoadPercent,
-        remainingMilestones: remainingMilestones,
-        remainingDays: remainingDays,
-        overloaded: overloaded,
-        recommendation: _recommendation(
-          overloaded: overloaded,
-          teamLoadPercent: teamLoadPercent,
-          remainingMilestones: remainingMilestones,
-          remainingDays: remainingDays,
-        ),
-      );
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.teamLoadPercent.compareTo(
-          first.teamLoadPercent,
-        ),
-      );
+          return AtlasCapacityItem(
+            plan: plan,
+            requiredHours: requiredHours,
+            teamLoadPercent: teamLoadPercent,
+            remainingMilestones: remainingMilestones,
+            remainingDays: remainingDays,
+            overloaded: overloaded,
+            recommendation: _recommendation(
+              overloaded: overloaded,
+              teamLoadPercent: teamLoadPercent,
+              remainingMilestones: remainingMilestones,
+              remainingDays: remainingDays,
+            ),
+          );
+        }).toList()..sort(
+          (first, second) =>
+              second.teamLoadPercent.compareTo(first.teamLoadPercent),
+        );
 
     final dependencies = _dependencies(activePlans);
-    final conflicts = _conflicts(
-      plans: activePlans,
-      items: items,
-    );
+    final conflicts = _conflicts(plans: activePlans, items: items);
 
     return AtlasCapacityAssessment(
       generatedAt: DateTime.now(),
@@ -102,9 +96,7 @@ class AtlasCapacityDependencyEngine {
     );
   }
 
-  double _riskLoad(
-    AtlasStrategyExecutionPlan plan,
-  ) {
+  double _riskLoad(AtlasStrategyExecutionPlan plan) {
     switch (plan.risk.name) {
       case 'low':
         return 4;
@@ -171,31 +163,23 @@ class AtlasCapacityDependencyEngine {
           continue;
         }
 
-        final relatedArea =
-            predecessor.area == successor.area;
-        final dateOverlap =
-            predecessor.targetDate.isAfter(
-          successor.startDate,
-        );
+        final relatedArea = predecessor.area == successor.area;
+        final dateOverlap = predecessor.targetDate.isAfter(successor.startDate);
 
         if (!relatedArea || !dateOverlap) {
           continue;
         }
 
         final predecessorComplete =
-            predecessor.status ==
-            AtlasStrategyExecutionStatus.completed;
+            predecessor.status == AtlasStrategyExecutionStatus.completed;
 
         final predecessorPaused =
-            predecessor.status ==
-                AtlasStrategyExecutionStatus.paused ||
-            predecessor.status ==
-                AtlasStrategyExecutionStatus.cancelled;
+            predecessor.status == AtlasStrategyExecutionStatus.paused ||
+            predecessor.status == AtlasStrategyExecutionStatus.cancelled;
 
         dependencies.add(
           AtlasStrategyDependency(
-            id:
-                'dependency_${predecessor.id}_${successor.id}',
+            id: 'dependency_${predecessor.id}_${successor.id}',
             predecessorPlanId: predecessor.id,
             predecessorTitle: predecessor.title,
             successorPlanId: successor.id,
@@ -205,8 +189,8 @@ class AtlasCapacityDependencyEngine {
             status: predecessorComplete
                 ? AtlasStrategyDependencyStatus.satisfied
                 : predecessorPaused
-                    ? AtlasStrategyDependencyStatus.blocked
-                    : AtlasStrategyDependencyStatus.pending,
+                ? AtlasStrategyDependencyStatus.blocked
+                : AtlasStrategyDependencyStatus.pending,
           ),
         );
       }
@@ -221,9 +205,7 @@ class AtlasCapacityDependencyEngine {
   }) {
     final conflicts = <AtlasCapacityConflict>[];
 
-    final overloaded = items
-        .where((item) => item.overloaded)
-        .toList();
+    final overloaded = items.where((item) => item.overloaded).toList();
 
     if (overloaded.length >= 2) {
       conflicts.add(
@@ -232,8 +214,7 @@ class AtlasCapacityDependencyEngine {
           title: 'Sobrecarga simultânea da equipe',
           description:
               '${overloaded.length} estratégias exigem capacidade elevada ao mesmo tempo.',
-          planIds:
-              overloaded.map((item) => item.plan.id).toList(),
+          planIds: overloaded.map((item) => item.plan.id).toList(),
           severity: overloaded.length >= 4
               ? AtlasCapacityConflictSeverity.critical
               : AtlasCapacityConflictSeverity.high,
@@ -243,9 +224,7 @@ class AtlasCapacityDependencyEngine {
       );
     }
 
-    final budgetCompetition = plans.where(
-      (plan) => plan.budget >= 100000,
-    );
+    final budgetCompetition = plans.where((plan) => plan.budget >= 100000);
 
     if (budgetCompetition.length >= 2) {
       conflicts.add(
@@ -254,8 +233,7 @@ class AtlasCapacityDependencyEngine {
           title: 'Concorrência por capital',
           description:
               'Múltiplas estratégias de alto investimento estão em execução simultânea.',
-          planIds:
-              budgetCompetition.map((item) => item.id).toList(),
+          planIds: budgetCompetition.map((item) => item.id).toList(),
           severity: AtlasCapacityConflictSeverity.high,
           recommendation:
               'Definir limite mensal de desembolso e liberar capital por gates.',
@@ -263,35 +241,32 @@ class AtlasCapacityDependencyEngine {
       );
     }
 
-    for (var firstIndex = 0;
-        firstIndex < plans.length;
-        firstIndex++) {
-      for (var secondIndex = firstIndex + 1;
-          secondIndex < plans.length;
-          secondIndex++) {
+    for (var firstIndex = 0; firstIndex < plans.length; firstIndex++) {
+      for (
+        var secondIndex = firstIndex + 1;
+        secondIndex < plans.length;
+        secondIndex++
+      ) {
         final first = plans[firstIndex];
         final second = plans[secondIndex];
 
-        final overlap = first.startDate
-                .isBefore(second.targetDate) &&
+        final overlap =
+            first.startDate.isBefore(second.targetDate) &&
             second.startDate.isBefore(first.targetDate);
 
-        final sameOwner = first.owner
-                .trim()
-                .toLowerCase() ==
+        final sameOwner =
+            first.owner.trim().toLowerCase() ==
             second.owner.trim().toLowerCase();
 
         if (overlap && sameOwner) {
           conflicts.add(
             AtlasCapacityConflict(
-              id:
-                  'conflict_owner_${first.id}_${second.id}',
+              id: 'conflict_owner_${first.id}_${second.id}',
               title: 'Responsável compartilhado',
               description:
                   '${first.owner} está alocado simultaneamente em "${first.title}" e "${second.title}".',
               planIds: <String>[first.id, second.id],
-              severity:
-                  AtlasCapacityConflictSeverity.moderate,
+              severity: AtlasCapacityConflictSeverity.moderate,
               recommendation:
                   'Nomear líderes operacionais distintos ou escalonar as entregas.',
             ),

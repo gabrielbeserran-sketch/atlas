@@ -15,8 +15,7 @@ class AtlasUnifiedWorkflowEngine {
       AtlasUnifiedWorkflowEngine._();
 
   static const String _rulesKey = 'atlas_unified_workflow_rules_v1';
-  static const String _executionsKey =
-      'atlas_unified_workflow_executions_v1';
+  static const String _executionsKey = 'atlas_unified_workflow_executions_v1';
 
   final AtlasEventFactory _eventFactory = const AtlasEventFactory();
   final List<AtlasAutomationRule> _rules = <AtlasAutomationRule>[];
@@ -30,9 +29,7 @@ class AtlasUnifiedWorkflowEngine {
       List<AtlasAutomationRule>.unmodifiable(_rules);
 
   List<AtlasAutomationExecution> get executions =>
-      List<AtlasAutomationExecution>.unmodifiable(
-        _executions.reversed,
-      );
+      List<AtlasAutomationExecution>.unmodifiable(_executions.reversed);
 
   bool get isRunning => _subscriptionId != null;
 
@@ -187,58 +184,60 @@ class AtlasUnifiedWorkflowEngine {
   }
 
   List<AtlasAutomationRule> _seedRules() => <AtlasAutomationRule>[
-        const AtlasAutomationRule(
-          id: 'weight_recalculate_kpis',
-          title: 'Pesagem atualiza indicadores',
-          description: 'Ao registrar uma pesagem, recalcula os indicadores produtivos.',
-          triggerType: AtlasEventType.animalWeightRecorded,
-          actionType: AtlasAutomationActionType.recalculateIndicators,
-          actionTitle: 'Indicadores produtivos recalculados',
-          enabled: true,
-          priority: AtlasEventPriority.normal,
-        ),
-        const AtlasAutomationRule(
-          id: 'low_stock_alert',
-          title: 'Estoque baixo gera alerta',
-          description: 'Transforma eventos de estoque baixo em alerta executivo.',
-          triggerType: AtlasEventType.inventoryLowStock,
-          actionType: AtlasAutomationActionType.createNotification,
-          actionTitle: 'Alerta executivo de estoque baixo',
-          enabled: true,
-          priority: AtlasEventPriority.high,
-        ),
-        const AtlasAutomationRule(
-          id: 'decision_approved_task',
-          title: 'Decisão aprovada cria tarefa',
-          description: 'Converte uma decisão aprovada em tarefa de execução.',
-          triggerType: AtlasEventType.decisionApproved,
-          actionType: AtlasAutomationActionType.createTask,
-          actionTitle: 'Tarefa criada a partir de decisão aprovada',
-          enabled: true,
-          priority: AtlasEventPriority.high,
-        ),
-        const AtlasAutomationRule(
-          id: 'workflow_completed_learning',
-          title: 'Workflow concluído gera aprendizado',
-          description: 'Registra o resultado de workflows concluídos na memória do Atlas.',
-          triggerType: AtlasEventType.workflowCompleted,
-          actionType: AtlasAutomationActionType.createLearningCase,
-          actionTitle: 'Caso de aprendizado registrado',
-          enabled: true,
-          priority: AtlasEventPriority.normal,
-        ),
-        const AtlasAutomationRule(
-          id: 'kpi_brain_update',
-          title: 'KPI atualiza Executive Brain',
-          description: 'Atualiza a inteligência executiva sempre que um KPI muda.',
-          triggerType: AtlasEventType.executiveKpiUpdated,
-          actionType: AtlasAutomationActionType.updateExecutiveBrain,
-          actionTitle: 'Executive Brain atualizado',
-          enabled: true,
-          priority: AtlasEventPriority.normal,
-          sourceModule: 'performance_intelligence',
-        ),
-      ];
+    const AtlasAutomationRule(
+      id: 'weight_recalculate_kpis',
+      title: 'Pesagem atualiza indicadores',
+      description:
+          'Ao registrar uma pesagem, recalcula os indicadores produtivos.',
+      triggerType: AtlasEventType.animalWeightRecorded,
+      actionType: AtlasAutomationActionType.recalculateIndicators,
+      actionTitle: 'Indicadores produtivos recalculados',
+      enabled: true,
+      priority: AtlasEventPriority.normal,
+    ),
+    const AtlasAutomationRule(
+      id: 'low_stock_alert',
+      title: 'Estoque baixo gera alerta',
+      description: 'Transforma eventos de estoque baixo em alerta executivo.',
+      triggerType: AtlasEventType.inventoryLowStock,
+      actionType: AtlasAutomationActionType.createNotification,
+      actionTitle: 'Alerta executivo de estoque baixo',
+      enabled: true,
+      priority: AtlasEventPriority.high,
+    ),
+    const AtlasAutomationRule(
+      id: 'decision_approved_task',
+      title: 'Decisão aprovada cria tarefa',
+      description: 'Converte uma decisão aprovada em tarefa de execução.',
+      triggerType: AtlasEventType.decisionApproved,
+      actionType: AtlasAutomationActionType.createTask,
+      actionTitle: 'Tarefa criada a partir de decisão aprovada',
+      enabled: true,
+      priority: AtlasEventPriority.high,
+    ),
+    const AtlasAutomationRule(
+      id: 'workflow_completed_learning',
+      title: 'Workflow concluído gera aprendizado',
+      description:
+          'Registra o resultado de workflows concluídos na memória do Atlas.',
+      triggerType: AtlasEventType.workflowCompleted,
+      actionType: AtlasAutomationActionType.createLearningCase,
+      actionTitle: 'Caso de aprendizado registrado',
+      enabled: true,
+      priority: AtlasEventPriority.normal,
+    ),
+    const AtlasAutomationRule(
+      id: 'kpi_brain_update',
+      title: 'KPI atualiza Executive Brain',
+      description: 'Atualiza a inteligência executiva sempre que um KPI muda.',
+      triggerType: AtlasEventType.executiveKpiUpdated,
+      actionType: AtlasAutomationActionType.updateExecutiveBrain,
+      actionTitle: 'Executive Brain atualizado',
+      enabled: true,
+      priority: AtlasEventPriority.normal,
+      sourceModule: 'performance_intelligence',
+    ),
+  ];
 
   List<AtlasAutomationRule> _decodeRules(String? stored) {
     if (stored == null || stored.isEmpty) return <AtlasAutomationRule>[];
@@ -247,9 +246,10 @@ class AtlasUnifiedWorkflowEngine {
       if (decoded is! List) return <AtlasAutomationRule>[];
       return decoded
           .whereType<Map>()
-          .map((item) => AtlasAutomationRule.fromJson(
-                Map<String, dynamic>.from(item),
-              ))
+          .map(
+            (item) =>
+                AtlasAutomationRule.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList();
     } catch (_) {
       return <AtlasAutomationRule>[];
@@ -265,9 +265,11 @@ class AtlasUnifiedWorkflowEngine {
       if (decoded is! List) return <AtlasAutomationExecution>[];
       return decoded
           .whereType<Map>()
-          .map((item) => AtlasAutomationExecution.fromJson(
-                Map<String, dynamic>.from(item),
-              ))
+          .map(
+            (item) => AtlasAutomationExecution.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .toList();
     } catch (_) {
       return <AtlasAutomationExecution>[];

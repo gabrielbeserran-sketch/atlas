@@ -12,8 +12,8 @@ class AnimalZootechnicalDashboardService {
   AnimalZootechnicalDashboardService({
     AnimalEnterpriseService? enterprise,
     AnimalWeightStorageService? weightStorage,
-  })  : _enterprise = enterprise ?? AnimalEnterpriseService(),
-        _weightStorage = weightStorage ?? AnimalWeightStorageService();
+  }) : _enterprise = enterprise ?? AnimalEnterpriseService(),
+       _weightStorage = weightStorage ?? AnimalWeightStorageService();
 
   final AnimalEnterpriseService _enterprise;
   final AnimalWeightStorageService _weightStorage;
@@ -34,11 +34,13 @@ class AnimalZootechnicalDashboardService {
           _parseDate(first.date).compareTo(_parseDate(second.date)),
     );
 
-    final currentWeight =
-        weights.isNotEmpty ? weights.last.weight : animal.weight;
+    final currentWeight = weights.isNotEmpty
+        ? weights.last.weight
+        : animal.weight;
 
-    final previousWeight =
-        weights.length >= 2 ? weights[weights.length - 2].weight : null;
+    final previousWeight = weights.length >= 2
+        ? weights[weights.length - 2].weight
+        : null;
 
     final weightVariation = previousWeight == null
         ? null
@@ -77,9 +79,7 @@ class AnimalZootechnicalDashboardService {
       (first, second) => second.weight.compareTo(first.weight),
     );
 
-    final rankIndex = rankedAnimals.indexWhere(
-      (item) => item.id == animal.id,
-    );
+    final rankIndex = rankedAnimals.indexWhere((item) => item.id == animal.id);
     final rank = rankIndex == -1 ? 0 : rankIndex + 1;
     final groupSize = rankedAnimals.length;
 
@@ -92,21 +92,9 @@ class AnimalZootechnicalDashboardService {
       previousWeight: previousWeight,
       weightVariation: weightVariation,
       averageDailyGain: averageDailyGain,
-      projectedWeight30Days: _project(
-        currentWeight,
-        averageDailyGain,
-        30,
-      ),
-      projectedWeight60Days: _project(
-        currentWeight,
-        averageDailyGain,
-        60,
-      ),
-      projectedWeight90Days: _project(
-        currentWeight,
-        averageDailyGain,
-        90,
-      ),
+      projectedWeight30Days: _project(currentWeight, averageDailyGain, 30),
+      projectedWeight60Days: _project(currentWeight, averageDailyGain, 60),
+      projectedWeight90Days: _project(currentWeight, averageDailyGain, 90),
       groupAverageWeight: average,
       groupMedianWeight: median,
       groupRank: rank,
@@ -119,25 +107,20 @@ class AnimalZootechnicalDashboardService {
     );
   }
 
-  double? _calculateAverageDailyGain(
-    List<AnimalWeightData> weights,
-  ) {
+  double? _calculateAverageDailyGain(List<AnimalWeightData> weights) {
     if (weights.length < 2) return null;
 
     final first = weights.first;
     final last = weights.last;
-    final days =
-        _parseDate(last.date).difference(_parseDate(first.date)).inDays;
+    final days = _parseDate(
+      last.date,
+    ).difference(_parseDate(first.date)).inDays;
 
     if (days <= 0) return null;
     return (last.weight - first.weight) / days;
   }
 
-  double? _project(
-    double currentWeight,
-    double? dailyGain,
-    int days,
-  ) {
+  double? _project(double currentWeight, double? dailyGain, int days) {
     if (dailyGain == null) return null;
     return math.max(0, currentWeight + dailyGain * days);
   }
@@ -151,10 +134,7 @@ class AnimalZootechnicalDashboardService {
     return (values[middle - 1] + values[middle]) / 2;
   }
 
-  String _trend(
-    List<AnimalWeightData> weights,
-    double? dailyGain,
-  ) {
+  String _trend(List<AnimalWeightData> weights, double? dailyGain) {
     if (weights.length < 2 || dailyGain == null) {
       return 'Dados insuficientes';
     }
@@ -173,9 +153,9 @@ class AnimalZootechnicalDashboardService {
     for (var index = 1; index < weights.length; index++) {
       final previous = weights[index - 1];
       final current = weights[index];
-      final days = _parseDate(current.date)
-          .difference(_parseDate(previous.date))
-          .inDays;
+      final days = _parseDate(
+        current.date,
+      ).difference(_parseDate(previous.date)).inDays;
 
       if (days > 0) {
         gains.add((current.weight - previous.weight) / days);
@@ -185,7 +165,8 @@ class AnimalZootechnicalDashboardService {
     if (gains.length < 2) return 50;
 
     final mean = gains.reduce((a, b) => a + b) / gains.length;
-    final variance = gains
+    final variance =
+        gains
             .map((value) => math.pow(value - mean, 2).toDouble())
             .reduce((a, b) => a + b) /
         gains.length;

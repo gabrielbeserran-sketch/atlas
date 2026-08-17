@@ -13,17 +13,12 @@ class AtlasMeetingDecisionMonitoringService {
 
     for (final meeting in meetings) {
       for (final decision in meeting.decisions) {
-        final statuses =
-            <AtlasMeetingDecisionMonitoringStatus>[];
+        final statuses = <AtlasMeetingDecisionMonitoringStatus>[];
 
         if (decision.completed) {
-          statuses.add(
-            AtlasMeetingDecisionMonitoringStatus.completed,
-          );
+          statuses.add(AtlasMeetingDecisionMonitoringStatus.completed);
         } else {
-          statuses.add(
-            AtlasMeetingDecisionMonitoringStatus.pending,
-          );
+          statuses.add(AtlasMeetingDecisionMonitoringStatus.pending);
         }
 
         int? daysUntilDue;
@@ -34,27 +29,19 @@ class AtlasMeetingDecisionMonitoringService {
           daysUntilDue = difference.inDays;
 
           if (difference.isNegative) {
-            statuses.add(
-              AtlasMeetingDecisionMonitoringStatus.overdue,
-            );
+            statuses.add(AtlasMeetingDecisionMonitoringStatus.overdue);
           } else if (difference.inHours <= 48) {
-            statuses.add(
-              AtlasMeetingDecisionMonitoringStatus.dueSoon,
-            );
+            statuses.add(AtlasMeetingDecisionMonitoringStatus.dueSoon);
           }
         }
 
         if (decision.responsibleName.trim().isEmpty) {
-          statuses.add(
-            AtlasMeetingDecisionMonitoringStatus
-                .withoutResponsible,
-          );
+          statuses.add(AtlasMeetingDecisionMonitoringStatus.withoutResponsible);
         }
 
         if (decision.linkedActionId?.trim().isEmpty != false) {
           statuses.add(
-            AtlasMeetingDecisionMonitoringStatus
-                .withoutLinkedAction,
+            AtlasMeetingDecisionMonitoringStatus.withoutLinkedAction,
           );
         }
 
@@ -63,9 +50,9 @@ class AtlasMeetingDecisionMonitoringService {
             id: '${meeting.id}_${decision.id}',
             meeting: meeting,
             decision: decision,
-            statuses:
-                List<AtlasMeetingDecisionMonitoringStatus>
-                    .unmodifiable(statuses),
+            statuses: List<AtlasMeetingDecisionMonitoringStatus>.unmodifiable(
+              statuses,
+            ),
             daysUntilDue: daysUntilDue,
           ),
         );
@@ -86,9 +73,7 @@ class AtlasMeetingDecisionMonitoringService {
       return firstDue.compareTo(secondDue);
     });
 
-    return List<AtlasMeetingDecisionMonitoringItem>.unmodifiable(
-      items,
-    );
+    return List<AtlasMeetingDecisionMonitoringItem>.unmodifiable(items);
   }
 
   int _weight(AtlasMeetingDecisionMonitoringItem item) {

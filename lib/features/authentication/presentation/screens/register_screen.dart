@@ -5,8 +5,7 @@ class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() =>
-      _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
@@ -42,9 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aceite os termos para continuar.'),
-        ),
+        const SnackBar(content: Text('Aceite os termos para continuar.')),
       );
       return;
     }
@@ -52,8 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => loading = true);
 
     try {
-      final result =
-          await AtlasEnterpriseApiClient.instance.register(
+      final result = await AtlasEnterpriseApiClient.instance.register(
         name: name.text,
         email: email.text,
         password: password.text,
@@ -63,23 +59,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
 
-      final developmentToken =
-          result['verification_token']?.toString();
+      final developmentToken = result['verification_token']?.toString();
 
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Conta criada'),
           content: Text(
-            developmentToken == null ||
-                    developmentToken.isEmpty
+            developmentToken == null || developmentToken.isEmpty
                 ? 'Verifique seu e-mail para confirmar a conta.'
                 : 'Conta criada. Em desenvolvimento, use este token para confirmar:\n\n$developmentToken',
           ),
           actions: [
             FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Entendi'),
             ),
           ],
@@ -89,9 +82,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) Navigator.pop(context);
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -162,8 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     helperText:
                         '10+ caracteres, maiúscula, minúscula, número e símbolo.',
                     suffixIcon: IconButton(
-                      onPressed: () =>
-                          setState(() => obscure = !obscure),
+                      onPressed: () => setState(() => obscure = !obscure),
                       icon: Icon(
                         obscure
                             ? Icons.visibility_outlined
@@ -187,19 +179,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     labelText: 'Confirmar senha',
                     prefixIcon: Icon(Icons.lock_outline),
                   ),
-                  validator: (value) =>
-                      value != password.text
-                          ? 'As senhas não coincidem.'
-                          : null,
+                  validator: (value) => value != password.text
+                      ? 'As senhas não coincidem.'
+                      : null,
                 ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   value: acceptTerms,
                   onChanged: loading
                       ? null
-                      : (value) => setState(
-                            () => acceptTerms = value ?? false,
-                          ),
+                      : (value) => setState(() => acceptTerms = value ?? false),
                   title: const Text(
                     'Li e aceito os termos de uso e a política de privacidade.',
                   ),
@@ -211,9 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.person_add_outlined),
                   label: const Text('Criar conta'),
@@ -227,7 +214,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? requiredValidator(String? value) =>
-      value == null || value.trim().isEmpty
-          ? 'Campo obrigatório.'
-          : null;
+      value == null || value.trim().isEmpty ? 'Campo obrigatório.' : null;
 }

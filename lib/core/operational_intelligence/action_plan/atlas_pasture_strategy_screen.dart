@@ -8,10 +8,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_strategy_service.dart';
 
 class AtlasPastureStrategyScreen extends StatefulWidget {
-  const AtlasPastureStrategyScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasPastureStrategyScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
@@ -26,8 +23,7 @@ class _AtlasPastureStrategyScreenState
   final pasture = AtlasPastureService.instance;
 
   AtlasPastureExecutiveSnapshot? snapshot;
-  List<AtlasPastureOccupationRecommendation> recommendations =
-      [];
+  List<AtlasPastureOccupationRecommendation> recommendations = [];
   List<AtlasPastureRecoveryPlan> recoveryPlans = [];
   List<AtlasPaddock> paddocks = [];
   List<String> intelligence = [];
@@ -44,8 +40,7 @@ class _AtlasPastureStrategyScreenState
     snapshot = await strategy.buildSnapshot(
       farmName: widget.actionController.farmName,
     );
-    recommendations =
-        await strategy.buildOccupationRecommendations(
+    recommendations = await strategy.buildOccupationRecommendations(
       farmName: widget.actionController.farmName,
     );
     recoveryPlans = await strategy.loadRecoveryPlans(
@@ -88,8 +83,7 @@ class _AtlasPastureStrategyScreenState
     final responsible = TextEditingController();
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasPastureRecoveryPlan>(
+    final result = await showDialog<AtlasPastureRecoveryPlan>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -117,9 +111,7 @@ class _AtlasPastureStrategyScreenState
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => paddockId = value,
-                          );
+                          setDialogState(() => paddockId = value);
                         }
                       },
                     ),
@@ -134,15 +126,9 @@ class _AtlasPastureStrategyScreenState
                     const SizedBox(height: 10),
                     _number(cost, 'Custo estimado'),
                     const SizedBox(height: 10),
-                    _number(
-                      dryMatter,
-                      'Ganho esperado de MS (kg/ha)',
-                    ),
+                    _number(dryMatter, 'Ganho esperado de MS (kg/ha)'),
                     const SizedBox(height: 10),
-                    _number(
-                      support,
-                      'Ganho esperado de suporte (UA/ha)',
-                    ),
+                    _number(support, 'Ganho esperado de suporte (UA/ha)'),
                     _dateTile(
                       context: dialogContext,
                       title: 'Início',
@@ -180,8 +166,7 @@ class _AtlasPastureStrategyScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -189,21 +174,18 @@ class _AtlasPastureStrategyScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasPastureRecoveryPlan(
-                        id: 'pasture_recovery_'
+                        id:
+                            'pasture_recovery_'
                             '${now.microsecondsSinceEpoch}',
                         paddockId: paddockId,
                         title: title.text.trim(),
                         startAt: start,
                         endAt: end,
                         estimatedCost: _double(cost.text),
-                        expectedDryMatterGainKgHa:
-                            _double(dryMatter.text),
-                        expectedSupportGainAuHa:
-                            _double(support.text),
-                        responsibleName:
-                            responsible.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        expectedDryMatterGainKgHa: _double(dryMatter.text),
+                        expectedSupportGainAuHa: _double(support.text),
+                        responsibleName: responsible.text.trim(),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -269,16 +251,13 @@ class _AtlasPastureStrategyScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addRecoveryPlan,
           icon: const Icon(Icons.add),
           label: const Text('Plano de recuperação'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _Dashboard(snapshot: current),
@@ -290,9 +269,7 @@ class _AtlasPastureStrategyScreenState
                         'Cadastre entrada, saída, descanso e operações na gestão operacional.',
                     onOpen: _openOperational,
                   ),
-                  _Occupation(
-                    recommendations: recommendations,
-                  ),
+                  _Occupation(recommendations: recommendations),
                   _Recovery(
                     plans: recoveryPlans,
                     paddocks: paddocks,
@@ -311,14 +288,10 @@ class _AtlasPastureStrategyScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -354,9 +327,7 @@ class _AtlasPastureStrategyScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -380,46 +351,18 @@ class _Dashboard extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _metricCard(
-              'Piquetes',
-              item.totalPaddocks.toDouble(),
-              '',
-            ),
-            _metricCard(
-              'Área',
-              item.totalAreaHectares,
-              'ha',
-            ),
-            _metricCard(
-              'Disponíveis',
-              item.availablePaddocks.toDouble(),
-              '',
-            ),
-            _metricCard(
-              'Altura média',
-              item.averageHeightCm,
-              'cm',
-            ),
-            _metricCard(
-              'MS média',
-              item.averageDryMatterKgHa,
-              'kg/ha',
-            ),
+            _metricCard('Piquetes', item.totalPaddocks.toDouble(), ''),
+            _metricCard('Área', item.totalAreaHectares, 'ha'),
+            _metricCard('Disponíveis', item.availablePaddocks.toDouble(), ''),
+            _metricCard('Altura média', item.averageHeightCm, 'cm'),
+            _metricCard('MS média', item.averageDryMatterKgHa, 'kg/ha'),
             _metricCard(
               'Suporte médio',
               item.averageSupportCapacityAuHa,
               'UA/ha',
             ),
-            _metricCard(
-              'Suporte total',
-              item.totalSupportedAu,
-              'UA',
-            ),
-            _metricCard(
-              'Score',
-              item.pastureScore,
-              '/100',
-            ),
+            _metricCard('Suporte total', item.totalSupportedAu, 'UA'),
+            _metricCard('Score', item.pastureScore, '/100'),
           ],
         ),
       ],
@@ -451,9 +394,7 @@ class _PaddockState extends StatelessWidget {
               '${item.currentHeightCm.toStringAsFixed(1)} cm • '
               '${item.dryMatterKgHa.toStringAsFixed(0)} kg MS/ha',
             ),
-            trailing: Text(
-              item.belowTargetHeight ? 'Atenção' : 'Adequado',
-            ),
+            trailing: Text(item.belowTargetHeight ? 'Atenção' : 'Adequado'),
           ),
         );
       },
@@ -475,31 +416,11 @@ class _Support extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _line(
-          'Capacidade média',
-          item.averageSupportCapacityAuHa,
-          'UA/ha',
-        ),
-        _line(
-          'Capacidade total',
-          item.totalSupportedAu,
-          'UA',
-        ),
-        _line(
-          'Matéria seca média',
-          item.averageDryMatterKgHa,
-          'kg/ha',
-        ),
-        _line(
-          'Piquetes ocupados',
-          item.occupiedPaddocks.toDouble(),
-          '',
-        ),
-        _line(
-          'Piquetes em descanso',
-          item.restingPaddocks.toDouble(),
-          '',
-        ),
+        _line('Capacidade média', item.averageSupportCapacityAuHa, 'UA/ha'),
+        _line('Capacidade total', item.totalSupportedAu, 'UA'),
+        _line('Matéria seca média', item.averageDryMatterKgHa, 'kg/ha'),
+        _line('Piquetes ocupados', item.occupiedPaddocks.toDouble(), ''),
+        _line('Piquetes em descanso', item.restingPaddocks.toDouble(), ''),
       ],
     );
   }
@@ -508,8 +429,7 @@ class _Support extends StatelessWidget {
 class _Occupation extends StatelessWidget {
   const _Occupation({required this.recommendations});
 
-  final List<AtlasPastureOccupationRecommendation>
-      recommendations;
+  final List<AtlasPastureOccupationRecommendation> recommendations;
 
   @override
   Widget build(BuildContext context) {
@@ -590,21 +510,11 @@ class _Recovery extends StatelessWidget {
         ),
         Expanded(
           child: plans.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum plano de recuperação.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum plano de recuperação.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: plans.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = plans[index];
                     return Card(
@@ -707,10 +617,7 @@ Widget _metricCard(String title, double value, String unit) {
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
               '${unit.isEmpty || unit == '/100' ? unit : ' $unit'}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -726,9 +633,7 @@ Widget _line(String title, double value, String unit) {
       trailing: Text(
         '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
         '${unit.isEmpty ? '' : ' $unit'}',
-        style: const TextStyle(
-          fontWeight: FontWeight.w900,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w900),
       ),
     ),
   );

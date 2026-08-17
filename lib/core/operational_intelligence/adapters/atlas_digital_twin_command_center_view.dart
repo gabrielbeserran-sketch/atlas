@@ -20,28 +20,21 @@ class AtlasDigitalTwinCommandCenterView {
   ) {
     final metrics = snapshot.metrics;
     final penalty =
-        (metrics.criticalEvents * 18) +
-        (metrics.highPriorityEvents * 7);
+        (metrics.criticalEvents * 18) + (metrics.highPriorityEvents * 7);
 
-    final health =
-        (100 - penalty).clamp(0, 100).toDouble();
+    final health = (100 - penalty).clamp(0, 100).toDouble();
 
     return AtlasDigitalTwinCommandCenterView(
       generatedAt: snapshot.generatedAt,
       farmName: snapshot.farmName,
       operationalHealthPercent: health,
-      riskLevel: _riskLevel(
-        metrics.criticalEvents,
-        metrics.highPriorityEvents,
-      ),
+      riskLevel: _riskLevel(metrics.criticalEvents, metrics.highPriorityEvents),
       activeModules: metrics.activeModules,
       recentEvents: metrics.eventsLast24Hours,
-      priorities:
-          List<AtlasOperationalPriority>.unmodifiable(
+      priorities: List<AtlasOperationalPriority>.unmodifiable(
         snapshot.priorities.take(10),
       ),
-      insights:
-          List<AtlasOperationalInsight>.unmodifiable(
+      insights: List<AtlasOperationalInsight>.unmodifiable(
         snapshot.insights.take(10),
       ),
     );

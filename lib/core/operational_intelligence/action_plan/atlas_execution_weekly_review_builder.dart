@@ -9,8 +9,7 @@ class AtlasExecutionWeeklyReviewBuilder {
         const AtlasCommandCenterActionAnalyticsService(),
   }) : _analyticsService = analyticsService;
 
-  final AtlasCommandCenterActionAnalyticsService
-      _analyticsService;
+  final AtlasCommandCenterActionAnalyticsService _analyticsService;
 
   AtlasExecutionWeeklyReview build({
     required List<AtlasCommandCenterAction> actions,
@@ -20,9 +19,7 @@ class AtlasExecutionWeeklyReviewBuilder {
   }) {
     final generatedAt = now ?? DateTime.now();
     final periodEnd = generatedAt;
-    final periodStart = generatedAt.subtract(
-      const Duration(days: 7),
-    );
+    final periodStart = generatedAt.subtract(const Duration(days: 7));
     final analytics = _analyticsService.build(actions);
 
     final completedInPeriod = actions.where((action) {
@@ -34,18 +31,11 @@ class AtlasExecutionWeeklyReviewBuilder {
     }).length;
 
     final blockedActions = actions
-        .where(
-          (action) =>
-              action.status ==
-              AtlasCanonicalStatus.blocked,
-        )
+        .where((action) => action.status == AtlasCanonicalStatus.blocked)
         .length;
 
     final withoutResponsible = actions
-        .where(
-          (action) =>
-              action.isOpen && !action.hasResponsible,
-        )
+        .where((action) => action.isOpen && !action.hasResponsible)
         .length;
 
     final withoutFollowUp = actions.where((action) {
@@ -53,8 +43,7 @@ class AtlasExecutionWeeklyReviewBuilder {
         return false;
       }
 
-      final reference =
-          latestUpdateDates[action.id] ?? action.updatedAt;
+      final reference = latestUpdateDates[action.id] ?? action.updatedAt;
 
       return generatedAt.difference(reference).inDays >= 7;
     }).length;
@@ -84,12 +73,9 @@ class AtlasExecutionWeeklyReviewBuilder {
       blockedActions: blockedActions,
       actionsWithoutResponsible: withoutResponsible,
       actionsWithoutRecentFollowUp: withoutFollowUp,
-      averageProgressPercent:
-          analytics.averageProgressPercent,
-      executionHealthPercent:
-          analytics.executionHealthPercent,
-      expectedFinancialImpact:
-          analytics.expectedFinancialImpact,
+      averageProgressPercent: analytics.averageProgressPercent,
+      executionHealthPercent: analytics.executionHealthPercent,
+      expectedFinancialImpact: analytics.expectedFinancialImpact,
       achievements: achievements,
       bottlenecks: bottlenecks,
       focusActions: focusActions,
@@ -101,18 +87,16 @@ class AtlasExecutionWeeklyReviewBuilder {
     required DateTime periodStart,
     required DateTime periodEnd,
   }) {
-    final completed = actions.where((action) {
-      final completedAt = action.completedAt;
+    final completed =
+        actions.where((action) {
+          final completedAt = action.completedAt;
 
-      return completedAt != null &&
-          !completedAt.isBefore(periodStart) &&
-          !completedAt.isAfter(periodEnd);
-    }).toList()
-      ..sort(
-        (first, second) => second.completedAt!.compareTo(
-          first.completedAt!,
-        ),
-      );
+          return completedAt != null &&
+              !completedAt.isBefore(periodStart) &&
+              !completedAt.isAfter(periodEnd);
+        }).toList()..sort(
+          (first, second) => second.completedAt!.compareTo(first.completedAt!),
+        );
 
     if (completed.isEmpty) {
       return const <String>[
@@ -122,10 +106,7 @@ class AtlasExecutionWeeklyReviewBuilder {
 
     return completed
         .take(5)
-        .map(
-          (action) =>
-              'Concluída: ${action.title}',
-        )
+        .map((action) => 'Concluída: ${action.title}')
         .toList(growable: false);
   }
 
@@ -135,26 +116,17 @@ class AtlasExecutionWeeklyReviewBuilder {
     required int withoutFollowUp,
   }) {
     final result = <String>[];
-    final overdue =
-        actions.where((action) => action.isOverdue).length;
+    final overdue = actions.where((action) => action.isOverdue).length;
     final blocked = actions
-        .where(
-          (action) =>
-              action.status ==
-              AtlasCanonicalStatus.blocked,
-        )
+        .where((action) => action.status == AtlasCanonicalStatus.blocked)
         .length;
 
     if (overdue > 0) {
-      result.add(
-        '$overdue ação(ões) está(ão) atrasada(s).',
-      );
+      result.add('$overdue ação(ões) está(ão) atrasada(s).');
     }
 
     if (blocked > 0) {
-      result.add(
-        '$blocked ação(ões) está(ão) bloqueada(s).',
-      );
+      result.add('$blocked ação(ões) está(ão) bloqueada(s).');
     }
 
     if (withoutResponsible > 0) {
@@ -170,20 +142,14 @@ class AtlasExecutionWeeklyReviewBuilder {
     }
 
     if (result.isEmpty) {
-      result.add(
-        'Nenhum gargalo crítico foi identificado no período.',
-      );
+      result.add('Nenhum gargalo crítico foi identificado no período.');
     }
 
     return result;
   }
 
-  List<String> _buildFocusActions(
-    List<AtlasCommandCenterAction> actions,
-  ) {
-    final candidates = actions
-        .where((action) => action.isOpen)
-        .toList()
+  List<String> _buildFocusActions(List<AtlasCommandCenterAction> actions) {
+    final candidates = actions.where((action) => action.isOpen).toList()
       ..sort((first, second) {
         if (first.isOverdue != second.isOverdue) {
           return first.isOverdue ? -1 : 1;
@@ -191,17 +157,14 @@ class AtlasExecutionWeeklyReviewBuilder {
 
         final priorityComparison = _priorityWeight(
           second.priority,
-        ).compareTo(
-          _priorityWeight(first.priority),
-        );
+        ).compareTo(_priorityWeight(first.priority));
 
         if (priorityComparison != 0) {
           return priorityComparison;
         }
 
         final firstDue = first.dueAt ?? DateTime(9999);
-        final secondDue =
-            second.dueAt ?? DateTime(9999);
+        final secondDue = second.dueAt ?? DateTime(9999);
 
         return firstDue.compareTo(secondDue);
       });
@@ -214,16 +177,11 @@ class AtlasExecutionWeeklyReviewBuilder {
 
     return candidates
         .take(5)
-        .map(
-          (action) =>
-              '${action.title}: ${action.recommendedAction}',
-        )
+        .map((action) => '${action.title}: ${action.recommendedAction}')
         .toList(growable: false);
   }
 
-  int _priorityWeight(
-    AtlasCanonicalPriority priority,
-  ) {
+  int _priorityWeight(AtlasCanonicalPriority priority) {
     switch (priority) {
       case AtlasCanonicalPriority.low:
         return 1;

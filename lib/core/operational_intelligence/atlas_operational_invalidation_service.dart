@@ -5,9 +5,7 @@ import 'package:projeto_atlas/core/operational_intelligence/atlas_operational_in
 class AtlasOperationalInvalidationService {
   const AtlasOperationalInvalidationService();
 
-  AtlasOperationalInvalidation fromEvent(
-    AtlasEvent event,
-  ) {
+  AtlasOperationalInvalidation fromEvent(AtlasEvent event) {
     return AtlasOperationalInvalidation(
       farmName: event.farmName,
       domains: Set<AtlasOperationalDomain>.unmodifiable(
@@ -19,9 +17,7 @@ class AtlasOperationalInvalidationService {
     );
   }
 
-  Set<AtlasOperationalDomain> _domainsFor(
-    AtlasEventType type,
-  ) {
+  Set<AtlasOperationalDomain> _domainsFor(AtlasEventType type) {
     switch (type) {
       case AtlasEventType.animalCreated:
       case AtlasEventType.animalUpdated:
@@ -112,9 +108,7 @@ class AtlasOperationalInvalidationService {
       case AtlasEventType.executiveBrainUpdated:
       case AtlasEventType.missionControlUpdated:
       case AtlasEventType.atlasOsUpdated:
-        return <AtlasOperationalDomain>{
-          AtlasOperationalDomain.executive,
-        };
+        return <AtlasOperationalDomain>{AtlasOperationalDomain.executive};
 
       case AtlasEventType.systemStarted:
       case AtlasEventType.systemUpdated:

@@ -5,73 +5,60 @@ enum AtlasCommercialOperationModule {
   ruralCrm,
 }
 
-extension AtlasCommercialOperationModuleX
-    on AtlasCommercialOperationModule {
+extension AtlasCommercialOperationModuleX on AtlasCommercialOperationModule {
   String get code => switch (this) {
-        AtlasCommercialOperationModule.digitalAuction =>
-          'digital_auction',
-        AtlasCommercialOperationModule.livestockLogistics =>
-          'livestock_logistics',
-        AtlasCommercialOperationModule.originCertification =>
-          'origin_certification',
-        AtlasCommercialOperationModule.ruralCrm =>
-          'rural_crm',
-      };
+    AtlasCommercialOperationModule.digitalAuction => 'digital_auction',
+    AtlasCommercialOperationModule.livestockLogistics => 'livestock_logistics',
+    AtlasCommercialOperationModule.originCertification =>
+      'origin_certification',
+    AtlasCommercialOperationModule.ruralCrm => 'rural_crm',
+  };
 
   String get title => switch (this) {
-        AtlasCommercialOperationModule.digitalAuction =>
-          'Leilão Digital',
-        AtlasCommercialOperationModule.livestockLogistics =>
-          'Logística Pecuária',
-        AtlasCommercialOperationModule.originCertification =>
-          'Certificação de Origem',
-        AtlasCommercialOperationModule.ruralCrm =>
-          'CRM Pecuário',
-      };
+    AtlasCommercialOperationModule.digitalAuction => 'Leilão Digital',
+    AtlasCommercialOperationModule.livestockLogistics => 'Logística Pecuária',
+    AtlasCommercialOperationModule.originCertification =>
+      'Certificação de Origem',
+    AtlasCommercialOperationModule.ruralCrm => 'CRM Pecuário',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasCommercialOperationModule.digitalAuction =>
-          'Pacote 75',
-        AtlasCommercialOperationModule.livestockLogistics =>
-          'Pacote 76',
-        AtlasCommercialOperationModule.originCertification =>
-          'Pacote 77',
-        AtlasCommercialOperationModule.ruralCrm =>
-          'Pacote 78',
-      };
+    AtlasCommercialOperationModule.digitalAuction => 'Pacote 75',
+    AtlasCommercialOperationModule.livestockLogistics => 'Pacote 76',
+    AtlasCommercialOperationModule.originCertification => 'Pacote 77',
+    AtlasCommercialOperationModule.ruralCrm => 'Pacote 78',
+  };
 
   List<String> get features => switch (this) {
-        AtlasCommercialOperationModule.digitalAuction => const [
-            'Cadastro de lotes',
-            'Lances e propostas',
-            'Comissões e condições',
-            'Arrematação e pagamento',
-            'Documentação pós-leilão',
-          ],
-        AtlasCommercialOperationModule.livestockLogistics =>
-          const [
-            'Planejamento de embarque',
-            'Transportadores e veículos',
-            'Rotas e custos',
-            'Bem-estar no transporte',
-            'Comprovantes de entrega',
-          ],
-        AtlasCommercialOperationModule.originCertification =>
-          const [
-            'Origem e propriedade',
-            'Identificação do lote',
-            'Evidências de produção',
-            'Auditoria e conformidade',
-            'Certificados e validade',
-          ],
-        AtlasCommercialOperationModule.ruralCrm => const [
-            'Leads e contatos',
-            'Oportunidades comerciais',
-            'Atividades e follow-up',
-            'Propostas e fechamento',
-            'Pós-venda e relacionamento',
-          ],
-      };
+    AtlasCommercialOperationModule.digitalAuction => const [
+      'Cadastro de lotes',
+      'Lances e propostas',
+      'Comissões e condições',
+      'Arrematação e pagamento',
+      'Documentação pós-leilão',
+    ],
+    AtlasCommercialOperationModule.livestockLogistics => const [
+      'Planejamento de embarque',
+      'Transportadores e veículos',
+      'Rotas e custos',
+      'Bem-estar no transporte',
+      'Comprovantes de entrega',
+    ],
+    AtlasCommercialOperationModule.originCertification => const [
+      'Origem e propriedade',
+      'Identificação do lote',
+      'Evidências de produção',
+      'Auditoria e conformidade',
+      'Certificados e validade',
+    ],
+    AtlasCommercialOperationModule.ruralCrm => const [
+      'Leads e contatos',
+      'Oportunidades comerciais',
+      'Atividades e follow-up',
+      'Propostas e fechamento',
+      'Pós-venda e relacionamento',
+    ],
+  };
 }
 
 class AtlasCommercialOperationRecord {
@@ -167,16 +154,12 @@ class AtlasCommercialOperationRecord {
     };
   }
 
-  factory AtlasCommercialOperationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCommercialOperationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasCommercialOperationModule.values.firstWhere(
+    final module = AtlasCommercialOperationModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasCommercialOperationModule.digitalAuction,
+      orElse: () => AtlasCommercialOperationModule.digitalAuction,
     );
 
     return AtlasCommercialOperationRecord(
@@ -189,15 +172,11 @@ class AtlasCommercialOperationRecord {
       counterparty: map['counterparty']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-      costAmount:
-          (map['costAmount'] as num?)?.toDouble() ?? 0.0,
+      costAmount: (map['costAmount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      distanceKm:
-          (map['distanceKm'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      distanceKm: (map['distanceKm'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

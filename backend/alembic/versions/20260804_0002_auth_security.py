@@ -14,10 +14,17 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("users", sa.Column("email_verified", sa.Boolean(), nullable=False, server_default=sa.false()))
-    op.add_column("users", sa.Column("failed_login_attempts", sa.Integer(), nullable=False, server_default="0"))
-    op.add_column("users", sa.Column("locked_until", sa.DateTime(timezone=True), nullable=True))
-    op.add_column("users", sa.Column("password_changed_at", sa.DateTime(timezone=True), nullable=True))
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    if "email_verified" not in user_columns:
+        op.add_column("users", sa.Column("email_verified", sa.Boolean(), nullable=False, server_default=sa.false()))
+    if "failed_login_attempts" not in user_columns:
+        op.add_column("users", sa.Column("failed_login_attempts", sa.Integer(), nullable=False, server_default="0"))
+    if "locked_until" not in user_columns:
+        op.add_column("users", sa.Column("locked_until", sa.DateTime(timezone=True), nullable=True))
+    if "password_changed_at" not in user_columns:
+        op.add_column("users", sa.Column("password_changed_at", sa.DateTime(timezone=True), nullable=True))
 
     op.create_table(
         "email_verification_tokens",

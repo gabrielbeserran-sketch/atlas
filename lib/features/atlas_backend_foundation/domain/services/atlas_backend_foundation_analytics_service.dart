@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 import 'package:projeto_atlas/features/atlas_backend_foundation/domain/models/atlas_backend_foundation_record.dart';
 
@@ -36,10 +35,18 @@ class AtlasBackendFoundationAnalyticsService {
     required List<AtlasBackendFoundationRecord> records,
   }) {
     final items = records.where((e) => e.module == module).toList();
-    final represented = items.map((e) => e.feature).where((e) => e.isNotEmpty).toSet();
-    final coverage = module.features.isEmpty ? 0.0 : represented.length * 100 / module.features.length;
+    final represented = items
+        .map((e) => e.feature)
+        .where((e) => e.isNotEmpty)
+        .toSet();
+    final coverage = module.features.isEmpty
+        ? 0.0
+        : represented.length * 100 / module.features.length;
     final operational = items.where((e) => e.isOperational).length;
-    final alerts = items.fold<int>(0, (sum, e) => sum + e.alertCount + (e.isCritical ? 1 : 0));
+    final alerts = items.fold<int>(
+      0,
+      (sum, e) => sum + e.alertCount + (e.isCritical ? 1 : 0),
+    );
 
     double avg(double Function(AtlasBackendFoundationRecord) select) {
       if (items.isEmpty) return 0;
@@ -63,8 +70,10 @@ class AtlasBackendFoundationAnalyticsService {
     final recommendations = <String>[
       for (final feature in module.features)
         if (!represented.contains(feature)) 'Implantar ou registrar: $feature.',
-      if (alerts > 0) 'Existem $alerts alertas técnicos; revise erros, disponibilidade e responsáveis.',
-      if (items.isEmpty) 'Cadastre o primeiro registro do ${module.packageLabel}.',
+      if (alerts > 0)
+        'Existem $alerts alertas técnicos; revise erros, disponibilidade e responsáveis.',
+      if (items.isEmpty)
+        'Cadastre o primeiro registro do ${module.packageLabel}.',
       'Mantenha desenvolvimento, homologação e produção separados.',
       'Não armazene credenciais no código-fonte.',
       'Valide toda operação no servidor antes de persistir.',

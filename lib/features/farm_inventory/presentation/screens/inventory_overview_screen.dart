@@ -9,7 +9,8 @@ class InventoryOverviewScreen extends StatefulWidget {
   const InventoryOverviewScreen({super.key});
 
   @override
-  State<InventoryOverviewScreen> createState() => _InventoryOverviewScreenState();
+  State<InventoryOverviewScreen> createState() =>
+      _InventoryOverviewScreenState();
 }
 
 class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
@@ -22,36 +23,29 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
   String search = '';
   String selectedFilter = 'Todos';
 
-  int get totalProducts => farmContexts.fold(
-        0,
-        (total, context) => total + context.items.length,
-      );
+  int get totalProducts =>
+      farmContexts.fold(0, (total, context) => total + context.items.length);
 
-  int get lowStockCount => farmContexts.fold(
-        0,
-        (total, context) => total + context.lowStockCount,
-      );
+  int get lowStockCount =>
+      farmContexts.fold(0, (total, context) => total + context.lowStockCount);
 
-  int get expiredCount => farmContexts.fold(
-        0,
-        (total, context) => total + context.expiredCount,
-      );
+  int get expiredCount =>
+      farmContexts.fold(0, (total, context) => total + context.expiredCount);
 
   int get nearExpirationCount => farmContexts.fold(
-        0,
-        (total, context) => total + context.nearExpirationCount,
-      );
+    0,
+    (total, context) => total + context.nearExpirationCount,
+  );
 
-  double get totalValue => farmContexts.fold(
-        0,
-        (total, context) => total + context.totalValue,
-      );
+  double get totalValue =>
+      farmContexts.fold(0, (total, context) => total + context.totalValue);
 
   List<InventoryFarmContext> get filteredContexts {
     final query = search.trim().toLowerCase();
 
     return farmContexts.where((context) {
-      final matchesSearch = query.isEmpty ||
+      final matchesSearch =
+          query.isEmpty ||
           context.farm.name.toLowerCase().contains(query) ||
           context.farm.city.toLowerCase().contains(query) ||
           context.farm.state.toLowerCase().contains(query) ||
@@ -105,8 +99,8 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
 
     contexts.sort(
       (first, second) => first.farm.name.toLowerCase().compareTo(
-            second.farm.name.toLowerCase(),
-          ),
+        second.farm.name.toLowerCase(),
+      ),
     );
 
     if (!mounted) {
@@ -303,10 +297,8 @@ class InventoryFarmContext {
 
   int get nearExpirationCount => items.where(_isNearExpiration).length;
 
-  double get totalValue => items.fold(
-        0,
-        (total, item) => total + item.totalValue,
-      );
+  double get totalValue =>
+      items.fold(0, (total, item) => total + item.totalValue);
 
   static bool _isExpired(FarmInventoryData item) {
     final date = _parseDate(item.expirationDate);
@@ -452,17 +444,15 @@ class _IndicatorCard extends StatelessWidget {
 }
 
 class _FarmInventoryCard extends StatelessWidget {
-  const _FarmInventoryCard({
-    required this.contextData,
-    required this.onOpen,
-  });
+  const _FarmInventoryCard({required this.contextData, required this.onOpen});
 
   final InventoryFarmContext contextData;
   final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
-    final hasAlerts = contextData.lowStockCount > 0 ||
+    final hasAlerts =
+        contextData.lowStockCount > 0 ||
         contextData.expiredCount > 0 ||
         contextData.nearExpirationCount > 0;
 

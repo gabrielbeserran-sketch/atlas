@@ -5,20 +5,15 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_cl
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 
 class AtlasClimateScreen extends StatefulWidget {
-  const AtlasClimateScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasClimateScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
   @override
-  State<AtlasClimateScreen> createState() =>
-      _AtlasClimateScreenState();
+  State<AtlasClimateScreen> createState() => _AtlasClimateScreenState();
 }
 
-class _AtlasClimateScreenState
-    extends State<AtlasClimateScreen> {
+class _AtlasClimateScreenState extends State<AtlasClimateScreen> {
   final service = AtlasClimateService.instance;
 
   List<AtlasClimateObservation> observations = [];
@@ -61,8 +56,7 @@ class _AtlasClimateScreenState
     final radiation = TextEditingController();
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasClimateObservation>(
+    final result = await showDialog<AtlasClimateObservation>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -79,36 +73,22 @@ class _AtlasClimateScreenState
                         title: 'Data',
                         date: occurredAt,
                         onChanged: (value) {
-                          setDialogState(
-                            () => occurredAt = value,
-                          );
+                          setDialogState(() => occurredAt = value);
                         },
                       ),
                       _row(
                         _number(rainfall, 'Chuva (mm)'),
-                        _number(
-                          humidity,
-                          'Umidade relativa (%)',
-                        ),
+                        _number(humidity, 'Umidade relativa (%)'),
                       ),
                       const SizedBox(height: 10),
                       _row(
-                        _number(
-                          minimum,
-                          'Temperatura mínima (°C)',
-                        ),
-                        _number(
-                          maximum,
-                          'Temperatura máxima (°C)',
-                        ),
+                        _number(minimum, 'Temperatura mínima (°C)'),
+                        _number(maximum, 'Temperatura máxima (°C)'),
                       ),
                       const SizedBox(height: 10),
                       _row(
                         _number(wind, 'Vento (km/h)'),
-                        _number(
-                          radiation,
-                          'Radiação (MJ/m²)',
-                        ),
+                        _number(radiation, 'Radiação (MJ/m²)'),
                       ),
                       const SizedBox(height: 10),
                       TextField(
@@ -125,8 +105,7 @@ class _AtlasClimateScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -134,21 +113,17 @@ class _AtlasClimateScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasClimateObservation(
-                        id: 'climate_observation_'
+                        id:
+                            'climate_observation_'
                             '${now.microsecondsSinceEpoch}',
                         occurredAt: occurredAt,
                         rainfallMm: _double(rainfall.text),
-                        minimumTemperatureC:
-                            _double(minimum.text),
-                        maximumTemperatureC:
-                            _double(maximum.text),
-                        relativeHumidityPercent:
-                            _double(humidity.text),
+                        minimumTemperatureC: _double(minimum.text),
+                        maximumTemperatureC: _double(maximum.text),
+                        relativeHumidityPercent: _double(humidity.text),
                         windSpeedKmH: _double(wind.text),
-                        solarRadiationMjM2:
-                            _double(radiation.text),
-                        farmName:
-                            widget.actionController.farmName,
+                        solarRadiationMjM2: _double(radiation.text),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -181,8 +156,7 @@ class _AtlasClimateScreenState
   }
 
   Future<void> _addForecast() async {
-    var forecastAt =
-        DateTime.now().add(const Duration(days: 1));
+    var forecastAt = DateTime.now().add(const Duration(days: 1));
     final rainfall = TextEditingController();
     final minimum = TextEditingController();
     final maximum = TextEditingController();
@@ -207,36 +181,19 @@ class _AtlasClimateScreenState
                         title: 'Data prevista',
                         date: forecastAt,
                         onChanged: (value) {
-                          setDialogState(
-                            () => forecastAt = value,
-                          );
+                          setDialogState(() => forecastAt = value);
                         },
                       ),
-                      _number(
-                        rainfall,
-                        'Chuva esperada (mm)',
+                      _number(rainfall, 'Chuva esperada (mm)'),
+                      const SizedBox(height: 10),
+                      _row(
+                        _number(minimum, 'Temperatura mínima (°C)'),
+                        _number(maximum, 'Temperatura máxima (°C)'),
                       ),
                       const SizedBox(height: 10),
                       _row(
-                        _number(
-                          minimum,
-                          'Temperatura mínima (°C)',
-                        ),
-                        _number(
-                          maximum,
-                          'Temperatura máxima (°C)',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      _row(
-                        _number(
-                          humidity,
-                          'Umidade relativa (%)',
-                        ),
-                        _number(
-                          probability,
-                          'Probabilidade de chuva (%)',
-                        ),
+                        _number(humidity, 'Umidade relativa (%)'),
+                        _number(probability, 'Probabilidade de chuva (%)'),
                       ),
                       const SizedBox(height: 10),
                       TextField(
@@ -252,8 +209,7 @@ class _AtlasClimateScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -261,22 +217,17 @@ class _AtlasClimateScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasClimateForecast(
-                        id: 'climate_forecast_'
+                        id:
+                            'climate_forecast_'
                             '${now.microsecondsSinceEpoch}',
                         forecastAt: forecastAt,
-                        expectedRainfallMm:
-                            _double(rainfall.text),
-                        minimumTemperatureC:
-                            _double(minimum.text),
-                        maximumTemperatureC:
-                            _double(maximum.text),
-                        relativeHumidityPercent:
-                            _double(humidity.text),
-                        probabilityOfRainPercent:
-                            _double(probability.text),
+                        expectedRainfallMm: _double(rainfall.text),
+                        minimumTemperatureC: _double(minimum.text),
+                        maximumTemperatureC: _double(maximum.text),
+                        relativeHumidityPercent: _double(humidity.text),
+                        probabilityOfRainPercent: _double(probability.text),
                         source: source.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                       ),
                     );
                   },
@@ -341,16 +292,13 @@ class _AtlasClimateScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addObservation,
           icon: const Icon(Icons.add),
           label: const Text('Registrar clima'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _Dashboard(snapshot: current),
@@ -358,13 +306,8 @@ class _AtlasClimateScreenState
                   _Forecasts(forecasts: forecasts),
                   _Rainfall(snapshot: current),
                   _Temperature(snapshot: current),
-                  _ThermalStress(
-                    observations: observations,
-                    snapshot: current,
-                  ),
-                  _Recommendations(
-                    recommendations: recommendations,
-                  ),
+                  _ThermalStress(observations: observations, snapshot: current),
+                  _Recommendations(recommendations: recommendations),
                   _Planning(
                     forecasts: forecasts,
                     recommendations: recommendations,
@@ -385,14 +328,10 @@ class _AtlasClimateScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -426,9 +365,7 @@ class _AtlasClimateScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -453,28 +390,12 @@ class _Dashboard extends StatelessWidget {
           runSpacing: 10,
           children: [
             _card('Chuva 30 dias', item.totalRainfall30DaysMm, 'mm'),
-            _card(
-              'Máxima média',
-              item.averageMaximumTemperatureC,
-              '°C',
-            ),
-            _card(
-              'Umidade média',
-              item.averageHumidityPercent,
-              '%',
-            ),
+            _card('Máxima média', item.averageMaximumTemperatureC, '°C'),
+            _card('Umidade média', item.averageHumidityPercent, '%'),
             _card('THI máximo', item.maximumThi, ''),
-            _card(
-              'Dias de estresse',
-              item.thermalStressDays.toDouble(),
-              '',
-            ),
+            _card('Dias de estresse', item.thermalStressDays.toDouble(), ''),
             _card('Dias secos', item.dryDays.toDouble(), ''),
-            _card(
-              'Chuva prevista',
-              item.forecastRainfall7DaysMm,
-              'mm',
-            ),
+            _card('Chuva prevista', item.forecastRainfall7DaysMm, 'mm'),
             _card('Score', item.climateScore, '/100'),
           ],
         ),
@@ -491,9 +412,7 @@ class _History extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (observations.isEmpty) {
-      return const Center(
-        child: Text('Nenhum registro climático.'),
-      );
+      return const Center(child: Text('Nenhum registro climático.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -503,17 +422,13 @@ class _History extends StatelessWidget {
         final item = observations[index];
         return Card(
           child: ListTile(
-            title: Text(
-              DateFormat('dd/MM/yyyy').format(item.occurredAt),
-            ),
+            title: Text(DateFormat('dd/MM/yyyy').format(item.occurredAt)),
             subtitle: Text(
               '${item.minimumTemperatureC.toStringAsFixed(1)} a '
               '${item.maximumTemperatureC.toStringAsFixed(1)} °C • '
               '${item.relativeHumidityPercent.toStringAsFixed(1)}% UR',
             ),
-            trailing: Text(
-              '${item.rainfallMm.toStringAsFixed(1)} mm',
-            ),
+            trailing: Text('${item.rainfallMm.toStringAsFixed(1)} mm'),
           ),
         );
       },
@@ -529,9 +444,7 @@ class _Forecasts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (forecasts.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma previsão registrada.'),
-      );
+      return const Center(child: Text('Nenhuma previsão registrada.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -542,17 +455,13 @@ class _Forecasts extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.cloud_outlined),
-            title: Text(
-              DateFormat('dd/MM/yyyy').format(item.forecastAt),
-            ),
+            title: Text(DateFormat('dd/MM/yyyy').format(item.forecastAt)),
             subtitle: Text(
               '${item.minimumTemperatureC.toStringAsFixed(1)} a '
               '${item.maximumTemperatureC.toStringAsFixed(1)} °C • '
               '${item.probabilityOfRainPercent.toStringAsFixed(0)}% de chuva',
             ),
-            trailing: Text(
-              '${item.expectedRainfallMm.toStringAsFixed(1)} mm',
-            ),
+            trailing: Text('${item.expectedRainfallMm.toStringAsFixed(1)} mm'),
           ),
         );
       },
@@ -574,10 +483,8 @@ class _Rainfall extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _line('Chuva acumulada em 30 dias',
-            item.totalRainfall30DaysMm, 'mm'),
-        _line('Chuva prevista em 7 dias',
-            item.forecastRainfall7DaysMm, 'mm'),
+        _line('Chuva acumulada em 30 dias', item.totalRainfall30DaysMm, 'mm'),
+        _line('Chuva prevista em 7 dias', item.forecastRainfall7DaysMm, 'mm'),
         _line('Dias secos', item.dryDays.toDouble(), ''),
       ],
     );
@@ -598,10 +505,12 @@ class _Temperature extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _line('Temperatura máxima média',
-            item.averageMaximumTemperatureC, '°C'),
-        _line('Umidade relativa média',
-            item.averageHumidityPercent, '%'),
+        _line(
+          'Temperatura máxima média',
+          item.averageMaximumTemperatureC,
+          '°C',
+        ),
+        _line('Umidade relativa média', item.averageHumidityPercent, '%'),
         _line('THI máximo', item.maximumThi, ''),
       ],
     );
@@ -609,10 +518,7 @@ class _Temperature extends StatelessWidget {
 }
 
 class _ThermalStress extends StatelessWidget {
-  const _ThermalStress({
-    required this.observations,
-    required this.snapshot,
-  });
+  const _ThermalStress({required this.observations, required this.snapshot});
 
   final List<AtlasClimateObservation> observations;
   final AtlasClimateExecutiveSnapshot? snapshot;
@@ -620,11 +526,7 @@ class _ThermalStress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final risky = observations
-        .where(
-          (item) =>
-              item.thermalStressRisk !=
-              AtlasClimateRiskLevel.low,
-        )
+        .where((item) => item.thermalStressRisk != AtlasClimateRiskLevel.low)
         .toList();
 
     return ListView(
@@ -639,16 +541,12 @@ class _ThermalStress extends StatelessWidget {
         ...risky.map(
           (item) => Card(
             child: ListTile(
-              title: Text(
-                DateFormat('dd/MM/yyyy').format(item.occurredAt),
-              ),
+              title: Text(DateFormat('dd/MM/yyyy').format(item.occurredAt)),
               subtitle: Text(
                 'THI ${item.temperatureHumidityIndex.toStringAsFixed(1)}',
               ),
               trailing: Text(
-                atlasClimateRiskLevelLabel(
-                  item.thermalStressRisk,
-                ),
+                atlasClimateRiskLevelLabel(item.thermalStressRisk),
               ),
             ),
           ),
@@ -659,9 +557,7 @@ class _ThermalStress extends StatelessWidget {
 }
 
 class _Recommendations extends StatelessWidget {
-  const _Recommendations({
-    required this.recommendations,
-  });
+  const _Recommendations({required this.recommendations});
 
   final List<String> recommendations;
 
@@ -682,10 +578,7 @@ class _Recommendations extends StatelessWidget {
 }
 
 class _Planning extends StatelessWidget {
-  const _Planning({
-    required this.forecasts,
-    required this.recommendations,
-  });
+  const _Planning({required this.forecasts, required this.recommendations});
 
   final List<AtlasClimateForecast> forecasts;
   final List<String> recommendations;
@@ -697,10 +590,7 @@ class _Planning extends StatelessWidget {
       children: [
         const Text(
           'Planejamento baseado na previsão',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 8),
         ...recommendations.map(
@@ -714,9 +604,7 @@ class _Planning extends StatelessWidget {
         if (forecasts.isEmpty)
           const Card(
             child: ListTile(
-              title: Text(
-                'Cadastre previsões para ampliar o planejamento.',
-              ),
+              title: Text('Cadastre previsões para ampliar o planejamento.'),
             ),
           ),
       ],
@@ -738,10 +626,7 @@ Widget _card(String title, double value, String unit) {
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
               '${unit.isEmpty || unit == '/100' ? unit : ' $unit'}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -757,9 +642,7 @@ Widget _line(String title, double value, String unit) {
       trailing: Text(
         '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
         '${unit.isEmpty ? '' : ' $unit'}',
-        style: const TextStyle(
-          fontWeight: FontWeight.w900,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w900),
       ),
     ),
   );

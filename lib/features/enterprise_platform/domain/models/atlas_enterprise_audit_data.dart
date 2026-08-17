@@ -42,30 +42,28 @@ class AtlasEnterpriseAuditRecord {
   final String integrityHash;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'companyId': companyId,
-        'farmId': farmId,
-        'userId': userId,
-        'userName': userName,
-        'action': action,
-        'module': module,
-        'entityType': entityType,
-        'entityId': entityId,
-        'description': description,
-        'before': before,
-        'after': after,
-        'occurredAt': occurredAt.toIso8601String(),
-        'device': device,
-        'source': source,
-        'result': result,
-        'justification': justification,
-        'previousHash': previousHash,
-        'integrityHash': integrityHash,
-      };
+    'id': id,
+    'companyId': companyId,
+    'farmId': farmId,
+    'userId': userId,
+    'userName': userName,
+    'action': action,
+    'module': module,
+    'entityType': entityType,
+    'entityId': entityId,
+    'description': description,
+    'before': before,
+    'after': after,
+    'occurredAt': occurredAt.toIso8601String(),
+    'device': device,
+    'source': source,
+    'result': result,
+    'justification': justification,
+    'previousHash': previousHash,
+    'integrityHash': integrityHash,
+  };
 
-  factory AtlasEnterpriseAuditRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnterpriseAuditRecord.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseAuditRecord(
       id: map['id']?.toString() ?? '',
       companyId: map['companyId']?.toString() ?? '',
@@ -85,7 +83,7 @@ class AtlasEnterpriseAuditRecord {
       ),
       occurredAt:
           DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       device: map['device']?.toString() ?? 'local_device',
       source: map['source']?.toString() ?? 'atlas_app',
       result: map['result']?.toString() ?? 'success',

@@ -1,0 +1,52 @@
+{
+  "status": "OK",
+  "errors": [],
+  "warnings": [],
+  "predicted_risks": [
+    {
+      "risk": "porta_8000_em_uso",
+      "probability": "media",
+      "prevention": "usar somente uma instância de start_backend e não iniciar Uvicorn manualmente em paralelo"
+    },
+    {
+      "risk": "porta_5432_ocupada_ou_container_antigo",
+      "probability": "media",
+      "prevention": "validar socket real e autenticação; recriar somente db quando necessário, preservando volume"
+    },
+    {
+      "risk": "dependencias_flutter_nao_restauradas",
+      "probability": "alta_em_extracao_limpa",
+      "prevention": "bootstrap_project executa flutter pub get e exige .dart_tool/package_config.json"
+    },
+    {
+      "risk": "venv_ausente_ou_desatualizada",
+      "probability": "alta_em_extracao_limpa",
+      "prevention": "ensure_backend_venv cria a venv e valida fingerprint dos requirements"
+    },
+    {
+      "risk": "schema_local_antigo",
+      "probability": "alta_em_base_existente",
+      "prevention": "reconcile_local_alembic faz reparo aditivo e revalida antes do stamp"
+    },
+    {
+      "risk": "arquivos_antigos_mesclados",
+      "probability": "alta_se_copiar_por_cima",
+      "prevention": "manifesto da baseline bloqueia arquivos-fonte inesperados"
+    },
+    {
+      "risk": "codificacao_windows_powershell",
+      "probability": "media",
+      "prevention": "scripts .ps1 distribuídos em UTF-8 BOM + CRLF"
+    },
+    {
+      "risk": "parser_powershell",
+      "probability": "media",
+      "prevention": "preflight usa parser nativo do PowerShell antes de executar"
+    },
+    {
+      "risk": "import_python_direto",
+      "probability": "media",
+      "prevention": "auditoria exige bootstrap de sys.path antes de import app"
+    }
+  ]
+}

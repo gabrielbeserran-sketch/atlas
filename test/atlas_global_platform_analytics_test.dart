@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_global_platform/domain/models/atlas
 import 'package:projeto_atlas/features/atlas_global_platform/domain/services/atlas_global_platform_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasGlobalPlatformAnalyticsService();
+  const service = AtlasGlobalPlatformAnalyticsService();
 
   test('calculates global coverage and alerts', () {
     final records = [
       AtlasGlobalPlatformRecord(
         id: '1',
-        feature:
-            AtlasGlobalPlatformFeature.multiCompany,
+        feature: AtlasGlobalPlatformFeature.multiCompany,
         title: 'Empresa Atlas',
         date: '04/08/2026',
         status: 'Ativo',

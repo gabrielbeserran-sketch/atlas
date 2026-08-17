@@ -44,8 +44,9 @@ class AtlasOfficialIntegrationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -63,9 +64,9 @@ class AtlasOfficialIntegrationAnalyticsService {
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(35, coverage.round() * 35 ~/ 100);
@@ -112,30 +113,26 @@ class AtlasOfficialIntegrationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasOfficialIntegrationModule.sisbov => const [
-              'Confirme identificação, vínculos e eventos antes da sincronização oficial.',
-              'Mantenha documentos e trilha de auditoria associados ao animal.',
-            ],
-          AtlasOfficialIntegrationModule.gta => const [
-              'Valide origem, destino, finalidade, quantidade e validade antes da emissão.',
-              'Mantenha os comprovantes e a situação da autorização atualizados.',
-            ],
-          AtlasOfficialIntegrationModule.mapa => const [
-              'Centralize protocolos, documentos e vencimentos regulatórios.',
-              'Use revisão humana antes de qualquer transmissão a sistema oficial.',
-            ],
-          AtlasOfficialIntegrationModule.esocialRural => const [
-              'Valide cadastros, lotações, eventos e prazos com o responsável contábil.',
-              'Não transmita dados pessoais sem autorização, segurança e conferência.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasOfficialIntegrationModule.sisbov => const [
+          'Confirme identificação, vínculos e eventos antes da sincronização oficial.',
+          'Mantenha documentos e trilha de auditoria associados ao animal.',
+        ],
+        AtlasOfficialIntegrationModule.gta => const [
+          'Valide origem, destino, finalidade, quantidade e validade antes da emissão.',
+          'Mantenha os comprovantes e a situação da autorização atualizados.',
+        ],
+        AtlasOfficialIntegrationModule.mapa => const [
+          'Centralize protocolos, documentos e vencimentos regulatórios.',
+          'Use revisão humana antes de qualquer transmissão a sistema oficial.',
+        ],
+        AtlasOfficialIntegrationModule.esocialRural => const [
+          'Valide cadastros, lotações, eventos e prazos com o responsável contábil.',
+          'Não transmita dados pessoais sem autorização, segurança e conferência.',
+        ],
+      });
     }
 
     return items;

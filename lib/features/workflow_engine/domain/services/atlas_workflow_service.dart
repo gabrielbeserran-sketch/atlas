@@ -6,27 +6,19 @@ import 'package:projeto_atlas/features/workflow_engine/domain/models/atlas_workf
 class AtlasWorkflowService {
   const AtlasWorkflowService();
 
-  AtlasWorkflow createWorkflow({
-    required AtlasDecisionExecution execution,
-  }) {
-    final start =
-        execution.startedAt ?? execution.approvedAt;
+  AtlasWorkflow createWorkflow({required AtlasDecisionExecution execution}) {
+    final start = execution.startedAt ?? execution.approvedAt;
 
-    final workflowId =
-        'workflow_${execution.id}';
+    final workflowId = 'workflow_${execution.id}';
 
-    final tasks =
-        <AtlasWorkflowTask>[];
+    final tasks = <AtlasWorkflowTask>[];
 
     for (final step in execution.steps) {
-      final taskId =
-          '${workflowId}_task_${step.position}';
+      final taskId = '${workflowId}_task_${step.position}';
 
       final dependencies = step.position <= 1
           ? <String>[]
-          : <String>[
-              '${workflowId}_task_${step.position - 1}',
-            ];
+          : <String>['${workflowId}_task_${step.position - 1}'];
 
       final taskStart = start.add(
         Duration(
@@ -34,16 +26,12 @@ class AtlasWorkflowService {
             0,
             step.position == 1
                 ? 0
-                : execution.steps[
-                            step.position - 2]
-                        .deadlineDays,
+                : execution.steps[step.position - 2].deadlineDays,
           ),
         ),
       );
 
-      final deadline = start.add(
-        Duration(days: step.deadlineDays),
-      );
+      final deadline = start.add(Duration(days: step.deadlineDays));
 
       tasks.add(
         AtlasWorkflowTask(
@@ -52,20 +40,17 @@ class AtlasWorkflowService {
           position: step.position,
           title: step.title,
           description: step.description,
-          responsibleName:
-              step.responsibleName,
+          responsibleName: step.responsibleName,
           startDate: taskStart,
           deadline: deadline,
           status: step.completed
               ? AtlasWorkflowTaskStatus.completed
               : dependencies.isEmpty
-                  ? AtlasWorkflowTaskStatus.pending
-                  : AtlasWorkflowTaskStatus.blocked,
-          progressPercent:
-              step.completed ? 100 : 0,
+              ? AtlasWorkflowTaskStatus.pending
+              : AtlasWorkflowTaskStatus.blocked,
+          progressPercent: step.completed ? 100 : 0,
           dependencies: dependencies,
-          expectedResult:
-              step.expectedResult,
+          expectedResult: step.expectedResult,
           notes: '',
         ),
       );
@@ -81,8 +66,7 @@ class AtlasWorkflowService {
         category: execution.category,
         startedAt: start,
         deadline: execution.deadline,
-        status:
-            AtlasWorkflowStatus.planned,
+        status: AtlasWorkflowStatus.planned,
         progressPercent: 0,
         tasks: tasks,
         bottlenecks: const [],
@@ -103,22 +87,14 @@ class AtlasWorkflowService {
         return task;
       }
 
-      if (!_dependenciesCompleted(
-        task: task,
-        tasks: workflow.tasks,
-      )) {
-        return task.copyWith(
-          status:
-              AtlasWorkflowTaskStatus.blocked,
-        );
+      if (!_dependenciesCompleted(task: task, tasks: workflow.tasks)) {
+        return task.copyWith(status: AtlasWorkflowTaskStatus.blocked);
       }
 
       return task.copyWith(
-        status:
-            AtlasWorkflowTaskStatus.inProgress,
+        status: AtlasWorkflowTaskStatus.inProgress,
         startDate: currentTime,
-        progressPercent:
-            math.max(task.progressPercent, 1),
+        progressPercent: math.max(task.progressPercent, 1),
       );
     }).toList();
 
@@ -136,24 +112,15 @@ class AtlasWorkflowService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    final safeProgress =
-        progressPercent
-            .clamp(0.0, 100.0)
-            .toDouble();
+    final safeProgress = progressPercent.clamp(0.0, 100.0).toDouble();
 
     final tasks = workflow.tasks.map((task) {
       if (task.id != taskId) {
         return task;
       }
 
-      if (!_dependenciesCompleted(
-        task: task,
-        tasks: workflow.tasks,
-      )) {
-        return task.copyWith(
-          status:
-              AtlasWorkflowTaskStatus.blocked,
-        );
+      if (!_dependenciesCompleted(task: task, tasks: workflow.tasks)) {
+        return task.copyWith(status: AtlasWorkflowTaskStatus.blocked);
       }
 
       return task.copyWith(
@@ -180,15 +147,10 @@ class AtlasWorkflowService {
         return task;
       }
 
-      return task.copyWith(
-        responsibleName:
-            responsibleName.trim(),
-      );
+      return task.copyWith(responsibleName: responsibleName.trim());
     }).toList();
 
-    return _normalizeWorkflow(
-      workflow.copyWith(tasks: tasks),
-    );
+    return _normalizeWorkflow(workflow.copyWith(tasks: tasks));
   }
 
   AtlasWorkflow replan({
@@ -198,29 +160,21 @@ class AtlasWorkflowService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    final safeDays =
-        math.max(additionalDays, 1);
+    final safeDays = math.max(additionalDays, 1);
 
     final tasks = workflow.tasks.map((task) {
-      if (task.status ==
-              AtlasWorkflowTaskStatus.completed ||
-          task.status ==
-              AtlasWorkflowTaskStatus.cancelled) {
+      if (task.status == AtlasWorkflowTaskStatus.completed ||
+          task.status == AtlasWorkflowTaskStatus.cancelled) {
         return task;
       }
 
       return task.copyWith(
-        deadline: task.deadline.add(
-          Duration(days: safeDays),
-        ),
+        deadline: task.deadline.add(Duration(days: safeDays)),
       );
     }).toList();
 
     return _normalizeWorkflow(
-      workflow.copyWith(
-        tasks: tasks,
-        replanningSuggestions: const [],
-      ),
+      workflow.copyWith(tasks: tasks, replanningSuggestions: const []),
       now: currentTime,
     );
   }
@@ -232,41 +186,27 @@ class AtlasWorkflowService {
     final currentTime = now ?? DateTime.now();
 
     final normalized = workflows.map((item) {
-      return _normalizeWorkflow(
-        item,
-        now: currentTime,
-      );
+      return _normalizeWorkflow(item, now: currentTime);
     }).toList();
 
-    final allTasks = normalized
-        .expand((workflow) => workflow.tasks)
-        .toList();
+    final allTasks = normalized.expand((workflow) => workflow.tasks).toList();
 
     final completed = allTasks.where((task) {
-      return task.status ==
-          AtlasWorkflowTaskStatus.completed;
+      return task.status == AtlasWorkflowTaskStatus.completed;
     }).length;
 
     final delayed = allTasks.where((task) {
-      return task.status ==
-          AtlasWorkflowTaskStatus.delayed;
+      return task.status == AtlasWorkflowTaskStatus.delayed;
     }).length;
 
     final progress = allTasks.isEmpty
         ? 0.0
-        : allTasks.fold<double>(
-              0,
-              (sum, task) =>
-                  sum + task.progressPercent,
-            ) /
-            allTasks.length;
+        : allTasks.fold<double>(0, (sum, task) => sum + task.progressPercent) /
+              allTasks.length;
 
-    final executionScore =
-        (progress -
-                delayed * 5 +
-                completed * 1.5)
-            .clamp(0.0, 100.0)
-            .toDouble();
+    final executionScore = (progress - delayed * 5 + completed * 1.5)
+        .clamp(0.0, 100.0)
+        .toDouble();
 
     return AtlasWorkflowData(
       generatedAt: currentTime,
@@ -286,96 +226,69 @@ class AtlasWorkflowService {
     );
   }
 
-  AtlasWorkflow _normalizeWorkflow(
-    AtlasWorkflow workflow, {
-    DateTime? now,
-  }) {
+  AtlasWorkflow _normalizeWorkflow(AtlasWorkflow workflow, {DateTime? now}) {
     final currentTime = now ?? DateTime.now();
 
     var tasks = workflow.tasks.map((task) {
-      if (task.status ==
-              AtlasWorkflowTaskStatus.completed ||
-          task.status ==
-              AtlasWorkflowTaskStatus.cancelled) {
+      if (task.status == AtlasWorkflowTaskStatus.completed ||
+          task.status == AtlasWorkflowTaskStatus.cancelled) {
         return task;
       }
 
-      final dependenciesCompleted =
-          _dependenciesCompleted(
+      final dependenciesCompleted = _dependenciesCompleted(
         task: task,
         tasks: workflow.tasks,
       );
 
       if (!dependenciesCompleted) {
-        return task.copyWith(
-          status:
-              AtlasWorkflowTaskStatus.blocked,
-        );
+        return task.copyWith(status: AtlasWorkflowTaskStatus.blocked);
       }
 
       if (currentTime.isAfter(task.deadline)) {
-        return task.copyWith(
-          status:
-              AtlasWorkflowTaskStatus.delayed,
-        );
+        return task.copyWith(status: AtlasWorkflowTaskStatus.delayed);
       }
 
-      if (task.status ==
-          AtlasWorkflowTaskStatus.blocked) {
-        return task.copyWith(
-          status:
-              AtlasWorkflowTaskStatus.pending,
-        );
+      if (task.status == AtlasWorkflowTaskStatus.blocked) {
+        return task.copyWith(status: AtlasWorkflowTaskStatus.pending);
       }
 
       return task;
     }).toList();
 
     final completedCount = tasks.where((task) {
-      return task.status ==
-          AtlasWorkflowTaskStatus.completed;
+      return task.status == AtlasWorkflowTaskStatus.completed;
     }).length;
 
     final progress = tasks.isEmpty
         ? 0.0
-        : tasks.fold<double>(
-              0,
-              (sum, task) =>
-                  sum + task.progressPercent,
-            ) /
-            tasks.length;
+        : tasks.fold<double>(0, (sum, task) => sum + task.progressPercent) /
+              tasks.length;
 
-    final allCompleted =
-        tasks.isNotEmpty &&
-            completedCount == tasks.length;
+    final allCompleted = tasks.isNotEmpty && completedCount == tasks.length;
 
     final hasDelayed = tasks.any((task) {
-      return task.status ==
-          AtlasWorkflowTaskStatus.delayed;
+      return task.status == AtlasWorkflowTaskStatus.delayed;
     });
 
     final hasInProgress = tasks.any((task) {
-      return task.status ==
-          AtlasWorkflowTaskStatus.inProgress;
+      return task.status == AtlasWorkflowTaskStatus.inProgress;
     });
 
     final status = allCompleted
         ? AtlasWorkflowStatus.completed
         : hasDelayed
-            ? AtlasWorkflowStatus.delayed
-            : hasInProgress
-                ? AtlasWorkflowStatus.inProgress
-                : AtlasWorkflowStatus.planned;
+        ? AtlasWorkflowStatus.delayed
+        : hasInProgress
+        ? AtlasWorkflowStatus.inProgress
+        : AtlasWorkflowStatus.planned;
 
-    final bottlenecks =
-        _buildBottlenecks(
+    final bottlenecks = _buildBottlenecks(
       workflowId: workflow.id,
       tasks: tasks,
       now: currentTime,
     );
 
-    final replanning =
-        _buildReplanningSuggestions(
+    final replanning = _buildReplanningSuggestions(
       workflow: workflow,
       bottlenecks: bottlenecks,
       now: currentTime,
@@ -383,8 +296,7 @@ class AtlasWorkflowService {
 
     return workflow.copyWith(
       tasks: tasks,
-      progressPercent:
-          progress.clamp(0.0, 100.0).toDouble(),
+      progressPercent: progress.clamp(0.0, 100.0).toDouble(),
       status: status,
       bottlenecks: bottlenecks,
       replanningSuggestions: replanning,
@@ -399,19 +311,14 @@ class AtlasWorkflowService {
       return true;
     }
 
-    for (final dependencyId
-        in task.dependencies) {
-      final dependency = tasks
-          .cast<AtlasWorkflowTask?>()
-          .firstWhere(
-            (item) => item?.id == dependencyId,
-            orElse: () => null,
-          );
+    for (final dependencyId in task.dependencies) {
+      final dependency = tasks.cast<AtlasWorkflowTask?>().firstWhere(
+        (item) => item?.id == dependencyId,
+        orElse: () => null,
+      );
 
       if (dependency == null ||
-          dependency.status !=
-              AtlasWorkflowTaskStatus
-                  .completed) {
+          dependency.status != AtlasWorkflowTaskStatus.completed) {
         return false;
       }
     }
@@ -419,46 +326,34 @@ class AtlasWorkflowService {
     return true;
   }
 
-  List<AtlasWorkflowBottleneck>
-      _buildBottlenecks({
+  List<AtlasWorkflowBottleneck> _buildBottlenecks({
     required String workflowId,
     required List<AtlasWorkflowTask> tasks,
     required DateTime now,
   }) {
-    final result =
-        <AtlasWorkflowBottleneck>[];
+    final result = <AtlasWorkflowBottleneck>[];
 
     for (final task in tasks) {
-      if (task.status !=
-          AtlasWorkflowTaskStatus.delayed) {
+      if (task.status != AtlasWorkflowTaskStatus.delayed) {
         continue;
       }
 
-      final delayDays =
-          now.difference(task.deadline).inDays;
+      final delayDays = now.difference(task.deadline).inDays;
 
       result.add(
         AtlasWorkflowBottleneck(
-          id:
-              'bottleneck_${workflowId}_${task.id}',
+          id: 'bottleneck_${workflowId}_${task.id}',
           workflowId: workflowId,
           taskId: task.id,
-          title:
-              'Atraso em ${task.title}',
-          description:
-              'A tarefa ultrapassou o prazo planejado.',
-          severity:
-              delayDays >= 15
-                  ? AtlasWorkflowBottleneckSeverity
-                      .critical
-                  : delayDays >= 7
-                      ? AtlasWorkflowBottleneckSeverity
-                          .high
-                      : delayDays >= 3
-                          ? AtlasWorkflowBottleneckSeverity
-                              .medium
-                          : AtlasWorkflowBottleneckSeverity
-                              .low,
+          title: 'Atraso em ${task.title}',
+          description: 'A tarefa ultrapassou o prazo planejado.',
+          severity: delayDays >= 15
+              ? AtlasWorkflowBottleneckSeverity.critical
+              : delayDays >= 7
+              ? AtlasWorkflowBottleneckSeverity.high
+              : delayDays >= 3
+              ? AtlasWorkflowBottleneckSeverity.medium
+              : AtlasWorkflowBottleneckSeverity.low,
           delayDays: math.max(delayDays, 1),
           recommendation:
               'Revisar responsável, recursos e dependências antes de replanejar.',
@@ -469,11 +364,9 @@ class AtlasWorkflowService {
     return result;
   }
 
-  List<AtlasWorkflowReplanningSuggestion>
-      _buildReplanningSuggestions({
+  List<AtlasWorkflowReplanningSuggestion> _buildReplanningSuggestions({
     required AtlasWorkflow workflow,
-    required List<AtlasWorkflowBottleneck>
-        bottlenecks,
+    required List<AtlasWorkflowBottleneck> bottlenecks,
     required DateTime now,
   }) {
     if (bottlenecks.isEmpty) {
@@ -482,31 +375,22 @@ class AtlasWorkflowService {
 
     final maxDelay = bottlenecks.fold<int>(
       0,
-      (current, item) =>
-          math.max(current, item.delayDays),
+      (current, item) => math.max(current, item.delayDays),
     );
 
     return [
       AtlasWorkflowReplanningSuggestion(
-        id:
-            'replan_${workflow.id}_${now.millisecondsSinceEpoch}',
+        id: 'replan_${workflow.id}_${now.millisecondsSinceEpoch}',
         workflowId: workflow.id,
-        title:
-            'Replanejar cronograma',
+        title: 'Replanejar cronograma',
         description:
             'Adicionar $maxDelay dias aos prazos pendentes e redistribuir recursos.',
-        newDeadline:
-            workflow.deadline.add(
-          Duration(days: maxDelay),
-        ),
+        newDeadline: workflow.deadline.add(Duration(days: maxDelay)),
         priority: maxDelay >= 15
-            ? AtlasWorkflowReplanningPriority
-                .critical
+            ? AtlasWorkflowReplanningPriority.critical
             : maxDelay >= 7
-                ? AtlasWorkflowReplanningPriority
-                    .high
-                : AtlasWorkflowReplanningPriority
-                    .medium,
+            ? AtlasWorkflowReplanningPriority.high
+            : AtlasWorkflowReplanningPriority.medium,
       ),
     ];
   }

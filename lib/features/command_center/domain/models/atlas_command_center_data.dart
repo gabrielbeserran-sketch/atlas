@@ -44,9 +44,7 @@ class AtlasCommandItem {
   bool get isOverdue =>
       isOpen && dueAt != null && dueAt!.isBefore(DateTime.now());
 
-  AtlasCommandItem copyWith({
-    AtlasCommandItemStatus? status,
-  }) {
+  AtlasCommandItem copyWith({AtlasCommandItemStatus? status}) {
     return AtlasCommandItem(
       id: id,
       title: title,
@@ -94,7 +92,8 @@ class AtlasCommandItem {
         orElse: () => AtlasCommandItemStatus.newItem,
       ),
       sourceModule: json['sourceModule']?.toString() ?? 'Atlas',
-      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
       dueAt: DateTime.tryParse(json['dueAt']?.toString() ?? ''),
       actionLabel: json['actionLabel']?.toString(),

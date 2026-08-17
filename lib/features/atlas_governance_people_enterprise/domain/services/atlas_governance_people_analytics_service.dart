@@ -56,8 +56,7 @@ class AtlasGovernancePeopleAnalyticsService {
         .where((record) => record.isOperational)
         .length;
 
-    final overdue =
-        moduleRecords.where((record) => record.isOverdue).length;
+    final overdue = moduleRecords.where((record) => record.isOverdue).length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -68,26 +67,19 @@ class AtlasGovernancePeopleAnalyticsService {
           (record.isOverdue ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasGovernancePeopleRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasGovernancePeopleRecord) selector) {
       if (moduleRecords.isEmpty) return 0;
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
-    final averageProbability =
-        averageOf((record) => record.probabilityPercent);
-    final averageImpact =
-        averageOf((record) => record.impactPercent);
-    final averageRisk =
-        averageOf((record) => record.riskScore);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageCompliance =
-        averageOf((record) => record.compliancePercent);
+    final averageProbability = averageOf((record) => record.probabilityPercent);
+    final averageImpact = averageOf((record) => record.impactPercent);
+    final averageRisk = averageOf((record) => record.riskScore);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageCompliance = averageOf((record) => record.compliancePercent);
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -124,60 +116,48 @@ class AtlasGovernancePeopleAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasGovernancePeopleModule.peopleManagement =>
-            const [
-              'Mantenha contratos, cargos e histórico atualizados.',
-              'Restrinja dados pessoais conforme o nível de acesso.',
-            ],
-          AtlasGovernancePeopleModule.trainingAndQualification =>
-            const [
-              'Associe capacitação às competências exigidas.',
-              'Acompanhe certificados e respectivas validades.',
-            ],
-          AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
-            const [
-              'Trate acidentes e riscos com ações preventivas.',
-              'Valide exames e registros com profissionais responsáveis.',
-            ],
-          AtlasGovernancePeopleModule.personalProtectiveEquipment =>
-            const [
-              'Controle entrega, validade, devolução e substituição.',
-              'Mantenha comprovantes vinculados ao colaborador.',
-            ],
-          AtlasGovernancePeopleModule.documentManagement =>
-            const [
-              'Controle versões, validade, acesso e evidências.',
-              'Evite documentos críticos sem responsável definido.',
-            ],
-          AtlasGovernancePeopleModule.complianceControl =>
-            const [
-              'Associe requisitos a evidências e responsáveis.',
-              'Transforme não conformidades em planos corretivos.',
-            ],
-          AtlasGovernancePeopleModule.internalAudits =>
-            const [
-              'Registre escopo, evidências, achados e acompanhamento.',
-              'Não encerre auditoria sem tratar achados relevantes.',
-            ],
-          AtlasGovernancePeopleModule.corporateRiskManagement =>
-            const [
-              'Avalie probabilidade, impacto e controles.',
-              'Revise riscos críticos em periodicidade definida.',
-            ],
-          AtlasGovernancePeopleModule.permissionMatrix =>
-            const [
-              'Aplique o princípio do menor privilégio.',
-              'Revise acessos após mudanças de função ou desligamento.',
-            ],
-          AtlasGovernancePeopleModule.governanceCenter =>
-            const [
-              'Centralize pessoas, documentos, conformidade e riscos.',
-              'Priorize decisões por impacto, urgência e obrigação.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasGovernancePeopleModule.peopleManagement => const [
+          'Mantenha contratos, cargos e histórico atualizados.',
+          'Restrinja dados pessoais conforme o nível de acesso.',
+        ],
+        AtlasGovernancePeopleModule.trainingAndQualification => const [
+          'Associe capacitação às competências exigidas.',
+          'Acompanhe certificados e respectivas validades.',
+        ],
+        AtlasGovernancePeopleModule.occupationalHealthAndSafety => const [
+          'Trate acidentes e riscos com ações preventivas.',
+          'Valide exames e registros com profissionais responsáveis.',
+        ],
+        AtlasGovernancePeopleModule.personalProtectiveEquipment => const [
+          'Controle entrega, validade, devolução e substituição.',
+          'Mantenha comprovantes vinculados ao colaborador.',
+        ],
+        AtlasGovernancePeopleModule.documentManagement => const [
+          'Controle versões, validade, acesso e evidências.',
+          'Evite documentos críticos sem responsável definido.',
+        ],
+        AtlasGovernancePeopleModule.complianceControl => const [
+          'Associe requisitos a evidências e responsáveis.',
+          'Transforme não conformidades em planos corretivos.',
+        ],
+        AtlasGovernancePeopleModule.internalAudits => const [
+          'Registre escopo, evidências, achados e acompanhamento.',
+          'Não encerre auditoria sem tratar achados relevantes.',
+        ],
+        AtlasGovernancePeopleModule.corporateRiskManagement => const [
+          'Avalie probabilidade, impacto e controles.',
+          'Revise riscos críticos em periodicidade definida.',
+        ],
+        AtlasGovernancePeopleModule.permissionMatrix => const [
+          'Aplique o princípio do menor privilégio.',
+          'Revise acessos após mudanças de função ou desligamento.',
+        ],
+        AtlasGovernancePeopleModule.governanceCenter => const [
+          'Centralize pessoas, documentos, conformidade e riscos.',
+          'Priorize decisões por impacto, urgência e obrigação.',
+        ],
+      });
     }
 
     return AtlasGovernancePeopleAnalytics(

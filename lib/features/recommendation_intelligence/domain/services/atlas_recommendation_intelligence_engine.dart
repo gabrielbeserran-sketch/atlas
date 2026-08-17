@@ -13,23 +13,16 @@ class AtlasRecommendationIntelligenceEngine {
   }) {
     final results = <AtlasIntelligentRecommendation>[];
 
-    final orderedAreas = List<AtlasFarmAuditAreaResult>.from(
-      audit.areaResults,
-    )..sort(
-        (first, second) =>
-            first.score.compareTo(second.score),
-      );
+    final orderedAreas = List<AtlasFarmAuditAreaResult>.from(audit.areaResults)
+      ..sort((first, second) => first.score.compareTo(second.score));
 
     for (final areaResult in orderedAreas) {
-      if (areaResult.score >= 85 &&
-          results.length >= 3) {
+      if (areaResult.score >= 85 && results.length >= 3) {
         continue;
       }
 
       final relatedCases = knowledgeCases
-          .where(
-            (item) => item.area == areaResult.area,
-          )
+          .where((item) => item.area == areaResult.area)
           .toList();
 
       results.add(
@@ -45,22 +38,17 @@ class AtlasRecommendationIntelligenceEngine {
       }
     }
 
-    results.sort(
-      (first, second) {
-        final priorityComparison =
-            _priorityWeight(second.priority).compareTo(
-          _priorityWeight(first.priority),
-        );
+    results.sort((first, second) {
+      final priorityComparison = _priorityWeight(
+        second.priority,
+      ).compareTo(_priorityWeight(first.priority));
 
-        if (priorityComparison != 0) {
-          return priorityComparison;
-        }
+      if (priorityComparison != 0) {
+        return priorityComparison;
+      }
 
-        return second.confidence.compareTo(
-          first.confidence,
-        );
-      },
-    );
+      return second.confidence.compareTo(first.confidence);
+    });
 
     return AtlasRecommendationPortfolio(
       farmId: audit.farmId,
@@ -76,34 +64,21 @@ class AtlasRecommendationIntelligenceEngine {
     required AtlasFarmAuditAreaResult areaResult,
     required List<AtlasKnowledgeCase> relatedCases,
   }) {
-    final successCases = relatedCases
-        .where((item) => item.success)
-        .toList();
+    final successCases = relatedCases.where((item) => item.success).toList();
 
     final successRate = relatedCases.isEmpty
         ? _baselineSuccessRate(areaResult.score)
-        : successCases.length /
-            relatedCases.length *
-            100;
+        : successCases.length / relatedCases.length * 100;
 
     final averageResponseDays = relatedCases.isEmpty
         ? _baselineResponseDays(areaResult.area)
-        : relatedCases.fold<double>(
-              0,
-              (sum, item) => sum + item.responseDays,
-            ) /
-            relatedCases.length;
+        : relatedCases.fold<double>(0, (sum, item) => sum + item.responseDays) /
+              relatedCases.length;
 
     final averageEconomicGain = relatedCases.isEmpty
-        ? _baselineEconomicGain(
-            areaResult.area,
-            areaResult.score,
-          )
-        : relatedCases.fold<double>(
-              0,
-              (sum, item) => sum + item.economicGain,
-            ) /
-            relatedCases.length;
+        ? _baselineEconomicGain(areaResult.area, areaResult.score)
+        : relatedCases.fold<double>(0, (sum, item) => sum + item.economicGain) /
+              relatedCases.length;
 
     final confidence = _confidence(
       caseCount: relatedCases.length,
@@ -111,30 +86,23 @@ class AtlasRecommendationIntelligenceEngine {
       areaScore: areaResult.score,
     );
 
-    final strongestCase =
-        _strongestCase(relatedCases);
+    final strongestCase = _strongestCase(relatedCases);
 
-    final targetScore = math.max(
-      areaResult.score,
-      areaResult.score < 60 ? 75 : 85,
-    ).toDouble();
+    final targetScore = math
+        .max(areaResult.score, areaResult.score < 60 ? 75 : 85)
+        .toDouble();
 
-    final priority =
-        _priorityFromScore(areaResult.score);
+    final priority = _priorityFromScore(areaResult.score);
 
     return AtlasIntelligentRecommendation(
-      id:
-          'recommendation_${audit.id}_${areaResult.area.name}',
+      id: 'recommendation_${audit.id}_${areaResult.area.name}',
       farmId: audit.farmId,
       farmName: audit.farmName,
       generatedAt: DateTime.now(),
       area: areaResult.area,
-      title:
-          'Melhorar ${atlasFarmAuditAreaLabel(areaResult.area)}',
+      title: 'Melhorar ${atlasFarmAuditAreaLabel(areaResult.area)}',
       diagnosis: areaResult.summary,
-      recommendedProtocol: _protocolTitle(
-        areaResult.area,
-      ),
+      recommendedProtocol: _protocolTitle(areaResult.area),
       justification: strongestCase == null
           ? 'A recomendação foi construída a partir da auditoria atual e das regras técnicas do Atlas. A confiança aumentará conforme novos casos forem concluídos.'
           : 'A recomendação considera ${relatedCases.length} caso(s) semelhante(s). O caso de maior referência apresentou melhora de ${strongestCase.improvement.toStringAsFixed(1)} pontos.',
@@ -156,25 +124,18 @@ class AtlasRecommendationIntelligenceEngine {
     );
   }
 
-  AtlasKnowledgeCase? _strongestCase(
-    List<AtlasKnowledgeCase> cases,
-  ) {
+  AtlasKnowledgeCase? _strongestCase(List<AtlasKnowledgeCase> cases) {
     if (cases.isEmpty) {
       return null;
     }
 
-    final ordered = List<AtlasKnowledgeCase>.from(
-      cases,
-    )..sort(
-        (first, second) {
-          final firstScore =
-              first.improvement + first.economicGain / 10000;
-          final secondScore =
-              second.improvement + second.economicGain / 10000;
+    final ordered = List<AtlasKnowledgeCase>.from(cases)
+      ..sort((first, second) {
+        final firstScore = first.improvement + first.economicGain / 10000;
+        final secondScore = second.improvement + second.economicGain / 10000;
 
-          return secondScore.compareTo(firstScore);
-        },
-      );
+        return secondScore.compareTo(firstScore);
+      });
 
     return ordered.first;
   }
@@ -197,8 +158,7 @@ class AtlasRecommendationIntelligenceEngine {
       'Taxa histórica de sucesso de ${successRate.toStringAsFixed(1)}%.',
       if (strongestCase != null)
         'Melhor referência: ${strongestCase.farmName}, com ganho de ${strongestCase.improvement.toStringAsFixed(1)} pontos.',
-      if (strongestCase != null &&
-          strongestCase.lessons.isNotEmpty)
+      if (strongestCase != null && strongestCase.lessons.isNotEmpty)
         'Lição principal: ${strongestCase.lessons.first}',
     ];
   }
@@ -208,20 +168,13 @@ class AtlasRecommendationIntelligenceEngine {
     required double successRate,
     required double areaScore,
   }) {
-    final caseEvidence =
-        (caseCount * 7).clamp(0, 35).toDouble();
+    final caseEvidence = (caseCount * 7).clamp(0, 35).toDouble();
 
-    final successEvidence =
-        (successRate * 0.35).clamp(0.0, 35.0);
+    final successEvidence = (successRate * 0.35).clamp(0.0, 35.0);
 
-    final urgencyEvidence =
-        ((85 - areaScore) * 0.25)
-            .clamp(0.0, 15.0);
+    final urgencyEvidence = ((85 - areaScore) * 0.25).clamp(0.0, 15.0);
 
-    return (35 +
-            caseEvidence +
-            successEvidence +
-            urgencyEvidence)
+    return (35 + caseEvidence + successEvidence + urgencyEvidence)
         .clamp(45.0, 98.0)
         .toDouble();
   }
@@ -242,9 +195,7 @@ class AtlasRecommendationIntelligenceEngine {
     return 84;
   }
 
-  double _baselineResponseDays(
-    AtlasFarmAuditArea area,
-  ) {
+  double _baselineResponseDays(AtlasFarmAuditArea area) {
     switch (area) {
       case AtlasFarmAuditArea.reproduction:
       case AtlasFarmAuditArea.genetics:
@@ -266,12 +217,8 @@ class AtlasRecommendationIntelligenceEngine {
     }
   }
 
-  double _baselineEconomicGain(
-    AtlasFarmAuditArea area,
-    double score,
-  ) {
-    final gap =
-        (85 - score).clamp(0.0, 60.0).toDouble();
+  double _baselineEconomicGain(AtlasFarmAuditArea area, double score) {
+    final gap = (85 - score).clamp(0.0, 60.0).toDouble();
 
     switch (area) {
       case AtlasFarmAuditArea.reproduction:
@@ -298,9 +245,7 @@ class AtlasRecommendationIntelligenceEngine {
     }
   }
 
-  AtlasFarmAuditPriority _priorityFromScore(
-    double score,
-  ) {
+  AtlasFarmAuditPriority _priorityFromScore(double score) {
     if (score < 45) {
       return AtlasFarmAuditPriority.critical;
     }
@@ -316,9 +261,7 @@ class AtlasRecommendationIntelligenceEngine {
     return AtlasFarmAuditPriority.low;
   }
 
-  int _priorityWeight(
-    AtlasFarmAuditPriority priority,
-  ) {
+  int _priorityWeight(AtlasFarmAuditPriority priority) {
     switch (priority) {
       case AtlasFarmAuditPriority.critical:
         return 4;
@@ -336,9 +279,7 @@ class AtlasRecommendationIntelligenceEngine {
         '${atlasFarmAuditAreaLabel(area)}';
   }
 
-  List<String> _stepsForArea(
-    AtlasFarmAuditArea area,
-  ) {
+  List<String> _stepsForArea(AtlasFarmAuditArea area) {
     switch (area) {
       case AtlasFarmAuditArea.reproduction:
         return <String>[
@@ -403,9 +344,7 @@ class AtlasRecommendationIntelligenceEngine {
     }
   }
 
-  List<String> _risksForArea(
-    AtlasFarmAuditArea area,
-  ) {
+  List<String> _risksForArea(AtlasFarmAuditArea area) {
     return <String>[
       'Execução incompleta ou sem responsável definido.',
       'Ausência de registros para confirmar o resultado.',

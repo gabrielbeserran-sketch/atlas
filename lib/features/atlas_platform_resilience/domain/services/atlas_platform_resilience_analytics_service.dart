@@ -50,8 +50,9 @@ class AtlasPlatformResilienceAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -79,16 +80,16 @@ class AtlasPlatformResilienceAnalyticsService {
     final averageScore = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.scoreValue)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.scoreValue)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -138,39 +139,30 @@ class AtlasPlatformResilienceAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasPlatformResilienceModule.dataGovernance =>
-            const [
-              'Defina proprietário, significado, qualidade e retenção para cada dado crítico.',
-              'Monitore completude, duplicidade, consistência e origem dos dados.',
-            ],
-          AtlasPlatformResilienceModule.integrationHub =>
-            const [
-              'Use identificadores idempotentes, filas, retentativas e rastreabilidade ponta a ponta.',
-              'Documente contrato, versão, autenticação, mapeamento e tratamento de falhas.',
-            ],
-          AtlasPlatformResilienceModule.cybersecurity =>
-            const [
-              'Aplique menor privilégio, autenticação forte, revisão periódica e segregação de funções.',
-              'Mantenha inventário, avaliação de riscos, evidências e plano de resposta a incidentes.',
-            ],
-          AtlasPlatformResilienceModule.observability =>
-            const [
-              'Acompanhe disponibilidade, latência, erros, saturação e capacidade dos serviços.',
-              'Todo alerta deve ter prioridade, responsável, contexto e procedimento de resposta.',
-            ],
-          AtlasPlatformResilienceModule.digitalTwin =>
-            const [
-              'Mantenha o modelo digital sincronizado com dados confiáveis do ambiente físico.',
-              'Valide cenários simulados antes de usá-los em decisões operacionais.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasPlatformResilienceModule.dataGovernance => const [
+          'Defina proprietário, significado, qualidade e retenção para cada dado crítico.',
+          'Monitore completude, duplicidade, consistência e origem dos dados.',
+        ],
+        AtlasPlatformResilienceModule.integrationHub => const [
+          'Use identificadores idempotentes, filas, retentativas e rastreabilidade ponta a ponta.',
+          'Documente contrato, versão, autenticação, mapeamento e tratamento de falhas.',
+        ],
+        AtlasPlatformResilienceModule.cybersecurity => const [
+          'Aplique menor privilégio, autenticação forte, revisão periódica e segregação de funções.',
+          'Mantenha inventário, avaliação de riscos, evidências e plano de resposta a incidentes.',
+        ],
+        AtlasPlatformResilienceModule.observability => const [
+          'Acompanhe disponibilidade, latência, erros, saturação e capacidade dos serviços.',
+          'Todo alerta deve ter prioridade, responsável, contexto e procedimento de resposta.',
+        ],
+        AtlasPlatformResilienceModule.digitalTwin => const [
+          'Mantenha o modelo digital sincronizado com dados confiáveis do ambiente físico.',
+          'Valide cenários simulados antes de usá-los em decisões operacionais.',
+        ],
+      });
     }
 
     return items;

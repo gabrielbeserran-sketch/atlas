@@ -23,7 +23,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'analyze',
       title: 'Flutter Analyze',
-      description: 'Executar flutter analyze e eliminar todos os erros de compilação.',
+      description:
+          'Executar flutter analyze e eliminar todos os erros de compilação.',
       category: 'Código',
       isCritical: true,
       isCompleted: false,
@@ -31,7 +32,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'navigation',
       title: 'Navegação principal',
-      description: 'Abrir Dashboard, fazendas, animais, relatórios e módulos centrais sem falhas.',
+      description:
+          'Abrir Dashboard, fazendas, animais, relatórios e módulos centrais sem falhas.',
       category: 'Fluxos',
       isCritical: true,
       isCompleted: false,
@@ -39,7 +41,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'persistence',
       title: 'Persistência local',
-      description: 'Validar criação, edição, exclusão e recarga dos dados após reiniciar o app.',
+      description:
+          'Validar criação, edição, exclusão e recarga dos dados após reiniciar o app.',
       category: 'Dados',
       isCritical: true,
       isCompleted: false,
@@ -47,7 +50,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'offline',
       title: 'Operação offline',
-      description: 'Confirmar registros sem internet e posterior sincronização da fila.',
+      description:
+          'Confirmar registros sem internet e posterior sincronização da fila.',
       category: 'Dados',
       isCritical: true,
       isCompleted: false,
@@ -55,7 +59,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'backup',
       title: 'Backup e restauração',
-      description: 'Criar um backup, alterar dados e restaurar a versão anterior.',
+      description:
+          'Criar um backup, alterar dados e restaurar a versão anterior.',
       category: 'Segurança',
       isCritical: true,
       isCompleted: false,
@@ -63,7 +68,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'permissions',
       title: 'Usuários e permissões',
-      description: 'Validar os perfis administrativos, técnicos e de visualização.',
+      description:
+          'Validar os perfis administrativos, técnicos e de visualização.',
       category: 'Segurança',
       isCritical: false,
       isCompleted: false,
@@ -71,7 +77,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'visual',
       title: 'Revisão visual',
-      description: 'Verificar textos cortados, overflow, contraste e responsividade das telas.',
+      description:
+          'Verificar textos cortados, overflow, contraste e responsividade das telas.',
       category: 'Interface',
       isCritical: false,
       isCompleted: false,
@@ -79,7 +86,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'performance',
       title: 'Desempenho',
-      description: 'Revisar telas lentas, listas grandes e carregamentos repetidos.',
+      description:
+          'Revisar telas lentas, listas grandes e carregamentos repetidos.',
       category: 'Qualidade',
       isCritical: false,
       isCompleted: false,
@@ -87,7 +95,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'smoke_test',
       title: 'Teste de fumaça',
-      description: 'Executar o fluxo completo: login, fazenda, animal, operação e relatório.',
+      description:
+          'Executar o fluxo completo: login, fazenda, animal, operação e relatório.',
       category: 'Testes',
       isCritical: true,
       isCompleted: false,
@@ -95,7 +104,8 @@ class _AtlasReleaseCandidateScreenState
     AtlasReleaseCheck(
       id: 'release_build',
       title: 'Build de release',
-      description: 'Gerar o APK em modo release e instalar em um aparelho Android real.',
+      description:
+          'Gerar o APK em modo release e instalar em um aparelho Android real.',
       category: 'Distribuição',
       isCritical: true,
       isCompleted: false,
@@ -117,9 +127,8 @@ class _AtlasReleaseCandidateScreenState
     setState(() {
       _checks = _baseChecks
           .map(
-            (AtlasReleaseCheck item) => item.copyWith(
-              isCompleted: completed.contains(item.id),
-            ),
+            (AtlasReleaseCheck item) =>
+                item.copyWith(isCompleted: completed.contains(item.id)),
           )
           .toList();
       _lastReview = review;
@@ -187,9 +196,8 @@ class _AtlasReleaseCandidateScreenState
                         children: <Widget>[
                           Text(
                             '${(_progress * 100).round()}% pronto para validação',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 12),
                           LinearProgressIndicator(value: _progress),
@@ -229,8 +237,8 @@ class _AtlasReleaseCandidateScreenState
                   Text(
                     'Checklist da RC 1.0',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   ..._checks.map(
@@ -252,7 +260,9 @@ class _AtlasReleaseCandidateScreenState
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 6),
-                          child: Text('${check.category} • ${check.description}'),
+                          child: Text(
+                            '${check.category} • ${check.description}',
+                          ),
                         ),
                         controlAffinity: ListTileControlAffinity.leading,
                       ),

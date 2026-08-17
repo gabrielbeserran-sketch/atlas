@@ -23,8 +23,7 @@ class AtlasSystemSettings {
     return AtlasSystemSettings(
       automaticSync: automaticSync ?? this.automaticSync,
       wifiOnly: wifiOnly ?? this.wifiOnly,
-      notificationsEnabled:
-          notificationsEnabled ?? this.notificationsEnabled,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       diagnosticsEnabled: diagnosticsEnabled ?? this.diagnosticsEnabled,
       compactMode: compactMode ?? this.compactMode,
     );

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
@@ -7,6 +6,7 @@ import 'package:projeto_atlas/features/atlas_livestock_integration/domain/models
 import 'package:projeto_atlas/features/atlas_livestock_integration/domain/services/atlas_livestock_integration_analytics_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasLivestockIntegrationScreen extends StatefulWidget {
   const AtlasLivestockIntegrationScreen({
@@ -30,8 +30,7 @@ class AtlasLivestockIntegrationScreen extends StatefulWidget {
 class _AtlasLivestockIntegrationScreenState
     extends State<AtlasLivestockIntegrationScreen> {
   final storage = AtlasLivestockIntegrationStorageService();
-  final analyticsService =
-      const AtlasLivestockIntegrationAnalyticsService();
+  final analyticsService = const AtlasLivestockIntegrationAnalyticsService();
 
   late AtlasLivestockIntegrationModule selectedModule;
   List<AtlasLivestockIntegrationRecord> records = [];
@@ -54,8 +53,9 @@ class _AtlasLivestockIntegrationScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasLivestockIntegrationDate(b.date)
-          .compareTo(parseAtlasLivestockIntegrationDate(a.date)),
+      (a, b) => parseAtlasLivestockIntegrationDate(
+        b.date,
+      ).compareTo(parseAtlasLivestockIntegrationDate(a.date)),
     );
 
     if (!mounted) return;
@@ -67,28 +67,23 @@ class _AtlasLivestockIntegrationScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasLivestockIntegrationRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasLivestockIntegrationRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasLivestockIntegrationRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasLivestockIntegrationRecord>(
+  Future<void> openForm([AtlasLivestockIntegrationRecord? current]) async {
+    final result = await showDialog<AtlasLivestockIntegrationRecord>(
       context: context,
-      builder: (_) => _LivestockIntegrationForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _LivestockIntegrationForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -107,9 +102,7 @@ class _AtlasLivestockIntegrationScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasLivestockIntegrationRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasLivestockIntegrationRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -314,9 +307,7 @@ class _AtlasLivestockIntegrationScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira migração, integração, alerta ou tarefa.',
                             ),
@@ -369,10 +360,7 @@ class _AtlasLivestockIntegrationScreenState
 }
 
 class _LivestockIntegrationForm extends StatefulWidget {
-  const _LivestockIntegrationForm({
-    required this.module,
-    this.current,
-  });
+  const _LivestockIntegrationForm({required this.module, this.current});
 
   final AtlasLivestockIntegrationModule module;
   final AtlasLivestockIntegrationRecord? current;
@@ -382,8 +370,7 @@ class _LivestockIntegrationForm extends StatefulWidget {
       _LivestockIntegrationFormState();
 }
 
-class _LivestockIntegrationFormState
-    extends State<_LivestockIntegrationForm> {
+class _LivestockIntegrationFormState extends State<_LivestockIntegrationForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -416,24 +403,19 @@ class _LivestockIntegrationFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasLivestockIntegrationDate(DateTime.now()),
+      text:
+          current?.date ?? formatAtlasLivestockIntegrationDate(DateTime.now()),
     );
     farmName = TextEditingController(text: current?.farmName ?? '');
-    animalOrLot =
-        TextEditingController(text: current?.animalOrLot ?? '');
-    sourceModule =
-        TextEditingController(text: current?.sourceModule ?? '');
-    destinationModule =
-        TextEditingController(text: current?.destinationModule ?? '');
-    eventType =
-        TextEditingController(text: current?.eventType ?? '');
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
+    animalOrLot = TextEditingController(text: current?.animalOrLot ?? '');
+    sourceModule = TextEditingController(text: current?.sourceModule ?? '');
+    destinationModule = TextEditingController(
+      text: current?.destinationModule ?? '',
+    );
+    eventType = TextEditingController(text: current?.eventType ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     successRatePercent = TextEditingController(
       text: current == null || current.successRatePercent == 0
@@ -483,10 +465,7 @@ class _LivestockIntegrationFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
@@ -500,7 +479,8 @@ class _LivestockIntegrationFormState
     Navigator.pop(
       context,
       AtlasLivestockIntegrationRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'livestock_integration_'
                 '${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
@@ -515,16 +495,11 @@ class _LivestockIntegrationFormState
         destinationModule: destinationModule.text.trim(),
         eventType: eventType.text.trim(),
         responsible: responsible.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        successRatePercent:
-            decimal(successRatePercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        pendingCount:
-            integer(pendingCount) < 0 ? 0 : integer(pendingCount),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        successRatePercent: decimal(successRatePercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        pendingCount: integer(pendingCount) < 0 ? 0 : integer(pendingCount),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -535,11 +510,7 @@ class _LivestockIntegrationFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -554,10 +525,8 @@ class _LivestockIntegrationFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -568,37 +537,33 @@ class _LivestockIntegrationFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Integrado',
-                    'Validado',
-                    'Concluído',
-                    'Atenção',
-                    'Falha',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Integrado',
+                            'Validado',
+                            'Concluído',
+                            'Atenção',
+                            'Falha',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -607,20 +572,11 @@ class _LivestockIntegrationFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -645,18 +601,14 @@ class _LivestockIntegrationFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -668,38 +620,28 @@ class _LivestockIntegrationFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasLivestockIntegrationModule module,
-) {
+IconData _moduleIcon(AtlasLivestockIntegrationModule module) {
   return switch (module) {
-    AtlasLivestockIntegrationModule.herdMigration =>
-      Icons.pets_outlined,
+    AtlasLivestockIntegrationModule.herdMigration => AtlasLivestockIcons.cow,
     AtlasLivestockIntegrationModule.reproductionMigration =>
       Icons.favorite_outline,
-    AtlasLivestockIntegrationModule.healthMigration =>
-      Icons.vaccines_outlined,
+    AtlasLivestockIntegrationModule.healthMigration => Icons.vaccines_outlined,
     AtlasLivestockIntegrationModule.nutritionMigration =>
       Icons.restaurant_outlined,
     AtlasLivestockIntegrationModule.financeMigration =>
       Icons.account_balance_wallet_outlined,
     AtlasLivestockIntegrationModule.stockMigration =>
       Icons.inventory_2_outlined,
-    AtlasLivestockIntegrationModule.eventIntegration =>
-      Icons.hub_outlined,
-    AtlasLivestockIntegrationModule.unifiedTimeline =>
-      Icons.timeline_outlined,
+    AtlasLivestockIntegrationModule.eventIntegration => Icons.hub_outlined,
+    AtlasLivestockIntegrationModule.unifiedTimeline => Icons.timeline_outlined,
     AtlasLivestockIntegrationModule.integratedAlerts =>
       Icons.notifications_active_outlined,
-    AtlasLivestockIntegrationModule.integratedTasks =>
-      Icons.task_alt_outlined,
+    AtlasLivestockIntegrationModule.integratedTasks => Icons.task_alt_outlined,
   };
 }

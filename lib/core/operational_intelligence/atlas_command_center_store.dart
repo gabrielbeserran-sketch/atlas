@@ -12,10 +12,7 @@ class AtlasCommandCenterStore extends ChangeNotifier {
   AtlasCommandCenterState stateFor(String? farmName) {
     final key = _key(farmName);
 
-    return _states[key] ??
-        AtlasCommandCenterState.initial(
-          farmName: farmName,
-        );
+    return _states[key] ?? AtlasCommandCenterState.initial(farmName: farmName);
   }
 
   AtlasCommandCenterState get globalState => stateFor(null);
@@ -24,10 +21,7 @@ class AtlasCommandCenterStore extends ChangeNotifier {
     final key = _key(farmName);
     final current = stateFor(farmName);
 
-    _states[key] = current.copyWith(
-      isLoading: true,
-      clearError: true,
-    );
+    _states[key] = current.copyWith(isLoading: true, clearError: true);
 
     notifyListeners();
   }
@@ -53,10 +47,7 @@ class AtlasCommandCenterStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void publishError({
-    required String? farmName,
-    required Object error,
-  }) {
+  void publishError({required String? farmName, required Object error}) {
     final key = _key(farmName);
     final current = stateFor(farmName);
 

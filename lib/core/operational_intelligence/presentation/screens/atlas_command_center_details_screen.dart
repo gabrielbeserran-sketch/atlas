@@ -11,10 +11,7 @@ import 'package:projeto_atlas/core/operational_intelligence/atlas_operational_pr
 import 'package:projeto_atlas/core/operational_memory/atlas_operational_memory_entry.dart';
 
 class AtlasCommandCenterDetailsScreen extends StatefulWidget {
-  const AtlasCommandCenterDetailsScreen({
-    this.farmName,
-    super.key,
-  });
+  const AtlasCommandCenterDetailsScreen({this.farmName, super.key});
 
   final String? farmName;
 
@@ -25,8 +22,7 @@ class AtlasCommandCenterDetailsScreen extends StatefulWidget {
 
 class _AtlasCommandCenterDetailsScreenState
     extends State<AtlasCommandCenterDetailsScreen> {
-  AtlasCommandCenterRuntime get runtime =>
-      AtlasCommandCenterRuntime.instance;
+  AtlasCommandCenterRuntime get runtime => AtlasCommandCenterRuntime.instance;
 
   @override
   void initState() {
@@ -37,9 +33,7 @@ class _AtlasCommandCenterDetailsScreenState
     });
   }
 
-  Future<void> _load({
-    bool forceRefresh = false,
-  }) async {
+  Future<void> _load({bool forceRefresh = false}) async {
     try {
       await runtime.controller.load(
         farmName: widget.farmName,
@@ -62,8 +56,7 @@ class _AtlasCommandCenterDetailsScreenState
           child: Scaffold(
             appBar: AppBar(
               title: Text(
-                widget.farmName == null ||
-                        widget.farmName!.trim().isEmpty
+                widget.farmName == null || widget.farmName!.trim().isEmpty
                     ? 'Command Center'
                     : 'Command Center — ${widget.farmName}',
               ),
@@ -73,8 +66,7 @@ class _AtlasCommandCenterDetailsScreenState
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) =>
-                            AtlasCommandCenterActionPlanScreen(
+                        builder: (_) => AtlasCommandCenterActionPlanScreen(
                           farmName: widget.farmName,
                         ),
                       ),
@@ -97,22 +89,10 @@ class _AtlasCommandCenterDetailsScreenState
                     icon: Icon(Icons.dashboard_outlined),
                     text: 'Visão geral',
                   ),
-                  Tab(
-                    icon: Icon(Icons.priority_high),
-                    text: 'Prioridades',
-                  ),
-                  Tab(
-                    icon: Icon(Icons.lightbulb_outline),
-                    text: 'Insights',
-                  ),
-                  Tab(
-                    icon: Icon(Icons.timeline),
-                    text: 'Linha do tempo',
-                  ),
-                  Tab(
-                    icon: Icon(Icons.analytics_outlined),
-                    text: 'Métricas',
-                  ),
+                  Tab(icon: Icon(Icons.priority_high), text: 'Prioridades'),
+                  Tab(icon: Icon(Icons.lightbulb_outline), text: 'Insights'),
+                  Tab(icon: Icon(Icons.timeline), text: 'Linha do tempo'),
+                  Tab(icon: Icon(Icons.analytics_outlined), text: 'Métricas'),
                 ],
               ),
             ),
@@ -123,13 +103,9 @@ class _AtlasCommandCenterDetailsScreenState
     );
   }
 
-  Widget _buildBody(
-    AtlasCommandCenterState state,
-  ) {
+  Widget _buildBody(AtlasCommandCenterState state) {
     if (state.snapshot == null && state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (state.snapshot == null && state.hasError) {
@@ -151,23 +127,14 @@ class _AtlasCommandCenterDetailsScreenState
       children: [
         TabBarView(
           children: [
-            _OverviewTab(
-              snapshot: snapshot,
-              state: state,
-            ),
+            _OverviewTab(snapshot: snapshot, state: state),
             _PrioritiesTab(
               priorities: snapshot.priorities,
               farmName: widget.farmName,
             ),
-            _InsightsTab(
-              insights: snapshot.insights,
-            ),
-            _TimelineTab(
-              entries: snapshot.timeline.entries,
-            ),
-            _MetricsTab(
-              snapshot: snapshot,
-            ),
+            _InsightsTab(insights: snapshot.insights),
+            _TimelineTab(entries: snapshot.timeline.entries),
+            _MetricsTab(snapshot: snapshot),
           ],
         ),
         if (state.isLoading)
@@ -183,10 +150,7 @@ class _AtlasCommandCenterDetailsScreenState
 }
 
 class _OverviewTab extends StatelessWidget {
-  const _OverviewTab({
-    required this.snapshot,
-    required this.state,
-  });
+  const _OverviewTab({required this.snapshot, required this.state});
 
   final AtlasCommandCenterSnapshot snapshot;
   final AtlasCommandCenterState state;
@@ -234,21 +198,13 @@ class _OverviewTab extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              Chip(
-                label: Text(
-                  'Versão ${state.version?.number ?? 0}',
-                ),
-              ),
+              Chip(label: Text('Versão ${state.version?.number ?? 0}')),
               Chip(
                 label: Text(
                   'Atualizada em ${_formatDateTime(state.updatedAt)}',
                 ),
               ),
-              Chip(
-                label: Text(
-                  snapshot.farmName ?? 'Operação global',
-                ),
-              ),
+              Chip(label: Text(snapshot.farmName ?? 'Operação global')),
             ],
           ),
         ),
@@ -257,9 +213,7 @@ class _OverviewTab extends StatelessWidget {
           title: 'Principal prioridade',
           icon: Icons.priority_high,
           child: topPriority == null
-              ? const Text(
-                  'Nenhuma prioridade operacional foi identificada.',
-                )
+              ? const Text('Nenhuma prioridade operacional foi identificada.')
               : _PrioritySummary(priority: topPriority),
         ),
         const SizedBox(height: 16),
@@ -267,9 +221,7 @@ class _OverviewTab extends StatelessWidget {
           title: 'Principal insight',
           icon: Icons.lightbulb_outline,
           child: topInsight == null
-              ? const Text(
-                  'Nenhum insight operacional foi gerado.',
-                )
+              ? const Text('Nenhum insight operacional foi gerado.')
               : _InsightSummary(insight: topInsight),
         ),
       ],
@@ -278,10 +230,7 @@ class _OverviewTab extends StatelessWidget {
 }
 
 class _PrioritiesTab extends StatelessWidget {
-  const _PrioritiesTab({
-    required this.priorities,
-    required this.farmName,
-  });
+  const _PrioritiesTab({required this.priorities, required this.farmName});
 
   final List<AtlasOperationalPriority> priorities;
   final String? farmName;
@@ -292,8 +241,7 @@ class _PrioritiesTab extends StatelessWidget {
       return const _SimpleEmptyMessage(
         icon: Icons.task_alt,
         title: 'Nenhuma prioridade pendente',
-        description:
-            'O motor de prioridades não encontrou ações urgentes.',
+        description: 'O motor de prioridades não encontrou ações urgentes.',
       );
     }
 
@@ -310,8 +258,7 @@ class _PrioritiesTab extends StatelessWidget {
             child: _PrioritySummary(
               priority: priority,
               showDetails: true,
-              onCreateAction: () =>
-                  _createAction(context, priority),
+              onCreateAction: () => _createAction(context, priority),
             ),
           ),
         );
@@ -323,11 +270,8 @@ class _PrioritiesTab extends StatelessWidget {
     BuildContext context,
     AtlasOperationalPriority priority,
   ) async {
-    final action =
-        await AtlasCommandCenterActionService.instance
-            .createFromPriority(
-      priority: priority,
-    );
+    final action = await AtlasCommandCenterActionService.instance
+        .createFromPriority(priority: priority);
 
     if (!context.mounted) {
       return;
@@ -335,18 +279,14 @@ class _PrioritiesTab extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Ação "${action.title}" adicionada ao plano.',
-        ),
+        content: Text('Ação "${action.title}" adicionada ao plano.'),
         action: SnackBarAction(
           label: 'Abrir',
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) =>
-                    AtlasCommandCenterActionPlanScreen(
-                  farmName: farmName,
-                ),
+                    AtlasCommandCenterActionPlanScreen(farmName: farmName),
               ),
             );
           },
@@ -357,9 +297,7 @@ class _PrioritiesTab extends StatelessWidget {
 }
 
 class _InsightsTab extends StatelessWidget {
-  const _InsightsTab({
-    required this.insights,
-  });
+  const _InsightsTab({required this.insights});
 
   final List<AtlasOperationalInsight> insights;
 
@@ -384,10 +322,7 @@ class _InsightsTab extends StatelessWidget {
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: _InsightSummary(
-              insight: insight,
-              showDetails: true,
-            ),
+            child: _InsightSummary(insight: insight, showDetails: true),
           ),
         );
       },
@@ -396,9 +331,7 @@ class _InsightsTab extends StatelessWidget {
 }
 
 class _TimelineTab extends StatelessWidget {
-  const _TimelineTab({
-    required this.entries,
-  });
+  const _TimelineTab({required this.entries});
 
   final List<AtlasOperationalMemoryEntry> entries;
 
@@ -408,8 +341,7 @@ class _TimelineTab extends StatelessWidget {
       return const _SimpleEmptyMessage(
         icon: Icons.timeline,
         title: 'Linha do tempo vazia',
-        description:
-            'Os eventos registrados pelos módulos aparecerão aqui.',
+        description: 'Os eventos registrados pelos módulos aparecerão aqui.',
       );
     }
 
@@ -423,16 +355,11 @@ class _TimelineTab extends StatelessWidget {
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            child: Icon(
-              _eventPriorityIcon(entry.priority),
-              size: 20,
-            ),
+            child: Icon(_eventPriorityIcon(entry.priority), size: 20),
           ),
           title: Text(
             entry.title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 6),
@@ -444,19 +371,14 @@ class _TimelineTab extends StatelessWidget {
                 Text(
                   '${entry.sourceModule} • '
                   '${DateFormat('dd/MM/yyyy HH:mm').format(entry.occurredAt)}',
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ],
             ),
           ),
           trailing: Text(
             _eventPriorityLabel(entry.priority),
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
         );
       },
@@ -465,9 +387,7 @@ class _TimelineTab extends StatelessWidget {
 }
 
 class _MetricsTab extends StatelessWidget {
-  const _MetricsTab({
-    required this.snapshot,
-  });
+  const _MetricsTab({required this.snapshot});
 
   final AtlasCommandCenterSnapshot snapshot;
 
@@ -491,20 +411,12 @@ class _MetricsTab extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
+              Chip(label: Text('${metrics.eventsLast24Hours} nas últimas 24h')),
               Chip(
-                label: Text(
-                  '${metrics.eventsLast24Hours} nas últimas 24h',
-                ),
+                label: Text('${metrics.eventsLast7Days} nos últimos 7 dias'),
               ),
               Chip(
-                label: Text(
-                  '${metrics.eventsLast7Days} nos últimos 7 dias',
-                ),
-              ),
-              Chip(
-                label: Text(
-                  '${metrics.highPriorityEvents} de alta prioridade',
-                ),
+                label: Text('${metrics.highPriorityEvents} de alta prioridade'),
               ),
             ],
           ),
@@ -539,9 +451,7 @@ class _MetricsTab extends StatelessWidget {
                           title: Text(entry.key),
                           trailing: Text(
                             entry.value.toStringAsFixed(2),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
                       )
@@ -578,12 +488,9 @@ class _MetricCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 value,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
               ),
               const SizedBox(height: 4),
               Text(title),
@@ -620,12 +527,9 @@ class _SectionCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -657,9 +561,7 @@ class _PrioritySummary extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _canonicalPriorityIcon(priority.priority),
-            ),
+            Icon(_canonicalPriorityIcon(priority.priority)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -672,9 +574,7 @@ class _PrioritySummary extends StatelessWidget {
             ),
             Text(
               priority.score.toStringAsFixed(0),
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -683,9 +583,7 @@ class _PrioritySummary extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           priority.recommendedAction,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         if (showDetails) ...[
           const SizedBox(height: 10),
@@ -694,16 +592,10 @@ class _PrioritySummary extends StatelessWidget {
             runSpacing: 8,
             children: [
               Chip(label: Text(priority.sourceModule)),
+              Chip(label: Text(priority.farmName ?? 'Operação global')),
               Chip(
                 label: Text(
-                  priority.farmName ?? 'Operação global',
-                ),
-              ),
-              Chip(
-                label: Text(
-                  DateFormat('dd/MM/yyyy HH:mm').format(
-                    priority.occurredAt,
-                  ),
+                  DateFormat('dd/MM/yyyy HH:mm').format(priority.occurredAt),
                 ),
               ),
             ],
@@ -713,9 +605,7 @@ class _PrioritySummary extends StatelessWidget {
             FilledButton.icon(
               onPressed: onCreateAction,
               icon: const Icon(Icons.playlist_add_check),
-              label: const Text(
-                'Adicionar ao plano de ação',
-              ),
+              label: const Text('Adicionar ao plano de ação'),
             ),
           ],
         ],
@@ -725,10 +615,7 @@ class _PrioritySummary extends StatelessWidget {
 }
 
 class _InsightSummary extends StatelessWidget {
-  const _InsightSummary({
-    required this.insight,
-    this.showDetails = false,
-  });
+  const _InsightSummary({required this.insight, this.showDetails = false});
 
   final AtlasOperationalInsight insight;
   final bool showDetails;
@@ -741,9 +628,7 @@ class _InsightSummary extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _canonicalPriorityIcon(insight.priority),
-            ),
+            Icon(_canonicalPriorityIcon(insight.priority)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -756,9 +641,7 @@ class _InsightSummary extends StatelessWidget {
             ),
             Text(
               '${insight.confidencePercent.toStringAsFixed(0)}%',
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -767,9 +650,7 @@ class _InsightSummary extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           insight.recommendation,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         if (showDetails) ...[
           const SizedBox(height: 10),
@@ -777,14 +658,8 @@ class _InsightSummary extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              ...insight.modules.map(
-                (module) => Chip(label: Text(module)),
-              ),
-              Chip(
-                label: Text(
-                  insight.farmName ?? 'Operação global',
-                ),
-              ),
+              ...insight.modules.map((module) => Chip(label: Text(module))),
+              Chip(label: Text(insight.farmName ?? 'Operação global')),
             ],
           ),
         ],
@@ -821,9 +696,7 @@ class _MapMetricsSection extends StatelessWidget {
                       title: Text(entry.key),
                       trailing: Text(
                         entry.value.toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
                   )
@@ -850,24 +723,15 @@ class _CommandCenterErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.warning_amber_rounded,
-              size: 56,
-            ),
+            const Icon(Icons.warning_amber_rounded, size: 56),
             const SizedBox(height: 16),
             const Text(
               'Não foi possível carregar o Command Center.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: onRetry,
@@ -882,9 +746,7 @@ class _CommandCenterErrorState extends StatelessWidget {
 }
 
 class _CommandCenterEmptyState extends StatelessWidget {
-  const _CommandCenterEmptyState({
-    required this.onRefresh,
-  });
+  const _CommandCenterEmptyState({required this.onRefresh});
 
   final Future<void> Function() onRefresh;
 
@@ -896,18 +758,12 @@ class _CommandCenterEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.hub_outlined,
-              size: 56,
-            ),
+            const Icon(Icons.hub_outlined, size: 56),
             const SizedBox(height: 16),
             const Text(
               'A inteligência operacional ainda não possui dados.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             const SizedBox(height: 18),
             FilledButton.icon(
@@ -946,16 +802,10 @@ class _SimpleEmptyMessage extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             const SizedBox(height: 8),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-            ),
+            Text(description, textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -971,9 +821,7 @@ String _formatDateTime(DateTime? value) {
   return DateFormat('dd/MM/yyyy HH:mm').format(value);
 }
 
-IconData _canonicalPriorityIcon(
-  AtlasCanonicalPriority priority,
-) {
+IconData _canonicalPriorityIcon(AtlasCanonicalPriority priority) {
   switch (priority) {
     case AtlasCanonicalPriority.low:
       return Icons.info_outline;
@@ -986,9 +834,7 @@ IconData _canonicalPriorityIcon(
   }
 }
 
-IconData _eventPriorityIcon(
-  AtlasEventPriority priority,
-) {
+IconData _eventPriorityIcon(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return Icons.info_outline;
@@ -1001,9 +847,7 @@ IconData _eventPriorityIcon(
   }
 }
 
-String _eventPriorityLabel(
-  AtlasEventPriority priority,
-) {
+String _eventPriorityLabel(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return 'Baixa';

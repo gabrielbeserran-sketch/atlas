@@ -11,15 +11,11 @@ class AtlasHealthStrategyService {
   static final AtlasHealthStrategyService instance =
       AtlasHealthStrategyService._();
 
-  static const String _plansKey =
-      'atlas_health_annual_plans_v1';
+  static const String _plansKey = 'atlas_health_annual_plans_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasHealthAnnualPlan>> loadPlans({
-    String? farmName,
-  }) async {
+  Future<List<AtlasHealthAnnualPlan>> loadPlans({String? farmName}) async {
     final raw = await _preferences.getString(_plansKey);
     if (raw == null || raw.trim().isEmpty) {
       return <AtlasHealthAnnualPlan>[];
@@ -37,11 +33,7 @@ class AtlasHealthStrategyService {
         return values;
       }
       return values
-          .where(
-            (item) =>
-                item.farmName?.trim().toLowerCase() ==
-                normalized,
-          )
+          .where((item) => item.farmName?.trim().toLowerCase() == normalized)
           .toList();
     } catch (_) {
       return <AtlasHealthAnnualPlan>[];
@@ -53,15 +45,14 @@ class AtlasHealthStrategyService {
     final values = raw == null || raw.trim().isEmpty
         ? <AtlasHealthAnnualPlan>[]
         : (jsonDecode(raw) as List)
-            .map(
-              (item) => AtlasHealthAnnualPlan.fromMap(
-                Map<String, dynamic>.from(item as Map),
-              ),
-            )
-            .toList();
+              .map(
+                (item) => AtlasHealthAnnualPlan.fromMap(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList();
 
-    final index =
-        values.indexWhere((item) => item.id == plan.id);
+    final index = values.indexWhere((item) => item.id == plan.id);
     if (index == -1) {
       values.add(plan);
     } else {
@@ -74,49 +65,39 @@ class AtlasHealthStrategyService {
     );
   }
 
-  Future<AtlasHealthExecutiveSnapshot> buildSnapshot({
-    String? farmName,
-  }) async {
+  Future<AtlasHealthExecutiveSnapshot> buildSnapshot({String? farmName}) async {
     final service = AtlasHealthIntelligenceService.instance;
     final events = await service.loadEvents(farmName: farmName);
-    final protocols =
-        await service.loadProtocols(farmName: farmName);
+    final protocols = await service.loadProtocols(farmName: farmName);
 
     final animals = events
         .map((item) => item.animalId)
         .where((item) => item.trim().isNotEmpty)
         .toSet();
-    final denominator =
-        animals.isEmpty ? events.length : animals.length;
+    final denominator = animals.isEmpty ? events.length : animals.length;
 
     int count(AtlasHealthEventType type) =>
         events.where((item) => item.type == type).length;
 
-    final vaccinations =
-        count(AtlasHealthEventType.vaccination);
-    final dewormings =
-        count(AtlasHealthEventType.deworming);
-    final treatments =
-        count(AtlasHealthEventType.treatment);
-    final morbidity =
-        count(AtlasHealthEventType.morbidity);
-    final mortality =
-        count(AtlasHealthEventType.mortality);
-    final quarantine =
-        count(AtlasHealthEventType.quarantine);
+    final vaccinations = count(AtlasHealthEventType.vaccination);
+    final dewormings = count(AtlasHealthEventType.deworming);
+    final treatments = count(AtlasHealthEventType.treatment);
+    final morbidity = count(AtlasHealthEventType.morbidity);
+    final mortality = count(AtlasHealthEventType.mortality);
+    final quarantine = count(AtlasHealthEventType.quarantine);
 
     final protocolCoverage = protocols.isEmpty
         ? 0.0
-        : protocols
-                .where((item) => item.active)
-                .length /
-            protocols.length *
-            100;
+        : protocols.where((item) => item.active).length /
+              protocols.length *
+              100;
 
-    final morbidityRate =
-        denominator <= 0 ? 0.0 : morbidity / denominator * 100;
-    final mortalityRate =
-        denominator <= 0 ? 0.0 : mortality / denominator * 100;
+    final morbidityRate = denominator <= 0
+        ? 0.0
+        : morbidity / denominator * 100;
+    final mortalityRate = denominator <= 0
+        ? 0.0
+        : mortality / denominator * 100;
 
     var score = 100.0;
     score -= morbidityRate * 2;
@@ -133,10 +114,7 @@ class AtlasHealthStrategyService {
       morbidityCases: morbidity,
       mortalityCases: mortality,
       quarantineCases: quarantine,
-      totalCost: events.fold<double>(
-        0,
-        (total, item) => total + item.cost,
-      ),
+      totalCost: events.fold<double>(0, (total, item) => total + item.cost),
       morbidityRatePercent: morbidityRate,
       mortalityRatePercent: mortalityRate,
       protocolCoveragePercent: protocolCoverage,
@@ -147,37 +125,29 @@ class AtlasHealthStrategyService {
   Future<List<AtlasEpidemiologicalCluster>> buildClusters({
     String? farmName,
   }) async {
-    final events = await AtlasHealthIntelligenceService.instance
-        .loadEvents(farmName: farmName);
+    final events = await AtlasHealthIntelligenceService.instance.loadEvents(
+      farmName: farmName,
+    );
 
     final grouped = <String, List<AtlasHealthEvent>>{};
     for (final event in events) {
       final key = event.lotName.trim().isNotEmpty
           ? 'lote:${event.lotName}'
           : event.paddockName.trim().isNotEmpty
-              ? 'piquete:${event.paddockName}'
-              : 'geral';
+          ? 'piquete:${event.paddockName}'
+          : 'geral';
       grouped.putIfAbsent(key, () => []).add(event);
     }
 
     final result = grouped.entries.map((entry) {
       final values = entry.value;
       final morbidity = values
-          .where(
-            (item) =>
-                item.type == AtlasHealthEventType.morbidity,
-          )
+          .where((item) => item.type == AtlasHealthEventType.morbidity)
           .length;
       final mortality = values
-          .where(
-            (item) =>
-                item.type == AtlasHealthEventType.mortality,
-          )
+          .where((item) => item.type == AtlasHealthEventType.mortality)
           .length;
-      final cost = values.fold<double>(
-        0,
-        (total, item) => total + item.cost,
-      );
+      final cost = values.fold<double>(0, (total, item) => total + item.cost);
 
       return AtlasEpidemiologicalCluster(
         key: entry.key,
@@ -187,12 +157,9 @@ class AtlasHealthStrategyService {
         caseCount: morbidity,
         mortalityCount: mortality,
         totalCost: cost,
-        riskScore:
-            (morbidity * 8 + mortality * 20 + cost / 100)
-                .clamp(0, 100),
+        riskScore: (morbidity * 8 + mortality * 20 + cost / 100).clamp(0, 100),
       );
-    }).toList()
-      ..sort((a, b) => b.riskScore.compareTo(a.riskScore));
+    }).toList()..sort((a, b) => b.riskScore.compareTo(a.riskScore));
 
     return result;
   }
@@ -224,9 +191,8 @@ class AtlasHealthStrategyService {
       );
     }
 
-    final medications =
-        await AtlasHealthIntelligenceService.instance
-            .loadMedications(farmName: farmName);
+    final medications = await AtlasHealthIntelligenceService.instance
+        .loadMedications(farmName: farmName);
     final expiring = medications
         .where((item) => item.isExpired || item.expiresSoon)
         .length;

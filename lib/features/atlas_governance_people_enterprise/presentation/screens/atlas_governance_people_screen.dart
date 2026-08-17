@@ -29,8 +29,7 @@ class AtlasGovernancePeopleScreen extends StatefulWidget {
 class _AtlasGovernancePeopleScreenState
     extends State<AtlasGovernancePeopleScreen> {
   final storage = AtlasGovernancePeopleStorageService();
-  final analyticsService =
-      const AtlasGovernancePeopleAnalyticsService();
+  final analyticsService = const AtlasGovernancePeopleAnalyticsService();
 
   late AtlasGovernancePeopleModule selectedModule;
   List<AtlasGovernancePeopleRecord> records = [];
@@ -53,8 +52,9 @@ class _AtlasGovernancePeopleScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasGovernancePeopleDate(b.date)
-          .compareTo(parseAtlasGovernancePeopleDate(a.date)),
+      (a, b) => parseAtlasGovernancePeopleDate(
+        b.date,
+      ).compareTo(parseAtlasGovernancePeopleDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,27 +66,23 @@ class _AtlasGovernancePeopleScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasGovernancePeopleRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasGovernancePeopleRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasGovernancePeopleRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasGovernancePeopleRecord? current]) async {
     final result = await showDialog<AtlasGovernancePeopleRecord>(
       context: context,
-      builder: (_) => _GovernancePeopleForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _GovernancePeopleForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -105,9 +101,7 @@ class _AtlasGovernancePeopleScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasGovernancePeopleRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasGovernancePeopleRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -326,9 +320,7 @@ class _AtlasGovernancePeopleScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira pessoa, auditoria, permissão ou evidência.',
                             ),
@@ -381,21 +373,16 @@ class _AtlasGovernancePeopleScreenState
 }
 
 class _GovernancePeopleForm extends StatefulWidget {
-  const _GovernancePeopleForm({
-    required this.module,
-    this.current,
-  });
+  const _GovernancePeopleForm({required this.module, this.current});
 
   final AtlasGovernancePeopleModule module;
   final AtlasGovernancePeopleRecord? current;
 
   @override
-  State<_GovernancePeopleForm> createState() =>
-      _GovernancePeopleFormState();
+  State<_GovernancePeopleForm> createState() => _GovernancePeopleFormState();
 }
 
-class _GovernancePeopleFormState
-    extends State<_GovernancePeopleForm> {
+class _GovernancePeopleFormState extends State<_GovernancePeopleForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -430,21 +417,18 @@ class _GovernancePeopleFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasGovernancePeopleDate(DateTime.now()),
+      text: current?.date ?? formatAtlasGovernancePeopleDate(DateTime.now()),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
     personName = TextEditingController(text: current?.personName ?? '');
     roleName = TextEditingController(text: current?.roleName ?? '');
-    departmentName =
-        TextEditingController(text: current?.departmentName ?? '');
-    documentName =
-        TextEditingController(text: current?.documentName ?? '');
-    requirementName =
-        TextEditingController(text: current?.requirementName ?? '');
+    departmentName = TextEditingController(text: current?.departmentName ?? '');
+    documentName = TextEditingController(text: current?.documentName ?? '');
+    requirementName = TextEditingController(
+      text: current?.requirementName ?? '',
+    );
     riskName = TextEditingController(text: current?.riskName ?? '');
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     probabilityPercent = TextEditingController(
       text: current == null || current.probabilityPercent == 0
           ? ''
@@ -456,9 +440,7 @@ class _GovernancePeopleFormState
           : current.impactPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     compliancePercent = TextEditingController(
       text: current == null || current.compliancePercent == 0
@@ -499,33 +481,24 @@ class _GovernancePeopleFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasGovernancePeopleDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasGovernancePeopleDate(selected);
+      controller.text = formatAtlasGovernancePeopleDate(selected);
     });
   }
 
@@ -538,7 +511,8 @@ class _GovernancePeopleFormState
     Navigator.pop(
       context,
       AtlasGovernancePeopleRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'governance_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -554,16 +528,11 @@ class _GovernancePeopleFormState
         requirementName: requirementName.text.trim(),
         riskName: riskName.text.trim(),
         responsible: responsible.text.trim(),
-        probabilityPercent:
-            decimal(probabilityPercent).clamp(0, 100),
-        impactPercent:
-            decimal(impactPercent).clamp(0, 100),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        compliancePercent:
-            decimal(compliancePercent).clamp(0, 100),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        probabilityPercent: decimal(probabilityPercent).clamp(0, 100),
+        impactPercent: decimal(impactPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        compliancePercent: decimal(compliancePercent).clamp(0, 100),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -574,11 +543,7 @@ class _GovernancePeopleFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -593,10 +558,8 @@ class _GovernancePeopleFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -607,13 +570,10 @@ class _GovernancePeopleFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -621,9 +581,7 @@ class _GovernancePeopleFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 TextFormField(
@@ -632,35 +590,32 @@ class _GovernancePeopleFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou validade',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Conforme',
-                    'Validado',
-                    'Concluído',
-                    'Atenção',
-                    'Não conforme',
-                    'Crítico',
-                    'Bloqueado',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Conforme',
+                            'Validado',
+                            'Concluído',
+                            'Atenção',
+                            'Não conforme',
+                            'Crítico',
+                            'Bloqueado',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -669,20 +624,11 @@ class _GovernancePeopleFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -702,9 +648,7 @@ class _GovernancePeopleFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 ...[
@@ -714,13 +658,10 @@ class _GovernancePeopleFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -741,9 +682,7 @@ class _GovernancePeopleFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -755,21 +694,15 @@ class _GovernancePeopleFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasGovernancePeopleModule module,
-) {
+IconData _moduleIcon(AtlasGovernancePeopleModule module) {
   return switch (module) {
-    AtlasGovernancePeopleModule.peopleManagement =>
-      Icons.badge_outlined,
+    AtlasGovernancePeopleModule.peopleManagement => Icons.badge_outlined,
     AtlasGovernancePeopleModule.trainingAndQualification =>
       Icons.school_outlined,
     AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
@@ -778,15 +711,12 @@ IconData _moduleIcon(
       Icons.shield_outlined,
     AtlasGovernancePeopleModule.documentManagement =>
       Icons.folder_copy_outlined,
-    AtlasGovernancePeopleModule.complianceControl =>
-      Icons.rule_outlined,
-    AtlasGovernancePeopleModule.internalAudits =>
-      Icons.fact_check_outlined,
+    AtlasGovernancePeopleModule.complianceControl => Icons.rule_outlined,
+    AtlasGovernancePeopleModule.internalAudits => Icons.fact_check_outlined,
     AtlasGovernancePeopleModule.corporateRiskManagement =>
       Icons.warning_amber_outlined,
     AtlasGovernancePeopleModule.permissionMatrix =>
       Icons.admin_panel_settings_outlined,
-    AtlasGovernancePeopleModule.governanceCenter =>
-      Icons.dashboard_outlined,
+    AtlasGovernancePeopleModule.governanceCenter => Icons.dashboard_outlined,
   };
 }

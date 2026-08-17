@@ -36,17 +36,14 @@ class AtlasEnterpriseAuthorizationService {
     final session = AtlasEnterpriseSessionService.instance;
     await session.ensureInitialized();
 
-    final resolvedCompanyId =
-        companyId ?? session.currentCompanyId;
+    final resolvedCompanyId = companyId ?? session.currentCompanyId;
     final resolvedUserId = userId ?? session.currentUserId;
 
-    if (resolvedCompanyId == null ||
-        resolvedUserId == null) {
+    if (resolvedCompanyId == null || resolvedUserId == null) {
       return const AtlasEffectivePermissionSet(
         companyId: '',
         userId: '',
-        membershipRole:
-            AtlasEnterpriseMembershipRole.viewer,
+        membershipRole: AtlasEnterpriseMembershipRole.viewer,
         customRoleId: null,
         allowed: <String>{},
         denied: <String>{},
@@ -69,17 +66,14 @@ class AtlasEnterpriseAuthorizationService {
       return AtlasEffectivePermissionSet(
         companyId: resolvedCompanyId,
         userId: resolvedUserId,
-        membershipRole:
-            AtlasEnterpriseMembershipRole.viewer,
+        membershipRole: AtlasEnterpriseMembershipRole.viewer,
         customRoleId: null,
         allowed: const <String>{},
         denied: const <String>{},
       );
     }
 
-    final base = AtlasEnterprisePermissions.defaultsForRole(
-      membership.role,
-    );
+    final base = AtlasEnterprisePermissions.defaultsForRole(membership.role);
 
     final policy = await _permissions.findPolicy(
       companyId: resolvedCompanyId,
@@ -101,8 +95,9 @@ class AtlasEnterpriseAuthorizationService {
       }
     }
 
-    for (final entry in policy?.effects.entries ??
-        const <MapEntry<String, AtlasPermissionEffect>>[]) {
+    for (final entry
+        in policy?.effects.entries ??
+            const <MapEntry<String, AtlasPermissionEffect>>[]) {
       switch (entry.value) {
         case AtlasPermissionEffect.allow:
           allowed.add(entry.key);
@@ -151,15 +146,12 @@ class AtlasEnterpriseAuthorizationService {
         module: 'authorization',
         entityType: 'permission',
         entityId: permissionKey,
-        description:
-            'Acesso negado à permissão $permissionKey.',
+        description: 'Acesso negado à permissão $permissionKey.',
         result: 'denied',
         companyId: effective.companyId,
         userId: effective.userId,
         farmId: farmId,
-        after: <String, dynamic>{
-          'permissionKey': permissionKey,
-        },
+        after: <String, dynamic>{'permissionKey': permissionKey},
       );
     }
 
@@ -184,7 +176,8 @@ class AtlasEnterpriseAuthorizationService {
     if (!allowed) {
       throw AtlasAuthorizationException(
         permissionKey: permissionKey,
-        message: reason ??
+        message:
+            reason ??
             'Operação bloqueada. Permissão necessária: '
                 '$permissionKey.',
       );

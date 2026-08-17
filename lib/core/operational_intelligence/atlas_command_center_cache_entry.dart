@@ -22,12 +22,8 @@ class AtlasCommandCenterCacheEntry {
     return !expiresAt.isAfter(now);
   }
 
-  bool affectsAny(
-    Set<AtlasOperationalDomain> invalidatedDomains,
-  ) {
-    if (invalidatedDomains.contains(
-      AtlasOperationalDomain.unknown,
-    )) {
+  bool affectsAny(Set<AtlasOperationalDomain> invalidatedDomains) {
+    if (invalidatedDomains.contains(AtlasOperationalDomain.unknown)) {
       return true;
     }
 

@@ -54,18 +54,12 @@ class _AtlasEconomicScenarioScreenState
       input: AtlasAdvancedEconomicScenarioInput(
         type: type,
         inputInflationPercent: _double(inputInflation.text),
-        arrobaVariationPercent:
-            _double(arrobaVariation.text),
-        supplementVariationPercent:
-            _double(supplementVariation.text),
-        healthCostVariationPercent:
-            _double(healthVariation.text),
-        geneticInvestment:
-            _double(geneticInvestment.text),
-        productivityVariationPercent:
-            _double(productivityVariation.text),
-        horizonMonths:
-            int.tryParse(horizonMonths.text.trim()) ?? 12,
+        arrobaVariationPercent: _double(arrobaVariation.text),
+        supplementVariationPercent: _double(supplementVariation.text),
+        healthCostVariationPercent: _double(healthVariation.text),
+        geneticInvestment: _double(geneticInvestment.text),
+        productivityVariationPercent: _double(productivityVariation.text),
+        horizonMonths: int.tryParse(horizonMonths.text.trim()) ?? 12,
       ),
     );
     if (!mounted) return;
@@ -110,8 +104,7 @@ class _AtlasEconomicScenarioScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: loading ? null : _simulate,
           icon: const Icon(Icons.calculate_outlined),
           label: const Text('Simular'),
@@ -133,8 +126,7 @@ class _AtlasEconomicScenarioScreenState
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        DropdownButtonFormField<
-            AtlasAdvancedEconomicScenarioType>(
+        DropdownButtonFormField<AtlasAdvancedEconomicScenarioType>(
           initialValue: type,
           decoration: const InputDecoration(
             labelText: 'Cenário',
@@ -144,11 +136,7 @@ class _AtlasEconomicScenarioScreenState
               .map(
                 (value) => DropdownMenuItem(
                   value: value,
-                  child: Text(
-                    atlasAdvancedEconomicScenarioTypeLabel(
-                      value,
-                    ),
-                  ),
+                  child: Text(atlasAdvancedEconomicScenarioTypeLabel(value)),
                 ),
               )
               .toList(),
@@ -163,25 +151,13 @@ class _AtlasEconomicScenarioScreenState
         const SizedBox(height: 12),
         _number(arrobaVariation, 'Variação da arroba (%)'),
         const SizedBox(height: 12),
-        _number(
-          supplementVariation,
-          'Variação da suplementação (%)',
-        ),
+        _number(supplementVariation, 'Variação da suplementação (%)'),
         const SizedBox(height: 12),
-        _number(
-          healthVariation,
-          'Variação do custo sanitário (%)',
-        ),
+        _number(healthVariation, 'Variação do custo sanitário (%)'),
         const SizedBox(height: 12),
-        _number(
-          geneticInvestment,
-          'Investimento em genética (R\$)',
-        ),
+        _number(geneticInvestment, 'Investimento em genética (R\$)'),
         const SizedBox(height: 12),
-        _number(
-          productivityVariation,
-          'Variação da produtividade (%)',
-        ),
+        _number(productivityVariation, 'Variação da produtividade (%)'),
         const SizedBox(height: 12),
         _number(horizonMonths, 'Horizonte (meses)'),
         const SizedBox(height: 20),
@@ -191,9 +167,7 @@ class _AtlasEconomicScenarioScreenState
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.calculate_outlined),
           label: const Text('Calcular cenário'),
@@ -214,21 +188,9 @@ class _AtlasEconomicScenarioScreenState
       children: [
         _metric('Receita-base', item.baseRevenue, 'R\$'),
         _metric('Despesas-base', item.baseExpenses, 'R\$'),
-        _metric(
-          'Receita projetada',
-          item.projectedRevenue,
-          'R\$',
-        ),
-        _metric(
-          'Despesas projetadas',
-          item.projectedExpenses,
-          'R\$',
-        ),
-        _metric(
-          'Resultado projetado',
-          item.projectedNetResult,
-          'R\$',
-        ),
+        _metric('Receita projetada', item.projectedRevenue, 'R\$'),
+        _metric('Despesas projetadas', item.projectedExpenses, 'R\$'),
+        _metric('Resultado projetado', item.projectedNetResult, 'R\$'),
       ],
     );
   }
@@ -253,9 +215,7 @@ class _AtlasEconomicScenarioScreenState
             ),
             trailing: Text(
               'R\$ ${month.accumulatedBalance.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
         );
@@ -271,26 +231,14 @@ class _AtlasEconomicScenarioScreenState
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _metric(
-          'Margem projetada',
-          item.projectedMarginPercent,
-          '%',
-        ),
-        _metric(
-          'ROI projetado',
-          item.projectedRoiPercent,
-          '%',
-        ),
+        _metric('Margem projetada', item.projectedMarginPercent, '%'),
+        _metric('ROI projetado', item.projectedRoiPercent, '%'),
         _metric(
           'Payback',
           item.paybackMonths ?? 0,
           item.paybackMonths == null ? 'não calculado' : 'meses',
         ),
-        _metric(
-          'Score econômico',
-          item.economicScore,
-          '/100',
-        ),
+        _metric('Score econômico', item.economicScore, '/100'),
       ],
     );
   }
@@ -313,16 +261,10 @@ class _AtlasEconomicScenarioScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -333,9 +275,7 @@ class _AtlasEconomicScenarioScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -348,10 +288,16 @@ Widget _metric(String title, double value, String unit) {
       trailing: Text(
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(2)}'
-        '${unit == '%' ? '%' : unit == '/100' ? '/100' : unit == 'meses' ? ' meses' : unit == 'não calculado' ? ' —' : ''}',
-        style: const TextStyle(
-          fontWeight: FontWeight.w900,
-        ),
+        '${unit == '%'
+            ? '%'
+            : unit == '/100'
+            ? '/100'
+            : unit == 'meses'
+            ? ' meses'
+            : unit == 'não calculado'
+            ? ' —'
+            : ''}',
+        style: const TextStyle(fontWeight: FontWeight.w900),
       ),
     ),
   );

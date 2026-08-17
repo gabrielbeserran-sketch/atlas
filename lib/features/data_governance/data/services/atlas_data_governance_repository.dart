@@ -19,9 +19,8 @@ class AtlasDataGovernanceRepository {
       return decoded
           .whereType<Map<dynamic, dynamic>>()
           .map(
-            (item) => AtlasBackupSnapshot.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) =>
+                AtlasBackupSnapshot.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList()
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt));

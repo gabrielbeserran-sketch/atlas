@@ -4,8 +4,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_co
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_execution_weekly_review.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_execution_weekly_review_controller.dart';
 
-class AtlasExecutionWeeklyReviewScreen
-    extends StatefulWidget {
+class AtlasExecutionWeeklyReviewScreen extends StatefulWidget {
   const AtlasExecutionWeeklyReviewScreen({
     required this.actionController,
     super.key,
@@ -48,35 +47,23 @@ class _AtlasExecutionWeeklyReviewScreenState
             actions: [
               IconButton(
                 tooltip: 'Gerar nova revisão',
-                onPressed: controller.isLoading
-                    ? null
-                    : _generateReview,
-                icon: const Icon(
-                  Icons.auto_graph_outlined,
-                ),
+                onPressed: controller.isLoading ? null : _generateReview,
+                icon: const Icon(Icons.auto_graph_outlined),
               ),
               IconButton(
                 tooltip: 'Atualizar histórico',
-                onPressed:
-                    controller.isLoading ? null : controller.load,
+                onPressed: controller.isLoading ? null : controller.load,
                 icon: const Icon(Icons.refresh),
               ),
             ],
           ),
           body: _buildBody(),
-          floatingActionButton:
-              widget.actionController.actions.isEmpty
+          floatingActionButton: widget.actionController.actions.isEmpty
               ? null
               : FloatingActionButton.extended(
-                  onPressed: controller.isLoading
-                      ? null
-                      : _generateReview,
-                  icon: const Icon(
-                    Icons.playlist_add_check,
-                  ),
-                  label: const Text(
-                    'Gerar revisão',
-                  ),
+                  onPressed: controller.isLoading ? null : _generateReview,
+                  icon: const Icon(Icons.playlist_add_check),
+                  label: const Text('Gerar revisão'),
                 ),
         );
       },
@@ -84,15 +71,11 @@ class _AtlasExecutionWeeklyReviewScreenState
   }
 
   Widget _buildBody() {
-    if (controller.isLoading &&
-        controller.reviews.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+    if (controller.isLoading && controller.reviews.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
     }
 
-    if (controller.errorMessage != null &&
-        controller.reviews.isEmpty) {
+    if (controller.errorMessage != null && controller.reviews.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -112,18 +95,12 @@ class _AtlasExecutionWeeklyReviewScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.calendar_view_week_outlined,
-                size: 56,
-              ),
+              Icon(Icons.calendar_view_week_outlined, size: 56),
               SizedBox(height: 16),
               Text(
                 'Nenhuma revisão semanal foi gerada.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               SizedBox(height: 8),
               Text(
@@ -138,15 +115,9 @@ class _AtlasExecutionWeeklyReviewScreenState
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        96,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       itemCount: controller.reviews.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final review = controller.reviews[index];
 
@@ -156,14 +127,11 @@ class _AtlasExecutionWeeklyReviewScreenState
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.calendar_view_week_outlined,
-                      ),
+                      const Icon(Icons.calendar_view_week_outlined),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -186,9 +154,7 @@ class _AtlasExecutionWeeklyReviewScreenState
                         itemBuilder: (_) => const [
                           PopupMenuItem(
                             value: 'delete',
-                            child: Text(
-                              'Excluir revisão',
-                            ),
+                            child: Text('Excluir revisão'),
                           ),
                         ],
                       ),
@@ -200,15 +166,9 @@ class _AtlasExecutionWeeklyReviewScreenState
                     runSpacing: 8,
                     children: [
                       Chip(
-                        label: Text(
-                          '${review.completedInPeriod} concluída(s)',
-                        ),
+                        label: Text('${review.completedInPeriod} concluída(s)'),
                       ),
-                      Chip(
-                        label: Text(
-                          '${review.overdueActions} atrasada(s)',
-                        ),
-                      ),
+                      Chip(label: Text('${review.overdueActions} atrasada(s)')),
                       Chip(
                         label: Text(
                           '${review.executionHealthPercent.toStringAsFixed(0)}% saúde',
@@ -221,7 +181,7 @@ class _AtlasExecutionWeeklyReviewScreenState
                     review.focusActions.isEmpty
                         ? 'Sem foco prioritário definido.'
                         : 'Foco principal: '
-                            '${review.focusActions.first}',
+                              '${review.focusActions.first}',
                   ),
                 ],
               ),
@@ -242,9 +202,7 @@ class _AtlasExecutionWeeklyReviewScreenState
     await _openReview(review);
   }
 
-  Future<void> _openReview(
-    AtlasExecutionWeeklyReview review,
-  ) {
+  Future<void> _openReview(AtlasExecutionWeeklyReview review) {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -282,8 +240,7 @@ class _AtlasExecutionWeeklyReviewScreenState
           ),
           actions: [
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Fechar'),
             ),
           ],
@@ -294,9 +251,7 @@ class _AtlasExecutionWeeklyReviewScreenState
 }
 
 class _ReviewMetrics extends StatelessWidget {
-  const _ReviewMetrics({
-    required this.review,
-  });
+  const _ReviewMetrics({required this.review});
 
   final AtlasExecutionWeeklyReview review;
 
@@ -306,31 +261,11 @@ class _ReviewMetrics extends StatelessWidget {
       spacing: 10,
       runSpacing: 10,
       children: [
-        Chip(
-          label: Text(
-            '${review.totalActions} ações',
-          ),
-        ),
-        Chip(
-          label: Text(
-            '${review.openActions} abertas',
-          ),
-        ),
-        Chip(
-          label: Text(
-            '${review.completedInPeriod} concluídas',
-          ),
-        ),
-        Chip(
-          label: Text(
-            '${review.overdueActions} atrasadas',
-          ),
-        ),
-        Chip(
-          label: Text(
-            '${review.blockedActions} bloqueadas',
-          ),
-        ),
+        Chip(label: Text('${review.totalActions} ações')),
+        Chip(label: Text('${review.openActions} abertas')),
+        Chip(label: Text('${review.completedInPeriod} concluídas')),
+        Chip(label: Text('${review.overdueActions} atrasadas')),
+        Chip(label: Text('${review.blockedActions} bloqueadas')),
         Chip(
           label: Text(
             '${review.averageProgressPercent.toStringAsFixed(0)}% progresso',
@@ -368,8 +303,7 @@ class _ReviewSection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -387,18 +321,13 @@ class _ReviewSection extends StatelessWidget {
             const SizedBox(height: 10),
             ...items.map(
               (item) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
                       padding: EdgeInsets.only(top: 7),
-                      child: Icon(
-                        Icons.circle,
-                        size: 7,
-                      ),
+                      child: Icon(Icons.circle, size: 7),
                     ),
                     const SizedBox(width: 10),
                     Expanded(child: Text(item)),

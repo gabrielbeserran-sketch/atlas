@@ -21,9 +21,11 @@ def _response(path) -> BackupResponse:
             tz=timezone.utc,
         ),
         size_bytes=path.stat().st_size,
-        engine="postgresql"
-        if path.suffix == ".dump"
-        else "sqlite",
+        engine=(
+            "bundle"
+            if path.suffix == ".atlasbackup"
+            else ("postgresql" if path.suffix == ".dump" else "sqlite")
+        ),
     )
 
 
@@ -59,3 +61,32 @@ def run_backup(
     )
     db.commit()
     return _response(path)
+
+
+
+@router.post("/{filename}/verify-restore")
+def verify_restore(
+    filename: str,
+    principal: Principal = Depends(
+        require_permission("backup.run")
+    ),
+    db: Session = Depends(get_db),
+) -> dict:
+    path = service.backup_dir / Path(filename).name
+    if not path.is_file():
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Backup não encontrado.")
+
+    result = service.verify_restore(path)
+    record_audit(
+        db,
+        principal=principal,
+        action="backup_restore_verified",
+        module="backup",
+        entity_type="database",
+        entity_id=path.name,
+        description="Backup restaurado e validado em ambiente temporário.",
+        after=result,
+    )
+    db.commit()
+    return result

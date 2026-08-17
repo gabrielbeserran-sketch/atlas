@@ -98,10 +98,7 @@ class AnimalFinanceIntegrationService {
     }
 
     if (financeChanged) {
-      await _financeStorage.saveRecords(
-        farmName: farmName,
-        records: records,
-      );
+      await _financeStorage.saveRecords(farmName: farmName, records: records);
     }
 
     return messages;

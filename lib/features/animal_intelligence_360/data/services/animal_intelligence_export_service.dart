@@ -8,7 +8,8 @@ class AnimalIntelligenceExportService {
   const AnimalIntelligenceExportService();
 
   Directory _outputDirectory() {
-    final home = Platform.environment['USERPROFILE'] ??
+    final home =
+        Platform.environment['USERPROFILE'] ??
         Platform.environment['HOME'] ??
         Directory.current.path;
     final downloads = Directory('$home${Platform.pathSeparator}Downloads');
@@ -49,10 +50,7 @@ class AnimalIntelligenceExportService {
         build: (context) => [
           pw.Text(
             'Projeto Atlas — Relatório Executivo do Animal',
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
-            ),
+            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 8),
           pw.Text('Animal: $animalName'),
@@ -60,10 +58,7 @@ class AnimalIntelligenceExportService {
           pw.SizedBox(height: 18),
           pw.Text(
             'Indicadores consolidados',
-            style: pw.TextStyle(
-              fontSize: 15,
-              fontWeight: pw.FontWeight.bold,
-            ),
+            style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 8),
           ...snapshot.entries.map(
@@ -75,15 +70,10 @@ class AnimalIntelligenceExportService {
           pw.SizedBox(height: 18),
           pw.Text(
             'Recomendações',
-            style: pw.TextStyle(
-              fontSize: 15,
-              fontWeight: pw.FontWeight.bold,
-            ),
+            style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 8),
-          ...recommendations.map(
-            (item) => pw.Bullet(text: item),
-          ),
+          ...recommendations.map((item) => pw.Bullet(text: item)),
         ],
       ),
     );

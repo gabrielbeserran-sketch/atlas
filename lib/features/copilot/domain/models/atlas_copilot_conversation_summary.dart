@@ -21,21 +21,14 @@ class AtlasCopilotConversationSummary {
     return contextKey == 'operation_consolidated';
   }
 
-  factory AtlasCopilotConversationSummary.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasCopilotConversationSummary.fromJson(Map<String, dynamic> json) {
     return AtlasCopilotConversationSummary(
-      contextKey:
-          json['contextKey']?.toString() ?? '',
-      contextLabel:
-          json['contextLabel']?.toString() ?? '',
-      messageCount:
-          _readInt(json['messageCount']),
-      lastMessage:
-          json['lastMessage']?.toString() ?? '',
-      updatedAt: DateTime.tryParse(
-            json['updatedAt']?.toString() ?? '',
-          ) ??
+      contextKey: json['contextKey']?.toString() ?? '',
+      contextLabel: json['contextLabel']?.toString() ?? '',
+      messageCount: _readInt(json['messageCount']),
+      lastMessage: json['lastMessage']?.toString() ?? '',
+      updatedAt:
+          DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }
@@ -50,9 +43,7 @@ class AtlasCopilotConversationSummary {
     };
   }
 
-  static int _readInt(
-    dynamic value,
-  ) {
+  static int _readInt(dynamic value) {
     if (value is int) {
       return value;
     }
@@ -61,9 +52,6 @@ class AtlasCopilotConversationSummary {
       return value.toInt();
     }
 
-    return int.tryParse(
-          value?.toString() ?? '',
-        ) ??
-        0;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
@@ -30,8 +29,7 @@ class AtlasIntelligenceReportsScreen extends StatefulWidget {
 class _AtlasIntelligenceReportsScreenState
     extends State<AtlasIntelligenceReportsScreen> {
   final storage = AtlasIntelligenceReportsStorageService();
-  final analyticsService =
-      const AtlasIntelligenceReportsAnalyticsService();
+  final analyticsService = const AtlasIntelligenceReportsAnalyticsService();
 
   late AtlasIntelligenceReportsModule selectedModule;
   List<AtlasIntelligenceReportsRecord> records = [];
@@ -54,8 +52,9 @@ class _AtlasIntelligenceReportsScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasIntelligenceReportsDate(b.date)
-          .compareTo(parseAtlasIntelligenceReportsDate(a.date)),
+      (a, b) => parseAtlasIntelligenceReportsDate(
+        b.date,
+      ).compareTo(parseAtlasIntelligenceReportsDate(a.date)),
     );
 
     if (!mounted) return;
@@ -67,28 +66,23 @@ class _AtlasIntelligenceReportsScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasIntelligenceReportsRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasIntelligenceReportsRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasIntelligenceReportsRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasIntelligenceReportsRecord>(
+  Future<void> openForm([AtlasIntelligenceReportsRecord? current]) async {
+    final result = await showDialog<AtlasIntelligenceReportsRecord>(
       context: context,
-      builder: (_) => _IntelligenceReportsForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _IntelligenceReportsForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -107,9 +101,7 @@ class _AtlasIntelligenceReportsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasIntelligenceReportsRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasIntelligenceReportsRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -252,22 +244,22 @@ class _AtlasIntelligenceReportsScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor atual médio',
-                            value:
-                                analytics.averageCurrentValue.toStringAsFixed(2),
+                            value: analytics.averageCurrentValue
+                                .toStringAsFixed(2),
                             subtitle: 'Indicadores atuais',
                             icon: Icons.assessment_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Meta média',
-                            value:
-                                analytics.averageTargetValue.toStringAsFixed(2),
+                            value: analytics.averageTargetValue.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Indicadores-alvo',
                             icon: Icons.flag_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Gap médio',
-                            value:
-                                analytics.averageGap.toStringAsFixed(2),
+                            value: analytics.averageGap.toStringAsFixed(2),
                             subtitle: 'Atual menos meta',
                             icon: Icons.compare_arrows_outlined,
                           ),
@@ -328,9 +320,7 @@ class _AtlasIntelligenceReportsScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro indicador, relatório, exportação ou melhoria de navegação.',
                             ),
@@ -383,10 +373,7 @@ class _AtlasIntelligenceReportsScreenState
 }
 
 class _IntelligenceReportsForm extends StatefulWidget {
-  const _IntelligenceReportsForm({
-    required this.module,
-    this.current,
-  });
+  const _IntelligenceReportsForm({required this.module, this.current});
 
   final AtlasIntelligenceReportsModule module;
   final AtlasIntelligenceReportsRecord? current;
@@ -396,8 +383,7 @@ class _IntelligenceReportsForm extends StatefulWidget {
       _IntelligenceReportsFormState();
 }
 
-class _IntelligenceReportsFormState
-    extends State<_IntelligenceReportsForm> {
+class _IntelligenceReportsFormState extends State<_IntelligenceReportsForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -430,18 +416,13 @@ class _IntelligenceReportsFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasIntelligenceReportsDate(DateTime.now()),
+      text: current?.date ?? formatAtlasIntelligenceReportsDate(DateTime.now()),
     );
     farmName = TextEditingController(text: current?.farmName ?? '');
-    indicatorName =
-        TextEditingController(text: current?.indicatorName ?? '');
-    dataSource =
-        TextEditingController(text: current?.dataSource ?? '');
-    periodLabel =
-        TextEditingController(text: current?.periodLabel ?? '');
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
+    indicatorName = TextEditingController(text: current?.indicatorName ?? '');
+    dataSource = TextEditingController(text: current?.dataSource ?? '');
+    periodLabel = TextEditingController(text: current?.periodLabel ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     currentValue = TextEditingController(
       text: current == null || current.currentValue == 0
           ? ''
@@ -463,9 +444,7 @@ class _IntelligenceReportsFormState
           : current.riskPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -499,10 +478,7 @@ class _IntelligenceReportsFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
@@ -516,7 +492,8 @@ class _IntelligenceReportsFormState
     Navigator.pop(
       context,
       AtlasIntelligenceReportsRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'intelligence_reports_'
                 '${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
@@ -532,14 +509,10 @@ class _IntelligenceReportsFormState
         responsible: responsible.text.trim(),
         currentValue: decimal(currentValue),
         targetValue: decimal(targetValue),
-        confidencePercent:
-            decimal(confidencePercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        confidencePercent: decimal(confidencePercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -550,11 +523,7 @@ class _IntelligenceReportsFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -569,10 +538,8 @@ class _IntelligenceReportsFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -583,37 +550,33 @@ class _IntelligenceReportsFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Validado',
-                    'Publicado',
-                    'Concluído',
-                    'Atenção',
-                    'Falha',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Validado',
+                            'Publicado',
+                            'Concluído',
+                            'Atenção',
+                            'Falha',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -622,20 +585,11 @@ class _IntelligenceReportsFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -660,18 +614,14 @@ class _IntelligenceReportsFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -683,18 +633,13 @@ class _IntelligenceReportsFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasIntelligenceReportsModule module,
-) {
+IconData _moduleIcon(AtlasIntelligenceReportsModule module) {
   return switch (module) {
     AtlasIntelligenceReportsModule.consolidatedIndicatorEngine =>
       Icons.calculate_outlined,
@@ -712,8 +657,7 @@ IconData _moduleIcon(
       Icons.request_quote_outlined,
     AtlasIntelligenceReportsModule.spreadsheetCsvExport =>
       Icons.table_view_outlined,
-    AtlasIntelligenceReportsModule.secureSharing =>
-      Icons.share_outlined,
+    AtlasIntelligenceReportsModule.secureSharing => Icons.share_outlined,
     AtlasIntelligenceReportsModule.professionalNavigationExperience =>
       Icons.menu_open_outlined,
   };

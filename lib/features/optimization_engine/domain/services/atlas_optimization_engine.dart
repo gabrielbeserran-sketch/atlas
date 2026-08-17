@@ -25,8 +25,7 @@ class AtlasOptimizationEngine {
       final template = templates[index];
 
       final simulation = AtlasSimulation(
-        id:
-            'optimization_simulation_${DateTime.now().microsecondsSinceEpoch}_$index',
+        id: 'optimization_simulation_${DateTime.now().microsecondsSinceEpoch}_$index',
         name: template.name,
         description: template.description,
         farmId: request.farmId,
@@ -50,17 +49,13 @@ class AtlasOptimizationEngine {
       );
     }
 
-    evaluated.sort(
-      (first, second) {
-        if (first.isEligible != second.isEligible) {
-          return first.isEligible ? -1 : 1;
-        }
+    evaluated.sort((first, second) {
+      if (first.isEligible != second.isEligible) {
+        return first.isEligible ? -1 : 1;
+      }
 
-        return second.optimizationScore.compareTo(
-          first.optimizationScore,
-        );
-      },
-    );
+      return second.optimizationScore.compareTo(first.optimizationScore);
+    });
 
     final ranked = <AtlasOptimizationCandidate>[];
 
@@ -83,29 +78,18 @@ class AtlasOptimizationEngine {
       );
     }
 
-    final eligible = ranked.where(
-      (item) => item.isEligible,
-    );
+    final eligible = ranked.where((item) => item.isEligible);
 
-    final best = eligible.isNotEmpty
-        ? eligible.first
-        : ranked.first;
+    final best = eligible.isNotEmpty ? eligible.first : ranked.first;
 
     return AtlasOptimizationResult(
-      id:
-          'optimization_result_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'optimization_result_${DateTime.now().microsecondsSinceEpoch}',
       request: request,
       generatedAt: DateTime.now(),
       candidates: ranked,
       bestCandidate: best,
-      summary: _buildSummary(
-        request: request,
-        best: best,
-      ),
-      selectionReasons: _buildSelectionReasons(
-        request: request,
-        best: best,
-      ),
+      summary: _buildSummary(request: request, best: best),
+      selectionReasons: _buildSelectionReasons(request: request, best: best),
     );
   }
 
@@ -118,15 +102,11 @@ class AtlasOptimizationEngine {
     final changes = result.simulation.changes;
 
     if (changes.initialInvestment > request.maxInvestment) {
-      notes.add(
-        'Investimento superior ao limite definido.',
-      );
+      notes.add('Investimento superior ao limite definido.');
     }
 
     if (changes.herdSizeChange > request.maxHerdExpansion) {
-      notes.add(
-        'Expansão do rebanho superior ao limite.',
-      );
+      notes.add('Expansão do rebanho superior ao limite.');
     }
 
     final minimumProjectedScore = <double>[
@@ -139,35 +119,26 @@ class AtlasOptimizationEngine {
     ].reduce(math.min);
 
     if (minimumProjectedScore < request.minimumScore) {
-      notes.add(
-        'Um dos indicadores ficou abaixo do mínimo.',
-      );
+      notes.add('Um dos indicadores ficou abaixo do mínimo.');
     }
 
-    if (!_riskAccepted(
-      result.riskLevel,
-      request.maxRisk,
-    )) {
-      notes.add(
-        'Risco acima da tolerância selecionada.',
-      );
+    if (!_riskAccepted(result.riskLevel, request.maxRisk)) {
+      notes.add('Risco acima da tolerância selecionada.');
     }
 
-    final objectiveScore = _objectiveScore(
-      request.objective,
-      result,
-    );
+    final objectiveScore = _objectiveScore(request.objective, result);
 
     final financialScore = _financialScore(result);
     final riskScore = _riskScore(result.riskLevel);
     final balanceScore = _balanceScore(result);
 
-    final optimizationScore = (
-      objectiveScore * 0.48 +
-      financialScore * 0.20 +
-      riskScore * 0.18 +
-      balanceScore * 0.14
-    ).clamp(0.0, 100.0).toDouble();
+    final optimizationScore =
+        (objectiveScore * 0.48 +
+                financialScore * 0.20 +
+                riskScore * 0.18 +
+                balanceScore * 0.14)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
     return AtlasOptimizationCandidate(
       position: 0,
@@ -191,69 +162,57 @@ class AtlasOptimizationEngine {
 
     switch (objective) {
       case AtlasOptimizationObjective.balancedGrowth:
-        return (
-          50 +
-          result.scoreVariation * 5 +
-          _balanceScore(result) * 0.35
-        ).clamp(0.0, 100.0).toDouble();
+        return (50 + result.scoreVariation * 5 + _balanceScore(result) * 0.35)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
       case AtlasOptimizationObjective.maximizeProfit:
-        final netComponent =
-            result.projectedNetResult / 2500;
-        final roiComponent =
-            result.roiPercent.clamp(-50.0, 100.0) * 0.35;
+        final netComponent = result.projectedNetResult / 2500;
+        final roiComponent = result.roiPercent.clamp(-50.0, 100.0) * 0.35;
 
-        return (
-          45 + netComponent + roiComponent
-        ).clamp(0.0, 100.0).toDouble();
+        return (45 + netComponent + roiComponent).clamp(0.0, 100.0).toDouble();
 
       case AtlasOptimizationObjective.minimizeRisk:
-        return (
-          _riskScore(result.riskLevel) * 0.75 +
-          result.simulatedTwin.overallScore * 0.25
-        ).clamp(0.0, 100.0).toDouble();
+        return (_riskScore(result.riskLevel) * 0.75 +
+                result.simulatedTwin.overallScore * 0.25)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
       case AtlasOptimizationObjective.improveReproduction:
-        return (
-          health.reproductive * 0.75 +
-          result.simulatedTwin.overallScore * 0.25
-        ).clamp(0.0, 100.0).toDouble();
+        return (health.reproductive * 0.75 +
+                result.simulatedTwin.overallScore * 0.25)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
       case AtlasOptimizationObjective.improveSanitary:
-        return (
-          health.sanitary * 0.75 +
-          result.simulatedTwin.overallScore * 0.25
-        ).clamp(0.0, 100.0).toDouble();
+        return (health.sanitary * 0.75 +
+                result.simulatedTwin.overallScore * 0.25)
+            .clamp(0.0, 100.0)
+            .toDouble();
 
       case AtlasOptimizationObjective.improveOperations:
-        return (
-          health.operational * 0.55 +
-          health.inventory * 0.20 +
-          result.simulatedTwin.overallScore * 0.25
-        ).clamp(0.0, 100.0).toDouble();
+        return (health.operational * 0.55 +
+                health.inventory * 0.20 +
+                result.simulatedTwin.overallScore * 0.25)
+            .clamp(0.0, 100.0)
+            .toDouble();
     }
   }
 
-  double _financialScore(
-    AtlasSimulationResult result,
-  ) {
+  double _financialScore(AtlasSimulationResult result) {
     var score = 50.0;
 
     score += result.projectedNetResult / 4000;
     score += result.roiPercent.clamp(-50.0, 100.0) * 0.25;
 
     if (result.paybackMonths != null) {
-      score += (
-        24 - result.paybackMonths!
-      ).clamp(-20.0, 20.0);
+      score += (24 - result.paybackMonths!).clamp(-20.0, 20.0);
     }
 
     return score.clamp(0.0, 100.0).toDouble();
   }
 
-  double _riskScore(
-    AtlasSimulationRiskLevel level,
-  ) {
+  double _riskScore(AtlasSimulationRiskLevel level) {
     switch (level) {
       case AtlasSimulationRiskLevel.low:
         return 100;
@@ -266,9 +225,7 @@ class AtlasOptimizationEngine {
     }
   }
 
-  double _balanceScore(
-    AtlasSimulationResult result,
-  ) {
+  double _balanceScore(AtlasSimulationResult result) {
     final values = <double>[
       result.simulatedTwin.health.animal,
       result.simulatedTwin.health.sanitary,
@@ -278,22 +235,17 @@ class AtlasOptimizationEngine {
       result.simulatedTwin.health.operational,
     ];
 
-    final average =
-        values.reduce((a, b) => a + b) / values.length;
+    final average = values.reduce((a, b) => a + b) / values.length;
 
-    final variance = values
-            .map(
-              (value) =>
-                  math.pow(value - average, 2).toDouble(),
-            )
+    final variance =
+        values
+            .map((value) => math.pow(value - average, 2).toDouble())
             .reduce((a, b) => a + b) /
         values.length;
 
     final deviation = math.sqrt(variance);
 
-    return (
-      average - deviation * 1.6
-    ).clamp(0.0, 100.0).toDouble();
+    return (average - deviation * 1.6).clamp(0.0, 100.0).toDouble();
   }
 
   bool _riskAccepted(
@@ -311,20 +263,15 @@ class AtlasOptimizationEngine {
     }
   }
 
-  List<_OptimizationTemplate> _templatesFor(
-    AtlasOptimizationRequest request,
-  ) {
+  List<_OptimizationTemplate> _templatesFor(AtlasOptimizationRequest request) {
     final maxInvestment = request.maxInvestment;
     final smallInvestment = maxInvestment * 0.25;
     final mediumInvestment = maxInvestment * 0.55;
     final largeInvestment = maxInvestment * 0.90;
 
-    final herdSmall =
-        (request.maxHerdExpansion * 0.25).round();
-    final herdMedium =
-        (request.maxHerdExpansion * 0.55).round();
-    final herdLarge =
-        (request.maxHerdExpansion * 0.90).round();
+    final herdSmall = (request.maxHerdExpansion * 0.25).round();
+    final herdMedium = (request.maxHerdExpansion * 0.55).round();
+    final herdLarge = (request.maxHerdExpansion * 0.90).round();
 
     final base = <_OptimizationTemplate>[
       _OptimizationTemplate(
@@ -340,16 +287,13 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 7,
           herdSizeChange: 0,
           initialInvestment: smallInvestment,
-          expectedMonthlyRevenueChange:
-              smallInvestment * 0.12,
-          expectedMonthlyCostChange:
-              smallInvestment * 0.035,
+          expectedMonthlyRevenueChange: smallInvestment * 0.12,
+          expectedMonthlyCostChange: smallInvestment * 0.035,
         ),
       ),
       _OptimizationTemplate(
         name: 'Expansão moderada do rebanho',
-        description:
-            'Amplia a produção preservando equilíbrio operacional.',
+        description: 'Amplia a produção preservando equilíbrio operacional.',
         changes: AtlasSimulationChanges(
           animalScoreChange: 4,
           sanitaryScoreChange: 2,
@@ -359,16 +303,13 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 2,
           herdSizeChange: herdMedium,
           initialInvestment: mediumInvestment,
-          expectedMonthlyRevenueChange:
-              mediumInvestment * 0.15,
-          expectedMonthlyCostChange:
-              mediumInvestment * 0.07,
+          expectedMonthlyRevenueChange: mediumInvestment * 0.15,
+          expectedMonthlyCostChange: mediumInvestment * 0.07,
         ),
       ),
       _OptimizationTemplate(
         name: 'Intensificação produtiva',
-        description:
-            'Busca crescimento mais forte de produção e resultado.',
+        description: 'Busca crescimento mais forte de produção e resultado.',
         changes: AtlasSimulationChanges(
           animalScoreChange: 8,
           sanitaryScoreChange: 1,
@@ -378,10 +319,8 @@ class AtlasOptimizationEngine {
           operationalScoreChange: -1,
           herdSizeChange: herdLarge,
           initialInvestment: largeInvestment,
-          expectedMonthlyRevenueChange:
-              largeInvestment * 0.21,
-          expectedMonthlyCostChange:
-              largeInvestment * 0.11,
+          expectedMonthlyRevenueChange: largeInvestment * 0.21,
+          expectedMonthlyCostChange: largeInvestment * 0.11,
         ),
       ),
       _OptimizationTemplate(
@@ -397,10 +336,8 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 4,
           herdSizeChange: 0,
           initialInvestment: mediumInvestment * 0.75,
-          expectedMonthlyRevenueChange:
-              mediumInvestment * 0.08,
-          expectedMonthlyCostChange:
-              mediumInvestment * 0.035,
+          expectedMonthlyRevenueChange: mediumInvestment * 0.08,
+          expectedMonthlyCostChange: mediumInvestment * 0.035,
         ),
       ),
       _OptimizationTemplate(
@@ -416,16 +353,13 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 4,
           herdSizeChange: herdSmall,
           initialInvestment: mediumInvestment,
-          expectedMonthlyRevenueChange:
-              mediumInvestment * 0.14,
-          expectedMonthlyCostChange:
-              mediumInvestment * 0.055,
+          expectedMonthlyRevenueChange: mediumInvestment * 0.14,
+          expectedMonthlyCostChange: mediumInvestment * 0.055,
         ),
       ),
       _OptimizationTemplate(
         name: 'Redução de custos',
-        description:
-            'Melhora margem por controle de despesas e eficiência.',
+        description: 'Melhora margem por controle de despesas e eficiência.',
         changes: AtlasSimulationChanges(
           animalScoreChange: 0,
           sanitaryScoreChange: 1,
@@ -435,10 +369,8 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 6,
           herdSizeChange: 0,
           initialInvestment: smallInvestment * 0.55,
-          expectedMonthlyRevenueChange:
-              smallInvestment * 0.025,
-          expectedMonthlyCostChange:
-              -smallInvestment * 0.07,
+          expectedMonthlyRevenueChange: smallInvestment * 0.025,
+          expectedMonthlyCostChange: -smallInvestment * 0.07,
         ),
       ),
       _OptimizationTemplate(
@@ -454,10 +386,8 @@ class AtlasOptimizationEngine {
           operationalScoreChange: 5,
           herdSizeChange: herdSmall,
           initialInvestment: mediumInvestment,
-          expectedMonthlyRevenueChange:
-              mediumInvestment * 0.13,
-          expectedMonthlyCostChange:
-              mediumInvestment * 0.055,
+          expectedMonthlyRevenueChange: mediumInvestment * 0.13,
+          expectedMonthlyCostChange: mediumInvestment * 0.055,
         ),
       ),
       _OptimizationTemplate(
@@ -473,10 +403,8 @@ class AtlasOptimizationEngine {
           operationalScoreChange: -4,
           herdSizeChange: request.maxHerdExpansion,
           initialInvestment: maxInvestment,
-          expectedMonthlyRevenueChange:
-              maxInvestment * 0.25,
-          expectedMonthlyCostChange:
-              maxInvestment * 0.14,
+          expectedMonthlyRevenueChange: maxInvestment * 0.25,
+          expectedMonthlyCostChange: maxInvestment * 0.14,
         ),
       ),
     ];

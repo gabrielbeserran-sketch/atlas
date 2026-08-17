@@ -61,8 +61,7 @@ class AtlasOperationsEnterpriseAnalyticsService {
         .where((record) => record.isOperational)
         .length;
 
-    final overdue =
-        moduleRecords.where((record) => record.isOverdue).length;
+    final overdue = moduleRecords.where((record) => record.isOverdue).length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -98,10 +97,10 @@ class AtlasOperationsEnterpriseAnalyticsService {
       (total, record) => total + record.actualCost,
     );
 
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageQuality =
-        averageOf((record) => record.qualityPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageQuality = averageOf((record) => record.qualityPercent);
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -137,60 +136,48 @@ class AtlasOperationsEnterpriseAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasOperationsEnterpriseModule.farmOperationalPlanning =>
-            const [
-              'Conecte metas, responsáveis, prazos e recursos.',
-              'Revise o plano quando houver mudanças de prioridade.',
-            ],
-          AtlasOperationsEnterpriseModule.intelligentActivityAgenda =>
-            const [
-              'Evite conflitos de horário e dependências não resolvidas.',
-              'Converta atividades críticas em tarefas acompanháveis.',
-            ],
-          AtlasOperationsEnterpriseModule.workOrders =>
-            const [
-              'Registre abertura, execução, evidências e encerramento.',
-              'Não encerre ordens sem validação do responsável.',
-            ],
-          AtlasOperationsEnterpriseModule.teamManagement =>
-            const [
-              'Distribua tarefas conforme competência e disponibilidade.',
-              'Evite sobrecarga recorrente da mesma equipe.',
-            ],
-          AtlasOperationsEnterpriseModule.workdayControl =>
-            const [
-              'Mantenha registros de jornada auditáveis.',
-              'Trate horas extras e ausências com aprovação.',
-            ],
-          AtlasOperationsEnterpriseModule.machineryManagement =>
-            const [
-              'Atualize horímetro, operador e disponibilidade.',
-              'Separe custo fixo, variável e tempo parado.',
-            ],
-          AtlasOperationsEnterpriseModule.preventiveMaintenance =>
-            const [
-              'Planeje manutenção antes do limite de uso.',
-              'Associe peças, custos, prazo e responsável.',
-            ],
-          AtlasOperationsEnterpriseModule.correctiveMaintenance =>
-            const [
-              'Registre causa, reparo e tempo de indisponibilidade.',
-              'Use falhas recorrentes para melhorar o plano preventivo.',
-            ],
-          AtlasOperationsEnterpriseModule.operationalIndicators =>
-            const [
-              'Padronize período, fórmula e fonte de cada indicador.',
-              'Compare resultado com meta e histórico.',
-            ],
-          AtlasOperationsEnterpriseModule.operationsCenter =>
-            const [
-              'Centralize atividades, equipes, máquinas e ordens.',
-              'Priorize por impacto, urgência e dependência.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasOperationsEnterpriseModule.farmOperationalPlanning => const [
+          'Conecte metas, responsáveis, prazos e recursos.',
+          'Revise o plano quando houver mudanças de prioridade.',
+        ],
+        AtlasOperationsEnterpriseModule.intelligentActivityAgenda => const [
+          'Evite conflitos de horário e dependências não resolvidas.',
+          'Converta atividades críticas em tarefas acompanháveis.',
+        ],
+        AtlasOperationsEnterpriseModule.workOrders => const [
+          'Registre abertura, execução, evidências e encerramento.',
+          'Não encerre ordens sem validação do responsável.',
+        ],
+        AtlasOperationsEnterpriseModule.teamManagement => const [
+          'Distribua tarefas conforme competência e disponibilidade.',
+          'Evite sobrecarga recorrente da mesma equipe.',
+        ],
+        AtlasOperationsEnterpriseModule.workdayControl => const [
+          'Mantenha registros de jornada auditáveis.',
+          'Trate horas extras e ausências com aprovação.',
+        ],
+        AtlasOperationsEnterpriseModule.machineryManagement => const [
+          'Atualize horímetro, operador e disponibilidade.',
+          'Separe custo fixo, variável e tempo parado.',
+        ],
+        AtlasOperationsEnterpriseModule.preventiveMaintenance => const [
+          'Planeje manutenção antes do limite de uso.',
+          'Associe peças, custos, prazo e responsável.',
+        ],
+        AtlasOperationsEnterpriseModule.correctiveMaintenance => const [
+          'Registre causa, reparo e tempo de indisponibilidade.',
+          'Use falhas recorrentes para melhorar o plano preventivo.',
+        ],
+        AtlasOperationsEnterpriseModule.operationalIndicators => const [
+          'Padronize período, fórmula e fonte de cada indicador.',
+          'Compare resultado com meta e histórico.',
+        ],
+        AtlasOperationsEnterpriseModule.operationsCenter => const [
+          'Centralize atividades, equipes, máquinas e ordens.',
+          'Priorize por impacto, urgência e dependência.',
+        ],
+      });
     }
 
     return AtlasOperationsEnterpriseAnalytics(

@@ -570,6 +570,26 @@ class ReproductionEventCreateRequest(BaseModel):
     metadata_json: dict[str, Any] = Field(default_factory=dict)
 
 
+class ReproductionEventUpdateRequest(BaseModel):
+    event_type: str | None = None
+    event_code: str | None = None
+    protocol_name: str | None = None
+    protocol_stage: str | None = None
+    sire_reference: str | None = None
+    result: str | None = None
+    reproductive_status: str | None = None
+    responsible: str | None = None
+    attempt_number: int | None = Field(default=None, ge=0)
+    pregnancy_days: int | None = Field(default=None, ge=0, le=310)
+    calf_id: str | None = None
+    calf_sex: str | None = None
+    birth_type: str | None = None
+    occurred_at: datetime | None = None
+    expected_date: datetime | None = None
+    notes: str | None = None
+    metadata_json: dict[str, Any] | None = None
+
+
 class ReproductionEventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
@@ -636,6 +656,29 @@ class HealthEventCreateRequest(BaseModel):
     inventory_product_id: str | None = None
     inventory_quantity: float = Field(default=0, ge=0)
     treatment_cost: float = Field(default=0, ge=0)
+
+
+class HealthEventUpdateRequest(BaseModel):
+    event_type: str | None = None
+    product_name: str | None = None
+    dosage: str | None = None
+    route: str | None = None
+    withdrawal_until: datetime | None = None
+    withdrawal_meat_until: datetime | None = None
+    withdrawal_milk_until: datetime | None = None
+    occurred_at: datetime | None = None
+    responsible: str | None = None
+    notes: str | None = None
+    protocol_name: str | None = None
+    product_batch: str | None = None
+    frequency: str | None = None
+    diagnosis: str | None = None
+    severity: str | None = None
+    next_date: datetime | None = None
+    status: str | None = None
+    is_quarantine: bool | None = None
+    is_mortality: bool | None = None
+    necropsy_result: str | None = None
 
 
 class HealthEventResponse(BaseModel):
@@ -822,6 +865,7 @@ class OperationalTaskCreateRequest(BaseModel):
 
 
 class OperationalTaskUpdateRequest(BaseModel):
+    source_type: str | None = None
     title: str | None = None
     description: str | None = None
     responsible_user_id: str | None = None
@@ -2162,6 +2206,9 @@ class NutritionPlanCreateRequest(BaseModel):
     tdn_percent: float = Field(default=0, ge=0, le=100)
     cost_per_kg: float = Field(default=0, ge=0)
     ingredients_json: list[dict] = Field(default_factory=list)
+    stock_integration_enabled: bool = False
+    inventory_deducted: bool = False
+    inventory_deduction_cost: float = Field(default=0, ge=0)
     notes: str = ""
 
 
@@ -2237,3 +2284,35 @@ class FinancialSummaryResponse(BaseModel):
     cost_by_lot: dict[str, float]
     cost_by_animal: dict[str, float]
     indicators: dict[str, float]
+
+
+class PaddockCreateRequest(BaseModel):
+    farm_id: str
+    name: str
+    area: float = Field(gt=0)
+    status: str = "Descanso"
+    animals: int = Field(default=0, ge=0)
+    notes: str = ""
+
+
+class PaddockUpdateRequest(BaseModel):
+    name: str | None = None
+    area: float | None = Field(default=None, gt=0)
+    status: str | None = None
+    animals: int | None = Field(default=None, ge=0)
+    notes: str | None = None
+    active: bool | None = None
+
+
+class PaddockResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    farm_id: str
+    name: str
+    area: float
+    status: str
+    animals: int
+    notes: str
+    active: bool
+    created_at: datetime
+    updated_at: datetime

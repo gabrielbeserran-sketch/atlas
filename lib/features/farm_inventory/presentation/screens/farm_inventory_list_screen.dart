@@ -7,7 +7,6 @@ import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_invento
 import 'package:projeto_atlas/features/farm_inventory/domain/services/farm_inventory_event_service.dart';
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_form_screen.dart';
 
-
 class _InventoryMovementResult {
   const _InventoryMovementResult({
     required this.newQuantity,
@@ -122,20 +121,33 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
   }
 
   Future<void> loadItems() async {
-    final savedItems = await storage.loadItems(widget.farm.name);
-
-    savedItems.sort((first, second) {
-      return first.name.toLowerCase().compareTo(second.name.toLowerCase());
-    });
-
-    if (!mounted) {
-      return;
+    if (mounted) {
+      setState(() => isLoading = true);
     }
-
-    setState(() {
-      items = savedItems;
-      isLoading = false;
-    });
+    try {
+      final savedItems = await storage
+          .loadItems(widget.farm.name, farmId: widget.farm.id ?? '')
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        items = savedItems;
+        sortItems();
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível carregar o Estoque: $error'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   Future<void> saveItems() async {
@@ -156,12 +168,25 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id ?? '';
+    final savedItem = farmId.isEmpty
+        ? newItem
+        : await storage.createItem(
+            farmName: widget.farm.name,
+            farmId: farmId,
+            item: newItem,
+          );
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      items.add(newItem);
+      items.add(savedItem);
       sortItems();
     });
 
-    await saveItems();
+    if (farmId.isEmpty) {
+      await saveItems();
+    }
 
     await eventService.publishItemCreated(
       farmName: widget.farm.name,
@@ -192,25 +217,34 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       return;
     }
 
-    final itemIndex = items.indexWhere((currentItem) {
-      return currentItem.id == item.id;
-    });
-
-    if (itemIndex == -1) {
+    final farmId = widget.farm.id ?? '';
+    final savedItem = farmId.isEmpty
+        ? editedItem
+        : await storage.updateItem(
+            farmName: widget.farm.name,
+            farmId: farmId,
+            item: editedItem,
+          );
+    final itemIndex = items.indexWhere(
+      (currentItem) => currentItem.id == item.id,
+    );
+    if (itemIndex == -1 || !mounted) {
       return;
     }
 
     setState(() {
-      items[itemIndex] = editedItem;
+      items[itemIndex] = savedItem;
       sortItems();
     });
 
-    await saveItems();
+    if (farmId.isEmpty) {
+      await saveItems();
+    }
 
     await eventService.publishItemUpdated(
       farmName: widget.farm.name,
       previousItem: item,
-      updatedItem: editedItem,
+      updatedItem: savedItem,
       totalInventoryValue: totalInventoryValue,
     );
 
@@ -340,7 +374,8 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
                         movementQuantity: amount,
                         movementType: movementType,
                         registerFinancialExpense:
-                            movementType == 'Entrada' && registerFinancialExpense,
+                            movementType == 'Entrada' &&
+                            registerFinancialExpense,
                       ),
                     );
                   },
@@ -391,23 +426,33 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       movements: <FarmInventoryMovement>[movement, ...item.movements],
     );
 
+    final farmId = widget.farm.id ?? '';
+    final persistedItem = farmId.isEmpty
+        ? updatedItem
+        : await storage.registerMovement(
+            farmName: widget.farm.name,
+            item: item,
+            movement: movement,
+          );
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      items[itemIndex] = updatedItem;
+      items[itemIndex] = persistedItem;
     });
 
-    await saveItems();
+    if (farmId.isEmpty) {
+      await saveItems();
+    }
 
     if (result.registerFinancialExpense && item.unitValue > 0) {
-      await registerInventoryExpense(
-        item: item,
-        movement: movement,
-      );
+      await registerInventoryExpense(item: item, movement: movement);
     }
 
     await eventService.publishItemUpdated(
       farmName: widget.farm.name,
       previousItem: item,
-      updatedItem: updatedItem,
+      updatedItem: persistedItem,
       totalInventoryValue: totalInventoryValue,
       reason: 'Quantidade do estoque atualizada',
     );
@@ -420,16 +465,20 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
         ? 'Entrada registrada no Estoque e no Financeiro.'
         : 'Quantidade atualizada.';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> registerInventoryExpense({
     required FarmInventoryData item,
     required FarmInventoryMovement movement,
   }) async {
-    final records = await financeStorage.loadRecords(widget.farm.name);
+    final farmId = widget.farm.id ?? '';
+    final records = await financeStorage.loadRecords(
+      widget.farm.name,
+      farmId: farmId,
+    );
     final amount = movement.quantity * movement.unitValue;
     final now = DateTime.now();
     final formattedDate = formatDate(now);
@@ -455,15 +504,31 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       documentNumber: item.purchaseDocument,
     );
 
-    final alreadyExists = records.any((record) => record.id == expense.id);
+    final alreadyExists = farmId.isNotEmpty
+        ? await financeStorage.hasReference(
+            farmId: farmId,
+            referenceType: 'inventory_movement',
+            referenceId: movement.id,
+          )
+        : records.any((record) => record.id == expense.id);
     if (alreadyExists) {
       return;
     }
 
-    await financeStorage.saveRecords(
-      farmName: widget.farm.name,
-      records: <FarmFinanceData>[expense, ...records],
-    );
+    if (farmId.isNotEmpty) {
+      await financeStorage.createRecord(
+        farmName: widget.farm.name,
+        farmId: farmId,
+        record: expense,
+        referenceType: 'inventory_movement',
+        referenceId: movement.id,
+      );
+    } else {
+      await financeStorage.saveRecords(
+        farmName: widget.farm.name,
+        records: <FarmFinanceData>[expense, ...records],
+      );
+    }
   }
 
   String inventoryFinanceCategory(String inventoryCategory) {
@@ -536,13 +601,20 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id ?? '';
+    if (farmId.isNotEmpty) {
+      await storage.deleteItem(farmName: widget.farm.name, productId: item.id);
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      items.removeWhere((currentItem) {
-        return currentItem.id == item.id;
-      });
+      items.removeWhere((currentItem) => currentItem.id == item.id);
     });
 
-    await saveItems();
+    if (farmId.isEmpty) {
+      await saveItems();
+    }
 
     await eventService.publishItemDeleted(
       farmName: widget.farm.name,

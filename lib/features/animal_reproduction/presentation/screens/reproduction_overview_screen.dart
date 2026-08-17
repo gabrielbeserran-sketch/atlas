@@ -8,12 +8,10 @@ import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.d
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class ReproductionOverviewScreen extends StatefulWidget {
-  const ReproductionOverviewScreen({
-    this.farm,
-    super.key,
-  });
+  const ReproductionOverviewScreen({this.farm, super.key});
 
   final FarmData? farm;
 
@@ -39,21 +37,19 @@ class _ReproductionOverviewScreenState
   int get animalsWithRecords =>
       animals.where((context) => context.records.isNotEmpty).length;
 
-  int get totalRecords => animals.fold(
-        0,
-        (total, context) => total + context.records.length,
-      );
+  int get totalRecords =>
+      animals.fold(0, (total, context) => total + context.records.length);
 
   int get pregnantAnimals => animals.where((context) {
-        return context.records.any((record) {
-          if (record.type != 'Diagnóstico de gestação') {
-            return false;
-          }
+    return context.records.any((record) {
+      if (record.type != 'Diagnóstico de gestação') {
+        return false;
+      }
 
-          final result = record.result.toLowerCase();
-          return result.contains('prenhe') || result.contains('positivo');
-        });
-      }).length;
+      final result = record.result.toLowerCase();
+      return result.contains('prenhe') || result.contains('positivo');
+    });
+  }).length;
 
   List<ReproductionAnimalContext> get filteredAnimals {
     final normalizedSearch = search.trim().toLowerCase();
@@ -63,7 +59,9 @@ class _ReproductionOverviewScreenState
     }
 
     return animals.where((context) {
-      return context.animal.displayName.toLowerCase().contains(normalizedSearch) ||
+      return context.animal.displayName.toLowerCase().contains(
+            normalizedSearch,
+          ) ||
           context.animal.tag.toLowerCase().contains(normalizedSearch) ||
           context.farm.name.toLowerCase().contains(normalizedSearch) ||
           context.group.name.toLowerCase().contains(normalizedSearch);
@@ -162,10 +160,65 @@ class _ReproductionOverviewScreenState
     await loadData();
   }
 
+  Future<void> openNewEvent() async {
+    if (animals.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Cadastre um animal compatível antes de criar o evento.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    ReproductionAnimalContext? selected;
+    if (animals.length == 1) {
+      selected = animals.first;
+    } else {
+      selected = await showDialog<ReproductionAnimalContext>(
+        context: context,
+        builder: (dialogContext) => SimpleDialog(
+          title: const Text('Selecione o animal'),
+          children: animals
+              .map(
+                (item) => SimpleDialogOption(
+                  onPressed: () => Navigator.pop(dialogContext, item),
+                  child: Text(
+                    '${item.animal.displayName} • ${item.animal.tag}',
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
+
+    if (selected == null || !mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AnimalReproductionListScreen(
+          animal: selected!.animal,
+          farm: selected.farm,
+          group: selected.group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+    await loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: isLoading ? null : openNewEvent,
+        backgroundColor: const Color(0xFF1B5E20),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Novo evento reprodutivo'),
+      ),
       appBar: AppBar(
         title: Text(
           widget.farm == null
@@ -204,8 +257,9 @@ class _ReproductionOverviewScreenState
                                 _IndicatorCard(
                                   title: 'Fêmeas',
                                   value: totalFemales.toString(),
-                                  subtitle: 'Animais disponíveis para acompanhamento',
-                                  icon: Icons.pets_outlined,
+                                  subtitle:
+                                      'Animais disponíveis para acompanhamento',
+                                  icon: AtlasLivestockIcons.cow,
                                 ),
                                 _IndicatorCard(
                                   title: 'Com histórico',
@@ -222,7 +276,8 @@ class _ReproductionOverviewScreenState
                                 _IndicatorCard(
                                   title: 'Prenhes',
                                   value: pregnantAnimals.toString(),
-                                  subtitle: 'Diagnósticos positivos registrados',
+                                  subtitle:
+                                      'Diagnósticos positivos registrados',
                                   icon: Icons.favorite_outline,
                                 ),
                               ],
@@ -305,9 +360,10 @@ class ReproductionAnimalContext {
     }
 
     final sortedRecords = [...records]
-      ..sort((first, second) => _parseDate(second.date).compareTo(
-            _parseDate(first.date),
-          ));
+      ..sort(
+        (first, second) =>
+            _parseDate(second.date).compareTo(_parseDate(first.date)),
+      );
 
     return sortedRecords.first;
   }
@@ -411,7 +467,10 @@ class _IndicatorCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
                     ),
                   ],
                 ),
@@ -445,7 +504,7 @@ class _AnimalCard extends StatelessWidget {
               const CircleAvatar(
                 radius: 25,
                 backgroundColor: Color(0xFFE8F5E9),
-                child: Icon(Icons.pets_outlined, color: Color(0xFF1B5E20)),
+                child: Icon(AtlasLivestockIcons.cow, color: Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -530,9 +589,7 @@ class _NoSearchResults extends StatelessWidget {
     return const Card(
       child: Padding(
         padding: EdgeInsets.all(28),
-        child: Center(
-          child: Text('Nenhum animal encontrado para esta busca.'),
-        ),
+        child: Center(child: Text('Nenhum animal encontrado para esta busca.')),
       ),
     );
   }

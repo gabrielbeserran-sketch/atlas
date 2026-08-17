@@ -37,8 +37,9 @@ class AtlasObservabilityEngine {
   AtlasObservabilityData runDiagnostic(AtlasObservabilityData current) {
     final DateTime now = DateTime.now();
     final Random random = Random();
-    final List<AtlasHealthCheck> updatedChecks = current.healthChecks
-        .map((AtlasHealthCheck check) {
+    final List<AtlasHealthCheck> updatedChecks = current.healthChecks.map((
+      AtlasHealthCheck check,
+    ) {
       final int response = 40 + random.nextInt(300);
       final AtlasHealthStatus status;
       if (response >= 300) {
@@ -56,24 +57,26 @@ class AtlasObservabilityEngine {
     }).toList();
 
     final int criticalCount = updatedChecks
-        .where((AtlasHealthCheck item) =>
-            item.status == AtlasHealthStatus.critical)
+        .where(
+          (AtlasHealthCheck item) => item.status == AtlasHealthStatus.critical,
+        )
         .length;
     final int warningCount = updatedChecks
-        .where((AtlasHealthCheck item) =>
-            item.status == AtlasHealthStatus.warning)
+        .where(
+          (AtlasHealthCheck item) => item.status == AtlasHealthStatus.warning,
+        )
         .length;
 
     final AtlasLogLevel level = criticalCount > 0
         ? AtlasLogLevel.error
         : warningCount > 0
-            ? AtlasLogLevel.warning
-            : AtlasLogLevel.info;
+        ? AtlasLogLevel.warning
+        : AtlasLogLevel.info;
     final String message = criticalCount > 0
         ? 'Diagnóstico concluído com $criticalCount módulo(s) em estado crítico.'
         : warningCount > 0
-            ? 'Diagnóstico concluído com $warningCount módulo(s) em atenção.'
-            : 'Diagnóstico concluído: todos os módulos estão saudáveis.';
+        ? 'Diagnóstico concluído com $warningCount módulo(s) em atenção.'
+        : 'Diagnóstico concluído: todos os módulos estão saudáveis.';
 
     final List<AtlasSystemLog> logs = <AtlasSystemLog>[
       AtlasSystemLog(

@@ -1,0 +1,2 @@
+Ciclos 13, 14 e 15 implementados sobre a base consolidada.
+Correção use_build_context_synchronously aplicada.

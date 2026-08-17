@@ -42,10 +42,10 @@ class AtlasEcosystemAnalyticsService {
         ? 0.0
         : represented.length * 100 / module.features.length;
 
-    final completed =
-        moduleRecords.where((record) => record.isCompleted).length;
-    final alerts =
-        moduleRecords.where((record) => record.isCritical).length;
+    final completed = moduleRecords
+        .where((record) => record.isCompleted)
+        .length;
+    final alerts = moduleRecords.where((record) => record.isCritical).length;
 
     final values = moduleRecords
         .map((record) => record.primaryValue)
@@ -105,22 +105,20 @@ class AtlasEcosystemAnalyticsService {
         'para iniciar os indicadores.',
       );
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasEcosystemModule.sustainability => const [
-              'Associe indicadores ambientais à produção por hectare e por arroba.',
-              'Mantenha evidências, responsáveis e periodicidade de medição.',
-            ],
-          AtlasEcosystemModule.iot => const [
-              'Valide conectividade, horário da última leitura e qualidade do dado.',
-              'Defina rotina offline e reconciliação para dispositivos desconectados.',
-            ],
-          AtlasEcosystemModule.consultancy => const [
-              'Vincule cada visita a diagnóstico, plano de ação, prazo e responsável.',
-              'Compare clientes por indicadores equivalentes e preserve confidencialidade.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasEcosystemModule.sustainability => const [
+          'Associe indicadores ambientais à produção por hectare e por arroba.',
+          'Mantenha evidências, responsáveis e periodicidade de medição.',
+        ],
+        AtlasEcosystemModule.iot => const [
+          'Valide conectividade, horário da última leitura e qualidade do dado.',
+          'Defina rotina offline e reconciliação para dispositivos desconectados.',
+        ],
+        AtlasEcosystemModule.consultancy => const [
+          'Vincule cada visita a diagnóstico, plano de ação, prazo e responsável.',
+          'Compare clientes por indicadores equivalentes e preserve confidencialidade.',
+        ],
+      });
     }
 
     return items;

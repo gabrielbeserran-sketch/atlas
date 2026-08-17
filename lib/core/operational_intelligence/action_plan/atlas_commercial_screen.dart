@@ -5,20 +5,15 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_co
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_commercial_service.dart';
 
 class AtlasCommercialScreen extends StatefulWidget {
-  const AtlasCommercialScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasCommercialScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
   @override
-  State<AtlasCommercialScreen> createState() =>
-      _AtlasCommercialScreenState();
+  State<AtlasCommercialScreen> createState() => _AtlasCommercialScreenState();
 }
 
-class _AtlasCommercialScreenState
-    extends State<AtlasCommercialScreen> {
+class _AtlasCommercialScreenState extends State<AtlasCommercialScreen> {
   final service = AtlasCommercialService.instance;
 
   List<AtlasCommercialPartner> partners = [];
@@ -38,9 +33,7 @@ class _AtlasCommercialScreenState
     partners = await service.loadPartners(
       farmName: widget.actionController.farmName,
     );
-    deals = await service.loadDeals(
-      farmName: widget.actionController.farmName,
-    );
+    deals = await service.loadDeals(farmName: widget.actionController.farmName);
     snapshot = await service.buildSnapshot(
       farmName: widget.actionController.farmName,
     );
@@ -79,8 +72,7 @@ class _AtlasCommercialScreenState
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  DropdownButtonFormField<
-                      AtlasCommercialPartnerType>(
+                  DropdownButtonFormField<AtlasCommercialPartnerType>(
                     initialValue: type,
                     decoration: const InputDecoration(
                       labelText: 'Tipo',
@@ -90,9 +82,7 @@ class _AtlasCommercialScreenState
                         .map(
                           (item) => DropdownMenuItem(
                             value: item,
-                            child: Text(
-                              atlasCommercialPartnerTypeLabel(item),
-                            ),
+                            child: Text(atlasCommercialPartnerTypeLabel(item)),
                           ),
                         )
                         .toList(),
@@ -178,7 +168,8 @@ class _AtlasCommercialScreenState
                 final now = DateTime.now();
                 Navigator.of(dialogContext).pop(
                   AtlasCommercialPartner(
-                    id: 'commercial_partner_'
+                    id:
+                        'commercial_partner_'
                         '${now.microsecondsSinceEpoch}',
                     name: name.text.trim(),
                     type: type,
@@ -277,9 +268,7 @@ class _AtlasCommercialScreenState
                         .map(
                           (item) => DropdownMenuItem(
                             value: item,
-                            child: Text(
-                              atlasCommercialDealTypeLabel(item),
-                            ),
+                            child: Text(atlasCommercialDealTypeLabel(item)),
                           ),
                         )
                         .toList(),
@@ -289,8 +278,7 @@ class _AtlasCommercialScreenState
                       }
                     },
                   ),
-                  DropdownButtonFormField<
-                      AtlasCommercialDealStatus>(
+                  DropdownButtonFormField<AtlasCommercialDealStatus>(
                     initialValue: status,
                     decoration: const InputDecoration(
                       labelText: 'Situação',
@@ -300,9 +288,7 @@ class _AtlasCommercialScreenState
                         .map(
                           (item) => DropdownMenuItem(
                             value: item,
-                            child: Text(
-                              atlasCommercialDealStatusLabel(item),
-                            ),
+                            child: Text(atlasCommercialDealStatusLabel(item)),
                           ),
                         )
                         .toList(),
@@ -390,7 +376,8 @@ class _AtlasCommercialScreenState
                 final now = DateTime.now();
                 Navigator.of(dialogContext).pop(
                   AtlasCommercialDeal(
-                    id: 'commercial_deal_'
+                    id:
+                        'commercial_deal_'
                         '${now.microsecondsSinceEpoch}',
                     partnerId: partnerId,
                     type: type,
@@ -497,21 +484,9 @@ class _AtlasCommercialScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             _line('Receita atual', result.currentRevenue, 'R\$'),
-            _line(
-              'Receita projetada',
-              result.projectedRevenue,
-              'R\$',
-            ),
-            _line(
-              'Oportunidade',
-              result.opportunityValue,
-              'R\$',
-            ),
-            _line(
-              'Margem projetada',
-              result.projectedMargin,
-              'R\$',
-            ),
+            _line('Receita projetada', result.projectedRevenue, 'R\$'),
+            _line('Oportunidade', result.opportunityValue, 'R\$'),
+            _line('Margem projetada', result.projectedMargin, 'R\$'),
           ],
         ),
         actions: [
@@ -559,8 +534,7 @@ class _AtlasCommercialScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addDeal,
           icon: const Icon(Icons.add),
           label: const Text('Nova negociação'),
@@ -586,14 +560,9 @@ class _AtlasCommercialScreenState
                     type: AtlasCommercialDealType.purchase,
                     partnerName: partnerName,
                   ),
-                  _Contracts(
-                    deals: deals,
-                    partnerName: partnerName,
-                  ),
+                  _Contracts(deals: deals, partnerName: partnerName),
                   _Simulation(onSimulate: _simulatePrice),
-                  _CommercialRecommendations(
-                    values: recommendations,
-                  ),
+                  _CommercialRecommendations(values: recommendations),
                 ],
               ),
       ),
@@ -610,14 +579,10 @@ class _AtlasCommercialScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -655,9 +620,7 @@ class _AtlasCommercialScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -682,21 +645,9 @@ class _CommercialDashboard extends StatelessWidget {
           runSpacing: 10,
           children: [
             _card('Parceiros', item.totalPartners.toDouble(), ''),
-            _card(
-              'Negociações abertas',
-              item.openNegotiations.toDouble(),
-              '',
-            ),
-            _card(
-              'Vendas concluídas',
-              item.completedSales.toDouble(),
-              '',
-            ),
-            _card(
-              'Compras concluídas',
-              item.completedPurchases.toDouble(),
-              '',
-            ),
+            _card('Negociações abertas', item.openNegotiations.toDouble(), ''),
+            _card('Vendas concluídas', item.completedSales.toDouble(), ''),
+            _card('Compras concluídas', item.completedPurchases.toDouble(), ''),
             _card('Receita de vendas', item.salesRevenue, 'R\$'),
             _card('Valor de compras', item.purchaseValue, 'R\$'),
             _card('Margem comercial', item.commercialMargin, 'R\$'),
@@ -709,10 +660,7 @@ class _CommercialDashboard extends StatelessWidget {
 }
 
 class _Partners extends StatelessWidget {
-  const _Partners({
-    required this.partners,
-    required this.onAdd,
-  });
+  const _Partners({required this.partners, required this.onAdd});
 
   final List<AtlasCommercialPartner> partners;
   final VoidCallback onAdd;
@@ -734,14 +682,11 @@ class _Partners extends StatelessWidget {
         ),
         Expanded(
           child: partners.isEmpty
-              ? const Center(
-                  child: Text('Nenhum parceiro cadastrado.'),
-                )
+              ? const Center(child: Text('Nenhum parceiro cadastrado.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: partners.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = partners[index];
                     return Card(
@@ -751,9 +696,7 @@ class _Partners extends StatelessWidget {
                           '${atlasCommercialPartnerTypeLabel(item.type)} • '
                           '${item.city}/${item.state}',
                         ),
-                        trailing: Text(
-                          '${item.rating.toStringAsFixed(1)}/5',
-                        ),
+                        trailing: Text('${item.rating.toStringAsFixed(1)}/5'),
                       ),
                     );
                   },
@@ -792,14 +735,11 @@ class _Deals extends StatelessWidget {
         ),
         Expanded(
           child: deals.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma negociação.'),
-                )
+              ? const Center(child: Text('Nenhuma negociação.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: deals.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = deals[index];
                     return Card(
@@ -837,8 +777,7 @@ class _DealTypeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final values =
-        deals.where((item) => item.type == type).toList();
+    final values = deals.where((item) => item.type == type).toList();
     if (values.isEmpty) {
       return Center(
         child: Text(
@@ -856,9 +795,7 @@ class _DealTypeList extends StatelessWidget {
           child: ListTile(
             title: Text(item.product),
             subtitle: Text(partnerName(item.partnerId)),
-            trailing: Text(
-              'R\$ ${item.grossValue.toStringAsFixed(2)}',
-            ),
+            trailing: Text('R\$ ${item.grossValue.toStringAsFixed(2)}'),
           ),
         );
       },
@@ -867,10 +804,7 @@ class _DealTypeList extends StatelessWidget {
 }
 
 class _Contracts extends StatelessWidget {
-  const _Contracts({
-    required this.deals,
-    required this.partnerName,
-  });
+  const _Contracts({required this.deals, required this.partnerName});
 
   final List<AtlasCommercialDeal> deals;
   final String Function(String) partnerName;
@@ -896,9 +830,7 @@ class _Contracts extends StatelessWidget {
             subtitle: Text(
               '${partnerName(item.partnerId)} • ${item.paymentTerms}',
             ),
-            trailing: Text(
-              'R\$ ${item.grossValue.toStringAsFixed(2)}',
-            ),
+            trailing: Text('R\$ ${item.grossValue.toStringAsFixed(2)}'),
           ),
         );
       },
@@ -959,10 +891,7 @@ Widget _card(String title, double value, String unit) {
               '${unit == 'R\$' ? 'R\$ ' : ''}'
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
               '${unit == '/100' ? '/100' : ''}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),

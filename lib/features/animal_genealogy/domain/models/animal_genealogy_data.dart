@@ -32,9 +32,7 @@ class AnimalGenealogyNodeData {
     return registered ? 'Animal $tag' : 'Brinco $tag';
   }
 
-  factory AnimalGenealogyNodeData.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AnimalGenealogyNodeData.fromMap(Map<String, dynamic> map) {
     return AnimalGenealogyNodeData(
       id: map['id']?.toString() ?? '',
       farmId: map['farm_id']?.toString() ?? '',
@@ -82,13 +80,13 @@ class AnimalGenealogyData {
   final List<String> unresolvedTags;
 
   int get registeredAncestors => [
-        father,
-        mother,
-        paternalGrandfather,
-        paternalGrandmother,
-        maternalGrandfather,
-        maternalGrandmother,
-      ].where((item) => item?.registered == true).length;
+    father,
+    mother,
+    paternalGrandfather,
+    paternalGrandmother,
+    maternalGrandfather,
+    maternalGrandmother,
+  ].where((item) => item?.registered == true).length;
 
   int get familyCount =>
       registeredAncestors +
@@ -96,15 +94,11 @@ class AnimalGenealogyData {
       halfSiblings.length +
       descendants.length;
 
-  factory AnimalGenealogyData.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AnimalGenealogyData.fromMap(Map<String, dynamic> map) {
     AnimalGenealogyNodeData? optionalNode(String key) {
       final value = map[key];
       if (value is! Map) return null;
-      return AnimalGenealogyNodeData.fromMap(
-        Map<String, dynamic>.from(value),
-      );
+      return AnimalGenealogyNodeData.fromMap(Map<String, dynamic>.from(value));
     }
 
     List<AnimalGenealogyNodeData> nodes(String key) {

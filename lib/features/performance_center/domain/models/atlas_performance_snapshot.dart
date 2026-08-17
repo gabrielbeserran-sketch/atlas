@@ -73,6 +73,7 @@ class AtlasPerformanceAlert {
 }
 
 enum AtlasPerformanceTrend { improving, stable, worsening }
+
 enum AtlasPerformanceAlertSeverity { information, attention, high, critical }
 
 String atlasPerformanceTrendLabel(AtlasPerformanceTrend trend) {
@@ -86,7 +87,9 @@ String atlasPerformanceTrendLabel(AtlasPerformanceTrend trend) {
   }
 }
 
-String atlasPerformanceAlertSeverityLabel(AtlasPerformanceAlertSeverity severity) {
+String atlasPerformanceAlertSeverityLabel(
+  AtlasPerformanceAlertSeverity severity,
+) {
   switch (severity) {
     case AtlasPerformanceAlertSeverity.information:
       return 'Informativo';

@@ -16,43 +16,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FarmStorageService {
   static const String _farmsKey = 'atlas_farms';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   final AtlasEnterpriseRemoteAuthStore _remoteAuth =
       AtlasEnterpriseRemoteAuthStore.instance;
-  final AtlasEnterpriseApiClient _api =
-      AtlasEnterpriseApiClient.instance;
+  final AtlasEnterpriseApiClient _api = AtlasEnterpriseApiClient.instance;
 
   Future<List<FarmData>> loadFarms() async {
     final local = await loadFarmsUnscoped();
     final remoteSession = await _remoteAuth.loadSession();
 
     if (remoteSession != null && remoteSession.accessToken.isNotEmpty) {
-      final remote = await _api.requestList('GET', '/farms');
-      final localById = <String, FarmData>{
-        for (final item in local)
-          if (item.id != null && item.id!.isNotEmpty) item.id!: item,
-      };
-      final localByName = <String, FarmData>{
-        for (final item in local) item.name.trim().toLowerCase(): item,
-      };
-
-      final values = remote.map((item) {
-        final id = item['id']?.toString() ?? '';
-        final name = item['name']?.toString() ?? '';
-        final cached = localById[id] ??
-            localByName[name.trim().toLowerCase()];
-        return FarmData(
-          id: id,
-          name: name,
-          city: item['city']?.toString() ?? '',
-          state: item['state']?.toString() ?? '',
-          animals: (item['animals'] as num?)?.toInt() ??
-              cached?.animals ??
-              0,
-          area: (item['area'] as num?)?.toInt() ?? cached?.area ?? 0,
-        );
-      }).toList();
+      List<Map<String, dynamic>> remote;
+      try {
+        remote = await _api.requestList('GET', '/farms');
+      } on AtlasEnterpriseApiException {
+        if (local.isNotEmpty) return local;
+        rethrow;
+      }
+      // A API é a autoridade quando existe sessão remota. Não misturamos
+      // valores antigos do cache com a resposta atual do servidor, pois isso
+      // fazia animais/área reaparecerem com números obsoletos na interface.
+      final values = remote
+          .map(FarmData.fromMap)
+          .where((item) => item.id != null && item.id!.isNotEmpty)
+          .toList(growable: false);
 
       await saveLocalCache(values);
       return values;
@@ -75,10 +62,7 @@ class FarmStorageService {
     );
 
     final allowed = await AtlasEnterprise24ARepository.instance
-        .farmsAllowedForUser(
-      companyId: companyId,
-      userId: userId,
-    );
+        .farmsAllowedForUser(companyId: companyId, userId: userId);
 
     final snapshot = await AtlasEnterprise24ARepository.instance.load();
     final companyHasCanonicalFarms = snapshot.farms.any(
@@ -93,9 +77,7 @@ class FarmStorageService {
         .toSet();
 
     return local.where((farm) {
-      return allowedNames.contains(
-        farm.name.trim().toLowerCase(),
-      );
+      return allowedNames.contains(farm.name.trim().toLowerCase());
     }).toList();
   }
 
@@ -111,9 +93,7 @@ class FarmStorageService {
 
       return decodedData
           .map(
-            (item) => FarmData.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) => FarmData.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {
@@ -122,9 +102,7 @@ class FarmStorageService {
   }
 
   Future<void> saveLocalCache(List<FarmData> farms) async {
-    final encodedData = jsonEncode(
-      farms.map((farm) => farm.toMap()).toList(),
-    );
+    final encodedData = jsonEncode(farms.map((farm) => farm.toMap()).toList());
     await _preferences.setString(_farmsKey, encodedData);
   }
 
@@ -155,17 +133,16 @@ class FarmStorageService {
     );
 
     for (final farm in farms) {
-      final canonicalFarm =
-          await AtlasEnterprise24ARepository.instance.ensureFarm(
-        companyId: companyId,
-        name: farm.name,
-        city: farm.city,
-        state: farm.state,
-        userId: userId,
-      );
+      final canonicalFarm = await AtlasEnterprise24ARepository.instance
+          .ensureFarm(
+            companyId: companyId,
+            name: farm.name,
+            city: farm.city,
+            state: farm.state,
+            userId: userId,
+          );
 
-      final history =
-          await AtlasEnterpriseVersionService.instance.history(
+      final history = await AtlasEnterpriseVersionService.instance.history(
         companyId: companyId,
         entityType: 'farm',
         entityId: canonicalFarm.id,

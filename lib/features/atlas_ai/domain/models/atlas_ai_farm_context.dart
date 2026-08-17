@@ -54,8 +54,7 @@ class AtlasAiFarmContext {
 
   bool get hasCriticalRisk {
     return risks.any((item) {
-      return item.level ==
-          AtlasDiagnosticLevel.critical;
+      return item.level == AtlasDiagnosticLevel.critical;
     });
   }
 
@@ -103,12 +102,8 @@ class AtlasAiFarmContext {
     final buffer = StringBuffer();
 
     buffer.writeln('FAZENDA: $farmName');
-    buffer.writeln(
-      'SCORE: ${score.toStringAsFixed(0)}/100',
-    );
-    buffer.writeln(
-      'NÍVEL: ${atlasDiagnosticLevelLabel(level)}',
-    );
+    buffer.writeln('SCORE: ${score.toStringAsFixed(0)}/100');
+    buffer.writeln('NÍVEL: ${atlasDiagnosticLevelLabel(level)}');
     buffer.writeln();
     buffer.writeln('RESUMO EXECUTIVO');
     buffer.writeln(executiveSummary);
@@ -116,9 +111,7 @@ class AtlasAiFarmContext {
     buffer.writeln('PRIORIDADE PRINCIPAL');
     buffer.writeln(mainPriority.title);
     buffer.writeln(mainPriority.description);
-    buffer.writeln(
-      'RECOMENDAÇÃO: ${mainPriority.recommendation}',
-    );
+    buffer.writeln('RECOMENDAÇÃO: ${mainPriority.recommendation}');
     buffer.writeln();
 
     if (areaContexts.isNotEmpty) {
@@ -134,17 +127,9 @@ class AtlasAiFarmContext {
       buffer.writeln();
     }
 
-    _writeInsights(
-      buffer: buffer,
-      title: 'RISCOS',
-      items: risks,
-    );
+    _writeInsights(buffer: buffer, title: 'RISCOS', items: risks);
 
-    _writeInsights(
-      buffer: buffer,
-      title: 'GARGALOS',
-      items: bottlenecks,
-    );
+    _writeInsights(buffer: buffer, title: 'GARGALOS', items: bottlenecks);
 
     _writeInsights(
       buffer: buffer,

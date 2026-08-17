@@ -1,1 +1,40 @@
-import 'dart:convert';import 'package:shared_preferences/shared_preferences.dart';import 'package:projeto_atlas/features/animal_nutrition_enterprise/domain/models/animal_nutrition_plan.dart';class AnimalNutritionStorageService{final SharedPreferencesAsync _p=SharedPreferencesAsync();String _n(String v)=>v.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'),'_');String _k(String f,String g,String a)=>'atlas_animal_nutrition_${_n(f)}_${_n(g)}_${_n(a)}';Future<List<AnimalNutritionPlan>>load({required String farmName,required String groupName,required String animalId})async{final s=await _p.getString(_k(farmName,groupName,animalId));if(s==null||s.isEmpty)return[];try{return(jsonDecode(s)as List).map((e)=>AnimalNutritionPlan.fromMap(Map<String,dynamic>.from(e as Map))).toList();}catch(_){return[];}}Future<void>save({required String farmName,required String groupName,required String animalId,required List<AnimalNutritionPlan>plans})=>_p.setString(_k(farmName,groupName,animalId),jsonEncode(plans.map((e)=>e.toMap()).toList()));}
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:projeto_atlas/features/animal_nutrition_enterprise/domain/models/animal_nutrition_plan.dart';
+
+class AnimalNutritionStorageService {
+  final SharedPreferencesAsync _p = SharedPreferencesAsync();
+  String _n(String v) =>
+      v.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+  String _k(String f, String g, String a) =>
+      'atlas_animal_nutrition_${_n(f)}_${_n(g)}_${_n(a)}';
+  Future<List<AnimalNutritionPlan>> load({
+    required String farmName,
+    required String groupName,
+    required String animalId,
+  }) async {
+    final s = await _p.getString(_k(farmName, groupName, animalId));
+    if (s == null || s.isEmpty) return [];
+    try {
+      return (jsonDecode(s) as List)
+          .map(
+            (e) => AnimalNutritionPlan.fromMap(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> save({
+    required String farmName,
+    required String groupName,
+    required String animalId,
+    required List<AnimalNutritionPlan> plans,
+  }) => _p.setString(
+    _k(farmName, groupName, animalId),
+    jsonEncode(plans.map((e) => e.toMap()).toList()),
+  );
+}

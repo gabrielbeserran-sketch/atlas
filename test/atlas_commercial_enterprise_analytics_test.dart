@@ -3,8 +3,7 @@ import 'package:projeto_atlas/features/atlas_commercial_enterprise/domain/models
 import 'package:projeto_atlas/features/atlas_commercial_enterprise/domain/services/atlas_commercial_enterprise_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasCommercialEnterpriseAnalyticsService();
+  const service = AtlasCommercialEnterpriseAnalyticsService();
 
   test('calculates commercial enterprise analytics', () {
     final records = [

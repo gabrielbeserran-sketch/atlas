@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -6,9 +5,8 @@ import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class AtlasRealtimeRepository {
-  AtlasRealtimeRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasRealtimeRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
   WebSocketChannel? _channel;
@@ -23,9 +21,7 @@ class AtlasRealtimeRepository {
     );
 
     return _channel!.stream.map(
-      (event) => Map<String, dynamic>.from(
-        jsonDecode(event.toString()) as Map,
-      ),
+      (event) => Map<String, dynamic>.from(jsonDecode(event.toString()) as Map),
     );
   }
 
@@ -45,17 +41,11 @@ class AtlasRealtimeRepository {
   }
 
   Future<void> markRead(String notificationId) async {
-    await _client.send(
-      'PATCH',
-      '/realtime/notifications/$notificationId/read',
-    );
+    await _client.send('PATCH', '/realtime/notifications/$notificationId/read');
   }
 
   Future<Map<String, dynamic>> metrics() async {
-    final response = await _client.send(
-      'GET',
-      '/realtime/metrics',
-    );
+    final response = await _client.send('GET', '/realtime/metrics');
     return response.asMap();
   }
 

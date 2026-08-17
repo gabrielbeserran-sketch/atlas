@@ -62,8 +62,9 @@ class AtlasExecutiveBrainCanonicalService {
     AtlasDecisionContract first,
     AtlasDecisionContract second,
   ) {
-    final priorityComparison =
-        _priorityWeight(second.priority).compareTo(_priorityWeight(first.priority));
+    final priorityComparison = _priorityWeight(
+      second.priority,
+    ).compareTo(_priorityWeight(first.priority));
     if (priorityComparison != 0) {
       return priorityComparison;
     }
@@ -73,8 +74,9 @@ class AtlasExecutiveBrainCanonicalService {
       return scoreComparison;
     }
 
-    final confidenceComparison =
-        second.confidencePercent.compareTo(first.confidencePercent);
+    final confidenceComparison = second.confidencePercent.compareTo(
+      first.confidencePercent,
+    );
     if (confidenceComparison != 0) {
       return confidenceComparison;
     }
@@ -100,8 +102,9 @@ class AtlasExecutiveBrainCanonicalService {
       farmName: decision.farmName,
       priority: _priority(decision.priority),
       score: decision.decisionScore.clamp(0.0, 100.0).toDouble(),
-      confidencePercent:
-          decision.confidencePercent.clamp(0.0, 100.0).toDouble(),
+      confidencePercent: decision.confidencePercent
+          .clamp(0.0, 100.0)
+          .toDouble(),
       expectedFinancialImpact: decision.expectedFinancialImpact,
       deadlineHours: _deadlineHours(decision.deadline, now),
       reasoning: decision.reasoning,
@@ -128,8 +131,9 @@ class AtlasExecutiveBrainCanonicalService {
         farmName: decision.farmName,
         horizon: horizon,
         priority: _priority(decision.priority),
-        confidencePercent:
-            decision.confidencePercent.clamp(0.0, 100.0).toDouble(),
+        confidencePercent: decision.confidencePercent
+            .clamp(0.0, 100.0)
+            .toDouble(),
         expectedFinancialImpact: decision.expectedFinancialImpact,
         deadlineHours: _deadlineHours(decision.deadline, now),
         source: decision.sourceModule,
@@ -159,27 +163,23 @@ class AtlasExecutiveBrainCanonicalService {
   ) {
     final selected = actions.take(limit).toList(growable: false);
 
-    return List<AtlasExecutiveBrainAction>.generate(
-      selected.length,
-      (index) {
-        final item = selected[index];
-        return AtlasExecutiveBrainAction(
-          position: index + 1,
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          farmName: item.farmName,
-          horizon: item.horizon,
-          priority: item.priority,
-          confidencePercent: item.confidencePercent,
-          expectedFinancialImpact: item.expectedFinancialImpact,
-          deadlineHours: item.deadlineHours,
-          source: item.source,
-          completed: item.completed,
-        );
-      },
-      growable: false,
-    );
+    return List<AtlasExecutiveBrainAction>.generate(selected.length, (index) {
+      final item = selected[index];
+      return AtlasExecutiveBrainAction(
+        position: index + 1,
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        farmName: item.farmName,
+        horizon: item.horizon,
+        priority: item.priority,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        deadlineHours: item.deadlineHours,
+        source: item.source,
+        completed: item.completed,
+      );
+    }, growable: false);
   }
 
   AtlasExecutiveBrainStrategy _alignStrategy(
@@ -190,7 +190,8 @@ class AtlasExecutiveBrainCanonicalService {
       return AtlasExecutiveBrainStrategy(
         id: 'canonical_strategy_${official.id}',
         title: 'Estratégia executiva orientada pela decisão oficial',
-        summary: 'Executar a decisão oficial e acompanhar seus efeitos nos módulos integrados.',
+        summary:
+            'Executar a decisão oficial e acompanhar seus efeitos nos módulos integrados.',
         objective: official.expectedResult,
         horizonDays: 30,
         successProbabilityPercent: official.confidencePercent,
@@ -205,9 +206,12 @@ class AtlasExecutiveBrainCanonicalService {
       summary: base.summary,
       objective: official.expectedResult,
       horizonDays: base.horizonDays,
-      successProbabilityPercent:
-          _combinedConfidence(base.successProbabilityPercent, official.confidencePercent),
-      expectedFinancialImpact: official.expectedFinancialImpact +
+      successProbabilityPercent: _combinedConfidence(
+        base.successProbabilityPercent,
+        official.confidencePercent,
+      ),
+      expectedFinancialImpact:
+          official.expectedFinancialImpact +
           (base.expectedFinancialImpact > 0 ? base.expectedFinancialImpact : 0),
       pillars: base.pillars,
     );

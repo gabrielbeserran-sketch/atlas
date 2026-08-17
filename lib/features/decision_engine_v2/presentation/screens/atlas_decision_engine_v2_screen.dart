@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/decision_engine_v2/domain/models/atlas_decision_engine_v2_data.dart';
 
-class AtlasDecisionEngineV2Screen
-    extends StatefulWidget {
+class AtlasDecisionEngineV2Screen extends StatefulWidget {
   const AtlasDecisionEngineV2Screen({
     required this.data,
     this.onOpenFarm,
@@ -13,8 +12,7 @@ class AtlasDecisionEngineV2Screen
   final ValueChanged<String>? onOpenFarm;
 
   @override
-  State<AtlasDecisionEngineV2Screen>
-      createState() {
+  State<AtlasDecisionEngineV2Screen> createState() {
     return _AtlasDecisionEngineV2ScreenState();
   }
 }
@@ -29,25 +27,20 @@ class _AtlasDecisionEngineV2ScreenState
   }
 
   List<String> get farms {
-    final result = data.rankedActions
-        .map((item) => item.farmName)
-        .toSet()
-        .toList()
-      ..sort();
+    final result =
+        data.rankedActions.map((item) => item.farmName).toSet().toList()
+          ..sort();
 
     return result;
   }
 
-  List<AtlasDecisionV2Action>
-      get filteredActions {
+  List<AtlasDecisionV2Action> get filteredActions {
     return data.rankedActions.where((item) {
-      if (selectedFarm != null &&
-          item.farmName != selectedFarm) {
+      if (selectedFarm != null && item.farmName != selectedFarm) {
         return false;
       }
 
-      if (selectedHorizon != null &&
-          item.horizon != selectedHorizon) {
+      if (selectedHorizon != null && item.horizon != selectedHorizon) {
         return false;
       }
 
@@ -58,59 +51,46 @@ class _AtlasDecisionEngineV2ScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F6F8),
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text(
           'Atlas Decision Engine 2.0',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1240,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: data.hasData
                 ? ListView(
-                    padding:
-                        const EdgeInsets.all(22),
+                    padding: const EdgeInsets.all(22),
                     children: [
                       _DecisionV2Hero(data: data),
-                      if (data.bestActionToday !=
-                          null) ...[
+                      if (data.bestActionToday != null) ...[
                         const SizedBox(height: 24),
                         const _SectionTitle(
-                          title:
-                              'Melhor ação para hoje',
+                          title: 'Melhor ação para hoje',
                           subtitle:
                               'A recomendação com maior combinação de impacto, urgência e confiança.',
                         ),
                         const SizedBox(height: 12),
                         _BestActionCard(
-                          action:
-                              data.bestActionToday!,
-                          onOpenFarm:
-                              widget.onOpenFarm,
+                          action: data.bestActionToday!,
+                          onOpenFarm: widget.onOpenFarm,
                         ),
                       ],
                       const SizedBox(height: 24),
                       _DecisionFilters(
                         farms: farms,
-                        selectedFarm:
-                            selectedFarm,
-                        selectedHorizon:
-                            selectedHorizon,
+                        selectedFarm: selectedFarm,
+                        selectedHorizon: selectedHorizon,
                         onFarmChanged: (value) {
                           setState(() {
                             selectedFarm = value;
                           });
                         },
-                        onHorizonChanged:
-                            (value) {
+                        onHorizonChanged: (value) {
                           setState(() {
                             selectedHorizon = value;
                           });
@@ -118,8 +98,7 @@ class _AtlasDecisionEngineV2ScreenState
                       ),
                       const SizedBox(height: 26),
                       const _SectionTitle(
-                        title:
-                            'Ranking unificado de ações',
+                        title: 'Ranking unificado de ações',
                         subtitle:
                             'Plano diário, semanal e mensal priorizado automaticamente.',
                       ),
@@ -127,22 +106,15 @@ class _AtlasDecisionEngineV2ScreenState
                       if (filteredActions.isEmpty)
                         const _EmptySection()
                       else
-                        ...filteredActions.map(
-                          (item) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                bottom: 12,
-                              ),
-                              child:
-                                  _ActionCard(
-                                action: item,
-                                onOpenFarm:
-                                    widget.onOpenFarm,
-                              ),
-                            );
-                          },
-                        ),
+                        ...filteredActions.map((item) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _ActionCard(
+                              action: item,
+                              onOpenFarm: widget.onOpenFarm,
+                            ),
+                          );
+                        }),
                       const SizedBox(height: 26),
                       const _SectionTitle(
                         title: 'Simulações',
@@ -151,10 +123,8 @@ class _AtlasDecisionEngineV2ScreenState
                       ),
                       const SizedBox(height: 13),
                       _SimulationList(
-                        simulations:
-                            data.simulations,
-                        onOpenFarm:
-                            widget.onOpenFarm,
+                        simulations: data.simulations,
+                        onOpenFarm: widget.onOpenFarm,
                       ),
                       const SizedBox(height: 32),
                     ],
@@ -168,49 +138,32 @@ class _AtlasDecisionEngineV2ScreenState
 }
 
 class _DecisionV2Hero extends StatelessWidget {
-  const _DecisionV2Hero({
-    required this.data,
-  });
+  const _DecisionV2Hero({required this.data});
 
   final AtlasDecisionEngineV2Data data;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _statusColor(data.status);
+    final color = _statusColor(data.status);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF0A192F),
-            Color(0xFF17324D),
-            Color(0xFF28536B),
-          ],
+          colors: [Color(0xFF0A192F), Color(0xFF17324D), Color(0xFF28536B)],
         ),
-        borderRadius:
-            BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final compact =
-              constraints.maxWidth < 760;
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 760;
 
           final information = Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(
-                    Icons.hub_outlined,
-                    color: Color(0xFFB3E5FC),
-                    size: 32,
-                  ),
+                  Icon(Icons.hub_outlined, color: Color(0xFFB3E5FC), size: 32),
                   SizedBox(width: 11),
                   Expanded(
                     child: Text(
@@ -218,8 +171,7 @@ class _DecisionV2Hero extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -228,35 +180,19 @@ class _DecisionV2Hero extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 data.summary,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.45,
-                ),
+                style: const TextStyle(color: Colors.white70, height: 1.45),
               ),
               const SizedBox(height: 15),
               Wrap(
                 spacing: 9,
                 runSpacing: 9,
                 children: [
-                  _HeroMetric(
-                    label: 'Hoje',
-                    value:
-                        data.dailyPlan.length,
-                  ),
-                  _HeroMetric(
-                    label: 'Semana',
-                    value:
-                        data.weeklyPlan.length,
-                  ),
-                  _HeroMetric(
-                    label: 'Mês',
-                    value:
-                        data.monthlyPlan.length,
-                  ),
+                  _HeroMetric(label: 'Hoje', value: data.dailyPlan.length),
+                  _HeroMetric(label: 'Semana', value: data.weeklyPlan.length),
+                  _HeroMetric(label: 'Mês', value: data.monthlyPlan.length),
                   _HeroMetric(
                     label: 'Simulações',
-                    value:
-                        data.simulations.length,
+                    value: data.simulations.length,
                   ),
                 ],
               ),
@@ -267,42 +203,28 @@ class _DecisionV2Hero extends StatelessWidget {
             width: 230,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(17),
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(17),
             ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   data.score.toStringAsFixed(0),
                   style: TextStyle(
                     color: color,
                     fontSize: 42,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  atlasDecisionEngineV2StatusLabel(
-                    data.status,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
+                  atlasDecisionEngineV2StatusLabel(data.status),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   '${data.confidencePercent.toStringAsFixed(0)}% de confiança',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
                 ),
               ],
             ),
@@ -310,19 +232,13 @@ class _DecisionV2Hero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                information,
-                const SizedBox(height: 20),
-                side,
-              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [information, const SizedBox(height: 20), side],
             );
           }
 
           return Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: information),
               const SizedBox(width: 24),
@@ -336,61 +252,48 @@ class _DecisionV2Hero extends StatelessWidget {
 }
 
 class _BestActionCard extends StatelessWidget {
-  const _BestActionCard({
-    required this.action,
-    required this.onOpenFarm,
-  });
+  const _BestActionCard({required this.action, required this.onOpenFarm});
 
   final AtlasDecisionV2Action action;
   final ValueChanged<String>? onOpenFarm;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _priorityColor(action.priority);
+    final color = _priorityColor(action.priority);
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.bolt_outlined,
-                  color: color,
-                  size: 31,
-                ),
+                Icon(Icons.bolt_outlined, color: color, size: 31),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         action.title,
                         style: const TextStyle(
                           fontSize: 19,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         action.farmName,
                         style: TextStyle(
                           color: color,
-                          fontWeight:
-                              FontWeight.w700,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  action.decisionScore
-                      .toStringAsFixed(0),
+                  action.decisionScore.toStringAsFixed(0),
                   style: TextStyle(
                     color: color,
                     fontSize: 22,
@@ -402,10 +305,7 @@ class _BestActionCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               action.description,
-              style: const TextStyle(
-                color: Colors.black54,
-                height: 1.45,
-              ),
+              style: const TextStyle(color: Colors.black54, height: 1.45),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -413,29 +313,22 @@ class _BestActionCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _InfoChip(
-                  label:
-                      atlasDecisionV2PriorityLabel(
-                    action.priority,
-                  ),
+                  label: atlasDecisionV2PriorityLabel(action.priority),
                   color: color,
                 ),
                 _InfoChip(
                   label:
                       'Urgência: ${atlasDecisionV2UrgencyLabel(action.urgency)}',
-                  color:
-                      const Color(0xFFEF6C00),
+                  color: const Color(0xFFEF6C00),
                 ),
                 _InfoChip(
-                  label:
-                      'Risco: ${atlasDecisionV2RiskLabel(action.risk)}',
-                  color:
-                      const Color(0xFFC62828),
+                  label: 'Risco: ${atlasDecisionV2RiskLabel(action.risk)}',
+                  color: const Color(0xFFC62828),
                 ),
                 _InfoChip(
                   label:
                       'Esforço: ${atlasDecisionV2EffortLabel(action.effort)}',
-                  color:
-                      const Color(0xFF6A1B9A),
+                  color: const Color(0xFF6A1B9A),
                 ),
               ],
             ),
@@ -460,8 +353,7 @@ class _BestActionCard extends StatelessWidget {
             if (onOpenFarm != null) ...[
               const SizedBox(height: 12),
               ActionChip(
-                label:
-                    const Text('Abrir fazenda'),
+                label: const Text('Abrir fazenda'),
                 onPressed: () {
                   onOpenFarm!(action.farmName);
                 },
@@ -474,8 +366,7 @@ class _BestActionCard extends StatelessWidget {
   }
 }
 
-class _DecisionFilters
-    extends StatelessWidget {
+class _DecisionFilters extends StatelessWidget {
   const _DecisionFilters({
     required this.farms,
     required this.selectedFarm,
@@ -486,14 +377,11 @@ class _DecisionFilters
 
   final List<String> farms;
   final String? selectedFarm;
-  final AtlasDecisionV2Horizon?
-      selectedHorizon;
+  final AtlasDecisionV2Horizon? selectedHorizon;
 
-  final ValueChanged<String?>
-      onFarmChanged;
+  final ValueChanged<String?> onFarmChanged;
 
-  final ValueChanged<AtlasDecisionV2Horizon?>
-      onHorizonChanged;
+  final ValueChanged<AtlasDecisionV2Horizon?> onHorizonChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -506,25 +394,16 @@ class _DecisionFilters
           children: [
             SizedBox(
               width: 250,
-              child: DropdownButtonFormField<
-                  String?>(
+              child: DropdownButtonFormField<String?>(
                 initialValue: selectedFarm,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Fazenda',
-                ),
+                decoration: const InputDecoration(labelText: 'Fazenda'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todas as fazendas',
-                    ),
+                    child: Text('Todas as fazendas'),
                   ),
                   ...farms.map((farm) {
-                    return DropdownMenuItem(
-                      value: farm,
-                      child: Text(farm),
-                    );
+                    return DropdownMenuItem(value: farm, child: Text(farm));
                   }),
                 ],
                 onChanged: onFarmChanged,
@@ -532,35 +411,22 @@ class _DecisionFilters
             ),
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<
-                  AtlasDecisionV2Horizon?>(
-                initialValue:
-                    selectedHorizon,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Horizonte',
-                ),
+              child: DropdownButtonFormField<AtlasDecisionV2Horizon?>(
+                initialValue: selectedHorizon,
+                decoration: const InputDecoration(labelText: 'Horizonte'),
                 items: [
                   const DropdownMenuItem(
                     value: null,
-                    child: Text(
-                      'Todos os horizontes',
-                    ),
+                    child: Text('Todos os horizontes'),
                   ),
-                  ...AtlasDecisionV2Horizon.values
-                      .map((horizon) {
+                  ...AtlasDecisionV2Horizon.values.map((horizon) {
                     return DropdownMenuItem(
                       value: horizon,
-                      child: Text(
-                        atlasDecisionV2HorizonLabel(
-                          horizon,
-                        ),
-                      ),
+                      child: Text(atlasDecisionV2HorizonLabel(horizon)),
                     );
                   }),
                 ],
-                onChanged:
-                    onHorizonChanged,
+                onChanged: onHorizonChanged,
               ),
             ),
           ],
@@ -571,39 +437,27 @@ class _DecisionFilters
 }
 
 class _ActionCard extends StatelessWidget {
-  const _ActionCard({
-    required this.action,
-    required this.onOpenFarm,
-  });
+  const _ActionCard({required this.action, required this.onOpenFarm});
 
   final AtlasDecisionV2Action action;
   final ValueChanged<String>? onOpenFarm;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _priorityColor(action.priority);
+    final color = _priorityColor(action.priority);
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(
-            alpha: 0.12,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
           child: Text(
             action.position.toString(),
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
           ),
         ),
         title: Text(
           action.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${action.farmName} · '
@@ -613,12 +467,8 @@ class _ActionCard extends StatelessWidget {
         ),
         isThreeLine: true,
         trailing: Text(
-          action.decisionScore
-              .toStringAsFixed(0),
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+          action.decisionScore.toStringAsFixed(0),
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
         ),
         onTap: onOpenFarm == null
             ? null
@@ -630,15 +480,10 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-class _SimulationList
-    extends StatelessWidget {
-  const _SimulationList({
-    required this.simulations,
-    required this.onOpenFarm,
-  });
+class _SimulationList extends StatelessWidget {
+  const _SimulationList({required this.simulations, required this.onOpenFarm});
 
-  final List<AtlasDecisionV2Simulation>
-      simulations;
+  final List<AtlasDecisionV2Simulation> simulations;
 
   final ValueChanged<String>? onOpenFarm;
 
@@ -658,9 +503,7 @@ class _SimulationList
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasDecisionV2SimulationTypeLabel(item.type)} · '
@@ -688,10 +531,7 @@ class _SimulationList
 }
 
 class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.label,
-    required this.color,
-  });
+  const _InfoChip({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -699,17 +539,10 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.08,
-        ),
-        borderRadius:
-            BorderRadius.circular(10),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
@@ -724,10 +557,7 @@ class _InfoChip extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final int value;
@@ -735,17 +565,10 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(
-          alpha: 0.09,
-        ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$label: $value',
@@ -760,10 +583,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -771,23 +591,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -804,9 +615,7 @@ class _EmptySection extends StatelessWidget {
         child: Center(
           child: Text(
             'Nenhum item disponível.',
-            style: TextStyle(
-              color: Colors.black54,
-            ),
+            style: TextStyle(color: Colors.black54),
           ),
         ),
       ),
@@ -814,8 +623,7 @@ class _EmptySection extends StatelessWidget {
   }
 }
 
-class _EmptyDecisionView
-    extends StatelessWidget {
+class _EmptyDecisionView extends StatelessWidget {
   const _EmptyDecisionView();
 
   @override
@@ -823,17 +631,13 @@ class _EmptyDecisionView
     return const Center(
       child: Text(
         'Nenhuma ação priorizada disponível.',
-        style: TextStyle(
-          color: Colors.black54,
-        ),
+        style: TextStyle(color: Colors.black54),
       ),
     );
   }
 }
 
-Color _statusColor(
-  AtlasDecisionEngineV2Status status,
-) {
+Color _statusColor(AtlasDecisionEngineV2Status status) {
   switch (status) {
     case AtlasDecisionEngineV2Status.excellent:
       return const Color(0xFF80CBC4);
@@ -849,9 +653,7 @@ Color _statusColor(
   }
 }
 
-Color _priorityColor(
-  AtlasDecisionV2Priority priority,
-) {
+Color _priorityColor(AtlasDecisionV2Priority priority) {
   switch (priority) {
     case AtlasDecisionV2Priority.low:
       return const Color(0xFF2E7D32);

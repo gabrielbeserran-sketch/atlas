@@ -27,8 +27,7 @@ class AtlasPredictiveAnalyticsData {
   final List<AtlasPredictiveForecast> forecasts;
   final List<AtlasPredictiveScenario> scenarios;
   final List<AtlasPredictiveRisk> risks;
-  final List<AtlasPredictiveRecommendation>
-      recommendations;
+  final List<AtlasPredictiveRecommendation> recommendations;
 
   bool get hasData {
     return forecasts.isNotEmpty ||
@@ -191,12 +190,7 @@ class AtlasPredictiveRecommendation {
   final String expectedImpact;
 }
 
-enum AtlasPredictiveAnalyticsStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasPredictiveAnalyticsStatus { excellent, adequate, attention, critical }
 
 enum AtlasPredictiveForecastKind {
   finance,
@@ -212,26 +206,11 @@ enum AtlasPredictiveForecastKind {
   operationalBottleneck,
 }
 
-enum AtlasPredictiveScenarioType {
-  optimistic,
-  expected,
-  pessimistic,
-  whatIf,
-}
+enum AtlasPredictiveScenarioType { optimistic, expected, pessimistic, whatIf }
 
-enum AtlasPredictiveAnalyticsRiskLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasPredictiveAnalyticsRiskLevel { low, medium, high, critical }
 
-enum AtlasPredictiveAnalyticsPriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasPredictiveAnalyticsPriority { low, medium, high, critical }
 
 String atlasPredictiveAnalyticsStatusLabel(
   AtlasPredictiveAnalyticsStatus status,
@@ -251,9 +230,7 @@ String atlasPredictiveAnalyticsStatusLabel(
   }
 }
 
-String atlasPredictiveForecastKindLabel(
-  AtlasPredictiveForecastKind kind,
-) {
+String atlasPredictiveForecastKindLabel(AtlasPredictiveForecastKind kind) {
   switch (kind) {
     case AtlasPredictiveForecastKind.finance:
       return 'Financeiro';
@@ -290,9 +267,7 @@ String atlasPredictiveForecastKindLabel(
   }
 }
 
-String atlasPredictiveScenarioTypeLabel(
-  AtlasPredictiveScenarioType type,
-) {
+String atlasPredictiveScenarioTypeLabel(AtlasPredictiveScenarioType type) {
   switch (type) {
     case AtlasPredictiveScenarioType.optimistic:
       return 'Otimista';

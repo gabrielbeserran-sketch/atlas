@@ -36,11 +36,7 @@ void main() {
   test('identifies respiratory hypothesis', () {
     final result = engine.assess(
       buildCase(
-        symptoms: const [
-          'Tosse',
-          'Secreção nasal',
-          'Dificuldade respiratória',
-        ],
+        symptoms: const ['Tosse', 'Secreção nasal', 'Dificuldade respiratória'],
         temperature: 40,
         respiratoryRate: 65,
       ),

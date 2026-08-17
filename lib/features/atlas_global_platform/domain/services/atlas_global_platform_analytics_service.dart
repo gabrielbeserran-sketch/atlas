@@ -28,18 +28,13 @@ class AtlasGlobalPlatformAnalyticsService {
   AtlasGlobalPlatformAnalytics analyze(
     List<AtlasGlobalPlatformRecord> records,
   ) {
-    final represented = records
-        .map((record) => record.feature)
-        .toSet();
+    final represented = records.map((record) => record.feature).toSet();
 
-    final coverage = represented.length *
-        100 /
-        AtlasGlobalPlatformFeature.values.length;
+    final coverage =
+        represented.length * 100 / AtlasGlobalPlatformFeature.values.length;
 
-    final operational =
-        records.where((record) => record.isOperational).length;
-    final alerts =
-        records.where((record) => record.isCritical).length;
+    final operational = records.where((record) => record.isOperational).length;
+    final alerts = records.where((record) => record.isCritical).length;
 
     final values = records
         .map((record) => record.primaryValue)
@@ -78,12 +73,9 @@ class AtlasGlobalPlatformAnalyticsService {
   }) {
     final items = <String>[];
 
-    for (final feature
-        in AtlasGlobalPlatformFeature.values) {
+    for (final feature in AtlasGlobalPlatformFeature.values) {
       if (!represented.contains(feature)) {
-        items.add(
-          'Implantar ou registrar: ${feature.title}.',
-        );
+        items.add('Implantar ou registrar: ${feature.title}.');
       }
     }
 

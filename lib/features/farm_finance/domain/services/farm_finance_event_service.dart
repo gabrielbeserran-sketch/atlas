@@ -17,25 +17,21 @@ class FarmFinanceEventService {
     required double totalExpenses,
     required double balance,
   }) async {
-    await AtlasEventBus.instance.publishAll(
-      <AtlasEvent>[
-        _entryEvent(
-          type: AtlasEventType.financialEntryCreated,
-          title: record.isIncome
-              ? 'Receita registrada'
-              : 'Despesa registrada',
-          farmName: farmName,
-          record: record,
-        ),
-        _cashFlowEvent(
-          farmName: farmName,
-          totalIncome: totalIncome,
-          totalExpenses: totalExpenses,
-          balance: balance,
-          reason: 'Novo lançamento financeiro',
-        ),
-      ],
-    );
+    await AtlasEventBus.instance.publishAll(<AtlasEvent>[
+      _entryEvent(
+        type: AtlasEventType.financialEntryCreated,
+        title: record.isIncome ? 'Receita registrada' : 'Despesa registrada',
+        farmName: farmName,
+        record: record,
+      ),
+      _cashFlowEvent(
+        farmName: farmName,
+        totalIncome: totalIncome,
+        totalExpenses: totalExpenses,
+        balance: balance,
+        reason: 'Novo lançamento financeiro',
+      ),
+    ]);
   }
 
   Future<void> publishEntryUpdated({
@@ -46,28 +42,26 @@ class FarmFinanceEventService {
     required double totalExpenses,
     required double balance,
   }) async {
-    await AtlasEventBus.instance.publishAll(
-      <AtlasEvent>[
-        _entryEvent(
-          type: AtlasEventType.financialEntryUpdated,
-          title: 'Lançamento financeiro atualizado',
-          farmName: farmName,
-          record: updatedRecord,
-          extraPayload: <String, dynamic>{
-            'previousType': previousRecord.type,
-            'previousCategory': previousRecord.category,
-            'previousAmount': previousRecord.amount,
-          },
-        ),
-        _cashFlowEvent(
-          farmName: farmName,
-          totalIncome: totalIncome,
-          totalExpenses: totalExpenses,
-          balance: balance,
-          reason: 'Lançamento financeiro atualizado',
-        ),
-      ],
-    );
+    await AtlasEventBus.instance.publishAll(<AtlasEvent>[
+      _entryEvent(
+        type: AtlasEventType.financialEntryUpdated,
+        title: 'Lançamento financeiro atualizado',
+        farmName: farmName,
+        record: updatedRecord,
+        extraPayload: <String, dynamic>{
+          'previousType': previousRecord.type,
+          'previousCategory': previousRecord.category,
+          'previousAmount': previousRecord.amount,
+        },
+      ),
+      _cashFlowEvent(
+        farmName: farmName,
+        totalIncome: totalIncome,
+        totalExpenses: totalExpenses,
+        balance: balance,
+        reason: 'Lançamento financeiro atualizado',
+      ),
+    ]);
   }
 
   Future<void> publishEntryDeleted({
@@ -83,8 +77,7 @@ class FarmFinanceEventService {
         totalIncome: totalIncome,
         totalExpenses: totalExpenses,
         balance: balance,
-        reason:
-            'Lançamento removido: ${deletedRecord.description}',
+        reason: 'Lançamento removido: ${deletedRecord.description}',
         extraPayload: <String, dynamic>{
           'deletedRecordId': deletedRecord.id,
           'deletedRecordType': deletedRecord.type,
@@ -99,8 +92,7 @@ class FarmFinanceEventService {
     required String title,
     required String farmName,
     required FarmFinanceData record,
-    Map<String, dynamic> extraPayload =
-        const <String, dynamic>{},
+    Map<String, dynamic> extraPayload = const <String, dynamic>{},
   }) {
     return eventFactory.create(
       type: type,
@@ -141,15 +133,13 @@ class FarmFinanceEventService {
     required double totalExpenses,
     required double balance,
     required String reason,
-    Map<String, dynamic> extraPayload =
-        const <String, dynamic>{},
+    Map<String, dynamic> extraPayload = const <String, dynamic>{},
   }) {
     return eventFactory.create(
       type: AtlasEventType.cashFlowUpdated,
       sourceModule: 'farm_finance',
       title: 'Fluxo de caixa atualizado',
-      description:
-          '$reason. Saldo atual: R\$ ${balance.toStringAsFixed(2)}.',
+      description: '$reason. Saldo atual: R\$ ${balance.toStringAsFixed(2)}.',
       priority: balance < 0
           ? AtlasEventPriority.high
           : AtlasEventPriority.normal,
@@ -163,17 +153,11 @@ class FarmFinanceEventService {
         'reason': reason,
         ...extraPayload,
       },
-      tags: const <String>[
-        'finance',
-        'cash_flow',
-        'executive',
-      ],
+      tags: const <String>['finance', 'cash_flow', 'executive'],
     );
   }
 
-  DateTime? _parseDate(
-    String value,
-  ) {
+  DateTime? _parseDate(String value) {
     final parts = value.split('/');
 
     if (parts.length != 3) {
@@ -184,28 +168,14 @@ class FarmFinanceEventService {
     final month = int.tryParse(parts[1]);
     final year = int.tryParse(parts[2]);
 
-    if (day == null ||
-        month == null ||
-        year == null) {
+    if (day == null || month == null || year == null) {
       return null;
     }
 
-    return DateTime(
-      year,
-      month,
-      day,
-    );
+    return DateTime(year, month, day);
   }
 
-  String _normalizeTag(
-    String value,
-  ) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        );
+  String _normalizeTag(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 }

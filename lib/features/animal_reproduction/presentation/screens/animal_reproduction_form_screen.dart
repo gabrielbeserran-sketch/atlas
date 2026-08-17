@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalReproductionFormScreen extends StatefulWidget {
   const AnimalReproductionFormScreen({this.reproductionRecord, super.key});
@@ -33,7 +34,8 @@ class _AnimalReproductionFormScreenState
   bool isSaving = false;
 
   bool get isEditing => widget.reproductionRecord != null;
-  bool get isService => selectedType == 'Inseminação artificial' ||
+  bool get isService =>
+      selectedType == 'Inseminação artificial' ||
       selectedType == 'IATF' ||
       selectedType == 'Monta natural';
   bool get isProtocol =>
@@ -61,10 +63,12 @@ class _AnimalReproductionFormScreenState
     notesController.text = record.notes;
     protocolNameController.text = record.protocolName;
     protocolStageController.text = record.protocolStage;
-    attemptNumberController.text =
-        record.attemptNumber == 0 ? '' : record.attemptNumber.toString();
-    pregnancyDaysController.text =
-        record.pregnancyDays == 0 ? '' : record.pregnancyDays.toString();
+    attemptNumberController.text = record.attemptNumber == 0
+        ? ''
+        : record.attemptNumber.toString();
+    pregnancyDaysController.text = record.pregnancyDays == 0
+        ? ''
+        : record.pregnancyDays.toString();
     calfIdController.text = record.calfId;
   }
 
@@ -89,10 +93,14 @@ class _AnimalReproductionFormScreenState
   }
 
   String? requiredValidator(String? value) =>
-      value == null || value.trim().isEmpty ? 'Este campo é obrigatório.' : null;
+      value == null || value.trim().isEmpty
+      ? 'Este campo é obrigatório.'
+      : null;
 
-  Future<void> selectDate(TextEditingController controller,
-      {bool allowFuture = true}) async {
+  Future<void> selectDate(
+    TextEditingController controller, {
+    bool allowFuture = true,
+  }) async {
     final initialDate = parseDate(controller.text) ?? DateTime.now();
     final selectedDate = await showDatePicker(
       context: context,
@@ -126,7 +134,8 @@ class _AnimalReproductionFormScreenState
     Navigator.pop<AnimalReproductionData>(
       context,
       AnimalReproductionData(
-        id: widget.reproductionRecord?.id ??
+        id:
+            widget.reproductionRecord?.id ??
             DateTime.now().microsecondsSinceEpoch.toString(),
         type: selectedType,
         date: dateController.text.trim(),
@@ -164,9 +173,11 @@ class _AnimalReproductionFormScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing
-            ? 'Editar registro reprodutivo'
-            : 'Novo registro reprodutivo'),
+        title: Text(
+          isEditing
+              ? 'Editar registro reprodutivo'
+              : 'Novo registro reprodutivo',
+        ),
       ),
       body: SafeArea(
         child: Center(
@@ -179,9 +190,13 @@ class _AnimalReproductionFormScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text('Manejo reprodutivo profissional',
-                        style: TextStyle(
-                            fontSize: 26, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Manejo reprodutivo profissional',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     const Text(
                       'Registre serviços, protocolos, diagnósticos, previsões e partos.',
@@ -191,23 +206,29 @@ class _AnimalReproductionFormScreenState
                     DropdownButtonFormField<String>(
                       initialValue: selectedType,
                       decoration: const InputDecoration(
-                          labelText: 'Tipo de registro',
-                          prefixIcon: Icon(Icons.favorite_outline)),
-                      items: const [
-                        'Cio',
-                        'Inseminação artificial',
-                        'IATF',
-                        'Monta natural',
-                        'Diagnóstico de gestação',
-                        'Parto',
-                        'Aborto',
-                        'Exame ginecológico',
-                        'Protocolo hormonal',
-                        'Observação',
-                      ]
-                          .map((value) => DropdownMenuItem(
-                              value: value, child: Text(value)))
-                          .toList(),
+                        labelText: 'Tipo de registro',
+                        prefixIcon: Icon(Icons.favorite_outline),
+                      ),
+                      items:
+                          const [
+                                'Cio',
+                                'Inseminação artificial',
+                                'IATF',
+                                'Monta natural',
+                                'Diagnóstico de gestação',
+                                'Parto',
+                                'Aborto',
+                                'Exame ginecológico',
+                                'Protocolo hormonal',
+                                'Observação',
+                              ]
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (value) {
                         if (value == null) return;
                         setState(() => selectedType = value);
@@ -240,7 +261,8 @@ class _AnimalReproductionFormScreenState
                         controller: protocolStageController,
                         decoration: const InputDecoration(
                           labelText: 'Etapa do protocolo',
-                          hintText: 'D0, D8, retirada, aplicação, inseminação...',
+                          hintText:
+                              'D0, D8, retirada, aplicação, inseminação...',
                           prefixIcon: Icon(Icons.format_list_numbered),
                         ),
                       ),
@@ -252,7 +274,7 @@ class _AnimalReproductionFormScreenState
                         decoration: const InputDecoration(
                           labelText: 'Touro ou sêmen utilizado',
                           hintText: 'Nome, identificação, raça ou partida',
-                          prefixIcon: Icon(Icons.pets_outlined),
+                          prefixIcon: Icon(AtlasLivestockIcons.cow),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -269,15 +291,20 @@ class _AnimalReproductionFormScreenState
                     if (isDiagnosis) ...[
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue:
-                            selectedStatus.isEmpty ? null : selectedStatus,
+                        initialValue: selectedStatus.isEmpty
+                            ? null
+                            : selectedStatus,
                         decoration: const InputDecoration(
                           labelText: 'Status reprodutivo',
                           prefixIcon: Icon(Icons.monitor_heart_outlined),
                         ),
                         items: const ['Prenhe', 'Vazia', 'Inconclusivo']
-                            .map((value) => DropdownMenuItem(
-                                value: value, child: Text(value)))
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) =>
                             setState(() => selectedStatus = value ?? ''),
@@ -295,16 +322,27 @@ class _AnimalReproductionFormScreenState
                     if (isBirth) ...[
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue:
-                            selectedBirthType.isEmpty ? null : selectedBirthType,
+                        initialValue: selectedBirthType.isEmpty
+                            ? null
+                            : selectedBirthType,
                         decoration: const InputDecoration(
                           labelText: 'Tipo de parto',
                           prefixIcon: Icon(Icons.child_friendly_outlined),
                         ),
-                        items: const ['Normal', 'Assistido', 'Distócico', 'Cesárea']
-                            .map((value) => DropdownMenuItem(
-                                value: value, child: Text(value)))
-                            .toList(),
+                        items:
+                            const [
+                                  'Normal',
+                                  'Assistido',
+                                  'Distócico',
+                                  'Cesárea',
+                                ]
+                                .map(
+                                  (value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: (value) =>
                             setState(() => selectedBirthType = value ?? ''),
                       ),
@@ -319,15 +357,20 @@ class _AnimalReproductionFormScreenState
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        initialValue:
-                            selectedCalfSex.isEmpty ? null : selectedCalfSex,
+                        initialValue: selectedCalfSex.isEmpty
+                            ? null
+                            : selectedCalfSex,
                         decoration: const InputDecoration(
                           labelText: 'Sexo da cria',
                           prefixIcon: Icon(Icons.transgender),
                         ),
                         items: const ['Macho', 'Fêmea']
-                            .map((value) => DropdownMenuItem(
-                                value: value, child: Text(value)))
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) =>
                             setState(() => selectedCalfSex = value ?? ''),
@@ -380,7 +423,8 @@ class _AnimalReproductionFormScreenState
                       maxLines: 5,
                       decoration: const InputDecoration(
                         labelText: 'Observações técnicas',
-                        hintText: 'Medicamentos, doses, horários e recomendações...',
+                        hintText:
+                            'Medicamentos, doses, horários e recomendações...',
                         alignLabelWithHint: true,
                         prefixIcon: Icon(Icons.notes_outlined),
                       ),
@@ -395,9 +439,9 @@ class _AnimalReproductionFormScreenState
                           foregroundColor: Colors.white,
                         ),
                         icon: const Icon(Icons.save_outlined),
-                        label: Text(isEditing
-                            ? 'Salvar alterações'
-                            : 'Salvar registro'),
+                        label: Text(
+                          isEditing ? 'Salvar alterações' : 'Salvar registro',
+                        ),
                       ),
                     ),
                   ],

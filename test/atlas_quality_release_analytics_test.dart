@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/atlas_quality_release/domain/models/atlas_quality_release_record.dart';
 import 'package:projeto_atlas/features/atlas_quality_release/domain/services/atlas_quality_release_analytics_service.dart';

@@ -13,32 +13,24 @@ class AtlasExecutionCycleReportService {
   static final AtlasExecutionCycleReportService instance =
       AtlasExecutionCycleReportService._();
 
-  static const String _storageKey =
-      'atlas_execution_cycle_reports_v1';
+  static const String _storageKey = 'atlas_execution_cycle_reports_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasExecutionCycleReport>> load({
-    String? farmName,
-  }) async {
+  Future<List<AtlasExecutionCycleReport>> load({String? farmName}) async {
     final all = await _loadAll();
-    final normalizedFarm =
-        farmName?.trim().toLowerCase();
+    final normalizedFarm = farmName?.trim().toLowerCase();
 
-    final filtered = all.where((report) {
-      if (normalizedFarm == null ||
-          normalizedFarm.isEmpty) {
-        return true;
-      }
+    final filtered =
+        all.where((report) {
+          if (normalizedFarm == null || normalizedFarm.isEmpty) {
+            return true;
+          }
 
-      return report.farmName?.trim().toLowerCase() ==
-          normalizedFarm;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.generatedAt.compareTo(first.generatedAt),
-      );
+          return report.farmName?.trim().toLowerCase() == normalizedFarm;
+        }).toList()..sort(
+          (first, second) => second.generatedAt.compareTo(first.generatedAt),
+        );
 
     return filtered;
   }
@@ -51,8 +43,7 @@ class AtlasExecutionCycleReportService {
     DateTime? periodEnd,
   }) async {
     final now = DateTime.now();
-    final start = periodStart ??
-        now.subtract(const Duration(days: 30));
+    final start = periodStart ?? now.subtract(const Duration(days: 30));
     final end = periodEnd ?? now;
 
     final periodActions = actions.where((action) {
@@ -60,54 +51,40 @@ class AtlasExecutionCycleReportService {
           !action.createdAt.isAfter(end);
     }).toList();
 
-    final actionIds =
-        periodActions.map((action) => action.id).toSet();
+    final actionIds = periodActions.map((action) => action.id).toSet();
     final periodOutcomes = outcomes
-        .where(
-          (outcome) =>
-              actionIds.contains(outcome.actionId),
-        )
+        .where((outcome) => actionIds.contains(outcome.actionId))
         .toList();
 
     final completed = periodActions
         .where((action) => action.isCompleted)
         .length;
-    final overdue = periodActions
-        .where((action) => action.isOverdue)
-        .length;
+    final overdue = periodActions.where((action) => action.isOverdue).length;
     final expected = periodActions.fold<double>(
       0,
-      (total, action) =>
-          total + action.expectedFinancialImpact,
+      (total, action) => total + action.expectedFinancialImpact,
     );
     final realized = periodOutcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.realizedFinancialImpact,
+      (total, outcome) => total + outcome.realizedFinancialImpact,
     );
     final cost = periodOutcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.executionCost,
+      (total, outcome) => total + outcome.executionCost,
     );
     final net = periodOutcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.netFinancialResult,
+      (total, outcome) => total + outcome.netFinancialResult,
     );
     final averageRoi = periodOutcomes.isEmpty
         ? 0.0
         : periodOutcomes
-                .map((outcome) => outcome.roiPercent)
-                .fold<double>(
-                  0,
-                  (first, second) => first + second,
-                ) /
-            periodOutcomes.length;
+                  .map((outcome) => outcome.roiPercent)
+                  .fold<double>(0, (first, second) => first + second) /
+              periodOutcomes.length;
 
     final highlights = <String>[
-      if (completed > 0)
-        '$completed ação(ões) concluída(s) no ciclo.',
+      if (completed > 0) '$completed ação(ões) concluída(s) no ciclo.',
       if (net > 0)
         'Resultado financeiro líquido positivo de '
             'R\$ ${net.toStringAsFixed(2)}.',
@@ -117,25 +94,19 @@ class AtlasExecutionCycleReportService {
     ];
 
     if (highlights.isEmpty) {
-      highlights.add(
-        'Nenhum destaque positivo foi consolidado no período.',
-      );
+      highlights.add('Nenhum destaque positivo foi consolidado no período.');
     }
 
     final attentionPoints = <String>[
-      if (overdue > 0)
-        '$overdue ação(ões) permanece(m) atrasada(s).',
+      if (overdue > 0) '$overdue ação(ões) permanece(m) atrasada(s).',
       if (periodActions.length > periodOutcomes.length)
         '${periodActions.length - periodOutcomes.length} '
             'ação(ões) ainda não possui(em) resultado registrado.',
-      if (net < 0)
-        'O ciclo apresenta resultado financeiro líquido negativo.',
+      if (net < 0) 'O ciclo apresenta resultado financeiro líquido negativo.',
     ];
 
     if (attentionPoints.isEmpty) {
-      attentionPoints.add(
-        'Nenhum ponto crítico foi identificado no ciclo.',
-      );
+      attentionPoints.add('Nenhum ponto crítico foi identificado no ciclo.');
     }
 
     final lessons = periodOutcomes
@@ -170,13 +141,12 @@ class AtlasExecutionCycleReportService {
       highlights: highlights,
       attentionPoints: attentionPoints,
       lessonsLearned: lessons.isEmpty
-          ? const <String>[
-              'Nenhum aprendizado foi registrado no período.',
-            ]
+          ? const <String>['Nenhum aprendizado foi registrado no período.']
           : lessons,
     );
 
-    final all = await _loadAll()..add(report);
+    final all = await _loadAll()
+      ..add(report);
     await _saveAll(all);
     await _publish(report);
     return report;
@@ -189,10 +159,8 @@ class AtlasExecutionCycleReportService {
     await _saveAll(all);
   }
 
-  Future<List<AtlasExecutionCycleReport>>
-      _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasExecutionCycleReport>> _loadAll() async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasExecutionCycleReport>[];
@@ -213,20 +181,14 @@ class AtlasExecutionCycleReportService {
     }
   }
 
-  Future<void> _saveAll(
-    List<AtlasExecutionCycleReport> reports,
-  ) async {
+  Future<void> _saveAll(List<AtlasExecutionCycleReport> reports) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        reports.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(reports.map((item) => item.toMap()).toList()),
     );
   }
 
-  Future<void> _publish(
-    AtlasExecutionCycleReport report,
-  ) async {
+  Future<void> _publish(AtlasExecutionCycleReport report) async {
     await AtlasEventBus.instance.publish(
       AtlasEvent(
         id: 'cycle_report_event_${report.id}',
@@ -235,8 +197,8 @@ class AtlasExecutionCycleReportService {
         title: 'Relatório executivo do ciclo gerado',
         description: report.executiveSummary,
         occurredAt: report.generatedAt,
-        priority: report.overdueActions > 0 ||
-                report.totalNetFinancialResult < 0
+        priority:
+            report.overdueActions > 0 || report.totalNetFinancialResult < 0
             ? AtlasEventPriority.high
             : AtlasEventPriority.normal,
         farmName: report.farmName,
@@ -244,15 +206,11 @@ class AtlasExecutionCycleReportService {
         entityType: 'execution_cycle_report',
         payload: <String, dynamic>{
           'totalActions': report.totalActions,
-          'completedActions':
-              report.completedActions,
+          'completedActions': report.completedActions,
           'overdueActions': report.overdueActions,
-          'actionsWithOutcome':
-              report.actionsWithOutcome,
-          'totalNetFinancialResult':
-              report.totalNetFinancialResult,
-          'averageRoiPercent':
-              report.averageRoiPercent,
+          'actionsWithOutcome': report.actionsWithOutcome,
+          'totalNetFinancialResult': report.totalNetFinancialResult,
+          'averageRoiPercent': report.averageRoiPercent,
         },
         tags: const <String>[
           'command_center',

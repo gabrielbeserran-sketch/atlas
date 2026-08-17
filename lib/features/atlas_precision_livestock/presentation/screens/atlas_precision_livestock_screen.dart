@@ -6,6 +6,7 @@ import 'package:projeto_atlas/features/atlas_precision_livestock/domain/models/a
 import 'package:projeto_atlas/features/atlas_precision_livestock/domain/services/atlas_precision_livestock_analytics_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasPrecisionLivestockScreen extends StatefulWidget {
   const AtlasPrecisionLivestockScreen({
@@ -30,8 +31,7 @@ class _AtlasPrecisionLivestockScreenState
     extends State<AtlasPrecisionLivestockScreen> {
   final AtlasPrecisionLivestockStorageService storage =
       AtlasPrecisionLivestockStorageService();
-  final AtlasPrecisionLivestockAnalyticsService
-      analyticsService =
+  final AtlasPrecisionLivestockAnalyticsService analyticsService =
       const AtlasPrecisionLivestockAnalyticsService();
 
   late AtlasPrecisionLivestockModule selectedModule;
@@ -55,12 +55,9 @@ class _AtlasPrecisionLivestockScreenState
     );
 
     loaded.sort(
-      (first, second) =>
-          parseAtlasPrecisionLivestockDate(
+      (first, second) => parseAtlasPrecisionLivestockDate(
         second.date,
-      ).compareTo(
-        parseAtlasPrecisionLivestockDate(first.date),
-      ),
+      ).compareTo(parseAtlasPrecisionLivestockDate(first.date)),
     );
 
     if (!mounted) return;
@@ -80,31 +77,26 @@ class _AtlasPrecisionLivestockScreenState
   }
 
   List<AtlasPrecisionLivestockRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasPrecisionLivestockRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasPrecisionLivestockRecord>(
+  Future<void> openForm([AtlasPrecisionLivestockRecord? current]) async {
+    final result = await showDialog<AtlasPrecisionLivestockRecord>(
       context: context,
-      builder: (context) => _PrecisionLivestockForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _PrecisionLivestockForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -118,9 +110,7 @@ class _AtlasPrecisionLivestockScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasPrecisionLivestockRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasPrecisionLivestockRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -128,13 +118,11 @@ class _AtlasPrecisionLivestockScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -176,12 +164,9 @@ class _AtlasPrecisionLivestockScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -198,9 +183,7 @@ class _AtlasPrecisionLivestockScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 26 — Pecuária de Precisão',
-                          ),
+                          title: Text('Fase 26 — Pecuária de Precisão'),
                           subtitle: Text(
                             'A entrega organiza previsões, riscos e eficiência. '
                             'Modelos reais exigem dados históricos, sensores, calibração e validação profissional.',
@@ -274,15 +257,15 @@ class _AtlasPrecisionLivestockScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor atual médio',
-                            value:
-                                analytics.averageCurrent.toStringAsFixed(2),
+                            value: analytics.averageCurrent.toStringAsFixed(2),
                             subtitle: 'Métrica atual',
                             icon: Icons.assessment_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor projetado médio',
-                            value:
-                                analytics.averageProjected.toStringAsFixed(2),
+                            value: analytics.averageProjected.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Métrica projetada',
                             icon: Icons.auto_graph_outlined,
                           ),
@@ -324,12 +307,8 @@ class _AtlasPrecisionLivestockScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira previsão, análise ou alerta.',
                             ),
@@ -340,8 +319,7 @@ class _AtlasPrecisionLivestockScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -355,14 +333,10 @@ class _AtlasPrecisionLivestockScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasPrecisionLivestockModule selected;
-  final ValueChanged<AtlasPrecisionLivestockModule>
-      onSelected;
+  final ValueChanged<AtlasPrecisionLivestockModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -372,24 +346,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasPrecisionLivestockModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasPrecisionLivestockModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -412,15 +383,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -439,24 +410,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Alto risco' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Alto risco' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Validado' ||
-      'Monitorado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Validado' ||
+      'Monitorado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -475,14 +442,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -491,10 +452,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _PrecisionLivestockForm extends StatefulWidget {
-  const _PrecisionLivestockForm({
-    required this.module,
-    this.current,
-  });
+  const _PrecisionLivestockForm({required this.module, this.current});
 
   final AtlasPrecisionLivestockModule module;
   final AtlasPrecisionLivestockRecord? current;
@@ -504,8 +462,7 @@ class _PrecisionLivestockForm extends StatefulWidget {
       _PrecisionLivestockFormState();
 }
 
-class _PrecisionLivestockFormState
-    extends State<_PrecisionLivestockForm> {
+class _PrecisionLivestockFormState extends State<_PrecisionLivestockForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -539,20 +496,13 @@ class _PrecisionLivestockFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasPrecisionLivestockDate(
-            DateTime.now(),
-          ),
+      text: current?.date ?? formatAtlasPrecisionLivestockDate(DateTime.now()),
     );
     animalReference = TextEditingController(
       text: current?.animalReference ?? '',
     );
-    groupReference = TextEditingController(
-      text: current?.groupReference ?? '',
-    );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    groupReference = TextEditingController(text: current?.groupReference ?? '');
+    metricName = TextEditingController(text: current?.metricName ?? '');
     currentValue = TextEditingController(
       text: current == null || current.currentValue == 0
           ? ''
@@ -570,8 +520,7 @@ class _PrecisionLivestockFormState
     );
     unit = TextEditingController(text: current?.unit ?? '');
     confidencePercent = TextEditingController(
-      text: current == null ||
-              current.confidencePercent == 0
+      text: current == null || current.confidencePercent == 0
           ? ''
           : current.confidencePercent.toString(),
     );
@@ -581,15 +530,12 @@ class _PrecisionLivestockFormState
           : current.riskPercent.toString(),
     );
     financialImpact = TextEditingController(
-      text: current == null ||
-              current.financialImpact == 0
+      text: current == null || current.financialImpact == 0
           ? ''
           : current.financialImpact.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -601,12 +547,8 @@ class _PrecisionLivestockFormState
           ? ''
           : current.horizonDays.toString(),
     );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -632,10 +574,7 @@ class _PrecisionLivestockFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -652,24 +591,19 @@ class _PrecisionLivestockFormState
   }
 
   Future<void> chooseDate() async {
-    final parsed =
-        parseAtlasPrecisionLivestockDate(date.text);
+    final parsed = parseAtlasPrecisionLivestockDate(date.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      date.text =
-          formatAtlasPrecisionLivestockDate(selected);
+      date.text = formatAtlasPrecisionLivestockDate(selected);
     });
   }
 
@@ -682,8 +616,7 @@ class _PrecisionLivestockFormState
     Navigator.pop(
       context,
       AtlasPrecisionLivestockRecord(
-        id: current?.id ??
-            'precision_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'precision_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -699,8 +632,7 @@ class _PrecisionLivestockFormState
         confidencePercent: percent(confidencePercent),
         riskPercent: percent(riskPercent),
         financialImpact: decimal(financialImpact),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         horizonDays: nonNegative(horizonDays),
         responsible: responsible.text.trim(),
@@ -714,11 +646,7 @@ class _PrecisionLivestockFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -733,10 +661,8 @@ class _PrecisionLivestockFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -747,12 +673,9 @@ class _PrecisionLivestockFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -764,35 +687,32 @@ class _PrecisionLivestockFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Alto risco',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Alto risco',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -819,18 +739,14 @@ class _PrecisionLivestockFormState
                 ),
                 TextFormField(
                   controller: currentValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Valor atual',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Valor atual'),
                 ),
                 TextFormField(
                   controller: projectedValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -839,24 +755,18 @@ class _PrecisionLivestockFormState
                 ),
                 TextFormField(
                   controller: targetValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Meta',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Meta'),
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 TextFormField(
                   controller: confidencePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -865,8 +775,7 @@ class _PrecisionLivestockFormState
                 ),
                 TextFormField(
                   controller: riskPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -875,8 +784,7 @@ class _PrecisionLivestockFormState
                 ),
                 TextFormField(
                   controller: financialImpact,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -914,9 +822,7 @@ class _PrecisionLivestockFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -928,37 +834,28 @@ class _PrecisionLivestockFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasPrecisionLivestockModule module,
-) {
+IconData _moduleIcon(AtlasPrecisionLivestockModule module) {
   return switch (module) {
     AtlasPrecisionLivestockModule.weightPrediction =>
       Icons.monitor_weight_outlined,
     AtlasPrecisionLivestockModule.dailyGainPrediction =>
       Icons.trending_up_outlined,
-    AtlasPrecisionLivestockModule.estimatedIntake =>
-      Icons.restaurant_outlined,
-    AtlasPrecisionLivestockModule.feedEfficiency =>
-      Icons.speed_outlined,
+    AtlasPrecisionLivestockModule.estimatedIntake => Icons.restaurant_outlined,
+    AtlasPrecisionLivestockModule.feedEfficiency => Icons.speed_outlined,
     AtlasPrecisionLivestockModule.feedConversion =>
       Icons.compare_arrows_outlined,
-    AtlasPrecisionLivestockModule.animalWelfare =>
-      Icons.pets_outlined,
+    AtlasPrecisionLivestockModule.animalWelfare => AtlasLivestockIcons.cow,
     AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
       Icons.health_and_safety_outlined,
     AtlasPrecisionLivestockModule.heatStress =>
       Icons.device_thermostat_outlined,
-    AtlasPrecisionLivestockModule.mortalityRisk =>
-      Icons.warning_amber_outlined,
+    AtlasPrecisionLivestockModule.mortalityRisk => Icons.warning_amber_outlined,
     AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
       Icons.dashboard_outlined,
   };

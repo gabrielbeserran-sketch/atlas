@@ -64,9 +64,7 @@ class AnimalOperationalTask {
     };
   }
 
-  factory AnimalOperationalTask.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AnimalOperationalTask.fromMap(Map<String, dynamic> map) {
     return AnimalOperationalTask(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',

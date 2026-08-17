@@ -140,10 +140,7 @@ class AtlasReactiveDiagnosticsService {
   }
 
   _MutableTargetDiagnostics _target(AtlasReactiveTarget target) {
-    return _targets.putIfAbsent(
-      target,
-      _MutableTargetDiagnostics.new,
-    );
+    return _targets.putIfAbsent(target, _MutableTargetDiagnostics.new);
   }
 }
 

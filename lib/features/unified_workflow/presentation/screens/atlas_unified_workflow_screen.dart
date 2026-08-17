@@ -216,9 +216,7 @@ class _AtlasUnifiedWorkflowScreenState
           const Card(
             child: Padding(
               padding: EdgeInsets.all(28),
-              child: Center(
-                child: Text('Nenhuma automação executada ainda.'),
-              ),
+              child: Center(child: Text('Nenhuma automação executada ainda.')),
             ),
           )
         else
@@ -232,11 +230,7 @@ class _AtlasUnifiedWorkflowScreenState
         children: <Widget>[
           _Metric('Regras', '${rules.length}', Icons.rule_outlined),
           _Metric('Ativas', '$enabled', Icons.toggle_on_outlined),
-          _Metric(
-            'Execuções',
-            '${executions.length}',
-            Icons.bolt_outlined,
-          ),
+          _Metric('Execuções', '${executions.length}', Icons.bolt_outlined),
           _Metric('Taxa de sucesso', '$successRate%', Icons.verified_outlined),
         ],
       ),
@@ -394,8 +388,7 @@ class _RuleEditorDialogState extends State<_RuleEditorDialog> {
     Navigator.pop(
       context,
       AtlasAutomationRule(
-        id: widget.rule?.id ??
-            'rule_${DateTime.now().microsecondsSinceEpoch}',
+        id: widget.rule?.id ?? 'rule_${DateTime.now().microsecondsSinceEpoch}',
         title: _title.text.trim(),
         description: _description.text.trim(),
         triggerType: _trigger,

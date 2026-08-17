@@ -45,10 +45,7 @@ class AtlasStrategyExecutionPlan {
   final List<AtlasStrategyDecisionGate> gates;
 
   int get totalMilestones {
-    return phases.fold<int>(
-      0,
-      (sum, phase) => sum + phase.milestones.length,
-    );
+    return phases.fold<int>(0, (sum, phase) => sum + phase.milestones.length);
   }
 
   int get completedMilestones {
@@ -59,8 +56,7 @@ class AtlasStrategyExecutionPlan {
           phase.milestones
               .where(
                 (milestone) =>
-                    milestone.status ==
-                    AtlasStrategyMilestoneStatus.completed,
+                    milestone.status == AtlasStrategyMilestoneStatus.completed,
               )
               .length,
     );
@@ -75,10 +71,7 @@ class AtlasStrategyExecutionPlan {
   }
 
   double get committedBudget {
-    return phases.fold<double>(
-      0,
-      (sum, phase) => sum + phase.budget,
-    );
+    return phases.fold<double>(0, (sum, phase) => sum + phase.budget);
   }
 
   AtlasStrategyExecutionPlan copyWith({
@@ -133,13 +126,10 @@ class AtlasStrategyExecutionPlan {
     };
   }
 
-  factory AtlasStrategyExecutionPlan.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasStrategyExecutionPlan.fromJson(Map<String, dynamic> json) {
     return AtlasStrategyExecutionPlan(
       id: json['id'] as String? ?? '',
-      sourceScenarioId:
-          json['sourceScenarioId'] as String? ?? '',
+      sourceScenarioId: json['sourceScenarioId'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
       farmName: json['farmName'] as String? ?? 'Fazenda',
       title: json['title'] as String? ?? 'Plano estratégico',
@@ -150,20 +140,17 @@ class AtlasStrategyExecutionPlan {
       ),
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       startDate:
           DateTime.tryParse(json['startDate'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       targetDate:
           DateTime.tryParse(json['targetDate'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       budget: (json['budget'] as num?)?.toDouble() ?? 0,
-      expectedNetGain:
-          (json['expectedNetGain'] as num?)?.toDouble() ?? 0,
-      expectedRoi:
-          (json['expectedRoi'] as num?)?.toDouble() ?? 0,
-      confidence:
-          (json['confidence'] as num?)?.toDouble() ?? 0,
+      expectedNetGain: (json['expectedNetGain'] as num?)?.toDouble() ?? 0,
+      expectedRoi: (json['expectedRoi'] as num?)?.toDouble() ?? 0,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
       risk: AtlasDecisionRisk.values.firstWhere(
         (item) => item.name == json['risk'],
         orElse: () => AtlasDecisionRisk.moderate,
@@ -238,36 +225,30 @@ class AtlasStrategyExecutionPhase {
       'endDate': endDate.toIso8601String(),
       'budget': budget,
       'responsible': responsible,
-      'milestones':
-          milestones.map((item) => item.toJson()).toList(),
+      'milestones': milestones.map((item) => item.toJson()).toList(),
     };
   }
 
-  factory AtlasStrategyExecutionPhase.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasStrategyExecutionPhase.fromJson(Map<String, dynamic> json) {
     return AtlasStrategyExecutionPhase(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       objective: json['objective'] as String? ?? '',
       startDate:
           DateTime.tryParse(json['startDate'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       endDate:
-          DateTime.tryParse(json['endDate'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.tryParse(json['endDate'] as String? ?? '') ?? DateTime.now(),
       budget: (json['budget'] as num?)?.toDouble() ?? 0,
-      responsible:
-          json['responsible'] as String? ?? 'Equipe da fazenda',
-      milestones:
-          (json['milestones'] as List? ?? const <dynamic>[])
-              .whereType<Map>()
-              .map(
-                (item) => AtlasStrategyMilestone.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(),
+      responsible: json['responsible'] as String? ?? 'Equipe da fazenda',
+      milestones: (json['milestones'] as List? ?? const <dynamic>[])
+          .whereType<Map>()
+          .map(
+            (item) => AtlasStrategyMilestone.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -289,9 +270,7 @@ class AtlasStrategyMilestone {
   final String successCriterion;
   final AtlasStrategyMilestoneStatus status;
 
-  AtlasStrategyMilestone copyWith({
-    AtlasStrategyMilestoneStatus? status,
-  }) {
+  AtlasStrategyMilestone copyWith({AtlasStrategyMilestoneStatus? status}) {
     return AtlasStrategyMilestone(
       id: id,
       title: title,
@@ -313,18 +292,14 @@ class AtlasStrategyMilestone {
     };
   }
 
-  factory AtlasStrategyMilestone.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasStrategyMilestone.fromJson(Map<String, dynamic> json) {
     return AtlasStrategyMilestone(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
       dueDate:
-          DateTime.tryParse(json['dueDate'] as String? ?? '') ??
-              DateTime.now(),
-      successCriterion:
-          json['successCriterion'] as String? ?? '',
+          DateTime.tryParse(json['dueDate'] as String? ?? '') ?? DateTime.now(),
+      successCriterion: json['successCriterion'] as String? ?? '',
       status: AtlasStrategyMilestoneStatus.values.firstWhere(
         (item) => item.name == json['status'],
         orElse: () => AtlasStrategyMilestoneStatus.pending,
@@ -348,9 +323,7 @@ class AtlasStrategyDecisionGate {
   final List<String> criteria;
   final AtlasStrategyGateDecision decision;
 
-  AtlasStrategyDecisionGate copyWith({
-    AtlasStrategyGateDecision? decision,
-  }) {
+  AtlasStrategyDecisionGate copyWith({AtlasStrategyGateDecision? decision}) {
     return AtlasStrategyDecisionGate(
       id: id,
       title: title,
@@ -370,15 +343,13 @@ class AtlasStrategyDecisionGate {
     };
   }
 
-  factory AtlasStrategyDecisionGate.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasStrategyDecisionGate.fromJson(Map<String, dynamic> json) {
     return AtlasStrategyDecisionGate(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
       reviewDate:
           DateTime.tryParse(json['reviewDate'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
       criteria: (json['criteria'] as List? ?? const <dynamic>[])
           .whereType<String>()
           .toList(),
@@ -398,24 +369,11 @@ enum AtlasStrategyExecutionStatus {
   cancelled,
 }
 
-enum AtlasStrategyMilestoneStatus {
-  pending,
-  inProgress,
-  completed,
-  blocked,
-}
+enum AtlasStrategyMilestoneStatus { pending, inProgress, completed, blocked }
 
-enum AtlasStrategyGateDecision {
-  pending,
-  go,
-  adjust,
-  hold,
-  stop,
-}
+enum AtlasStrategyGateDecision { pending, go, adjust, hold, stop }
 
-String atlasStrategyExecutionStatusLabel(
-  AtlasStrategyExecutionStatus status,
-) {
+String atlasStrategyExecutionStatusLabel(AtlasStrategyExecutionStatus status) {
   switch (status) {
     case AtlasStrategyExecutionStatus.planned:
       return 'Planejado';
@@ -430,9 +388,7 @@ String atlasStrategyExecutionStatusLabel(
   }
 }
 
-String atlasStrategyMilestoneStatusLabel(
-  AtlasStrategyMilestoneStatus status,
-) {
+String atlasStrategyMilestoneStatusLabel(AtlasStrategyMilestoneStatus status) {
   switch (status) {
     case AtlasStrategyMilestoneStatus.pending:
       return 'Pendente';
@@ -445,9 +401,7 @@ String atlasStrategyMilestoneStatusLabel(
   }
 }
 
-String atlasStrategyGateDecisionLabel(
-  AtlasStrategyGateDecision decision,
-) {
+String atlasStrategyGateDecisionLabel(AtlasStrategyGateDecision decision) {
   switch (decision) {
     case AtlasStrategyGateDecision.pending:
       return 'Pendente';

@@ -15,6 +15,5 @@ class TechnicalInventorySeriesPoint {
   final double entryValue;
   final double exitValue;
 
-  int get totalMovements =>
-      (entries > 0 ? 1 : 0) + (exits > 0 ? 1 : 0);
+  int get totalMovements => (entries > 0 ? 1 : 0) + (exits > 0 ? 1 : 0);
 }

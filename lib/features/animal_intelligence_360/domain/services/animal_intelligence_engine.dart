@@ -75,13 +75,19 @@ class AnimalIntelligenceEngine {
     final items = <String>[];
 
     if (weightCount < 2) {
-      items.add('Cadastre duas pesagens em datas diferentes para calcular o GMD.');
+      items.add(
+        'Cadastre duas pesagens em datas diferentes para calcular o GMD.',
+      );
     }
     if (gmd != null && gmd < 0) {
-      items.add('Investigue imediatamente a perda de peso: consumo, sanidade, competição e lote.');
+      items.add(
+        'Investigue imediatamente a perda de peso: consumo, sanidade, competição e lote.',
+      );
     }
     if (healthCount == 0) {
-      items.add('Complete o histórico sanitário e configure o calendário preventivo.');
+      items.add(
+        'Complete o histórico sanitário e configure o calendário preventivo.',
+      );
     }
     if (female && reproductionCount == 0) {
       items.add('Cadastre a situação reprodutiva e o último manejo da matriz.');
@@ -90,19 +96,27 @@ class AnimalIntelligenceEngine {
       items.add('Cadastre a dieta, o custo diário e a meta de ganho.');
     }
     if (documentCount == 0) {
-      items.add('Inclua documentos oficiais, sanitários e comerciais do animal.');
+      items.add(
+        'Inclua documentos oficiais, sanitários e comerciais do animal.',
+      );
     }
     if (expiredDocuments > 0) {
       items.add('Regularize $expiredDocuments documento(s) vencido(s).');
     }
     if (bodyConditionScore <= 0) {
-      items.add('Informe o escore corporal para melhorar o diagnóstico nutricional e reprodutivo.');
+      items.add(
+        'Informe o escore corporal para melhorar o diagnóstico nutricional e reprodutivo.',
+      );
     }
     if (openTasks > 0) {
-      items.add('Existem $openTasks tarefa(s) aberta(s) na agenda operacional.');
+      items.add(
+        'Existem $openTasks tarefa(s) aberta(s) na agenda operacional.',
+      );
     }
     if (items.isEmpty) {
-      items.add('Não há ação crítica imediata; mantenha o calendário e a qualidade dos registros.');
+      items.add(
+        'Não há ação crítica imediata; mantenha o calendário e a qualidade dos registros.',
+      );
     }
 
     return items;

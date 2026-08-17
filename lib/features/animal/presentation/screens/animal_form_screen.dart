@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalFormScreen extends StatefulWidget {
   const AnimalFormScreen({this.animal, super.key});
@@ -125,7 +126,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   }
 
   String? requiredValidator(String? value) =>
-      value == null || value.trim().isEmpty ? 'Este campo é obrigatório.' : null;
+      value == null || value.trim().isEmpty
+      ? 'Este campo é obrigatório.'
+      : null;
 
   String? weightValidator(String? value) {
     final weight = double.tryParse((value ?? '').trim().replaceAll(',', '.'));
@@ -209,7 +212,8 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       category: selectedCategory,
       birthDate: birthDateController.text.trim(),
       weight: double.parse(weightController.text.trim().replaceAll(',', '.')),
-      bodyConditionScore: double.tryParse(
+      bodyConditionScore:
+          double.tryParse(
             bodyScoreController.text.trim().replaceAll(',', '.'),
           ) ??
           0,
@@ -233,18 +237,19 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   }
 
   Widget sectionTitle(String title, String subtitle) => Padding(
-        padding: const EdgeInsets.only(top: 8, bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: Colors.black54)),
-          ],
+    padding: const EdgeInsets.only(top: 8, bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-      );
+        const SizedBox(height: 4),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -262,9 +267,13 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      isEditing ? 'Atualizar prontuário' : 'Cadastro profissional',
+                      isEditing
+                          ? 'Atualizar prontuário'
+                          : 'Cadastro profissional',
                       style: const TextStyle(
-                          fontSize: 27, fontWeight: FontWeight.bold),
+                        fontSize: 27,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     const Text(
@@ -272,7 +281,10 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       style: TextStyle(color: Colors.black54),
                     ),
                     const SizedBox(height: 28),
-                    sectionTitle('Identificação', 'Dados oficiais e produtivos.'),
+                    sectionTitle(
+                      'Identificação',
+                      'Dados oficiais e produtivos.',
+                    ),
                     TextFormField(
                       controller: tagController,
                       validator: requiredValidator,
@@ -305,13 +317,16 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                         prefixIcon: Icon(Icons.category_outlined),
                       ),
                       items: categories
-                          .map((item) => DropdownMenuItem(
-                                value: item,
-                                child: Text(item),
-                              ))
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (value) =>
-                          setState(() => selectedCategory = value ?? selectedCategory),
+                      onChanged: (value) => setState(
+                        () => selectedCategory = value ?? selectedCategory,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -334,7 +349,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Raça',
                         hintText: 'Nelore',
-                        prefixIcon: Icon(Icons.pets_outlined),
+                        prefixIcon: Icon(AtlasLivestockIcons.cow),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -351,12 +366,16 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    sectionTitle('Desempenho', 'Peso e condição corporal atual.'),
+                    sectionTitle(
+                      'Desempenho',
+                      'Peso e condição corporal atual.',
+                    ),
                     TextFormField(
                       controller: weightController,
                       validator: weightValidator,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: const InputDecoration(
                         labelText: 'Peso atual em kg',
                         prefixIcon: Icon(Icons.monitor_weight_outlined),
@@ -366,8 +385,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                     TextFormField(
                       controller: bodyScoreController,
                       validator: bodyScoreValidator,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: const InputDecoration(
                         labelText: 'Escore corporal (1 a 5)',
                         hintText: '3,0',
@@ -375,7 +395,10 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    sectionTitle('Genealogia', 'Identifique mãe e pai pelo brinco.'),
+                    sectionTitle(
+                      'Genealogia',
+                      'Identifique mãe e pai pelo brinco.',
+                    ),
                     TextFormField(
                       controller: motherTagController,
                       decoration: const InputDecoration(
@@ -392,7 +415,10 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    sectionTitle('Origem e documentos', 'Informações complementares.'),
+                    sectionTitle(
+                      'Origem e documentos',
+                      'Informações complementares.',
+                    ),
                     TextFormField(
                       controller: originController,
                       decoration: const InputDecoration(
@@ -410,8 +436,14 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                       items: const [
                         DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
-                        DropdownMenuItem(value: 'Vendido', child: Text('Vendido')),
-                        DropdownMenuItem(value: 'Abatido', child: Text('Abatido')),
+                        DropdownMenuItem(
+                          value: 'Vendido',
+                          child: Text('Vendido'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Abatido',
+                          child: Text('Abatido'),
+                        ),
                         DropdownMenuItem(value: 'Morto', child: Text('Morto')),
                         DropdownMenuItem(
                           value: 'Em quarentena',
@@ -438,7 +470,10 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                           value: 'Nascido na fazenda',
                           child: Text('Nascido na fazenda'),
                         ),
-                        DropdownMenuItem(value: 'Compra', child: Text('Compra')),
+                        DropdownMenuItem(
+                          value: 'Compra',
+                          child: Text('Compra'),
+                        ),
                         DropdownMenuItem(
                           value: 'Transferência',
                           child: Text('Transferência'),
@@ -465,8 +500,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       TextFormField(
                         controller: acquisitionValueController,
                         validator: acquisitionValueValidator,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Valor de compra',
                           prefixText: 'R\$ ',
@@ -505,8 +541,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       TextFormField(
                         controller: saleValueController,
                         validator: saleValueValidator,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Valor de venda',
                           prefixText: 'R\$ ',
@@ -531,7 +568,10 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                     ],
                     const SizedBox(height: 28),
-                    sectionTitle('Arquivos e observações', 'Informações complementares.'),
+                    sectionTitle(
+                      'Arquivos e observações',
+                      'Informações complementares.',
+                    ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: photoReferenceController,
@@ -561,9 +601,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                           foregroundColor: Colors.white,
                         ),
                         icon: const Icon(Icons.save_outlined),
-                        label: Text(isEditing
-                            ? 'Salvar alterações'
-                            : 'Salvar animal'),
+                        label: Text(
+                          isEditing ? 'Salvar alterações' : 'Salvar animal',
+                        ),
                       ),
                     ),
                   ],

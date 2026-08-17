@@ -1,0 +1,13 @@
+PROJETO ATLAS — CORREÇÃO DOS ÍCONES BOVINOS
+
+Causa: font_awesome_flutter 11.0.0 tornou FaIconData incompatível com IconData.
+Correção aplicada: font_awesome_flutter: ^10.12.0.
+Isso mantém FontAwesomeIcons.cow compatível com os contratos IconData já usados no Atlas.
+
+EXECUTAR:
+cd "C:\Projetos\Projetos Atlas"
+flutter clean
+flutter pub get
+dart format lib test
+flutter analyze
+flutter test

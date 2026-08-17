@@ -1,0 +1,81 @@
+{
+  "date": "2026-08-12",
+  "scope": "Auditoria de conexão dos módulos operacionais antes de criar novas funcionalidades",
+  "principle": "Reutilizar funcionalidades existentes; criar apenas conexões ausentes.",
+  "modules": {
+    "Reprodução": {
+      "existing_ui": [
+        "ReproductionOverviewScreen",
+        "AnimalReproductionListScreen",
+        "AnimalReproductionFormScreen"
+      ],
+      "backend": [
+        "GET/POST /livestock/animals/{animal_id}/reproduction"
+      ],
+      "connection": "Menu aponta para overview existente; botão Novo evento reprodutivo seleciona animal e abre formulário existente; storage já sincroniza com backend/cache."
+    },
+    "Sanidade": {
+      "existing_ui": [
+        "HealthOverviewScreen",
+        "AnimalHealthListScreen",
+        "AnimalHealthFormScreen"
+      ],
+      "backend": [
+        "GET/POST /livestock/health"
+      ],
+      "connection": "Menu aponta para overview existente; botão Novo evento sanitário seleciona animal e abre formulário existente; storage usa backend com farm_id e cache offline."
+    },
+    "Nutrição": {
+      "existing_ui": [
+        "NutritionOverviewScreen",
+        "NutritionPlanDialog"
+      ],
+      "backend": [
+        "GET/POST/PATCH/DELETE /livestock/nutrition/plans",
+        "GET /livestock/lots"
+      ],
+      "connection": "Nova dieta e edição existentes foram ligadas aos planos oficiais; lote digitado é resolvido para lot_id; cache fica como contingência offline."
+    },
+    "Financeiro": {
+      "existing_ui": [
+        "FarmFinanceListScreen",
+        "FarmFinanceFormScreen"
+      ],
+      "backend": [
+        "GET/POST/PATCH/DELETE /livestock/finance/v2"
+      ],
+      "connection": "Novo lançamento, edição e exclusão existentes agora persistem na API oficial; leitura resolve farm_id e usa cache apenas em contingência."
+    },
+    "Estoque": {
+      "existing_ui": [
+        "FarmInventoryListScreen",
+        "FarmInventoryFormScreen"
+      ],
+      "backend": [
+        "GET /livestock/inventory/products",
+        "POST /livestock/inventory/products/v2",
+        "PATCH/DELETE /livestock/inventory/products/{id}/v2",
+        "POST /livestock/inventory/products/{id}/movements/v2"
+      ],
+      "connection": "Novo produto, edição, exclusão e movimentação existentes foram ligados ao backend; integração automática com Financeiro usa criação remota."
+    },
+    "Agenda": {
+      "existing_ui": [
+        "FarmAgendaListScreen",
+        "FarmAgendaFormScreen"
+      ],
+      "backend": [
+        "GET/POST/PATCH /operations/tasks"
+      ],
+      "connection": "Agenda foi recolocada no menu; novo compromisso, edição, conclusão/reabertura e cancelamento usam tarefas operacionais oficiais."
+    }
+  },
+  "audits": {
+    "python_compileall": "OK",
+    "tables": "221 nomes, 0 duplicidades",
+    "route_declarations": "490 declarações, 0 duplicidades locais",
+    "atlas_full_project_audit": "OK",
+    "operational_module_contract_errors": []
+  },
+  "limitations": "Flutter analyze/test devem ser executados no computador do usuário, pois o SDK Flutter não está disponível neste ambiente."
+}

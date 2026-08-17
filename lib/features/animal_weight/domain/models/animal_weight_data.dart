@@ -20,24 +20,24 @@ class AnimalWeightData {
   final bool isRemote;
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'date': date,
-        'weight': weight,
-        'notes': notes,
-        'bodyConditionScore': bodyConditionScore,
-        'source': source,
-        'equipment': equipment,
-        'isRemote': isRemote,
-      };
+    'id': id,
+    'date': date,
+    'weight': weight,
+    'notes': notes,
+    'bodyConditionScore': bodyConditionScore,
+    'source': source,
+    'equipment': equipment,
+    'isRemote': isRemote,
+  };
 
   Map<String, dynamic> toRemoteBody() => {
-        'weight': weight,
-        'body_condition_score': bodyConditionScore,
-        'source': source.trim(),
-        'equipment': equipment.trim(),
-        'measured_at': _toIsoDate(date),
-        'notes': notes.trim(),
-      };
+    'weight': weight,
+    'body_condition_score': bodyConditionScore,
+    'source': source.trim(),
+    'equipment': equipment.trim(),
+    'measured_at': _toIsoDate(date),
+    'notes': notes.trim(),
+  };
 
   factory AnimalWeightData.fromMap(Map<String, dynamic> map) {
     return AnimalWeightData(
@@ -45,8 +45,7 @@ class AnimalWeightData {
       date: map['date']?.toString() ?? '',
       weight: (map['weight'] as num?)?.toDouble() ?? 0,
       notes: map['notes']?.toString() ?? '',
-      bodyConditionScore:
-          (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
+      bodyConditionScore: (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
       source: map['source']?.toString() ?? '',
       equipment: map['equipment']?.toString() ?? '',
       isRemote: map['isRemote'] == true,

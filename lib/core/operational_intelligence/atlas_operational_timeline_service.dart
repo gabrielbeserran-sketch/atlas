@@ -6,8 +6,7 @@ import 'package:projeto_atlas/core/operational_memory/atlas_operational_memory_s
 class AtlasOperationalTimelineService {
   AtlasOperationalTimelineService({
     AtlasOperationalMemoryService? memoryService,
-  }) : _memoryService =
-            memoryService ?? AtlasOperationalMemoryService.instance;
+  }) : _memoryService = memoryService ?? AtlasOperationalMemoryService.instance;
 
   final AtlasOperationalMemoryService _memoryService;
 
@@ -35,10 +34,7 @@ class AtlasOperationalTimelineService {
     );
 
     final ordered = List<AtlasOperationalMemoryEntry>.from(entries)
-      ..sort(
-        (first, second) =>
-            second.occurredAt.compareTo(first.occurredAt),
-      );
+      ..sort((first, second) => second.occurredAt.compareTo(first.occurredAt));
 
     final modules = ordered
         .map((entry) => entry.sourceModule)

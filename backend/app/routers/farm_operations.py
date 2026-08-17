@@ -40,3 +40,16 @@ def dashboard(farm_id:str,db:Session=Depends(get_db),ctx=Depends(get_current_con
  for o in orders:
   key=o.assigned_user_id or "unassigned"; employee.setdefault(key,{"total":0,"completed":0}); employee[key]["total"]+=1; employee[key]["completed"]+=1 if o.status=="completed" else 0
  return {"operational_agenda":[{"id":o.id,"title":o.title,"scheduled_at":o.scheduled_at.isoformat() if o.scheduled_at else None} for o in open_orders],"work_orders":{"total":len(orders),"open":len(open_orders),"overdue":len(overdue)},"teams":employee,"shifts":{"status":"supported_by_scheduled_at_and_assignee"},"machines":{"total":len(assets)},"preventive_maintenance":len(preventive),"corrective_maintenance":sum(1 for o in orders if o.area=="maintenance" and o.priority=="high"),"operational_checklists":sum(1 for o in orders if o.checklist_json),"operational_costs":{"estimated":estimated,"actual":actual},"operational_score":max(0,100-len(overdue)*10-len(preventive)*5)}
+
+
+@router.get("/farms/{farm_id}/work-orders")
+def list_work_orders(farm_id:str,db:Session=Depends(get_db),ctx=Depends(get_current_context),_=Depends(require_permission("platform.read"))):
+ cid,tid,_=farm_scope(ctx,farm_id); rows=list(db.scalars(select(OperationalWorkOrder).where(OperationalWorkOrder.company_id==cid,OperationalWorkOrder.farm_id==farm_id).order_by(OperationalWorkOrder.scheduled_at))); return [{"id":r.id,"title":r.title,"area":r.area,"assigned_user_id":r.assigned_user_id,"priority":r.priority,"status":r.status,"scheduled_at":r.scheduled_at.isoformat() if r.scheduled_at else None,"notes":r.notes} for r in rows]
+
+@router.delete("/work-orders/{work_order_id}",status_code=204)
+def delete_work_order(work_order_id:str,db:Session=Depends(get_db),ctx=Depends(get_current_context),_=Depends(require_permission("platform.manage"))):
+ cid,tid,_=ctx_values(ctx); row=db.get(OperationalWorkOrder,work_order_id)
+ if not row or row.company_id!=cid: raise HTTPException(404,"Work order not found")
+ db.delete(row); db.commit()
+ from fastapi import Response
+ return Response(status_code=204)

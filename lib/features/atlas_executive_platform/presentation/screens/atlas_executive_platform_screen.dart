@@ -29,8 +29,7 @@ class AtlasExecutivePlatformScreen extends StatefulWidget {
 class _AtlasExecutivePlatformScreenState
     extends State<AtlasExecutivePlatformScreen> {
   final storage = AtlasExecutivePlatformStorageService();
-  final analyticsService =
-      const AtlasExecutivePlatformAnalyticsService();
+  final analyticsService = const AtlasExecutivePlatformAnalyticsService();
 
   late AtlasExecutivePlatformModule selectedModule;
   List<AtlasExecutivePlatformRecord> records = [];
@@ -53,8 +52,9 @@ class _AtlasExecutivePlatformScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasExecutiveDate(b.date)
-          .compareTo(parseAtlasExecutiveDate(a.date)),
+      (a, b) => parseAtlasExecutiveDate(
+        b.date,
+      ).compareTo(parseAtlasExecutiveDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,28 +66,23 @@ class _AtlasExecutivePlatformScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasExecutivePlatformRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasExecutivePlatformRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasExecutivePlatformRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasExecutivePlatformRecord>(
+  Future<void> openForm([AtlasExecutivePlatformRecord? current]) async {
+    final result = await showDialog<AtlasExecutivePlatformRecord>(
       context: context,
-      builder: (_) => _ExecutivePlatformForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _ExecutivePlatformForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -106,9 +101,7 @@ class _AtlasExecutivePlatformScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasExecutivePlatformRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasExecutivePlatformRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -258,22 +251,19 @@ class _AtlasExecutivePlatformScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor atual médio',
-                            value:
-                                analytics.averageCurrent.toStringAsFixed(2),
+                            value: analytics.averageCurrent.toStringAsFixed(2),
                             subtitle: 'Indicador atual',
                             icon: Icons.assessment_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Meta média',
-                            value:
-                                analytics.averageTarget.toStringAsFixed(2),
+                            value: analytics.averageTarget.toStringAsFixed(2),
                             subtitle: 'Meta consolidada',
                             icon: Icons.flag_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Gap médio',
-                            value:
-                                analytics.averageGap.toStringAsFixed(2),
+                            value: analytics.averageGap.toStringAsFixed(2),
                             subtitle: 'Atual menos meta',
                             icon: Icons.compare_arrows_outlined,
                           ),
@@ -334,9 +324,7 @@ class _AtlasExecutivePlatformScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro indicador, meta, alerta ou relatório.',
                             ),
@@ -389,21 +377,16 @@ class _AtlasExecutivePlatformScreenState
 }
 
 class _ExecutivePlatformForm extends StatefulWidget {
-  const _ExecutivePlatformForm({
-    required this.module,
-    this.current,
-  });
+  const _ExecutivePlatformForm({required this.module, this.current});
 
   final AtlasExecutivePlatformModule module;
   final AtlasExecutivePlatformRecord? current;
 
   @override
-  State<_ExecutivePlatformForm> createState() =>
-      _ExecutivePlatformFormState();
+  State<_ExecutivePlatformForm> createState() => _ExecutivePlatformFormState();
 }
 
-class _ExecutivePlatformFormState
-    extends State<_ExecutivePlatformForm> {
+class _ExecutivePlatformFormState extends State<_ExecutivePlatformForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -438,16 +421,13 @@ class _ExecutivePlatformFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasExecutiveDate(DateTime.now()),
+      text: current?.date ?? formatAtlasExecutiveDate(DateTime.now()),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
     farmName = TextEditingController(text: current?.farmName ?? '');
-    companyName =
-        TextEditingController(text: current?.companyName ?? '');
+    companyName = TextEditingController(text: current?.companyName ?? '');
     ownerName = TextEditingController(text: current?.ownerName ?? '');
-    metricName =
-        TextEditingController(text: current?.metricName ?? '');
+    metricName = TextEditingController(text: current?.metricName ?? '');
     currentValue = TextEditingController(
       text: current == null || current.currentValue == 0
           ? ''
@@ -465,9 +445,7 @@ class _ExecutivePlatformFormState
     );
     unit = TextEditingController(text: current?.unit ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     confidencePercent = TextEditingController(
       text: current == null || current.confidencePercent == 0
@@ -513,26 +491,18 @@ class _ExecutivePlatformFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasExecutiveDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -551,8 +521,7 @@ class _ExecutivePlatformFormState
     Navigator.pop(
       context,
       AtlasExecutivePlatformRecord(
-        id: current?.id ??
-            'executive_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'executive_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -568,14 +537,10 @@ class _ExecutivePlatformFormState
         targetValue: decimal(targetValue),
         referenceValue: decimal(referenceValue),
         unit: unit.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        confidencePercent:
-            decimal(confidencePercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        confidencePercent: decimal(confidencePercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -586,11 +551,7 @@ class _ExecutivePlatformFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -605,10 +566,8 @@ class _ExecutivePlatformFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -619,13 +578,10 @@ class _ExecutivePlatformFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -633,9 +589,7 @@ class _ExecutivePlatformFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 TextFormField(
@@ -644,35 +598,32 @@ class _ExecutivePlatformFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Validado',
-                    'Concluído',
-                    'Publicado',
-                    'Atenção',
-                    'Atrasado',
-                    'Crítico',
-                    'Bloqueado',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Validado',
+                            'Concluído',
+                            'Publicado',
+                            'Atenção',
+                            'Atrasado',
+                            'Crítico',
+                            'Bloqueado',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -681,20 +632,11 @@ class _ExecutivePlatformFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -712,9 +654,7 @@ class _ExecutivePlatformFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 ...[
@@ -726,14 +666,11 @@ class _ExecutivePlatformFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                       signed: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -754,9 +691,7 @@ class _ExecutivePlatformFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -768,38 +703,29 @@ class _ExecutivePlatformFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasExecutivePlatformModule module,
-) {
+IconData _moduleIcon(AtlasExecutivePlatformModule module) {
   return switch (module) {
     AtlasExecutivePlatformModule.globalExecutiveDashboard =>
       Icons.dashboard_outlined,
     AtlasExecutivePlatformModule.farmBenchmarking =>
       Icons.compare_arrows_outlined,
-    AtlasExecutivePlatformModule.corporateGoals =>
-      Icons.flag_outlined,
+    AtlasExecutivePlatformModule.corporateGoals => Icons.flag_outlined,
     AtlasExecutivePlatformModule.unifiedAlerts =>
       Icons.notifications_active_outlined,
-    AtlasExecutivePlatformModule.intelligentTasks =>
-      Icons.task_alt_outlined,
+    AtlasExecutivePlatformModule.intelligentTasks => Icons.task_alt_outlined,
     AtlasExecutivePlatformModule.professionalReports =>
       Icons.description_outlined,
-    AtlasExecutivePlatformModule.exportAndSharing =>
-      Icons.ios_share_outlined,
+    AtlasExecutivePlatformModule.exportAndSharing => Icons.ios_share_outlined,
     AtlasExecutivePlatformModule.plansAndSubscriptions =>
       Icons.workspace_premium_outlined,
     AtlasExecutivePlatformModule.platformAdminPanel =>
       Icons.admin_panel_settings_outlined,
-    AtlasExecutivePlatformModule.enterpriseCommandCenter =>
-      Icons.hub_outlined,
+    AtlasExecutivePlatformModule.enterpriseCommandCenter => Icons.hub_outlined,
   };
 }

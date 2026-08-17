@@ -18,11 +18,9 @@ class AtlasCopilotImprovementPlan {
 
   final String summary;
 
-  final List<AtlasCopilotImprovementPriority>
-      priorities;
+  final List<AtlasCopilotImprovementPriority> priorities;
 
-  final List<AtlasCopilotImprovementStrength>
-      strengths;
+  final List<AtlasCopilotImprovementStrength> strengths;
 
   final List<String> recommendedActions;
 
@@ -69,16 +67,9 @@ class AtlasCopilotImprovementStrength {
   final double score;
 }
 
-enum AtlasCopilotImprovementLevel {
-  excellent,
-  stable,
-  attention,
-  critical,
-}
+enum AtlasCopilotImprovementLevel { excellent, stable, attention, critical }
 
-String atlasCopilotImprovementLevelLabel(
-  AtlasCopilotImprovementLevel level,
-) {
+String atlasCopilotImprovementLevelLabel(AtlasCopilotImprovementLevel level) {
   switch (level) {
     case AtlasCopilotImprovementLevel.excellent:
       return 'Excelente';

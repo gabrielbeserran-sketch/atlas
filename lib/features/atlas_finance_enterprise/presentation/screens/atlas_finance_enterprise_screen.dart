@@ -30,8 +30,7 @@ class _AtlasFinanceEnterpriseScreenState
     extends State<AtlasFinanceEnterpriseScreen> {
   final AtlasFinanceEnterpriseStorageService storage =
       AtlasFinanceEnterpriseStorageService();
-  final AtlasFinanceEnterpriseAnalyticsService
-      analyticsService =
+  final AtlasFinanceEnterpriseAnalyticsService analyticsService =
       const AtlasFinanceEnterpriseAnalyticsService();
 
   late AtlasFinanceEnterpriseModule selectedModule;
@@ -55,12 +54,9 @@ class _AtlasFinanceEnterpriseScreenState
     );
 
     loaded.sort(
-      (first, second) =>
-          parseAtlasFinanceEnterpriseDate(
+      (first, second) => parseAtlasFinanceEnterpriseDate(
         second.date,
-      ).compareTo(
-        parseAtlasFinanceEnterpriseDate(first.date),
-      ),
+      ).compareTo(parseAtlasFinanceEnterpriseDate(first.date)),
     );
 
     if (!mounted) return;
@@ -80,31 +76,26 @@ class _AtlasFinanceEnterpriseScreenState
   }
 
   List<AtlasFinanceEnterpriseRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasFinanceEnterpriseRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasFinanceEnterpriseRecord>(
+  Future<void> openForm([AtlasFinanceEnterpriseRecord? current]) async {
+    final result = await showDialog<AtlasFinanceEnterpriseRecord>(
       context: context,
-      builder: (context) => _FinanceEnterpriseForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _FinanceEnterpriseForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -118,9 +109,7 @@ class _AtlasFinanceEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasFinanceEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasFinanceEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -128,13 +117,11 @@ class _AtlasFinanceEnterpriseScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -176,12 +163,9 @@ class _AtlasFinanceEnterpriseScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -198,9 +182,7 @@ class _AtlasFinanceEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 27 — Financeiro Enterprise',
-                          ),
+                          title: Text('Fase 27 — Financeiro Enterprise'),
                           subtitle: Text(
                             'A entrega organiza orçamento, fluxo, indicadores e cenários. '
                             'Decisões financeiras reais exigem contabilidade, contratos e validação profissional.',
@@ -287,7 +269,7 @@ class _AtlasFinanceEnterpriseScreenState
                             icon: Icons.compare_arrows_outlined,
                             warning:
                                 analytics.consolidatedDeviationPercent.abs() >=
-                                    10,
+                                10,
                           ),
                           EnterpriseMetricCard(
                             title: 'Risco médio',
@@ -335,12 +317,8 @@ class _AtlasFinanceEnterpriseScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro orçamento, indicador ou cenário.',
                             ),
@@ -351,8 +329,7 @@ class _AtlasFinanceEnterpriseScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -366,14 +343,10 @@ class _AtlasFinanceEnterpriseScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasFinanceEnterpriseModule selected;
-  final ValueChanged<AtlasFinanceEnterpriseModule>
-      onSelected;
+  final ValueChanged<AtlasFinanceEnterpriseModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -383,24 +356,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasFinanceEnterpriseModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasFinanceEnterpriseModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -423,15 +393,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -450,24 +420,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Inadimplente' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Inadimplente' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Validado' ||
-      'Monitorado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Validado' ||
+      'Monitorado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -484,14 +450,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -500,21 +460,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _FinanceEnterpriseForm extends StatefulWidget {
-  const _FinanceEnterpriseForm({
-    required this.module,
-    this.current,
-  });
+  const _FinanceEnterpriseForm({required this.module, this.current});
 
   final AtlasFinanceEnterpriseModule module;
   final AtlasFinanceEnterpriseRecord? current;
 
   @override
-  State<_FinanceEnterpriseForm> createState() =>
-      _FinanceEnterpriseFormState();
+  State<_FinanceEnterpriseForm> createState() => _FinanceEnterpriseFormState();
 }
 
-class _FinanceEnterpriseFormState
-    extends State<_FinanceEnterpriseForm> {
+class _FinanceEnterpriseFormState extends State<_FinanceEnterpriseForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -547,20 +502,11 @@ class _FinanceEnterpriseFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasFinanceEnterpriseDate(
-            DateTime.now(),
-          ),
+      text: current?.date ?? formatAtlasFinanceEnterpriseDate(DateTime.now()),
     );
-    companyName = TextEditingController(
-      text: current?.companyName ?? '',
-    );
-    farmName = TextEditingController(
-      text: current?.farmName ?? '',
-    );
-    category = TextEditingController(
-      text: current?.category ?? '',
-    );
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    farmName = TextEditingController(text: current?.farmName ?? '');
+    category = TextEditingController(text: current?.category ?? '');
     plannedValue = TextEditingController(
       text: current == null || current.plannedValue == 0
           ? ''
@@ -587,30 +533,21 @@ class _FinanceEnterpriseFormState
           : current.riskPercent.toString(),
     );
     confidencePercent = TextEditingController(
-      text: current == null ||
-              current.confidencePercent == 0
+      text: current == null || current.confidencePercent == 0
           ? ''
           : current.confidencePercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    periodLabel = TextEditingController(
-      text: current?.periodLabel ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    periodLabel = TextEditingController(text: current?.periodLabel ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -635,10 +572,7 @@ class _FinanceEnterpriseFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -655,24 +589,19 @@ class _FinanceEnterpriseFormState
   }
 
   Future<void> chooseDate() async {
-    final parsed =
-        parseAtlasFinanceEnterpriseDate(date.text);
+    final parsed = parseAtlasFinanceEnterpriseDate(date.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      date.text =
-          formatAtlasFinanceEnterpriseDate(selected);
+      date.text = formatAtlasFinanceEnterpriseDate(selected);
     });
   }
 
@@ -685,8 +614,7 @@ class _FinanceEnterpriseFormState
     Navigator.pop(
       context,
       AtlasFinanceEnterpriseRecord(
-        id: current?.id ??
-            'finance_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'finance_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -701,8 +629,7 @@ class _FinanceEnterpriseFormState
         referenceValue: decimal(referenceValue),
         riskPercent: percent(riskPercent),
         confidencePercent: percent(confidencePercent),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         periodLabel: periodLabel.text.trim(),
         responsible: responsible.text.trim(),
@@ -716,11 +643,7 @@ class _FinanceEnterpriseFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -735,10 +658,8 @@ class _FinanceEnterpriseFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -749,12 +670,9 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -766,35 +684,32 @@ class _FinanceEnterpriseFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Inadimplente',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Inadimplente',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -803,15 +718,11 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: companyName,
-                  decoration: const InputDecoration(
-                    labelText: 'Empresa',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Empresa'),
                 ),
                 TextFormField(
                   controller: farmName,
-                  decoration: const InputDecoration(
-                    labelText: 'Fazenda',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Fazenda'),
                 ),
                 TextFormField(
                   controller: category,
@@ -821,8 +732,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: plannedValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
@@ -832,8 +742,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: actualValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
@@ -843,8 +752,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: projectedValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
@@ -854,8 +762,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: referenceValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
@@ -865,8 +772,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: riskPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -875,8 +781,7 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: confidencePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -905,17 +810,13 @@ class _FinanceEnterpriseFormState
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -927,37 +828,28 @@ class _FinanceEnterpriseFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasFinanceEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasFinanceEnterpriseModule module) {
   return switch (module) {
     AtlasFinanceEnterpriseModule.projectedCashFlow =>
       Icons.trending_up_outlined,
     AtlasFinanceEnterpriseModule.consolidatedCashFlow =>
       Icons.account_balance_wallet_outlined,
-    AtlasFinanceEnterpriseModule.annualBudget =>
-      Icons.event_note_outlined,
+    AtlasFinanceEnterpriseModule.annualBudget => Icons.event_note_outlined,
     AtlasFinanceEnterpriseModule.actualVsPlanned =>
       Icons.compare_arrows_outlined,
     AtlasFinanceEnterpriseModule.economicSimulations =>
       Icons.analytics_outlined,
     AtlasFinanceEnterpriseModule.bankingIndicators =>
       Icons.account_balance_outlined,
-    AtlasFinanceEnterpriseModule.roi =>
-      Icons.percent_outlined,
-    AtlasFinanceEnterpriseModule.ebitda =>
-      Icons.bar_chart_outlined,
-    AtlasFinanceEnterpriseModule.assetValuation =>
-      Icons.home_work_outlined,
+    AtlasFinanceEnterpriseModule.roi => Icons.percent_outlined,
+    AtlasFinanceEnterpriseModule.ebitda => Icons.bar_chart_outlined,
+    AtlasFinanceEnterpriseModule.assetValuation => Icons.home_work_outlined,
     AtlasFinanceEnterpriseModule.enterpriseFinanceCenter =>
       Icons.dashboard_outlined,
   };

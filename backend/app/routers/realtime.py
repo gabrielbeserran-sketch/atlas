@@ -29,7 +29,7 @@ router = APIRouter(prefix="/realtime", tags=["realtime"])
 def _farm_allowed(principal: Principal, farm_id: str | None) -> None:
     if farm_id is None or principal.membership.role in {"owner", "admin", "companyAdministrator"}:
         return
-    if farm_id not in set(principal.membership.farm_ids or []):
+    if principal.membership.farm_ids and farm_id not in set(principal.membership.farm_ids):
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
 
 

@@ -7,23 +7,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasCopilotHistoryStorageService {
   const AtlasCopilotHistoryStorageService();
 
-  static const String _keyPrefix =
-      'atlas_copilot_history_v1';
+  static const String _keyPrefix = 'atlas_copilot_history_v1';
 
-  static const String _summaryKey =
-      'atlas_copilot_history_summaries_v1';
+  static const String _summaryKey = 'atlas_copilot_history_summaries_v1';
 
   static const int maximumStoredMessages = 80;
 
-  Future<List<AtlasCopilotMessage>> load({
-    required String contextKey,
-  }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<List<AtlasCopilotMessage>> load({required String contextKey}) async {
+    final preferences = await SharedPreferences.getInstance();
 
-    final value = preferences.getString(
-      _storageKey(contextKey),
-    );
+    final value = preferences.getString(_storageKey(contextKey));
 
     if (value == null || value.trim().isEmpty) {
       return [];
@@ -44,16 +37,12 @@ class AtlasCopilotHistoryStorageService {
             );
           })
           .where((message) {
-            return message.id.isNotEmpty &&
-                message.text.trim().isNotEmpty;
+            return message.id.isNotEmpty && message.text.trim().isNotEmpty;
           })
           .toList();
 
       messages.sort(
-        (first, second) =>
-            first.createdAt.compareTo(
-          second.createdAt,
-        ),
+        (first, second) => first.createdAt.compareTo(second.createdAt),
       );
 
       return messages;
@@ -67,15 +56,10 @@ class AtlasCopilotHistoryStorageService {
     required String contextLabel,
     required List<AtlasCopilotMessage> messages,
   }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final limited = messages.length >
-            maximumStoredMessages
-        ? messages.sublist(
-            messages.length -
-                maximumStoredMessages,
-          )
+    final limited = messages.length > maximumStoredMessages
+        ? messages.sublist(messages.length - maximumStoredMessages)
         : messages;
 
     final value = jsonEncode(
@@ -84,10 +68,7 @@ class AtlasCopilotHistoryStorageService {
       }).toList(),
     );
 
-    await preferences.setString(
-      _storageKey(contextKey),
-      value,
-    );
+    await preferences.setString(_storageKey(contextKey), value);
 
     await _updateSummary(
       preferences: preferences,
@@ -97,64 +78,38 @@ class AtlasCopilotHistoryStorageService {
     );
   }
 
-  Future<void> clear({
-    required String contextKey,
-  }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<void> clear({required String contextKey}) async {
+    final preferences = await SharedPreferences.getInstance();
 
-    await preferences.remove(
-      _storageKey(contextKey),
-    );
+    await preferences.remove(_storageKey(contextKey));
 
-    final summaries =
-        await _loadSummariesFromPreferences(
-      preferences,
-    );
+    final summaries = await _loadSummariesFromPreferences(preferences);
 
-    summaries.removeWhere(
-      (item) => item.contextKey == contextKey,
-    );
+    summaries.removeWhere((item) => item.contextKey == contextKey);
 
-    await _saveSummaries(
-      preferences,
-      summaries,
-    );
+    await _saveSummaries(preferences, summaries);
   }
 
   Future<List<AtlasCopilotConversationSummary>>
-      loadConversationSummaries() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  loadConversationSummaries() async {
+    final preferences = await SharedPreferences.getInstance();
 
-    final summaries =
-        await _loadSummariesFromPreferences(
-      preferences,
-    );
+    final summaries = await _loadSummariesFromPreferences(preferences);
 
     summaries.sort(
-      (first, second) =>
-          second.updatedAt.compareTo(
-        first.updatedAt,
-      ),
+      (first, second) => second.updatedAt.compareTo(first.updatedAt),
     );
 
     return summaries;
   }
 
   Future<void> clearAll() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
-    final summaries =
-        await _loadSummariesFromPreferences(
-      preferences,
-    );
+    final summaries = await _loadSummariesFromPreferences(preferences);
 
     for (final summary in summaries) {
-      await preferences.remove(
-        _storageKey(summary.contextKey),
-      );
+      await preferences.remove(_storageKey(summary.contextKey));
     }
 
     await preferences.remove(_summaryKey);
@@ -166,14 +121,9 @@ class AtlasCopilotHistoryStorageService {
     required String contextLabel,
     required List<AtlasCopilotMessage> messages,
   }) async {
-    final summaries =
-        await _loadSummariesFromPreferences(
-      preferences,
-    );
+    final summaries = await _loadSummariesFromPreferences(preferences);
 
-    summaries.removeWhere(
-      (item) => item.contextKey == contextKey,
-    );
+    summaries.removeWhere((item) => item.contextKey == contextKey);
 
     if (messages.isNotEmpty) {
       final lastMessage = messages.last;
@@ -189,18 +139,13 @@ class AtlasCopilotHistoryStorageService {
       );
     }
 
-    await _saveSummaries(
-      preferences,
-      summaries,
-    );
+    await _saveSummaries(preferences, summaries);
   }
 
-  Future<List<AtlasCopilotConversationSummary>>
-      _loadSummariesFromPreferences(
+  Future<List<AtlasCopilotConversationSummary>> _loadSummariesFromPreferences(
     SharedPreferences preferences,
   ) async {
-    final value =
-        preferences.getString(_summaryKey);
+    final value = preferences.getString(_summaryKey);
 
     if (value == null || value.trim().isEmpty) {
       return [];
@@ -216,8 +161,7 @@ class AtlasCopilotHistoryStorageService {
       return decoded
           .whereType<Map>()
           .map((item) {
-            return AtlasCopilotConversationSummary
-                .fromJson(
+            return AtlasCopilotConversationSummary.fromJson(
               Map<String, dynamic>.from(item),
             );
           })
@@ -232,8 +176,7 @@ class AtlasCopilotHistoryStorageService {
 
   Future<void> _saveSummaries(
     SharedPreferences preferences,
-    List<AtlasCopilotConversationSummary>
-        summaries,
+    List<AtlasCopilotConversationSummary> summaries,
   ) async {
     final value = jsonEncode(
       summaries.map((item) {
@@ -241,21 +184,14 @@ class AtlasCopilotHistoryStorageService {
       }).toList(),
     );
 
-    await preferences.setString(
-      _summaryKey,
-      value,
-    );
+    await preferences.setString(_summaryKey, value);
   }
 
-  String _storageKey(
-    String contextKey,
-  ) {
+  String _storageKey(String contextKey) {
     return '${_keyPrefix}_${_normalizeKey(contextKey)}';
   }
 
-  String _normalizeKey(
-    String value,
-  ) {
+  String _normalizeKey(String value) {
     final normalized = value
         .trim()
         .toLowerCase()
@@ -271,17 +207,9 @@ class AtlasCopilotHistoryStorageService {
         .replaceAll('õ', 'o')
         .replaceAll('ú', 'u')
         .replaceAll('ç', 'c')
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        )
-        .replaceAll(
-          RegExp(r'_+'),
-          '_',
-        );
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
 
-    return normalized.isEmpty
-        ? 'default'
-        : normalized;
+    return normalized.isEmpty ? 'default' : normalized;
   }
 }

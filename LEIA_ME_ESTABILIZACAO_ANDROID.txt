@@ -1,0 +1,44 @@
+PROJETO ATLAS — ESTABILIZAÇÃO ANDROID
+
+Correções aplicadas nesta entrega:
+1. Dashboard da fazenda responsivo para telas Android estreitas.
+2. Cabeçalho verde reorganizado em layout móvel, eliminando o grande RenderFlex overflow.
+3. Métricas do cabeçalho reorganizadas em grade responsiva.
+4. Cards de Piquetes adaptados para celular.
+5. Status e menu dos piquetes reorganizados para eliminar overflow horizontal.
+6. Ao abrir uma fazenda pela lista, ela passa a ser definida como fazenda ativa da sessão.
+7. O módulo Rebanho passa a receber a mesma fazenda ativa usada na navegação principal.
+
+Arquivos diretamente alterados:
+- lib/features/farm/presentation/screens/farm_detail_screen.dart
+- lib/features/farm/presentation/screens/farm_list_screen.dart
+- lib/features/paddock/presentation/screens/paddock_list_screen.dart
+
+INSTALAÇÃO
+1. Faça uma cópia de segurança da sua pasta lib atual.
+2. Apague a pasta lib atual do projeto.
+3. Extraia este ZIP.
+4. Copie a pasta lib desta entrega para a raiz do Projeto Atlas.
+
+VALIDAÇÃO
+Na raiz do projeto:
+flutter pub get
+dart format lib
+flutter analyze
+flutter test
+
+Depois, com o backend ativo e o celular conectado:
+flutter run -d ZF524XKRWZ
+
+Teste:
+Fazendas -> Fazenda Santa Helena
+Indicadores
+Piquetes
+Rebanho
+
+Resultado esperado:
+- nenhuma faixa amarela/preta de RIGHT OVERFLOWED;
+- nome da fazenda legível;
+- métricas do cabeçalho distribuídas em linhas;
+- cards de piquetes íntegros;
+- Rebanho reconhecendo a fazenda selecionada.

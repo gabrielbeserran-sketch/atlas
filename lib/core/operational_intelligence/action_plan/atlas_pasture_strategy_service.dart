@@ -11,17 +11,14 @@ class AtlasPastureStrategyService {
   static final AtlasPastureStrategyService instance =
       AtlasPastureStrategyService._();
 
-  static const String _recoveryPlansKey =
-      'atlas_pasture_recovery_plans_v1';
+  static const String _recoveryPlansKey = 'atlas_pasture_recovery_plans_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasPastureRecoveryPlan>> loadRecoveryPlans({
     String? farmName,
   }) async {
-    final raw =
-        await _preferences.getString(_recoveryPlansKey);
+    final raw = await _preferences.getString(_recoveryPlansKey);
     if (raw == null || raw.trim().isEmpty) {
       return <AtlasPastureRecoveryPlan>[];
     }
@@ -40,34 +37,26 @@ class AtlasPastureStrategyService {
         return values;
       }
       return values
-          .where(
-            (item) =>
-                item.farmName?.trim().toLowerCase() ==
-                normalized,
-          )
+          .where((item) => item.farmName?.trim().toLowerCase() == normalized)
           .toList();
     } catch (_) {
       return <AtlasPastureRecoveryPlan>[];
     }
   }
 
-  Future<void> saveRecoveryPlan(
-    AtlasPastureRecoveryPlan plan,
-  ) async {
-    final raw =
-        await _preferences.getString(_recoveryPlansKey);
+  Future<void> saveRecoveryPlan(AtlasPastureRecoveryPlan plan) async {
+    final raw = await _preferences.getString(_recoveryPlansKey);
     final values = raw == null || raw.trim().isEmpty
         ? <AtlasPastureRecoveryPlan>[]
         : (jsonDecode(raw) as List)
-            .map(
-              (item) => AtlasPastureRecoveryPlan.fromMap(
-                Map<String, dynamic>.from(item as Map),
-              ),
-            )
-            .toList();
+              .map(
+                (item) => AtlasPastureRecoveryPlan.fromMap(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList();
 
-    final index =
-        values.indexWhere((item) => item.id == plan.id);
+    final index = values.indexWhere((item) => item.id == plan.id);
     if (index == -1) {
       values.add(plan);
     } else {
@@ -84,48 +73,35 @@ class AtlasPastureStrategyService {
     String? farmName,
   }) async {
     final pastureService = AtlasPastureService.instance;
-    final paddocks =
-        await pastureService.loadPaddocks(farmName: farmName);
-    final operations =
-        await pastureService.loadOperations(farmName: farmName);
+    final paddocks = await pastureService.loadPaddocks(farmName: farmName);
+    final operations = await pastureService.loadOperations(farmName: farmName);
 
     final totalArea = paddocks.fold<double>(
       0,
       (total, item) => total + item.areaHectares,
     );
 
-    double average(
-      double Function(AtlasPaddock item) value,
-    ) {
+    double average(double Function(AtlasPaddock item) value) {
       if (paddocks.isEmpty) {
         return 0;
       }
-      return paddocks.fold<double>(
-            0,
-            (total, item) => total + value(item),
-          ) /
+      return paddocks.fold<double>(0, (total, item) => total + value(item)) /
           paddocks.length;
     }
 
-    final averageHeight =
-        average((item) => item.currentHeightCm);
-    final averageDryMatter =
-        average((item) => item.dryMatterKgHa);
-    final averageSupport =
-        average((item) => item.supportCapacityAuHa);
+    final averageHeight = average((item) => item.currentHeightCm);
+    final averageDryMatter = average((item) => item.dryMatterKgHa);
+    final averageSupport = average((item) => item.supportCapacityAuHa);
     final totalSupportedAu = paddocks.fold<double>(
       0,
-      (total, item) =>
-          total +
-          item.supportCapacityAuHa * item.areaHectares,
+      (total, item) => total + item.supportCapacityAuHa * item.areaHectares,
     );
 
-    final overdue =
-        operations.where((item) => item.isOverdue).length;
-    final lowHeight =
-        paddocks.where((item) => item.belowTargetHeight).length;
-    final lowDryMatter =
-        paddocks.where((item) => item.dryMatterKgHa < 1000).length;
+    final overdue = operations.where((item) => item.isOverdue).length;
+    final lowHeight = paddocks.where((item) => item.belowTargetHeight).length;
+    final lowDryMatter = paddocks
+        .where((item) => item.dryMatterKgHa < 1000)
+        .length;
 
     var score = 85.0;
     score -= lowHeight * 7;
@@ -142,22 +118,13 @@ class AtlasPastureStrategyService {
       totalPaddocks: paddocks.length,
       totalAreaHectares: totalArea,
       availablePaddocks: paddocks
-          .where(
-            (item) =>
-                item.status == AtlasPaddockStatus.available,
-          )
+          .where((item) => item.status == AtlasPaddockStatus.available)
           .length,
       occupiedPaddocks: paddocks
-          .where(
-            (item) =>
-                item.status == AtlasPaddockStatus.occupied,
-          )
+          .where((item) => item.status == AtlasPaddockStatus.occupied)
           .length,
       restingPaddocks: paddocks
-          .where(
-            (item) =>
-                item.status == AtlasPaddockStatus.resting,
-          )
+          .where((item) => item.status == AtlasPaddockStatus.resting)
           .length,
       averageHeightCm: averageHeight,
       averageDryMatterKgHa: averageDryMatter,
@@ -169,32 +136,24 @@ class AtlasPastureStrategyService {
   }
 
   Future<List<AtlasPastureOccupationRecommendation>>
-      buildOccupationRecommendations({
-    String? farmName,
-  }) async {
+  buildOccupationRecommendations({String? farmName}) async {
     final pastureService = AtlasPastureService.instance;
-    final paddocks =
-        await pastureService.loadPaddocks(farmName: farmName);
+    final paddocks = await pastureService.loadPaddocks(farmName: farmName);
 
     return paddocks.map((item) {
-      final supportedAu =
-          item.supportCapacityAuHa * item.areaHectares;
-      final recommendedAnimals =
-          (supportedAu * 1.5).floor().clamp(0, 100000);
-      final occupationDays = item.currentHeightCm >=
-              item.targetHeightCm
+      final supportedAu = item.supportCapacityAuHa * item.areaHectares;
+      final recommendedAnimals = (supportedAu * 1.5).floor().clamp(0, 100000);
+      final occupationDays = item.currentHeightCm >= item.targetHeightCm
           ? 4
-          : item.currentHeightCm >=
-                  item.targetHeightCm * 0.8
-              ? 3
-              : 0;
+          : item.currentHeightCm >= item.targetHeightCm * 0.8
+          ? 3
+          : 0;
       final restDays = item.irrigated ? 22 : 30;
-      final risk = item.dryMatterKgHa < 1000 ||
-              item.belowTargetHeight
+      final risk = item.dryMatterKgHa < 1000 || item.belowTargetHeight
           ? 'Alto'
           : item.dryMatterKgHa < 1800
-              ? 'Moderado'
-              : 'Baixo';
+          ? 'Moderado'
+          : 'Baixo';
 
       final reason = occupationDays == 0
           ? 'Não ocupar até recuperar altura e disponibilidade.'
@@ -209,10 +168,7 @@ class AtlasPastureStrategyService {
         riskLevel: risk,
         reason: reason,
       );
-    }).toList()
-      ..sort(
-        (a, b) => a.riskLevel.compareTo(b.riskLevel),
-      );
+    }).toList()..sort((a, b) => a.riskLevel.compareTo(b.riskLevel));
   }
 
   Future<List<String>> buildRecommendations({
@@ -236,8 +192,7 @@ class AtlasPastureStrategyService {
         '${snapshot.overdueOperations} operação(ões) de pastagem estão atrasadas.',
       );
     }
-    if (snapshot.availablePaddocks == 0 &&
-        snapshot.totalPaddocks > 0) {
+    if (snapshot.availablePaddocks == 0 && snapshot.totalPaddocks > 0) {
       recommendations.add(
         'Nenhum piquete está disponível. Replaneje a rotação e avalie suplementação estratégica.',
       );

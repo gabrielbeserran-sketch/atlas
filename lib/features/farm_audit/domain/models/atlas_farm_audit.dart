@@ -38,69 +38,52 @@ class AtlasFarmAudit {
       'overallIndex': overallIndex,
       'classification': classification.name,
       'diagnosis': diagnosis,
-      'areaResults':
-          areaResults.map((item) => item.toJson()).toList(),
-      'problems':
-          problems.map((item) => item.toJson()).toList(),
-      'opportunities':
-          opportunities.map((item) => item.toJson()).toList(),
+      'areaResults': areaResults.map((item) => item.toJson()).toList(),
+      'problems': problems.map((item) => item.toJson()).toList(),
+      'opportunities': opportunities.map((item) => item.toJson()).toList(),
       'digitalTwinScore': digitalTwinScore,
       'trend': trend.name,
     };
   }
 
-  factory AtlasFarmAudit.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmAudit.fromJson(Map<String, dynamic> json) {
     return AtlasFarmAudit(
       id: json['id'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
       farmName: json['farmName'] as String? ?? 'Fazenda',
-      generatedAt: DateTime.tryParse(
-            json['generatedAt'] as String? ?? '',
-          ) ??
+      generatedAt:
+          DateTime.tryParse(json['generatedAt'] as String? ?? '') ??
           DateTime.now(),
-      overallIndex:
-          (json['overallIndex'] as num?)?.toDouble() ?? 0,
-      classification:
-          AtlasFarmAuditClassification.values.firstWhere(
+      overallIndex: (json['overallIndex'] as num?)?.toDouble() ?? 0,
+      classification: AtlasFarmAuditClassification.values.firstWhere(
         (item) => item.name == json['classification'],
-        orElse: () =>
-            AtlasFarmAuditClassification.attention,
+        orElse: () => AtlasFarmAuditClassification.attention,
       ),
       diagnosis: json['diagnosis'] as String? ?? '',
-      areaResults:
-          (json['areaResults'] as List? ?? const <dynamic>[])
-              .whereType<Map>()
-              .map(
-                (item) => AtlasFarmAuditAreaResult.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(),
-      problems:
-          (json['problems'] as List? ?? const <dynamic>[])
-              .whereType<Map>()
-              .map(
-                (item) => AtlasFarmAuditProblem.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(),
-      opportunities:
-          (json['opportunities'] as List? ??
-                  const <dynamic>[])
-              .whereType<Map>()
-              .map(
-                (item) =>
-                    AtlasFarmAuditOpportunity.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList(),
-      digitalTwinScore:
-          (json['digitalTwinScore'] as num?)?.toDouble() ??
-              0,
+      areaResults: (json['areaResults'] as List? ?? const <dynamic>[])
+          .whereType<Map>()
+          .map(
+            (item) => AtlasFarmAuditAreaResult.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+      problems: (json['problems'] as List? ?? const <dynamic>[])
+          .whereType<Map>()
+          .map(
+            (item) =>
+                AtlasFarmAuditProblem.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(),
+      opportunities: (json['opportunities'] as List? ?? const <dynamic>[])
+          .whereType<Map>()
+          .map(
+            (item) => AtlasFarmAuditOpportunity.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList(),
+      digitalTwinScore: (json['digitalTwinScore'] as num?)?.toDouble() ?? 0,
       trend: AtlasDigitalTwinTrend.values.firstWhere(
         (item) => item.name == json['trend'],
         orElse: () => AtlasDigitalTwinTrend.stable,
@@ -134,9 +117,7 @@ class AtlasFarmAuditAreaResult {
     };
   }
 
-  factory AtlasFarmAuditAreaResult.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmAuditAreaResult.fromJson(Map<String, dynamic> json) {
     return AtlasFarmAuditAreaResult(
       area: AtlasFarmAuditArea.values.firstWhere(
         (item) => item.name == json['area'],
@@ -180,14 +161,11 @@ class AtlasFarmAuditProblem {
       'description': description,
       'priority': priority.name,
       'estimatedAnnualImpact': estimatedAnnualImpact,
-      'recommendedDeadlineDays':
-          recommendedDeadlineDays,
+      'recommendedDeadlineDays': recommendedDeadlineDays,
     };
   }
 
-  factory AtlasFarmAuditProblem.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmAuditProblem.fromJson(Map<String, dynamic> json) {
     return AtlasFarmAuditProblem(
       id: json['id'] as String? ?? '',
       area: AtlasFarmAuditArea.values.firstWhere(
@@ -201,11 +179,8 @@ class AtlasFarmAuditProblem {
         orElse: () => AtlasFarmAuditPriority.moderate,
       ),
       estimatedAnnualImpact:
-          (json['estimatedAnnualImpact'] as num?)
-                  ?.toDouble() ??
-              0,
-      recommendedDeadlineDays:
-          json['recommendedDeadlineDays'] as int? ?? 30,
+          (json['estimatedAnnualImpact'] as num?)?.toDouble() ?? 0,
+      recommendedDeadlineDays: json['recommendedDeadlineDays'] as int? ?? 30,
     );
   }
 }
@@ -244,9 +219,7 @@ class AtlasFarmAuditOpportunity {
     };
   }
 
-  factory AtlasFarmAuditOpportunity.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasFarmAuditOpportunity.fromJson(Map<String, dynamic> json) {
     return AtlasFarmAuditOpportunity(
       id: json['id'] as String? ?? '',
       area: AtlasFarmAuditArea.values.firstWhere(
@@ -256,14 +229,9 @@ class AtlasFarmAuditOpportunity {
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
       estimatedInvestment:
-          (json['estimatedInvestment'] as num?)
-                  ?.toDouble() ??
-              0,
-      estimatedReturn:
-          (json['estimatedReturn'] as num?)?.toDouble() ??
-              0,
-      roiPercent:
-          (json['roiPercent'] as num?)?.toDouble() ?? 0,
+          (json['estimatedInvestment'] as num?)?.toDouble() ?? 0,
+      estimatedReturn: (json['estimatedReturn'] as num?)?.toDouble() ?? 0,
+      roiPercent: (json['roiPercent'] as num?)?.toDouble() ?? 0,
       priority: AtlasFarmAuditPriority.values.firstWhere(
         (item) => item.name == json['priority'],
         orElse: () => AtlasFarmAuditPriority.moderate,
@@ -287,26 +255,11 @@ enum AtlasFarmAuditArea {
   sustainability,
 }
 
-enum AtlasFarmAuditClassification {
-  excellent,
-  good,
-  attention,
-  critical,
-}
+enum AtlasFarmAuditClassification { excellent, good, attention, critical }
 
-enum AtlasFarmAuditAreaStatus {
-  excellent,
-  good,
-  attention,
-  critical,
-}
+enum AtlasFarmAuditAreaStatus { excellent, good, attention, critical }
 
-enum AtlasFarmAuditPriority {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasFarmAuditPriority { low, moderate, high, critical }
 
 String atlasFarmAuditAreaLabel(AtlasFarmAuditArea area) {
   switch (area) {
@@ -352,9 +305,7 @@ String atlasFarmAuditClassificationLabel(
   }
 }
 
-String atlasFarmAuditAreaStatusLabel(
-  AtlasFarmAuditAreaStatus status,
-) {
+String atlasFarmAuditAreaStatusLabel(AtlasFarmAuditAreaStatus status) {
   switch (status) {
     case AtlasFarmAuditAreaStatus.excellent:
       return 'Excelente';
@@ -367,9 +318,7 @@ String atlasFarmAuditAreaStatusLabel(
   }
 }
 
-String atlasFarmAuditPriorityLabel(
-  AtlasFarmAuditPriority priority,
-) {
+String atlasFarmAuditPriorityLabel(AtlasFarmAuditPriority priority) {
   switch (priority) {
     case AtlasFarmAuditPriority.low:
       return 'Baixa';

@@ -6,16 +6,13 @@ import 'package:projeto_atlas/features/autonomous_consultant/domain/services/atl
 import 'package:projeto_atlas/features/digital_twin/domain/models/atlas_digital_twin.dart';
 import 'package:projeto_atlas/features/digital_twin/domain/services/atlas_digital_twin_service.dart';
 import 'package:projeto_atlas/features/optimization_engine/presentation/screens/atlas_optimization_result_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
-class AtlasAutonomousConsultantScreen
-    extends StatefulWidget {
-  const AtlasAutonomousConsultantScreen({
-    super.key,
-  });
+class AtlasAutonomousConsultantScreen extends StatefulWidget {
+  const AtlasAutonomousConsultantScreen({super.key});
 
   @override
-  State<AtlasAutonomousConsultantScreen>
-      createState() {
+  State<AtlasAutonomousConsultantScreen> createState() {
     return _AtlasAutonomousConsultantScreenState();
   }
 }
@@ -43,12 +40,10 @@ class _AtlasAutonomousConsultantScreenState
       return;
     }
 
-    final twins =
-        AtlasDigitalTwinService.instance.twins;
+    final twins = AtlasDigitalTwinService.instance.twins;
 
     setState(() {
-      selectedFarmId =
-          twins.isEmpty ? null : twins.first.farmId;
+      selectedFarmId = twins.isEmpty ? null : twins.first.farmId;
       isLoading = false;
     });
 
@@ -64,8 +59,7 @@ class _AtlasAutonomousConsultantScreenState
       return null;
     }
 
-    return AtlasDigitalTwinService.instance
-        .byFarmId(farmId);
+    return AtlasDigitalTwinService.instance.byFarmId(farmId);
   }
 
   Future<void> _analyze() async {
@@ -79,13 +73,9 @@ class _AtlasAutonomousConsultantScreenState
       isAnalyzing = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(milliseconds: 250),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 250));
 
-    final generated = service.analyze(
-      twin: twin,
-    );
+    final generated = service.analyze(twin: twin);
 
     if (!mounted) {
       return;
@@ -99,8 +89,7 @@ class _AtlasAutonomousConsultantScreenState
 
   @override
   Widget build(BuildContext context) {
-    final twins =
-        AtlasDigitalTwinService.instance.twins;
+    final twins = AtlasDigitalTwinService.instance.twins;
     final currentReport = report;
 
     return Scaffold(
@@ -108,9 +97,7 @@ class _AtlasAutonomousConsultantScreenState
       appBar: AppBar(
         title: const Text(
           'Atlas Autonomous Consultant',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -126,9 +113,7 @@ class _AtlasAutonomousConsultantScreenState
                 ),
               );
             },
-            icon: const Icon(
-              Icons.lightbulb_outline,
-            ),
+            icon: const Icon(Icons.lightbulb_outline),
           ),
           IconButton(
             tooltip: 'Abrir auditoria inteligente',
@@ -141,120 +126,71 @@ class _AtlasAutonomousConsultantScreenState
                 ),
               );
             },
-            icon: const Icon(
-              Icons.assignment_outlined,
-            ),
+            icon: const Icon(Icons.assignment_outlined),
           ),
           IconButton(
             tooltip: 'Gerar nova análise',
-            onPressed:
-                isAnalyzing ? null : _analyze,
-            icon: const Icon(
-              Icons.refresh,
-            ),
+            onPressed: isAnalyzing ? null : _analyze,
+            icon: const Icon(Icons.refresh),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : selectedTwin == null
-              ? const _EmptyConsultantView()
-              : isAnalyzing &&
-                      currentReport == null
-                  ? const Center(
-                      child:
-                          CircularProgressIndicator(),
-                    )
-                  : currentReport == null
-                      ? const _EmptyConsultantView()
-                      : SafeArea(
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints:
-                                  const BoxConstraints(
-                                maxWidth: 1180,
-                              ),
-                              child: ListView(
-                                padding:
-                                    const EdgeInsets
-                                        .all(22),
-                                children: [
-                                  if (twins.length >
-                                      1) ...[
-                                    _FarmSelector(
-                                      twins: twins,
-                                      selectedFarmId:
-                                          selectedFarmId,
-                                      onChanged:
-                                          (value) async {
-                                        setState(() {
-                                          selectedFarmId =
-                                              value;
-                                          report = null;
-                                        });
+          ? const _EmptyConsultantView()
+          : isAnalyzing && currentReport == null
+          ? const Center(child: CircularProgressIndicator())
+          : currentReport == null
+          ? const _EmptyConsultantView()
+          : SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1180),
+                  child: ListView(
+                    padding: const EdgeInsets.all(22),
+                    children: [
+                      if (twins.length > 1) ...[
+                        _FarmSelector(
+                          twins: twins,
+                          selectedFarmId: selectedFarmId,
+                          onChanged: (value) async {
+                            setState(() {
+                              selectedFarmId = value;
+                              report = null;
+                            });
 
-                                        await _analyze();
-                                      },
-                                    ),
-                                    const SizedBox(
-                                      height: 16,
-                                    ),
-                                  ],
-                                  _ConsultantHero(
-                                    report:
-                                        currentReport,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  _DiagnosisCard(
-                                    report:
-                                        currentReport,
-                                  ),
-                                  const SizedBox(
-                                    height: 24,
-                                  ),
-                                  const _SectionTitle(
-                                    title:
-                                        'Plano de ação priorizado',
-                                    subtitle:
-                                        'Ações ordenadas pelo risco, urgência e impacto esperado.',
-                                  ),
-                                  const SizedBox(
-                                    height: 12,
-                                  ),
-                                  _ActionList(
-                                    actions:
-                                        currentReport
-                                            .actions,
-                                  ),
-                                  const SizedBox(
-                                    height: 24,
-                                  ),
-                                  const _SectionTitle(
-                                    title:
-                                        'Estratégia recomendada',
-                                    subtitle:
-                                        'Melhor alternativa encontrada automaticamente pelo Optimization Engine.',
-                                  ),
-                                  const SizedBox(
-                                    height: 12,
-                                  ),
-                                  _OptimizationCard(
-                                    report:
-                                        currentReport,
-                                  ),
-                                  const SizedBox(
-                                    height: 30,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                            await _analyze();
+                          },
                         ),
+                        const SizedBox(height: 16),
+                      ],
+                      _ConsultantHero(report: currentReport),
+                      const SizedBox(height: 20),
+                      _DiagnosisCard(report: currentReport),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Plano de ação priorizado',
+                        subtitle:
+                            'Ações ordenadas pelo risco, urgência e impacto esperado.',
+                      ),
+                      const SizedBox(height: 12),
+                      _ActionList(actions: currentReport.actions),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Estratégia recomendada',
+                        subtitle:
+                            'Melhor alternativa encontrada automaticamente pelo Optimization Engine.',
+                      ),
+                      const SizedBox(height: 12),
+                      _OptimizationCard(report: currentReport),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -295,26 +231,19 @@ class _FarmSelector extends StatelessWidget {
 }
 
 class _ConsultantHero extends StatelessWidget {
-  const _ConsultantHero({
-    required this.report,
-  });
+  const _ConsultantHero({required this.report});
 
   final AtlasConsultantReport report;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _priorityColor(report.overallPriority);
+    final color = _priorityColor(report.overallPriority);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF07111F),
-            Color(0xFF17384D),
-            Color(0xFF236075),
-          ],
+          colors: [Color(0xFF07111F), Color(0xFF17384D), Color(0xFF236075)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
@@ -328,8 +257,7 @@ class _ConsultantHero extends StatelessWidget {
           const SizedBox(width: 18),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   report.farmName,
@@ -342,9 +270,7 @@ class _ConsultantHero extends StatelessWidget {
                 const SizedBox(height: 5),
                 const Text(
                   'Consultoria autônoma baseada no estado vivo da fazenda',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -353,21 +279,18 @@ class _ConsultantHero extends StatelessWidget {
                   children: [
                     _HeroMetric(
                       label: 'Farm Index',
-                      value: report.farmScore
-                          .toStringAsFixed(1),
+                      value: report.farmScore.toStringAsFixed(1),
                     ),
                     _HeroMetric(
                       label: 'Prioridade',
-                      value:
-                          atlasConsultantPriorityLabel(
+                      value: atlasConsultantPriorityLabel(
                         report.overallPriority,
                       ),
                       valueColor: color,
                     ),
                     _HeroMetric(
                       label: 'Ações',
-                      value:
-                          report.actions.length.toString(),
+                      value: report.actions.length.toString(),
                     ),
                   ],
                 ),
@@ -394,10 +317,7 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white10,
         borderRadius: BorderRadius.circular(12),
@@ -407,16 +327,11 @@ class _HeroMetric extends StatelessWidget {
           children: [
             TextSpan(
               text: '$label: ',
-              style: const TextStyle(
-                color: Colors.white60,
-              ),
+              style: const TextStyle(color: Colors.white60),
             ),
             TextSpan(
               text: value,
-              style: TextStyle(
-                color: valueColor,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: valueColor, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -426,9 +341,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _DiagnosisCard extends StatelessWidget {
-  const _DiagnosisCard({
-    required this.report,
-  });
+  const _DiagnosisCard({required this.report});
 
   final AtlasConsultantReport report;
 
@@ -438,38 +351,27 @@ class _DiagnosisCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(
-                  Icons.psychology_outlined,
-                ),
+                Icon(Icons.psychology_outlined),
                 SizedBox(width: 8),
                 Text(
                   'Diagnóstico executivo',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               report.executiveDiagnosis,
-              style: const TextStyle(
-                height: 1.5,
-              ),
+              style: const TextStyle(height: 1.5),
             ),
             const SizedBox(height: 14),
             Text(
               report.strategicSummary,
-              style: const TextStyle(
-                height: 1.5,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(height: 1.5, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -479,9 +381,7 @@ class _DiagnosisCard extends StatelessWidget {
 }
 
 class _ActionList extends StatelessWidget {
-  const _ActionList({
-    required this.actions,
-  });
+  const _ActionList({required this.actions});
 
   final List<AtlasConsultantAction> actions;
 
@@ -489,24 +389,17 @@ class _ActionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: actions.map((action) {
-        final color =
-            _priorityColor(action.priority);
+        final color = _priorityColor(action.priority);
 
         return Card(
           child: ExpansionTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(alpha: 0.12),
-              child: Icon(
-                _areaIcon(action.area),
-                color: color,
-              ),
+              backgroundColor: color.withValues(alpha: 0.12),
+              child: Icon(_areaIcon(action.area), color: color),
             ),
             title: Text(
               action.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasDigitalTwinAreaLabel(action.area)} · '
@@ -516,26 +409,15 @@ class _ActionList extends StatelessWidget {
             trailing: Text(
               '${action.expectedScoreImpact >= 0 ? '+' : ''}'
               '${action.expectedScoreImpact.toStringAsFixed(1)}',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
-            childrenPadding:
-                const EdgeInsets.fromLTRB(
-              18,
-              0,
-              18,
-              18,
-            ),
+            childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   action.description,
-                  style: const TextStyle(
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(height: 1.4),
                 ),
               ),
               const SizedBox(height: 10),
@@ -562,9 +444,7 @@ class _ActionList extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Risco de não agir: ${action.riskOfInaction}',
-                  style: const TextStyle(
-                    color: Color(0xFFC62828),
-                  ),
+                  style: const TextStyle(color: Color(0xFFC62828)),
                 ),
               ),
               const SizedBox(height: 14),
@@ -572,9 +452,7 @@ class _ActionList extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Passos recomendados',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 7),
@@ -582,10 +460,7 @@ class _ActionList extends StatelessWidget {
                 (step) => Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(
-                      bottom: 6,
-                    ),
+                    padding: const EdgeInsets.only(bottom: 6),
                     child: Text('• $step'),
                   ),
                 ),
@@ -597,11 +472,7 @@ class _ActionList extends StatelessWidget {
                   spacing: 7,
                   runSpacing: 7,
                   children: action.indicators
-                      .map(
-                        (indicator) => Chip(
-                          label: Text(indicator),
-                        ),
-                      )
+                      .map((indicator) => Chip(label: Text(indicator)))
                       .toList(),
                 ),
               ),
@@ -614,32 +485,24 @@ class _ActionList extends StatelessWidget {
 }
 
 class _OptimizationCard extends StatelessWidget {
-  const _OptimizationCard({
-    required this.report,
-  });
+  const _OptimizationCard({required this.report});
 
   final AtlasConsultantReport report;
 
   @override
   Widget build(BuildContext context) {
-    final best =
-        report.optimizationResult.bestCandidate;
+    final best = report.optimizationResult.bestCandidate;
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            const CircleAvatar(
-              child: Icon(
-                Icons.auto_awesome_outlined,
-              ),
-            ),
+            const CircleAvatar(child: Icon(Icons.auto_awesome_outlined)),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     best.name,
@@ -653,9 +516,7 @@ class _OptimizationCard extends StatelessWidget {
                     '${best.optimizationScore.toStringAsFixed(1)} pontos de otimização · '
                     '${best.result.scoreVariation >= 0 ? '+' : ''}'
                     '${best.result.scoreVariation.toStringAsFixed(1)} pontos no Farm Index',
-                    style: const TextStyle(
-                      color: Colors.black54,
-                    ),
+                    style: const TextStyle(color: Colors.black54),
                   ),
                 ],
               ),
@@ -667,19 +528,14 @@ class _OptimizationCard extends StatelessWidget {
                   MaterialPageRoute<void>(
                     builder: (context) {
                       return AtlasOptimizationResultScreen(
-                        result:
-                            report.optimizationResult,
+                        result: report.optimizationResult,
                       );
                     },
                   ),
                 );
               },
-              icon: const Icon(
-                Icons.visibility_outlined,
-              ),
-              label: const Text(
-                'Ver estratégia',
-              ),
+              icon: const Icon(Icons.visibility_outlined),
+              label: const Text('Ver estratégia'),
             ),
           ],
         ),
@@ -689,10 +545,7 @@ class _OptimizationCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -700,30 +553,20 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
-class _EmptyConsultantView
-    extends StatelessWidget {
+class _EmptyConsultantView extends StatelessWidget {
   const _EmptyConsultantView();
 
   @override
@@ -734,25 +577,17 @@ class _EmptyConsultantView
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.support_agent_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.support_agent_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Nenhum Digital Twin está disponível.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Registre eventos nos módulos operacionais para gerar a consultoria autônoma.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -761,9 +596,7 @@ class _EmptyConsultantView
   }
 }
 
-Color _priorityColor(
-  AtlasConsultantPriority priority,
-) {
+Color _priorityColor(AtlasConsultantPriority priority) {
   switch (priority) {
     case AtlasConsultantPriority.low:
       return const Color(0xFF2E7D32);
@@ -776,16 +609,14 @@ Color _priorityColor(
   }
 }
 
-IconData _areaIcon(
-  AtlasDigitalTwinArea area,
-) {
+IconData _areaIcon(AtlasDigitalTwinArea area) {
   switch (area) {
     case AtlasDigitalTwinArea.animal:
       return Icons.monitor_weight_outlined;
     case AtlasDigitalTwinArea.sanitary:
       return Icons.medical_services_outlined;
     case AtlasDigitalTwinArea.reproductive:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     case AtlasDigitalTwinArea.financial:
       return Icons.account_balance_wallet_outlined;
     case AtlasDigitalTwinArea.inventory:

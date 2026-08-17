@@ -51,11 +51,7 @@ class _AtlasEconomicIntelligenceScreenState
 
   Future<void> _addMetric() async {
     var activity = AtlasEconomicActivity.breeding;
-    var start = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      1,
-    );
+    var start = DateTime(DateTime.now().year, DateTime.now().month, 1);
     var end = DateTime.now();
 
     final hectares = TextEditingController();
@@ -68,8 +64,7 @@ class _AtlasEconomicIntelligenceScreenState
     final fixedCost = TextEditingController();
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasEconomicProductionMetric>(
+    final result = await showDialog<AtlasEconomicProductionMetric>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -81,8 +76,7 @@ class _AtlasEconomicIntelligenceScreenState
                 height: 650,
                 child: ListView(
                   children: [
-                    DropdownButtonFormField<
-                        AtlasEconomicActivity>(
+                    DropdownButtonFormField<AtlasEconomicActivity>(
                       initialValue: activity,
                       decoration: const InputDecoration(
                         labelText: 'Atividade',
@@ -92,17 +86,13 @@ class _AtlasEconomicIntelligenceScreenState
                           .map(
                             (value) => DropdownMenuItem(
                               value: value,
-                              child: Text(
-                                atlasEconomicActivityLabel(value),
-                              ),
+                              child: Text(atlasEconomicActivityLabel(value)),
                             ),
                           )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => activity = value,
-                          );
+                          setDialogState(() => activity = value);
                         }
                       },
                     ),
@@ -133,17 +123,11 @@ class _AtlasEconomicIntelligenceScreenState
                       _number(liters, 'Litros produzidos'),
                     ),
                     const SizedBox(height: 10),
-                    _number(
-                      kilograms,
-                      'Quilogramas produzidos',
-                    ),
+                    _number(kilograms, 'Quilogramas produzidos'),
                     const SizedBox(height: 10),
                     _row(
                       _number(revenue, 'Receita'),
-                      _number(
-                        variableCost,
-                        'Custos variáveis',
-                      ),
+                      _number(variableCost, 'Custos variáveis'),
                     ),
                     const SizedBox(height: 10),
                     _number(fixedCost, 'Custos fixos'),
@@ -161,8 +145,7 @@ class _AtlasEconomicIntelligenceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -170,27 +153,21 @@ class _AtlasEconomicIntelligenceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasEconomicProductionMetric(
-                        id: 'economic_metric_'
+                        id:
+                            'economic_metric_'
                             '${now.microsecondsSinceEpoch}',
                         activity: activity,
                         periodStart: start,
                         periodEnd: end,
                         hectares: _double(hectares.text),
-                        animalCount:
-                            int.tryParse(animals.text) ?? 0,
-                        arrobasProduced:
-                            _double(arrobas.text),
-                        litersProduced:
-                            _double(liters.text),
-                        kilogramsProduced:
-                            _double(kilograms.text),
+                        animalCount: int.tryParse(animals.text) ?? 0,
+                        arrobasProduced: _double(arrobas.text),
+                        litersProduced: _double(liters.text),
+                        kilogramsProduced: _double(kilograms.text),
                         revenue: _double(revenue.text),
-                        variableCost:
-                            _double(variableCost.text),
-                        fixedCost:
-                            _double(fixedCost.text),
-                        farmName:
-                            widget.actionController.farmName,
+                        variableCost: _double(variableCost.text),
+                        fixedCost: _double(fixedCost.text),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -234,8 +211,7 @@ class _AtlasEconomicIntelligenceScreenState
     final discount = TextEditingController(text: '12');
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasEconomicInvestmentScenario>(
+    final result = await showDialog<AtlasEconomicInvestmentScenario>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -256,58 +232,39 @@ class _AtlasEconomicIntelligenceScreenState
                         ),
                       ),
                       const SizedBox(height: 10),
-                      DropdownButtonFormField<
-                          AtlasEconomicScenarioType>(
+                      DropdownButtonFormField<AtlasEconomicScenarioType>(
                         initialValue: type,
                         decoration: const InputDecoration(
                           labelText: 'Cenário',
                           border: OutlineInputBorder(),
                         ),
-                        items:
-                            AtlasEconomicScenarioType.values
-                                .map(
-                                  (value) =>
-                                      DropdownMenuItem(
-                                    value: value,
-                                    child: Text(
-                                      atlasEconomicScenarioTypeLabel(
-                                        value,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                        items: AtlasEconomicScenarioType.values
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  atlasEconomicScenarioTypeLabel(value),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setDialogState(
-                              () => type = value,
-                            );
+                            setDialogState(() => type = value);
                           }
                         },
                       ),
                       const SizedBox(height: 10),
-                      _number(
-                        investment,
-                        'Investimento inicial',
-                      ),
+                      _number(investment, 'Investimento inicial'),
                       const SizedBox(height: 10),
                       _row(
-                        _number(
-                          monthlyRevenue,
-                          'Receita mensal adicional',
-                        ),
-                        _number(
-                          monthlyCost,
-                          'Custo mensal adicional',
-                        ),
+                        _number(monthlyRevenue, 'Receita mensal adicional'),
+                        _number(monthlyCost, 'Custo mensal adicional'),
                       ),
                       const SizedBox(height: 10),
                       _row(
                         _number(months, 'Horizonte em meses'),
-                        _number(
-                          discount,
-                          'Taxa anual de desconto (%)',
-                        ),
+                        _number(discount, 'Taxa anual de desconto (%)'),
                       ),
                       const SizedBox(height: 10),
                       TextField(
@@ -324,8 +281,7 @@ class _AtlasEconomicIntelligenceScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -336,22 +292,17 @@ class _AtlasEconomicIntelligenceScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasEconomicInvestmentScenario(
-                        id: 'economic_scenario_'
+                        id:
+                            'economic_scenario_'
                             '${now.microsecondsSinceEpoch}',
                         title: title.text.trim(),
                         type: type,
-                        initialInvestment:
-                            _double(investment.text),
-                        monthlyRevenueIncrease:
-                            _double(monthlyRevenue.text),
-                        monthlyCostIncrease:
-                            _double(monthlyCost.text),
-                        horizonMonths:
-                            int.tryParse(months.text) ?? 0,
-                        discountRatePercent:
-                            _double(discount.text),
-                        farmName:
-                            widget.actionController.farmName,
+                        initialInvestment: _double(investment.text),
+                        monthlyRevenueIncrease: _double(monthlyRevenue.text),
+                        monthlyCostIncrease: _double(monthlyCost.text),
+                        horizonMonths: int.tryParse(months.text) ?? 0,
+                        discountRatePercent: _double(discount.text),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -388,12 +339,8 @@ class _AtlasEconomicIntelligenceScreenState
     final current = snapshot;
     final recommendations = current == null
         ? <String>[]
-        : service.buildRecommendations(
-            snapshot: current,
-            metrics: metrics,
-          );
-    final profitability =
-        service.profitabilityByActivity(metrics);
+        : service.buildRecommendations(snapshot: current, metrics: metrics);
+    final profitability = service.profitabilityByActivity(metrics);
 
     return DefaultTabController(
       length: 8,
@@ -421,26 +368,20 @@ class _AtlasEconomicIntelligenceScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addMetric,
           icon: const Icon(Icons.add),
           label: const Text('Novo período'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _DreTab(snapshot: current),
                   _CashFlowTab(snapshot: current),
                   _CostsTab(metrics: metrics),
                   _EconomicIndicatorsTab(snapshot: current),
-                  _ScenariosTab(
-                    scenarios: scenarios,
-                    onAdd: _addScenario,
-                  ),
+                  _ScenariosTab(scenarios: scenarios, onAdd: _addScenario),
                   _ActivitiesTab(values: profitability),
                   _ProjectionsTab(snapshot: current),
                   _EconomicAiTab(
@@ -463,16 +404,10 @@ class _AtlasEconomicIntelligenceScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -508,9 +443,7 @@ class _AtlasEconomicIntelligenceScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -545,15 +478,11 @@ class _DreTab extends StatelessWidget {
       child: ListTile(
         title: Text(
           label,
-          style: TextStyle(
-            fontWeight: strong ? FontWeight.w900 : null,
-          ),
+          style: TextStyle(fontWeight: strong ? FontWeight.w900 : null),
         ),
         trailing: Text(
           'R\$ ${value.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontWeight: strong ? FontWeight.w900 : null,
-          ),
+          style: TextStyle(fontWeight: strong ? FontWeight.w900 : null),
         ),
       ),
     );
@@ -590,9 +519,7 @@ class _CostsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (metrics.isEmpty) {
-      return const Center(
-        child: Text('Nenhum período econômico cadastrado.'),
-      );
+      return const Center(child: Text('Nenhum período econômico cadastrado.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -602,9 +529,7 @@ class _CostsTab extends StatelessWidget {
         final item = metrics[index];
         return Card(
           child: ExpansionTile(
-            title: Text(
-              atlasEconomicActivityLabel(item.activity),
-            ),
+            title: Text(atlasEconomicActivityLabel(item.activity)),
             subtitle: Text(
               '${DateFormat('dd/MM/yyyy').format(item.periodStart)} a '
               '${DateFormat('dd/MM/yyyy').format(item.periodEnd)}',
@@ -646,9 +571,7 @@ class _CostsTab extends StatelessWidget {
 }
 
 class _EconomicIndicatorsTab extends StatelessWidget {
-  const _EconomicIndicatorsTab({
-    required this.snapshot,
-  });
+  const _EconomicIndicatorsTab({required this.snapshot});
 
   final AtlasEconomicSnapshot? snapshot;
 
@@ -671,10 +594,7 @@ class _EconomicIndicatorsTab extends StatelessWidget {
 }
 
 class _ScenariosTab extends StatelessWidget {
-  const _ScenariosTab({
-    required this.scenarios,
-    required this.onAdd,
-  });
+  const _ScenariosTab({required this.scenarios, required this.onAdd});
 
   final List<AtlasEconomicInvestmentScenario> scenarios;
   final VoidCallback onAdd;
@@ -696,16 +616,11 @@ class _ScenariosTab extends StatelessWidget {
         ),
         Expanded(
           child: scenarios.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Nenhum cenário de investimento.',
-                  ),
-                )
+              ? const Center(child: Text('Nenhum cenário de investimento.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: scenarios.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = scenarios[index];
                     return Card(
@@ -738,9 +653,7 @@ class _ActivitiesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (values.isEmpty) {
-      return const Center(
-        child: Text('Sem atividades para comparar.'),
-      );
+      return const Center(child: Text('Sem atividades para comparar.'));
     }
     final entries = values.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -792,10 +705,7 @@ class _ProjectionsTab extends StatelessWidget {
 }
 
 class _EconomicAiTab extends StatelessWidget {
-  const _EconomicAiTab({
-    required this.snapshot,
-    required this.recommendations,
-  });
+  const _EconomicAiTab({required this.snapshot, required this.recommendations});
 
   final AtlasEconomicSnapshot? snapshot;
   final List<String> recommendations;
@@ -806,11 +716,7 @@ class _EconomicAiTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         if (snapshot != null)
-          _metric(
-            'Score econômico',
-            snapshot!.financialScore,
-            '/100',
-          ),
+          _metric('Score econômico', snapshot!.financialScore, '/100'),
         const SizedBox(height: 12),
         ...recommendations.map(
           (item) => Card(
@@ -832,11 +738,12 @@ Widget _metric(String title, double value, String unit) {
       trailing: Text(
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(2)}'
-        '${unit == '%' ? '%' : unit == '/100' ? '/100' : ''}',
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-        ),
+        '${unit == '%'
+            ? '%'
+            : unit == '/100'
+            ? '/100'
+            : ''}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
       ),
     ),
   );

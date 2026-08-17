@@ -11,149 +11,134 @@ enum AtlasClimateEnterpriseModule {
   climateIntelligenceCenter,
 }
 
-extension AtlasClimateEnterpriseModuleX
-    on AtlasClimateEnterpriseModule {
+extension AtlasClimateEnterpriseModuleX on AtlasClimateEnterpriseModule {
   String get code => switch (this) {
-        AtlasClimateEnterpriseModule.climateIntelligence =>
-          'climate_intelligence',
-        AtlasClimateEnterpriseModule.advancedMeteorology =>
-          'advanced_meteorology',
-        AtlasClimateEnterpriseModule.intelligentForagePlanning =>
-          'intelligent_forage_planning',
-        AtlasClimateEnterpriseModule.aiPastureManagement =>
-          'ai_pasture_management',
-        AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
-          'climate_environmental_indicators',
-        AtlasClimateEnterpriseModule.climateRiskManagement =>
-          'climate_risk_management',
-        AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
-          'predictive_climate_simulations',
-        AtlasClimateEnterpriseModule.intelligentClimateAlerts =>
-          'intelligent_climate_alerts',
-        AtlasClimateEnterpriseModule.agroclimateDecisionCenter =>
-          'agroclimate_decision_center',
-        AtlasClimateEnterpriseModule.climateIntelligenceCenter =>
-          'climate_intelligence_center',
-      };
+    AtlasClimateEnterpriseModule.climateIntelligence => 'climate_intelligence',
+    AtlasClimateEnterpriseModule.advancedMeteorology => 'advanced_meteorology',
+    AtlasClimateEnterpriseModule.intelligentForagePlanning =>
+      'intelligent_forage_planning',
+    AtlasClimateEnterpriseModule.aiPastureManagement => 'ai_pasture_management',
+    AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
+      'climate_environmental_indicators',
+    AtlasClimateEnterpriseModule.climateRiskManagement =>
+      'climate_risk_management',
+    AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
+      'predictive_climate_simulations',
+    AtlasClimateEnterpriseModule.intelligentClimateAlerts =>
+      'intelligent_climate_alerts',
+    AtlasClimateEnterpriseModule.agroclimateDecisionCenter =>
+      'agroclimate_decision_center',
+    AtlasClimateEnterpriseModule.climateIntelligenceCenter =>
+      'climate_intelligence_center',
+  };
 
   String get title => switch (this) {
-        AtlasClimateEnterpriseModule.climateIntelligence =>
-          'Inteligência Climática',
-        AtlasClimateEnterpriseModule.advancedMeteorology =>
-          'Meteorologia Avançada',
-        AtlasClimateEnterpriseModule.intelligentForagePlanning =>
-          'Planejamento Forrageiro Inteligente',
-        AtlasClimateEnterpriseModule.aiPastureManagement =>
-          'Gestão de Pastagens com IA',
-        AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
-          'Indicadores Climáticos e Ambientais',
-        AtlasClimateEnterpriseModule.climateRiskManagement =>
-          'Gestão de Riscos Climáticos',
-        AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
-          'Simulações Climáticas Preditivas',
-        AtlasClimateEnterpriseModule.intelligentClimateAlerts =>
-          'Alertas Climáticos Inteligentes',
-        AtlasClimateEnterpriseModule.agroclimateDecisionCenter =>
-          'Central de Decisão Agroclimática',
-        AtlasClimateEnterpriseModule.climateIntelligenceCenter =>
-          'Atlas Climate Intelligence Center',
-      };
+    AtlasClimateEnterpriseModule.climateIntelligence =>
+      'Inteligência Climática',
+    AtlasClimateEnterpriseModule.advancedMeteorology => 'Meteorologia Avançada',
+    AtlasClimateEnterpriseModule.intelligentForagePlanning =>
+      'Planejamento Forrageiro Inteligente',
+    AtlasClimateEnterpriseModule.aiPastureManagement =>
+      'Gestão de Pastagens com IA',
+    AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
+      'Indicadores Climáticos e Ambientais',
+    AtlasClimateEnterpriseModule.climateRiskManagement =>
+      'Gestão de Riscos Climáticos',
+    AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
+      'Simulações Climáticas Preditivas',
+    AtlasClimateEnterpriseModule.intelligentClimateAlerts =>
+      'Alertas Climáticos Inteligentes',
+    AtlasClimateEnterpriseModule.agroclimateDecisionCenter =>
+      'Central de Decisão Agroclimática',
+    AtlasClimateEnterpriseModule.climateIntelligenceCenter =>
+      'Atlas Climate Intelligence Center',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasClimateEnterpriseModule.climateIntelligence =>
-          'Pacote 191',
-        AtlasClimateEnterpriseModule.advancedMeteorology =>
-          'Pacote 192',
-        AtlasClimateEnterpriseModule.intelligentForagePlanning =>
-          'Pacote 193',
-        AtlasClimateEnterpriseModule.aiPastureManagement =>
-          'Pacote 194',
-        AtlasClimateEnterpriseModule.climateEnvironmentalIndicators =>
-          'Pacote 195',
-        AtlasClimateEnterpriseModule.climateRiskManagement =>
-          'Pacote 196',
-        AtlasClimateEnterpriseModule.predictiveClimateSimulations =>
-          'Pacote 197',
-        AtlasClimateEnterpriseModule.intelligentClimateAlerts =>
-          'Pacote 198',
-        AtlasClimateEnterpriseModule.agroclimateDecisionCenter =>
-          'Pacote 199',
-        AtlasClimateEnterpriseModule.climateIntelligenceCenter =>
-          'Pacote 200',
-      };
+    AtlasClimateEnterpriseModule.climateIntelligence => 'Pacote 191',
+    AtlasClimateEnterpriseModule.advancedMeteorology => 'Pacote 192',
+    AtlasClimateEnterpriseModule.intelligentForagePlanning => 'Pacote 193',
+    AtlasClimateEnterpriseModule.aiPastureManagement => 'Pacote 194',
+    AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => 'Pacote 195',
+    AtlasClimateEnterpriseModule.climateRiskManagement => 'Pacote 196',
+    AtlasClimateEnterpriseModule.predictiveClimateSimulations => 'Pacote 197',
+    AtlasClimateEnterpriseModule.intelligentClimateAlerts => 'Pacote 198',
+    AtlasClimateEnterpriseModule.agroclimateDecisionCenter => 'Pacote 199',
+    AtlasClimateEnterpriseModule.climateIntelligenceCenter => 'Pacote 200',
+  };
 
   List<String> get features => switch (this) {
-        AtlasClimateEnterpriseModule.climateIntelligence => const [
-            'Contexto climático',
-            'Histórico meteorológico',
-            'Tendências',
-            'Impactos produtivos',
-            'Recomendações operacionais',
-          ],
-        AtlasClimateEnterpriseModule.advancedMeteorology => const [
-            'Temperatura e umidade',
-            'Precipitação',
-            'Vento e pressão',
-            'Evapotranspiração',
-            'Previsão e observação',
-          ],
-        AtlasClimateEnterpriseModule.intelligentForagePlanning => const [
-            'Demanda do rebanho',
-            'Oferta de forragem',
-            'Sazonalidade',
-            'Reserva estratégica',
-            'Plano por período',
-          ],
-        AtlasClimateEnterpriseModule.aiPastureManagement => const [
-            'Condição da pastagem',
-            'Lotação recomendada',
-            'Entrada e saída',
-            'Descanso',
-            'Ações de manejo',
-          ],
-        AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => const [
-            'Índice térmico',
-            'Balanço hídrico',
-            'Déficit de chuva',
-            'Umidade do solo',
-            'Pressão ambiental',
-          ],
-        AtlasClimateEnterpriseModule.climateRiskManagement => const [
-            'Riscos identificados',
-            'Probabilidade',
-            'Impacto',
-            'Mitigação',
-            'Plano de contingência',
-          ],
-        AtlasClimateEnterpriseModule.predictiveClimateSimulations => const [
-            'Cenário base',
-            'Cenário seco',
-            'Cenário chuvoso',
-            'Impacto produtivo',
-            'Sensibilidade',
-          ],
-        AtlasClimateEnterpriseModule.intelligentClimateAlerts => const [
-            'Gatilhos',
-            'Nível de severidade',
-            'Área afetada',
-            'Ação recomendada',
-            'Confirmação e encerramento',
-          ],
-        AtlasClimateEnterpriseModule.agroclimateDecisionCenter => const [
-            'Decisões prioritárias',
-            'Janelas operacionais',
-            'Riscos',
-            'Planos de ação',
-            'Painel executivo',
-          ],
-        AtlasClimateEnterpriseModule.climateIntelligenceCenter => const [
-            'Indicadores consolidados',
-            'Previsões',
-            'Alertas',
-            'Cenários',
-            'Governança climática',
-          ],
-      };
+    AtlasClimateEnterpriseModule.climateIntelligence => const [
+      'Contexto climático',
+      'Histórico meteorológico',
+      'Tendências',
+      'Impactos produtivos',
+      'Recomendações operacionais',
+    ],
+    AtlasClimateEnterpriseModule.advancedMeteorology => const [
+      'Temperatura e umidade',
+      'Precipitação',
+      'Vento e pressão',
+      'Evapotranspiração',
+      'Previsão e observação',
+    ],
+    AtlasClimateEnterpriseModule.intelligentForagePlanning => const [
+      'Demanda do rebanho',
+      'Oferta de forragem',
+      'Sazonalidade',
+      'Reserva estratégica',
+      'Plano por período',
+    ],
+    AtlasClimateEnterpriseModule.aiPastureManagement => const [
+      'Condição da pastagem',
+      'Lotação recomendada',
+      'Entrada e saída',
+      'Descanso',
+      'Ações de manejo',
+    ],
+    AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => const [
+      'Índice térmico',
+      'Balanço hídrico',
+      'Déficit de chuva',
+      'Umidade do solo',
+      'Pressão ambiental',
+    ],
+    AtlasClimateEnterpriseModule.climateRiskManagement => const [
+      'Riscos identificados',
+      'Probabilidade',
+      'Impacto',
+      'Mitigação',
+      'Plano de contingência',
+    ],
+    AtlasClimateEnterpriseModule.predictiveClimateSimulations => const [
+      'Cenário base',
+      'Cenário seco',
+      'Cenário chuvoso',
+      'Impacto produtivo',
+      'Sensibilidade',
+    ],
+    AtlasClimateEnterpriseModule.intelligentClimateAlerts => const [
+      'Gatilhos',
+      'Nível de severidade',
+      'Área afetada',
+      'Ação recomendada',
+      'Confirmação e encerramento',
+    ],
+    AtlasClimateEnterpriseModule.agroclimateDecisionCenter => const [
+      'Decisões prioritárias',
+      'Janelas operacionais',
+      'Riscos',
+      'Planos de ação',
+      'Painel executivo',
+    ],
+    AtlasClimateEnterpriseModule.climateIntelligenceCenter => const [
+      'Indicadores consolidados',
+      'Previsões',
+      'Alertas',
+      'Cenários',
+      'Governança climática',
+    ],
+  };
 }
 
 class AtlasClimateEnterpriseRecord {
@@ -222,41 +207,37 @@ class AtlasClimateEnterpriseRecord {
       status == 'Concluído';
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'status': status,
-        'farmName': farmName,
-        'areaName': areaName,
-        'metricName': metricName,
-        'currentValue': currentValue,
-        'projectedValue': projectedValue,
-        'referenceValue': referenceValue,
-        'unit': unit,
-        'probabilityPercent': probabilityPercent,
-        'confidencePercent': confidencePercent,
-        'riskPercent': riskPercent,
-        'progressPercent': progressPercent,
-        'alertCount': alertCount,
-        'horizonDays': horizonDays,
-        'source': source,
-        'responsible': responsible,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'status': status,
+    'farmName': farmName,
+    'areaName': areaName,
+    'metricName': metricName,
+    'currentValue': currentValue,
+    'projectedValue': projectedValue,
+    'referenceValue': referenceValue,
+    'unit': unit,
+    'probabilityPercent': probabilityPercent,
+    'confidencePercent': confidencePercent,
+    'riskPercent': riskPercent,
+    'progressPercent': progressPercent,
+    'alertCount': alertCount,
+    'horizonDays': horizonDays,
+    'source': source,
+    'responsible': responsible,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasClimateEnterpriseRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasClimateEnterpriseRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
-    final module =
-        AtlasClimateEnterpriseModule.values.firstWhere(
+    final module = AtlasClimateEnterpriseModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasClimateEnterpriseModule.climateIntelligence,
+      orElse: () => AtlasClimateEnterpriseModule.climateIntelligence,
     );
 
     return AtlasClimateEnterpriseRecord(
@@ -269,25 +250,16 @@ class AtlasClimateEnterpriseRecord {
       farmName: map['farmName']?.toString() ?? '',
       areaName: map['areaName']?.toString() ?? '',
       metricName: map['metricName']?.toString() ?? '',
-      currentValue:
-          (map['currentValue'] as num?)?.toDouble() ?? 0,
-      projectedValue:
-          (map['projectedValue'] as num?)?.toDouble() ?? 0,
-      referenceValue:
-          (map['referenceValue'] as num?)?.toDouble() ?? 0,
+      currentValue: (map['currentValue'] as num?)?.toDouble() ?? 0,
+      projectedValue: (map['projectedValue'] as num?)?.toDouble() ?? 0,
+      referenceValue: (map['referenceValue'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
-      probabilityPercent:
-          (map['probabilityPercent'] as num?)?.toDouble() ?? 0,
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ?? 0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
-      horizonDays:
-          (map['horizonDays'] as num?)?.toInt() ?? 0,
+      probabilityPercent: (map['probabilityPercent'] as num?)?.toDouble() ?? 0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
+      horizonDays: (map['horizonDays'] as num?)?.toInt() ?? 0,
       source: map['source']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

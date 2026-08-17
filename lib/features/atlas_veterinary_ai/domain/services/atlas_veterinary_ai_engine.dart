@@ -39,9 +39,7 @@ class AtlasVeterinaryAssessment {
 class AtlasVeterinaryAiEngine {
   const AtlasVeterinaryAiEngine();
 
-  AtlasVeterinaryAssessment assess(
-    AtlasVeterinaryCase clinicalCase,
-  ) {
+  AtlasVeterinaryAssessment assess(AtlasVeterinaryCase clinicalCase) {
     final symptoms = clinicalCase.symptoms
         .map((item) => item.trim().toLowerCase())
         .toSet();
@@ -126,7 +124,8 @@ class AtlasVeterinaryAiEngine {
       'Não administrar medicamentos sem prescrição e confirmação profissional.',
     ];
 
-    final evidencePoints = clinicalCase.symptoms.length +
+    final evidencePoints =
+        clinicalCase.symptoms.length +
         (clinicalCase.temperatureCelsius > 0 ? 1 : 0) +
         (clinicalCase.heartRateBpm > 0 ? 1 : 0) +
         (clinicalCase.respiratoryRateBpm > 0 ? 1 : 0) +

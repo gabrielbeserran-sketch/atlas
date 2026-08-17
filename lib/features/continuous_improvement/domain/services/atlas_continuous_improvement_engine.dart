@@ -11,40 +11,28 @@ class AtlasContinuousImprovementEngine {
     required AtlasFarmAudit audit,
     required AtlasActionPlan plan,
   }) {
-    final decisions = performance.kpis
-        .map(
-          (kpi) => _decisionFor(
-            kpi: kpi,
-            plan: plan,
-          ),
-        )
-        .toList()
-      ..sort(
-        (first, second) =>
-            _priorityWeight(second.priority).compareTo(
-          _priorityWeight(first.priority),
-        ),
-      );
+    final decisions =
+        performance.kpis
+            .map((kpi) => _decisionFor(kpi: kpi, plan: plan))
+            .toList()
+          ..sort(
+            (first, second) => _priorityWeight(
+              second.priority,
+            ).compareTo(_priorityWeight(first.priority)),
+          );
 
     final classification = _classification(
       executionScore: performance.executionScore,
       auditIndex: audit.overallIndex,
       criticalDecisions: decisions
-          .where(
-            (item) =>
-                item.priority ==
-                AtlasFarmAuditPriority.critical,
-          )
+          .where((item) => item.priority == AtlasFarmAuditPriority.critical)
           .length,
     );
 
-    final nextReviewDays = _nextReviewDays(
-      classification,
-    );
+    final nextReviewDays = _nextReviewDays(classification);
 
     return AtlasImprovementCycle(
-      id:
-          'improvement_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'improvement_${DateTime.now().microsecondsSinceEpoch}',
       farmId: audit.farmId,
       farmName: audit.farmName,
       generatedAt: DateTime.now(),
@@ -57,8 +45,7 @@ class AtlasContinuousImprovementEngine {
         decisions: decisions,
       ),
       decisions: decisions,
-      nextReviewDate:
-          DateTime.now().add(Duration(days: nextReviewDays)),
+      nextReviewDate: DateTime.now().add(Duration(days: nextReviewDays)),
     );
   }
 
@@ -70,12 +57,10 @@ class AtlasContinuousImprovementEngine {
         .where((mission) => mission.area == kpi.area)
         .toList();
 
-    final hasOverdue =
-        relatedMissions.any((mission) => mission.isOverdue);
+    final hasOverdue = relatedMissions.any((mission) => mission.isOverdue);
 
     final completed = relatedMissions.where(
-      (mission) =>
-          mission.status == AtlasMissionStatus.completed,
+      (mission) => mission.status == AtlasMissionStatus.completed,
     );
 
     final completedCount = completed.length;
@@ -86,14 +71,12 @@ class AtlasContinuousImprovementEngine {
     AtlasFarmAuditPriority priority;
     String explanation;
 
-    if (kpi.currentValue < 45 ||
-        hasOverdue && kpi.currentValue < 60) {
+    if (kpi.currentValue < 45 || hasOverdue && kpi.currentValue < 60) {
       type = AtlasImprovementDecisionType.recalibrate;
       priority = AtlasFarmAuditPriority.critical;
       explanation =
           'O indicador permanece em nível crítico e existem sinais de que o plano atual não está produzindo resposta suficiente.';
-    } else if (kpi.trend ==
-            AtlasPerformanceTrend.worsening ||
+    } else if (kpi.trend == AtlasPerformanceTrend.worsening ||
         kpi.currentValue < 60) {
       type = AtlasImprovementDecisionType.correct;
       priority = AtlasFarmAuditPriority.high;
@@ -126,16 +109,14 @@ class AtlasContinuousImprovementEngine {
     return AtlasImprovementDecision(
       id: 'decision_${kpi.area.name}',
       area: kpi.area,
-      title:
-          '${atlasImprovementDecisionTypeLabel(type)} ${kpi.title}',
+      title: '${atlasImprovementDecisionTypeLabel(type)} ${kpi.title}',
       explanation: explanation,
       type: type,
       priority: priority,
       currentValue: kpi.currentValue,
       targetValue: kpi.targetValue,
       deadlineDays: _deadline(priority),
-      expectedGain:
-          gap.clamp(0.0, 40.0).toDouble(),
+      expectedGain: gap.clamp(0.0, 40.0).toDouble(),
     );
   }
 
@@ -144,9 +125,7 @@ class AtlasContinuousImprovementEngine {
     required double auditIndex,
     required int criticalDecisions,
   }) {
-    if (criticalDecisions > 0 ||
-        executionScore < 45 ||
-        auditIndex < 45) {
+    if (criticalDecisions > 0 || executionScore < 45 || auditIndex < 45) {
       return AtlasImprovementCycleClassification.critical;
     }
 
@@ -167,27 +146,15 @@ class AtlasContinuousImprovementEngine {
     required List<AtlasImprovementDecision> decisions,
   }) {
     final recalibrations = decisions
-        .where(
-          (item) =>
-              item.type ==
-              AtlasImprovementDecisionType.recalibrate,
-        )
+        .where((item) => item.type == AtlasImprovementDecisionType.recalibrate)
         .length;
 
     final corrections = decisions
-        .where(
-          (item) =>
-              item.type ==
-              AtlasImprovementDecisionType.correct,
-        )
+        .where((item) => item.type == AtlasImprovementDecisionType.correct)
         .length;
 
     final maintained = decisions
-        .where(
-          (item) =>
-              item.type ==
-              AtlasImprovementDecisionType.maintain,
-        )
+        .where((item) => item.type == AtlasImprovementDecisionType.maintain)
         .length;
 
     return 'A fazenda apresenta Atlas Execution Score de '
@@ -212,9 +179,7 @@ class AtlasContinuousImprovementEngine {
     }
   }
 
-  int _priorityWeight(
-    AtlasFarmAuditPriority priority,
-  ) {
+  int _priorityWeight(AtlasFarmAuditPriority priority) {
     switch (priority) {
       case AtlasFarmAuditPriority.critical:
         return 4;
@@ -227,9 +192,7 @@ class AtlasContinuousImprovementEngine {
     }
   }
 
-  int _nextReviewDays(
-    AtlasImprovementCycleClassification classification,
-  ) {
+  int _nextReviewDays(AtlasImprovementCycleClassification classification) {
     switch (classification) {
       case AtlasImprovementCycleClassification.critical:
         return 7;

@@ -13,146 +13,117 @@ enum AtlasAdvancedAiModule {
 
 extension AtlasAdvancedAiModuleX on AtlasAdvancedAiModule {
   String get code => switch (this) {
-        AtlasAdvancedAiModule.conversationalAssistant =>
-          'conversational_assistant',
-        AtlasAdvancedAiModule.farmContextChat =>
-          'farm_context_chat',
-        AtlasAdvancedAiModule.healthDecisionSupport =>
-          'health_decision_support',
-        AtlasAdvancedAiModule.reproductiveIntelligence =>
-          'reproductive_intelligence',
-        AtlasAdvancedAiModule.nutritionalIntelligence =>
-          'nutritional_intelligence',
-        AtlasAdvancedAiModule.geneticIntelligence =>
-          'genetic_intelligence',
-        AtlasAdvancedAiModule.financialIntelligence =>
-          'financial_intelligence',
-        AtlasAdvancedAiModule.strategicIntelligence =>
-          'strategic_intelligence',
-        AtlasAdvancedAiModule.climateIntelligence =>
-          'climate_intelligence',
-        AtlasAdvancedAiModule.explainableAi =>
-          'explainable_ai',
-      };
+    AtlasAdvancedAiModule.conversationalAssistant => 'conversational_assistant',
+    AtlasAdvancedAiModule.farmContextChat => 'farm_context_chat',
+    AtlasAdvancedAiModule.healthDecisionSupport => 'health_decision_support',
+    AtlasAdvancedAiModule.reproductiveIntelligence =>
+      'reproductive_intelligence',
+    AtlasAdvancedAiModule.nutritionalIntelligence => 'nutritional_intelligence',
+    AtlasAdvancedAiModule.geneticIntelligence => 'genetic_intelligence',
+    AtlasAdvancedAiModule.financialIntelligence => 'financial_intelligence',
+    AtlasAdvancedAiModule.strategicIntelligence => 'strategic_intelligence',
+    AtlasAdvancedAiModule.climateIntelligence => 'climate_intelligence',
+    AtlasAdvancedAiModule.explainableAi => 'explainable_ai',
+  };
 
   String get title => switch (this) {
-        AtlasAdvancedAiModule.conversationalAssistant =>
-          'Assistente Atlas IA',
-        AtlasAdvancedAiModule.farmContextChat =>
-          'Chat Contextual da Fazenda',
-        AtlasAdvancedAiModule.healthDecisionSupport =>
-          'IA de Apoio Sanitário',
-        AtlasAdvancedAiModule.reproductiveIntelligence =>
-          'IA Reprodutiva',
-        AtlasAdvancedAiModule.nutritionalIntelligence =>
-          'IA Nutricional',
-        AtlasAdvancedAiModule.geneticIntelligence =>
-          'IA Genética',
-        AtlasAdvancedAiModule.financialIntelligence =>
-          'IA Financeira',
-        AtlasAdvancedAiModule.strategicIntelligence =>
-          'IA Estratégica',
-        AtlasAdvancedAiModule.climateIntelligence =>
-          'IA Climática Integrada',
-        AtlasAdvancedAiModule.explainableAi =>
-          'IA Explicável',
-      };
+    AtlasAdvancedAiModule.conversationalAssistant => 'Assistente Atlas IA',
+    AtlasAdvancedAiModule.farmContextChat => 'Chat Contextual da Fazenda',
+    AtlasAdvancedAiModule.healthDecisionSupport => 'IA de Apoio Sanitário',
+    AtlasAdvancedAiModule.reproductiveIntelligence => 'IA Reprodutiva',
+    AtlasAdvancedAiModule.nutritionalIntelligence => 'IA Nutricional',
+    AtlasAdvancedAiModule.geneticIntelligence => 'IA Genética',
+    AtlasAdvancedAiModule.financialIntelligence => 'IA Financeira',
+    AtlasAdvancedAiModule.strategicIntelligence => 'IA Estratégica',
+    AtlasAdvancedAiModule.climateIntelligence => 'IA Climática Integrada',
+    AtlasAdvancedAiModule.explainableAi => 'IA Explicável',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasAdvancedAiModule.conversationalAssistant =>
-          'Pacote 111',
-        AtlasAdvancedAiModule.farmContextChat =>
-          'Pacote 112',
-        AtlasAdvancedAiModule.healthDecisionSupport =>
-          'Pacote 113',
-        AtlasAdvancedAiModule.reproductiveIntelligence =>
-          'Pacote 114',
-        AtlasAdvancedAiModule.nutritionalIntelligence =>
-          'Pacote 115',
-        AtlasAdvancedAiModule.geneticIntelligence =>
-          'Pacote 116',
-        AtlasAdvancedAiModule.financialIntelligence =>
-          'Pacote 117',
-        AtlasAdvancedAiModule.strategicIntelligence =>
-          'Pacote 118',
-        AtlasAdvancedAiModule.climateIntelligence =>
-          'Pacote 119',
-        AtlasAdvancedAiModule.explainableAi =>
-          'Pacote 120',
-      };
+    AtlasAdvancedAiModule.conversationalAssistant => 'Pacote 111',
+    AtlasAdvancedAiModule.farmContextChat => 'Pacote 112',
+    AtlasAdvancedAiModule.healthDecisionSupport => 'Pacote 113',
+    AtlasAdvancedAiModule.reproductiveIntelligence => 'Pacote 114',
+    AtlasAdvancedAiModule.nutritionalIntelligence => 'Pacote 115',
+    AtlasAdvancedAiModule.geneticIntelligence => 'Pacote 116',
+    AtlasAdvancedAiModule.financialIntelligence => 'Pacote 117',
+    AtlasAdvancedAiModule.strategicIntelligence => 'Pacote 118',
+    AtlasAdvancedAiModule.climateIntelligence => 'Pacote 119',
+    AtlasAdvancedAiModule.explainableAi => 'Pacote 120',
+  };
 
   List<String> get features => switch (this) {
-        AtlasAdvancedAiModule.conversationalAssistant => const [
-            'Perguntas e respostas',
-            'Comandos assistidos',
-            'Resumos automáticos',
-            'Sugestões de ação',
-            'Histórico de conversas',
-          ],
-        AtlasAdvancedAiModule.farmContextChat => const [
-            'Contexto da propriedade',
-            'Contexto do rebanho',
-            'Contexto do animal',
-            'Memória operacional',
-            'Fontes e referências',
-          ],
-        AtlasAdvancedAiModule.healthDecisionSupport => const [
-            'Sinais clínicos',
-            'Hipóteses de triagem',
-            'Prioridade sanitária',
-            'Evidências e exames',
-            'Encaminhamento veterinário',
-          ],
-        AtlasAdvancedAiModule.reproductiveIntelligence => const [
-            'Indicadores reprodutivos',
-            'Elegibilidade de protocolo',
-            'Risco reprodutivo',
-            'Agenda e oportunidades',
-            'Recomendações assistidas',
-          ],
-        AtlasAdvancedAiModule.nutritionalIntelligence => const [
-            'Demanda nutricional',
-            'Consumo estimado',
-            'Disponibilidade de alimento',
-            'Custo da dieta',
-            'Ajustes recomendados',
-          ],
-        AtlasAdvancedAiModule.geneticIntelligence => const [
-            'Objetivos de seleção',
-            'Informações genealógicas',
-            'Indicadores genéticos',
-            'Acasalamentos assistidos',
-            'Risco de consanguinidade',
-          ],
-        AtlasAdvancedAiModule.financialIntelligence => const [
-            'Análise de resultado',
-            'Desvios financeiros',
-            'Projeções e cenários',
-            'Riscos econômicos',
-            'Recomendações financeiras',
-          ],
-        AtlasAdvancedAiModule.strategicIntelligence => const [
-            'Objetivos estratégicos',
-            'Priorização',
-            'Cenários futuros',
-            'Riscos e dependências',
-            'Plano de ação',
-          ],
-        AtlasAdvancedAiModule.climateIntelligence => const [
-            'Dados meteorológicos',
-            'Risco térmico',
-            'Janela operacional',
-            'Impacto em pastagens',
-            'Alertas climáticos',
-          ],
-        AtlasAdvancedAiModule.explainableAi => const [
-            'Motivos da recomendação',
-            'Evidências utilizadas',
-            'Limitações do modelo',
-            'Confiança e incerteza',
-            'Revisão humana',
-          ],
-      };
+    AtlasAdvancedAiModule.conversationalAssistant => const [
+      'Perguntas e respostas',
+      'Comandos assistidos',
+      'Resumos automáticos',
+      'Sugestões de ação',
+      'Histórico de conversas',
+    ],
+    AtlasAdvancedAiModule.farmContextChat => const [
+      'Contexto da propriedade',
+      'Contexto do rebanho',
+      'Contexto do animal',
+      'Memória operacional',
+      'Fontes e referências',
+    ],
+    AtlasAdvancedAiModule.healthDecisionSupport => const [
+      'Sinais clínicos',
+      'Hipóteses de triagem',
+      'Prioridade sanitária',
+      'Evidências e exames',
+      'Encaminhamento veterinário',
+    ],
+    AtlasAdvancedAiModule.reproductiveIntelligence => const [
+      'Indicadores reprodutivos',
+      'Elegibilidade de protocolo',
+      'Risco reprodutivo',
+      'Agenda e oportunidades',
+      'Recomendações assistidas',
+    ],
+    AtlasAdvancedAiModule.nutritionalIntelligence => const [
+      'Demanda nutricional',
+      'Consumo estimado',
+      'Disponibilidade de alimento',
+      'Custo da dieta',
+      'Ajustes recomendados',
+    ],
+    AtlasAdvancedAiModule.geneticIntelligence => const [
+      'Objetivos de seleção',
+      'Informações genealógicas',
+      'Indicadores genéticos',
+      'Acasalamentos assistidos',
+      'Risco de consanguinidade',
+    ],
+    AtlasAdvancedAiModule.financialIntelligence => const [
+      'Análise de resultado',
+      'Desvios financeiros',
+      'Projeções e cenários',
+      'Riscos econômicos',
+      'Recomendações financeiras',
+    ],
+    AtlasAdvancedAiModule.strategicIntelligence => const [
+      'Objetivos estratégicos',
+      'Priorização',
+      'Cenários futuros',
+      'Riscos e dependências',
+      'Plano de ação',
+    ],
+    AtlasAdvancedAiModule.climateIntelligence => const [
+      'Dados meteorológicos',
+      'Risco térmico',
+      'Janela operacional',
+      'Impacto em pastagens',
+      'Alertas climáticos',
+    ],
+    AtlasAdvancedAiModule.explainableAi => const [
+      'Motivos da recomendação',
+      'Evidências utilizadas',
+      'Limitações do modelo',
+      'Confiança e incerteza',
+      'Revisão humana',
+    ],
+  };
 }
 
 class AtlasAdvancedAiRecord {
@@ -221,8 +192,7 @@ class AtlasAdvancedAiRecord {
     final parsed = parseAtlasAdvancedAiDate(reviewDate);
     if (parsed.year == 1900) return false;
 
-    return parsed.isBefore(DateTime.now()) &&
-        status != 'Concluído';
+    return parsed.isBefore(DateTime.now()) && status != 'Concluído';
   }
 
   Map<String, dynamic> toMap() {
@@ -252,15 +222,12 @@ class AtlasAdvancedAiRecord {
     };
   }
 
-  factory AtlasAdvancedAiRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasAdvancedAiRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasAdvancedAiModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasAdvancedAiModule.conversationalAssistant,
+      orElse: () => AtlasAdvancedAiModule.conversationalAssistant,
     );
 
     return AtlasAdvancedAiRecord(
@@ -275,19 +242,12 @@ class AtlasAdvancedAiRecord {
       promptSummary: map['promptSummary']?.toString() ?? '',
       recommendation: map['recommendation']?.toString() ?? '',
       evidence: map['evidence']?.toString() ?? '',
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ??
-              0.0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
-      estimatedImpact:
-          (map['estimatedImpact'] as num?)?.toDouble() ??
-              0.0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0.0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
+      estimatedImpact: (map['estimatedImpact'] as num?)?.toDouble() ?? 0.0,
       priority: (map['priority'] as num?)?.toInt() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       reviewDate: map['reviewDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

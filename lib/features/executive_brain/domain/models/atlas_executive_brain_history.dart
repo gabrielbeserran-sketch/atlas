@@ -49,14 +49,11 @@ class AtlasExecutiveBrainHistoryEntry {
     };
   }
 
-  factory AtlasExecutiveBrainHistoryEntry.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasExecutiveBrainHistoryEntry.fromJson(Map<String, dynamic> json) {
     return AtlasExecutiveBrainHistoryEntry(
       id: json['id'] as String? ?? 'brain_history_unknown',
-      recordedAt: DateTime.tryParse(
-            json['recordedAt'] as String? ?? '',
-          ) ??
+      recordedAt:
+          DateTime.tryParse(json['recordedAt'] as String? ?? '') ??
           DateTime.now(),
       changeType: AtlasExecutiveBrainChangeType.values.firstWhere(
         (item) => item.name == json['changeType'],
@@ -68,16 +65,15 @@ class AtlasExecutiveBrainHistoryEntry {
       currentDecisionTitle: json['currentDecisionTitle'] as String?,
       previousScore: (json['previousScore'] as num?)?.toDouble(),
       currentScore: (json['currentScore'] as num?)?.toDouble() ?? 0,
-      previousConfidencePercent:
-          (json['previousConfidencePercent'] as num?)?.toDouble(),
+      previousConfidencePercent: (json['previousConfidencePercent'] as num?)
+          ?.toDouble(),
       currentConfidencePercent:
           (json['currentConfidencePercent'] as num?)?.toDouble() ?? 0,
       currentStatus: AtlasExecutiveBrainStatus.values.firstWhere(
         (item) => item.name == json['currentStatus'],
         orElse: () => AtlasExecutiveBrainStatus.attention,
       ),
-      reason: json['reason'] as String? ??
-          'Mudança executiva registrada.',
+      reason: json['reason'] as String? ?? 'Mudança executiva registrada.',
     );
   }
 }
@@ -91,9 +87,7 @@ enum AtlasExecutiveBrainChangeType {
   strategyChanged,
 }
 
-String atlasExecutiveBrainChangeTypeLabel(
-  AtlasExecutiveBrainChangeType type,
-) {
+String atlasExecutiveBrainChangeTypeLabel(AtlasExecutiveBrainChangeType type) {
   switch (type) {
     case AtlasExecutiveBrainChangeType.initialized:
       return 'Inicialização';

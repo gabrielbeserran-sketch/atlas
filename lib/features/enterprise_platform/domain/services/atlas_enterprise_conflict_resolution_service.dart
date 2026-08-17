@@ -21,11 +21,8 @@ class AtlasEnterpriseConflictResolutionService {
     required AtlasEnterpriseConflictResolution resolution,
     Map<String, dynamic>? mergedPayload,
   }) async {
-    if (resolution ==
-        AtlasEnterpriseConflictResolution.unresolved) {
-      throw StateError(
-        'Selecione uma resolução válida para o conflito.',
-      );
+    if (resolution == AtlasEnterpriseConflictResolution.unresolved) {
+      throw StateError('Selecione uma resolução válida para o conflito.');
     }
 
     final session = AtlasEnterpriseSessionService.instance;
@@ -34,11 +31,9 @@ class AtlasEnterpriseConflictResolutionService {
     Map<String, dynamic> selectedPayload;
     switch (resolution) {
       case AtlasEnterpriseConflictResolution.keepLocal:
-        selectedPayload =
-            Map<String, dynamic>.from(conflict.localPayload);
+        selectedPayload = Map<String, dynamic>.from(conflict.localPayload);
       case AtlasEnterpriseConflictResolution.keepRemote:
-        selectedPayload =
-            Map<String, dynamic>.from(conflict.remotePayload);
+        selectedPayload = Map<String, dynamic>.from(conflict.remotePayload);
       case AtlasEnterpriseConflictResolution.merge:
         selectedPayload = <String, dynamic>{
           ...conflict.remotePayload,
@@ -54,8 +49,7 @@ class AtlasEnterpriseConflictResolutionService {
       entityType: conflict.entityType,
       entityId: conflict.entityId,
     );
-    final currentVersion =
-        history.isEmpty ? 0 : history.first.version;
+    final currentVersion = history.isEmpty ? 0 : history.first.version;
 
     await versions.commit(
       tenantId: conflict.companyId,
@@ -66,8 +60,7 @@ class AtlasEnterpriseConflictResolutionService {
       payload: selectedPayload,
       baseVersion: currentVersion,
       mutationType: AtlasVersionMutationType.merge,
-      reason:
-          'Conflito resolvido: ${resolution.name}.',
+      reason: 'Conflito resolvido: ${resolution.name}.',
       force: true,
     );
 
@@ -85,10 +78,9 @@ class AtlasEnterpriseConflictResolutionService {
           operation.copyWith(
             status: AtlasEnterpriseSyncStatus.synchronized,
             lastError: '',
-            baseVersion:
-                conflict.remoteVersion > conflict.localVersion
-                    ? conflict.remoteVersion
-                    : conflict.localVersion,
+            baseVersion: conflict.remoteVersion > conflict.localVersion
+                ? conflict.remoteVersion
+                : conflict.localVersion,
             payload: selectedPayload,
           ),
         );

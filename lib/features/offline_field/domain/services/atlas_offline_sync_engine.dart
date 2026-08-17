@@ -38,9 +38,6 @@ class AtlasOfflineSyncEngine {
     required List<AtlasOfflineRecord> records,
     required AtlasOfflineRecord record,
   }) {
-    return <AtlasOfflineRecord>[
-      record,
-      ...records,
-    ];
+    return <AtlasOfflineRecord>[record, ...records];
   }
 }

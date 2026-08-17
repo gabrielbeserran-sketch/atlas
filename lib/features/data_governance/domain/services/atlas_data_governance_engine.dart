@@ -6,8 +6,8 @@ class AtlasDataGovernanceEngine {
   AtlasDataGovernanceSummary buildSummary(List<AtlasBackupSnapshot> backups) {
     final AtlasBackupSnapshot? latest = backups.isEmpty ? null : backups.first;
     final DateTime now = DateTime.now();
-    final bool recentBackup = latest != null &&
-        now.difference(latest.createdAt).inDays <= 7;
+    final bool recentBackup =
+        latest != null && now.difference(latest.createdAt).inDays <= 7;
 
     final List<AtlasIntegrityCheck> checks = <AtlasIntegrityCheck>[
       AtlasIntegrityCheck(

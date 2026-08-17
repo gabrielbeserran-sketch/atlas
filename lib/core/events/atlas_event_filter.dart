@@ -24,56 +24,40 @@ class AtlasEventFilter {
 
   final Set<String>? tags;
 
-  bool matches(
-    AtlasEvent event,
-  ) {
-    if (types != null &&
-        types!.isNotEmpty &&
-        !types!.contains(event.type)) {
+  bool matches(AtlasEvent event) {
+    if (types != null && types!.isNotEmpty && !types!.contains(event.type)) {
       return false;
     }
 
     if (sourceModules != null &&
         sourceModules!.isNotEmpty &&
-        !sourceModules!.contains(
-          event.sourceModule,
-        )) {
+        !sourceModules!.contains(event.sourceModule)) {
       return false;
     }
 
     if (priorities != null &&
         priorities!.isNotEmpty &&
-        !priorities!.contains(
-          event.priority,
-        )) {
+        !priorities!.contains(event.priority)) {
       return false;
     }
 
-    if (farmId != null &&
-        event.farmId != farmId) {
+    if (farmId != null && event.farmId != farmId) {
       return false;
     }
 
-    if (farmName != null &&
-        event.farmName != farmName) {
+    if (farmName != null && event.farmName != farmName) {
       return false;
     }
 
-    if (entityId != null &&
-        event.entityId != entityId) {
+    if (entityId != null && event.entityId != entityId) {
       return false;
     }
 
-    if (entityType != null &&
-        event.entityType != entityType) {
+    if (entityType != null && event.entityType != entityType) {
       return false;
     }
 
-    if (tags != null &&
-        tags!.isNotEmpty &&
-        !tags!.every(
-          event.tags.contains,
-        )) {
+    if (tags != null && tags!.isNotEmpty && !tags!.every(event.tags.contains)) {
       return false;
     }
 

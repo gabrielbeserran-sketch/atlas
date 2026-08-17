@@ -30,9 +30,7 @@ class AtlasOperationalMemoryEntry {
   final List<String> tags;
   final Map<String, dynamic> payload;
 
-  factory AtlasOperationalMemoryEntry.fromLogEntry(
-    AtlasEventLogEntry entry,
-  ) {
+  factory AtlasOperationalMemoryEntry.fromLogEntry(AtlasEventLogEntry entry) {
     return AtlasOperationalMemoryEntry(
       id: 'memory_${entry.id}',
       eventId: entry.eventId,

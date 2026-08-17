@@ -1,0 +1,23 @@
+{
+  "python_syntax_errors": [],
+  "dart_missing_internal_imports": [],
+  "missing_permission_catalog_entries": [],
+  "backend_route_count": 502,
+  "duplicate_routes": [],
+  "unsafe_farm_scope_checks": [],
+  "alembic_revision_count": 40,
+  "alembic_heads": [
+    "20260815_0040"
+  ],
+  "alembic_orphans": [],
+  "deprecated_http_422_constants": 0,
+  "legacy_pet_icons": 0,
+  "fontawesome_refs": 0,
+  "farm_frontend_contract_errors": [],
+  "operational_module_contract_errors": [],
+  "animal_central_contract_errors": [],
+  "livestock_core_contract_errors": [],
+  "management_core_contract_errors": [],
+  "marco3_integration_contract_errors": [],
+  "marco4_route_screen_contract_errors": []
+}

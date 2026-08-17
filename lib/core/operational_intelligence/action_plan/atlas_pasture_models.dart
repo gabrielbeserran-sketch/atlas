@@ -2,11 +2,16 @@ enum AtlasPaddockStatus { available, occupied, resting, maintenance, reform }
 
 String atlasPaddockStatusLabel(AtlasPaddockStatus value) {
   switch (value) {
-    case AtlasPaddockStatus.available: return 'Disponível';
-    case AtlasPaddockStatus.occupied: return 'Ocupado';
-    case AtlasPaddockStatus.resting: return 'Descanso';
-    case AtlasPaddockStatus.maintenance: return 'Manutenção';
-    case AtlasPaddockStatus.reform: return 'Reforma';
+    case AtlasPaddockStatus.available:
+      return 'Disponível';
+    case AtlasPaddockStatus.occupied:
+      return 'Ocupado';
+    case AtlasPaddockStatus.resting:
+      return 'Descanso';
+    case AtlasPaddockStatus.maintenance:
+      return 'Manutenção';
+    case AtlasPaddockStatus.reform:
+      return 'Reforma';
   }
 }
 
@@ -122,10 +127,10 @@ class AtlasGrazingRotation {
       paddockId: map['paddockId']?.toString() ?? '',
       lotName: map['lotName']?.toString() ?? '',
       animalCount: (map['animalCount'] as num?)?.toInt() ?? 0,
-      entryAt: DateTime.tryParse(map['entryAt']?.toString() ?? '') ??
-          DateTime.now(),
-      exitAt: DateTime.tryParse(map['exitAt']?.toString() ?? '') ??
-          DateTime.now(),
+      entryAt:
+          DateTime.tryParse(map['entryAt']?.toString() ?? '') ?? DateTime.now(),
+      exitAt:
+          DateTime.tryParse(map['exitAt']?.toString() ?? '') ?? DateTime.now(),
       restDays: (map['restDays'] as num?)?.toInt() ?? 0,
       farmName: map['farmName']?.toString(),
     );
@@ -144,13 +149,20 @@ enum AtlasPastureOperationType {
 
 String atlasPastureOperationTypeLabel(AtlasPastureOperationType value) {
   switch (value) {
-    case AtlasPastureOperationType.fertilization: return 'Adubação';
-    case AtlasPastureOperationType.irrigation: return 'Irrigação';
-    case AtlasPastureOperationType.mowing: return 'Roçada';
-    case AtlasPastureOperationType.weedControl: return 'Controle de invasoras';
-    case AtlasPastureOperationType.soilCorrection: return 'Correção do solo';
-    case AtlasPastureOperationType.reseeding: return 'Ressemeadura';
-    case AtlasPastureOperationType.reform: return 'Reforma';
+    case AtlasPastureOperationType.fertilization:
+      return 'Adubação';
+    case AtlasPastureOperationType.irrigation:
+      return 'Irrigação';
+    case AtlasPastureOperationType.mowing:
+      return 'Roçada';
+    case AtlasPastureOperationType.weedControl:
+      return 'Controle de invasoras';
+    case AtlasPastureOperationType.soilCorrection:
+      return 'Correção do solo';
+    case AtlasPastureOperationType.reseeding:
+      return 'Ressemeadura';
+    case AtlasPastureOperationType.reform:
+      return 'Reforma';
   }
 }
 
@@ -180,8 +192,7 @@ class AtlasPastureOperation {
   final String? farmName;
 
   bool get isCompleted => completedAt != null;
-  bool get isOverdue =>
-      !isCompleted && scheduledAt.isBefore(DateTime.now());
+  bool get isOverdue => !isCompleted && scheduledAt.isBefore(DateTime.now());
 
   Map<String, dynamic> toMap() => {
     'id': id,
@@ -204,7 +215,8 @@ class AtlasPastureOperation {
         (e) => e.name == map['type']?.toString(),
         orElse: () => AtlasPastureOperationType.fertilization,
       ),
-      scheduledAt: DateTime.tryParse(map['scheduledAt']?.toString() ?? '') ??
+      scheduledAt:
+          DateTime.tryParse(map['scheduledAt']?.toString() ?? '') ??
           DateTime.now(),
       completedAt: DateTime.tryParse(map['completedAt']?.toString() ?? ''),
       product: map['product']?.toString() ?? '',

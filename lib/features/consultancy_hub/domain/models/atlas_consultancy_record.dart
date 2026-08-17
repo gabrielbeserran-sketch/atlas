@@ -1,4 +1,5 @@
 enum AtlasClientStatus { active, attention, inactive }
+
 enum AtlasVisitStatus { scheduled, completed, cancelled }
 
 class AtlasConsultancyRecord {
@@ -56,18 +57,18 @@ class AtlasConsultancyRecord {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'clientName': clientName,
-        'propertyName': propertyName,
-        'phone': phone,
-        'city': city,
-        'status': status.name,
-        'nextVisit': nextVisit.toIso8601String(),
-        'executiveScore': executiveScore,
-        'openActions': openActions,
-        'monthlyFee': monthlyFee,
-        'notes': notes,
-      };
+    'id': id,
+    'clientName': clientName,
+    'propertyName': propertyName,
+    'phone': phone,
+    'city': city,
+    'status': status.name,
+    'nextVisit': nextVisit.toIso8601String(),
+    'executiveScore': executiveScore,
+    'openActions': openActions,
+    'monthlyFee': monthlyFee,
+    'notes': notes,
+  };
 
   factory AtlasConsultancyRecord.fromJson(Map<String, dynamic> json) {
     return AtlasConsultancyRecord(
@@ -80,7 +81,9 @@ class AtlasConsultancyRecord {
         (e) => e.name == json['status'],
         orElse: () => AtlasClientStatus.active,
       ),
-      nextVisit: DateTime.tryParse(json['nextVisit'] as String? ?? '') ?? DateTime.now(),
+      nextVisit:
+          DateTime.tryParse(json['nextVisit'] as String? ?? '') ??
+          DateTime.now(),
       executiveScore: (json['executiveScore'] as num? ?? 0).toDouble(),
       openActions: (json['openActions'] as num? ?? 0).toInt(),
       monthlyFee: (json['monthlyFee'] as num? ?? 0).toDouble(),

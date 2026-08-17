@@ -1,14 +1,6 @@
-enum AtlasVersionMutationType {
-  create,
-  update,
-  delete,
-  restore,
-  merge,
-}
+enum AtlasVersionMutationType { create, update, delete, restore, merge }
 
-String atlasVersionMutationTypeLabel(
-  AtlasVersionMutationType value,
-) {
+String atlasVersionMutationTypeLabel(AtlasVersionMutationType value) {
   switch (value) {
     case AtlasVersionMutationType.create:
       return 'Criação';
@@ -59,26 +51,24 @@ class AtlasVersionedEntitySnapshot {
   final String contentHash;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'versionId': versionId,
-        'tenantId': tenantId,
-        'companyId': companyId,
-        'farmId': farmId,
-        'entityType': entityType,
-        'entityId': entityId,
-        'version': version,
-        'mutationType': mutationType.name,
-        'payload': payload,
-        'deleted': deleted,
-        'reason': reason,
-        'createdBy': createdBy,
-        'createdAt': createdAt.toIso8601String(),
-        'previousVersionId': previousVersionId,
-        'contentHash': contentHash,
-      };
+    'versionId': versionId,
+    'tenantId': tenantId,
+    'companyId': companyId,
+    'farmId': farmId,
+    'entityType': entityType,
+    'entityId': entityId,
+    'version': version,
+    'mutationType': mutationType.name,
+    'payload': payload,
+    'deleted': deleted,
+    'reason': reason,
+    'createdBy': createdBy,
+    'createdAt': createdAt.toIso8601String(),
+    'previousVersionId': previousVersionId,
+    'contentHash': contentHash,
+  };
 
-  factory AtlasVersionedEntitySnapshot.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasVersionedEntitySnapshot.fromMap(Map<String, dynamic> map) {
     return AtlasVersionedEntitySnapshot(
       versionId: map['versionId']?.toString() ?? '',
       tenantId: map['tenantId']?.toString() ?? '',
@@ -87,26 +77,20 @@ class AtlasVersionedEntitySnapshot {
       entityType: map['entityType']?.toString() ?? '',
       entityId: map['entityId']?.toString() ?? '',
       version: (map['version'] as num?)?.toInt() ?? 0,
-      mutationType:
-          AtlasVersionMutationType.values.firstWhere(
-        (item) =>
-            item.name == map['mutationType']?.toString(),
+      mutationType: AtlasVersionMutationType.values.firstWhere(
+        (item) => item.name == map['mutationType']?.toString(),
         orElse: () => AtlasVersionMutationType.update,
       ),
       payload: Map<String, dynamic>.from(
-        (map['payload'] as Map?) ??
-            const <String, dynamic>{},
+        (map['payload'] as Map?) ?? const <String, dynamic>{},
       ),
       deleted: map['deleted'] == true,
       reason: map['reason']?.toString() ?? '',
       createdBy: map['createdBy']?.toString() ?? 'system',
       createdAt:
-          DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      previousVersionId:
-          map['previousVersionId']?.toString(),
+      previousVersionId: map['previousVersionId']?.toString(),
       contentHash: map['contentHash']?.toString() ?? '',
     );
   }

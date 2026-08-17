@@ -11,20 +11,16 @@ class AtlasAiOperationActionsService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    final progress =
-        _buildOperationProgress(actions);
+    final progress = _buildOperationProgress(actions);
 
-    final farms =
-        _buildFarmSummaries(actions);
+    final farms = _buildFarmSummaries(actions);
 
-    final priorities =
-        _buildPriorityActions(
+    final priorities = _buildPriorityActions(
       actions: actions,
       now: currentTime,
     );
 
-    final areas =
-        _buildAreaSummaries(actions);
+    final areas = _buildAreaSummaries(actions);
 
     return AtlasAiOperationActions(
       generatedAt: currentTime,
@@ -40,41 +36,34 @@ class AtlasAiOperationActionsService {
     );
   }
 
-  AtlasAiOperationActionProgress
-      _buildOperationProgress(
+  AtlasAiOperationActionProgress _buildOperationProgress(
     List<AtlasAiTrackedAction> actions,
   ) {
     final pending = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.pending;
+      return item.status == AtlasAiTrackedActionStatus.pending;
     }).length;
 
     final inProgress = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.inProgress;
+      return item.status == AtlasAiTrackedActionStatus.inProgress;
     }).length;
 
     final completed = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.completed;
+      return item.status == AtlasAiTrackedActionStatus.completed;
     }).length;
 
     final cancelled = actions.where((item) {
-      return item.status ==
-          AtlasAiTrackedActionStatus.cancelled;
+      return item.status == AtlasAiTrackedActionStatus.cancelled;
     }).length;
 
     final overdue = actions.where((item) {
       return item.isOverdue;
     }).length;
 
-    final validTotal =
-        actions.length - cancelled;
+    final validTotal = actions.length - cancelled;
 
-    final completionPercent =
-        validTotal <= 0
-            ? 0.0
-            : completed / validTotal * 100;
+    final completionPercent = validTotal <= 0
+        ? 0.0
+        : completed / validTotal * 100;
 
     return AtlasAiOperationActionProgress(
       total: actions.length,
@@ -83,88 +72,60 @@ class AtlasAiOperationActionsService {
       completed: completed,
       cancelled: cancelled,
       overdue: overdue,
-      completionPercent:
-          completionPercent.clamp(
-        0.0,
-        100.0,
-      ),
+      completionPercent: completionPercent.clamp(0.0, 100.0),
     );
   }
 
-  List<AtlasAiFarmActionSummary>
-      _buildFarmSummaries(
+  List<AtlasAiFarmActionSummary> _buildFarmSummaries(
     List<AtlasAiTrackedAction> actions,
   ) {
-    final grouped =
-        <String, List<AtlasAiTrackedAction>>{};
+    final grouped = <String, List<AtlasAiTrackedAction>>{};
 
     for (final action in actions) {
-      grouped.putIfAbsent(
-        action.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(action.farmName, () => []);
 
       grouped[action.farmName]!.add(action);
     }
 
-    final result =
-        <AtlasAiFarmActionSummary>[];
+    final result = <AtlasAiFarmActionSummary>[];
 
     for (final entry in grouped.entries) {
       final farmActions = entry.value;
 
-      final progress =
-          _buildOperationProgress(
-        farmActions,
-      );
+      final progress = _buildOperationProgress(farmActions);
 
-      final nextAction =
-          _nextAction(farmActions);
+      final nextAction = _nextAction(farmActions);
 
       final priorityScore =
           progress.overdue * 18 +
-              progress.pending * 6 +
-              progress.inProgress * 3 +
-              (100 -
-                      progress
-                          .completionPercent) *
-                  0.35;
+          progress.pending * 6 +
+          progress.inProgress * 3 +
+          (100 - progress.completionPercent) * 0.35;
 
       result.add(
         AtlasAiFarmActionSummary(
           farmName: entry.key,
           total: progress.total,
           pending: progress.pending,
-          inProgress:
-              progress.inProgress,
+          inProgress: progress.inProgress,
           completed: progress.completed,
           cancelled: progress.cancelled,
           overdue: progress.overdue,
-          completionPercent:
-              progress.completionPercent,
-          priorityScore:
-              priorityScore.clamp(
-            0.0,
-            100.0,
-          ),
-          nextActionTitle:
-              nextAction?.title,
+          completionPercent: progress.completionPercent,
+          priorityScore: priorityScore.clamp(0.0, 100.0),
+          nextActionTitle: nextAction?.title,
         ),
       );
     }
 
     result.sort(
-      (first, second) =>
-          second.priorityScore.compareTo(
-        first.priorityScore,
-      ),
+      (first, second) => second.priorityScore.compareTo(first.priorityScore),
     );
 
     return result;
   }
 
-  List<AtlasAiOperationPriorityAction>
-      _buildPriorityActions({
+  List<AtlasAiOperationPriorityAction> _buildPriorityActions({
     required List<AtlasAiTrackedAction> actions,
     required DateTime now,
   }) {
@@ -173,23 +134,18 @@ class AtlasAiOperationActionsService {
     }).toList();
 
     final scored = open.map((action) {
-      final daysToDue =
-          action.dueDate.difference(now).inDays;
+      final daysToDue = action.dueDate.difference(now).inDays;
 
       var score = 0.0;
 
       if (action.isOverdue) {
         score += 60;
-        score +=
-            (-daysToDue).clamp(0, 30) * 1.2;
+        score += (-daysToDue).clamp(0, 30) * 1.2;
       } else {
-        score +=
-            (30 - daysToDue.clamp(0, 30)) *
-                0.9;
+        score += (30 - daysToDue.clamp(0, 30)) * 0.9;
       }
 
-      if (action.status ==
-          AtlasAiTrackedActionStatus.inProgress) {
+      if (action.status == AtlasAiTrackedActionStatus.inProgress) {
         score += 12;
       }
 
@@ -197,56 +153,33 @@ class AtlasAiOperationActionsService {
         score += 4;
       }
 
-      return _ScoredAction(
-        action: action,
-        score: score.clamp(
-          0.0,
-          100.0,
-        ),
-      );
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.score.compareTo(
-          first.score,
-        ),
-      );
+      return _ScoredAction(action: action, score: score.clamp(0.0, 100.0));
+    }).toList()..sort((first, second) => second.score.compareTo(first.score));
 
-    return List.generate(
-      scored.length,
-      (index) {
-        final item = scored[index];
+    return List.generate(scored.length, (index) {
+      final item = scored[index];
 
-        return AtlasAiOperationPriorityAction(
-          position: index + 1,
-          action: item.action,
-          priorityScore: item.score,
-          reason:
-              _priorityReason(item.action),
-        );
-      },
-    );
+      return AtlasAiOperationPriorityAction(
+        position: index + 1,
+        action: item.action,
+        priorityScore: item.score,
+        reason: _priorityReason(item.action),
+      );
+    });
   }
 
-  List<AtlasAiAreaActionSummary>
-      _buildAreaSummaries(
+  List<AtlasAiAreaActionSummary> _buildAreaSummaries(
     List<AtlasAiTrackedAction> actions,
   ) {
-    final grouped = <
-        AtlasFarmAnalysisArea,
-        List<AtlasAiTrackedAction>>{};
+    final grouped = <AtlasFarmAnalysisArea, List<AtlasAiTrackedAction>>{};
 
     for (final action in actions) {
-      grouped.putIfAbsent(
-        action.area,
-        () => [],
-      );
+      grouped.putIfAbsent(action.area, () => []);
 
       grouped[action.area]!.add(action);
     }
 
-    final result =
-        <AtlasAiAreaActionSummary>[];
+    final result = <AtlasAiAreaActionSummary>[];
 
     for (final entry in grouped.entries) {
       final items = entry.value;
@@ -254,8 +187,7 @@ class AtlasAiOperationActionsService {
       result.add(
         AtlasAiAreaActionSummary(
           area: entry.key,
-          label:
-              atlasFarmAreaLabel(entry.key),
+          label: atlasFarmAreaLabel(entry.key),
           total: items.length,
           open: items.where((item) {
             return item.isOpen;
@@ -270,58 +202,42 @@ class AtlasAiOperationActionsService {
       );
     }
 
-    result.sort(
-      (first, second) {
-        if (first.overdue != second.overdue) {
-          return second.overdue.compareTo(
-            first.overdue,
-          );
-        }
+    result.sort((first, second) {
+      if (first.overdue != second.overdue) {
+        return second.overdue.compareTo(first.overdue);
+      }
 
-        return second.open.compareTo(
-          first.open,
-        );
-      },
-    );
+      return second.open.compareTo(first.open);
+    });
 
     return result;
   }
 
-  AtlasAiTrackedAction? _nextAction(
-    List<AtlasAiTrackedAction> actions,
-  ) {
-    final open = actions.where((item) {
-      return item.isOpen;
-    }).toList()
-      ..sort((first, second) {
-        if (first.isOverdue !=
-            second.isOverdue) {
-          return first.isOverdue ? -1 : 1;
-        }
+  AtlasAiTrackedAction? _nextAction(List<AtlasAiTrackedAction> actions) {
+    final open =
+        actions.where((item) {
+          return item.isOpen;
+        }).toList()..sort((first, second) {
+          if (first.isOverdue != second.isOverdue) {
+            return first.isOverdue ? -1 : 1;
+          }
 
-        return first.dueDate.compareTo(
-          second.dueDate,
-        );
-      });
+          return first.dueDate.compareTo(second.dueDate);
+        });
 
     return open.isEmpty ? null : open.first;
   }
 
-  String _priorityReason(
-    AtlasAiTrackedAction action,
-  ) {
+  String _priorityReason(AtlasAiTrackedAction action) {
     if (action.isOverdue) {
-      final delay = DateTime.now()
-          .difference(action.dueDate)
-          .inDays;
+      final delay = DateTime.now().difference(action.dueDate).inDays;
 
       return 'Ação atrasada há '
           '$delay '
           '${delay == 1 ? 'dia' : 'dias'}.';
     }
 
-    if (action.status ==
-        AtlasAiTrackedActionStatus.inProgress) {
+    if (action.status == AtlasAiTrackedActionStatus.inProgress) {
       return 'Ação em andamento com prazo em '
           '${_formatDate(action.dueDate)}.';
     }
@@ -331,13 +247,9 @@ class AtlasAiOperationActionsService {
   }
 
   String _buildSummary({
-    required AtlasAiOperationActionProgress
-        progress,
-    required List<AtlasAiFarmActionSummary>
-        farms,
-    required List<
-            AtlasAiOperationPriorityAction>
-        priorities,
+    required AtlasAiOperationActionProgress progress,
+    required List<AtlasAiFarmActionSummary> farms,
+    required List<AtlasAiOperationPriorityAction> priorities,
   }) {
     if (progress.total == 0) {
       return 'Ainda não existem ações acompanhadas na operação.';
@@ -377,24 +289,17 @@ class AtlasAiOperationActionsService {
     return buffer.toString().trim();
   }
 
-  String _formatDate(
-    DateTime date,
-  ) {
-    final day =
-        date.day.toString().padLeft(2, '0');
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
 
-    final month =
-        date.month.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year}';
   }
 }
 
 class _ScoredAction {
-  const _ScoredAction({
-    required this.action,
-    required this.score,
-  });
+  const _ScoredAction({required this.action, required this.score});
 
   final AtlasAiTrackedAction action;
   final double score;

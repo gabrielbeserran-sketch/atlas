@@ -6,20 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasAiTrackedActionStorageService {
   const AtlasAiTrackedActionStorageService();
 
-  static const String _keyPrefix =
-      'atlas_ai_tracked_actions_v1';
+  static const String _keyPrefix = 'atlas_ai_tracked_actions_v1';
 
   static const int maximumActionsPerFarm = 150;
 
-  Future<List<AtlasAiTrackedAction>> load({
-    required String farmName,
-  }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<List<AtlasAiTrackedAction>> load({required String farmName}) async {
+    final preferences = await SharedPreferences.getInstance();
 
-    final value = preferences.getString(
-      _storageKey(farmName),
-    );
+    final value = preferences.getString(_storageKey(farmName));
 
     if (value == null || value.trim().isEmpty) {
       return [];
@@ -40,17 +34,13 @@ class AtlasAiTrackedActionStorageService {
             );
           })
           .where((item) {
-            return item.id.trim().isNotEmpty &&
-                item.title.trim().isNotEmpty;
+            return item.id.trim().isNotEmpty && item.title.trim().isNotEmpty;
           })
           .take(maximumActionsPerFarm)
           .toList();
 
       actions.sort(
-        (first, second) =>
-            second.updatedAt.compareTo(
-          first.updatedAt,
-        ),
+        (first, second) => second.updatedAt.compareTo(first.updatedAt),
       );
 
       return actions;
@@ -61,23 +51,14 @@ class AtlasAiTrackedActionStorageService {
 
   Future<void> save({
     required String farmName,
-    required List<AtlasAiTrackedAction>
-        actions,
+    required List<AtlasAiTrackedAction> actions,
   }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     final ordered = [...actions]
-      ..sort(
-        (first, second) =>
-            second.updatedAt.compareTo(
-          first.updatedAt,
-        ),
-      );
+      ..sort((first, second) => second.updatedAt.compareTo(first.updatedAt));
 
-    final limited = ordered
-        .take(maximumActionsPerFarm)
-        .toList();
+    final limited = ordered.take(maximumActionsPerFarm).toList();
 
     await preferences.setString(
       _storageKey(farmName),
@@ -89,26 +70,17 @@ class AtlasAiTrackedActionStorageService {
     );
   }
 
-  Future<void> clear({
-    required String farmName,
-  }) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<void> clear({required String farmName}) async {
+    final preferences = await SharedPreferences.getInstance();
 
-    await preferences.remove(
-      _storageKey(farmName),
-    );
+    await preferences.remove(_storageKey(farmName));
   }
 
-  String _storageKey(
-    String farmName,
-  ) {
+  String _storageKey(String farmName) {
     return '${_keyPrefix}_${_normalize(farmName)}';
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     final normalized = value
         .trim()
         .toLowerCase()
@@ -124,17 +96,9 @@ class AtlasAiTrackedActionStorageService {
         .replaceAll('õ', 'o')
         .replaceAll('ú', 'u')
         .replaceAll('ç', 'c')
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        )
-        .replaceAll(
-          RegExp(r'_+'),
-          '_',
-        );
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
 
-    return normalized.isEmpty
-        ? 'farm'
-        : normalized;
+    return normalized.isEmpty ? 'farm' : normalized;
   }
 }

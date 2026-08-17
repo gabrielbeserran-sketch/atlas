@@ -12,94 +12,85 @@ class AtlasPortfolioManagementEngine {
     required List<AtlasValueGovernanceDecision> decisions,
   }) {
     final realizationByPlan = <String, AtlasBenefitRealization>{
-      for (final item in realizations)
-        item.strategyPlanId: item,
+      for (final item in realizations) item.strategyPlanId: item,
     };
 
     final decisionByPlan = <String, AtlasValueGovernanceDecision>{
-      for (final item in decisions)
-        item.strategyPlanId: item,
+      for (final item in decisions) item.strategyPlanId: item,
     };
 
-    final items = plans.map((plan) {
-      final realization = realizationByPlan[plan.id];
-      final governance = decisionByPlan[plan.id];
+    final items =
+        plans.map((plan) {
+          final realization = realizationByPlan[plan.id];
+          final governance = decisionByPlan[plan.id];
 
-      final financialScore = realization == null
-          ? 55.0
-          : (50 +
-                  realization.roiVariance +
-                  realization.benefitAchievement * 0.35 -
-                  realization.budgetVariance.abs() /
-                      (plan.budget <= 0 ? 1 : plan.budget) *
-                      100)
-              .clamp(0.0, 100.0)
+          final financialScore = realization == null
+              ? 55.0
+              : (50 +
+                        realization.roiVariance +
+                        realization.benefitAchievement * 0.35 -
+                        realization.budgetVariance.abs() /
+                            (plan.budget <= 0 ? 1 : plan.budget) *
+                            100)
+                    .clamp(0.0, 100.0)
+                    .toDouble();
+
+          final executionScore =
+              (plan.progressPercent * 0.70 + _statusScore(plan.status) * 0.30)
+                  .clamp(0.0, 100.0)
+                  .toDouble();
+
+          final governanceScore = governance?.valueScore ?? 55.0;
+
+          final healthScore =
+              (financialScore * 0.40 +
+                      executionScore * 0.35 +
+                      governanceScore * 0.25)
+                  .clamp(0.0, 100.0)
+                  .toDouble();
+
+          final urgency = _urgency(plan, realization, governance);
+          final impact = _impact(plan);
+          final priorityScore =
+              (impact * 0.45 + urgency * 0.35 + (100 - healthScore) * 0.20)
+                  .clamp(0.0, 100.0)
+                  .toDouble();
+
+          final valueAtRisk = (plan.expectedNetGain * (100 - healthScore) / 100)
+              .clamp(0.0, double.infinity)
               .toDouble();
 
-      final executionScore = (
-        plan.progressPercent * 0.70 +
-        _statusScore(plan.status) * 0.30
-      ).clamp(0.0, 100.0).toDouble();
+          final resourceLoad =
+              (plan.totalMilestones * 4 +
+                      plan.gates.length * 6 +
+                      (100 - plan.progressPercent) * 0.35)
+                  .clamp(0.0, 100.0)
+                  .toDouble();
 
-      final governanceScore =
-          governance?.valueScore ?? 55.0;
+          return AtlasPortfolioItem(
+            plan: plan,
+            realization: realization,
+            governance: governance,
+            priorityScore: priorityScore,
+            healthScore: healthScore,
+            valueAtRisk: valueAtRisk,
+            resourceLoad: resourceLoad,
+            recommendation: _recommendation(
+              healthScore: healthScore,
+              resourceLoad: resourceLoad,
+              governance: governance,
+              realization: realization,
+            ),
+          );
+        }).toList()..sort(
+          (first, second) =>
+              second.priorityScore.compareTo(first.priorityScore),
+        );
 
-      final healthScore = (
-        financialScore * 0.40 +
-        executionScore * 0.35 +
-        governanceScore * 0.25
-      ).clamp(0.0, 100.0).toDouble();
-
-      final urgency = _urgency(plan, realization, governance);
-      final impact = _impact(plan);
-      final priorityScore = (
-        impact * 0.45 +
-        urgency * 0.35 +
-        (100 - healthScore) * 0.20
-      ).clamp(0.0, 100.0).toDouble();
-
-      final valueAtRisk = (
-        plan.expectedNetGain *
-        (100 - healthScore) /
-        100
-      ).clamp(0.0, double.infinity).toDouble();
-
-      final resourceLoad = (
-        plan.totalMilestones * 4 +
-        plan.gates.length * 6 +
-        (100 - plan.progressPercent) * 0.35
-      ).clamp(0.0, 100.0).toDouble();
-
-      return AtlasPortfolioItem(
-        plan: plan,
-        realization: realization,
-        governance: governance,
-        priorityScore: priorityScore,
-        healthScore: healthScore,
-        valueAtRisk: valueAtRisk,
-        resourceLoad: resourceLoad,
-        recommendation: _recommendation(
-          healthScore: healthScore,
-          resourceLoad: resourceLoad,
-          governance: governance,
-          realization: realization,
-        ),
-      );
-    }).toList()
-      ..sort(
-        (first, second) =>
-            second.priorityScore.compareTo(first.priorityScore),
-      );
-
-    return AtlasPortfolioSummary(
-      items: items,
-      generatedAt: DateTime.now(),
-    );
+    return AtlasPortfolioSummary(items: items, generatedAt: DateTime.now());
   }
 
-  double _statusScore(
-    AtlasStrategyExecutionStatus status,
-  ) {
+  double _statusScore(AtlasStrategyExecutionStatus status) {
     switch (status) {
       case AtlasStrategyExecutionStatus.planned:
         return 55;
@@ -127,20 +118,16 @@ class AtlasPortfolioManagementEngine {
       urgency += 20;
     }
 
-    if (realization?.status ==
-        AtlasBenefitRealizationStatus.offTrack) {
+    if (realization?.status == AtlasBenefitRealizationStatus.offTrack) {
       urgency += 25;
     }
 
-    if (realization?.status ==
-        AtlasBenefitRealizationStatus.critical) {
+    if (realization?.status == AtlasBenefitRealizationStatus.critical) {
       urgency += 40;
     }
 
-    if (governance?.decision ==
-            AtlasValueGovernanceDecisionType.pause ||
-        governance?.decision ==
-            AtlasValueGovernanceDecisionType.terminate) {
+    if (governance?.decision == AtlasValueGovernanceDecisionType.pause ||
+        governance?.decision == AtlasValueGovernanceDecisionType.terminate) {
       urgency += 30;
     }
 
@@ -148,11 +135,10 @@ class AtlasPortfolioManagementEngine {
   }
 
   double _impact(AtlasStrategyExecutionPlan plan) {
-    final normalized = (
-      plan.expectedNetGain / 10000 +
-      plan.expectedRoi * 0.45 +
-      plan.confidence * 0.25
-    );
+    final normalized =
+        (plan.expectedNetGain / 10000 +
+        plan.expectedRoi * 0.45 +
+        plan.confidence * 0.25);
 
     return normalized.clamp(0.0, 100.0).toDouble();
   }
@@ -163,13 +149,11 @@ class AtlasPortfolioManagementEngine {
     required AtlasValueGovernanceDecision? governance,
     required AtlasBenefitRealization? realization,
   }) {
-    if (governance?.decision ==
-        AtlasValueGovernanceDecisionType.terminate) {
+    if (governance?.decision == AtlasValueGovernanceDecisionType.terminate) {
       return 'Encerrar de forma controlada e registrar lições aprendidas.';
     }
 
-    if (governance?.decision ==
-            AtlasValueGovernanceDecisionType.pause ||
+    if (governance?.decision == AtlasValueGovernanceDecisionType.pause ||
         healthScore < 35) {
       return 'Pausar novas despesas e abrir revisão executiva imediata.';
     }
@@ -178,8 +162,7 @@ class AtlasPortfolioManagementEngine {
       return 'Reduzir concorrência por recursos e replanejar capacidade.';
     }
 
-    if (realization?.status ==
-            AtlasBenefitRealizationStatus.offTrack ||
+    if (realization?.status == AtlasBenefitRealizationStatus.offTrack ||
         healthScore < 60) {
       return 'Executar plano corretivo antes de ampliar o investimento.';
     }

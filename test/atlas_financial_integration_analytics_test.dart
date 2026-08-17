@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_financial_integrations/domain/model
 import 'package:projeto_atlas/features/atlas_financial_integrations/domain/services/atlas_financial_integration_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasFinancialIntegrationAnalyticsService();
+  const service = AtlasFinancialIntegrationAnalyticsService();
 
   test('calculates financial integration analytics', () {
     final records = [
       AtlasFinancialIntegrationRecord(
         id: '1',
-        module:
-            AtlasFinancialIntegrationModule.receitaFederal,
+        module: AtlasFinancialIntegrationModule.receitaFederal,
         feature: 'Cadastro fiscal',
         title: 'Cadastro principal',
         date: '04/08/2026',
@@ -32,8 +30,7 @@ void main() {
       ),
       AtlasFinancialIntegrationRecord(
         id: '2',
-        module:
-            AtlasFinancialIntegrationModule.receitaFederal,
+        module: AtlasFinancialIntegrationModule.receitaFederal,
         feature: 'Pendências fiscais',
         title: 'Pendência',
         date: '04/08/2026',
@@ -55,8 +52,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasFinancialIntegrationModule.receitaFederal,
+      module: AtlasFinancialIntegrationModule.receitaFederal,
       records: records,
     );
 

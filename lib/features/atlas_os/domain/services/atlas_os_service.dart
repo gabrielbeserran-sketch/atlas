@@ -12,30 +12,20 @@ class AtlasOsService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    final modules = _buildModules(
-      missionControl,
-    );
+    final modules = _buildModules(missionControl);
 
-    final commands = _buildCommands(
-      missionControl,
-    );
+    final commands = _buildCommands(missionControl);
 
-    final criticalItems = _buildCriticalItems(
-      missionControl,
-    );
+    final criticalItems = _buildCriticalItems(missionControl);
 
-    final dailyCycle = _buildDailyCycle(
-      currentTime,
-    );
+    final dailyCycle = _buildDailyCycle(currentTime);
 
     final healthScore = _healthScore(
       missionControl: missionControl,
       modules: modules,
     );
 
-    final status = _statusFromMission(
-      missionControl.status,
-    );
+    final status = _statusFromMission(missionControl.status);
 
     return AtlasOsData(
       generatedAt: currentTime,
@@ -47,12 +37,9 @@ class AtlasOsService {
         criticalItems: criticalItems,
       ),
       healthScore: healthScore,
-      executionPercent:
-          missionControl.executionProbabilityPercent,
-      goalProbabilityPercent:
-          missionControl.goalProbabilityPercent,
-      estimatedMonthlyImpact:
-          missionControl.estimatedMonthlyImpact,
+      executionPercent: missionControl.executionProbabilityPercent,
+      goalProbabilityPercent: missionControl.goalProbabilityPercent,
+      estimatedMonthlyImpact: missionControl.estimatedMonthlyImpact,
       status: status,
       modules: modules,
       commands: commands,
@@ -64,116 +51,84 @@ class AtlasOsService {
   List<AtlasOsModuleState> _buildModules(
     AtlasMissionControlData missionControl,
   ) {
-    final criticalPriorities =
-        missionControl.priorities.where((item) {
-      return item.priority ==
-          AtlasMissionPriorityLevel.critical;
+    final criticalPriorities = missionControl.priorities.where((item) {
+      return item.priority == AtlasMissionPriorityLevel.critical;
     }).length;
 
-    final criticalAlerts =
-        missionControl.alerts.where((item) {
-      return item.severity ==
-          AtlasMissionSeverity.critical;
+    final criticalAlerts = missionControl.alerts.where((item) {
+      return item.severity == AtlasMissionSeverity.critical;
     }).length;
 
-    final delayedWorkflows =
-        missionControl.workflows.where((item) {
-      return item.status ==
-          AtlasMissionWorkflowStatus.delayed;
+    final delayedWorkflows = missionControl.workflows.where((item) {
+      return item.status == AtlasMissionWorkflowStatus.delayed;
     }).length;
 
     return [
       AtlasOsModuleState(
         id: 'mission_control',
         title: 'Mission Control',
-        description:
-            'Coordenação executiva da operação.',
+        description: 'Coordenação executiva da operação.',
         status: _moduleStatus(
-          criticalCount:
-              criticalPriorities + criticalAlerts,
-          attentionCount:
-              missionControl.alerts.length,
+          criticalCount: criticalPriorities + criticalAlerts,
+          attentionCount: missionControl.alerts.length,
         ),
         score: missionControl.globalScore,
-        pendingItems:
-            missionControl.priorities.length,
-        criticalItems:
-            criticalPriorities + criticalAlerts,
+        pendingItems: missionControl.priorities.length,
+        criticalItems: criticalPriorities + criticalAlerts,
       ),
       AtlasOsModuleState(
         id: 'decision_engine',
         title: 'Decision Engine',
-        description:
-            'Priorização e recomendação de decisões.',
+        description: 'Priorização e recomendação de decisões.',
         status: _moduleStatus(
           criticalCount: criticalPriorities,
-          attentionCount:
-              missionControl.decisions.length,
+          attentionCount: missionControl.decisions.length,
         ),
-        score:
-            missionControl.goalProbabilityPercent,
-        pendingItems:
-            missionControl.decisions.length,
+        score: missionControl.goalProbabilityPercent,
+        pendingItems: missionControl.decisions.length,
         criticalItems: criticalPriorities,
       ),
       AtlasOsModuleState(
         id: 'workflow',
         title: 'Workflow Engine',
-        description:
-            'Execução e acompanhamento dos planos.',
+        description: 'Execução e acompanhamento dos planos.',
         status: _moduleStatus(
           criticalCount: delayedWorkflows,
-          attentionCount:
-              missionControl.workflows.length,
+          attentionCount: missionControl.workflows.length,
         ),
-        score: missionControl
-            .executionProbabilityPercent,
-        pendingItems:
-            missionControl.workflows.length,
+        score: missionControl.executionProbabilityPercent,
+        pendingItems: missionControl.workflows.length,
         criticalItems: delayedWorkflows,
       ),
       AtlasOsModuleState(
         id: 'predictive',
         title: 'Predictive Analytics',
-        description:
-            'Riscos futuros e projeções.',
+        description: 'Riscos futuros e projeções.',
         status: _moduleStatus(
           criticalCount: criticalAlerts,
-          attentionCount:
-              missionControl.alerts.length,
+          attentionCount: missionControl.alerts.length,
         ),
-        score:
-            missionControl.goalProbabilityPercent,
-        pendingItems:
-            missionControl.alerts.length,
+        score: missionControl.goalProbabilityPercent,
+        pendingItems: missionControl.alerts.length,
         criticalItems: criticalAlerts,
       ),
     ];
   }
 
-  List<AtlasOsCommand> _buildCommands(
-    AtlasMissionControlData missionControl,
-  ) {
+  List<AtlasOsCommand> _buildCommands(AtlasMissionControlData missionControl) {
     final result = <AtlasOsCommand>[];
 
-    for (final item
-        in missionControl.dailyPlan.take(8)) {
+    for (final item in missionControl.dailyPlan.take(8)) {
       result.add(
         AtlasOsCommand(
           position: result.length + 1,
-          id:
-              'command_daily_${item.position}_${item.farmName}',
+          id: 'command_daily_${item.position}_${item.farmName}',
           title: item.title,
           description: item.description,
           farmName: item.farmName,
-          priority:
-              _priorityFromMission(
-            item.priority,
-          ),
-          deadlineHours:
-              item.deadlineHours,
-          expectedImpact:
-              item.expectedImpact,
+          priority: _priorityFromMission(item.priority),
+          deadlineHours: item.deadlineHours,
+          expectedImpact: item.expectedImpact,
           source: 'Plano diário',
           completed: item.completed,
         ),
@@ -181,10 +136,8 @@ class AtlasOsService {
     }
 
     if (result.length < 8) {
-      for (final item
-          in missionControl.priorities) {
-        final alreadyAdded =
-            result.any((command) {
+      for (final item in missionControl.priorities) {
+        final alreadyAdded = result.any((command) {
           return command.title == item.title &&
               command.farmName == item.farmName;
         });
@@ -200,24 +153,13 @@ class AtlasOsService {
             title: item.title,
             description: item.description,
             farmName: item.farmName,
-            priority:
-                _priorityFromMission(
-              item.priority,
-            ),
-            deadlineHours:
-                math.max(
-              4,
-              item.deadlineDays * 24,
-            ),
-            expectedImpact:
-                item.expectedFinancialImpact > 0
-                    ? 'Impacto estimado de '
-                        'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.'
-                    : item.recommendation,
-            source:
-                atlasMissionSourceLabel(
-              item.source,
-            ),
+            priority: _priorityFromMission(item.priority),
+            deadlineHours: math.max(4, item.deadlineDays * 24),
+            expectedImpact: item.expectedFinancialImpact > 0
+                ? 'Impacto estimado de '
+                      'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.'
+                : item.recommendation,
+            source: atlasMissionSourceLabel(item.source),
             completed: false,
           ),
         );
@@ -236,40 +178,29 @@ class AtlasOsService {
   ) {
     return missionControl.alerts
         .where((item) {
-          return item.severity ==
-                  AtlasMissionSeverity.high ||
-              item.severity ==
-                  AtlasMissionSeverity.critical;
+          return item.severity == AtlasMissionSeverity.high ||
+              item.severity == AtlasMissionSeverity.critical;
         })
         .take(10)
         .map((item) {
-      return AtlasOsCriticalItem(
-        id: 'critical_${item.id}',
-        title: item.title,
-        description: item.description,
-        farmName: item.farmName,
-        severity:
-            _severityFromMission(
-          item.severity,
-        ),
-        probabilityPercent:
-            item.probabilityPercent,
-        expectedFinancialImpact:
-            item.expectedFinancialImpact,
-        recommendation:
-            item.recommendation,
-      );
-    }).toList();
+          return AtlasOsCriticalItem(
+            id: 'critical_${item.id}',
+            title: item.title,
+            description: item.description,
+            farmName: item.farmName,
+            severity: _severityFromMission(item.severity),
+            probabilityPercent: item.probabilityPercent,
+            expectedFinancialImpact: item.expectedFinancialImpact,
+            recommendation: item.recommendation,
+          );
+        })
+        .toList();
   }
 
-  List<AtlasOsDailyCycleItem> _buildDailyCycle(
-    DateTime now,
-  ) {
+  List<AtlasOsDailyCycleItem> _buildDailyCycle(DateTime now) {
     final hour = now.hour;
 
-    AtlasOsCycleStatus statusFor(
-      AtlasOsDayPeriod period,
-    ) {
+    AtlasOsCycleStatus statusFor(AtlasOsDayPeriod period) {
       switch (period) {
         case AtlasOsDayPeriod.morning:
           if (hour >= 12) {
@@ -310,20 +241,16 @@ class AtlasOsService {
       AtlasOsDailyCycleItem(
         position: 1,
         title: 'Planejar o dia',
-        description:
-            'Revisar prioridades, riscos e responsáveis.',
+        description: 'Revisar prioridades, riscos e responsáveis.',
         period: AtlasOsDayPeriod.morning,
-        status:
-            statusFor(AtlasOsDayPeriod.morning),
+        status: statusFor(AtlasOsDayPeriod.morning),
       ),
       AtlasOsDailyCycleItem(
         position: 2,
         title: 'Acompanhar execução',
-        description:
-            'Confirmar progresso das tarefas e remover bloqueios.',
+        description: 'Confirmar progresso das tarefas e remover bloqueios.',
         period: AtlasOsDayPeriod.afternoon,
-        status:
-            statusFor(AtlasOsDayPeriod.afternoon),
+        status: statusFor(AtlasOsDayPeriod.afternoon),
       ),
       AtlasOsDailyCycleItem(
         position: 3,
@@ -331,15 +258,13 @@ class AtlasOsService {
         description:
             'Registrar resultados e preparar as prioridades seguintes.',
         period: AtlasOsDayPeriod.evening,
-        status:
-            statusFor(AtlasOsDayPeriod.evening),
+        status: statusFor(AtlasOsDayPeriod.evening),
       ),
     ];
   }
 
   double _healthScore({
-    required AtlasMissionControlData
-        missionControl,
+    required AtlasMissionControlData missionControl,
     required List<AtlasOsModuleState> modules,
   }) {
     if (modules.isEmpty) {
@@ -347,22 +272,15 @@ class AtlasOsService {
     }
 
     final moduleAverage =
-        modules.fold<double>(
-              0,
-              (sum, item) =>
-                  sum + item.score,
-            ) /
-            modules.length;
+        modules.fold<double>(0, (sum, item) => sum + item.score) /
+        modules.length;
 
-    return (missionControl.globalScore * 0.55 +
-            moduleAverage * 0.45)
+    return (missionControl.globalScore * 0.55 + moduleAverage * 0.45)
         .clamp(0.0, 100.0)
         .toDouble();
   }
 
-  AtlasOsStatus _statusFromMission(
-    AtlasMissionControlStatus status,
-  ) {
+  AtlasOsStatus _statusFromMission(AtlasMissionControlStatus status) {
     switch (status) {
       case AtlasMissionControlStatus.stable:
         return AtlasOsStatus.stable;
@@ -386,17 +304,14 @@ class AtlasOsService {
       return AtlasOsModuleStatus.critical;
     }
 
-    if (criticalCount > 0 ||
-        attentionCount >= 5) {
+    if (criticalCount > 0 || attentionCount >= 5) {
       return AtlasOsModuleStatus.attention;
     }
 
     return AtlasOsModuleStatus.active;
   }
 
-  AtlasOsPriority _priorityFromMission(
-    AtlasMissionPriorityLevel priority,
-  ) {
+  AtlasOsPriority _priorityFromMission(AtlasMissionPriorityLevel priority) {
     switch (priority) {
       case AtlasMissionPriorityLevel.low:
         return AtlasOsPriority.low;
@@ -412,9 +327,7 @@ class AtlasOsService {
     }
   }
 
-  AtlasOsSeverity _severityFromMission(
-    AtlasMissionSeverity severity,
-  ) {
+  AtlasOsSeverity _severityFromMission(AtlasMissionSeverity severity) {
     switch (severity) {
       case AtlasMissionSeverity.low:
         return AtlasOsSeverity.low;
@@ -431,16 +344,13 @@ class AtlasOsService {
   }
 
   String _summary({
-    required AtlasMissionControlData
-        missionControl,
+    required AtlasMissionControlData missionControl,
     required List<AtlasOsModuleState> modules,
     required List<AtlasOsCommand> commands,
-    required List<AtlasOsCriticalItem>
-        criticalItems,
+    required List<AtlasOsCriticalItem> criticalItems,
   }) {
     final activeModules = modules.where((item) {
-      return item.status ==
-          AtlasOsModuleStatus.active;
+      return item.status == AtlasOsModuleStatus.active;
     }).length;
 
     return 'O Atlas OS coordena ${modules.length} módulos, '

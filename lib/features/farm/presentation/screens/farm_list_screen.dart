@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_remote_authorization_service.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_detail_screen.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_form_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class FarmListScreen extends StatefulWidget {
-  const FarmListScreen({super.key});
+  const FarmListScreen({super.key, this.onFarmSelected, this.embedded = false});
+
+  /// Quando true, a tela usa o AppBar do AtlasHomeShell e não cria um
+  /// segundo cabeçalho/navegação.
+  final bool embedded;
+
+  /// Callback opcional para fluxos que desejem tratar externamente a seleção.
+  /// No menu oficial do Atlas ele não é usado: o card ativa a propriedade
+  /// e abre a tela completa da própria fazenda.
+  final ValueChanged<FarmData>? onFarmSelected;
 
   @override
   State<FarmListScreen> createState() => _FarmListScreenState();
@@ -38,14 +49,8 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
     try {
       final permissions = await Future.wait<bool>([
-        authorization.can(
-          'farms.create',
-          refresh: true,
-        ),
-        authorization.can(
-          'farms.update',
-          refresh: false,
-        ),
+        authorization.can('farms.create', refresh: true),
+        authorization.can('farms.update', refresh: false),
       ]);
 
       final saved = await storage.loadFarms();
@@ -67,22 +72,56 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
       setState(() => isLoading = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
       if (!mounted) return;
 
       setState(() => isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Falha ao carregar fazendas: $error',
-          ),
+        SnackBar(content: Text('Falha ao carregar fazendas: $error')),
+      );
+    }
+  }
+
+  Future<void> openFarm(FarmData farm) async {
+    final controller = AtlasSessionScope.read(context);
+    final farmId = farm.id;
+
+    if (farmId == null || farmId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A fazenda ainda não possui ID remoto válido.'),
         ),
+      );
+      return;
+    }
+
+    try {
+      await controller.selectFarmById(farmId);
+      if (!mounted) return;
+
+      if (widget.onFarmSelected != null) {
+        widget.onFarmSelected!(farm);
+        return;
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => FarmDetailScreen(farm: farm)),
+      );
+      if (mounted) await loadFarms();
+    } on AtlasEnterpriseApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Não foi possível abrir a fazenda: $error')),
       );
     }
   }
@@ -99,11 +138,9 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
       setState(() => canCreate = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
 
       return;
     }
@@ -112,12 +149,12 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
     final newFarm = await Navigator.push<FarmData>(
       context,
-      MaterialPageRoute<FarmData>(
-        builder: (context) => const FarmFormScreen(),
-      ),
+      MaterialPageRoute<FarmData>(builder: (context) => const FarmFormScreen()),
     );
 
     if (newFarm == null || !mounted) return;
+
+    final sessionScope = AtlasSessionScope.read(context);
 
     try {
       final created = await api.request(
@@ -132,9 +169,7 @@ class _FarmListScreenState extends State<FarmListScreen> {
         },
       );
 
-      final persisted = newFarm.copyWith(
-        id: created['id']?.toString(),
-      );
+      final persisted = FarmData.fromMap(created);
 
       if (!mounted) return;
 
@@ -142,15 +177,22 @@ class _FarmListScreenState extends State<FarmListScreen> {
         farms.add(persisted);
       });
 
-      await storage.saveFarms(farms);
+      await storage.saveLocalCache(farms);
+
+      try {
+        await sessionScope.refreshAfterFarmMutation();
+        await loadFarms();
+      } catch (_) {
+        // O POST já foi confirmado pelo servidor. Uma falha secundária ao
+        // sincronizar o contexto não deve induzir o usuário a cadastrar a
+        // mesma fazenda novamente.
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '${persisted.name} foi cadastrada com sucesso.',
-          ),
+          content: Text('${persisted.name} foi cadastrada com sucesso.'),
         ),
       );
     } on AtlasEnterpriseApiException catch (error) {
@@ -160,11 +202,9 @@ class _FarmListScreenState extends State<FarmListScreen> {
         setState(() => canCreate = false);
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -180,11 +220,9 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
       setState(() => canUpdate = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
 
       return;
     }
@@ -193,9 +231,7 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
     final editedFarm = await Navigator.of(context).push<FarmData>(
       MaterialPageRoute<FarmData>(
-        builder: (context) => FarmFormScreen(
-          farm: farm,
-        ),
+        builder: (context) => FarmFormScreen(farm: farm),
       ),
     );
 
@@ -204,14 +240,14 @@ class _FarmListScreenState extends State<FarmListScreen> {
     if (farm.id == null || farm.id!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Esta fazenda ainda não possui ID Enterprise.',
-          ),
+          content: Text('Esta fazenda ainda não possui ID Enterprise.'),
         ),
       );
 
       return;
     }
+
+    final sessionScope = AtlasSessionScope.read(context);
 
     try {
       final updated = await api.request(
@@ -226,9 +262,9 @@ class _FarmListScreenState extends State<FarmListScreen> {
         },
       );
 
-      final persisted = editedFarm.copyWith(
-        id: updated['id']?.toString() ?? farm.id,
-      );
+      final persisted = FarmData.fromMap(
+        updated,
+      ).copyWith(id: updated['id']?.toString() ?? farm.id);
 
       final farmIndex = farms.indexOf(farm);
 
@@ -238,25 +274,29 @@ class _FarmListScreenState extends State<FarmListScreen> {
         farms[farmIndex] = persisted;
       });
 
-      await storage.saveFarms(farms);
+      await storage.saveLocalCache(farms);
+
+      try {
+        await sessionScope.refreshAfterFarmMutation();
+        await loadFarms();
+      } catch (_) {
+        // O PATCH já foi persistido no backend; mantém o retorno confirmado
+        // na interface mesmo se a sincronização de contexto falhar.
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '${persisted.name} foi atualizada com sucesso.',
-          ),
+          content: Text('${persisted.name} foi atualizada com sucesso.'),
         ),
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -272,11 +312,9 @@ class _FarmListScreenState extends State<FarmListScreen> {
 
       setState(() => canUpdate = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
 
       return;
     }
@@ -288,9 +326,7 @@ class _FarmListScreenState extends State<FarmListScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Excluir fazenda'),
-          content: Text(
-            'Tem certeza de que deseja excluir ${farm.name}?',
-          ),
+          content: Text('Tem certeza de que deseja excluir ${farm.name}?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -317,20 +353,17 @@ class _FarmListScreenState extends State<FarmListScreen> {
     if (farm.id == null || farm.id!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Esta fazenda ainda não possui ID Enterprise.',
-          ),
+          content: Text('Esta fazenda ainda não possui ID Enterprise.'),
         ),
       );
 
       return;
     }
 
+    final sessionScope = AtlasSessionScope.read(context);
+
     try {
-      await api.request(
-        'DELETE',
-        '/farms/${farm.id}',
-      );
+      await api.request('DELETE', '/farms/${farm.id}');
 
       if (!mounted) return;
 
@@ -338,73 +371,63 @@ class _FarmListScreenState extends State<FarmListScreen> {
         farms.remove(farm);
       });
 
-      await storage.saveFarms(farms);
+      await storage.saveLocalCache(farms);
+
+      try {
+        await sessionScope.refreshAfterFarmMutation();
+        await loadFarms();
+      } catch (_) {
+        // O DELETE lógico já foi confirmado; evita reintroduzir a fazenda
+        // localmente por causa de uma falha de atualização secundária.
+      }
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${farm.name} foi excluída.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${farm.name} foi excluída.')));
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Fazendas',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: isLoading ? null : loadFarms,
-            tooltip: 'Atualizar permissões e fazendas',
-            icon: const Icon(
-              Icons.refresh,
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text(
+                'Fazendas',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              actions: [
+                IconButton(
+                  onPressed: isLoading ? null : loadFarms,
+                  tooltip: 'Atualizar permissões e fazendas',
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: openFarmForm,
-              backgroundColor: const Color(
-                0xFF1B5E20,
-              ),
+              backgroundColor: const Color(0xFF1B5E20),
               foregroundColor: Colors.white,
-              icon: const Icon(
-                Icons.add,
-              ),
-              label: const Text(
-                'Nova fazenda',
-              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Nova fazenda'),
             )
           : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 1000,
-            ),
+            constraints: const BoxConstraints(maxWidth: 1000),
             child: isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(20),
                     children: [
@@ -413,66 +436,49 @@ class _FarmListScreenState extends State<FarmListScreen> {
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Color(
-                            0xFF263238,
-                          ),
+                          color: Color(0xFF263238),
                         ),
                       ),
-                      const SizedBox(
-                        height: 6,
-                      ),
+                      const SizedBox(height: 6),
                       const Text(
                         'A lista respeita o escopo e as permissões da sessão Enterprise.',
-                        style: TextStyle(
-                          color: Colors.black54,
-                        ),
+                        style: TextStyle(color: Colors.black54),
                       ),
                       if (!canCreate) ...[
-                        const SizedBox(
-                          height: 12,
-                        ),
+                        const SizedBox(height: 12),
                         const Card(
                           child: ListTile(
-                            leading: Icon(
-                              Icons.lock_outline,
-                            ),
-                            title: Text(
-                              'Cadastro de fazendas bloqueado',
-                            ),
+                            leading: Icon(Icons.lock_outline),
+                            title: Text('Cadastro de fazendas bloqueado'),
                             subtitle: Text(
                               'A permissão farms.create não está habilitada para este usuário.',
                             ),
                           ),
                         ),
                       ],
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      const SizedBox(height: 24),
                       if (farms.isEmpty)
                         const EmptyFarmsMessage()
                       else
-                        ...farms.map(
-                          (farm) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 16,
-                              ),
-                              child: FarmCard(
-                                farm: farm,
-                                canUpdate: canUpdate,
-                                onEdit: () {
-                                  editFarm(farm);
-                                },
-                                onDelete: () {
-                                  deleteFarm(farm);
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      const SizedBox(
-                        height: 80,
-                      ),
+                        ...farms.map((farm) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: FarmCard(
+                              farm: farm,
+                              canUpdate: canUpdate,
+                              onOpen: () {
+                                openFarm(farm);
+                              },
+                              onEdit: () {
+                                editFarm(farm);
+                              },
+                              onDelete: () {
+                                deleteFarm(farm);
+                              },
+                            ),
+                          );
+                        }),
+                      const SizedBox(height: 80),
                     ],
                   ),
           ),
@@ -483,9 +489,7 @@ class _FarmListScreenState extends State<FarmListScreen> {
 }
 
 class EmptyFarmsMessage extends StatelessWidget {
-  const EmptyFarmsMessage({
-    super.key,
-  });
+  const EmptyFarmsMessage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -494,22 +498,11 @@ class EmptyFarmsMessage extends StatelessWidget {
         padding: EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(
-              Icons.landscape_outlined,
-              size: 56,
-              color: Color(
-                0xFF1B5E20,
-              ),
-            ),
-            SizedBox(
-              height: 16,
-            ),
+            Icon(Icons.landscape_outlined, size: 56, color: Color(0xFF1B5E20)),
+            SizedBox(height: 16),
             Text(
               'Nenhuma fazenda disponível para esta sessão.',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -522,6 +515,7 @@ class FarmCard extends StatelessWidget {
   const FarmCard({
     required this.farm,
     required this.canUpdate,
+    required this.onOpen,
     required this.onEdit,
     required this.onDelete,
     super.key,
@@ -529,6 +523,7 @@ class FarmCard extends StatelessWidget {
 
   final FarmData farm;
   final bool canUpdate;
+  final VoidCallback onOpen;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -536,24 +531,10 @@ class FarmCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(
-          16,
-        ),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) {
-                return FarmDetailScreen(
-                  farm: farm,
-                );
-              },
-            ),
-          );
-        },
+        borderRadius: BorderRadius.circular(16),
+        onTap: onOpen,
         child: Padding(
-          padding: const EdgeInsets.all(
-            20,
-          ),
+          padding: const EdgeInsets.all(20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -561,26 +542,16 @@ class FarmCard extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: const Color(
-                    0xFF1B5E20,
-                  ).withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    16,
-                  ),
+                  color: const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.landscape_outlined,
-                  color: Color(
-                    0xFF1B5E20,
-                  ),
+                  color: Color(0xFF1B5E20),
                   size: 30,
                 ),
               ),
-              const SizedBox(
-                width: 18,
-              ),
+              const SizedBox(width: 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,14 +561,10 @@ class FarmCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(
-                          0xFF263238,
-                        ),
+                        color: Color(0xFF263238),
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(
@@ -605,26 +572,20 @@ class FarmCard extends StatelessWidget {
                           size: 18,
                           color: Colors.black54,
                         ),
-                        const SizedBox(
-                          width: 4,
-                        ),
+                        const SizedBox(width: 4),
                         Text(
                           '${farm.city} - ${farm.state}',
-                          style: const TextStyle(
-                            color: Colors.black54,
-                          ),
+                          style: const TextStyle(color: Colors.black54),
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 16,
-                    ),
+                    const SizedBox(height: 16),
                     Wrap(
                       spacing: 20,
                       runSpacing: 10,
                       children: [
                         FarmInformation(
-                          icon: Icons.pets_outlined,
+                          icon: AtlasLivestockIcons.cow,
                           text: '${farm.animals} animais',
                         ),
                         FarmInformation(
@@ -654,18 +615,9 @@ class FarmCard extends StatelessWidget {
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.edit_outlined,
-                              color: Color(
-                                0xFF1B5E20,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              'Editar fazenda',
-                            ),
+                            Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
+                            SizedBox(width: 10),
+                            Text('Editar fazenda'),
                           ],
                         ),
                       ),
@@ -673,16 +625,9 @@ class FarmCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              'Excluir fazenda',
-                            ),
+                            Icon(Icons.delete_outline, color: Colors.red),
+                            SizedBox(width: 10),
+                            Text('Excluir fazenda'),
                           ],
                         ),
                       ),
@@ -698,11 +643,7 @@ class FarmCard extends StatelessWidget {
 }
 
 class FarmInformation extends StatelessWidget {
-  const FarmInformation({
-    required this.icon,
-    required this.text,
-    super.key,
-  });
+  const FarmInformation({required this.icon, required this.text, super.key});
 
   final IconData icon;
   final String text;
@@ -712,19 +653,9 @@ class FarmInformation extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 18,
-          color: const Color(
-            0xFF1B5E20,
-          ),
-        ),
-        const SizedBox(
-          width: 6,
-        ),
-        Text(
-          text,
-        ),
+        Icon(icon, size: 18, color: const Color(0xFF1B5E20)),
+        const SizedBox(width: 6),
+        Text(text),
       ],
     );
   }

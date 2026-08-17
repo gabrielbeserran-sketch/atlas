@@ -4,11 +4,7 @@ import '../../data/services/atlas_business_service.dart';
 import '../../domain/models/atlas_business_dashboard_data.dart';
 
 class AtlasBusinessDashboardScreen extends StatefulWidget {
-  const AtlasBusinessDashboardScreen({
-    super.key,
-    this.farmId,
-    this.farmName,
-  });
+  const AtlasBusinessDashboardScreen({super.key, this.farmId, this.farmName});
 
   final String? farmId;
   final String? farmName;
@@ -109,11 +105,7 @@ class _AtlasBusinessDashboardScreenState
                   title: 'Comercialização',
                   icon: Icons.handshake_outlined,
                   data: data.commercial,
-                  keys: const [
-                    'documents',
-                    'open_contracts',
-                    'crm_parties',
-                  ],
+                  keys: const ['documents', 'open_contracts', 'crm_parties'],
                 ),
                 _section(
                   context,
@@ -235,9 +227,7 @@ class _AtlasBusinessDashboardScreenState
     }
 
     if (value is Map) {
-      return value.map(
-        (key, item) => MapEntry(key.toString(), item),
-      );
+      return value.map((key, item) => MapEntry(key.toString(), item));
     }
 
     return const <String, dynamic>{};
@@ -282,10 +272,7 @@ class _AtlasBusinessDashboardScreenState
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.label,
-    required this.value,
-  });
+  const _MetricCard({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -302,15 +289,9 @@ class _MetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(value, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

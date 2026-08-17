@@ -1,0 +1,123 @@
+{
+  "versao": "Atlas V1 - Consolidação passos 1 a 10",
+  "telas_encontradas": 248,
+  "classificacao": {
+    "ADMIN_OU_OPERACIONAL": 59,
+    "AVANCADO_POS_V1": 71,
+    "REVISAR": 78,
+    "V1_ESSENCIAL": 40
+  },
+  "duplicidades_nominais": {
+    "atlascopilot": [
+      "features/atlas_copilot/presentation/screens/atlas_copilot_screen.dart",
+      "features/copilot/presentation/screens/atlas_copilot_screen.dart"
+    ],
+    "atlasenterpriseoperations": [
+      "features/atlas_enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart",
+      "features/enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart"
+    ],
+    "atlasexecutiveintelligence": [
+      "features/atlas_executive_intelligence/presentation/screens/atlas_executive_intelligence_screen.dart",
+      "core/operational_intelligence/action_plan/atlas_executive_intelligence_screen.dart",
+      "features/executive_intelligence/presentation/screens/atlas_executive_intelligence_screen.dart"
+    ],
+    "atlasintelligence": [
+      "features/atlas_intelligence/presentation/screens/atlas_intelligence_screen.dart",
+      "features/dashboard/presentation/screens/atlas_intelligence_screen.dart"
+    ],
+    "atlaspredictiveai": [
+      "features/atlas_predictive_ai_suite/presentation/screens/atlas_predictive_ai_screen.dart",
+      "features/predictive_ai/presentation/screens/atlas_predictive_ai_screen.dart"
+    ]
+  },
+  "passos": {
+    "1": {
+      "nome": "Responsividade Android",
+      "status": "IMPLEMENTADO_NESTE_PACOTE",
+      "evidencias": [
+        "farm_detail_screen.dart: FarmDashboardHeader responsivo",
+        "paddock_list_screen.dart: PaddockCard responsivo",
+        "atlas_livestock_module_screen.dart: padding móvel"
+      ]
+    },
+    "2": {
+      "nome": "Contexto da fazenda",
+      "status": "IMPLEMENTADO_NESTE_PACOTE",
+      "evidencias": [
+        "FarmListScreen seleciona a fazenda da sessão antes de abrir detalhes",
+        "AtlasSessionController persiste activeFarm"
+      ]
+    },
+    "3": {
+      "nome": "Auditoria das 248 telas",
+      "status": "IMPLEMENTADO_NESTE_PACOTE",
+      "evidencias": [
+        "ATLAS_V1_AUDITORIA_248_TELAS.csv",
+        "classificação V1/Admin/Avançado/Revisar"
+      ]
+    },
+    "4": {
+      "nome": "Seis módulos operacionais centrais",
+      "status": "CONSOLIDADO_SEM_RECRIAR",
+      "evidencias": [
+        "Rebanho usa HerdOverviewScreen",
+        "Sanidade/Reprodução/Nutrição/Financeiro/Estoque usam AtlasLivestockModuleScreen oficial"
+      ]
+    },
+    "5": {
+      "nome": "Fazendas e manejo",
+      "status": "CONSOLIDADO_COM_PENDENCIA_DE_BACKEND_PARA_PIQUETES",
+      "evidencias": [
+        "Fazendas usam FarmStorageService com API como autoridade quando autenticado",
+        "Piquetes ainda persistem localmente"
+      ]
+    },
+    "6": {
+      "nome": "Persistência real",
+      "status": "PARCIAL_E_EXPLICITA",
+      "evidencias": [
+        "Fazendas CRUD remoto + cache local",
+        "Módulos centrais consultam backend",
+        "Piquetes e partes legadas ainda usam SharedPreferences"
+      ]
+    },
+    "7": {
+      "nome": "Eliminar dados demonstrativos",
+      "status": "IMPLEMENTADO_NO_FLUXO_CRITICO",
+      "evidencias": [
+        "Removida criação automática de Piquete 01/Piquete 02/42 animais"
+      ]
+    },
+    "8": {
+      "nome": "Autenticação real",
+      "status": "ENDURECIDA",
+      "evidencias": [
+        "Restauração de sessão existente",
+        "logout limpa activeFarm",
+        "falha de restore limpa sessão/contexto"
+      ]
+    },
+    "9": {
+      "nome": "Permissões e multiempresa",
+      "status": "ENDURECIDA",
+      "evidencias": [
+        "default-deny para sessão não-admin sem permissões",
+        "fazenda só pode ser selecionada se autorizada"
+      ]
+    },
+    "10": {
+      "nome": "Offline e sincronização",
+      "status": "ENDURECIDA",
+      "evidencias": [
+        "sync exige companyId, tenantId e deviceId",
+        "fila/push/pull/conflitos existentes preservados"
+      ]
+    }
+  },
+  "pendencias_criticas_restantes": [
+    "Criar contrato/endpoints oficiais de Piquetes no backend antes de considerar esse módulo persistido em produção.",
+    "Migrar telas legadas que ainda usam SharedPreferences como autoridade para API/offline repository.",
+    "Executar flutter analyze e flutter test no ambiente do usuário após substituição.",
+    "Revalidar visualmente todas as telas V1_ESSENCIAL no Moto G75 5G."
+  ]
+}

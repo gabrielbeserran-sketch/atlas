@@ -26,11 +26,9 @@ class AtlasCloudSecurityScreen extends StatefulWidget {
       _AtlasCloudSecurityScreenState();
 }
 
-class _AtlasCloudSecurityScreenState
-    extends State<AtlasCloudSecurityScreen> {
+class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
   final storage = AtlasCloudSecurityStorageService();
-  final analyticsService =
-      const AtlasCloudSecurityAnalyticsService();
+  final analyticsService = const AtlasCloudSecurityAnalyticsService();
 
   late AtlasCloudSecurityModule selectedModule;
   List<AtlasCloudSecurityRecord> records = [];
@@ -53,8 +51,9 @@ class _AtlasCloudSecurityScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasCloudSecurityDate(b.date)
-          .compareTo(parseAtlasCloudSecurityDate(a.date)),
+      (a, b) => parseAtlasCloudSecurityDate(
+        b.date,
+      ).compareTo(parseAtlasCloudSecurityDate(a.date)),
     );
 
     if (!mounted) return;
@@ -66,27 +65,23 @@ class _AtlasCloudSecurityScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasCloudSecurityRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasCloudSecurityRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasCloudSecurityRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasCloudSecurityRecord? current]) async {
     final result = await showDialog<AtlasCloudSecurityRecord>(
       context: context,
-      builder: (_) => _CloudSecurityForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _CloudSecurityForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -105,9 +100,7 @@ class _AtlasCloudSecurityScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasCloudSecurityRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasCloudSecurityRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -318,9 +311,7 @@ class _AtlasCloudSecurityScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro controle, integração, backup ou incidente.',
                             ),
@@ -373,21 +364,16 @@ class _AtlasCloudSecurityScreenState
 }
 
 class _CloudSecurityForm extends StatefulWidget {
-  const _CloudSecurityForm({
-    required this.module,
-    this.current,
-  });
+  const _CloudSecurityForm({required this.module, this.current});
 
   final AtlasCloudSecurityModule module;
   final AtlasCloudSecurityRecord? current;
 
   @override
-  State<_CloudSecurityForm> createState() =>
-      _CloudSecurityFormState();
+  State<_CloudSecurityForm> createState() => _CloudSecurityFormState();
 }
 
-class _CloudSecurityFormState
-    extends State<_CloudSecurityForm> {
+class _CloudSecurityFormState extends State<_CloudSecurityForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -421,25 +407,17 @@ class _CloudSecurityFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasCloudSecurityDate(DateTime.now()),
+      text: current?.date ?? formatAtlasCloudSecurityDate(DateTime.now()),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
-    environment =
-        TextEditingController(text: current?.environment ?? '');
-    resourceName =
-        TextEditingController(text: current?.resourceName ?? '');
+    environment = TextEditingController(text: current?.environment ?? '');
+    resourceName = TextEditingController(text: current?.resourceName ?? '');
     userName = TextEditingController(text: current?.userName ?? '');
-    companyName =
-        TextEditingController(text: current?.companyName ?? '');
-    providerName =
-        TextEditingController(text: current?.providerName ?? '');
-    versionLabel =
-        TextEditingController(text: current?.versionLabel ?? '');
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    providerName = TextEditingController(text: current?.providerName ?? '');
+    versionLabel = TextEditingController(text: current?.versionLabel ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     availabilityPercent = TextEditingController(
       text: current == null || current.availabilityPercent == 0
@@ -489,26 +467,18 @@ class _CloudSecurityFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasCloudSecurityDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -527,7 +497,8 @@ class _CloudSecurityFormState
     Navigator.pop(
       context,
       AtlasCloudSecurityRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'cloud_security_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -542,16 +513,11 @@ class _CloudSecurityFormState
         companyName: companyName.text.trim(),
         providerName: providerName.text.trim(),
         versionLabel: versionLabel.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        availabilityPercent:
-            decimal(availabilityPercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
-        retryCount:
-            integer(retryCount) < 0 ? 0 : integer(retryCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        availabilityPercent: decimal(availabilityPercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
+        retryCount: integer(retryCount) < 0 ? 0 : integer(retryCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -562,11 +528,7 @@ class _CloudSecurityFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -581,10 +543,8 @@ class _CloudSecurityFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -595,13 +555,10 @@ class _CloudSecurityFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 TextFormField(
                   controller: date,
@@ -609,9 +566,7 @@ class _CloudSecurityFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 TextFormField(
@@ -620,35 +575,32 @@ class _CloudSecurityFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou validade',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Seguro',
-                    'Sincronizado',
-                    'Concluído',
-                    'Atenção',
-                    'Incidente',
-                    'Crítico',
-                    'Bloqueado',
-                    'Cancelado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Seguro',
+                            'Sincronizado',
+                            'Concluído',
+                            'Atenção',
+                            'Incidente',
+                            'Crítico',
+                            'Bloqueado',
+                            'Cancelado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -657,20 +609,11 @@ class _CloudSecurityFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -689,9 +632,7 @@ class _CloudSecurityFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 ...[
@@ -700,13 +641,10 @@ class _CloudSecurityFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
@@ -734,9 +672,7 @@ class _CloudSecurityFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -748,38 +684,23 @@ class _CloudSecurityFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasCloudSecurityModule module,
-) {
+IconData _moduleIcon(AtlasCloudSecurityModule module) {
   return switch (module) {
-    AtlasCloudSecurityModule.professionalAuthentication =>
-      Icons.login_outlined,
-    AtlasCloudSecurityModule.usersAndCompanies =>
-      Icons.business_outlined,
-    AtlasCloudSecurityModule.cloudDatabase =>
-      Icons.cloud_outlined,
-    AtlasCloudSecurityModule.offlineSynchronization =>
-      Icons.sync_outlined,
-    AtlasCloudSecurityModule.conflictResolution =>
-      Icons.merge_type_outlined,
-    AtlasCloudSecurityModule.automatedBackup =>
-      Icons.backup_outlined,
-    AtlasCloudSecurityModule.dataEncryption =>
-      Icons.lock_outlined,
-    AtlasCloudSecurityModule.userAuditLogs =>
-      Icons.manage_search_outlined,
-    AtlasCloudSecurityModule.integrationCenter =>
-      Icons.hub_outlined,
-    AtlasCloudSecurityModule.securityCenter =>
-      Icons.security_outlined,
+    AtlasCloudSecurityModule.professionalAuthentication => Icons.login_outlined,
+    AtlasCloudSecurityModule.usersAndCompanies => Icons.business_outlined,
+    AtlasCloudSecurityModule.cloudDatabase => Icons.cloud_outlined,
+    AtlasCloudSecurityModule.offlineSynchronization => Icons.sync_outlined,
+    AtlasCloudSecurityModule.conflictResolution => Icons.merge_type_outlined,
+    AtlasCloudSecurityModule.automatedBackup => Icons.backup_outlined,
+    AtlasCloudSecurityModule.dataEncryption => Icons.lock_outlined,
+    AtlasCloudSecurityModule.userAuditLogs => Icons.manage_search_outlined,
+    AtlasCloudSecurityModule.integrationCenter => Icons.hub_outlined,
+    AtlasCloudSecurityModule.securityCenter => Icons.security_outlined,
   };
 }

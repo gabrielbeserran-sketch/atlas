@@ -3,9 +3,7 @@ import 'package:projeto_atlas/features/digital_twin/domain/models/atlas_digital_
 class AtlasDigitalTwinScoreService {
   const AtlasDigitalTwinScoreService();
 
-  double calculateOverall(
-    AtlasFarmHealth health,
-  ) {
+  double calculateOverall(AtlasFarmHealth health) {
     final weighted =
         health.animal * 0.18 +
         health.sanitary * 0.20 +
@@ -21,8 +19,7 @@ class AtlasDigitalTwinScoreService {
     required double previousScore,
     required double currentScore,
   }) {
-    final variation =
-        currentScore - previousScore;
+    final variation = currentScore - previousScore;
 
     if (variation >= 0.8) {
       return AtlasDigitalTwinTrend.improving;
@@ -35,10 +32,7 @@ class AtlasDigitalTwinScoreService {
     return AtlasDigitalTwinTrend.stable;
   }
 
-  double apply(
-    double current,
-    double variation,
-  ) {
+  double apply(double current, double variation) {
     return _bounded(current + variation);
   }
 

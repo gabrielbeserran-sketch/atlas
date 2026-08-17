@@ -11,149 +11,127 @@ enum AtlasGovernancePeopleModule {
   governanceCenter,
 }
 
-extension AtlasGovernancePeopleModuleX
-    on AtlasGovernancePeopleModule {
+extension AtlasGovernancePeopleModuleX on AtlasGovernancePeopleModule {
   String get code => switch (this) {
-        AtlasGovernancePeopleModule.peopleManagement =>
-          'people_management',
-        AtlasGovernancePeopleModule.trainingAndQualification =>
-          'training_and_qualification',
-        AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
-          'occupational_health_and_safety',
-        AtlasGovernancePeopleModule.personalProtectiveEquipment =>
-          'personal_protective_equipment',
-        AtlasGovernancePeopleModule.documentManagement =>
-          'document_management',
-        AtlasGovernancePeopleModule.complianceControl =>
-          'compliance_control',
-        AtlasGovernancePeopleModule.internalAudits =>
-          'internal_audits',
-        AtlasGovernancePeopleModule.corporateRiskManagement =>
-          'corporate_risk_management',
-        AtlasGovernancePeopleModule.permissionMatrix =>
-          'permission_matrix',
-        AtlasGovernancePeopleModule.governanceCenter =>
-          'governance_center',
-      };
+    AtlasGovernancePeopleModule.peopleManagement => 'people_management',
+    AtlasGovernancePeopleModule.trainingAndQualification =>
+      'training_and_qualification',
+    AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
+      'occupational_health_and_safety',
+    AtlasGovernancePeopleModule.personalProtectiveEquipment =>
+      'personal_protective_equipment',
+    AtlasGovernancePeopleModule.documentManagement => 'document_management',
+    AtlasGovernancePeopleModule.complianceControl => 'compliance_control',
+    AtlasGovernancePeopleModule.internalAudits => 'internal_audits',
+    AtlasGovernancePeopleModule.corporateRiskManagement =>
+      'corporate_risk_management',
+    AtlasGovernancePeopleModule.permissionMatrix => 'permission_matrix',
+    AtlasGovernancePeopleModule.governanceCenter => 'governance_center',
+  };
 
   String get title => switch (this) {
-        AtlasGovernancePeopleModule.peopleManagement =>
-          'Gestão de Pessoas',
-        AtlasGovernancePeopleModule.trainingAndQualification =>
-          'Treinamentos e Capacitações',
-        AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
-          'Saúde e Segurança do Trabalho',
-        AtlasGovernancePeopleModule.personalProtectiveEquipment =>
-          'Equipamentos de Proteção Individual',
-        AtlasGovernancePeopleModule.documentManagement =>
-          'Gestão de Documentos',
-        AtlasGovernancePeopleModule.complianceControl =>
-          'Controle de Conformidade',
-        AtlasGovernancePeopleModule.internalAudits =>
-          'Auditorias Internas',
-        AtlasGovernancePeopleModule.corporateRiskManagement =>
-          'Gestão de Riscos Corporativos',
-        AtlasGovernancePeopleModule.permissionMatrix =>
-          'Matriz de Permissões',
-        AtlasGovernancePeopleModule.governanceCenter =>
-          'Central de Governança Atlas',
-      };
+    AtlasGovernancePeopleModule.peopleManagement => 'Gestão de Pessoas',
+    AtlasGovernancePeopleModule.trainingAndQualification =>
+      'Treinamentos e Capacitações',
+    AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
+      'Saúde e Segurança do Trabalho',
+    AtlasGovernancePeopleModule.personalProtectiveEquipment =>
+      'Equipamentos de Proteção Individual',
+    AtlasGovernancePeopleModule.documentManagement => 'Gestão de Documentos',
+    AtlasGovernancePeopleModule.complianceControl => 'Controle de Conformidade',
+    AtlasGovernancePeopleModule.internalAudits => 'Auditorias Internas',
+    AtlasGovernancePeopleModule.corporateRiskManagement =>
+      'Gestão de Riscos Corporativos',
+    AtlasGovernancePeopleModule.permissionMatrix => 'Matriz de Permissões',
+    AtlasGovernancePeopleModule.governanceCenter =>
+      'Central de Governança Atlas',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasGovernancePeopleModule.peopleManagement =>
-          'Pacote 221',
-        AtlasGovernancePeopleModule.trainingAndQualification =>
-          'Pacote 222',
-        AtlasGovernancePeopleModule.occupationalHealthAndSafety =>
-          'Pacote 223',
-        AtlasGovernancePeopleModule.personalProtectiveEquipment =>
-          'Pacote 224',
-        AtlasGovernancePeopleModule.documentManagement =>
-          'Pacote 225',
-        AtlasGovernancePeopleModule.complianceControl =>
-          'Pacote 226',
-        AtlasGovernancePeopleModule.internalAudits =>
-          'Pacote 227',
-        AtlasGovernancePeopleModule.corporateRiskManagement =>
-          'Pacote 228',
-        AtlasGovernancePeopleModule.permissionMatrix =>
-          'Pacote 229',
-        AtlasGovernancePeopleModule.governanceCenter =>
-          'Pacote 230',
-      };
+    AtlasGovernancePeopleModule.peopleManagement => 'Pacote 221',
+    AtlasGovernancePeopleModule.trainingAndQualification => 'Pacote 222',
+    AtlasGovernancePeopleModule.occupationalHealthAndSafety => 'Pacote 223',
+    AtlasGovernancePeopleModule.personalProtectiveEquipment => 'Pacote 224',
+    AtlasGovernancePeopleModule.documentManagement => 'Pacote 225',
+    AtlasGovernancePeopleModule.complianceControl => 'Pacote 226',
+    AtlasGovernancePeopleModule.internalAudits => 'Pacote 227',
+    AtlasGovernancePeopleModule.corporateRiskManagement => 'Pacote 228',
+    AtlasGovernancePeopleModule.permissionMatrix => 'Pacote 229',
+    AtlasGovernancePeopleModule.governanceCenter => 'Pacote 230',
+  };
 
   List<String> get features => switch (this) {
-        AtlasGovernancePeopleModule.peopleManagement => const [
-            'Colaboradores',
-            'Cargos',
-            'Contratos',
-            'Documentos pessoais',
-            'Histórico profissional',
-          ],
-        AtlasGovernancePeopleModule.trainingAndQualification => const [
-            'Cursos',
-            'Competências',
-            'Certificados',
-            'Validades',
-            'Plano de capacitação',
-          ],
-        AtlasGovernancePeopleModule.occupationalHealthAndSafety => const [
-            'Exames',
-            'Riscos ocupacionais',
-            'Acidentes',
-            'Afastamentos',
-            'Ações preventivas',
-          ],
-        AtlasGovernancePeopleModule.personalProtectiveEquipment => const [
-            'Entrega',
-            'Validade',
-            'Substituição',
-            'Devolução',
-            'Responsabilidade',
-          ],
-        AtlasGovernancePeopleModule.documentManagement => const [
-            'Cadastro documental',
-            'Categorias',
-            'Versões',
-            'Validades',
-            'Anexos e evidências',
-          ],
-        AtlasGovernancePeopleModule.complianceControl => const [
-            'Requisitos legais',
-            'Requisitos internos',
-            'Evidências',
-            'Não conformidades',
-            'Plano corretivo',
-          ],
-        AtlasGovernancePeopleModule.internalAudits => const [
-            'Planejamento',
-            'Execução',
-            'Achados',
-            'Responsáveis',
-            'Acompanhamento',
-          ],
-        AtlasGovernancePeopleModule.corporateRiskManagement => const [
-            'Riscos identificados',
-            'Probabilidade',
-            'Impacto',
-            'Controles',
-            'Plano de resposta',
-          ],
-        AtlasGovernancePeopleModule.permissionMatrix => const [
-            'Usuários',
-            'Papéis',
-            'Módulos',
-            'Operações',
-            'Níveis de acesso',
-          ],
-        AtlasGovernancePeopleModule.governanceCenter => const [
-            'Pessoas',
-            'Documentos',
-            'Conformidade',
-            'Riscos',
-            'Painel executivo',
-          ],
-      };
+    AtlasGovernancePeopleModule.peopleManagement => const [
+      'Colaboradores',
+      'Cargos',
+      'Contratos',
+      'Documentos pessoais',
+      'Histórico profissional',
+    ],
+    AtlasGovernancePeopleModule.trainingAndQualification => const [
+      'Cursos',
+      'Competências',
+      'Certificados',
+      'Validades',
+      'Plano de capacitação',
+    ],
+    AtlasGovernancePeopleModule.occupationalHealthAndSafety => const [
+      'Exames',
+      'Riscos ocupacionais',
+      'Acidentes',
+      'Afastamentos',
+      'Ações preventivas',
+    ],
+    AtlasGovernancePeopleModule.personalProtectiveEquipment => const [
+      'Entrega',
+      'Validade',
+      'Substituição',
+      'Devolução',
+      'Responsabilidade',
+    ],
+    AtlasGovernancePeopleModule.documentManagement => const [
+      'Cadastro documental',
+      'Categorias',
+      'Versões',
+      'Validades',
+      'Anexos e evidências',
+    ],
+    AtlasGovernancePeopleModule.complianceControl => const [
+      'Requisitos legais',
+      'Requisitos internos',
+      'Evidências',
+      'Não conformidades',
+      'Plano corretivo',
+    ],
+    AtlasGovernancePeopleModule.internalAudits => const [
+      'Planejamento',
+      'Execução',
+      'Achados',
+      'Responsáveis',
+      'Acompanhamento',
+    ],
+    AtlasGovernancePeopleModule.corporateRiskManagement => const [
+      'Riscos identificados',
+      'Probabilidade',
+      'Impacto',
+      'Controles',
+      'Plano de resposta',
+    ],
+    AtlasGovernancePeopleModule.permissionMatrix => const [
+      'Usuários',
+      'Papéis',
+      'Módulos',
+      'Operações',
+      'Níveis de acesso',
+    ],
+    AtlasGovernancePeopleModule.governanceCenter => const [
+      'Pessoas',
+      'Documentos',
+      'Conformidade',
+      'Riscos',
+      'Painel executivo',
+    ],
+  };
 }
 
 class AtlasGovernancePeopleRecord {
@@ -229,44 +207,39 @@ class AtlasGovernancePeopleRecord {
         status != 'Cancelado';
   }
 
-  double get riskScore =>
-      probabilityPercent * impactPercent / 100;
+  double get riskScore => probabilityPercent * impactPercent / 100;
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'dueDate': dueDate,
-        'status': status,
-        'priority': priority,
-        'personName': personName,
-        'roleName': roleName,
-        'departmentName': departmentName,
-        'documentName': documentName,
-        'requirementName': requirementName,
-        'riskName': riskName,
-        'responsible': responsible,
-        'probabilityPercent': probabilityPercent,
-        'impactPercent': impactPercent,
-        'progressPercent': progressPercent,
-        'compliancePercent': compliancePercent,
-        'alertCount': alertCount,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'dueDate': dueDate,
+    'status': status,
+    'priority': priority,
+    'personName': personName,
+    'roleName': roleName,
+    'departmentName': departmentName,
+    'documentName': documentName,
+    'requirementName': requirementName,
+    'riskName': riskName,
+    'responsible': responsible,
+    'probabilityPercent': probabilityPercent,
+    'impactPercent': impactPercent,
+    'progressPercent': progressPercent,
+    'compliancePercent': compliancePercent,
+    'alertCount': alertCount,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasGovernancePeopleRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasGovernancePeopleRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
-    final module =
-        AtlasGovernancePeopleModule.values.firstWhere(
+    final module = AtlasGovernancePeopleModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasGovernancePeopleModule.peopleManagement,
+      orElse: () => AtlasGovernancePeopleModule.peopleManagement,
     );
 
     return AtlasGovernancePeopleRecord(
@@ -285,16 +258,11 @@ class AtlasGovernancePeopleRecord {
       requirementName: map['requirementName']?.toString() ?? '',
       riskName: map['riskName']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
-      probabilityPercent:
-          (map['probabilityPercent'] as num?)?.toDouble() ?? 0,
-      impactPercent:
-          (map['impactPercent'] as num?)?.toDouble() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      compliancePercent:
-          (map['compliancePercent'] as num?)?.toDouble() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      probabilityPercent: (map['probabilityPercent'] as num?)?.toDouble() ?? 0,
+      impactPercent: (map['impactPercent'] as num?)?.toDouble() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      compliancePercent: (map['compliancePercent'] as num?)?.toDouble() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

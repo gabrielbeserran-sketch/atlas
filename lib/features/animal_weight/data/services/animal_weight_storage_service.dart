@@ -8,8 +8,8 @@ class AnimalWeightStorageService {
   AnimalWeightStorageService({
     SharedPreferencesAsync? preferences,
     AnimalWeightEnterpriseService? enterprise,
-  })  : _preferences = preferences ?? SharedPreferencesAsync(),
-        _enterprise = enterprise ?? AnimalWeightEnterpriseService();
+  }) : _preferences = preferences ?? SharedPreferencesAsync(),
+       _enterprise = enterprise ?? AnimalWeightEnterpriseService();
 
   final SharedPreferencesAsync _preferences;
   final AnimalWeightEnterpriseService _enterprise;

@@ -1,0 +1,4 @@
+CORREÇÃO DOS AVISOS CURLY BRACES
+
+Os arquivos apontados pelo flutter analyze foram corrigidos para usar blocos explícitos em estruturas if.
+Nenhuma regra de negócio foi alterada.

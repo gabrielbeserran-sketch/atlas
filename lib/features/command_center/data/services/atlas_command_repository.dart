@@ -8,8 +8,7 @@ class AtlasCommandRepository {
   static const String _updatedKey = 'atlas_command_center_updated_v1';
 
   Future<AtlasCommandCenterState> load() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     final String? rawItems = preferences.getString(_itemsKey);
 
     if (rawItems == null || rawItems.isEmpty) {
@@ -30,9 +29,8 @@ class AtlasCommandRepository {
 
       return AtlasCommandCenterState(
         items: items,
-        lastUpdatedAt: DateTime.tryParse(
-              preferences.getString(_updatedKey) ?? '',
-            ) ??
+        lastUpdatedAt:
+            DateTime.tryParse(preferences.getString(_updatedKey) ?? '') ??
             DateTime.now(),
       );
     } catch (_) {
@@ -43,8 +41,7 @@ class AtlasCommandRepository {
   }
 
   Future<void> save(AtlasCommandCenterState state) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _itemsKey,
       jsonEncode(

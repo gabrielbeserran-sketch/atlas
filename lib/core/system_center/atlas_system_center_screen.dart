@@ -13,8 +13,7 @@ class AtlasSystemCenterScreen extends StatefulWidget {
 }
 
 class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
-  final AtlasSystemCenterRepository _repository =
-      AtlasSystemCenterRepository();
+  final AtlasSystemCenterRepository _repository = AtlasSystemCenterRepository();
 
   AtlasSystemSnapshot? _snapshot;
   bool _loading = true;
@@ -69,9 +68,7 @@ class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Atlas System Center'),
-      ),
+      appBar: AppBar(title: const Text('Atlas System Center')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _buildContent(_snapshot!),
@@ -137,10 +134,7 @@ class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
                 Expanded(
                   child: Text(
                     'Sprint Enterprise 2',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -150,10 +144,7 @@ class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
               'Versão ${snapshot.version} • Índice arquitetural ${snapshot.architectureScore}%',
             ),
             const SizedBox(height: 5),
-            Text(
-              inspectionText,
-              style: const TextStyle(color: Colors.black54),
-            ),
+            Text(inspectionText, style: const TextStyle(color: Colors.black54)),
           ],
         ),
       ),
@@ -203,7 +194,9 @@ class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
         children: <Widget>[
           SwitchListTile(
             title: const Text('Sincronização automática'),
-            subtitle: const Text('Prepara o envio dos dados quando houver conexão.'),
+            subtitle: const Text(
+              'Prepara o envio dos dados quando houver conexão.',
+            ),
             value: settings.automaticSync,
             onChanged: (bool value) {
               _updateSettings(settings.copyWith(automaticSync: value));
@@ -245,9 +238,7 @@ class _AtlasSystemCenterScreenState extends State<AtlasSystemCenterScreen> {
   Widget _buildModuleCard(AtlasSystemModule module) {
     return Card(
       child: ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.extension_outlined),
-        ),
+        leading: const CircleAvatar(child: Icon(Icons.extension_outlined)),
         title: Text(module.name),
         subtitle: Text(module.category),
         trailing: Chip(label: Text(module.status)),

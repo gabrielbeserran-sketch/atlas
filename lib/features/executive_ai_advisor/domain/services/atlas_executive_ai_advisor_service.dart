@@ -18,33 +18,20 @@ class AtlasExecutiveAiAdvisorService {
     required AtlasExecutiveIntelligenceData intelligence,
     DateTime? now,
   }) {
-    final weeklyPriorities =
-        _buildWeeklyPriorities(
-      intelligence,
-    );
+    final weeklyPriorities = _buildWeeklyPriorities(intelligence);
 
-    final monthlyPriorities =
-        _buildMonthlyPriorities(
-      intelligence,
-    );
+    final monthlyPriorities = _buildMonthlyPriorities(intelligence);
 
-    final financialOpportunities =
-        _buildFinancialOpportunities(
-      analytics,
-    );
+    final financialOpportunities = _buildFinancialOpportunities(analytics);
 
     final hiddenRisks = _buildHiddenRisks(
       forecast: forecast,
       intelligence: intelligence,
     );
 
-    final operationalBottlenecks =
-        _buildOperationalBottlenecks(
-      intelligence,
-    );
+    final operationalBottlenecks = _buildOperationalBottlenecks(intelligence);
 
-    final strategicRecommendations =
-        _buildStrategicRecommendations(
+    final strategicRecommendations = _buildStrategicRecommendations(
       bi: bi,
       benchmark: benchmark,
       analytics: analytics,
@@ -54,8 +41,7 @@ class AtlasExecutiveAiAdvisorService {
     final actionPlan = _buildActionPlan(
       weeklyPriorities: weeklyPriorities,
       monthlyPriorities: monthlyPriorities,
-      financialOpportunities:
-          financialOpportunities,
+      financialOpportunities: financialOpportunities,
       hiddenRisks: hiddenRisks,
     );
 
@@ -85,8 +71,7 @@ class AtlasExecutiveAiAdvisorService {
         confidence: confidence,
         status: status,
         weeklyPriorities: weeklyPriorities,
-        financialOpportunities:
-            financialOpportunities,
+        financialOpportunities: financialOpportunities,
         hiddenRisks: hiddenRisks,
       ),
       diagnostic: _diagnostic(
@@ -98,13 +83,10 @@ class AtlasExecutiveAiAdvisorService {
       ),
       weeklyPriorities: weeklyPriorities,
       monthlyPriorities: monthlyPriorities,
-      financialOpportunities:
-          financialOpportunities,
+      financialOpportunities: financialOpportunities,
       hiddenRisks: hiddenRisks,
-      operationalBottlenecks:
-          operationalBottlenecks,
-      strategicRecommendations:
-          strategicRecommendations,
+      operationalBottlenecks: operationalBottlenecks,
+      strategicRecommendations: strategicRecommendations,
       actionPlan: actionPlan,
       advisorScore: score,
       confidencePercent: confidence,
@@ -112,8 +94,7 @@ class AtlasExecutiveAiAdvisorService {
     );
   }
 
-  List<AtlasExecutiveAdvisorPriority>
-      _buildWeeklyPriorities(
+  List<AtlasExecutiveAdvisorPriority> _buildWeeklyPriorities(
     AtlasExecutiveIntelligenceData intelligence,
   ) {
     final items = intelligence.priorities
@@ -121,35 +102,26 @@ class AtlasExecutiveAiAdvisorService {
         .take(6)
         .toList();
 
-    return List.generate(
-      items.length,
-      (index) {
-        final item = items[index];
+    return List.generate(items.length, (index) {
+      final item = items[index];
 
-        return AtlasExecutiveAdvisorPriority(
-          position: index + 1,
-          farmName: item.farmName,
-          title: item.title,
-          description: item.description,
-          category: item.category,
-          priority:
-              _priorityFromSeverity(item.severity),
-          deadlineDays: math.min(
-            item.deadlineDays,
-            7,
-          ),
-          confidencePercent:
-              item.confidencePercent,
-          expectedImpact:
-              'Impacto econômico estimado em '
-              'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.',
-        );
-      },
-    );
+      return AtlasExecutiveAdvisorPriority(
+        position: index + 1,
+        farmName: item.farmName,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        priority: _priorityFromSeverity(item.severity),
+        deadlineDays: math.min(item.deadlineDays, 7),
+        confidencePercent: item.confidencePercent,
+        expectedImpact:
+            'Impacto econômico estimado em '
+            'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.',
+      );
+    });
   }
 
-  List<AtlasExecutiveAdvisorPriority>
-      _buildMonthlyPriorities(
+  List<AtlasExecutiveAdvisorPriority> _buildMonthlyPriorities(
     AtlasExecutiveIntelligenceData intelligence,
   ) {
     final items = intelligence.priorities
@@ -157,74 +129,56 @@ class AtlasExecutiveAiAdvisorService {
         .take(8)
         .toList();
 
-    return List.generate(
-      items.length,
-      (index) {
-        final item = items[index];
+    return List.generate(items.length, (index) {
+      final item = items[index];
 
-        return AtlasExecutiveAdvisorPriority(
-          position: index + 1,
-          farmName: item.farmName,
-          title: item.title,
-          description: item.description,
-          category: item.category,
-          priority:
-              _priorityFromSeverity(item.severity),
-          deadlineDays: item.deadlineDays,
-          confidencePercent:
-              item.confidencePercent,
-          expectedImpact:
-              'Impacto econômico estimado em '
-              'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.',
-        );
-      },
-    );
+      return AtlasExecutiveAdvisorPriority(
+        position: index + 1,
+        farmName: item.farmName,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        priority: _priorityFromSeverity(item.severity),
+        deadlineDays: item.deadlineDays,
+        confidencePercent: item.confidencePercent,
+        expectedImpact:
+            'Impacto econômico estimado em '
+            'R\$ ${item.expectedFinancialImpact.toStringAsFixed(2)}.',
+      );
+    });
   }
 
-  List<AtlasExecutiveAdvisorFinancialOpportunity>
-      _buildFinancialOpportunities(
+  List<AtlasExecutiveAdvisorFinancialOpportunity> _buildFinancialOpportunities(
     AtlasBiAnalyticsData analytics,
   ) {
-    final items = analytics.investments
-        .take(8)
-        .toList();
+    final items = analytics.investments.take(8).toList();
 
-    return List.generate(
-      items.length,
-      (index) {
-        final item = items[index];
+    return List.generate(items.length, (index) {
+      final item = items[index];
 
-        return AtlasExecutiveAdvisorFinancialOpportunity(
-          position: index + 1,
-          farmName: item.farmName,
-          title: item.title,
-          description: item.description,
-          category: item.category,
-          investmentValue:
-              item.investmentValue,
-          expectedReturnValue:
-              item.expectedReturnValue,
-          roiPercent: item.roiPercent,
-          paybackDays: item.paybackDays,
-          confidencePercent:
-              item.confidencePercent,
-          recommendation:
-              item.recommendation,
-        );
-      },
-    );
+      return AtlasExecutiveAdvisorFinancialOpportunity(
+        position: index + 1,
+        farmName: item.farmName,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
+        roiPercent: item.roiPercent,
+        paybackDays: item.paybackDays,
+        confidencePercent: item.confidencePercent,
+        recommendation: item.recommendation,
+      );
+    });
   }
 
-  List<AtlasExecutiveAdvisorRisk>
-      _buildHiddenRisks({
+  List<AtlasExecutiveAdvisorRisk> _buildHiddenRisks({
     required AtlasBiForecastDashboardData forecast,
     required AtlasExecutiveIntelligenceData intelligence,
   }) {
-    final result =
-        <AtlasExecutiveAdvisorRisk>[];
+    final result = <AtlasExecutiveAdvisorRisk>[];
 
-    for (final item
-        in intelligence.consequences.take(8)) {
+    for (final item in intelligence.consequences.take(8)) {
       result.add(
         AtlasExecutiveAdvisorRisk(
           id: 'risk_${item.id}',
@@ -232,30 +186,23 @@ class AtlasExecutiveAiAdvisorService {
           title: item.title,
           description: item.description,
           category: item.category,
-          severity:
-              _severityFromIntelligence(
-            item.severity,
-          ),
-          probabilityPercent:
-              item.probabilityPercent,
-          financialImpactValue:
-              item.financialImpactValue,
+          severity: _severityFromIntelligence(item.severity),
+          probabilityPercent: item.probabilityPercent,
+          financialImpactValue: item.financialImpactValue,
           horizonDays: item.horizonDays,
-          recommendation:
-              item.recommendation,
+          recommendation: item.recommendation,
         ),
       );
     }
 
-    for (final item in forecast.forecasts
-        .where((forecastItem) {
-      return forecastItem.risk ==
-              AtlasBiForecastRisk.critical ||
-          forecastItem.risk ==
-              AtlasBiForecastRisk.high;
-    }).take(6)) {
-      final id =
-          'risk_forecast_${item.farmName}_${item.indicatorId}';
+    for (final item
+        in forecast.forecasts
+            .where((forecastItem) {
+              return forecastItem.risk == AtlasBiForecastRisk.critical ||
+                  forecastItem.risk == AtlasBiForecastRisk.high;
+            })
+            .take(6)) {
+      final id = 'risk_forecast_${item.farmName}_${item.indicatorId}';
 
       if (result.any((risk) => risk.id == id)) {
         continue;
@@ -265,90 +212,65 @@ class AtlasExecutiveAiAdvisorService {
         AtlasExecutiveAdvisorRisk(
           id: id,
           farmName: item.farmName,
-          title:
-              'Risco futuro em ${item.title}',
+          title: 'Risco futuro em ${item.title}',
           description:
               'A probabilidade atual de alcançar a meta é '
               '${item.targetProbabilityPercent.toStringAsFixed(0)}%.',
           category: item.category,
-          severity:
-              item.risk ==
-                      AtlasBiForecastRisk.critical
-                  ? AtlasExecutiveAdvisorSeverity.critical
-                  : AtlasExecutiveAdvisorSeverity.high,
-          probabilityPercent:
-              100 - item.targetProbabilityPercent,
-          financialImpactValue:
-              item.projectedVariationPercent.abs() *
-                  1000,
+          severity: item.risk == AtlasBiForecastRisk.critical
+              ? AtlasExecutiveAdvisorSeverity.critical
+              : AtlasExecutiveAdvisorSeverity.high,
+          probabilityPercent: 100 - item.targetProbabilityPercent,
+          financialImpactValue: item.projectedVariationPercent.abs() * 1000,
           horizonDays: item.horizonDays,
-          recommendation:
-              item.recommendation,
+          recommendation: item.recommendation,
         ),
       );
     }
 
-    result.sort(
-      (first, second) {
-        final severityComparison =
-            _severityWeight(second.severity)
-                .compareTo(
-          _severityWeight(first.severity),
-        );
+    result.sort((first, second) {
+      final severityComparison = _severityWeight(
+        second.severity,
+      ).compareTo(_severityWeight(first.severity));
 
-        if (severityComparison != 0) {
-          return severityComparison;
-        }
+      if (severityComparison != 0) {
+        return severityComparison;
+      }
 
-        return second.probabilityPercent
-            .compareTo(
-          first.probabilityPercent,
-        );
-      },
-    );
+      return second.probabilityPercent.compareTo(first.probabilityPercent);
+    });
 
     return result.take(12).toList();
   }
 
-  List<AtlasExecutiveAdvisorBottleneck>
-      _buildOperationalBottlenecks(
+  List<AtlasExecutiveAdvisorBottleneck> _buildOperationalBottlenecks(
     AtlasExecutiveIntelligenceData intelligence,
   ) {
-    return intelligence.rootCauses
-        .take(10)
-        .map((item) {
+    return intelligence.rootCauses.take(10).map((item) {
       return AtlasExecutiveAdvisorBottleneck(
         id: 'bottleneck_${item.id}',
         farmName: item.farmName,
         title: item.title,
         description: item.description,
         category: item.category,
-        severity:
-            _severityFromIntelligence(
-          item.severity,
-        ),
+        severity: _severityFromIntelligence(item.severity),
         impactScore: item.impactScore,
-        confidencePercent:
-            item.confidencePercent,
+        confidencePercent: item.confidencePercent,
         rootCause: item.evidences.join(' '),
-        recommendation:
-            item.recommendation,
+        recommendation: item.recommendation,
       );
     }).toList();
   }
 
-  List<AtlasExecutiveAdvisorRecommendation>
-      _buildStrategicRecommendations({
+  List<AtlasExecutiveAdvisorRecommendation> _buildStrategicRecommendations({
     required AtlasBiData bi,
     required AtlasBiBenchmarkData benchmark,
     required AtlasBiAnalyticsData analytics,
     required AtlasExecutiveIntelligenceData intelligence,
   }) {
-    final result =
-        <AtlasExecutiveAdvisorRecommendation>[];
+    final result = <AtlasExecutiveAdvisorRecommendation>[];
 
-    for (final insight
-        in intelligence.insights.take(10)) {
+    for (final insight in intelligence.insights.take(10)) {
       result.add(
         AtlasExecutiveAdvisorRecommendation(
           id: 'recommendation_${insight.id}',
@@ -356,14 +278,9 @@ class AtlasExecutiveAiAdvisorService {
           title: insight.title,
           description: insight.description,
           category: insight.category,
-          priority:
-              _priorityFromInsight(
-            insight.priority,
-          ),
-          confidencePercent:
-              insight.confidencePercent,
-          expectedImpact:
-              insight.recommendation,
+          priority: _priorityFromInsight(insight.priority),
+          confidencePercent: insight.confidencePercent,
+          expectedImpact: insight.recommendation,
         ),
       );
     }
@@ -371,17 +288,13 @@ class AtlasExecutiveAiAdvisorService {
     if (benchmark.leadingFarmName != null) {
       result.add(
         AtlasExecutiveAdvisorRecommendation(
-          id:
-              'recommendation_benchmark_leader',
-          farmName:
-              benchmark.leadingFarmName!,
-          title:
-              'Transformar a fazenda líder em referência interna',
+          id: 'recommendation_benchmark_leader',
+          farmName: benchmark.leadingFarmName!,
+          title: 'Transformar a fazenda líder em referência interna',
           description:
               'Documentar processos, rotinas e decisões responsáveis pelo melhor desempenho.',
           category: AtlasBiCategory.management,
-          priority:
-              AtlasExecutiveAdvisorPriorityLevel.medium,
+          priority: AtlasExecutiveAdvisorPriorityLevel.medium,
           confidencePercent: 86,
           expectedImpact:
               'Reduzir diferenças de desempenho entre propriedades.',
@@ -389,22 +302,18 @@ class AtlasExecutiveAiAdvisorService {
       );
     }
 
-    for (final item
-        in analytics.scenarios.take(4)) {
+    for (final item in analytics.scenarios.take(4)) {
       result.add(
         AtlasExecutiveAdvisorRecommendation(
-          id:
-              'recommendation_scenario_${item.id}',
+          id: 'recommendation_scenario_${item.id}',
           farmName: item.farmName,
           title: item.title,
           description: item.description,
           category: item.category,
-          priority:
-              item.projectedFinancialImpact >= 50000
-                  ? AtlasExecutiveAdvisorPriorityLevel.high
-                  : AtlasExecutiveAdvisorPriorityLevel.medium,
-          confidencePercent:
-              item.confidencePercent,
+          priority: item.projectedFinancialImpact >= 50000
+              ? AtlasExecutiveAdvisorPriorityLevel.high
+              : AtlasExecutiveAdvisorPriorityLevel.medium,
+          confidencePercent: item.confidencePercent,
           expectedImpact:
               'Impacto projetado de '
               'R\$ ${item.projectedFinancialImpact.toStringAsFixed(2)}.',
@@ -413,8 +322,7 @@ class AtlasExecutiveAiAdvisorService {
     }
 
     for (final insight in bi.insights.take(4)) {
-      final id =
-          'recommendation_bi_${insight.id}';
+      final id = 'recommendation_bi_${insight.id}';
 
       if (result.any((item) => item.id == id)) {
         continue;
@@ -423,17 +331,13 @@ class AtlasExecutiveAiAdvisorService {
       result.add(
         AtlasExecutiveAdvisorRecommendation(
           id: id,
-          farmName:
-              insight.farmName ?? 'Operação',
+          farmName: insight.farmName ?? 'Operação',
           title: insight.title,
           description: insight.description,
           category: insight.category,
-          priority:
-              _priorityFromBi(insight.priority),
-          confidencePercent:
-              insight.confidencePercent,
-          expectedImpact:
-              insight.recommendation,
+          priority: _priorityFromBi(insight.priority),
+          confidencePercent: insight.confidencePercent,
+          expectedImpact: insight.recommendation,
         ),
       );
     }
@@ -441,19 +345,14 @@ class AtlasExecutiveAiAdvisorService {
     return result.take(16).toList();
   }
 
-  List<AtlasExecutiveAdvisorAction>
-      _buildActionPlan({
-    required List<AtlasExecutiveAdvisorPriority>
-        weeklyPriorities,
-    required List<AtlasExecutiveAdvisorPriority>
-        monthlyPriorities,
+  List<AtlasExecutiveAdvisorAction> _buildActionPlan({
+    required List<AtlasExecutiveAdvisorPriority> weeklyPriorities,
+    required List<AtlasExecutiveAdvisorPriority> monthlyPriorities,
     required List<AtlasExecutiveAdvisorFinancialOpportunity>
-        financialOpportunities,
-    required List<AtlasExecutiveAdvisorRisk>
-        hiddenRisks,
+    financialOpportunities,
+    required List<AtlasExecutiveAdvisorRisk> hiddenRisks,
   }) {
-    final actions =
-        <AtlasExecutiveAdvisorAction>[];
+    final actions = <AtlasExecutiveAdvisorAction>[];
 
     for (final item in weeklyPriorities) {
       actions.add(
@@ -465,10 +364,8 @@ class AtlasExecutiveAiAdvisorService {
           category: item.category,
           priority: item.priority,
           deadlineDays: item.deadlineDays,
-          expectedResult:
-              item.expectedImpact,
-          source:
-              AtlasExecutiveAdvisorActionSource.rootCause,
+          expectedResult: item.expectedImpact,
+          source: AtlasExecutiveAdvisorActionSource.rootCause,
         ),
       );
     }
@@ -478,51 +375,39 @@ class AtlasExecutiveAiAdvisorService {
         AtlasExecutiveAdvisorAction(
           position: actions.length + 1,
           farmName: risk.farmName,
-          title:
-              'Mitigar ${risk.title}',
-          description:
-              risk.recommendation,
+          title: 'Mitigar ${risk.title}',
+          description: risk.recommendation,
           category: risk.category,
-          priority:
-              risk.severity ==
-                      AtlasExecutiveAdvisorSeverity.critical
-                  ? AtlasExecutiveAdvisorPriorityLevel.critical
-                  : AtlasExecutiveAdvisorPriorityLevel.high,
-          deadlineDays:
-              risk.severity ==
-                      AtlasExecutiveAdvisorSeverity.critical
-                  ? 7
-                  : 14,
+          priority: risk.severity == AtlasExecutiveAdvisorSeverity.critical
+              ? AtlasExecutiveAdvisorPriorityLevel.critical
+              : AtlasExecutiveAdvisorPriorityLevel.high,
+          deadlineDays: risk.severity == AtlasExecutiveAdvisorSeverity.critical
+              ? 7
+              : 14,
           expectedResult:
               'Reduzir a probabilidade de risco em '
               '${risk.probabilityPercent.toStringAsFixed(0)}%.',
-          source:
-              AtlasExecutiveAdvisorActionSource.forecast,
+          source: AtlasExecutiveAdvisorActionSource.forecast,
         ),
       );
     }
 
-    for (final item
-        in financialOpportunities.take(3)) {
+    for (final item in financialOpportunities.take(3)) {
       actions.add(
         AtlasExecutiveAdvisorAction(
           position: actions.length + 1,
           farmName: item.farmName,
-          title:
-              'Avaliar ${item.title}',
-          description:
-              item.recommendation,
+          title: 'Avaliar ${item.title}',
+          description: item.recommendation,
           category: item.category,
-          priority:
-              item.roiPercent >= 50
-                  ? AtlasExecutiveAdvisorPriorityLevel.high
-                  : AtlasExecutiveAdvisorPriorityLevel.medium,
+          priority: item.roiPercent >= 50
+              ? AtlasExecutiveAdvisorPriorityLevel.high
+              : AtlasExecutiveAdvisorPriorityLevel.medium,
           deadlineDays: 30,
           expectedResult:
               'Retorno esperado de '
               'R\$ ${item.expectedReturnValue.toStringAsFixed(2)}.',
-          source:
-              AtlasExecutiveAdvisorActionSource.financial,
+          source: AtlasExecutiveAdvisorActionSource.financial,
         ),
       );
     }
@@ -537,10 +422,8 @@ class AtlasExecutiveAiAdvisorService {
           category: item.category,
           priority: item.priority,
           deadlineDays: item.deadlineDays,
-          expectedResult:
-              item.expectedImpact,
-          source:
-              AtlasExecutiveAdvisorActionSource.strategy,
+          expectedResult: item.expectedImpact,
+          source: AtlasExecutiveAdvisorActionSource.strategy,
         ),
       );
     }
@@ -555,15 +438,11 @@ class AtlasExecutiveAiAdvisorService {
     required AtlasBiAnalyticsData analytics,
     required AtlasExecutiveIntelligenceData intelligence,
   }) {
-    final forecastScore =
-        forecast.forecasts.isEmpty
-            ? 0.0
-            : (100 -
-                    forecast.highRiskCount /
-                        forecast.forecasts.length *
-                        100)
-                .clamp(0.0, 100.0)
-                .toDouble();
+    final forecastScore = forecast.forecasts.isEmpty
+        ? 0.0
+        : (100 - forecast.highRiskCount / forecast.forecasts.length * 100)
+              .clamp(0.0, 100.0)
+              .toDouble();
 
     return (bi.score * 0.20 +
             forecastScore * 0.15 +
@@ -583,19 +462,15 @@ class AtlasExecutiveAiAdvisorService {
   }) {
     final coverage =
         bi.indicators.length * 2 +
-            forecast.forecasts.length * 2 +
-            benchmark.farms.length * 8 +
-            analytics.correlations.length * 2 +
-            intelligence.insights.length * 2;
+        forecast.forecasts.length * 2 +
+        benchmark.farms.length * 8 +
+        analytics.correlations.length * 2 +
+        intelligence.insights.length * 2;
 
-    return coverage
-        .clamp(45, 98)
-        .toDouble();
+    return coverage.clamp(45, 98).toDouble();
   }
 
-  AtlasExecutiveAdvisorStatus _statusFromScore(
-    double score,
-  ) {
+  AtlasExecutiveAdvisorStatus _statusFromScore(double score) {
     if (score >= 90) {
       return AtlasExecutiveAdvisorStatus.excellent;
     }
@@ -611,8 +486,7 @@ class AtlasExecutiveAiAdvisorService {
     return AtlasExecutiveAdvisorStatus.critical;
   }
 
-  AtlasExecutiveAdvisorSeverity
-      _severityFromIntelligence(
+  AtlasExecutiveAdvisorSeverity _severityFromIntelligence(
     AtlasExecutiveIntelligenceSeverity severity,
   ) {
     switch (severity) {
@@ -630,8 +504,7 @@ class AtlasExecutiveAiAdvisorService {
     }
   }
 
-  AtlasExecutiveAdvisorPriorityLevel
-      _priorityFromSeverity(
+  AtlasExecutiveAdvisorPriorityLevel _priorityFromSeverity(
     AtlasExecutiveIntelligenceSeverity severity,
   ) {
     switch (severity) {
@@ -649,8 +522,7 @@ class AtlasExecutiveAiAdvisorService {
     }
   }
 
-  AtlasExecutiveAdvisorPriorityLevel
-      _priorityFromInsight(
+  AtlasExecutiveAdvisorPriorityLevel _priorityFromInsight(
     AtlasExecutiveInsightPriority priority,
   ) {
     switch (priority) {
@@ -668,10 +540,7 @@ class AtlasExecutiveAiAdvisorService {
     }
   }
 
-  AtlasExecutiveAdvisorPriorityLevel
-      _priorityFromBi(
-    AtlasBiPriority priority,
-  ) {
+  AtlasExecutiveAdvisorPriorityLevel _priorityFromBi(AtlasBiPriority priority) {
     switch (priority) {
       case AtlasBiPriority.low:
         return AtlasExecutiveAdvisorPriorityLevel.low;
@@ -687,9 +556,7 @@ class AtlasExecutiveAiAdvisorService {
     }
   }
 
-  int _severityWeight(
-    AtlasExecutiveAdvisorSeverity severity,
-  ) {
+  int _severityWeight(AtlasExecutiveAdvisorSeverity severity) {
     switch (severity) {
       case AtlasExecutiveAdvisorSeverity.low:
         return 1;
@@ -709,12 +576,10 @@ class AtlasExecutiveAiAdvisorService {
     required double score,
     required double confidence,
     required AtlasExecutiveAdvisorStatus status,
-    required List<AtlasExecutiveAdvisorPriority>
-        weeklyPriorities,
+    required List<AtlasExecutiveAdvisorPriority> weeklyPriorities,
     required List<AtlasExecutiveAdvisorFinancialOpportunity>
-        financialOpportunities,
-    required List<AtlasExecutiveAdvisorRisk>
-        hiddenRisks,
+    financialOpportunities,
+    required List<AtlasExecutiveAdvisorRisk> hiddenRisks,
   }) {
     return 'O parecer executivo apresenta score de '
         '${score.toStringAsFixed(0)}/100, situação '
@@ -732,16 +597,13 @@ class AtlasExecutiveAiAdvisorService {
     required AtlasBiAnalyticsData analytics,
     required AtlasExecutiveIntelligenceData intelligence,
   }) {
-    final leader =
-        benchmark.leadingFarmName ?? 'nenhuma fazenda';
+    final leader = benchmark.leadingFarmName ?? 'nenhuma fazenda';
 
     final mainRootCause =
-        intelligence.mainRootCause?.title ??
-            'nenhuma causa-raiz principal';
+        intelligence.mainRootCause?.title ?? 'nenhuma causa-raiz principal';
 
     final mainInvestment =
-        analytics.bestInvestment?.title ??
-            'nenhuma oportunidade prioritária';
+        analytics.bestInvestment?.title ?? 'nenhuma oportunidade prioritária';
 
     return 'A operação possui ${bi.indicators.length} indicadores analisados, '
         '${forecast.highRiskCount} previsões em risco alto ou crítico, '

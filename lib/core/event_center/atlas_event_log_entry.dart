@@ -35,9 +35,7 @@ class AtlasEventLogEntry {
   final Map<String, dynamic> payload;
   final List<String> tags;
 
-  factory AtlasEventLogEntry.fromEvent(
-    AtlasEvent event,
-  ) {
+  factory AtlasEventLogEntry.fromEvent(AtlasEvent event) {
     final now = DateTime.now();
 
     return AtlasEventLogEntry(
@@ -54,12 +52,8 @@ class AtlasEventLogEntry {
       farmName: event.farmName,
       entityId: event.entityId,
       entityType: event.entityType,
-      payload: Map<String, dynamic>.from(
-        event.payload,
-      ),
-      tags: List<String>.from(
-        event.tags,
-      ),
+      payload: Map<String, dynamic>.from(event.payload),
+      tags: List<String>.from(event.tags),
     );
   }
 
@@ -83,56 +77,35 @@ class AtlasEventLogEntry {
     };
   }
 
-  factory AtlasEventLogEntry.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasEventLogEntry.fromJson(Map<String, dynamic> json) {
     return AtlasEventLogEntry(
-      id: json['id'] as String? ??
-          'event_log_unknown',
-      eventId: json['eventId'] as String? ??
-          'event_unknown',
+      id: json['id'] as String? ?? 'event_log_unknown',
+      eventId: json['eventId'] as String? ?? 'event_unknown',
       type: AtlasEventType.values.firstWhere(
-        (item) =>
-            item.name == json['type'],
-        orElse: () =>
-            AtlasEventType.systemUpdated,
+        (item) => item.name == json['type'],
+        orElse: () => AtlasEventType.systemUpdated,
       ),
-      sourceModule:
-          json['sourceModule'] as String? ??
-              'unknown',
-      title: json['title'] as String? ??
-          'Evento',
-      description:
-          json['description'] as String? ??
-              '',
-      occurredAt: DateTime.tryParse(
-            json['occurredAt'] as String? ?? '',
-          ) ??
+      sourceModule: json['sourceModule'] as String? ?? 'unknown',
+      title: json['title'] as String? ?? 'Evento',
+      description: json['description'] as String? ?? '',
+      occurredAt:
+          DateTime.tryParse(json['occurredAt'] as String? ?? '') ??
           DateTime.now(),
-      recordedAt: DateTime.tryParse(
-            json['recordedAt'] as String? ?? '',
-          ) ??
+      recordedAt:
+          DateTime.tryParse(json['recordedAt'] as String? ?? '') ??
           DateTime.now(),
-      priority:
-          AtlasEventPriority.values.firstWhere(
-        (item) =>
-            item.name == json['priority'],
-        orElse: () =>
-            AtlasEventPriority.normal,
+      priority: AtlasEventPriority.values.firstWhere(
+        (item) => item.name == json['priority'],
+        orElse: () => AtlasEventPriority.normal,
       ),
       farmId: json['farmId'] as String?,
       farmName: json['farmName'] as String?,
       entityId: json['entityId'] as String?,
-      entityType:
-          json['entityType'] as String?,
+      entityType: json['entityType'] as String?,
       payload: Map<String, dynamic>.from(
-        json['payload'] as Map? ??
-            const <String, dynamic>{},
+        json['payload'] as Map? ?? const <String, dynamic>{},
       ),
-      tags: List<String>.from(
-        json['tags'] as List? ??
-            const <String>[],
-      ),
+      tags: List<String>.from(json['tags'] as List? ?? const <String>[]),
     );
   }
 }

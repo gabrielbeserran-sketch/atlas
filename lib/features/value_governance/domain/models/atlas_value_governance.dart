@@ -40,36 +40,35 @@ class AtlasValueGovernanceDecision {
   final DateTime nextReviewAt;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'strategyPlanId': strategyPlanId,
-        'farmId': farmId,
-        'farmName': farmName,
-        'strategyTitle': strategyTitle,
-        'createdAt': createdAt.toIso8601String(),
-        'decision': decision.name,
-        'valueScore': valueScore,
-        'financialScore': financialScore,
-        'executionScore': executionScore,
-        'riskScore': riskScore,
-        'benefitAchievement': benefitAchievement,
-        'budgetVariance': budgetVariance,
-        'roiVariance': roiVariance,
-        'executiveSummary': executiveSummary,
-        'conditions': conditions,
-        'requiredActions': requiredActions,
-        'nextReviewAt': nextReviewAt.toIso8601String(),
-      };
+    'id': id,
+    'strategyPlanId': strategyPlanId,
+    'farmId': farmId,
+    'farmName': farmName,
+    'strategyTitle': strategyTitle,
+    'createdAt': createdAt.toIso8601String(),
+    'decision': decision.name,
+    'valueScore': valueScore,
+    'financialScore': financialScore,
+    'executionScore': executionScore,
+    'riskScore': riskScore,
+    'benefitAchievement': benefitAchievement,
+    'budgetVariance': budgetVariance,
+    'roiVariance': roiVariance,
+    'executiveSummary': executiveSummary,
+    'conditions': conditions,
+    'requiredActions': requiredActions,
+    'nextReviewAt': nextReviewAt.toIso8601String(),
+  };
 
-  factory AtlasValueGovernanceDecision.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasValueGovernanceDecision.fromJson(Map<String, dynamic> json) {
     return AtlasValueGovernanceDecision(
       id: json['id'] as String? ?? '',
       strategyPlanId: json['strategyPlanId'] as String? ?? '',
       farmId: json['farmId'] as String? ?? '',
       farmName: json['farmName'] as String? ?? 'Fazenda',
       strategyTitle: json['strategyTitle'] as String? ?? 'Estratégia',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
       decision: AtlasValueGovernanceDecisionType.values.firstWhere(
         (item) => item.name == json['decision'],
@@ -79,21 +78,19 @@ class AtlasValueGovernanceDecision {
       financialScore: (json['financialScore'] as num?)?.toDouble() ?? 0,
       executionScore: (json['executionScore'] as num?)?.toDouble() ?? 0,
       riskScore: (json['riskScore'] as num?)?.toDouble() ?? 0,
-      benefitAchievement:
-          (json['benefitAchievement'] as num?)?.toDouble() ?? 0,
+      benefitAchievement: (json['benefitAchievement'] as num?)?.toDouble() ?? 0,
       budgetVariance: (json['budgetVariance'] as num?)?.toDouble() ?? 0,
       roiVariance: (json['roiVariance'] as num?)?.toDouble() ?? 0,
       executiveSummary: json['executiveSummary'] as String? ?? '',
       conditions: (json['conditions'] as List? ?? const <dynamic>[])
           .whereType<String>()
           .toList(),
-      requiredActions:
-          (json['requiredActions'] as List? ?? const <dynamic>[])
-              .whereType<String>()
-              .toList(),
+      requiredActions: (json['requiredActions'] as List? ?? const <dynamic>[])
+          .whereType<String>()
+          .toList(),
       nextReviewAt:
           DateTime.tryParse(json['nextReviewAt'] as String? ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
     );
   }
 }

@@ -14,146 +14,126 @@ enum AtlasSustainabilityEnterpriseModule {
 extension AtlasSustainabilityEnterpriseModuleX
     on AtlasSustainabilityEnterpriseModule {
   String get code => switch (this) {
-        AtlasSustainabilityEnterpriseModule.carbonFootprint =>
-          'carbon_footprint',
-        AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
-          'greenhouse_gas_inventory',
-        AtlasSustainabilityEnterpriseModule.waterManagement =>
-          'water_management',
-        AtlasSustainabilityEnterpriseModule.energyEfficiency =>
-          'energy_efficiency',
-        AtlasSustainabilityEnterpriseModule.wasteManagement =>
-          'waste_management',
-        AtlasSustainabilityEnterpriseModule.biodiversity =>
-          'biodiversity',
-        AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
-          'environmental_compliance',
-        AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
-          'sustainability_certifications',
-        AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
-          'sustainable_traceability',
-        AtlasSustainabilityEnterpriseModule.esgCenter =>
-          'esg_center',
-      };
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'carbon_footprint',
+    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
+      'greenhouse_gas_inventory',
+    AtlasSustainabilityEnterpriseModule.waterManagement => 'water_management',
+    AtlasSustainabilityEnterpriseModule.energyEfficiency => 'energy_efficiency',
+    AtlasSustainabilityEnterpriseModule.wasteManagement => 'waste_management',
+    AtlasSustainabilityEnterpriseModule.biodiversity => 'biodiversity',
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
+      'environmental_compliance',
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
+      'sustainability_certifications',
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
+      'sustainable_traceability',
+    AtlasSustainabilityEnterpriseModule.esgCenter => 'esg_center',
+  };
 
   String get title => switch (this) {
-        AtlasSustainabilityEnterpriseModule.carbonFootprint =>
-          'Pegada de Carbono',
-        AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
-          'Inventário de Gases de Efeito Estufa',
-        AtlasSustainabilityEnterpriseModule.waterManagement =>
-          'Gestão Hídrica',
-        AtlasSustainabilityEnterpriseModule.energyEfficiency =>
-          'Eficiência Energética',
-        AtlasSustainabilityEnterpriseModule.wasteManagement =>
-          'Gestão de Resíduos',
-        AtlasSustainabilityEnterpriseModule.biodiversity =>
-          'Biodiversidade',
-        AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
-          'Conformidade Ambiental',
-        AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
-          'Certificações de Sustentabilidade',
-        AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
-          'Rastreabilidade Sustentável',
-        AtlasSustainabilityEnterpriseModule.esgCenter =>
-          'Central ESG',
-      };
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'Pegada de Carbono',
+    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
+      'Inventário de Gases de Efeito Estufa',
+    AtlasSustainabilityEnterpriseModule.waterManagement => 'Gestão Hídrica',
+    AtlasSustainabilityEnterpriseModule.energyEfficiency =>
+      'Eficiência Energética',
+    AtlasSustainabilityEnterpriseModule.wasteManagement => 'Gestão de Resíduos',
+    AtlasSustainabilityEnterpriseModule.biodiversity => 'Biodiversidade',
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
+      'Conformidade Ambiental',
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
+      'Certificações de Sustentabilidade',
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
+      'Rastreabilidade Sustentável',
+    AtlasSustainabilityEnterpriseModule.esgCenter => 'Central ESG',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasSustainabilityEnterpriseModule.carbonFootprint =>
-          'Pacote 181',
-        AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
-          'Pacote 182',
-        AtlasSustainabilityEnterpriseModule.waterManagement =>
-          'Pacote 183',
-        AtlasSustainabilityEnterpriseModule.energyEfficiency =>
-          'Pacote 184',
-        AtlasSustainabilityEnterpriseModule.wasteManagement =>
-          'Pacote 185',
-        AtlasSustainabilityEnterpriseModule.biodiversity =>
-          'Pacote 186',
-        AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
-          'Pacote 187',
-        AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
-          'Pacote 188',
-        AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
-          'Pacote 189',
-        AtlasSustainabilityEnterpriseModule.esgCenter =>
-          'Pacote 190',
-      };
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'Pacote 181',
+    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => 'Pacote 182',
+    AtlasSustainabilityEnterpriseModule.waterManagement => 'Pacote 183',
+    AtlasSustainabilityEnterpriseModule.energyEfficiency => 'Pacote 184',
+    AtlasSustainabilityEnterpriseModule.wasteManagement => 'Pacote 185',
+    AtlasSustainabilityEnterpriseModule.biodiversity => 'Pacote 186',
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance => 'Pacote 187',
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
+      'Pacote 188',
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability => 'Pacote 189',
+    AtlasSustainabilityEnterpriseModule.esgCenter => 'Pacote 190',
+  };
 
   List<String> get features => switch (this) {
-        AtlasSustainabilityEnterpriseModule.carbonFootprint => const [
-            'Fontes de emissão',
-            'Emissões por atividade',
-            'Emissões por animal',
-            'Compensações',
-            'Meta de redução',
-          ],
-        AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => const [
-            'Escopo 1',
-            'Escopo 2',
-            'Escopo 3',
-            'Fatores de emissão',
-            'Relatório consolidado',
-          ],
-        AtlasSustainabilityEnterpriseModule.waterManagement => const [
-            'Captação',
-            'Consumo',
-            'Qualidade da água',
-            'Reuso',
-            'Meta de eficiência hídrica',
-          ],
-        AtlasSustainabilityEnterpriseModule.energyEfficiency => const [
-            'Consumo total',
-            'Consumo por atividade',
-            'Fontes renováveis',
-            'Eficiência operacional',
-            'Plano de redução',
-          ],
-        AtlasSustainabilityEnterpriseModule.wasteManagement => const [
-            'Resíduos orgânicos',
-            'Resíduos recicláveis',
-            'Resíduos perigosos',
-            'Destino final',
-            'Economia circular',
-          ],
-        AtlasSustainabilityEnterpriseModule.biodiversity => const [
-            'Áreas conservadas',
-            'Espécies observadas',
-            'Corredores ecológicos',
-            'Riscos ambientais',
-            'Plano de conservação',
-          ],
-        AtlasSustainabilityEnterpriseModule.environmentalCompliance => const [
-            'Licenças',
-            'Condicionantes',
-            'Prazos',
-            'Evidências',
-            'Não conformidades',
-          ],
-        AtlasSustainabilityEnterpriseModule.sustainabilityCertifications => const [
-            'Certificações',
-            'Requisitos',
-            'Auditorias',
-            'Validade',
-            'Plano de adequação',
-          ],
-        AtlasSustainabilityEnterpriseModule.sustainableTraceability => const [
-            'Origem',
-            'Cadeia de custódia',
-            'Evidências ambientais',
-            'Fornecedores',
-            'Destino comercial',
-          ],
-        AtlasSustainabilityEnterpriseModule.esgCenter => const [
-            'Indicadores ambientais',
-            'Indicadores sociais',
-            'Indicadores de governança',
-            'Metas e alertas',
-            'Painel executivo',
-          ],
-      };
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => const [
+      'Fontes de emissão',
+      'Emissões por atividade',
+      'Emissões por animal',
+      'Compensações',
+      'Meta de redução',
+    ],
+    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => const [
+      'Escopo 1',
+      'Escopo 2',
+      'Escopo 3',
+      'Fatores de emissão',
+      'Relatório consolidado',
+    ],
+    AtlasSustainabilityEnterpriseModule.waterManagement => const [
+      'Captação',
+      'Consumo',
+      'Qualidade da água',
+      'Reuso',
+      'Meta de eficiência hídrica',
+    ],
+    AtlasSustainabilityEnterpriseModule.energyEfficiency => const [
+      'Consumo total',
+      'Consumo por atividade',
+      'Fontes renováveis',
+      'Eficiência operacional',
+      'Plano de redução',
+    ],
+    AtlasSustainabilityEnterpriseModule.wasteManagement => const [
+      'Resíduos orgânicos',
+      'Resíduos recicláveis',
+      'Resíduos perigosos',
+      'Destino final',
+      'Economia circular',
+    ],
+    AtlasSustainabilityEnterpriseModule.biodiversity => const [
+      'Áreas conservadas',
+      'Espécies observadas',
+      'Corredores ecológicos',
+      'Riscos ambientais',
+      'Plano de conservação',
+    ],
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance => const [
+      'Licenças',
+      'Condicionantes',
+      'Prazos',
+      'Evidências',
+      'Não conformidades',
+    ],
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications => const [
+      'Certificações',
+      'Requisitos',
+      'Auditorias',
+      'Validade',
+      'Plano de adequação',
+    ],
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability => const [
+      'Origem',
+      'Cadeia de custódia',
+      'Evidências ambientais',
+      'Fornecedores',
+      'Destino comercial',
+    ],
+    AtlasSustainabilityEnterpriseModule.esgCenter => const [
+      'Indicadores ambientais',
+      'Indicadores sociais',
+      'Indicadores de governança',
+      'Metas e alertas',
+      'Painel executivo',
+    ],
+  };
 }
 
 class AtlasSustainabilityEnterpriseRecord {
@@ -230,9 +210,7 @@ class AtlasSustainabilityEnterpriseRecord {
 
   double get changePercent {
     if (baselineValue == 0) return 0.0;
-    return (currentValue - baselineValue) *
-        100 /
-        baselineValue.abs();
+    return (currentValue - baselineValue) * 100 / baselineValue.abs();
   }
 
   Map<String, dynamic> toMap() {
@@ -268,11 +246,9 @@ class AtlasSustainabilityEnterpriseRecord {
   ) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasSustainabilityEnterpriseModule.values.firstWhere(
+    final module = AtlasSustainabilityEnterpriseModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasSustainabilityEnterpriseModule.carbonFootprint,
+      orElse: () => AtlasSustainabilityEnterpriseModule.carbonFootprint,
     );
 
     return AtlasSustainabilityEnterpriseRecord(
@@ -286,19 +262,13 @@ class AtlasSustainabilityEnterpriseRecord {
       farmName: map['farmName']?.toString() ?? '',
       scope: map['scope']?.toString() ?? '',
       metricName: map['metricName']?.toString() ?? '',
-      currentValue:
-          (map['currentValue'] as num?)?.toDouble() ?? 0.0,
-      baselineValue:
-          (map['baselineValue'] as num?)?.toDouble() ?? 0.0,
-      targetValue:
-          (map['targetValue'] as num?)?.toDouble() ?? 0.0,
+      currentValue: (map['currentValue'] as num?)?.toDouble() ?? 0.0,
+      baselineValue: (map['baselineValue'] as num?)?.toDouble() ?? 0.0,
+      targetValue: (map['targetValue'] as num?)?.toDouble() ?? 0.0,
       unit: map['unit']?.toString() ?? '',
-      qualityPercent:
-          (map['qualityPercent'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      qualityPercent: (map['qualityPercent'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       evidence: map['evidence']?.toString() ?? '',

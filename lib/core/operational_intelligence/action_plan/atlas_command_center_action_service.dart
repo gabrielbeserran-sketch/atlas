@@ -14,19 +14,14 @@ class AtlasCommandCenterActionService {
   static final AtlasCommandCenterActionService instance =
       AtlasCommandCenterActionService._();
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   final AtlasExecutionAuditService _auditService =
       AtlasExecutionAuditService.instance;
 
-  static const String _storageKey =
-      'atlas_command_center_actions_v1';
+  static const String _storageKey = 'atlas_command_center_actions_v1';
 
-  Future<List<AtlasCommandCenterAction>> loadActions({
-    String? farmName,
-  }) async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasCommandCenterAction>> loadActions({String? farmName}) async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasCommandCenterAction>[];
@@ -40,12 +35,7 @@ class AtlasCommandCenterActionService {
               Map<String, dynamic>.from(item as Map),
             ),
           )
-          .where(
-            (action) => _matchesFarm(
-              action.farmName,
-              farmName,
-            ),
-          )
+          .where((action) => _matchesFarm(action.farmName, farmName))
           .toList();
 
       actions.sort(_compareActions);
@@ -115,23 +105,18 @@ class AtlasCommandCenterActionService {
     String source = 'plano de ação',
   }) async {
     final all = await _loadAllActions();
-    final index = all.indexWhere(
-      (item) => item.id == action.id,
-    );
+    final index = all.indexWhere((item) => item.id == action.id);
     final previous = index == -1 ? null : all[index];
 
     final updated = action.copyWith(
       updatedAt: DateTime.now(),
-      completedAt:
-          action.status == AtlasCanonicalStatus.completed
-              ? action.completedAt ?? DateTime.now()
-              : action.completedAt,
-      clearCompletedAt:
-          action.status != AtlasCanonicalStatus.completed,
-      progressPercent:
-          action.status == AtlasCanonicalStatus.completed
-              ? 100
-              : action.progressPercent,
+      completedAt: action.status == AtlasCanonicalStatus.completed
+          ? action.completedAt ?? DateTime.now()
+          : action.completedAt,
+      clearCompletedAt: action.status != AtlasCanonicalStatus.completed,
+      progressPercent: action.status == AtlasCanonicalStatus.completed
+          ? 100
+          : action.progressPercent,
     );
 
     if (index == -1) {
@@ -141,7 +126,6 @@ class AtlasCommandCenterActionService {
     }
 
     await _saveAllActions(all);
-
 
     if (previous != null) {
       await _auditActionChanges(
@@ -154,8 +138,8 @@ class AtlasCommandCenterActionService {
     final eventType = updated.status == AtlasCanonicalStatus.completed
         ? AtlasEventType.taskCompleted
         : updated.isOverdue
-            ? AtlasEventType.taskDelayed
-            : AtlasEventType.taskUpdated;
+        ? AtlasEventType.taskDelayed
+        : AtlasEventType.taskUpdated;
 
     await _publishActionEvent(
       action: updated,
@@ -163,14 +147,13 @@ class AtlasCommandCenterActionService {
       title: updated.status == AtlasCanonicalStatus.completed
           ? 'Ação concluída'
           : updated.isOverdue
-              ? 'Ação atrasada'
-              : 'Ação atualizada',
+          ? 'Ação atrasada'
+          : 'Ação atualizada',
       description:
           'A ação "${updated.title}" agora está com status '
           '"${atlasCanonicalStatusLabel(updated.status)}".',
     );
   }
-
 
   Future<void> _auditActionChanges({
     required AtlasCommandCenterAction previous,
@@ -180,24 +163,15 @@ class AtlasCommandCenterActionService {
     final changes = <String, List<Object?>>{
       'Título': [previous.title, current.title],
       'Descrição': [previous.description, current.description],
-      'Recomendação': [
-        previous.recommendedAction,
-        current.recommendedAction,
-      ],
-      'Responsável': [
-        previous.responsibleName,
-        current.responsibleName,
-      ],
+      'Recomendação': [previous.recommendedAction, current.recommendedAction],
+      'Responsável': [previous.responsibleName, current.responsibleName],
       'Identificador do responsável': [
         previous.responsibleId,
         current.responsibleId,
       ],
       'Prazo': [previous.dueAt, current.dueAt],
       'Status': [previous.status.name, current.status.name],
-      'Progresso': [
-        previous.progressPercent,
-        current.progressPercent,
-      ],
+      'Progresso': [previous.progressPercent, current.progressPercent],
       'Observações': [previous.notes, current.notes],
     };
 
@@ -218,9 +192,9 @@ class AtlasCommandCenterActionService {
   Future<void> deleteAction(String id) async {
     final all = await _loadAllActions();
     final action = all.cast<AtlasCommandCenterAction?>().firstWhere(
-          (item) => item?.id == id,
-          orElse: () => null,
-        );
+      (item) => item?.id == id,
+      orElse: () => null,
+    );
 
     all.removeWhere((item) => item.id == id);
     await _saveAllActions(all);
@@ -230,16 +204,13 @@ class AtlasCommandCenterActionService {
         action: action,
         type: AtlasEventType.taskUpdated,
         title: 'Ação removida do plano',
-        description:
-            'A ação "${action.title}" foi removida do plano de ação.',
+        description: 'A ação "${action.title}" foi removida do plano de ação.',
       );
     }
   }
 
-  Future<List<AtlasCommandCenterAction>>
-      _loadAllActions() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasCommandCenterAction>> _loadAllActions() async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasCommandCenterAction>[];
@@ -260,61 +231,46 @@ class AtlasCommandCenterActionService {
     }
   }
 
-  Future<void> _saveAllActions(
-    List<AtlasCommandCenterAction> actions,
-  ) async {
+  Future<void> _saveAllActions(List<AtlasCommandCenterAction> actions) async {
     final encoded = jsonEncode(
       actions.map((action) => action.toMap()).toList(),
     );
 
-    await _preferences.setString(
-      _storageKey,
-      encoded,
-    );
+    await _preferences.setString(_storageKey, encoded);
   }
 
-  bool _matchesFarm(
-    String? actionFarm,
-    String? requestedFarm,
-  ) {
-    final normalizedRequested =
-        requestedFarm?.trim().toLowerCase();
+  bool _matchesFarm(String? actionFarm, String? requestedFarm) {
+    final normalizedRequested = requestedFarm?.trim().toLowerCase();
 
-    if (normalizedRequested == null ||
-        normalizedRequested.isEmpty) {
+    if (normalizedRequested == null || normalizedRequested.isEmpty) {
       return true;
     }
 
-    return actionFarm?.trim().toLowerCase() ==
-        normalizedRequested;
+    return actionFarm?.trim().toLowerCase() == normalizedRequested;
   }
 
   int _compareActions(
     AtlasCommandCenterAction first,
     AtlasCommandCenterAction second,
   ) {
-    final statusComparison =
-        _statusWeight(first.status).compareTo(
-      _statusWeight(second.status),
-    );
+    final statusComparison = _statusWeight(
+      first.status,
+    ).compareTo(_statusWeight(second.status));
 
     if (statusComparison != 0) {
       return statusComparison;
     }
 
-    final priorityComparison =
-        _priorityWeight(second.priority).compareTo(
-      _priorityWeight(first.priority),
-    );
+    final priorityComparison = _priorityWeight(
+      second.priority,
+    ).compareTo(_priorityWeight(first.priority));
 
     if (priorityComparison != 0) {
       return priorityComparison;
     }
 
-    final firstDue =
-        first.dueAt ?? DateTime(9999);
-    final secondDue =
-        second.dueAt ?? DateTime(9999);
+    final firstDue = first.dueAt ?? DateTime(9999);
+    final secondDue = second.dueAt ?? DateTime(9999);
 
     return firstDue.compareTo(secondDue);
   }
@@ -334,9 +290,7 @@ class AtlasCommandCenterActionService {
     }
   }
 
-  int _priorityWeight(
-    AtlasCanonicalPriority priority,
-  ) {
+  int _priorityWeight(AtlasCanonicalPriority priority) {
     switch (priority) {
       case AtlasCanonicalPriority.low:
         return 1;
@@ -388,9 +342,7 @@ class AtlasCommandCenterActionService {
     );
   }
 
-  AtlasEventPriority _eventPriority(
-    AtlasCanonicalPriority priority,
-  ) {
+  AtlasEventPriority _eventPriority(AtlasCanonicalPriority priority) {
     switch (priority) {
       case AtlasCanonicalPriority.low:
         return AtlasEventPriority.low;
@@ -403,10 +355,7 @@ class AtlasCommandCenterActionService {
     }
   }
 
-  DateTime _defaultDueAt(
-    AtlasCanonicalPriority priority,
-    DateTime now,
-  ) {
+  DateTime _defaultDueAt(AtlasCanonicalPriority priority, DateTime now) {
     switch (priority) {
       case AtlasCanonicalPriority.critical:
         return now.add(const Duration(hours: 4));

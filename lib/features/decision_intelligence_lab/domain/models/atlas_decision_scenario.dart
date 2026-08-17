@@ -88,23 +88,14 @@ class AtlasDecisionComparison {
       return null;
     }
 
-    final ordered = List<AtlasDecisionScenarioResult>.from(
-      results,
-    )..sort(
-        (first, second) =>
-            second.score.compareTo(first.score),
-      );
+    final ordered = List<AtlasDecisionScenarioResult>.from(results)
+      ..sort((first, second) => second.score.compareTo(first.score));
 
     return ordered.first;
   }
 }
 
-enum AtlasDecisionRisk {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasDecisionRisk { low, moderate, high, critical }
 
 String atlasDecisionRiskLabel(AtlasDecisionRisk risk) {
   switch (risk) {

@@ -2,22 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal_genealogy/data/services/animal_genealogy_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal_genealogy/domain/models/animal_genealogy_data.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalGenealogyScreen extends StatefulWidget {
-  const AnimalGenealogyScreen({
-    required this.animalId,
-    super.key,
-  });
+  const AnimalGenealogyScreen({required this.animalId, super.key});
 
   final String animalId;
 
   @override
-  State<AnimalGenealogyScreen> createState() =>
-      _AnimalGenealogyScreenState();
+  State<AnimalGenealogyScreen> createState() => _AnimalGenealogyScreenState();
 }
 
-class _AnimalGenealogyScreenState
-    extends State<AnimalGenealogyScreen> {
+class _AnimalGenealogyScreenState extends State<AnimalGenealogyScreen> {
   final AnimalGenealogyEnterpriseService service =
       AnimalGenealogyEnterpriseService();
 
@@ -65,9 +61,7 @@ class _AnimalGenealogyScreenState
     }
   }
 
-  void openRelative(
-    AnimalGenealogyNodeData node,
-  ) {
+  void openRelative(AnimalGenealogyNodeData node) {
     if (!node.registered || node.id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -81,9 +75,7 @@ class _AnimalGenealogyScreenState
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalGenealogyScreen(
-          animalId: node.id,
-        ),
+        builder: (context) => AnimalGenealogyScreen(animalId: node.id),
       ),
     );
   }
@@ -126,16 +118,9 @@ class _AnimalGenealogyScreenState
               padding: const EdgeInsets.all(28),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 52,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 52, color: Colors.red),
                   const SizedBox(height: 14),
-                  Text(
-                    errorMessage!,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(errorMessage!, textAlign: TextAlign.center),
                   const SizedBox(height: 18),
                   FilledButton.icon(
                     onPressed: loadGenealogy,
@@ -165,10 +150,7 @@ class _AnimalGenealogyScreenState
                 'Toque em qualquer animal cadastrado para navegar pela família.',
           ),
           const SizedBox(height: 16),
-          AncestorTree(
-            data: data,
-            onOpen: openRelative,
-          ),
+          AncestorTree(data: data, onOpen: openRelative),
           const SizedBox(height: 26),
           RelativeSection(
             title: 'Irmãos',
@@ -219,10 +201,7 @@ class _AnimalGenealogyScreenState
 }
 
 class GenealogySummary extends StatelessWidget {
-  const GenealogySummary({
-    required this.data,
-    super.key,
-  });
+  const GenealogySummary({required this.data, super.key});
 
   final AnimalGenealogyData data;
 
@@ -238,8 +217,7 @@ class GenealogySummary extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 35,
-              backgroundColor:
-                  const Color(0xFF1B5E20).withValues(alpha: 0.10),
+              backgroundColor: const Color(0xFF1B5E20).withValues(alpha: 0.10),
               child: const Icon(
                 Icons.account_tree_outlined,
                 size: 36,
@@ -286,11 +264,7 @@ class GenealogySummary extends StatelessWidget {
 }
 
 class GenealogyCounter extends StatelessWidget {
-  const GenealogyCounter({
-    required this.label,
-    required this.value,
-    super.key,
-  });
+  const GenealogyCounter({required this.label, required this.value, super.key});
 
   final String label;
   final int value;
@@ -330,10 +304,7 @@ class GenealogySectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(subtitle, style: const TextStyle(color: Colors.black54)),
@@ -343,11 +314,7 @@ class GenealogySectionTitle extends StatelessWidget {
 }
 
 class AncestorTree extends StatelessWidget {
-  const AncestorTree({
-    required this.data,
-    required this.onOpen,
-    super.key,
-  });
+  const AncestorTree({required this.data, required this.onOpen, super.key});
 
   final AnimalGenealogyData data;
   final ValueChanged<AnimalGenealogyNodeData> onOpen;
@@ -453,10 +420,7 @@ class AncestorBranch extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -477,11 +441,7 @@ class AncestorBranch extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          width: 2,
-          height: 24,
-          color: Colors.black12,
-        ),
+        Container(width: 2, height: 24, color: Colors.black12),
         GenealogyPersonCard(
           node: parent,
           emptyRelation: 'Genitor não informado',
@@ -515,8 +475,8 @@ class GenealogyPersonCard extends StatelessWidget {
       color: highlighted
           ? const Color(0xFF1B5E20).withValues(alpha: 0.12)
           : registered
-              ? Colors.white
-              : Colors.grey.withValues(alpha: 0.06),
+          ? Colors.white
+          : Colors.grey.withValues(alpha: 0.06),
       borderRadius: BorderRadius.circular(15),
       child: InkWell(
         onTap: current == null ? null : () => onOpen(current),
@@ -536,10 +496,7 @@ class GenealogyPersonCard extends StatelessWidget {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.help_outline,
-                      color: Colors.black38,
-                    ),
+                    const Icon(Icons.help_outline, color: Colors.black38),
                     const SizedBox(height: 7),
                     Text(
                       emptyRelation,
@@ -553,7 +510,7 @@ class GenealogyPersonCard extends StatelessWidget {
                   children: [
                     Icon(
                       current.registered
-                          ? Icons.pets_outlined
+                          ? AtlasLivestockIcons.cow
                           : Icons.link_off_outlined,
                       color: const Color(0xFF1B5E20),
                     ),
@@ -561,9 +518,7 @@ class GenealogyPersonCard extends StatelessWidget {
                     Text(
                       current.displayName,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -609,8 +564,9 @@ class RelativeSection extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor:
-                      const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                  backgroundColor: const Color(
+                    0xFF1B5E20,
+                  ).withValues(alpha: 0.10),
                   child: Icon(icon, color: const Color(0xFF1B5E20)),
                 ),
                 const SizedBox(width: 13),
@@ -644,15 +600,14 @@ class RelativeSection extends StatelessWidget {
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: nodes.map((node) {
-                  return SizedBox(
-                    width: 270,
-                    child: GenealogyPersonCard(
-                      node: node,
-                      onOpen: onOpen,
-                    ),
-                  );
-                }).toList(growable: false),
+                children: nodes
+                    .map((node) {
+                      return SizedBox(
+                        width: 270,
+                        child: GenealogyPersonCard(node: node, onOpen: onOpen),
+                      );
+                    })
+                    .toList(growable: false),
               ),
           ],
         ),

@@ -9,8 +9,7 @@ void main() {
     final records = [
       AtlasSupplyLogisticsRecord(
         id: '1',
-        module:
-            AtlasSupplyLogisticsModule.intelligentPurchasing,
+        module: AtlasSupplyLogisticsModule.intelligentPurchasing,
         feature: 'Pedido',
         title: 'Compra de suplemento',
         date: '04/08/2026',
@@ -39,8 +38,7 @@ void main() {
       ),
       AtlasSupplyLogisticsRecord(
         id: '2',
-        module:
-            AtlasSupplyLogisticsModule.intelligentPurchasing,
+        module: AtlasSupplyLogisticsModule.intelligentPurchasing,
         feature: 'Recebimento',
         title: 'Entrega atrasada',
         date: '04/08/2026',
@@ -70,8 +68,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasSupplyLogisticsModule.intelligentPurchasing,
+      module: AtlasSupplyLogisticsModule.intelligentPurchasing,
       records: records,
     );
 

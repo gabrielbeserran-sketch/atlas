@@ -9,81 +9,43 @@ class AtlasAssetMaintenanceService {
   static final AtlasAssetMaintenanceService instance =
       AtlasAssetMaintenanceService._();
 
-  static const String _assetsKey =
-      'atlas_farm_assets_v1';
-  static const String _ordersKey =
-      'atlas_maintenance_orders_v1';
-  static const String _usageKey =
-      'atlas_asset_usage_records_v1';
+  static const String _assetsKey = 'atlas_farm_assets_v1';
+  static const String _ordersKey = 'atlas_maintenance_orders_v1';
+  static const String _usageKey = 'atlas_asset_usage_records_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasFarmAsset>> loadAssets({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _assetsKey,
-      AtlasFarmAsset.fromMap,
-    );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort(
-            (first, second) =>
-                first.name.compareTo(second.name),
-          );
+  Future<List<AtlasFarmAsset>> loadAssets({String? farmName}) async {
+    final all = await _decodeList(_assetsKey, AtlasFarmAsset.fromMap);
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) => first.name.compareTo(second.name));
     return filtered;
   }
 
   Future<void> saveAsset(AtlasFarmAsset asset) async {
-    final all = await _decodeList(
-      _assetsKey,
-      AtlasFarmAsset.fromMap,
-    );
+    final all = await _decodeList(_assetsKey, AtlasFarmAsset.fromMap);
     _upsert(all, asset, (item) => item.id);
-    await _saveList(
-      _assetsKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_assetsKey, all.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasMaintenanceOrder>> loadOrders({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _ordersKey,
-      AtlasMaintenanceOrder.fromMap,
-    );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort(
-            (first, second) =>
-                first.scheduledAt.compareTo(second.scheduledAt),
-          );
+  Future<List<AtlasMaintenanceOrder>> loadOrders({String? farmName}) async {
+    final all = await _decodeList(_ordersKey, AtlasMaintenanceOrder.fromMap);
+    final filtered = _filterFarm(
+      all,
+      farmName,
+      (item) => item.farmName,
+    )..sort((first, second) => first.scheduledAt.compareTo(second.scheduledAt));
     return filtered;
   }
 
-  Future<void> saveOrder(
-    AtlasMaintenanceOrder order,
-  ) async {
-    final all = await _decodeList(
-      _ordersKey,
-      AtlasMaintenanceOrder.fromMap,
-    );
+  Future<void> saveOrder(AtlasMaintenanceOrder order) async {
+    final all = await _decodeList(_ordersKey, AtlasMaintenanceOrder.fromMap);
     _upsert(all, order, (item) => item.id);
-    await _saveList(
-      _ordersKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_ordersKey, all.map((item) => item.toMap()).toList());
 
     if (order.status == AtlasMaintenanceStatus.completed) {
-      final assets = await _decodeList(
-        _assetsKey,
-        AtlasFarmAsset.fromMap,
-      );
-      final index = assets.indexWhere(
-        (asset) => asset.id == order.assetId,
-      );
+      final assets = await _decodeList(_assetsKey, AtlasFarmAsset.fromMap);
+      final index = assets.indexWhere((asset) => asset.id == order.assetId);
       if (index != -1) {
         assets[index] = assets[index].copyWith(
           status: AtlasAssetStatus.available,
@@ -102,58 +64,31 @@ class AtlasAssetMaintenanceService {
     }
   }
 
-  Future<List<AtlasAssetUsageRecord>> loadUsage({
-    String? farmName,
-  }) async {
-    final all = await _decodeList(
-      _usageKey,
-      AtlasAssetUsageRecord.fromMap,
-    );
-    final filtered =
-        _filterFarm(all, farmName, (item) => item.farmName)
-          ..sort(
-            (first, second) =>
-                second.occurredAt.compareTo(first.occurredAt),
-          );
+  Future<List<AtlasAssetUsageRecord>> loadUsage({String? farmName}) async {
+    final all = await _decodeList(_usageKey, AtlasAssetUsageRecord.fromMap);
+    final filtered = _filterFarm(all, farmName, (item) => item.farmName)
+      ..sort((first, second) => second.occurredAt.compareTo(first.occurredAt));
     return filtered;
   }
 
-  Future<void> saveUsage(
-    AtlasAssetUsageRecord record,
-  ) async {
-    final all = await _decodeList(
-      _usageKey,
-      AtlasAssetUsageRecord.fromMap,
-    );
+  Future<void> saveUsage(AtlasAssetUsageRecord record) async {
+    final all = await _decodeList(_usageKey, AtlasAssetUsageRecord.fromMap);
     _upsert(all, record, (item) => item.id);
-    await _saveList(
-      _usageKey,
-      all.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_usageKey, all.map((item) => item.toMap()).toList());
 
-    final assets = await _decodeList(
-      _assetsKey,
-      AtlasFarmAsset.fromMap,
-    );
-    final index = assets.indexWhere(
-      (asset) => asset.id == record.assetId,
-    );
+    final assets = await _decodeList(_assetsKey, AtlasFarmAsset.fromMap);
+    final index = assets.indexWhere((asset) => asset.id == record.assetId);
     if (index != -1) {
       assets[index] = assets[index].copyWith(
         status: AtlasAssetStatus.available,
-        hourMeter: record.endHourMeter >
-                assets[index].hourMeter
+        hourMeter: record.endHourMeter > assets[index].hourMeter
             ? record.endHourMeter
             : assets[index].hourMeter,
-        odometerKm: record.endOdometerKm >
-                assets[index].odometerKm
+        odometerKm: record.endOdometerKm > assets[index].odometerKm
             ? record.endOdometerKm
             : assets[index].odometerKm,
       );
-      await _saveList(
-        _assetsKey,
-        assets.map((item) => item.toMap()).toList(),
-      );
+      await _saveList(_assetsKey, assets.map((item) => item.toMap()).toList());
     }
   }
 
@@ -183,31 +118,29 @@ class AtlasAssetMaintenanceService {
     );
 
     return AtlasAssetMaintenanceSummary(
-      totalAssets:
-          assets.where((asset) => asset.active).length,
-      availableAssets: assets.where(
-        (asset) =>
-            asset.active &&
-            asset.status == AtlasAssetStatus.available,
-      ).length,
-      assetsInMaintenance: assets.where(
-        (asset) =>
-            asset.active &&
-            asset.status == AtlasAssetStatus.maintenance,
-      ).length,
-      stoppedAssets: assets.where(
-        (asset) =>
-            asset.active &&
-            asset.status == AtlasAssetStatus.stopped,
-      ).length,
+      totalAssets: assets.where((asset) => asset.active).length,
+      availableAssets: assets
+          .where(
+            (asset) =>
+                asset.active && asset.status == AtlasAssetStatus.available,
+          )
+          .length,
+      assetsInMaintenance: assets
+          .where(
+            (asset) =>
+                asset.active && asset.status == AtlasAssetStatus.maintenance,
+          )
+          .length,
+      stoppedAssets: assets
+          .where(
+            (asset) => asset.active && asset.status == AtlasAssetStatus.stopped,
+          )
+          .length,
       openOrders: orders.where((order) {
-        return order.status !=
-                AtlasMaintenanceStatus.completed &&
-            order.status !=
-                AtlasMaintenanceStatus.cancelled;
+        return order.status != AtlasMaintenanceStatus.completed &&
+            order.status != AtlasMaintenanceStatus.cancelled;
       }).length,
-      overdueOrders:
-          orders.where((order) => order.isOverdue).length,
+      overdueOrders: orders.where((order) => order.isOverdue).length,
       monthlyMaintenanceCost: monthOrders.fold<double>(
         0,
         (total, order) => total + order.totalCost,
@@ -217,8 +150,7 @@ class AtlasAssetMaintenanceService {
         (total, order) => total + order.downtimeHours,
       ),
       monthlyFuelLiters: fuel,
-      averageFuelPerHour:
-          workedHours <= 0 ? 0 : fuel / workedHours,
+      averageFuelPerHour: workedHours <= 0 ? 0 : fuel / workedHours,
       totalCurrentAssetValue: assets.fold<double>(
         0,
         (total, asset) => total + asset.currentValue,
@@ -235,26 +167,19 @@ class AtlasAssetMaintenanceService {
 
     for (final asset in assets) {
       if (asset.status == AtlasAssetStatus.stopped) {
-        alerts.add(
-          '${asset.name}: equipamento parado.',
-        );
+        alerts.add('${asset.name}: equipamento parado.');
       }
     }
 
     for (final order in orders) {
       if (order.isOverdue) {
-        alerts.add(
-          '${order.title}: manutenção atrasada.',
-        );
+        alerts.add('${order.title}: manutenção atrasada.');
       }
 
       if (order.nextServiceAt != null) {
-        final days =
-            order.nextServiceAt!.difference(now).inDays;
+        final days = order.nextServiceAt!.difference(now).inDays;
         if (days >= 0 && days <= 15) {
-          alerts.add(
-            '${order.title}: próxima manutenção em $days dia(s).',
-          );
+          alerts.add('${order.title}: próxima manutenção em $days dia(s).');
         }
       }
 
@@ -262,25 +187,18 @@ class AtlasAssetMaintenanceService {
       if (asset != null &&
           order.nextServiceHourMeter > 0 &&
           asset.hourMeter >= order.nextServiceHourMeter) {
-        alerts.add(
-          '${asset.name}: revisão por horímetro vencida.',
-        );
+        alerts.add('${asset.name}: revisão por horímetro vencida.');
       }
 
       if (asset != null &&
           order.nextServiceOdometerKm > 0 &&
-          asset.odometerKm >=
-              order.nextServiceOdometerKm) {
-        alerts.add(
-          '${asset.name}: revisão por quilometragem vencida.',
-        );
+          asset.odometerKm >= order.nextServiceOdometerKm) {
+        alerts.add('${asset.name}: revisão por quilometragem vencida.');
       }
     }
 
     if (alerts.isEmpty) {
-      alerts.add(
-        'Nenhum alerta crítico de máquinas e manutenção.',
-      );
+      alerts.add('Nenhum alerta crítico de máquinas e manutenção.');
     }
     return alerts.toSet().toList();
   }
@@ -293,10 +211,7 @@ class AtlasAssetMaintenanceService {
     for (final asset in assets) {
       result[asset.name] = orders
           .where((order) => order.assetId == asset.id)
-          .fold<double>(
-            0,
-            (total, order) => total + order.totalCost,
-          );
+          .fold<double>(0, (total, order) => total + order.totalCost);
     }
     result.removeWhere((_, value) => value <= 0);
     return result;
@@ -310,10 +225,7 @@ class AtlasAssetMaintenanceService {
     for (final asset in assets) {
       result[asset.name] = usage
           .where((record) => record.assetId == asset.id)
-          .fold<double>(
-            0,
-            (total, record) => total + record.fuelLiters,
-          );
+          .fold<double>(0, (total, record) => total + record.fuelLiters);
     }
     result.removeWhere((_, value) => value <= 0);
     return result;
@@ -322,23 +234,19 @@ class AtlasAssetMaintenanceService {
   List<AtlasMaintenanceOrder> preventivePlan({
     required List<AtlasMaintenanceOrder> orders,
   }) {
-    final result = orders.where((order) {
-      return order.type == AtlasMaintenanceType.preventive ||
-          order.type == AtlasMaintenanceType.predictive ||
-          order.type == AtlasMaintenanceType.inspection ||
-          order.type == AtlasMaintenanceType.calibration;
-    }).toList()
-      ..sort(
-        (first, second) =>
-            first.scheduledAt.compareTo(second.scheduledAt),
-      );
+    final result =
+        orders.where((order) {
+          return order.type == AtlasMaintenanceType.preventive ||
+              order.type == AtlasMaintenanceType.predictive ||
+              order.type == AtlasMaintenanceType.inspection ||
+              order.type == AtlasMaintenanceType.calibration;
+        }).toList()..sort(
+          (first, second) => first.scheduledAt.compareTo(second.scheduledAt),
+        );
     return result;
   }
 
-  AtlasFarmAsset? _findAsset(
-    List<AtlasFarmAsset> assets,
-    String id,
-  ) {
+  AtlasFarmAsset? _findAsset(List<AtlasFarmAsset> assets, String id) {
     for (final asset in assets) {
       if (asset.id == id) {
         return asset;
@@ -359,35 +267,20 @@ class AtlasAssetMaintenanceService {
     try {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
-    return _preferences.setString(
-      key,
-      jsonEncode(values),
-    );
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
+    return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
     final id = readId(value);
-    final index =
-        values.indexWhere((item) => readId(item) == id);
+    final index = values.indexWhere((item) => readId(item) == id);
     if (index == -1) {
       values.add(value);
     } else {
@@ -406,8 +299,7 @@ class AtlasAssetMaintenanceService {
     }
 
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

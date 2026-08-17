@@ -3,7 +3,12 @@ import 'atlas_performance_kpi.dart';
 enum AtlasPerformanceAlertSeverity { info, attention, critical }
 
 class AtlasPerformanceAlert {
-  const AtlasPerformanceAlert({required this.title, required this.message, required this.severity, this.kpiId});
+  const AtlasPerformanceAlert({
+    required this.title,
+    required this.message,
+    required this.severity,
+    this.kpiId,
+  });
   final String title;
   final String message;
   final AtlasPerformanceAlertSeverity severity;
@@ -11,7 +16,11 @@ class AtlasPerformanceAlert {
 }
 
 class AtlasKpiEvaluation {
-  const AtlasKpiEvaluation({required this.kpi, required this.status, required this.achievement});
+  const AtlasKpiEvaluation({
+    required this.kpi,
+    required this.status,
+    required this.achievement,
+  });
   final AtlasPerformanceKpi kpi;
   final AtlasKpiStatus status;
   final double achievement;

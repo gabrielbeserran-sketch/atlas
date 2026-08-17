@@ -1,4 +1,5 @@
 enum AtlasPredictionArea { reproduction, production, financial, operational }
+
 enum AtlasRiskLevel { low, moderate, high, critical }
 
 class AtlasPredictiveScenario {
@@ -35,15 +36,27 @@ class AtlasPredictiveScenario {
   final int horizonMonths;
 
   AtlasPredictiveScenario copyWith({
-    String? id, String? farmId, String? title, String? description,
-    AtlasPredictionArea? area, DateTime? createdAt, double? investment,
-    double? currentRevenue, double? currentCost, double? productivityChange,
-    double? costChange, double? revenueChange, double? capacityChange,
+    String? id,
+    String? farmId,
+    String? title,
+    String? description,
+    AtlasPredictionArea? area,
+    DateTime? createdAt,
+    double? investment,
+    double? currentRevenue,
+    double? currentCost,
+    double? productivityChange,
+    double? costChange,
+    double? revenueChange,
+    double? capacityChange,
     int? horizonMonths,
   }) => AtlasPredictiveScenario(
-    id: id ?? this.id, farmId: farmId ?? this.farmId,
-    title: title ?? this.title, description: description ?? this.description,
-    area: area ?? this.area, createdAt: createdAt ?? this.createdAt,
+    id: id ?? this.id,
+    farmId: farmId ?? this.farmId,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    area: area ?? this.area,
+    createdAt: createdAt ?? this.createdAt,
     investment: investment ?? this.investment,
     currentRevenue: currentRevenue ?? this.currentRevenue,
     currentCost: currentCost ?? this.currentCost,
@@ -55,30 +68,44 @@ class AtlasPredictiveScenario {
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'id': id, 'farmId': farmId, 'title': title, 'description': description,
-    'area': area.name, 'createdAt': createdAt.toIso8601String(),
-    'investment': investment, 'currentRevenue': currentRevenue,
-    'currentCost': currentCost, 'productivityChange': productivityChange,
-    'costChange': costChange, 'revenueChange': revenueChange,
-    'capacityChange': capacityChange, 'horizonMonths': horizonMonths,
+    'id': id,
+    'farmId': farmId,
+    'title': title,
+    'description': description,
+    'area': area.name,
+    'createdAt': createdAt.toIso8601String(),
+    'investment': investment,
+    'currentRevenue': currentRevenue,
+    'currentCost': currentCost,
+    'productivityChange': productivityChange,
+    'costChange': costChange,
+    'revenueChange': revenueChange,
+    'capacityChange': capacityChange,
+    'horizonMonths': horizonMonths,
   };
 
-  factory AtlasPredictiveScenario.fromJson(Map<String, dynamic> json) => AtlasPredictiveScenario(
-    id: json['id'] as String,
-    farmId: (json['farmId'] as String?) ?? '',
-    title: (json['title'] as String?) ?? '',
-    description: (json['description'] as String?) ?? '',
-    area: AtlasPredictionArea.values.byName((json['area'] as String?) ?? 'production'),
-    createdAt: DateTime.tryParse((json['createdAt'] as String?) ?? '') ?? DateTime.now(),
-    investment: (json['investment'] as num?)?.toDouble() ?? 0,
-    currentRevenue: (json['currentRevenue'] as num?)?.toDouble() ?? 0,
-    currentCost: (json['currentCost'] as num?)?.toDouble() ?? 0,
-    productivityChange: (json['productivityChange'] as num?)?.toDouble() ?? 0,
-    costChange: (json['costChange'] as num?)?.toDouble() ?? 0,
-    revenueChange: (json['revenueChange'] as num?)?.toDouble() ?? 0,
-    capacityChange: (json['capacityChange'] as num?)?.toDouble() ?? 0,
-    horizonMonths: (json['horizonMonths'] as num?)?.toInt() ?? 12,
-  );
+  factory AtlasPredictiveScenario.fromJson(Map<String, dynamic> json) =>
+      AtlasPredictiveScenario(
+        id: json['id'] as String,
+        farmId: (json['farmId'] as String?) ?? '',
+        title: (json['title'] as String?) ?? '',
+        description: (json['description'] as String?) ?? '',
+        area: AtlasPredictionArea.values.byName(
+          (json['area'] as String?) ?? 'production',
+        ),
+        createdAt:
+            DateTime.tryParse((json['createdAt'] as String?) ?? '') ??
+            DateTime.now(),
+        investment: (json['investment'] as num?)?.toDouble() ?? 0,
+        currentRevenue: (json['currentRevenue'] as num?)?.toDouble() ?? 0,
+        currentCost: (json['currentCost'] as num?)?.toDouble() ?? 0,
+        productivityChange:
+            (json['productivityChange'] as num?)?.toDouble() ?? 0,
+        costChange: (json['costChange'] as num?)?.toDouble() ?? 0,
+        revenueChange: (json['revenueChange'] as num?)?.toDouble() ?? 0,
+        capacityChange: (json['capacityChange'] as num?)?.toDouble() ?? 0,
+        horizonMonths: (json['horizonMonths'] as num?)?.toInt() ?? 12,
+      );
 }
 
 class AtlasPredictionResult {

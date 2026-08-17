@@ -1,0 +1,2 @@
+Ciclos 19 e 20 implementados.
+Erro de sintaxe da Central do Piloto corrigido.

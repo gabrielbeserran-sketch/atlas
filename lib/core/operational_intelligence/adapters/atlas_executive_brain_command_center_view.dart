@@ -22,20 +22,16 @@ class AtlasExecutiveBrainCommandCenterView {
     final metrics = snapshot.metrics;
 
     final riskPenalty =
-        (metrics.criticalEvents * 20) +
-        (metrics.highPriorityEvents * 8);
+        (metrics.criticalEvents * 20) + (metrics.highPriorityEvents * 8);
 
     final score = (100 - riskPenalty).clamp(0, 100).toDouble();
 
     return AtlasExecutiveBrainCommandCenterView(
       generatedAt: snapshot.generatedAt,
       farmName: snapshot.farmName,
-      officialPriority:
-          priorities.isEmpty ? null : priorities.first,
-      priorities:
-          List<AtlasOperationalPriority>.unmodifiable(priorities),
-      insights:
-          List<AtlasOperationalInsight>.unmodifiable(insights),
+      officialPriority: priorities.isEmpty ? null : priorities.first,
+      priorities: List<AtlasOperationalPriority>.unmodifiable(priorities),
+      insights: List<AtlasOperationalInsight>.unmodifiable(insights),
       riskLevel: _riskLevel(
         criticalEvents: metrics.criticalEvents,
         highPriorityEvents: metrics.highPriorityEvents,

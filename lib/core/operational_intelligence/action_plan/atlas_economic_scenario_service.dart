@@ -15,31 +15,22 @@ class AtlasEconomicScenarioService {
       metrics: metrics,
     );
 
-    final baseExpenses =
-        snapshot.variableCosts + snapshot.fixedCosts;
+    final baseExpenses = snapshot.variableCosts + snapshot.fixedCosts;
 
     final revenueFactor =
         1 +
         input.arrobaVariationPercent / 100 +
         input.productivityVariationPercent / 100;
 
-    final generalCostFactor =
-        1 + input.inputInflationPercent / 100;
+    final generalCostFactor = 1 + input.inputInflationPercent / 100;
 
     final supplementImpact =
-        snapshot.variableCosts *
-        0.35 *
-        input.supplementVariationPercent /
-        100;
+        snapshot.variableCosts * 0.35 * input.supplementVariationPercent / 100;
 
     final healthImpact =
-        snapshot.variableCosts *
-        0.12 *
-        input.healthCostVariationPercent /
-        100;
+        snapshot.variableCosts * 0.12 * input.healthCostVariationPercent / 100;
 
-    final geneticMonthlyBenefit =
-        input.geneticInvestment <= 0
+    final geneticMonthlyBenefit = input.geneticInvestment <= 0
         ? 0.0
         : input.geneticInvestment * 0.018;
 
@@ -53,27 +44,23 @@ class AtlasEconomicScenarioService {
         healthImpact +
         input.geneticInvestment;
 
-    final projectedNetResult =
-        projectedRevenue - projectedExpenses;
+    final projectedNetResult = projectedRevenue - projectedExpenses;
 
     final projectedMargin = projectedRevenue <= 0
         ? 0.0
         : projectedNetResult / projectedRevenue * 100;
 
-    final investedCapital =
-        projectedExpenses <= 0 ? 1.0 : projectedExpenses;
+    final investedCapital = projectedExpenses <= 0 ? 1.0 : projectedExpenses;
 
-    final roi =
-        projectedNetResult / investedCapital * 100;
+    final roi = projectedNetResult / investedCapital * 100;
 
     final monthlyNetGeneticBenefit = geneticMonthlyBenefit;
-    final payback = input.geneticInvestment <= 0 ||
-            monthlyNetGeneticBenefit <= 0
+    final payback =
+        input.geneticInvestment <= 0 || monthlyNetGeneticBenefit <= 0
         ? null
         : input.geneticInvestment / monthlyNetGeneticBenefit;
 
-    final monthlyProjection =
-        _buildMonthlyProjection(
+    final monthlyProjection = _buildMonthlyProjection(
       horizonMonths: input.horizonMonths,
       annualRevenue: projectedRevenue,
       annualExpenses: projectedExpenses,
@@ -109,8 +96,7 @@ class AtlasEconomicScenarioService {
     );
   }
 
-  List<AtlasMonthlyEconomicProjection>
-      _buildMonthlyProjection({
+  List<AtlasMonthlyEconomicProjection> _buildMonthlyProjection({
     required int horizonMonths,
     required double annualRevenue,
     required double annualExpenses,
@@ -121,32 +107,29 @@ class AtlasEconomicScenarioService {
     final monthlyExpenses = annualExpenses / months;
     var accumulated = 0.0;
 
-    return List<AtlasMonthlyEconomicProjection>.generate(
-      months,
-      (index) {
-        final month = index + 1;
-        final seasonality = switch (type) {
-          AtlasAdvancedEconomicScenarioType.pessimistic =>
-            month % 4 == 0 ? 0.90 : 0.96,
-          AtlasAdvancedEconomicScenarioType.realistic =>
-            month % 4 == 0 ? 1.02 : 1.0,
-          AtlasAdvancedEconomicScenarioType.optimistic =>
-            month % 4 == 0 ? 1.10 : 1.04,
-        };
-        final revenue = monthlyRevenue * seasonality;
-        final expenses = monthlyExpenses;
-        final balance = revenue - expenses;
-        accumulated += balance;
+    return List<AtlasMonthlyEconomicProjection>.generate(months, (index) {
+      final month = index + 1;
+      final seasonality = switch (type) {
+        AtlasAdvancedEconomicScenarioType.pessimistic =>
+          month % 4 == 0 ? 0.90 : 0.96,
+        AtlasAdvancedEconomicScenarioType.realistic =>
+          month % 4 == 0 ? 1.02 : 1.0,
+        AtlasAdvancedEconomicScenarioType.optimistic =>
+          month % 4 == 0 ? 1.10 : 1.04,
+      };
+      final revenue = monthlyRevenue * seasonality;
+      final expenses = monthlyExpenses;
+      final balance = revenue - expenses;
+      accumulated += balance;
 
-        return AtlasMonthlyEconomicProjection(
-          month: month,
-          revenue: revenue,
-          expenses: expenses,
-          balance: balance,
-          accumulatedBalance: accumulated,
-        );
-      },
-    );
+      return AtlasMonthlyEconomicProjection(
+        month: month,
+        revenue: revenue,
+        expenses: expenses,
+        balance: balance,
+        accumulatedBalance: accumulated,
+      );
+    });
   }
 
   double _buildScore({

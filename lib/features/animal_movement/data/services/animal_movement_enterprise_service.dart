@@ -4,7 +4,7 @@ import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 
 class AnimalMovementEnterpriseService {
   AnimalMovementEnterpriseService({AtlasEnterpriseApiClient? api})
-      : _api = api ?? AtlasEnterpriseApiClient.instance;
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 

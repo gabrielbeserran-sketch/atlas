@@ -26,9 +26,7 @@ class AtlasFarmAuditEngine {
       (sum, item) => sum + item.score * item.weight,
     );
 
-    final overallIndex = totalWeight == 0
-        ? 0.0
-        : weightedTotal / totalWeight;
+    final overallIndex = totalWeight == 0 ? 0.0 : weightedTotal / totalWeight;
 
     final problems = _buildProblems(results);
     final opportunities = _buildOpportunities(
@@ -37,8 +35,7 @@ class AtlasFarmAuditEngine {
     );
 
     return AtlasFarmAudit(
-      id:
-          'farm_audit_${DateTime.now().microsecondsSinceEpoch}',
+      id: 'farm_audit_${DateTime.now().microsecondsSinceEpoch}',
       farmId: twin.farmId,
       farmName: twin.farmName,
       generatedAt: DateTime.now(),
@@ -62,28 +59,21 @@ class AtlasFarmAuditEngine {
     required AtlasConsultantReport consultantReport,
   }) {
     final health = twin.health;
-    final eventConfidence =
-        (twin.totalProcessedEvents / 40)
-            .clamp(0.0, 1.0)
-            .toDouble();
+    final eventConfidence = (twin.totalProcessedEvents / 40)
+        .clamp(0.0, 1.0)
+        .toDouble();
 
     final riskPenalty = twin.risks.fold<double>(
       0,
       (sum, risk) => sum + _riskWeight(risk.level),
     );
 
-    final actionPressure =
-        consultantReport.actions.fold<double>(
+    final actionPressure = consultantReport.actions.fold<double>(
       0,
-      (sum, action) =>
-          sum + _consultantPriorityWeight(action.priority),
+      (sum, action) => sum + _consultantPriorityWeight(action.priority),
     );
 
-    double adjusted(
-      double base, {
-      double bonus = 0,
-      double penalty = 0,
-    }) {
+    double adjusted(double base, {double bonus = 0, double penalty = 0}) {
       return (base +
               bonus +
               eventConfidence * 3 -
@@ -108,10 +98,7 @@ class AtlasFarmAuditEngine {
         area: AtlasFarmAuditArea.sanitary,
         score: adjusted(
           health.sanitary,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.sanitary,
-          ),
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.sanitary),
         ),
         weight: 1.25,
       ),
@@ -119,26 +106,19 @@ class AtlasFarmAuditEngine {
         area: AtlasFarmAuditArea.reproduction,
         score: adjusted(
           health.reproductive,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.reproductive,
-          ),
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.reproductive),
         ),
         weight: 1.25,
       ),
       _result(
         area: AtlasFarmAuditArea.animalWelfare,
-        score: adjusted(
-          health.animal * 0.70 +
-              health.sanitary * 0.30,
-        ),
+        score: adjusted(health.animal * 0.70 + health.sanitary * 0.30),
         weight: 1.00,
       ),
       _result(
         area: AtlasFarmAuditArea.genetics,
         score: adjusted(
-          health.reproductive * 0.55 +
-              health.animal * 0.45,
+          health.reproductive * 0.55 + health.animal * 0.45,
           penalty: eventConfidence < 0.25 ? 6 : 0,
         ),
         weight: 0.80,
@@ -157,10 +137,7 @@ class AtlasFarmAuditEngine {
         area: AtlasFarmAuditArea.financial,
         score: adjusted(
           health.financial,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.financial,
-          ),
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.financial),
         ),
         weight: 1.25,
       ),
@@ -168,10 +145,7 @@ class AtlasFarmAuditEngine {
         area: AtlasFarmAuditArea.inventory,
         score: adjusted(
           health.inventory,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.inventory,
-          ),
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.inventory),
         ),
         weight: 0.85,
       ),
@@ -179,10 +153,7 @@ class AtlasFarmAuditEngine {
         area: AtlasFarmAuditArea.operational,
         score: adjusted(
           health.operational,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.operational,
-          ),
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.operational),
         ),
         weight: 1.10,
       ),
@@ -199,12 +170,8 @@ class AtlasFarmAuditEngine {
       _result(
         area: AtlasFarmAuditArea.biosecurity,
         score: adjusted(
-          health.sanitary * 0.75 +
-              health.operational * 0.25,
-          penalty: _areaRiskPenalty(
-            twin,
-            AtlasDigitalTwinArea.sanitary,
-          ),
+          health.sanitary * 0.75 + health.operational * 0.25,
+          penalty: _areaRiskPenalty(twin, AtlasDigitalTwinArea.sanitary),
         ),
         weight: 1.10,
       ),
@@ -222,10 +189,7 @@ class AtlasFarmAuditEngine {
       ),
     ];
 
-    results.sort(
-      (first, second) =>
-          first.score.compareTo(second.score),
-    );
+    results.sort((first, second) => first.score.compareTo(second.score));
 
     return results;
   }
@@ -259,8 +223,7 @@ class AtlasFarmAuditEngine {
 
       problems.add(
         AtlasFarmAuditProblem(
-          id:
-              'audit_problem_${result.area.name}_${DateTime.now().microsecondsSinceEpoch}',
+          id: 'audit_problem_${result.area.name}_${DateTime.now().microsecondsSinceEpoch}',
           area: result.area,
           title:
               'Desempenho insuficiente em ${atlasFarmAuditAreaLabel(result.area)}',
@@ -269,17 +232,15 @@ class AtlasFarmAuditEngine {
           priority: priority,
           estimatedAnnualImpact:
               math.max(0, gap) * _economicFactor(result.area),
-          recommendedDeadlineDays:
-              _deadlineForPriority(priority),
+          recommendedDeadlineDays: _deadlineForPriority(priority),
         ),
       );
     }
 
     problems.sort(
-      (first, second) =>
-          _priorityWeight(second.priority).compareTo(
-        _priorityWeight(first.priority),
-      ),
+      (first, second) => _priorityWeight(
+        second.priority,
+      ).compareTo(_priorityWeight(first.priority)),
     );
 
     return problems;
@@ -292,21 +253,18 @@ class AtlasFarmAuditEngine {
     final opportunities = <AtlasFarmAuditOpportunity>[];
 
     for (final result in results.take(5)) {
-      final gap =
-          (85 - result.score).clamp(0.0, 60.0).toDouble();
+      final gap = (85 - result.score).clamp(0.0, 60.0).toDouble();
 
       if (gap <= 4) {
         continue;
       }
 
-      final investment =
-          (gap * _investmentFactor(result.area))
-              .clamp(3000.0, 120000.0)
-              .toDouble();
+      final investment = (gap * _investmentFactor(result.area))
+          .clamp(3000.0, 120000.0)
+          .toDouble();
 
       final returnValue =
-          investment *
-          _returnMultiplier(result.area, result.score);
+          investment * _returnMultiplier(result.area, result.score);
 
       final roi = investment <= 0
           ? 0.0
@@ -314,11 +272,9 @@ class AtlasFarmAuditEngine {
 
       opportunities.add(
         AtlasFarmAuditOpportunity(
-          id:
-              'audit_opportunity_${result.area.name}_${DateTime.now().microsecondsSinceEpoch}',
+          id: 'audit_opportunity_${result.area.name}_${DateTime.now().microsecondsSinceEpoch}',
           area: result.area,
-          title:
-              'Elevar ${atlasFarmAuditAreaLabel(result.area)}',
+          title: 'Elevar ${atlasFarmAuditAreaLabel(result.area)}',
           description:
               'Intervenção orientada para reduzir o gargalo e aproximar a área da faixa de excelência.',
           estimatedInvestment: investment,
@@ -329,19 +285,16 @@ class AtlasFarmAuditEngine {
       );
     }
 
-    final best =
-        consultantReport.optimizationResult.bestCandidate;
+    final best = consultantReport.optimizationResult.bestCandidate;
 
     opportunities.add(
       AtlasFarmAuditOpportunity(
-        id:
-            'audit_optimized_${DateTime.now().microsecondsSinceEpoch}',
+        id: 'audit_optimized_${DateTime.now().microsecondsSinceEpoch}',
         area: AtlasFarmAuditArea.operational,
         title: best.name,
         description:
             'Estratégia selecionada automaticamente pelo Optimization Engine.',
-        estimatedInvestment:
-            best.result.simulation.changes.initialInvestment,
+        estimatedInvestment: best.result.simulation.changes.initialInvestment,
         estimatedReturn:
             best.result.projectedNetResult +
             best.result.simulation.changes.initialInvestment,
@@ -353,24 +306,16 @@ class AtlasFarmAuditEngine {
     );
 
     opportunities.sort(
-      (first, second) =>
-          second.roiPercent.compareTo(first.roiPercent),
+      (first, second) => second.roiPercent.compareTo(first.roiPercent),
     );
 
     return opportunities.take(6).toList();
   }
 
-  double _areaRiskPenalty(
-    AtlasDigitalTwin twin,
-    AtlasDigitalTwinArea area,
-  ) {
+  double _areaRiskPenalty(AtlasDigitalTwin twin, AtlasDigitalTwinArea area) {
     return twin.risks
         .where((risk) => risk.area == area)
-        .fold<double>(
-          0,
-          (sum, risk) =>
-              sum + _riskWeight(risk.level) * 1.5,
-        );
+        .fold<double>(0, (sum, risk) => sum + _riskWeight(risk.level) * 1.5);
   }
 
   double _riskWeight(AtlasFarmRiskLevel level) {
@@ -386,9 +331,7 @@ class AtlasFarmAuditEngine {
     }
   }
 
-  double _consultantPriorityWeight(
-    AtlasConsultantPriority priority,
-  ) {
+  double _consultantPriorityWeight(AtlasConsultantPriority priority) {
     switch (priority) {
       case AtlasConsultantPriority.low:
         return 1;
@@ -401,9 +344,7 @@ class AtlasFarmAuditEngine {
     }
   }
 
-  AtlasFarmAuditClassification _classification(
-    double score,
-  ) {
+  AtlasFarmAuditClassification _classification(double score) {
     if (score >= 85) {
       return AtlasFarmAuditClassification.excellent;
     }
@@ -435,9 +376,7 @@ class AtlasFarmAuditEngine {
     return AtlasFarmAuditAreaStatus.critical;
   }
 
-  AtlasFarmAuditPriority _priorityFromScore(
-    double score,
-  ) {
+  AtlasFarmAuditPriority _priorityFromScore(double score) {
     if (score < 45) {
       return AtlasFarmAuditPriority.critical;
     }
@@ -453,9 +392,7 @@ class AtlasFarmAuditEngine {
     return AtlasFarmAuditPriority.low;
   }
 
-  int _priorityWeight(
-    AtlasFarmAuditPriority priority,
-  ) {
+  int _priorityWeight(AtlasFarmAuditPriority priority) {
     switch (priority) {
       case AtlasFarmAuditPriority.low:
         return 1;
@@ -468,9 +405,7 @@ class AtlasFarmAuditEngine {
     }
   }
 
-  int _deadlineForPriority(
-    AtlasFarmAuditPriority priority,
-  ) {
+  int _deadlineForPriority(AtlasFarmAuditPriority priority) {
     switch (priority) {
       case AtlasFarmAuditPriority.critical:
         return 7;
@@ -535,12 +470,8 @@ class AtlasFarmAuditEngine {
     }
   }
 
-  double _returnMultiplier(
-    AtlasFarmAuditArea area,
-    double score,
-  ) {
-    final urgencyBonus =
-        ((75 - score) / 100).clamp(0.0, 0.35);
+  double _returnMultiplier(AtlasFarmAuditArea area, double score) {
+    final urgencyBonus = ((75 - score) / 100).clamp(0.0, 0.35);
 
     switch (area) {
       case AtlasFarmAuditArea.reproduction:
@@ -567,13 +498,8 @@ class AtlasFarmAuditEngine {
     }
   }
 
-  String _summaryForArea(
-    AtlasFarmAuditArea area,
-    double score,
-  ) {
-    final status = atlasFarmAuditAreaStatusLabel(
-      _status(score),
-    ).toLowerCase();
+  String _summaryForArea(AtlasFarmAuditArea area, double score) {
+    final status = atlasFarmAuditAreaStatusLabel(_status(score)).toLowerCase();
 
     return '${atlasFarmAuditAreaLabel(area)} apresenta condição $status, com ${score.toStringAsFixed(1)} pontos.';
   }
@@ -586,22 +512,14 @@ class AtlasFarmAuditEngine {
     final weakest = results.first;
     final strongest = results.last;
 
-    final trendText =
-        atlasDigitalTwinTrendLabel(twin.trend).toLowerCase();
+    final trendText = atlasDigitalTwinTrendLabel(twin.trend).toLowerCase();
 
-    final urgencyText = problems.any(
-      (item) =>
-          item.priority ==
-          AtlasFarmAuditPriority.critical,
-    )
+    final urgencyText =
+        problems.any((item) => item.priority == AtlasFarmAuditPriority.critical)
         ? 'Existem pontos críticos que exigem intervenção imediata.'
-        : problems.any(
-            (item) =>
-                item.priority ==
-                AtlasFarmAuditPriority.high,
-          )
-            ? 'Existem gargalos de alta prioridade que devem ser tratados antes de novas expansões.'
-            : 'A fazenda não apresenta criticidades graves, mas ainda possui oportunidades de melhoria.';
+        : problems.any((item) => item.priority == AtlasFarmAuditPriority.high)
+        ? 'Existem gargalos de alta prioridade que devem ser tratados antes de novas expansões.'
+        : 'A fazenda não apresenta criticidades graves, mas ainda possui oportunidades de melhoria.';
 
     return 'A propriedade apresenta tendência $trendText. '
         'O principal ponto forte é ${atlasFarmAuditAreaLabel(strongest.area)}, '

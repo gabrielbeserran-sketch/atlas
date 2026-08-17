@@ -5,10 +5,7 @@ import 'package:projeto_atlas/features/strategic_capacity/domain/services/atlas_
 import 'package:projeto_atlas/features/strategy_execution/data/services/atlas_strategy_execution_repository.dart';
 
 class AtlasStrategicCapacityScreen extends StatefulWidget {
-  const AtlasStrategicCapacityScreen({
-    super.key,
-    this.farmId,
-  });
+  const AtlasStrategicCapacityScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -31,20 +28,13 @@ class _AtlasStrategicCapacityScreenState
   }
 
   Future<void> _load() async {
-    final plans =
-        await AtlasStrategyExecutionRepository.instance
-            .loadAll();
+    final plans = await AtlasStrategyExecutionRepository.instance.loadAll();
 
     final filtered = widget.farmId == null
         ? plans
-        : plans
-            .where(
-              (item) => item.farmId == widget.farmId,
-            )
-            .toList();
+        : plans.where((item) => item.farmId == widget.farmId).toList();
 
-    final generated =
-        const AtlasCapacityDependencyEngine().assess(
+    final generated = const AtlasCapacityDependencyEngine().assess(
       plans: filtered,
       availableWeeklyHours: availableWeeklyHours,
     );
@@ -77,9 +67,7 @@ class _AtlasStrategicCapacityScreenState
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) {
-                    return AtlasStrategicAlignmentScreen(
-                      farmId: widget.farmId,
-                    );
+                    return AtlasStrategicAlignmentScreen(farmId: widget.farmId);
                   },
                 ),
               );
@@ -95,88 +83,75 @@ class _AtlasStrategicCapacityScreenState
         ],
       ),
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : current == null || current.items.isEmpty
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1240),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(assessment: current),
-                        const SizedBox(height: 22),
-                        _CapacityConfig(
-                          value: availableWeeklyHours,
-                          onChanged: (value) {
-                            setState(() {
-                              availableWeeklyHours = value;
-                            });
-                          },
-                          onApply: _load,
-                        ),
-                        const SizedBox(height: 22),
-                        const _SectionTitle(
-                          title: 'Carga por estratégia',
-                          subtitle:
-                              'Capacidade estimada, marcos restantes, prazo e recomendação operacional.',
-                        ),
-                        const SizedBox(height: 12),
-                        ...current.items.map(
-                          (item) => _CapacityCard(item: item),
-                        ),
-                        const SizedBox(height: 22),
-                        const _SectionTitle(
-                          title: 'Dependências',
-                          subtitle:
-                              'Relações entre estratégias que podem bloquear ou atrasar a execução.',
-                        ),
-                        const SizedBox(height: 12),
-                        if (current.dependencies.isEmpty)
-                          const _EmptyCard(
-                            text:
-                                'Nenhuma dependência relevante foi detectada.',
-                          )
-                        else
-                          ...current.dependencies.map(
-                            (item) => _DependencyCard(
-                              dependency: item,
-                            ),
-                          ),
-                        const SizedBox(height: 22),
-                        const _SectionTitle(
-                          title: 'Conflitos de capacidade',
-                          subtitle:
-                              'Sobrecarga, concorrência por capital e responsáveis compartilhados.',
-                        ),
-                        const SizedBox(height: 12),
-                        if (current.conflicts.isEmpty)
-                          const _EmptyCard(
-                            text:
-                                'Nenhum conflito importante foi detectado.',
-                          )
-                        else
-                          ...current.conflicts.map(
-                            (item) => _ConflictCard(
-                              conflict: item,
-                            ),
-                          ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(assessment: current),
+                    const SizedBox(height: 22),
+                    _CapacityConfig(
+                      value: availableWeeklyHours,
+                      onChanged: (value) {
+                        setState(() {
+                          availableWeeklyHours = value;
+                        });
+                      },
+                      onApply: _load,
                     ),
-                  ),
+                    const SizedBox(height: 22),
+                    const _SectionTitle(
+                      title: 'Carga por estratégia',
+                      subtitle:
+                          'Capacidade estimada, marcos restantes, prazo e recomendação operacional.',
+                    ),
+                    const SizedBox(height: 12),
+                    ...current.items.map((item) => _CapacityCard(item: item)),
+                    const SizedBox(height: 22),
+                    const _SectionTitle(
+                      title: 'Dependências',
+                      subtitle:
+                          'Relações entre estratégias que podem bloquear ou atrasar a execução.',
+                    ),
+                    const SizedBox(height: 12),
+                    if (current.dependencies.isEmpty)
+                      const _EmptyCard(
+                        text: 'Nenhuma dependência relevante foi detectada.',
+                      )
+                    else
+                      ...current.dependencies.map(
+                        (item) => _DependencyCard(dependency: item),
+                      ),
+                    const SizedBox(height: 22),
+                    const _SectionTitle(
+                      title: 'Conflitos de capacidade',
+                      subtitle:
+                          'Sobrecarga, concorrência por capital e responsáveis compartilhados.',
+                    ),
+                    const SizedBox(height: 12),
+                    if (current.conflicts.isEmpty)
+                      const _EmptyCard(
+                        text: 'Nenhum conflito importante foi detectado.',
+                      )
+                    else
+                      ...current.conflicts.map(
+                        (item) => _ConflictCard(conflict: item),
+                      ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.assessment,
-  });
+  const _Hero({required this.assessment});
 
   final AtlasCapacityAssessment assessment;
 
@@ -195,8 +170,7 @@ class _Hero extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Capacidade real de execução do portfólio',
@@ -218,33 +192,27 @@ class _Hero extends StatelessWidget {
             children: [
               _HeroMetric(
                 label: 'Demanda semanal',
-                value:
-                    '${assessment.totalCapacityDemand.toStringAsFixed(0)} h',
+                value: '${assessment.totalCapacityDemand.toStringAsFixed(0)} h',
               ),
               _HeroMetric(
                 label: 'Capacidade disponível',
-                value:
-                    '${assessment.availableCapacity.toStringAsFixed(0)} h',
+                value: '${assessment.availableCapacity.toStringAsFixed(0)} h',
               ),
               _HeroMetric(
                 label: 'Utilização',
-                value:
-                    '${assessment.utilizationPercent.toStringAsFixed(1)}%',
+                value: '${assessment.utilizationPercent.toStringAsFixed(1)}%',
               ),
               _HeroMetric(
                 label: 'Estratégias sobrecarregadas',
-                value:
-                    '${assessment.overloadedStrategies}',
+                value: '${assessment.overloadedStrategies}',
               ),
               _HeroMetric(
                 label: 'Conflitos críticos',
-                value:
-                    '${assessment.criticalConflicts}',
+                value: '${assessment.criticalConflicts}',
               ),
               _HeroMetric(
                 label: 'Dependências bloqueadas',
-                value:
-                    '${assessment.blockedDependencies}',
+                value: '${assessment.blockedDependencies}',
               ),
             ],
           ),
@@ -271,15 +239,12 @@ class _CapacityConfig extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Capacidade semanal disponível: '
               '${value.toStringAsFixed(0)} horas',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             Slider(
               value: value,
@@ -293,12 +258,8 @@ class _CapacityConfig extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
                 onPressed: onApply,
-                icon: const Icon(
-                  Icons.calculate_outlined,
-                ),
-                label: const Text(
-                  'Recalcular capacidade',
-                ),
+                icon: const Icon(Icons.calculate_outlined),
+                label: const Text('Recalcular capacidade'),
               ),
             ),
           ],
@@ -309,9 +270,7 @@ class _CapacityConfig extends StatelessWidget {
 }
 
 class _CapacityCard extends StatelessWidget {
-  const _CapacityCard({
-    required this.item,
-  });
+  const _CapacityCard({required this.item});
 
   final AtlasCapacityItem item;
 
@@ -324,8 +283,7 @@ class _CapacityCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
+          backgroundColor: color.withValues(alpha: 0.12),
           child: Icon(
             item.overloaded
                 ? Icons.warning_amber_outlined
@@ -335,16 +293,13 @@ class _CapacityCard extends StatelessWidget {
         ),
         title: Text(
           item.plan.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${item.requiredHours.toStringAsFixed(0)} h estimadas · '
           '${item.teamLoadPercent.toStringAsFixed(1)}% da capacidade',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Wrap(
             spacing: 12,
@@ -352,22 +307,16 @@ class _CapacityCard extends StatelessWidget {
             children: [
               _Metric(
                 label: 'Marcos restantes',
-                value:
-                    '${item.remainingMilestones}',
+                value: '${item.remainingMilestones}',
               ),
-              _Metric(
-                label: 'Dias restantes',
-                value: '${item.remainingDays}',
-              ),
+              _Metric(label: 'Dias restantes', value: '${item.remainingDays}'),
               _Metric(
                 label: 'Carga estimada',
-                value:
-                    '${item.requiredHours.toStringAsFixed(0)} h',
+                value: '${item.requiredHours.toStringAsFixed(0)} h',
               ),
               _Metric(
                 label: 'Uso da capacidade',
-                value:
-                    '${item.teamLoadPercent.toStringAsFixed(1)}%',
+                value: '${item.teamLoadPercent.toStringAsFixed(1)}%',
               ),
             ],
           ),
@@ -386,9 +335,7 @@ class _CapacityCard extends StatelessWidget {
 }
 
 class _DependencyCard extends StatelessWidget {
-  const _DependencyCard({
-    required this.dependency,
-  });
+  const _DependencyCard({required this.dependency});
 
   final AtlasStrategyDependency dependency;
 
@@ -396,15 +343,11 @@ class _DependencyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const Icon(
-          Icons.account_tree_outlined,
-        ),
+        leading: const Icon(Icons.account_tree_outlined),
         title: Text(
           '${dependency.predecessorTitle} → '
           '${dependency.successorTitle}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${dependency.reason}\n'
@@ -418,9 +361,7 @@ class _DependencyCard extends StatelessWidget {
 }
 
 class _ConflictCard extends StatelessWidget {
-  const _ConflictCard({
-    required this.conflict,
-  });
+  const _ConflictCard({required this.conflict});
 
   final AtlasCapacityConflict conflict;
 
@@ -428,21 +369,16 @@ class _ConflictCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ExpansionTile(
-        leading: const Icon(
-          Icons.report_problem_outlined,
-        ),
+        leading: const Icon(Icons.report_problem_outlined),
         title: Text(
           conflict.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           'Severidade '
           '${atlasCapacityConflictSeverityLabel(conflict.severity)}',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Align(
             alignment: Alignment.centerLeft,
@@ -460,10 +396,7 @@ class _ConflictCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -471,30 +404,18 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 155),
+      constraints: const BoxConstraints(minWidth: 155),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F6F8),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -502,10 +423,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -513,24 +431,16 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 155),
+      constraints: const BoxConstraints(minWidth: 155),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color:
-            Colors.white.withValues(alpha: 0.10),
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -547,10 +457,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -558,32 +465,21 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
 class _EmptyCard extends StatelessWidget {
-  const _EmptyCard({
-    required this.text,
-  });
+  const _EmptyCard({required this.text});
 
   final String text;
 
@@ -592,10 +488,7 @@ class _EmptyCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(22),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-        ),
+        child: Text(text, textAlign: TextAlign.center),
       ),
     );
   }
@@ -612,25 +505,17 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.hub_outlined,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.hub_outlined, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existem estratégias para avaliar.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Crie planos de execução antes de analisar capacidade e dependências.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),

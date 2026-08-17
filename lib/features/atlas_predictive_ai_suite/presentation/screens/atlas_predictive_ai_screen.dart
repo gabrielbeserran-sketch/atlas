@@ -26,12 +26,10 @@ class AtlasPredictiveAiScreen extends StatefulWidget {
       _AtlasPredictiveAiScreenState();
 }
 
-class _AtlasPredictiveAiScreenState
-    extends State<AtlasPredictiveAiScreen> {
+class _AtlasPredictiveAiScreenState extends State<AtlasPredictiveAiScreen> {
   final AtlasPredictiveAiStorageService storage =
       AtlasPredictiveAiStorageService();
-  final AtlasPredictiveAiEngine engine =
-      const AtlasPredictiveAiEngine();
+  final AtlasPredictiveAiEngine engine = const AtlasPredictiveAiEngine();
 
   late AtlasPredictiveAiModule selectedModule;
   List<AtlasPredictiveAiRecord> records = [];
@@ -78,30 +76,26 @@ class _AtlasPredictiveAiScreenState
   }
 
   List<AtlasPredictiveAiRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasPredictiveAiRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasPredictiveAiRecord? current]) async {
     final result = await showDialog<AtlasPredictiveAiRecord>(
       context: context,
-      builder: (context) => _PredictiveAiRecordForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _PredictiveAiRecordForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +109,7 @@ class _AtlasPredictiveAiScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasPredictiveAiRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasPredictiveAiRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +117,11 @@ class _AtlasPredictiveAiScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -160,9 +150,9 @@ class _AtlasPredictiveAiScreenState
     final averageScore = moduleRecords.isEmpty
         ? 0
         : moduleRecords
-                .map((record) => engine.evaluate(record).score)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => engine.evaluate(record).score)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -183,12 +173,9 @@ class _AtlasPredictiveAiScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -205,9 +192,7 @@ class _AtlasPredictiveAiScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Simulações de apoio à decisão',
-                          ),
+                          title: Text('Simulações de apoio à decisão'),
                           subtitle: Text(
                             'Os resultados dependem das premissas informadas '
                             'e devem ser confirmados com dados reais e avaliação profissional.',
@@ -237,8 +222,7 @@ class _AtlasPredictiveAiScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Score médio',
-                            value:
-                                averageScore.toStringAsFixed(0),
+                            value: averageScore.toStringAsFixed(0),
                             subtitle: 'Qualidade dos cenários',
                             icon: Icons.analytics_outlined,
                           ),
@@ -268,12 +252,8 @@ class _AtlasPredictiveAiScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhuma simulação cadastrada.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhuma simulação cadastrada.'),
                             subtitle: const Text(
                               'Cadastre o primeiro cenário para gerar projeções.',
                             ),
@@ -285,8 +265,7 @@ class _AtlasPredictiveAiScreenState
                             record: record,
                             result: engine.evaluate(record),
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -300,10 +279,7 @@ class _AtlasPredictiveAiScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasPredictiveAiModule selected;
   final ValueChanged<AtlasPredictiveAiModule> onSelected;
@@ -314,32 +290,32 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasPredictiveAiModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasPredictiveAiModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right:
-                      module == AtlasPredictiveAiModule.values.last
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasPredictiveAiModule.values.last
                           ? 0
                           : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -364,13 +340,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -399,12 +377,8 @@ class _PredictionCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -418,18 +392,11 @@ class _PredictionCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
           Wrap(
             spacing: 12,
@@ -474,10 +441,7 @@ class _PredictionCard extends StatelessWidget {
 }
 
 class _PredictiveAiRecordForm extends StatefulWidget {
-  const _PredictiveAiRecordForm({
-    required this.module,
-    this.current,
-  });
+  const _PredictiveAiRecordForm({required this.module, this.current});
 
   final AtlasPredictiveAiModule module;
   final AtlasPredictiveAiRecord? current;
@@ -487,8 +451,7 @@ class _PredictiveAiRecordForm extends StatefulWidget {
       _PredictiveAiRecordFormState();
 }
 
-class _PredictiveAiRecordFormState
-    extends State<_PredictiveAiRecordForm> {
+class _PredictiveAiRecordFormState extends State<_PredictiveAiRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -517,48 +480,31 @@ class _PredictiveAiRecordFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasPredictiveDate(DateTime.now()),
+      text: current?.date ?? formatAtlasPredictiveDate(DateTime.now()),
     );
     primaryInput = TextEditingController(
-      text: current == null
-          ? ''
-          : current.primaryInput.toString(),
+      text: current == null ? '' : current.primaryInput.toString(),
     );
     secondaryInput = TextEditingController(
-      text: current == null
-          ? ''
-          : current.secondaryInput.toString(),
+      text: current == null ? '' : current.secondaryInput.toString(),
     );
     tertiaryInput = TextEditingController(
-      text: current == null
-          ? ''
-          : current.tertiaryInput.toString(),
+      text: current == null ? '' : current.tertiaryInput.toString(),
     );
     costValue = TextEditingController(
-      text: current == null
-          ? ''
-          : current.costValue.toString(),
+      text: current == null ? '' : current.costValue.toString(),
     );
     revenueValue = TextEditingController(
-      text: current == null
-          ? ''
-          : current.revenueValue.toString(),
+      text: current == null ? '' : current.revenueValue.toString(),
     );
     periodDays = TextEditingController(
       text: current == null || current.periodDays == 0
           ? ''
           : current.periodDays.toString(),
     );
-    referenceName = TextEditingController(
-      text: current?.referenceName ?? '',
-    );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    referenceName = TextEditingController(text: current?.referenceName ?? '');
+    unit = TextEditingController(text: current?.unit ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -578,10 +524,7 @@ class _PredictiveAiRecordFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   int integer(TextEditingController controller) {
@@ -593,12 +536,9 @@ class _PredictiveAiRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -609,49 +549,35 @@ class _PredictiveAiRecordFormState
   }
 
   String get primaryLabel => switch (widget.module) {
-        AtlasPredictiveAiModule.nutrition =>
-          'Peso vivo (kg)',
-        AtlasPredictiveAiModule.economics =>
-          'Investimento inicial (R\$)',
-        AtlasPredictiveAiModule.commercialization =>
-          'Peso vivo (kg)',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Peso vivo (kg)',
+    AtlasPredictiveAiModule.economics => 'Investimento inicial (R\$)',
+    AtlasPredictiveAiModule.commercialization => 'Peso vivo (kg)',
+  };
 
   String get secondaryLabel => switch (widget.module) {
-        AtlasPredictiveAiModule.nutrition =>
-          'Meta de GMD (kg/dia)',
-        AtlasPredictiveAiModule.economics =>
-          'Indicador complementar',
-        AtlasPredictiveAiModule.commercialization =>
-          'Rendimento de carcaça (%)',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Meta de GMD (kg/dia)',
+    AtlasPredictiveAiModule.economics => 'Indicador complementar',
+    AtlasPredictiveAiModule.commercialization => 'Rendimento de carcaça (%)',
+  };
 
   String get tertiaryLabel => switch (widget.module) {
-        AtlasPredictiveAiModule.nutrition =>
-          'Consumo informado (kg/dia)',
-        AtlasPredictiveAiModule.economics =>
-          'Indicador adicional',
-        AtlasPredictiveAiModule.commercialization =>
-          'Preço esperado da arroba (R\$)',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Consumo informado (kg/dia)',
+    AtlasPredictiveAiModule.economics => 'Indicador adicional',
+    AtlasPredictiveAiModule.commercialization =>
+      'Preço esperado da arroba (R\$)',
+  };
 
   String get costLabel => switch (widget.module) {
-        AtlasPredictiveAiModule.nutrition =>
-          'Custo diário da dieta (R\$)',
-        AtlasPredictiveAiModule.economics =>
-          'Custo mensal (R\$)',
-        AtlasPredictiveAiModule.commercialization =>
-          'Custos da negociação (R\$)',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Custo diário da dieta (R\$)',
+    AtlasPredictiveAiModule.economics => 'Custo mensal (R\$)',
+    AtlasPredictiveAiModule.commercialization => 'Custos da negociação (R\$)',
+  };
 
   String get revenueLabel => switch (widget.module) {
-        AtlasPredictiveAiModule.nutrition =>
-          'Receita estimada (opcional)',
-        AtlasPredictiveAiModule.economics =>
-          'Receita mensal (R\$)',
-        AtlasPredictiveAiModule.commercialization =>
-          'Receita adicional (opcional)',
-      };
+    AtlasPredictiveAiModule.nutrition => 'Receita estimada (opcional)',
+    AtlasPredictiveAiModule.economics => 'Receita mensal (R\$)',
+    AtlasPredictiveAiModule.commercialization => 'Receita adicional (opcional)',
+  };
 
   void save() {
     if (!formKey.currentState!.validate()) return;
@@ -662,7 +588,8 @@ class _PredictiveAiRecordFormState
     Navigator.pop(
       context,
       AtlasPredictiveAiRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'predictive_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -688,9 +615,7 @@ class _PredictiveAiRecordFormState
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        widget.current == null
-            ? 'Nova simulação'
-            : 'Editar simulação',
+        widget.current == null ? 'Nova simulação' : 'Editar simulação',
       ),
       content: SizedBox(
         width: 720,
@@ -706,10 +631,8 @@ class _PredictiveAiRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -720,12 +643,9 @@ class _PredictiveAiRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -737,31 +657,28 @@ class _PredictiveAiRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em avaliação',
-                    'Ativo',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em avaliação',
+                            'Ativo',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -770,53 +687,38 @@ class _PredictiveAiRecordFormState
                 ),
                 TextFormField(
                   controller: primaryInput,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: primaryLabel,
-                  ),
+                  decoration: InputDecoration(labelText: primaryLabel),
                 ),
                 TextFormField(
                   controller: secondaryInput,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: secondaryLabel,
-                  ),
+                  decoration: InputDecoration(labelText: secondaryLabel),
                 ),
                 TextFormField(
                   controller: tertiaryInput,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: tertiaryLabel,
-                  ),
+                  decoration: InputDecoration(labelText: tertiaryLabel),
                 ),
                 TextFormField(
                   controller: costValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: costLabel,
-                  ),
+                  decoration: InputDecoration(labelText: costLabel),
                 ),
                 TextFormField(
                   controller: revenueValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: revenueLabel,
-                  ),
+                  decoration: InputDecoration(labelText: revenueLabel),
                 ),
                 TextFormField(
                   controller: periodDays,
@@ -828,7 +730,8 @@ class _PredictiveAiRecordFormState
                 TextFormField(
                   controller: referenceName,
                   decoration: InputDecoration(
-                    labelText: widget.module ==
+                    labelText:
+                        widget.module ==
                             AtlasPredictiveAiModule.commercialization
                         ? 'Comprador ou frigorífico'
                         : 'Referência ou cenário',
@@ -858,24 +761,16 @@ class _PredictiveAiRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Calcular'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Calcular')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasPredictiveAiModule module,
-) {
+IconData _moduleIcon(AtlasPredictiveAiModule module) {
   return switch (module) {
-    AtlasPredictiveAiModule.nutrition =>
-      Icons.restaurant_outlined,
-    AtlasPredictiveAiModule.economics =>
-      Icons.account_balance_wallet_outlined,
-    AtlasPredictiveAiModule.commercialization =>
-      Icons.sell_outlined,
+    AtlasPredictiveAiModule.nutrition => Icons.restaurant_outlined,
+    AtlasPredictiveAiModule.economics => Icons.account_balance_wallet_outlined,
+    AtlasPredictiveAiModule.commercialization => Icons.sell_outlined,
   };
 }

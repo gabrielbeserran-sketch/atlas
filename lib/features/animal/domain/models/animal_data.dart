@@ -64,8 +64,7 @@ class AnimalData {
   bool get hasGenealogy =>
       motherTag.trim().isNotEmpty || fatherTag.trim().isNotEmpty;
 
-  bool get wasPurchased =>
-      acquisitionType == 'Compra' && acquisitionValue > 0;
+  bool get wasPurchased => acquisitionType == 'Compra' && acquisitionValue > 0;
 
   bool get wasSold => status == 'Vendido' && saleValue > 0;
 
@@ -224,8 +223,7 @@ class AnimalData {
       status: map['status']?.toString() ?? 'Ativo',
       sisbov: map['sisbov']?.toString() ?? '',
       category: map['category']?.toString() ?? 'Não informada',
-      bodyConditionScore:
-          (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
+      bodyConditionScore: (map['bodyConditionScore'] as num?)?.toDouble() ?? 0,
       motherTag: map['motherTag']?.toString() ?? '',
       fatherTag: map['fatherTag']?.toString() ?? '',
       origin: map['origin']?.toString() ?? '',
@@ -235,8 +233,7 @@ class AnimalData {
           map['acquisitionType']?.toString() ?? 'Nascido na fazenda',
       acquisitionDate: map['acquisitionDate']?.toString() ?? '',
       acquisitionValue: (map['acquisitionValue'] as num?)?.toDouble() ?? 0,
-      acquisitionCounterparty:
-          map['acquisitionCounterparty']?.toString() ?? '',
+      acquisitionCounterparty: map['acquisitionCounterparty']?.toString() ?? '',
       acquisitionDocument: map['acquisitionDocument']?.toString() ?? '',
       saleDate: map['saleDate']?.toString() ?? '',
       saleValue: (map['saleValue'] as num?)?.toDouble() ?? 0,
@@ -278,12 +275,10 @@ class AnimalData {
           (metadata['acquisition_value'] as num?)?.toDouble() ?? 0,
       acquisitionCounterparty:
           metadata['acquisition_counterparty']?.toString() ?? '',
-      acquisitionDocument:
-          metadata['acquisition_document']?.toString() ?? '',
+      acquisitionDocument: metadata['acquisition_document']?.toString() ?? '',
       saleDate: metadata['sale_date']?.toString() ?? '',
       saleValue: (metadata['sale_value'] as num?)?.toDouble() ?? 0,
-      saleCounterparty:
-          metadata['sale_counterparty']?.toString() ?? '',
+      saleCounterparty: metadata['sale_counterparty']?.toString() ?? '',
       saleDocument: metadata['sale_document']?.toString() ?? '',
       updatedAt: map['updated_at']?.toString() ?? '',
     );

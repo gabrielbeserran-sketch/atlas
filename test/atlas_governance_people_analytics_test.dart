@@ -9,8 +9,7 @@ void main() {
     final records = [
       AtlasGovernancePeopleRecord(
         id: '1',
-        module:
-            AtlasGovernancePeopleModule.peopleManagement,
+        module: AtlasGovernancePeopleModule.peopleManagement,
         feature: 'Colaboradores',
         title: 'Cadastro atualizado',
         date: '04/08/2026',
@@ -35,8 +34,7 @@ void main() {
       ),
       AtlasGovernancePeopleRecord(
         id: '2',
-        module:
-            AtlasGovernancePeopleModule.peopleManagement,
+        module: AtlasGovernancePeopleModule.peopleManagement,
         feature: 'Documentos pessoais',
         title: 'Documento vencido',
         date: '04/08/2026',
@@ -62,8 +60,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasGovernancePeopleModule.peopleManagement,
+      module: AtlasGovernancePeopleModule.peopleManagement,
       records: records,
     );
 

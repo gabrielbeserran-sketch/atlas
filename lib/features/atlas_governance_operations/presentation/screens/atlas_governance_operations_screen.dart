@@ -30,8 +30,7 @@ class _AtlasGovernanceOperationsScreenState
     extends State<AtlasGovernanceOperationsScreen> {
   final AtlasGovernanceOperationStorageService storage =
       AtlasGovernanceOperationStorageService();
-  final AtlasGovernanceOperationAnalyticsService
-      analyticsService =
+  final AtlasGovernanceOperationAnalyticsService analyticsService =
       const AtlasGovernanceOperationAnalyticsService();
 
   late AtlasGovernanceOperationModule selectedModule;
@@ -79,31 +78,26 @@ class _AtlasGovernanceOperationsScreenState
   }
 
   List<AtlasGovernanceOperationRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasGovernanceOperationRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasGovernanceOperationRecord>(
+  Future<void> openForm([AtlasGovernanceOperationRecord? current]) async {
+    final result = await showDialog<AtlasGovernanceOperationRecord>(
       context: context,
-      builder: (context) => _GovernanceOperationForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _GovernanceOperationForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -117,9 +111,7 @@ class _AtlasGovernanceOperationsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasGovernanceOperationRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasGovernanceOperationRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -127,13 +119,11 @@ class _AtlasGovernanceOperationsScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -175,12 +165,9 @@ class _AtlasGovernanceOperationsScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -225,8 +212,7 @@ class _AtlasGovernanceOperationsScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -247,8 +233,7 @@ class _AtlasGovernanceOperationsScreenState
                           EnterpriseMetricCard(
                             title: 'Operacionais',
                             value: '${analytics.operationalCount}',
-                            subtitle:
-                                'Aprovados, conformes ou concluídos',
+                            subtitle: 'Aprovados, conformes ou concluídos',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -260,8 +245,7 @@ class _AtlasGovernanceOperationsScreenState
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Vencimentos e situações críticas',
+                            subtitle: 'Vencimentos e situações críticas',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -273,8 +257,7 @@ class _AtlasGovernanceOperationsScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Nota média',
-                            value:
-                                analytics.averageScore.toStringAsFixed(1),
+                            value: analytics.averageScore.toStringAsFixed(1),
                             subtitle: 'Indicador informado',
                             icon: Icons.stars_outlined,
                           ),
@@ -283,8 +266,7 @@ class _AtlasGovernanceOperationsScreenState
                             value:
                                 'R\$ ${analytics.netAmount.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Após custos informados',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -317,12 +299,8 @@ class _AtlasGovernanceOperationsScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro processo.',
                             ),
@@ -333,8 +311,7 @@ class _AtlasGovernanceOperationsScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -348,14 +325,10 @@ class _AtlasGovernanceOperationsScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasGovernanceOperationModule selected;
-  final ValueChanged<AtlasGovernanceOperationModule>
-      onSelected;
+  final ValueChanged<AtlasGovernanceOperationModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -365,22 +338,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasGovernanceOperationModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasGovernanceOperationModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor: active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -405,13 +377,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -430,25 +404,25 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Rejeitado' || 'Vencido' || 'Cancelado' ||
-      'Não conforme' || 'Bloqueado' =>
-        Colors.red.shade800,
+      'Rejeitado' ||
+      'Vencido' ||
+      'Cancelado' ||
+      'Não conforme' ||
+      'Bloqueado' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Aprovado' || 'Conforme' || 'Em execução' ||
-      'Certificado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Aprovado' ||
+      'Conforme' ||
+      'Em execução' ||
+      'Certificado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -465,14 +439,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -481,10 +449,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _GovernanceOperationForm extends StatefulWidget {
-  const _GovernanceOperationForm({
-    required this.module,
-    this.current,
-  });
+  const _GovernanceOperationForm({required this.module, this.current});
 
   final AtlasGovernanceOperationModule module;
   final AtlasGovernanceOperationRecord? current;
@@ -494,8 +459,7 @@ class _GovernanceOperationForm extends StatefulWidget {
       _GovernanceOperationFormState();
 }
 
-class _GovernanceOperationFormState
-    extends State<_GovernanceOperationForm> {
+class _GovernanceOperationFormState extends State<_GovernanceOperationForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -526,15 +490,10 @@ class _GovernanceOperationFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasGovernanceDate(DateTime.now()),
+      text: current?.date ?? formatAtlasGovernanceDate(DateTime.now()),
     );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    externalId = TextEditingController(
-      text: current?.externalId ?? '',
-    );
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
     amount = TextEditingController(
       text: current == null || current.amount == 0
           ? ''
@@ -556,24 +515,16 @@ class _GovernanceOperationFormState
           : current.scoreValue.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -595,29 +546,21 @@ class _GovernanceOperationFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasGovernanceDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -636,7 +579,8 @@ class _GovernanceOperationFormState
     Navigator.pop(
       context,
       AtlasGovernanceOperationRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'governance_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -649,8 +593,7 @@ class _GovernanceOperationFormState
         costAmount: decimal(costAmount),
         quantity: _maxZero(integer(quantity)),
         scoreValue: decimal(scoreValue),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -666,11 +609,7 @@ class _GovernanceOperationFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -685,10 +624,8 @@ class _GovernanceOperationFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -699,12 +636,9 @@ class _GovernanceOperationFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -716,39 +650,36 @@ class _GovernanceOperationFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Em aprovação',
-                    'Aprovado',
-                    'Conforme',
-                    'Em execução',
-                    'Certificado',
-                    'Concluído',
-                    'Atenção',
-                    'Não conforme',
-                    'Rejeitado',
-                    'Vencido',
-                    'Cancelado',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Em aprovação',
+                            'Aprovado',
+                            'Conforme',
+                            'Em execução',
+                            'Certificado',
+                            'Concluído',
+                            'Atenção',
+                            'Não conforme',
+                            'Rejeitado',
+                            'Vencido',
+                            'Cancelado',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -758,8 +689,7 @@ class _GovernanceOperationFormState
                 TextFormField(
                   controller: responsible,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Responsável, equipe, auditor ou instrutor',
+                    labelText: 'Responsável, equipe, auditor ou instrutor',
                   ),
                 ),
                 TextFormField(
@@ -771,8 +701,7 @@ class _GovernanceOperationFormState
                 ),
                 TextFormField(
                   controller: amount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -781,8 +710,7 @@ class _GovernanceOperationFormState
                 ),
                 TextFormField(
                   controller: costAmount,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -793,14 +721,12 @@ class _GovernanceOperationFormState
                   controller: quantity,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Quantidade de itens, pessoas ou entregas',
+                    labelText: 'Quantidade de itens, pessoas ou entregas',
                   ),
                 ),
                 TextFormField(
                   controller: scoreValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -827,25 +753,20 @@ class _GovernanceOperationFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou validade',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, evidência, arquivo ou referência',
+                    labelText: 'Documento, evidência, arquivo ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -857,28 +778,20 @@ class _GovernanceOperationFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasGovernanceOperationModule module,
-) {
+IconData _moduleIcon(AtlasGovernanceOperationModule module) {
   return switch (module) {
     AtlasGovernanceOperationModule.qualityManagement =>
       Icons.workspace_premium_outlined,
-    AtlasGovernanceOperationModule.compliance =>
-      Icons.policy_outlined,
+    AtlasGovernanceOperationModule.compliance => Icons.policy_outlined,
     AtlasGovernanceOperationModule.projectPortfolio =>
       Icons.account_tree_outlined,
-    AtlasGovernanceOperationModule.workforceManagement =>
-      Icons.groups_outlined,
-    AtlasGovernanceOperationModule.trainingAcademy =>
-      Icons.school_outlined,
+    AtlasGovernanceOperationModule.workforceManagement => Icons.groups_outlined,
+    AtlasGovernanceOperationModule.trainingAcademy => Icons.school_outlined,
   };
 }

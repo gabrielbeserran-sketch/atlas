@@ -76,31 +76,26 @@ class _AtlasPlatformResilienceScreenState
   }
 
   List<AtlasPlatformResilienceRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasPlatformResilienceRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasPlatformResilienceRecord>(
+  Future<void> openForm([AtlasPlatformResilienceRecord? current]) async {
+    final result = await showDialog<AtlasPlatformResilienceRecord>(
       context: context,
-      builder: (context) => _PlatformResilienceForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _PlatformResilienceForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -114,9 +109,7 @@ class _AtlasPlatformResilienceScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasPlatformResilienceRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasPlatformResilienceRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -124,13 +117,11 @@ class _AtlasPlatformResilienceScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -191,9 +182,7 @@ class _AtlasPlatformResilienceScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Central de plataforma e resiliência',
-                          ),
+                          title: Text('Central de plataforma e resiliência'),
                           subtitle: Text(
                             'Organiza dados, integrações, segurança, observabilidade e modelos digitais. '
                             'A operação real depende de infraestrutura, credenciais e serviços externos.',
@@ -264,8 +253,7 @@ class _AtlasPlatformResilienceScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Nota média',
-                            value:
-                                analytics.averageScore.toStringAsFixed(1),
+                            value: analytics.averageScore.toStringAsFixed(1),
                             subtitle: 'Indicador informado',
                             icon: Icons.stars_outlined,
                           ),
@@ -274,8 +262,7 @@ class _AtlasPlatformResilienceScreenState
                             value:
                                 'R\$ ${analytics.financialImpact.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Impacto consolidado',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -308,12 +295,8 @@ class _AtlasPlatformResilienceScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro componente ou processo.',
                             ),
@@ -324,8 +307,7 @@ class _AtlasPlatformResilienceScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -339,10 +321,7 @@ class _AtlasPlatformResilienceScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasPlatformResilienceModule selected;
   final ValueChanged<AtlasPlatformResilienceModule> onSelected;
@@ -355,21 +334,20 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: AtlasPlatformResilienceModule.values.map(
-            (module) {
-              final active = module == selected;
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor: active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+          children: AtlasPlatformResilienceModule.values
+              .map((module) {
+                final active = module == selected;
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -392,13 +370,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -417,13 +397,16 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Indisponível' || 'Bloqueado' ||
-      'Em risco' =>
-        Colors.red.shade800,
+      'Crítico' ||
+      'Indisponível' ||
+      'Bloqueado' ||
+      'Em risco' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Conforme' || 'Disponível' ||
-      'Monitorado' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Conforme' ||
+      'Disponível' ||
+      'Monitorado' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
@@ -458,10 +441,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _PlatformResilienceForm extends StatefulWidget {
-  const _PlatformResilienceForm({
-    required this.module,
-    this.current,
-  });
+  const _PlatformResilienceForm({required this.module, this.current});
 
   final AtlasPlatformResilienceModule module;
   final AtlasPlatformResilienceRecord? current;
@@ -471,8 +451,7 @@ class _PlatformResilienceForm extends StatefulWidget {
       _PlatformResilienceFormState();
 }
 
-class _PlatformResilienceFormState
-    extends State<_PlatformResilienceForm> {
+class _PlatformResilienceFormState extends State<_PlatformResilienceForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -503,12 +482,10 @@ class _PlatformResilienceFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasPlatformDate(DateTime.now()),
+      text: current?.date ?? formatAtlasPlatformDate(DateTime.now()),
     );
     owner = TextEditingController(text: current?.owner ?? '');
-    externalId =
-        TextEditingController(text: current?.externalId ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
     primaryValue = TextEditingController(
       text: current == null || current.primaryValue == 0
           ? ''
@@ -535,9 +512,7 @@ class _PlatformResilienceFormState
           : current.scoreValue.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -545,8 +520,7 @@ class _PlatformResilienceFormState
           : current.alertCount.toString(),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
-    reference =
-        TextEditingController(text: current?.reference ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
     notes = TextEditingController(text: current?.notes ?? '');
   }
 
@@ -570,28 +544,20 @@ class _PlatformResilienceFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasPlatformDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -611,8 +577,7 @@ class _PlatformResilienceFormState
     Navigator.pop(
       context,
       AtlasPlatformResilienceRecord(
-        id: current?.id ??
-            'platform_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'platform_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -625,8 +590,7 @@ class _PlatformResilienceFormState
         financialImpact: decimal(financialImpact),
         quantity: _maxZero(integer(quantity)),
         scoreValue: decimal(scoreValue),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -640,11 +604,7 @@ class _PlatformResilienceFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -659,10 +619,8 @@ class _PlatformResilienceFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -673,8 +631,7 @@ class _PlatformResilienceFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration:
-                      const InputDecoration(labelText: 'Título'),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -688,35 +645,34 @@ class _PlatformResilienceFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon:
-                        Icon(Icons.calendar_month_outlined),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration:
-                      const InputDecoration(labelText: 'Situação'),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Conforme',
-                    'Disponível',
-                    'Monitorado',
-                    'Concluído',
-                    'Atenção',
-                    'Em risco',
-                    'Crítico',
-                    'Indisponível',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Conforme',
+                            'Disponível',
+                            'Monitorado',
+                            'Concluído',
+                            'Atenção',
+                            'Em risco',
+                            'Crítico',
+                            'Indisponível',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -732,14 +688,12 @@ class _PlatformResilienceFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Dado, conector, serviço, ativo ou cenário',
+                    labelText: 'Dado, conector, serviço, ativo ou cenário',
                   ),
                 ),
                 TextFormField(
                   controller: primaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -748,8 +702,7 @@ class _PlatformResilienceFormState
                 ),
                 TextFormField(
                   controller: secondaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -758,8 +711,7 @@ class _PlatformResilienceFormState
                 ),
                 TextFormField(
                   controller: financialImpact,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -769,17 +721,14 @@ class _PlatformResilienceFormState
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Quantidade'),
+                  decoration: const InputDecoration(labelText: 'Quantidade'),
                 ),
                 TextFormField(
                   controller: scoreValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration:
-                      const InputDecoration(labelText: 'Nota'),
+                  decoration: const InputDecoration(labelText: 'Nota'),
                 ),
                 TextFormField(
                   controller: progressPercent,
@@ -807,17 +756,14 @@ class _PlatformResilienceFormState
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, endpoint, log ou referência',
+                    labelText: 'Documento, endpoint, log ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -829,28 +775,18 @@ class _PlatformResilienceFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasPlatformResilienceModule module,
-) {
+IconData _moduleIcon(AtlasPlatformResilienceModule module) {
   return switch (module) {
-    AtlasPlatformResilienceModule.dataGovernance =>
-      Icons.dataset_outlined,
-    AtlasPlatformResilienceModule.integrationHub =>
-      Icons.hub_outlined,
-    AtlasPlatformResilienceModule.cybersecurity =>
-      Icons.security_outlined,
-    AtlasPlatformResilienceModule.observability =>
-      Icons.monitor_heart_outlined,
-    AtlasPlatformResilienceModule.digitalTwin =>
-      Icons.view_in_ar_outlined,
+    AtlasPlatformResilienceModule.dataGovernance => Icons.dataset_outlined,
+    AtlasPlatformResilienceModule.integrationHub => Icons.hub_outlined,
+    AtlasPlatformResilienceModule.cybersecurity => Icons.security_outlined,
+    AtlasPlatformResilienceModule.observability => Icons.monitor_heart_outlined,
+    AtlasPlatformResilienceModule.digitalTwin => Icons.view_in_ar_outlined,
   };
 }

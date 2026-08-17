@@ -9,82 +9,70 @@ enum AtlasExecutiveIntelligenceModule {
 extension AtlasExecutiveIntelligenceModuleX
     on AtlasExecutiveIntelligenceModule {
   String get code => switch (this) {
-        AtlasExecutiveIntelligenceModule.enterpriseCrm =>
-          'enterprise_crm',
-        AtlasExecutiveIntelligenceModule.financialCenter =>
-          'financial_center',
-        AtlasExecutiveIntelligenceModule.businessIntelligence =>
-          'business_intelligence',
-        AtlasExecutiveIntelligenceModule.strategicCenter =>
-          'strategic_center',
-        AtlasExecutiveIntelligenceModule.commandCenter =>
-          'command_center',
-      };
+    AtlasExecutiveIntelligenceModule.enterpriseCrm => 'enterprise_crm',
+    AtlasExecutiveIntelligenceModule.financialCenter => 'financial_center',
+    AtlasExecutiveIntelligenceModule.businessIntelligence =>
+      'business_intelligence',
+    AtlasExecutiveIntelligenceModule.strategicCenter => 'strategic_center',
+    AtlasExecutiveIntelligenceModule.commandCenter => 'command_center',
+  };
 
   String get title => switch (this) {
-        AtlasExecutiveIntelligenceModule.enterpriseCrm =>
-          'CRM Enterprise',
-        AtlasExecutiveIntelligenceModule.financialCenter =>
-          'Central Financeira',
-        AtlasExecutiveIntelligenceModule.businessIntelligence =>
-          'Business Intelligence',
-        AtlasExecutiveIntelligenceModule.strategicCenter =>
-          'Central Estratégica Atlas AI',
-        AtlasExecutiveIntelligenceModule.commandCenter =>
-          'Enterprise Command Center',
-      };
+    AtlasExecutiveIntelligenceModule.enterpriseCrm => 'CRM Enterprise',
+    AtlasExecutiveIntelligenceModule.financialCenter => 'Central Financeira',
+    AtlasExecutiveIntelligenceModule.businessIntelligence =>
+      'Business Intelligence',
+    AtlasExecutiveIntelligenceModule.strategicCenter =>
+      'Central Estratégica Atlas AI',
+    AtlasExecutiveIntelligenceModule.commandCenter =>
+      'Enterprise Command Center',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasExecutiveIntelligenceModule.enterpriseCrm =>
-          'Pacote 89',
-        AtlasExecutiveIntelligenceModule.financialCenter =>
-          'Pacote 90',
-        AtlasExecutiveIntelligenceModule.businessIntelligence =>
-          'Pacote 91',
-        AtlasExecutiveIntelligenceModule.strategicCenter =>
-          'Pacote 92',
-        AtlasExecutiveIntelligenceModule.commandCenter =>
-          'Pacote 93',
-      };
+    AtlasExecutiveIntelligenceModule.enterpriseCrm => 'Pacote 89',
+    AtlasExecutiveIntelligenceModule.financialCenter => 'Pacote 90',
+    AtlasExecutiveIntelligenceModule.businessIntelligence => 'Pacote 91',
+    AtlasExecutiveIntelligenceModule.strategicCenter => 'Pacote 92',
+    AtlasExecutiveIntelligenceModule.commandCenter => 'Pacote 93',
+  };
 
   List<String> get features => switch (this) {
-        AtlasExecutiveIntelligenceModule.enterpriseCrm => const [
-            'Clientes e propriedades',
-            'Atendimentos e visitas',
-            'Propostas e contratos',
-            'Pipeline comercial',
-            'Rentabilidade e fidelização',
-          ],
-        AtlasExecutiveIntelligenceModule.financialCenter => const [
-            'Fluxo de caixa',
-            'Contas a pagar e receber',
-            'DRE e resultado',
-            'Centros de custo',
-            'Forecast e simulações',
-          ],
-        AtlasExecutiveIntelligenceModule.businessIntelligence =>
-          const [
-            'KPIs e scorecards',
-            'Dashboards executivos',
-            'Benchmark entre fazendas',
-            'Tendências e séries temporais',
-            'Drill-down e exportações',
-          ],
-        AtlasExecutiveIntelligenceModule.strategicCenter => const [
-            'Objetivos e OKRs',
-            'Metas e indicadores',
-            'Riscos estratégicos',
-            'Cenários e simulações',
-            'Planos de ação',
-          ],
-        AtlasExecutiveIntelligenceModule.commandCenter => const [
-            'Saúde operacional',
-            'Saúde financeira',
-            'Saúde produtiva',
-            'Alertas globais',
-            'Radar de prioridades',
-          ],
-      };
+    AtlasExecutiveIntelligenceModule.enterpriseCrm => const [
+      'Clientes e propriedades',
+      'Atendimentos e visitas',
+      'Propostas e contratos',
+      'Pipeline comercial',
+      'Rentabilidade e fidelização',
+    ],
+    AtlasExecutiveIntelligenceModule.financialCenter => const [
+      'Fluxo de caixa',
+      'Contas a pagar e receber',
+      'DRE e resultado',
+      'Centros de custo',
+      'Forecast e simulações',
+    ],
+    AtlasExecutiveIntelligenceModule.businessIntelligence => const [
+      'KPIs e scorecards',
+      'Dashboards executivos',
+      'Benchmark entre fazendas',
+      'Tendências e séries temporais',
+      'Drill-down e exportações',
+    ],
+    AtlasExecutiveIntelligenceModule.strategicCenter => const [
+      'Objetivos e OKRs',
+      'Metas e indicadores',
+      'Riscos estratégicos',
+      'Cenários e simulações',
+      'Planos de ação',
+    ],
+    AtlasExecutiveIntelligenceModule.commandCenter => const [
+      'Saúde operacional',
+      'Saúde financeira',
+      'Saúde produtiva',
+      'Alertas globais',
+      'Radar de prioridades',
+    ],
+  };
 }
 
 class AtlasExecutiveIntelligenceRecord {
@@ -150,8 +138,7 @@ class AtlasExecutiveIntelligenceRecord {
     final parsed = parseAtlasExecutiveDate(dueDate);
     if (parsed.year == 1900) return false;
 
-    return parsed.isBefore(DateTime.now()) &&
-        status != 'Concluído';
+    return parsed.isBefore(DateTime.now()) && status != 'Concluído';
   }
 
   Map<String, dynamic> toMap() {
@@ -179,16 +166,12 @@ class AtlasExecutiveIntelligenceRecord {
     };
   }
 
-  factory AtlasExecutiveIntelligenceRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutiveIntelligenceRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasExecutiveIntelligenceModule.values.firstWhere(
+    final module = AtlasExecutiveIntelligenceModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasExecutiveIntelligenceModule.enterpriseCrm,
+      orElse: () => AtlasExecutiveIntelligenceModule.enterpriseCrm,
     );
 
     return AtlasExecutiveIntelligenceRecord(
@@ -200,19 +183,13 @@ class AtlasExecutiveIntelligenceRecord {
       status: map['status']?.toString() ?? 'Planejado',
       responsible: map['responsible']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
-      primaryValue:
-          (map['primaryValue'] as num?)?.toDouble() ?? 0.0,
-      secondaryValue:
-          (map['secondaryValue'] as num?)?.toDouble() ?? 0.0,
-      financialImpact:
-          (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
+      primaryValue: (map['primaryValue'] as num?)?.toDouble() ?? 0.0,
+      secondaryValue: (map['secondaryValue'] as num?)?.toDouble() ?? 0.0,
+      financialImpact: (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      scoreValue:
-          (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      scoreValue: (map['scoreValue'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

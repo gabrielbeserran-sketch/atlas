@@ -18,18 +18,19 @@ class AtlasBackupSnapshot {
   final String label;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'createdAt': createdAt.toIso8601String(),
-        'itemCount': itemCount,
-        'sizeBytes': sizeBytes,
-        'payload': payload,
-        'label': label,
-      };
+    'id': id,
+    'createdAt': createdAt.toIso8601String(),
+    'itemCount': itemCount,
+    'sizeBytes': sizeBytes,
+    'payload': payload,
+    'label': label,
+  };
 
   factory AtlasBackupSnapshot.fromJson(Map<String, dynamic> json) {
     return AtlasBackupSnapshot(
       id: json['id'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       itemCount: json['itemCount'] as int? ?? 0,
       sizeBytes: json['sizeBytes'] as int? ?? 0,
@@ -78,10 +79,14 @@ class AtlasDataGovernanceSummary {
   final List<AtlasIntegrityCheck> checks;
   final DateTime? lastBackupAt;
 
-  int get totalItems => backups.fold<int>(0, (sum, item) => sum + item.itemCount);
+  int get totalItems =>
+      backups.fold<int>(0, (sum, item) => sum + item.itemCount);
 
   int get integrityScore {
-    final int totalWeight = checks.fold<int>(0, (sum, item) => sum + item.weight);
+    final int totalWeight = checks.fold<int>(
+      0,
+      (sum, item) => sum + item.weight,
+    );
     if (totalWeight == 0) {
       return 0;
     }

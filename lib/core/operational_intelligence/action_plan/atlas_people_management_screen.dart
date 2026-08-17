@@ -161,9 +161,7 @@ class _AtlasPeopleManagementScreenState
                         .map(
                           (item) => DropdownMenuItem(
                             value: item,
-                            child: Text(
-                              atlasWorkShiftStatusLabel(item),
-                            ),
+                            child: Text(atlasWorkShiftStatusLabel(item)),
                           ),
                         )
                         .toList(),
@@ -424,8 +422,7 @@ class _AtlasPeopleManagementScreenState
                     id: 'performance_${now.microsecondsSinceEpoch}',
                     memberId: memberId,
                     reviewedAt: now,
-                    productivityPercent:
-                        _double(productivity.text),
+                    productivityPercent: _double(productivity.text),
                     qualityPercent: _double(quality.text),
                     safetyPercent: _double(safety.text),
                     teamworkPercent: _double(teamwork.text),
@@ -510,27 +507,18 @@ class _AtlasPeopleManagementScreenState
                     memberName: memberName,
                     onAdd: _addReview,
                   ),
-                  _Competencies(
-                    trainings: trainings,
-                    memberName: memberName,
-                  ),
-                  _PeopleRecommendations(
-                    values: recommendations,
-                  ),
+                  _Competencies(trainings: trainings, memberName: memberName),
+                  _PeopleRecommendations(values: recommendations),
                 ],
               ),
       ),
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -554,13 +542,7 @@ class _AtlasPeopleManagementScreenState
       initialTime: TimeOfDay.fromDateTime(initial),
     );
     if (time == null) return null;
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
   static Widget _dateTimeTile({
@@ -572,9 +554,7 @@ class _AtlasPeopleManagementScreenState
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title),
-      subtitle: Text(
-        DateFormat('dd/MM/yyyy HH:mm').format(value),
-      ),
+      subtitle: Text(DateFormat('dd/MM/yyyy HH:mm').format(value)),
       trailing: const Icon(Icons.schedule),
       onTap: () async {
         final selected = await _pickDateTime(context, value);
@@ -613,9 +593,7 @@ class _AtlasPeopleManagementScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -653,11 +631,7 @@ class _PeopleDashboard extends StatelessWidget {
               item.expiredTrainings.toDouble(),
               '',
             ),
-            _card(
-              'Desempenho médio',
-              item.averagePerformancePercent,
-              '%',
-            ),
+            _card('Desempenho médio', item.averagePerformancePercent, '%'),
             _card('Score de pessoas', item.peopleScore, '/100'),
           ],
         ),
@@ -667,10 +641,7 @@ class _PeopleDashboard extends StatelessWidget {
 }
 
 class _Members extends StatelessWidget {
-  const _Members({
-    required this.members,
-    required this.onOpen,
-  });
+  const _Members({required this.members, required this.onOpen});
 
   final List<AtlasTeamMember> members;
   final VoidCallback onOpen;
@@ -692,14 +663,11 @@ class _Members extends StatelessWidget {
         ),
         Expanded(
           child: members.isEmpty
-              ? const Center(
-                  child: Text('Nenhum colaborador cadastrado.'),
-                )
+              ? const Center(child: Text('Nenhum colaborador cadastrado.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: members.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = members[index];
                     return Card(
@@ -709,9 +677,7 @@ class _Members extends StatelessWidget {
                           '${atlasTeamMemberRoleLabel(item.role)} • '
                           '${item.email}',
                         ),
-                        trailing: Text(
-                          item.active ? 'Ativo' : 'Inativo',
-                        ),
+                        trailing: Text(item.active ? 'Ativo' : 'Inativo'),
                       ),
                     );
                   },
@@ -754,8 +720,7 @@ class _Shifts extends StatelessWidget {
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: shifts.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = shifts[index];
                     return Card(
@@ -768,9 +733,7 @@ class _Shifts extends StatelessWidget {
                           '${item.plannedHours.toStringAsFixed(1)} h • '
                           '${item.location}',
                         ),
-                        trailing: Text(
-                          atlasWorkShiftStatusLabel(item.status),
-                        ),
+                        trailing: Text(atlasWorkShiftStatusLabel(item.status)),
                       ),
                     );
                   },
@@ -833,14 +796,11 @@ class _Trainings extends StatelessWidget {
         ),
         Expanded(
           child: trainings.isEmpty
-              ? const Center(
-                  child: Text('Nenhum treinamento.'),
-                )
+              ? const Center(child: Text('Nenhum treinamento.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: trainings.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = trainings[index];
                     return Card(
@@ -893,28 +853,22 @@ class _Reviews extends StatelessWidget {
         ),
         Expanded(
           child: reviews.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma avaliação.'),
-                )
+              ? const Center(child: Text('Nenhuma avaliação.'))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: reviews.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = reviews[index];
                     return Card(
                       child: ListTile(
                         title: Text(memberName(item.memberId)),
                         subtitle: Text(
-                          DateFormat('dd/MM/yyyy')
-                              .format(item.reviewedAt),
+                          DateFormat('dd/MM/yyyy').format(item.reviewedAt),
                         ),
                         trailing: Text(
                           '${item.overallScore.toStringAsFixed(1)}%',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w900),
                         ),
                       ),
                     );
@@ -927,10 +881,7 @@ class _Reviews extends StatelessWidget {
 }
 
 class _Competencies extends StatelessWidget {
-  const _Competencies({
-    required this.trainings,
-    required this.memberName,
-  });
+  const _Competencies({required this.trainings, required this.memberName});
 
   final List<AtlasTrainingRecord> trainings;
   final String Function(String) memberName;
@@ -938,9 +889,7 @@ class _Competencies extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (trainings.isEmpty) {
-      return const Center(
-        child: Text('Sem competências registradas.'),
-      );
+      return const Center(child: Text('Sem competências registradas.'));
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -996,10 +945,7 @@ Widget _card(String title, double value, String unit) {
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
               '${unit.isEmpty || unit == '/100' ? unit : ' $unit'}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),

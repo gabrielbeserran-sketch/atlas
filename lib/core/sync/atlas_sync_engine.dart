@@ -24,9 +24,8 @@ class AtlasSyncEngine {
   AtlasSyncEngine({
     AtlasLocalDatabase? localDatabase,
     AtlasHttpClient? httpClient,
-  })  : _localDatabase =
-            localDatabase ?? AtlasLocalDatabase.instance,
-        _httpClient = httpClient ?? AtlasHttpClient();
+  }) : _localDatabase = localDatabase ?? AtlasLocalDatabase.instance,
+       _httpClient = httpClient ?? AtlasHttpClient();
 
   final AtlasLocalDatabase _localDatabase;
   final AtlasHttpClient _httpClient;
@@ -46,35 +45,29 @@ class AtlasSyncEngine {
     final id = _uuid.v4();
     final now = DateTime.now().toIso8601String();
 
-    await db.insert(
-      'sync_queue',
-      {
-        'id': id,
-        'company_id': companyId,
-        'farm_id': farmId,
-        'method': method,
-        'endpoint': endpoint,
-        'payload_json':
-            payload == null ? null : jsonEncode(payload),
-        'idempotency_key': _uuid.v4(),
-        'entity_type': entityType,
-        'entity_id': entityId,
-        'local_version': localVersion,
-        'status': 'pending',
-        'attempt_count': 0,
-        'last_error': null,
-        'created_at': now,
-        'updated_at': now,
-      },
-      conflictAlgorithm: ConflictAlgorithm.abort,
-    );
+    await db.insert('sync_queue', {
+      'id': id,
+      'company_id': companyId,
+      'farm_id': farmId,
+      'method': method,
+      'endpoint': endpoint,
+      'payload_json': payload == null ? null : jsonEncode(payload),
+      'idempotency_key': _uuid.v4(),
+      'entity_type': entityType,
+      'entity_id': entityId,
+      'local_version': localVersion,
+      'status': 'pending',
+      'attempt_count': 0,
+      'last_error': null,
+      'created_at': now,
+      'updated_at': now,
+    }, conflictAlgorithm: ConflictAlgorithm.abort);
 
     return id;
   }
 
   Future<AtlasSyncSummary> synchronize() async {
-    final connectivity =
-        await Connectivity().checkConnectivity();
+    final connectivity = await Connectivity().checkConnectivity();
 
     if (connectivity.contains(ConnectivityResult.none)) {
       return AtlasSyncSummary(
@@ -98,8 +91,7 @@ class AtlasSyncEngine {
 
     for (final row in rows) {
       final id = row['id']! as String;
-      final attempts =
-          (row['attempt_count'] as int?) ?? 0;
+      final attempts = (row['attempt_count'] as int?) ?? 0;
 
       await db.update(
         'sync_queue',
@@ -113,31 +105,22 @@ class AtlasSyncEngine {
       );
 
       try {
-        final payloadText =
-            row['payload_json'] as String?;
+        final payloadText = row['payload_json'] as String?;
         final payload = payloadText == null
             ? null
-            : Map<String, dynamic>.from(
-                jsonDecode(payloadText) as Map,
-              );
+            : Map<String, dynamic>.from(jsonDecode(payloadText) as Map);
 
         await _httpClient.send(
           row['method']! as String,
           row['endpoint']! as String,
           body: {
             ...?payload,
-            '_idempotency_key':
-                row['idempotency_key'],
-            '_local_version':
-                row['local_version'],
+            '_idempotency_key': row['idempotency_key'],
+            '_local_version': row['local_version'],
           },
         );
 
-        await db.delete(
-          'sync_queue',
-          where: 'id = ?',
-          whereArgs: [id],
-        );
+        await db.delete('sync_queue', where: 'id = ?', whereArgs: [id]);
 
         succeeded++;
       } catch (error) {
@@ -146,8 +129,7 @@ class AtlasSyncEngine {
           {
             'status': 'failed',
             'last_error': error.toString(),
-            'updated_at':
-                DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
           },
           where: 'id = ?',
           whereArgs: [id],
@@ -178,14 +160,10 @@ class AtlasSyncEngine {
   Future<void> retryAll() async {
     final db = await _localDatabase.database;
 
-    await db.update(
-      'sync_queue',
-      {
-        'status': 'pending',
-        'last_error': null,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      where: "status = 'failed'",
-    );
+    await db.update('sync_queue', {
+      'status': 'pending',
+      'last_error': null,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, where: "status = 'failed'");
   }
 }

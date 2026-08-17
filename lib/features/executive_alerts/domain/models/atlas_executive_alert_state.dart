@@ -28,30 +28,23 @@ class AtlasExecutiveAlertState {
   final DateTime? customDeadline;
 
   bool get isOpen {
-    return status ==
-            AtlasExecutiveAlertTreatmentStatus.newAlert ||
-        status ==
-            AtlasExecutiveAlertTreatmentStatus.acknowledged ||
-        status ==
-            AtlasExecutiveAlertTreatmentStatus.inTreatment;
+    return status == AtlasExecutiveAlertTreatmentStatus.newAlert ||
+        status == AtlasExecutiveAlertTreatmentStatus.acknowledged ||
+        status == AtlasExecutiveAlertTreatmentStatus.inTreatment;
   }
 
   bool get isResolved {
-    return status ==
-        AtlasExecutiveAlertTreatmentStatus.resolved;
+    return status == AtlasExecutiveAlertTreatmentStatus.resolved;
   }
 
   bool get isDiscarded {
-    return status ==
-        AtlasExecutiveAlertTreatmentStatus.discarded;
+    return status == AtlasExecutiveAlertTreatmentStatus.discarded;
   }
 
   bool get isOverdue {
     final deadline = customDeadline;
 
-    return isOpen &&
-        deadline != null &&
-        deadline.isBefore(DateTime.now());
+    return isOpen && deadline != null && deadline.isBefore(DateTime.now());
   }
 
   Duration? get resolutionDuration {
@@ -83,11 +76,8 @@ class AtlasExecutiveAlertState {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      resolvedAt: clearResolvedAt
-          ? null
-          : resolvedAt ?? this.resolvedAt,
-      responsibleName:
-          responsibleName ?? this.responsibleName,
+      resolvedAt: clearResolvedAt ? null : resolvedAt ?? this.resolvedAt,
+      responsibleName: responsibleName ?? this.responsibleName,
       notes: notes ?? this.notes,
       customDeadline: clearCustomDeadline
           ? null
@@ -105,42 +95,28 @@ class AtlasExecutiveAlertState {
       'resolvedAt': resolvedAt?.toIso8601String(),
       'responsibleName': responsibleName,
       'notes': notes,
-      'customDeadline':
-          customDeadline?.toIso8601String(),
+      'customDeadline': customDeadline?.toIso8601String(),
     };
   }
 
-  factory AtlasExecutiveAlertState.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final statusName =
-        json['status']?.toString() ?? '';
+  factory AtlasExecutiveAlertState.fromJson(Map<String, dynamic> json) {
+    final statusName = json['status']?.toString() ?? '';
 
     return AtlasExecutiveAlertState(
-      alertId:
-          json['alertId']?.toString() ?? '',
-      farmName:
-          json['farmName']?.toString() ?? '',
-      status:
-          AtlasExecutiveAlertTreatmentStatus.values
-              .firstWhere(
+      alertId: json['alertId']?.toString() ?? '',
+      farmName: json['farmName']?.toString() ?? '',
+      status: AtlasExecutiveAlertTreatmentStatus.values.firstWhere(
         (item) => item.name == statusName,
-        orElse: () =>
-            AtlasExecutiveAlertTreatmentStatus.newAlert,
+        orElse: () => AtlasExecutiveAlertTreatmentStatus.newAlert,
       ),
-      createdAt: DateTime.tryParse(
-            json['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            json['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
-      resolvedAt: DateTime.tryParse(
-        json['resolvedAt']?.toString() ?? '',
-      ),
-      responsibleName:
-          json['responsibleName']?.toString() ?? '',
+      resolvedAt: DateTime.tryParse(json['resolvedAt']?.toString() ?? ''),
+      responsibleName: json['responsibleName']?.toString() ?? '',
       notes: json['notes']?.toString() ?? '',
       customDeadline: DateTime.tryParse(
         json['customDeadline']?.toString() ?? '',

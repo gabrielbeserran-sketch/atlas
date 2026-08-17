@@ -3,7 +3,7 @@ import 'package:projeto_atlas/features/atlas_advanced/domain/models/atlas_advanc
 
 class AtlasAdvancedService {
   AtlasAdvancedService({AtlasHttpClient? httpClient})
-      : _httpClient = httpClient ?? AtlasHttpClient();
+    : _httpClient = httpClient ?? AtlasHttpClient();
 
   final AtlasHttpClient _httpClient;
 
@@ -48,9 +48,7 @@ class AtlasAdvancedService {
       '/advanced/farms/$farmId/geo-assets',
       queryParameters: type == null || type.trim().isEmpty
           ? null
-          : <String, String>{
-              'asset_type': type.trim(),
-            },
+          : <String, String>{'asset_type': type.trim()},
     );
 
     return response.asMapList();

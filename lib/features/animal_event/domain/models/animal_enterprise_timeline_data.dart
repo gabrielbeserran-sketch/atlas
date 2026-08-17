@@ -21,9 +21,7 @@ class AnimalEnterpriseTimelineData {
   final String userId;
   final DateTime occurredAt;
 
-  factory AnimalEnterpriseTimelineData.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AnimalEnterpriseTimelineData.fromMap(Map<String, dynamic> map) {
     return AnimalEnterpriseTimelineData(
       id: map['id']?.toString() ?? '',
       action: map['action']?.toString() ?? '',
@@ -39,7 +37,7 @@ class AnimalEnterpriseTimelineData {
       userId: map['user_id']?.toString() ?? '',
       occurredAt:
           DateTime.tryParse(map['occurred_at']?.toString() ?? '') ??
-              DateTime(1900),
+          DateTime(1900),
     );
   }
 
@@ -83,9 +81,7 @@ class AnimalEnterpriseTimelineData {
       }
 
       final label = labels[entry.key] ?? entry.key;
-      changes.add(
-        '$label: ${formatValue(previous)} → ${formatValue(current)}',
-      );
+      changes.add('$label: ${formatValue(previous)} → ${formatValue(current)}');
     }
 
     if (changes.isEmpty) {

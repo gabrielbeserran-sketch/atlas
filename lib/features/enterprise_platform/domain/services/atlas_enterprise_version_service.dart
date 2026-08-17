@@ -34,7 +34,7 @@ class AtlasEnterpriseVersionService {
       message: current == baseVersion
           ? 'Versão compatível.'
           : 'Conflito de concorrência: base $baseVersion, '
-              'atual $current.',
+                'atual $current.',
     );
   }
 
@@ -87,7 +87,8 @@ class AtlasEnterpriseVersionService {
     });
 
     final snapshot = AtlasVersionedEntitySnapshot(
-      versionId: 'version_${entityType}_${entityId}_'
+      versionId:
+          'version_${entityType}_${entityId}_'
           '${now.microsecondsSinceEpoch}',
       tenantId: tenantId,
       companyId: companyId,
@@ -112,12 +113,10 @@ class AtlasEnterpriseVersionService {
       module: 'versioning',
       entityType: entityType,
       entityId: entityId,
-      description:
-          'Versão $nextVersion registrada para $entityType.',
+      description: 'Versão $nextVersion registrada para $entityType.',
       companyId: companyId,
       farmId: farmId,
-      before: previous?.payload ??
-          const <String, dynamic>{},
+      before: previous?.payload ?? const <String, dynamic>{},
       after: snapshot.payload,
       justification: reason,
     );

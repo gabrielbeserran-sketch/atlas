@@ -43,20 +43,17 @@ class AtlasExecutiveAlert {
   final String? unitLabel;
 
   bool get isCritical {
-    return severity ==
-        AtlasExecutiveAlertSeverity.critical;
+    return severity == AtlasExecutiveAlertSeverity.critical;
   }
 
   bool get requiresImmediateAction {
-    return isCritical ||
-        responseDeadlineDays <= 1;
+    return isCritical || responseDeadlineDays <= 1;
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'generatedAt':
-          generatedAt.toIso8601String(),
+      'generatedAt': generatedAt.toIso8601String(),
       'farmName': farmName,
       'title': title,
       'description': description,
@@ -65,8 +62,7 @@ class AtlasExecutiveAlert {
       'severity': severity.name,
       'area': area.name,
       'priorityScore': priorityScore,
-      'responseDeadlineDays':
-          responseDeadlineDays,
+      'responseDeadlineDays': responseDeadlineDays,
       'sourceLabel': sourceLabel,
       'numericValue': numericValue,
       'unitLabel': unitLabel,
@@ -99,11 +95,9 @@ class AtlasExecutiveAlertSummary {
 
   final List<AtlasExecutiveAlert> alerts;
 
-  final List<AtlasExecutiveFarmAlertSummary>
-      farms;
+  final List<AtlasExecutiveFarmAlertSummary> farms;
 
-  final List<AtlasExecutiveAreaAlertSummary>
-      areas;
+  final List<AtlasExecutiveAreaAlertSummary> areas;
 
   bool get hasAlerts {
     return alerts.isNotEmpty;
@@ -117,8 +111,7 @@ class AtlasExecutiveAlertSummary {
     return alerts.first;
   }
 
-  AtlasExecutiveFarmAlertSummary?
-      get mostCriticalFarm {
+  AtlasExecutiveFarmAlertSummary? get mostCriticalFarm {
     if (farms.isEmpty) {
       return null;
     }
@@ -128,8 +121,7 @@ class AtlasExecutiveAlertSummary {
 
   Map<String, dynamic> toJson() {
     return {
-      'generatedAt':
-          generatedAt.toIso8601String(),
+      'generatedAt': generatedAt.toIso8601String(),
       'summary': summary,
       'total': total,
       'informational': informational,
@@ -228,16 +220,9 @@ enum AtlasExecutiveAlertType {
   mainPriority,
 }
 
-enum AtlasExecutiveAlertSeverity {
-  informational,
-  attention,
-  high,
-  critical,
-}
+enum AtlasExecutiveAlertSeverity { informational, attention, high, critical }
 
-String atlasExecutiveAlertSeverityLabel(
-  AtlasExecutiveAlertSeverity severity,
-) {
+String atlasExecutiveAlertSeverityLabel(AtlasExecutiveAlertSeverity severity) {
   switch (severity) {
     case AtlasExecutiveAlertSeverity.informational:
       return 'Informativo';
@@ -253,8 +238,7 @@ String atlasExecutiveAlertSeverityLabel(
   }
 }
 
-AtlasDiagnosticLevel
-    atlasExecutiveAlertSeverityToDiagnosticLevel(
+AtlasDiagnosticLevel atlasExecutiveAlertSeverityToDiagnosticLevel(
   AtlasExecutiveAlertSeverity severity,
 ) {
   switch (severity) {

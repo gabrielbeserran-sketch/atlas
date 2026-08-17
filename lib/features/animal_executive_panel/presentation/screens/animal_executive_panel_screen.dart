@@ -92,17 +92,15 @@ class _AnimalExecutivePanelScreenState
     var calculatedGmd = 0.0;
 
     if (weightRecords.length >= 2) {
-      final days = parseEnterpriseDate(
-        weightRecords.last.date.toString(),
-      ).difference(
-        parseEnterpriseDate(weightRecords.first.date.toString()),
-      ).inDays;
+      final days = parseEnterpriseDate(weightRecords.last.date.toString())
+          .difference(parseEnterpriseDate(weightRecords.first.date.toString()))
+          .inDays;
 
       if (days > 0) {
         calculatedGmd =
             ((weightRecords.last.weight as num).toDouble() -
-                    (weightRecords.first.weight as num).toDouble()) /
-                days;
+                (weightRecords.first.weight as num).toDouble()) /
+            days;
       }
     }
 
@@ -120,21 +118,18 @@ class _AnimalExecutivePanelScreenState
       calculatedScore += 5;
     }
 
-    calculatedScore =
-        calculatedScore.clamp(0, 100).toInt();
+    calculatedScore = calculatedScore.clamp(0, 100).toInt();
 
     final generatedRecommendations = <String>[
       if (weightRecords.length < 2)
         'Cadastre duas ou mais pesagens para habilitar tendência e projeções.',
-      if (calculatedGmd < 0)
-        'Prioridade alta: investigar perda de peso.',
+      if (calculatedGmd < 0) 'Prioridade alta: investigar perda de peso.',
       if (healthRecords.isEmpty)
         'Completar histórico sanitário e calendário preventivo.',
       if (reproductionRecords.isEmpty &&
           widget.animal.sex.toLowerCase().contains('f'))
         'Cadastrar situação e histórico reprodutivo.',
-      if (nutritionPlans.isEmpty)
-        'Cadastrar dieta e meta nutricional.',
+      if (nutritionPlans.isEmpty) 'Cadastrar dieta e meta nutricional.',
       if (calculatedScore >= 75)
         'Animal com boa completude de dados e desempenho global.',
       if (calculatedScore < 50)
@@ -186,8 +181,7 @@ class _AnimalExecutivePanelScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title:
-                            'Visão executiva — ${widget.animal.displayName}',
+                        title: 'Visão executiva — ${widget.animal.displayName}',
                         subtitle:
                             'Score, valor técnico, riscos e próximas ações integradas.',
                         icon: Icons.dashboard_customize_outlined,
@@ -226,8 +220,7 @@ class _AnimalExecutivePanelScreenState
                               );
 
                               final description = Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
                                     'Score geral do animal',
@@ -239,9 +232,7 @@ class _AnimalExecutivePanelScreenState
                                   const SizedBox(height: 8),
                                   const Text(
                                     'Combina completude dos dados, crescimento, sanidade, reprodução e nutrição.',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
+                                    style: TextStyle(color: Colors.black54),
                                   ),
                                   const SizedBox(height: 14),
                                   LinearProgressIndicator(
@@ -279,15 +270,13 @@ class _AnimalExecutivePanelScreenState
                         children: [
                           EnterpriseMetricCard(
                             title: 'Peso atual',
-                            value:
-                                '${_decimal(latestWeight, 1)} kg',
+                            value: '${_decimal(latestWeight, 1)} kg',
                             subtitle: 'Último dado disponível',
                             icon: Icons.monitor_weight_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'GMD',
-                            value:
-                                '${_decimal(gmd, 3)} kg/dia',
+                            value: '${_decimal(gmd, 3)} kg/dia',
                             subtitle: 'Tendência histórica',
                             icon: Icons.trending_up_outlined,
                             warning: gmd < 0,
@@ -347,8 +336,6 @@ class _AnimalExecutivePanelScreenState
   }
 
   String _decimal(double value, int decimals) {
-    return value
-        .toStringAsFixed(decimals)
-        .replaceAll('.', ',');
+    return value.toStringAsFixed(decimals).replaceAll('.', ',');
   }
 }

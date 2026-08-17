@@ -11,13 +11,10 @@ class AtlasEconomicIntelligenceService {
   static final AtlasEconomicIntelligenceService instance =
       AtlasEconomicIntelligenceService._();
 
-  static const String _metricsKey =
-      'atlas_economic_production_metrics_v1';
-  static const String _scenariosKey =
-      'atlas_economic_investment_scenarios_v1';
+  static const String _metricsKey = 'atlas_economic_production_metrics_v1';
+  static const String _scenariosKey = 'atlas_economic_investment_scenarios_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasEconomicProductionMetric>> loadMetrics({
     String? farmName,
@@ -26,92 +23,62 @@ class AtlasEconomicIntelligenceService {
       _metricsKey,
       AtlasEconomicProductionMetric.fromMap,
     );
-    final filtered = _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    )..sort(
-        (first, second) =>
-            second.periodEnd.compareTo(first.periodEnd),
-      );
+    final filtered = _filterFarm(values, farmName, (item) => item.farmName)
+      ..sort((first, second) => second.periodEnd.compareTo(first.periodEnd));
     return filtered;
   }
 
-  Future<void> saveMetric(
-    AtlasEconomicProductionMetric metric,
-  ) async {
+  Future<void> saveMetric(AtlasEconomicProductionMetric metric) async {
     final values = await _decodeList(
       _metricsKey,
       AtlasEconomicProductionMetric.fromMap,
     );
     _upsert(values, metric, (item) => item.id);
-    await _saveList(
-      _metricsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_metricsKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasEconomicInvestmentScenario>>
-      loadScenarios({
+  Future<List<AtlasEconomicInvestmentScenario>> loadScenarios({
     String? farmName,
   }) async {
     final values = await _decodeList(
       _scenariosKey,
       AtlasEconomicInvestmentScenario.fromMap,
     );
-    return _filterFarm(
-      values,
-      farmName,
-      (item) => item.farmName,
-    );
+    return _filterFarm(values, farmName, (item) => item.farmName);
   }
 
-  Future<void> saveScenario(
-    AtlasEconomicInvestmentScenario scenario,
-  ) async {
+  Future<void> saveScenario(AtlasEconomicInvestmentScenario scenario) async {
     final values = await _decodeList(
       _scenariosKey,
       AtlasEconomicInvestmentScenario.fromMap,
     );
     _upsert(values, scenario, (item) => item.id);
-    await _saveList(
-      _scenariosKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_scenariosKey, values.map((item) => item.toMap()).toList());
   }
 
   Future<AtlasEconomicSnapshot> buildSnapshot({
     required String? farmName,
     required List<AtlasEconomicProductionMetric> metrics,
   }) async {
-    final transactions =
-        await AtlasFinancialService.instance.loadTransactions(
+    final transactions = await AtlasFinancialService.instance.loadTransactions(
       farmName: farmName,
     );
 
     final settledIncome = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.income &&
+              item.type == AtlasFinancialTransactionType.income &&
               item.isSettled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
 
     final settledExpense = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.expense &&
+              item.type == AtlasFinancialTransactionType.expense &&
               item.isSettled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
 
     final productionRevenue = metrics.fold<double>(
       0,
@@ -127,50 +94,35 @@ class AtlasEconomicIntelligenceService {
     );
 
     final revenue = settledIncome + productionRevenue;
-    final totalExpense =
-        settledExpense + variableCosts + fixedCosts;
+    final totalExpense = settledExpense + variableCosts + fixedCosts;
     final ebitda = revenue - variableCosts - fixedCosts;
     final netResult = revenue - totalExpense;
-    final margin =
-        revenue <= 0 ? 0.0 : netResult / revenue * 100;
+    final margin = revenue <= 0 ? 0.0 : netResult / revenue * 100;
     final investedCapital = metrics.fold<double>(
       0,
       (total, item) => total + item.totalCost,
     );
-    final roi = investedCapital <= 0
-        ? 0.0
-        : netResult / investedCapital * 100;
+    final roi = investedCapital <= 0 ? 0.0 : netResult / investedCapital * 100;
 
     final payable = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.expense &&
+              item.type == AtlasFinancialTransactionType.expense &&
               !item.isSettled &&
-              item.status !=
-                  AtlasFinancialTransactionStatus.cancelled,
+              item.status != AtlasFinancialTransactionStatus.cancelled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
 
     final receivable = transactions
         .where(
           (item) =>
-              item.type ==
-                  AtlasFinancialTransactionType.income &&
+              item.type == AtlasFinancialTransactionType.income &&
               !item.isSettled &&
-              item.status !=
-                  AtlasFinancialTransactionStatus.cancelled,
+              item.status != AtlasFinancialTransactionStatus.cancelled,
         )
-        .fold<double>(
-          0,
-          (total, item) => total + item.amount,
-        );
+        .fold<double>(0, (total, item) => total + item.amount);
 
-    final liquidity =
-        payable <= 0 ? receivable : receivable / payable;
+    final liquidity = payable <= 0 ? receivable : receivable / payable;
 
     return AtlasEconomicSnapshot(
       revenue: revenue,
@@ -181,12 +133,9 @@ class AtlasEconomicIntelligenceService {
       operatingMarginPercent: margin,
       roiPercent: roi,
       liquidity: liquidity,
-      projectedBalance30Days:
-          _projectCashFlow(transactions, 30),
-      projectedBalance90Days:
-          _projectCashFlow(transactions, 90),
-      projectedBalance365Days:
-          _projectCashFlow(transactions, 365),
+      projectedBalance30Days: _projectCashFlow(transactions, 30),
+      projectedBalance90Days: _projectCashFlow(transactions, 90),
+      projectedBalance365Days: _projectCashFlow(transactions, 365),
       financialScore: _score(
         margin: margin,
         roi: roi,
@@ -201,18 +150,19 @@ class AtlasEconomicIntelligenceService {
     int days,
   ) {
     final limit = DateTime.now().add(Duration(days: days));
-    return transactions.where((item) {
-      return item.dueAt.isBefore(limit) &&
-          item.status !=
-              AtlasFinancialTransactionStatus.cancelled;
-    }).fold<double>(
-      0,
-      (total, item) =>
-          total +
-          (item.type == AtlasFinancialTransactionType.income
-              ? item.amount
-              : -item.amount),
-    );
+    return transactions
+        .where((item) {
+          return item.dueAt.isBefore(limit) &&
+              item.status != AtlasFinancialTransactionStatus.cancelled;
+        })
+        .fold<double>(
+          0,
+          (total, item) =>
+              total +
+              (item.type == AtlasFinancialTransactionType.income
+                  ? item.amount
+                  : -item.amount),
+        );
   }
 
   double _score({
@@ -255,9 +205,7 @@ class AtlasEconomicIntelligenceService {
       );
     }
 
-    final inefficient = metrics.where(
-      (item) => item.marginPercent < 0,
-    );
+    final inefficient = metrics.where((item) => item.marginPercent < 0);
     for (final item in inefficient) {
       recommendations.add(
         '${atlasEconomicActivityLabel(item.activity)} apresenta margem negativa no período analisado.',
@@ -295,32 +243,19 @@ class AtlasEconomicIntelligenceService {
     try {
       final decoded = jsonDecode(encoded) as List<dynamic>;
       return decoded
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {
@@ -338,8 +273,7 @@ class AtlasEconomicIntelligenceService {
       return values;
     }
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

@@ -36,7 +36,8 @@ class TechnicalDashboardAnalysis {
 
   bool get hasComparison => previous != null;
 
-  TechnicalAtlasScore get atlasScore => TechnicalAtlasScore.fromSummary(current);
+  TechnicalAtlasScore get atlasScore =>
+      TechnicalAtlasScore.fromSummary(current);
 
   TechnicalExecutiveDiagnosis get executiveDiagnosis =>
       TechnicalExecutiveDiagnosis.fromData(
@@ -55,14 +56,14 @@ class TechnicalDashboardAnalysis {
       _variation(current.balance, previous?.balance);
 
   double? get healthRecordVariationPercent => _variation(
-        current.healthRecords.toDouble(),
-        previous?.healthRecords.toDouble(),
-      );
+    current.healthRecords.toDouble(),
+    previous?.healthRecords.toDouble(),
+  );
 
   double? get reproductionRecordVariationPercent => _variation(
-        current.reproductionRecords.toDouble(),
-        previous?.reproductionRecords.toDouble(),
-      );
+    current.reproductionRecords.toDouble(),
+    previous?.reproductionRecords.toDouble(),
+  );
 
   static double? _variation(double current, double? previous) {
     if (previous == null) return null;

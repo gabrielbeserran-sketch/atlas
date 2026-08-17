@@ -11,6 +11,7 @@ import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.d
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class IndicatorsScreen extends StatefulWidget {
   const IndicatorsScreen({super.key});
@@ -396,7 +397,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
                               title: 'Animais',
                               value: totalAnimals.toString(),
                               subtitle: 'Animais individuais',
-                              icon: Icons.pets_outlined,
+                              icon: AtlasLivestockIcons.cow,
                             ),
                             IndicatorMetricCard(
                               title: 'Animais ativos',

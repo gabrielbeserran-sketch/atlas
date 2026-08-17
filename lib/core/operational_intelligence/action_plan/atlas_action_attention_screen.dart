@@ -40,13 +40,9 @@ class _AtlasActionAttentionScreenState
     return controller.rebuild(
       actions: widget.actionController.actions,
       latestUpdateDates: <String, DateTime>{
-        for (final action
-            in widget.actionController.actions)
-          if (widget.actionController
-                  .latestUpdateFor(action.id) !=
-              null)
-            action.id: widget.actionController
-                .latestUpdateFor(action.id)!,
+        for (final action in widget.actionController.actions)
+          if (widget.actionController.latestUpdateFor(action.id) != null)
+            action.id: widget.actionController.latestUpdateFor(action.id)!,
       },
     );
   }
@@ -62,8 +58,7 @@ class _AtlasActionAttentionScreenState
             actions: [
               IconButton(
                 tooltip: 'Atualizar alertas',
-                onPressed:
-                    controller.isLoading ? null : _rebuild,
+                onPressed: controller.isLoading ? null : _rebuild,
                 icon: const Icon(Icons.refresh),
               ),
             ],
@@ -75,11 +70,8 @@ class _AtlasActionAttentionScreenState
   }
 
   Widget _buildBody() {
-    if (controller.isLoading &&
-        controller.items.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+    if (controller.isLoading && controller.items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (controller.items.isEmpty) {
@@ -94,10 +86,7 @@ class _AtlasActionAttentionScreenState
               Text(
                 'Nenhuma atenção operacional pendente.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -114,42 +103,25 @@ class _AtlasActionAttentionScreenState
             runSpacing: 10,
             children: [
               Chip(
-                avatar: const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 17,
-                ),
-                label: Text(
-                  '${controller.criticalCount} crítica(s)',
-                ),
+                avatar: const Icon(Icons.warning_amber_rounded, size: 17),
+                label: Text('${controller.criticalCount} crítica(s)'),
               ),
               Chip(
                 avatar: const Icon(
                   Icons.notification_important_outlined,
                   size: 17,
                 ),
-                label: Text(
-                  '${controller.warningCount} atenção(ões)',
-                ),
+                label: Text('${controller.warningCount} atenção(ões)'),
               ),
-              Chip(
-                label: Text(
-                  '${controller.items.length} no total',
-                ),
-              ),
+              Chip(label: Text('${controller.items.length} no total')),
             ],
           ),
         ),
         Expanded(
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              0,
-              16,
-              24,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             itemCount: controller.items.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(height: 12),
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final attention = controller.items[index];
 
@@ -157,21 +129,17 @@ class _AtlasActionAttentionScreenState
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            _iconFor(attention),
-                          ),
+                          Icon(_iconFor(attention)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               attention.title,
                               style: const TextStyle(
-                                fontWeight:
-                                    FontWeight.w800,
+                                fontWeight: FontWeight.w800,
                                 fontSize: 16,
                               ),
                             ),
@@ -190,14 +158,10 @@ class _AtlasActionAttentionScreenState
                       const SizedBox(height: 8),
                       Text(
                         attention.recommendedAction,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        'Ação: ${attention.action.title}',
-                      ),
+                      Text('Ação: ${attention.action.title}'),
                       if (attention.action.dueAt != null)
                         Text(
                           'Prazo: ${DateFormat('dd/MM/yyyy HH:mm').format(attention.action.dueAt!)}',
@@ -210,32 +174,18 @@ class _AtlasActionAttentionScreenState
                         children: [
                           TextButton.icon(
                             onPressed: () async {
-                              await controller.snooze(
-                                attention,
-                              );
+                              await controller.snooze(attention);
                             },
-                            icon: const Icon(
-                              Icons.snooze,
-                            ),
-                            label: const Text(
-                              'Adiar 24 horas',
-                            ),
+                            icon: const Icon(Icons.snooze),
+                            label: const Text('Adiar 24 horas'),
                           ),
                           FilledButton.tonalIcon(
                             onPressed: () {
-                              widget.onOpenAction?.call(
-                                attention.action.id,
-                              );
-                              Navigator.of(context).pop(
-                                attention.action.id,
-                              );
+                              widget.onOpenAction?.call(attention.action.id);
+                              Navigator.of(context).pop(attention.action.id);
                             },
-                            icon: const Icon(
-                              Icons.open_in_new,
-                            ),
-                            label: const Text(
-                              'Abrir ação',
-                            ),
+                            icon: const Icon(Icons.open_in_new),
+                            label: const Text('Abrir ação'),
                           ),
                         ],
                       ),
@@ -250,9 +200,7 @@ class _AtlasActionAttentionScreenState
     );
   }
 
-  IconData _iconFor(
-    AtlasActionAttention attention,
-  ) {
+  IconData _iconFor(AtlasActionAttention attention) {
     switch (attention.type) {
       case AtlasActionAttentionType.overdue:
         return Icons.event_busy;

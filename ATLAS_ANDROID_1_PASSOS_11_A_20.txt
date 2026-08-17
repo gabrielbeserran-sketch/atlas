@@ -1,0 +1,1 @@
+Atlas Android 1.0: scripts dos passos 11 a 20 consolidados, com ADB reverse para primeiro teste USB e build LAN para APK independente do cabo.

@@ -15,10 +15,16 @@ class AtlasIntegrationSnapshot {
   final List<AtlasIntegrationEvent> events;
   final DateTime updatedAt;
 
-  int get activeModules => modules.where((AtlasIntegrationModule item) => item.isEnabled).length;
-  int get healthyModules => modules.where((AtlasIntegrationModule item) => item.isHealthy).length;
-  int get pendingEvents => modules.fold<int>(0, (int value, AtlasIntegrationModule item) => value + item.pendingEvents);
-  double get healthScore => modules.isEmpty ? 0 : healthyModules / modules.length * 100;
+  int get activeModules =>
+      modules.where((AtlasIntegrationModule item) => item.isEnabled).length;
+  int get healthyModules =>
+      modules.where((AtlasIntegrationModule item) => item.isHealthy).length;
+  int get pendingEvents => modules.fold<int>(
+    0,
+    (int value, AtlasIntegrationModule item) => value + item.pendingEvents,
+  );
+  double get healthScore =>
+      modules.isEmpty ? 0 : healthyModules / modules.length * 100;
 }
 
 class AtlasIntegrationCore {

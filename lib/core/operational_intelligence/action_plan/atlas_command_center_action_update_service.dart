@@ -12,24 +12,17 @@ class AtlasCommandCenterActionUpdateService {
   static final AtlasCommandCenterActionUpdateService instance =
       AtlasCommandCenterActionUpdateService._();
 
-  static const String _storageKey =
-      'atlas_command_center_action_updates_v1';
+  static const String _storageKey = 'atlas_command_center_action_updates_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   Future<List<AtlasCommandCenterActionUpdate>> loadForAction(
     String actionId,
   ) async {
     final all = await _loadAll();
 
-    return all
-        .where((update) => update.actionId == actionId)
-        .toList()
-      ..sort(
-        (first, second) =>
-            second.createdAt.compareTo(first.createdAt),
-      );
+    return all.where((update) => update.actionId == actionId).toList()
+      ..sort((first, second) => second.createdAt.compareTo(first.createdAt));
   }
 
   Future<Map<String, DateTime>> loadLatestDates() async {
@@ -88,11 +81,7 @@ class AtlasCommandCenterActionUpdateService {
           'responsibleName': update.responsibleName,
           'note': update.note,
         },
-        tags: <String>[
-          'command_center',
-          'action_plan',
-          'follow_up',
-        ],
+        tags: <String>['command_center', 'action_plan', 'follow_up'],
       ),
     );
 
@@ -106,10 +95,8 @@ class AtlasCommandCenterActionUpdateService {
     await _saveAll(all);
   }
 
-  Future<List<AtlasCommandCenterActionUpdate>>
-      _loadAll() async {
-    final encoded =
-        await _preferences.getString(_storageKey);
+  Future<List<AtlasCommandCenterActionUpdate>> _loadAll() async {
+    final encoded = await _preferences.getString(_storageKey);
 
     if (encoded == null || encoded.trim().isEmpty) {
       return <AtlasCommandCenterActionUpdate>[];
@@ -120,8 +107,7 @@ class AtlasCommandCenterActionUpdateService {
 
       return decoded
           .map(
-            (item) =>
-                AtlasCommandCenterActionUpdate.fromMap(
+            (item) => AtlasCommandCenterActionUpdate.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -131,20 +117,14 @@ class AtlasCommandCenterActionUpdateService {
     }
   }
 
-  Future<void> _saveAll(
-    List<AtlasCommandCenterActionUpdate> updates,
-  ) async {
+  Future<void> _saveAll(List<AtlasCommandCenterActionUpdate> updates) async {
     await _preferences.setString(
       _storageKey,
-      jsonEncode(
-        updates.map((update) => update.toMap()).toList(),
-      ),
+      jsonEncode(updates.map((update) => update.toMap()).toList()),
     );
   }
 
-  AtlasEventPriority _eventPriority(
-    AtlasCommandCenterAction action,
-  ) {
+  AtlasEventPriority _eventPriority(AtlasCommandCenterAction action) {
     switch (action.priority.name) {
       case 'critical':
         return AtlasEventPriority.critical;

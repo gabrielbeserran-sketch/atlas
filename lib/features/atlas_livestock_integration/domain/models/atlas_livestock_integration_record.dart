@@ -1,4 +1,3 @@
-
 enum AtlasLivestockIntegrationModule {
   herdMigration,
   reproductionMigration,
@@ -12,129 +11,129 @@ enum AtlasLivestockIntegrationModule {
   integratedTasks,
 }
 
-extension AtlasLivestockIntegrationModuleX
-    on AtlasLivestockIntegrationModule {
+extension AtlasLivestockIntegrationModuleX on AtlasLivestockIntegrationModule {
   String get code => switch (this) {
-        AtlasLivestockIntegrationModule.herdMigration => 'herd_migration',
-        AtlasLivestockIntegrationModule.reproductionMigration => 'reproduction_migration',
-        AtlasLivestockIntegrationModule.healthMigration => 'health_migration',
-        AtlasLivestockIntegrationModule.nutritionMigration => 'nutrition_migration',
-        AtlasLivestockIntegrationModule.financeMigration => 'finance_migration',
-        AtlasLivestockIntegrationModule.stockMigration => 'stock_migration',
-        AtlasLivestockIntegrationModule.eventIntegration => 'event_integration',
-        AtlasLivestockIntegrationModule.unifiedTimeline => 'unified_timeline',
-        AtlasLivestockIntegrationModule.integratedAlerts => 'integrated_alerts',
-        AtlasLivestockIntegrationModule.integratedTasks => 'integrated_tasks',
-      };
+    AtlasLivestockIntegrationModule.herdMigration => 'herd_migration',
+    AtlasLivestockIntegrationModule.reproductionMigration =>
+      'reproduction_migration',
+    AtlasLivestockIntegrationModule.healthMigration => 'health_migration',
+    AtlasLivestockIntegrationModule.nutritionMigration => 'nutrition_migration',
+    AtlasLivestockIntegrationModule.financeMigration => 'finance_migration',
+    AtlasLivestockIntegrationModule.stockMigration => 'stock_migration',
+    AtlasLivestockIntegrationModule.eventIntegration => 'event_integration',
+    AtlasLivestockIntegrationModule.unifiedTimeline => 'unified_timeline',
+    AtlasLivestockIntegrationModule.integratedAlerts => 'integrated_alerts',
+    AtlasLivestockIntegrationModule.integratedTasks => 'integrated_tasks',
+  };
 
   String get title => switch (this) {
-        AtlasLivestockIntegrationModule.herdMigration =>
-          'Migração do Módulo Rebanho',
-        AtlasLivestockIntegrationModule.reproductionMigration =>
-          'Migração do Módulo Reprodução',
-        AtlasLivestockIntegrationModule.healthMigration =>
-          'Migração do Módulo Sanidade',
-        AtlasLivestockIntegrationModule.nutritionMigration =>
-          'Migração do Módulo Nutrição',
-        AtlasLivestockIntegrationModule.financeMigration =>
-          'Migração do Módulo Financeiro',
-        AtlasLivestockIntegrationModule.stockMigration =>
-          'Migração do Módulo Estoque',
-        AtlasLivestockIntegrationModule.eventIntegration =>
-          'Integração entre Eventos',
-        AtlasLivestockIntegrationModule.unifiedTimeline =>
-          'Linha do Tempo Unificada',
-        AtlasLivestockIntegrationModule.integratedAlerts =>
-          'Central de Alertas Integrada',
-        AtlasLivestockIntegrationModule.integratedTasks =>
-          'Central de Tarefas Integrada',
-      };
+    AtlasLivestockIntegrationModule.herdMigration =>
+      'Migração do Módulo Rebanho',
+    AtlasLivestockIntegrationModule.reproductionMigration =>
+      'Migração do Módulo Reprodução',
+    AtlasLivestockIntegrationModule.healthMigration =>
+      'Migração do Módulo Sanidade',
+    AtlasLivestockIntegrationModule.nutritionMigration =>
+      'Migração do Módulo Nutrição',
+    AtlasLivestockIntegrationModule.financeMigration =>
+      'Migração do Módulo Financeiro',
+    AtlasLivestockIntegrationModule.stockMigration =>
+      'Migração do Módulo Estoque',
+    AtlasLivestockIntegrationModule.eventIntegration =>
+      'Integração entre Eventos',
+    AtlasLivestockIntegrationModule.unifiedTimeline =>
+      'Linha do Tempo Unificada',
+    AtlasLivestockIntegrationModule.integratedAlerts =>
+      'Central de Alertas Integrada',
+    AtlasLivestockIntegrationModule.integratedTasks =>
+      'Central de Tarefas Integrada',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasLivestockIntegrationModule.herdMigration => 'Pacote 271',
-        AtlasLivestockIntegrationModule.reproductionMigration => 'Pacote 272',
-        AtlasLivestockIntegrationModule.healthMigration => 'Pacote 273',
-        AtlasLivestockIntegrationModule.nutritionMigration => 'Pacote 274',
-        AtlasLivestockIntegrationModule.financeMigration => 'Pacote 275',
-        AtlasLivestockIntegrationModule.stockMigration => 'Pacote 276',
-        AtlasLivestockIntegrationModule.eventIntegration => 'Pacote 277',
-        AtlasLivestockIntegrationModule.unifiedTimeline => 'Pacote 278',
-        AtlasLivestockIntegrationModule.integratedAlerts => 'Pacote 279',
-        AtlasLivestockIntegrationModule.integratedTasks => 'Pacote 280',
-      };
+    AtlasLivestockIntegrationModule.herdMigration => 'Pacote 271',
+    AtlasLivestockIntegrationModule.reproductionMigration => 'Pacote 272',
+    AtlasLivestockIntegrationModule.healthMigration => 'Pacote 273',
+    AtlasLivestockIntegrationModule.nutritionMigration => 'Pacote 274',
+    AtlasLivestockIntegrationModule.financeMigration => 'Pacote 275',
+    AtlasLivestockIntegrationModule.stockMigration => 'Pacote 276',
+    AtlasLivestockIntegrationModule.eventIntegration => 'Pacote 277',
+    AtlasLivestockIntegrationModule.unifiedTimeline => 'Pacote 278',
+    AtlasLivestockIntegrationModule.integratedAlerts => 'Pacote 279',
+    AtlasLivestockIntegrationModule.integratedTasks => 'Pacote 280',
+  };
 
   List<String> get features => switch (this) {
-        AtlasLivestockIntegrationModule.herdMigration => const [
-            'Animais',
-            'Lotes',
-            'Movimentações',
-            'Filtros',
-            'Histórico',
-          ],
-        AtlasLivestockIntegrationModule.reproductionMigration => const [
-            'Protocolos',
-            'Inseminações',
-            'Coberturas',
-            'Diagnósticos',
-            'Partos',
-          ],
-        AtlasLivestockIntegrationModule.healthMigration => const [
-            'Vacinas',
-            'Medicamentos',
-            'Diagnósticos',
-            'Tratamentos',
-            'Carências',
-          ],
-        AtlasLivestockIntegrationModule.nutritionMigration => const [
-            'Dietas',
-            'Suplementos',
-            'Consumo',
-            'Lotes nutricionais',
-            'Custos',
-          ],
-        AtlasLivestockIntegrationModule.financeMigration => const [
-            'Receitas',
-            'Despesas',
-            'Fluxo de caixa',
-            'Orçamento',
-            'Indicadores',
-          ],
-        AtlasLivestockIntegrationModule.stockMigration => const [
-            'Produtos',
-            'Depósitos',
-            'Lotes',
-            'Validades',
-            'Movimentações',
-          ],
-        AtlasLivestockIntegrationModule.eventIntegration => const [
-            'Origem do evento',
-            'Reflexos automáticos',
-            'Validações',
-            'Idempotência',
-            'Auditoria',
-          ],
-        AtlasLivestockIntegrationModule.unifiedTimeline => const [
-            'Eventos produtivos',
-            'Eventos sanitários',
-            'Eventos reprodutivos',
-            'Eventos financeiros',
-            'Eventos operacionais',
-          ],
-        AtlasLivestockIntegrationModule.integratedAlerts => const [
-            'Vencimentos',
-            'Falhas',
-            'Riscos',
-            'Metas',
-            'Priorização',
-          ],
-        AtlasLivestockIntegrationModule.integratedTasks => const [
-            'Origem',
-            'Responsável',
-            'Prazo',
-            'Prioridade',
-            'Comprovação',
-          ],
-      };
+    AtlasLivestockIntegrationModule.herdMigration => const [
+      'Animais',
+      'Lotes',
+      'Movimentações',
+      'Filtros',
+      'Histórico',
+    ],
+    AtlasLivestockIntegrationModule.reproductionMigration => const [
+      'Protocolos',
+      'Inseminações',
+      'Coberturas',
+      'Diagnósticos',
+      'Partos',
+    ],
+    AtlasLivestockIntegrationModule.healthMigration => const [
+      'Vacinas',
+      'Medicamentos',
+      'Diagnósticos',
+      'Tratamentos',
+      'Carências',
+    ],
+    AtlasLivestockIntegrationModule.nutritionMigration => const [
+      'Dietas',
+      'Suplementos',
+      'Consumo',
+      'Lotes nutricionais',
+      'Custos',
+    ],
+    AtlasLivestockIntegrationModule.financeMigration => const [
+      'Receitas',
+      'Despesas',
+      'Fluxo de caixa',
+      'Orçamento',
+      'Indicadores',
+    ],
+    AtlasLivestockIntegrationModule.stockMigration => const [
+      'Produtos',
+      'Depósitos',
+      'Lotes',
+      'Validades',
+      'Movimentações',
+    ],
+    AtlasLivestockIntegrationModule.eventIntegration => const [
+      'Origem do evento',
+      'Reflexos automáticos',
+      'Validações',
+      'Idempotência',
+      'Auditoria',
+    ],
+    AtlasLivestockIntegrationModule.unifiedTimeline => const [
+      'Eventos produtivos',
+      'Eventos sanitários',
+      'Eventos reprodutivos',
+      'Eventos financeiros',
+      'Eventos operacionais',
+    ],
+    AtlasLivestockIntegrationModule.integratedAlerts => const [
+      'Vencimentos',
+      'Falhas',
+      'Riscos',
+      'Metas',
+      'Priorização',
+    ],
+    AtlasLivestockIntegrationModule.integratedTasks => const [
+      'Origem',
+      'Responsável',
+      'Prazo',
+      'Prioridade',
+      'Comprovação',
+    ],
+  };
 }
 
 class AtlasLivestockIntegrationRecord {
@@ -197,39 +196,35 @@ class AtlasLivestockIntegrationRecord {
       status == 'Atenção';
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'status': status,
-        'priority': priority,
-        'farmName': farmName,
-        'animalOrLot': animalOrLot,
-        'sourceModule': sourceModule,
-        'destinationModule': destinationModule,
-        'eventType': eventType,
-        'responsible': responsible,
-        'progressPercent': progressPercent,
-        'successRatePercent': successRatePercent,
-        'riskPercent': riskPercent,
-        'pendingCount': pendingCount,
-        'alertCount': alertCount,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'status': status,
+    'priority': priority,
+    'farmName': farmName,
+    'animalOrLot': animalOrLot,
+    'sourceModule': sourceModule,
+    'destinationModule': destinationModule,
+    'eventType': eventType,
+    'responsible': responsible,
+    'progressPercent': progressPercent,
+    'successRatePercent': successRatePercent,
+    'riskPercent': riskPercent,
+    'pendingCount': pendingCount,
+    'alertCount': alertCount,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasLivestockIntegrationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasLivestockIntegrationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasLivestockIntegrationModule.values.firstWhere(
+    final module = AtlasLivestockIntegrationModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasLivestockIntegrationModule.herdMigration,
+      orElse: () => AtlasLivestockIntegrationModule.herdMigration,
     );
 
     return AtlasLivestockIntegrationRecord(
@@ -246,16 +241,11 @@ class AtlasLivestockIntegrationRecord {
       destinationModule: map['destinationModule']?.toString() ?? '',
       eventType: map['eventType']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      successRatePercent:
-          (map['successRatePercent'] as num?)?.toDouble() ?? 0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0,
-      pendingCount:
-          (map['pendingCount'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      successRatePercent: (map['successRatePercent'] as num?)?.toDouble() ?? 0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0,
+      pendingCount: (map['pendingCount'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

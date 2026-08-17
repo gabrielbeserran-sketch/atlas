@@ -30,12 +30,9 @@ class AtlasActionOutcome {
   final DateTime updatedAt;
 
   double get totalFinancialBenefit =>
-      realizedFinancialImpact +
-      revenueGenerated +
-      savingsGenerated;
+      realizedFinancialImpact + revenueGenerated + savingsGenerated;
 
-  double get netFinancialResult =>
-      totalFinancialBenefit - executionCost;
+  double get netFinancialResult => totalFinancialBenefit - executionCost;
 
   double get financialVariance =>
       realizedFinancialImpact - expectedFinancialImpact;
@@ -48,8 +45,7 @@ class AtlasActionOutcome {
     return netFinancialResult / executionCost * 100;
   }
 
-  bool get hasTechnicalResult =>
-      technicalResult.trim().isNotEmpty;
+  bool get hasTechnicalResult => technicalResult.trim().isNotEmpty;
 
   bool get hasFinancialData =>
       expectedFinancialImpact != 0 ||
@@ -73,22 +69,16 @@ class AtlasActionOutcome {
       id: id,
       actionId: actionId,
       farmName: farmName,
-      technicalResult:
-          technicalResult ?? this.technicalResult,
-      lessonsLearned:
-          lessonsLearned ?? this.lessonsLearned,
+      technicalResult: technicalResult ?? this.technicalResult,
+      lessonsLearned: lessonsLearned ?? this.lessonsLearned,
       evidence: evidence ?? this.evidence,
       expectedFinancialImpact:
-          expectedFinancialImpact ??
-          this.expectedFinancialImpact,
+          expectedFinancialImpact ?? this.expectedFinancialImpact,
       realizedFinancialImpact:
-          realizedFinancialImpact ??
-          this.realizedFinancialImpact,
+          realizedFinancialImpact ?? this.realizedFinancialImpact,
       executionCost: executionCost ?? this.executionCost,
-      revenueGenerated:
-          revenueGenerated ?? this.revenueGenerated,
-      savingsGenerated:
-          savingsGenerated ?? this.savingsGenerated,
+      revenueGenerated: revenueGenerated ?? this.revenueGenerated,
+      savingsGenerated: savingsGenerated ?? this.savingsGenerated,
       recordedAt: recordedAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -102,10 +92,8 @@ class AtlasActionOutcome {
       'technicalResult': technicalResult,
       'lessonsLearned': lessonsLearned,
       'evidence': evidence,
-      'expectedFinancialImpact':
-          expectedFinancialImpact,
-      'realizedFinancialImpact':
-          realizedFinancialImpact,
+      'expectedFinancialImpact': expectedFinancialImpact,
+      'realizedFinancialImpact': realizedFinancialImpact,
       'executionCost': executionCost,
       'revenueGenerated': revenueGenerated,
       'savingsGenerated': savingsGenerated,
@@ -114,37 +102,24 @@ class AtlasActionOutcome {
     };
   }
 
-  factory AtlasActionOutcome.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasActionOutcome.fromMap(Map<String, dynamic> map) {
     return AtlasActionOutcome(
       id: map['id']?.toString() ?? '',
       actionId: map['actionId']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
-      technicalResult:
-          map['technicalResult']?.toString() ?? '',
-      lessonsLearned:
-          map['lessonsLearned']?.toString() ?? '',
+      technicalResult: map['technicalResult']?.toString() ?? '',
+      lessonsLearned: map['lessonsLearned']?.toString() ?? '',
       evidence: map['evidence']?.toString() ?? '',
-      expectedFinancialImpact: _readDouble(
-        map['expectedFinancialImpact'],
-      ),
-      realizedFinancialImpact: _readDouble(
-        map['realizedFinancialImpact'],
-      ),
-      executionCost:
-          _readDouble(map['executionCost']),
-      revenueGenerated:
-          _readDouble(map['revenueGenerated']),
-      savingsGenerated:
-          _readDouble(map['savingsGenerated']),
-      recordedAt: DateTime.tryParse(
-            map['recordedAt']?.toString() ?? '',
-          ) ??
+      expectedFinancialImpact: _readDouble(map['expectedFinancialImpact']),
+      realizedFinancialImpact: _readDouble(map['realizedFinancialImpact']),
+      executionCost: _readDouble(map['executionCost']),
+      revenueGenerated: _readDouble(map['revenueGenerated']),
+      savingsGenerated: _readDouble(map['savingsGenerated']),
+      recordedAt:
+          DateTime.tryParse(map['recordedAt']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            map['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(map['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

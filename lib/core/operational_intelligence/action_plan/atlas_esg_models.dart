@@ -58,18 +58,18 @@ class AtlasEsgRecord {
   final String notes;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'category': category.name,
-        'occurredAt': occurredAt.toIso8601String(),
-        'title': title,
-        'value': value,
-        'unit': unit,
-        'financialValue': financialValue,
-        'evidence': evidence,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'category': category.name,
+    'occurredAt': occurredAt.toIso8601String(),
+    'title': title,
+    'value': value,
+    'unit': unit,
+    'financialValue': financialValue,
+    'evidence': evidence,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
   factory AtlasEsgRecord.fromMap(Map<String, dynamic> map) {
     return AtlasEsgRecord(
@@ -78,18 +78,15 @@ class AtlasEsgRecord {
         (item) => item.name == map['category']?.toString(),
         orElse: () => AtlasEsgCategory.governance,
       ),
-      occurredAt: DateTime.tryParse(
-            map['occurredAt']?.toString() ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
           DateTime.now(),
       title: map['title']?.toString() ?? '',
       value: (map['value'] as num?)?.toDouble() ?? 0,
       unit: map['unit']?.toString() ?? '',
-      financialValue:
-          (map['financialValue'] as num?)?.toDouble() ?? 0,
+      financialValue: (map['financialValue'] as num?)?.toDouble() ?? 0,
       evidence: map['evidence']?.toString() ?? '',
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );
@@ -120,8 +117,7 @@ class AtlasCarbonInventory {
       electricityTco2e +
       soilAndFertilizerTco2e;
 
-  double get netEmissionsTco2e =>
-      grossEmissionsTco2e - sequestrationTco2e;
+  double get netEmissionsTco2e => grossEmissionsTco2e - sequestrationTco2e;
 }
 
 class AtlasEsgExecutiveSnapshot {

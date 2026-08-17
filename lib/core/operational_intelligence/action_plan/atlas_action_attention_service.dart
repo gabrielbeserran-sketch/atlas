@@ -72,8 +72,7 @@ class AtlasActionAttentionService {
         );
       }
 
-      final lastUpdate =
-          latestUpdateDates[action.id] ?? action.updatedAt;
+      final lastUpdate = latestUpdateDates[action.id] ?? action.updatedAt;
 
       if (now.difference(lastUpdate).inDays >= 7) {
         attentions.add(
@@ -113,25 +112,19 @@ class AtlasActionAttentionService {
     attentions.sort((first, second) {
       final severityComparison = _severityWeight(
         second.severity,
-      ).compareTo(
-        _severityWeight(first.severity),
-      );
+      ).compareTo(_severityWeight(first.severity));
 
       if (severityComparison != 0) {
         return severityComparison;
       }
 
-      return first.action.title.compareTo(
-        second.action.title,
-      );
+      return first.action.title.compareTo(second.action.title);
     });
 
     return List<AtlasActionAttention>.unmodifiable(attentions);
   }
 
-  int _severityWeight(
-    AtlasActionAttentionSeverity severity,
-  ) {
+  int _severityWeight(AtlasActionAttentionSeverity severity) {
     switch (severity) {
       case AtlasActionAttentionSeverity.information:
         return 1;

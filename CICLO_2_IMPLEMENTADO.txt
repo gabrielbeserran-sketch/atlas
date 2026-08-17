@@ -1,0 +1,10 @@
+CICLO 2 IMPLEMENTADO
+Sprints 136 a 140
+- Rebanho remoto por fazenda ativa
+- Busca e filtros
+- CRUD de lotes
+- CRUD de animais
+- Detalhes e linha do tempo
+- Pesagens oficiais
+- Movimentações oficiais
+- RadioGroup moderno no seletor de fazenda

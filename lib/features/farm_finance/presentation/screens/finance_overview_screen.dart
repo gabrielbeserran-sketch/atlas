@@ -20,22 +20,16 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
   bool isLoading = true;
   String search = '';
 
-  double get totalIncome => farmContexts.fold(
-        0,
-        (total, context) => total + context.totalIncome,
-      );
+  double get totalIncome =>
+      farmContexts.fold(0, (total, context) => total + context.totalIncome);
 
-  double get totalExpenses => farmContexts.fold(
-        0,
-        (total, context) => total + context.totalExpenses,
-      );
+  double get totalExpenses =>
+      farmContexts.fold(0, (total, context) => total + context.totalExpenses);
 
   double get balance => totalIncome - totalExpenses;
 
-  int get totalRecords => farmContexts.fold(
-        0,
-        (total, context) => total + context.records.length,
-      );
+  int get totalRecords =>
+      farmContexts.fold(0, (total, context) => total + context.records.length);
 
   List<FinanceFarmContext> get filteredContexts {
     final query = search.trim().toLowerCase();
@@ -80,8 +74,8 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
 
     contexts.sort((first, second) {
       return first.farm.name.toLowerCase().compareTo(
-            second.farm.name.toLowerCase(),
-          );
+        second.farm.name.toLowerCase(),
+      );
     });
 
     if (!mounted) {

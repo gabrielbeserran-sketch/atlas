@@ -47,15 +47,13 @@ class AtlasBiManagementService {
     final priorities = <AtlasBiManagementPriority>[];
     final sortedIndicators = List<AtlasBiIndicator>.from(indicators)
       ..sort((a, b) {
-        final statusComparison = _statusWeight(b.status).compareTo(
-          _statusWeight(a.status),
-        );
+        final statusComparison = _statusWeight(
+          b.status,
+        ).compareTo(_statusWeight(a.status));
         if (statusComparison != 0) {
           return statusComparison;
         }
-        return a.targetAchievementPercent.compareTo(
-          b.targetAchievementPercent,
-        );
+        return a.targetAchievementPercent.compareTo(b.targetAchievementPercent);
       });
 
     for (final indicator in sortedIndicators.take(5)) {
@@ -71,8 +69,8 @@ class AtlasBiManagementService {
           urgency: indicator.status == AtlasBiStatus.critical
               ? AtlasBiPriority.critical
               : indicator.status == AtlasBiStatus.attention
-                  ? AtlasBiPriority.high
-                  : AtlasBiPriority.medium,
+              ? AtlasBiPriority.high
+              : AtlasBiPriority.medium,
           recommendedAction:
               'Revisar o indicador, confirmar a causa operacional e definir uma ação com responsável e prazo.',
         ),

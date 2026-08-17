@@ -3,9 +3,8 @@ import 'package:projeto_atlas/features/animal_event/domain/models/animal_enterpr
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class AnimalEnterpriseTimelineService {
-  AnimalEnterpriseTimelineService({
-    AtlasEnterpriseApiClient? api,
-  }) : _api = api ?? AtlasEnterpriseApiClient.instance;
+  AnimalEnterpriseTimelineService({AtlasEnterpriseApiClient? api})
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 
@@ -22,9 +21,7 @@ class AnimalEnterpriseTimelineService {
         .toList(growable: false);
   }
 
-  Future<List<AnimalEnterpriseHistoryData>> loadHistory(
-    String animalId,
-  ) async {
+  Future<List<AnimalEnterpriseHistoryData>> loadHistory(String animalId) async {
     final response = await _api.requestList(
       'GET',
       '/animals/$animalId/history',

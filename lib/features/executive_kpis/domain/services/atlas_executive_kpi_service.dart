@@ -4,60 +4,44 @@ class AtlasExecutiveKpiService {
   const AtlasExecutiveKpiService();
 
   AtlasExecutiveKpiDashboardData build({
-    required List<AtlasExecutiveFarmKpiInput>
-        farms,
+    required List<AtlasExecutiveFarmKpiInput> farms,
     DateTime? now,
   }) {
     final generatedAt = now ?? DateTime.now();
 
-    final kpis = farms
-        .expand((farm) {
-          return farm.kpis.map((input) {
-            return _buildKpi(
-              farmName: farm.farmName,
-              input: input,
-              generatedAt: generatedAt,
-            );
-          });
-        })
-        .toList();
+    final kpis = farms.expand((farm) {
+      return farm.kpis.map((input) {
+        return _buildKpi(
+          farmName: farm.farmName,
+          input: input,
+          generatedAt: generatedAt,
+        );
+      });
+    }).toList();
 
-    final farmSummaries =
-        _buildFarmSummaries(kpis);
+    final farmSummaries = _buildFarmSummaries(kpis);
 
-    final categorySummaries =
-        _buildCategorySummaries(kpis);
+    final categorySummaries = _buildCategorySummaries(kpis);
 
-    final operationScore =
-        _weightedScore(kpis);
+    final operationScore = _weightedScore(kpis);
 
-    final operationStatus =
-        _statusFromScore(operationScore);
+    final operationStatus = _statusFromScore(operationScore);
 
-    final criticalKpis = kpis
-        .where((item) => item.isCritical)
-        .toList()
+    final criticalKpis = kpis.where((item) => item.isCritical).toList()
       ..sort(
-        (first, second) =>
-            first.targetAchievementPercent
-                .compareTo(
+        (first, second) => first.targetAchievementPercent.compareTo(
           second.targetAchievementPercent,
         ),
       );
 
-    final positiveHighlights = kpis
-        .where((item) {
-          return item.status ==
-              AtlasExecutiveKpiStatus.excellent;
-        })
-        .toList()
-      ..sort(
-        (first, second) =>
-            second.targetAchievementPercent
-                .compareTo(
-          first.targetAchievementPercent,
-        ),
-      );
+    final positiveHighlights =
+        kpis.where((item) {
+          return item.status == AtlasExecutiveKpiStatus.excellent;
+        }).toList()..sort(
+          (first, second) => second.targetAchievementPercent.compareTo(
+            first.targetAchievementPercent,
+          ),
+        );
 
     return AtlasExecutiveKpiDashboardData(
       generatedAt: generatedAt,
@@ -68,16 +52,13 @@ class AtlasExecutiveKpiService {
         status: operationStatus,
         farms: farmSummaries,
         criticalKpis: criticalKpis,
-        positiveHighlights:
-            positiveHighlights,
+        positiveHighlights: positiveHighlights,
       ),
       kpis: kpis,
       farms: farmSummaries,
       categories: categorySummaries,
-      criticalKpis:
-          criticalKpis.take(10).toList(),
-      positiveHighlights:
-          positiveHighlights.take(10).toList(),
+      criticalKpis: criticalKpis.take(10).toList(),
+      positiveHighlights: positiveHighlights.take(10).toList(),
     );
   }
 
@@ -105,8 +86,7 @@ class AtlasExecutiveKpiService {
       trend: _trendFromPercent(
         trendPercent: trendPercent,
         direction: input.direction,
-        hasPrevious:
-            input.previousValue != null,
+        hasPrevious: input.previousValue != null,
       ),
       trendPercent: trendPercent,
       status: _evaluateStatus(
@@ -120,24 +100,18 @@ class AtlasExecutiveKpiService {
     );
   }
 
-  List<AtlasExecutiveFarmKpiSummary>
-      _buildFarmSummaries(
+  List<AtlasExecutiveFarmKpiSummary> _buildFarmSummaries(
     List<AtlasExecutiveKpi> kpis,
   ) {
-    final grouped =
-        <String, List<AtlasExecutiveKpi>>{};
+    final grouped = <String, List<AtlasExecutiveKpi>>{};
 
     for (final kpi in kpis) {
-      grouped.putIfAbsent(
-        kpi.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(kpi.farmName, () => []);
 
       grouped[kpi.farmName]!.add(kpi);
     }
 
-    final result =
-        <AtlasExecutiveFarmKpiSummary>[];
+    final result = <AtlasExecutiveFarmKpiSummary>[];
 
     for (final entry in grouped.entries) {
       final items = entry.value;
@@ -145,53 +119,37 @@ class AtlasExecutiveKpiService {
       final score = _weightedScore(items);
 
       final excellent = items.where((item) {
-        return item.status ==
-            AtlasExecutiveKpiStatus.excellent;
+        return item.status == AtlasExecutiveKpiStatus.excellent;
       }).length;
 
       final adequate = items.where((item) {
-        return item.status ==
-            AtlasExecutiveKpiStatus.adequate;
+        return item.status == AtlasExecutiveKpiStatus.adequate;
       }).length;
 
       final attention = items.where((item) {
-        return item.status ==
-            AtlasExecutiveKpiStatus.attention;
+        return item.status == AtlasExecutiveKpiStatus.attention;
       }).length;
 
       final critical = items.where((item) {
-        return item.status ==
-            AtlasExecutiveKpiStatus.critical;
+        return item.status == AtlasExecutiveKpiStatus.critical;
       }).length;
 
-      final positive = items
-          .where((item) => item.isPositive)
-          .toList()
+      final positive = items.where((item) => item.isPositive).toList()
         ..sort(
-          (first, second) =>
-              second.targetAchievementPercent
-                  .compareTo(
+          (first, second) => second.targetAchievementPercent.compareTo(
             first.targetAchievementPercent,
           ),
         );
 
-      final negative = items
-          .where((item) {
-            return item.status ==
-                    AtlasExecutiveKpiStatus
-                        .attention ||
-                item.status ==
-                    AtlasExecutiveKpiStatus
-                        .critical;
-          })
-          .toList()
-        ..sort(
-          (first, second) =>
-              first.targetAchievementPercent
-                  .compareTo(
-            second.targetAchievementPercent,
-          ),
-        );
+      final negative =
+          items.where((item) {
+            return item.status == AtlasExecutiveKpiStatus.attention ||
+                item.status == AtlasExecutiveKpiStatus.critical;
+          }).toList()..sort(
+            (first, second) => first.targetAchievementPercent.compareTo(
+              second.targetAchievementPercent,
+            ),
+          );
 
       result.add(
         AtlasExecutiveFarmKpiSummary(
@@ -203,63 +161,43 @@ class AtlasExecutiveKpiService {
           adequate: adequate,
           attention: attention,
           critical: critical,
-          mainPositiveKpi:
-              positive.isEmpty
-                  ? null
-                  : positive.first,
-          mainCriticalKpi:
-              negative.isEmpty
-                  ? null
-                  : negative.first,
+          mainPositiveKpi: positive.isEmpty ? null : positive.first,
+          mainCriticalKpi: negative.isEmpty ? null : negative.first,
         ),
       );
     }
 
-    result.sort(
-      (first, second) =>
-          second.score.compareTo(first.score),
-    );
+    result.sort((first, second) => second.score.compareTo(first.score));
 
     return result;
   }
 
-  List<AtlasExecutiveKpiCategorySummary>
-      _buildCategorySummaries(
+  List<AtlasExecutiveKpiCategorySummary> _buildCategorySummaries(
     List<AtlasExecutiveKpi> kpis,
   ) {
-    final grouped = <
-        AtlasExecutiveKpiCategory,
-        List<AtlasExecutiveKpi>>{};
+    final grouped = <AtlasExecutiveKpiCategory, List<AtlasExecutiveKpi>>{};
 
     for (final kpi in kpis) {
-      grouped.putIfAbsent(
-        kpi.category,
-        () => [],
-      );
+      grouped.putIfAbsent(kpi.category, () => []);
 
       grouped[kpi.category]!.add(kpi);
     }
 
-    final result =
-        <AtlasExecutiveKpiCategorySummary>[];
+    final result = <AtlasExecutiveKpiCategorySummary>[];
 
     for (final entry in grouped.entries) {
       final items = entry.value;
 
       final orderedBest = [...items]
         ..sort(
-          (first, second) =>
-              second.targetAchievementPercent
-                  .compareTo(
+          (first, second) => second.targetAchievementPercent.compareTo(
             first.targetAchievementPercent,
           ),
         );
 
       final orderedWorst = [...items]
         ..sort(
-          (first, second) =>
-              first.targetAchievementPercent
-                  .compareTo(
+          (first, second) => first.targetAchievementPercent.compareTo(
             second.targetAchievementPercent,
           ),
         );
@@ -269,73 +207,47 @@ class AtlasExecutiveKpiService {
       result.add(
         AtlasExecutiveKpiCategorySummary(
           category: entry.key,
-          label: atlasExecutiveKpiCategoryLabel(
-            entry.key,
-          ),
+          label: atlasExecutiveKpiCategoryLabel(entry.key),
           score: score,
           status: _statusFromScore(score),
           totalKpis: items.length,
           criticalKpis: items.where((item) {
-            return item.status ==
-                AtlasExecutiveKpiStatus.critical;
+            return item.status == AtlasExecutiveKpiStatus.critical;
           }).length,
-          bestKpi:
-              orderedBest.isEmpty
-                  ? null
-                  : orderedBest.first,
-          worstKpi:
-              orderedWorst.isEmpty
-                  ? null
-                  : orderedWorst.first,
+          bestKpi: orderedBest.isEmpty ? null : orderedBest.first,
+          worstKpi: orderedWorst.isEmpty ? null : orderedWorst.first,
         ),
       );
     }
 
-    result.sort(
-      (first, second) {
-        if (first.criticalKpis !=
-            second.criticalKpis) {
-          return second.criticalKpis.compareTo(
-            first.criticalKpis,
-          );
-        }
+    result.sort((first, second) {
+      if (first.criticalKpis != second.criticalKpis) {
+        return second.criticalKpis.compareTo(first.criticalKpis);
+      }
 
-        return first.score.compareTo(
-          second.score,
-        );
-      },
-    );
+      return first.score.compareTo(second.score);
+    });
 
     return result;
   }
 
-  double _weightedScore(
-    List<AtlasExecutiveKpi> kpis,
-  ) {
+  double _weightedScore(List<AtlasExecutiveKpi> kpis) {
     if (kpis.isEmpty) {
       return 0;
     }
 
-    final totalWeight = kpis.fold<double>(
-      0,
-      (sum, item) => sum + item.weight,
-    );
+    final totalWeight = kpis.fold<double>(0, (sum, item) => sum + item.weight);
 
     if (totalWeight <= 0) {
       return 0;
     }
 
     final weightedResult =
-        kpis.fold<double>(
-          0,
-          (sum, item) {
-            final score = item
-                .targetAchievementPercent
-                .clamp(0.0, 100.0);
+        kpis.fold<double>(0, (sum, item) {
+          final score = item.targetAchievementPercent.clamp(0.0, 100.0);
 
-            return sum + score * item.weight;
-          },
-        ) /
+          return sum + score * item.weight;
+        }) /
         totalWeight;
 
     return weightedResult.clamp(0.0, 100.0).toDouble();
@@ -344,36 +256,27 @@ class AtlasExecutiveKpiService {
   AtlasExecutiveKpiStatus _evaluateStatus({
     required double value,
     required double targetValue,
-    required AtlasExecutiveKpiDirection
-        direction,
+    required AtlasExecutiveKpiDirection direction,
   }) {
     if (targetValue == 0) {
       return AtlasExecutiveKpiStatus.attention;
     }
 
     final achievement = switch (direction) {
-      AtlasExecutiveKpiDirection.higherIsBetter =>
-        value / targetValue * 100,
+      AtlasExecutiveKpiDirection.higherIsBetter => value / targetValue * 100,
       AtlasExecutiveKpiDirection.lowerIsBetter =>
-        value <= 0
-            ? 120
-            : targetValue / value * 100,
+        value <= 0 ? 120 : targetValue / value * 100,
       AtlasExecutiveKpiDirection.neutral =>
         100 -
             ((value - targetValue).abs() /
-                    targetValue.abs()
-                        .clamp(1.0, double.infinity) *
+                targetValue.abs().clamp(1.0, double.infinity) *
                 100),
     };
 
-    return _statusFromScore(
-      achievement.clamp(0.0, 120.0).toDouble(),
-    );
+    return _statusFromScore(achievement.clamp(0.0, 120.0).toDouble());
   }
 
-  AtlasExecutiveKpiStatus _statusFromScore(
-    double score,
-  ) {
+  AtlasExecutiveKpiStatus _statusFromScore(double score) {
     if (score >= 100) {
       return AtlasExecutiveKpiStatus.excellent;
     }
@@ -393,20 +296,16 @@ class AtlasExecutiveKpiService {
     required double currentValue,
     required double? previousValue,
   }) {
-    if (previousValue == null ||
-        previousValue == 0) {
+    if (previousValue == null || previousValue == 0) {
       return 0;
     }
 
-    return (currentValue - previousValue) /
-        previousValue.abs() *
-        100;
+    return (currentValue - previousValue) / previousValue.abs() * 100;
   }
 
   AtlasExecutiveKpiTrend _trendFromPercent({
     required double trendPercent,
-    required AtlasExecutiveKpiDirection
-        direction,
+    required AtlasExecutiveKpiDirection direction,
     required bool hasPrevious,
   }) {
     if (!hasPrevious) {
@@ -414,12 +313,9 @@ class AtlasExecutiveKpiService {
     }
 
     final adjusted = switch (direction) {
-      AtlasExecutiveKpiDirection.higherIsBetter =>
-        trendPercent,
-      AtlasExecutiveKpiDirection.lowerIsBetter =>
-        -trendPercent,
-      AtlasExecutiveKpiDirection.neutral =>
-        -trendPercent.abs(),
+      AtlasExecutiveKpiDirection.higherIsBetter => trendPercent,
+      AtlasExecutiveKpiDirection.lowerIsBetter => -trendPercent,
+      AtlasExecutiveKpiDirection.neutral => -trendPercent.abs(),
     };
 
     if (adjusted >= 10) {
@@ -444,12 +340,9 @@ class AtlasExecutiveKpiService {
   String _buildSummary({
     required double score,
     required AtlasExecutiveKpiStatus status,
-    required List<AtlasExecutiveFarmKpiSummary>
-        farms,
-    required List<AtlasExecutiveKpi>
-        criticalKpis,
-    required List<AtlasExecutiveKpi>
-        positiveHighlights,
+    required List<AtlasExecutiveFarmKpiSummary> farms,
+    required List<AtlasExecutiveKpi> criticalKpis,
+    required List<AtlasExecutiveKpi> positiveHighlights,
   }) {
     if (farms.isEmpty) {
       return 'Ainda não existem indicadores suficientes para formar a visão executiva.';
@@ -482,9 +375,7 @@ class AtlasExecutiveKpiService {
     return buffer.toString();
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     return value
         .trim()
         .toLowerCase()
@@ -500,9 +391,6 @@ class AtlasExecutiveKpiService {
         .replaceAll('õ', 'o')
         .replaceAll('ú', 'u')
         .replaceAll('ç', 'c')
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        );
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 }

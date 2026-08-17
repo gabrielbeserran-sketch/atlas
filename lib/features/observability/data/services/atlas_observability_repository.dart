@@ -5,8 +5,7 @@ class AtlasObservabilityRepository {
   static const String _storageKey = 'atlas_observability_data_v1';
 
   Future<AtlasObservabilityData> load() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     final String? saved = preferences.getString(_storageKey);
     if (saved == null || saved.isEmpty) {
       return _initialData();
@@ -19,8 +18,7 @@ class AtlasObservabilityRepository {
   }
 
   Future<void> save(AtlasObservabilityData data) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(_storageKey, data.toJson());
   }
 

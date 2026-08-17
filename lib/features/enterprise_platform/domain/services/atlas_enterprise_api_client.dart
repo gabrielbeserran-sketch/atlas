@@ -6,11 +6,7 @@ import '../../data/services/atlas_enterprise_remote_auth_store.dart';
 import '../models/atlas_enterprise_remote_session.dart';
 
 class AtlasEnterpriseApiException implements Exception {
-  const AtlasEnterpriseApiException(
-    this.message, {
-    this.statusCode,
-    this.code,
-  });
+  const AtlasEnterpriseApiException(this.message, {this.statusCode, this.code});
 
   final String message;
   final int? statusCode;
@@ -23,8 +19,7 @@ class AtlasEnterpriseApiException implements Exception {
 class AtlasEnterpriseApiClient {
   AtlasEnterpriseApiClient._();
 
-  static final AtlasEnterpriseApiClient instance =
-      AtlasEnterpriseApiClient._();
+  static final AtlasEnterpriseApiClient instance = AtlasEnterpriseApiClient._();
 
   final AtlasEnterpriseRemoteAuthStore _store =
       AtlasEnterpriseRemoteAuthStore.instance;
@@ -49,9 +44,7 @@ class AtlasEnterpriseApiClient {
         },
       );
 
-      final session = AtlasRemoteSession.fromMap(
-        response.asMap(),
-      );
+      final session = AtlasRemoteSession.fromMap(response.asMap());
 
       if (session.mfaRequired) {
         return session;
@@ -77,15 +70,10 @@ class AtlasEnterpriseApiClient {
         'POST',
         '/auth/mfa/challenge',
         authenticated: false,
-        body: {
-          'challenge_token': challengeToken,
-          'code': code.trim(),
-        },
+        body: {'challenge_token': challengeToken, 'code': code.trim()},
       );
 
-      final session = AtlasRemoteSession.fromMap(
-        response.asMap(),
-      );
+      final session = AtlasRemoteSession.fromMap(response.asMap());
 
       await _store.saveSession(session);
       return session;
@@ -146,10 +134,7 @@ class AtlasEnterpriseApiClient {
       'POST',
       '/auth/password/confirm',
       authenticated: false,
-      body: {
-        'token': token.trim(),
-        'new_password': newPassword,
-      },
+      body: {'token': token.trim(), 'new_password': newPassword},
     );
   }
 
@@ -161,19 +146,15 @@ class AtlasEnterpriseApiClient {
       ...response,
       'access_token': current?.accessToken ?? '',
       'refresh_token': current?.refreshToken ?? '',
-      'expires_in_seconds':
-          current?.expiresInSeconds ?? 3600,
-      'savedAt':
-          current?.savedAt.toIso8601String(),
+      'expires_in_seconds': current?.expiresInSeconds ?? 3600,
+      'savedAt': current?.savedAt.toIso8601String(),
     });
 
     await _store.saveSession(session);
     return session;
   }
 
-  Future<AtlasRemoteSession> switchCompany(
-    String companyId,
-  ) async {
+  Future<AtlasRemoteSession> switchCompany(String companyId) async {
     final response = await request(
       'POST',
       '/auth/switch-company',
@@ -194,9 +175,7 @@ class AtlasEnterpriseApiClient {
           'POST',
           '/auth/logout',
           authenticated: false,
-          body: {
-            'refresh_token': session!.refreshToken,
-          },
+          body: {'refresh_token': session!.refreshToken},
         );
       } catch (_) {
         // O encerramento local continua mesmo sem rede.
@@ -207,25 +186,15 @@ class AtlasEnterpriseApiClient {
   }
 
   Future<Map<String, dynamic>> health() {
-    return request(
-      'GET',
-      '/health',
-      authenticated: false,
-    );
+    return request('GET', '/health', authenticated: false);
   }
 
   Future<List<Map<String, dynamic>>> backups() {
-    return requestList(
-      'GET',
-      '/backups',
-    );
+    return requestList('GET', '/backups');
   }
 
   Future<Map<String, dynamic>> runBackup() {
-    return request(
-      'POST',
-      '/backups/run',
-    );
+    return request('POST', '/backups/run');
   }
 
   Future<Map<String, dynamic>> request(
@@ -245,6 +214,44 @@ class AtlasEnterpriseApiClient {
       );
 
       return response.asMap();
+    } on AtlasHttpException catch (error) {
+      throw AtlasEnterpriseApiException(
+        error.message,
+        statusCode: error.statusCode,
+        code: error.code,
+      );
+    }
+  }
+
+
+  Future<Map<String, dynamic>> uploadFile(
+    String method,
+    String path, {
+    required String filePath,
+    String fileField = 'file',
+    Map<String, String> fields = const <String, String>{},
+  }) async {
+    try {
+      final response = await _http.uploadFile(
+        method,
+        path,
+        filePath: filePath,
+        fileField: fileField,
+        fields: fields,
+      );
+      return response.asMap();
+    } on AtlasHttpException catch (error) {
+      throw AtlasEnterpriseApiException(
+        error.message,
+        statusCode: error.statusCode,
+        code: error.code,
+      );
+    }
+  }
+
+  Future<List<int>> downloadBytes(String path) async {
+    try {
+      return await _http.downloadBytes(path);
     } on AtlasHttpException catch (error) {
       throw AtlasEnterpriseApiException(
         error.message,

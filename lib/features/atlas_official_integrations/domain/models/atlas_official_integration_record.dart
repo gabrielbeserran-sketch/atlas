@@ -1,69 +1,57 @@
-enum AtlasOfficialIntegrationModule {
-  sisbov,
-  gta,
-  mapa,
-  esocialRural,
-}
+enum AtlasOfficialIntegrationModule { sisbov, gta, mapa, esocialRural }
 
-extension AtlasOfficialIntegrationModuleX
-    on AtlasOfficialIntegrationModule {
+extension AtlasOfficialIntegrationModuleX on AtlasOfficialIntegrationModule {
   String get code => switch (this) {
-        AtlasOfficialIntegrationModule.sisbov => 'sisbov',
-        AtlasOfficialIntegrationModule.gta => 'gta',
-        AtlasOfficialIntegrationModule.mapa => 'mapa',
-        AtlasOfficialIntegrationModule.esocialRural =>
-          'esocial_rural',
-      };
+    AtlasOfficialIntegrationModule.sisbov => 'sisbov',
+    AtlasOfficialIntegrationModule.gta => 'gta',
+    AtlasOfficialIntegrationModule.mapa => 'mapa',
+    AtlasOfficialIntegrationModule.esocialRural => 'esocial_rural',
+  };
 
   String get title => switch (this) {
-        AtlasOfficialIntegrationModule.sisbov =>
-          'SISBOV Enterprise',
-        AtlasOfficialIntegrationModule.gta =>
-          'GTA Digital',
-        AtlasOfficialIntegrationModule.mapa =>
-          'Integração MAPA',
-        AtlasOfficialIntegrationModule.esocialRural =>
-          'eSocial Rural',
-      };
+    AtlasOfficialIntegrationModule.sisbov => 'SISBOV Enterprise',
+    AtlasOfficialIntegrationModule.gta => 'GTA Digital',
+    AtlasOfficialIntegrationModule.mapa => 'Integração MAPA',
+    AtlasOfficialIntegrationModule.esocialRural => 'eSocial Rural',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasOfficialIntegrationModule.sisbov => 'Pacote 63',
-        AtlasOfficialIntegrationModule.gta => 'Pacote 64',
-        AtlasOfficialIntegrationModule.mapa => 'Pacote 65',
-        AtlasOfficialIntegrationModule.esocialRural =>
-          'Pacote 66',
-      };
+    AtlasOfficialIntegrationModule.sisbov => 'Pacote 63',
+    AtlasOfficialIntegrationModule.gta => 'Pacote 64',
+    AtlasOfficialIntegrationModule.mapa => 'Pacote 65',
+    AtlasOfficialIntegrationModule.esocialRural => 'Pacote 66',
+  };
 
   List<String> get features => switch (this) {
-        AtlasOfficialIntegrationModule.sisbov => const [
-            'Identificação individual',
-            'Rastreabilidade animal',
-            'Eventos de movimentação',
-            'Conferência documental',
-            'Pendências de conformidade',
-          ],
-        AtlasOfficialIntegrationModule.gta => const [
-            'Solicitação de GTA',
-            'Origem e destino',
-            'Animais e finalidade',
-            'Validade e situação',
-            'Anexos e comprovantes',
-          ],
-        AtlasOfficialIntegrationModule.mapa => const [
-            'Cadastros regulatórios',
-            'Obrigações sanitárias',
-            'Documentos oficiais',
-            'Protocolos e processos',
-            'Alertas de vencimento',
-          ],
-        AtlasOfficialIntegrationModule.esocialRural => const [
-            'Trabalhadores rurais',
-            'Eventos periódicos',
-            'Eventos não periódicos',
-            'Saúde e segurança',
-            'Pendências de envio',
-          ],
-      };
+    AtlasOfficialIntegrationModule.sisbov => const [
+      'Identificação individual',
+      'Rastreabilidade animal',
+      'Eventos de movimentação',
+      'Conferência documental',
+      'Pendências de conformidade',
+    ],
+    AtlasOfficialIntegrationModule.gta => const [
+      'Solicitação de GTA',
+      'Origem e destino',
+      'Animais e finalidade',
+      'Validade e situação',
+      'Anexos e comprovantes',
+    ],
+    AtlasOfficialIntegrationModule.mapa => const [
+      'Cadastros regulatórios',
+      'Obrigações sanitárias',
+      'Documentos oficiais',
+      'Protocolos e processos',
+      'Alertas de vencimento',
+    ],
+    AtlasOfficialIntegrationModule.esocialRural => const [
+      'Trabalhadores rurais',
+      'Eventos periódicos',
+      'Eventos não periódicos',
+      'Saúde e segurança',
+      'Pendências de envio',
+    ],
+  };
 }
 
 class AtlasOfficialIntegrationRecord {
@@ -148,13 +136,10 @@ class AtlasOfficialIntegrationRecord {
     };
   }
 
-  factory AtlasOfficialIntegrationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasOfficialIntegrationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasOfficialIntegrationModule.values.firstWhere(
+    final module = AtlasOfficialIntegrationModule.values.firstWhere(
       (item) => item.code == code,
       orElse: () => AtlasOfficialIntegrationModule.sisbov,
     );
@@ -171,12 +156,9 @@ class AtlasOfficialIntegrationRecord {
       destination: map['destination']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
-      expirationDate:
-          map['expirationDate']?.toString() ?? '',
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
+      expirationDate: map['expirationDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

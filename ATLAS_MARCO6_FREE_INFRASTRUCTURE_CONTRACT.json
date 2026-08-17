@@ -1,0 +1,21 @@
+{
+  "status": "OK",
+  "architecture": "Oracle Cloud Always Free + DuckDNS + Caddy",
+  "monthly_cost_target_brl": 0,
+  "checks": {
+    "free_duckdns_hostname": true,
+    "duckdns_updater": true,
+    "automatic_https": true,
+    "database_not_public": true,
+    "redis_not_public": true,
+    "alembic_before_api": true,
+    "persistent_database": true,
+    "persistent_attachments": true,
+    "persistent_backups": true,
+    "firewall": true,
+    "strong_secrets": true,
+    "self_audit": true,
+    "android_free_gate": true
+  },
+  "errors": []
+}

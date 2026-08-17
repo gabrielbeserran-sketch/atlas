@@ -3,7 +3,7 @@ import 'package:projeto_atlas/features/livestock_integration/domain/models/atlas
 
 class AtlasPhases23Service {
   AtlasPhases23Service({AtlasHttpClient? httpClient})
-      : _http = httpClient ?? AtlasHttpClient();
+    : _http = httpClient ?? AtlasHttpClient();
 
   final AtlasHttpClient _http;
 
@@ -19,10 +19,7 @@ class AtlasPhases23Service {
         'expiry_days': '$expiryDays',
       },
     );
-    return response
-        .asMapList()
-        .map(AtlasInventoryAlertData.fromMap)
-        .toList();
+    return response.asMapList().map(AtlasInventoryAlertData.fromMap).toList();
   }
 
   Future<AtlasNutritionPerformanceData> loadNutritionPerformance({

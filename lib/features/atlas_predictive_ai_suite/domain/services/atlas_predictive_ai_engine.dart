@@ -29,45 +29,29 @@ class AtlasPredictiveAiResult {
 class AtlasPredictiveAiEngine {
   const AtlasPredictiveAiEngine();
 
-  AtlasPredictiveAiResult evaluate(
-    AtlasPredictiveAiRecord record,
-  ) {
+  AtlasPredictiveAiResult evaluate(AtlasPredictiveAiRecord record) {
     return switch (record.module) {
-      AtlasPredictiveAiModule.nutrition =>
-        _nutrition(record),
-      AtlasPredictiveAiModule.economics =>
-        _economics(record),
-      AtlasPredictiveAiModule.commercialization =>
-        _commercialization(record),
+      AtlasPredictiveAiModule.nutrition => _nutrition(record),
+      AtlasPredictiveAiModule.economics => _economics(record),
+      AtlasPredictiveAiModule.commercialization => _commercialization(record),
     };
   }
 
-  AtlasPredictiveAiResult _nutrition(
-    AtlasPredictiveAiRecord record,
-  ) {
+  AtlasPredictiveAiResult _nutrition(AtlasPredictiveAiRecord record) {
     final weight = record.primaryInput;
     final targetGain = record.secondaryInput;
     final intake = record.tertiaryInput;
     final dailyCost = record.costValue;
 
-    final double expectedIntake =
-        weight > 0 ? weight * 0.025 : 0.0;
-    final double feedEfficiency =
-        intake > 0 ? targetGain / intake : 0.0;
+    final double expectedIntake = weight > 0 ? weight * 0.025 : 0.0;
+    final double feedEfficiency = intake > 0 ? targetGain / intake : 0.0;
     final double expectedCost =
-        dailyCost *
-        math.max(1, record.periodDays).toDouble();
-    final double wastePercent =
-        expectedIntake > 0 && intake > 0
-            ? math
-                .max(
-                  0.0,
-                  (intake - expectedIntake) /
-                      expectedIntake *
-                      100.0,
-                )
-                .toDouble()
-            : 0.0;
+        dailyCost * math.max(1, record.periodDays).toDouble();
+    final double wastePercent = expectedIntake > 0 && intake > 0
+        ? math
+              .max(0.0, (intake - expectedIntake) / expectedIntake * 100.0)
+              .toDouble()
+        : 0.0;
 
     var score = 50;
     final recommendations = <String>[];
@@ -75,9 +59,7 @@ class AtlasPredictiveAiEngine {
 
     if (weight > 0) {
       score += 10;
-      explanations.add(
-        'Peso informado: ${weight.toStringAsFixed(1)} kg.',
-      );
+      explanations.add('Peso informado: ${weight.toStringAsFixed(1)} kg.');
     }
     if (targetGain > 0) {
       score += 10;
@@ -87,8 +69,7 @@ class AtlasPredictiveAiEngine {
     }
     if (intake > 0 && expectedIntake > 0) {
       final deviation =
-          ((intake - expectedIntake).abs() / expectedIntake) *
-              100;
+          ((intake - expectedIntake).abs() / expectedIntake) * 100;
       if (deviation <= 15) {
         score += 20;
       } else {
@@ -100,9 +81,7 @@ class AtlasPredictiveAiEngine {
     }
     if (wastePercent > 10) {
       score -= 15;
-      recommendations.add(
-        'Investigar possível desperdício acima de 10%.',
-      );
+      recommendations.add('Investigar possível desperdício acima de 10%.');
     }
     if (feedEfficiency <= 0 && intake > 0) {
       recommendations.add(
@@ -122,23 +101,22 @@ class AtlasPredictiveAiEngine {
       primaryProjection: expectedIntake,
       secondaryProjection: expectedCost,
       primaryLabel: 'Consumo previsto (kg/dia)',
-      secondaryLabel:
-          'Custo projetado no período (R\$)',
+      secondaryLabel: 'Custo projetado no período (R\$)',
       riskLevel: score < 45
           ? 'Alto'
           : score < 70
-              ? 'Moderado'
-              : 'Baixo',
+          ? 'Moderado'
+          : 'Baixo',
       confidencePercent: math.min(
         90,
         35 +
             [
-              weight > 0,
-              targetGain > 0,
-              intake > 0,
-              dailyCost > 0,
-              record.periodDays > 0,
-            ].where((item) => item).length *
+                  weight > 0,
+                  targetGain > 0,
+                  intake > 0,
+                  dailyCost > 0,
+                  record.periodDays > 0,
+                ].where((item) => item).length *
                 10,
       ),
       recommendations: recommendations,
@@ -155,18 +133,14 @@ class AtlasPredictiveAiEngine {
     );
   }
 
-  AtlasPredictiveAiResult _economics(
-    AtlasPredictiveAiRecord record,
-  ) {
+  AtlasPredictiveAiResult _economics(AtlasPredictiveAiRecord record) {
     final initialInvestment = record.primaryInput;
     final monthlyRevenue = record.revenueValue;
     final monthlyCost = record.costValue;
-    final int months =
-        math.max(1, record.periodDays ~/ 30).toInt();
+    final int months = math.max(1, record.periodDays ~/ 30).toInt();
 
     final monthlyProfit = monthlyRevenue - monthlyCost;
-    final projectedProfit =
-        monthlyProfit * months - initialInvestment;
+    final projectedProfit = monthlyProfit * months - initialInvestment;
     final double roi = initialInvestment > 0
         ? projectedProfit / initialInvestment * 100.0
         : 0.0;
@@ -186,27 +160,21 @@ class AtlasPredictiveAiEngine {
       score += 20;
     } else {
       score -= 30;
-      recommendations.add(
-        'Receitas não cobrem os custos mensais.',
-      );
+      recommendations.add('Receitas não cobrem os custos mensais.');
     }
 
     if (roi >= 20) {
       score += 20;
     } else if (roi < 0) {
       score -= 20;
-      recommendations.add(
-        'O cenário apresenta ROI negativo.',
-      );
+      recommendations.add('O cenário apresenta ROI negativo.');
     }
 
     if (paybackMonths > 0 && paybackMonths <= 24) {
       score += 10;
     } else if (paybackMonths > 36) {
       score -= 10;
-      recommendations.add(
-        'Payback superior a 36 meses; revise premissas.',
-      );
+      recommendations.add('Payback superior a 36 meses; revise premissas.');
     }
 
     if (recommendations.isEmpty) {
@@ -226,17 +194,17 @@ class AtlasPredictiveAiEngine {
       riskLevel: score < 45
           ? 'Alto'
           : score < 70
-              ? 'Moderado'
-              : 'Baixo',
+          ? 'Moderado'
+          : 'Baixo',
       confidencePercent: math.min(
         90,
         35 +
             [
-              initialInvestment > 0,
-              monthlyRevenue > 0,
-              monthlyCost > 0,
-              record.periodDays > 0,
-            ].where((item) => item).length *
+                  initialInvestment > 0,
+                  monthlyRevenue > 0,
+                  monthlyCost > 0,
+                  record.periodDays > 0,
+                ].where((item) => item).length *
                 12,
       ),
       recommendations: recommendations,
@@ -249,22 +217,17 @@ class AtlasPredictiveAiEngine {
     );
   }
 
-  AtlasPredictiveAiResult _commercialization(
-    AtlasPredictiveAiRecord record,
-  ) {
+  AtlasPredictiveAiResult _commercialization(AtlasPredictiveAiRecord record) {
     final liveWeight = record.primaryInput;
     final yieldPercent = record.secondaryInput;
     final arrobaPrice = record.tertiaryInput;
     final transactionCost = record.costValue;
 
-    final carcassWeight =
-        liveWeight * (yieldPercent / 100);
+    final carcassWeight = liveWeight * (yieldPercent / 100);
     final double arrobas = carcassWeight / 15.0;
     final double grossRevenue = arrobas * arrobaPrice;
-    final double netRevenue =
-        grossRevenue - transactionCost;
-    final double netPerArroba =
-        arrobas > 0 ? netRevenue / arrobas : 0.0;
+    final double netRevenue = grossRevenue - transactionCost;
+    final double netPerArroba = arrobas > 0 ? netRevenue / arrobas : 0.0;
 
     var score = 50;
     final recommendations = <String>[];
@@ -274,30 +237,24 @@ class AtlasPredictiveAiEngine {
       score += 10;
       explanations.add(
         'Peso vivo considerado: '
-            '${liveWeight.toStringAsFixed(1)} kg.',
+        '${liveWeight.toStringAsFixed(1)} kg.',
       );
     }
     if (yieldPercent >= 50 && yieldPercent <= 60) {
       score += 15;
     } else if (yieldPercent > 0) {
       score -= 10;
-      recommendations.add(
-        'Revisar rendimento de carcaça informado.',
-      );
+      recommendations.add('Revisar rendimento de carcaça informado.');
     }
     if (arrobaPrice > 0) {
       score += 15;
     } else {
       score -= 20;
-      recommendations.add(
-        'Informe o preço esperado da arroba.',
-      );
+      recommendations.add('Informe o preço esperado da arroba.');
     }
     if (transactionCost > grossRevenue && grossRevenue > 0) {
       score -= 30;
-      recommendations.add(
-        'Custos da negociação superam a receita bruta.',
-      );
+      recommendations.add('Custos da negociação superam a receita bruta.');
     }
     if (netPerArroba > 0) {
       score += 10;
@@ -320,18 +277,18 @@ class AtlasPredictiveAiEngine {
       riskLevel: score < 45
           ? 'Alto'
           : score < 70
-              ? 'Moderado'
-              : 'Baixo',
+          ? 'Moderado'
+          : 'Baixo',
       confidencePercent: math.min(
         90,
         35 +
             [
-              liveWeight > 0,
-              yieldPercent > 0,
-              arrobaPrice > 0,
-              transactionCost >= 0,
-              record.referenceName.isNotEmpty,
-            ].where((item) => item).length *
+                  liveWeight > 0,
+                  yieldPercent > 0,
+                  arrobaPrice > 0,
+                  transactionCost >= 0,
+                  record.referenceName.isNotEmpty,
+                ].where((item) => item).length *
                 10,
       ),
       recommendations: recommendations,

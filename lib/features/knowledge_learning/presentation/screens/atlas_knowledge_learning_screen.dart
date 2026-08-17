@@ -42,9 +42,10 @@ class _AtlasKnowledgeLearningScreenState
     final filtered = widget.farmId == null
         ? cases
         : cases
-            .where((item) =>
-                item.farmId.isEmpty || item.farmId == widget.farmId)
-            .toList();
+              .where(
+                (item) => item.farmId.isEmpty || item.farmId == widget.farmId,
+              )
+              .toList();
     if (!mounted) return;
     setState(() {
       overview = _engine.buildOverview(filtered);
@@ -62,8 +63,9 @@ class _AtlasKnowledgeLearningScreenState
           : cycles.where((item) => item.farmId == widget.farmId).toList();
       final learned = <AtlasKnowledgeCase>[];
       for (final cycle in selected.take(20)) {
-        final plan = await AtlasActionPlanStorageService.instance
-            .latestForFarm(cycle.farmId);
+        final plan = await AtlasActionPlanStorageService.instance.latestForFarm(
+          cycle.farmId,
+        );
         if (plan == null) continue;
         learned.addAll(_engine.learn(cycle: cycle, plan: plan));
       }
@@ -130,10 +132,10 @@ class _AtlasKnowledgeLearningScreenState
   }
 
   List<AtlasKnowledgeCase> get _visibleCases => overview.cases.where((item) {
-        final areaOk = areaFilter == null || item.area == areaFilter;
-        final statusOk = statusFilter == null || item.status == statusFilter;
-        return areaOk && statusOk;
-      }).toList();
+    final areaOk = areaFilter == null || item.area == areaFilter;
+    final statusOk = statusFilter == null || item.status == statusFilter;
+    return areaOk && statusOk;
+  }).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -202,11 +204,10 @@ class _AtlasKnowledgeLearningScreenState
                             'Ainda não existem protocolos consolidados. Registre casos ou aprenda com ciclos concluídos.',
                       )
                     else
-                      ...overview.protocols
-                          .map((item) => _ProtocolCard(
-                                protocol: item,
-                                currency: _currency,
-                              )),
+                      ...overview.protocols.map(
+                        (item) =>
+                            _ProtocolCard(protocol: item, currency: _currency),
+                      ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -222,8 +223,9 @@ class _AtlasKnowledgeLearningScreenState
                           width: 190,
                           child: DropdownButtonFormField<AtlasFarmAuditArea?>(
                             initialValue: areaFilter,
-                            decoration:
-                                const InputDecoration(labelText: 'Área'),
+                            decoration: const InputDecoration(
+                              labelText: 'Área',
+                            ),
                             items: [
                               const DropdownMenuItem<AtlasFarmAuditArea?>(
                                 value: null,
@@ -243,21 +245,22 @@ class _AtlasKnowledgeLearningScreenState
                         const SizedBox(width: 10),
                         SizedBox(
                           width: 180,
-                          child:
-                              DropdownButtonFormField<AtlasKnowledgeStatus?>(
+                          child: DropdownButtonFormField<AtlasKnowledgeStatus?>(
                             initialValue: statusFilter,
-                            decoration:
-                                const InputDecoration(labelText: 'Status'),
+                            decoration: const InputDecoration(
+                              labelText: 'Status',
+                            ),
                             items: [
                               const DropdownMenuItem<AtlasKnowledgeStatus?>(
                                 value: null,
                                 child: Text('Todos'),
                               ),
                               ...AtlasKnowledgeStatus.values.map(
-                                (item) => DropdownMenuItem<AtlasKnowledgeStatus?>(
-                                  value: item,
-                                  child: Text(_statusLabel(item)),
-                                ),
+                                (item) =>
+                                    DropdownMenuItem<AtlasKnowledgeStatus?>(
+                                      value: item,
+                                      child: Text(_statusLabel(item)),
+                                    ),
                               ),
                             ],
                             onChanged: (value) =>
@@ -308,8 +311,10 @@ class _Hero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Memória técnica do Atlas',
-              style: TextStyle(color: Colors.white70)),
+          const Text(
+            'Memória técnica do Atlas',
+            style: TextStyle(color: Colors.white70),
+          ),
           const SizedBox(height: 5),
           const Text(
             'Conhecimento que melhora cada nova decisão',
@@ -327,13 +332,22 @@ class _Hero extends StatelessWidget {
               _HeroMetric('Casos aprendidos', '${overview.learnedCases}'),
               _HeroMetric('Protocolos ativos', '${overview.activeProtocols}'),
               _HeroMetric('Boas práticas', '${overview.bestPractices}'),
-              _HeroMetric('Sucesso', '${overview.successRate.toStringAsFixed(1)}%'),
-              _HeroMetric('Aderência',
-                  '${overview.implementationRate.toStringAsFixed(1)}%'),
-              _HeroMetric('Precisão preditiva',
-                  '${overview.averagePredictionAccuracy.toStringAsFixed(1)}%'),
-              _HeroMetric('Ganho médio',
-                  currency.format(overview.averageEconomicGain)),
+              _HeroMetric(
+                'Sucesso',
+                '${overview.successRate.toStringAsFixed(1)}%',
+              ),
+              _HeroMetric(
+                'Aderência',
+                '${overview.implementationRate.toStringAsFixed(1)}%',
+              ),
+              _HeroMetric(
+                'Precisão preditiva',
+                '${overview.averagePredictionAccuracy.toStringAsFixed(1)}%',
+              ),
+              _HeroMetric(
+                'Ganho médio',
+                currency.format(overview.averageEconomicGain),
+              ),
             ],
           ),
         ],
@@ -352,25 +366,36 @@ class _ProtocolCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: const CircleAvatar(child: Icon(Icons.menu_book_outlined)),
-        title: Text(protocol.title,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          protocol.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Text(
           '${protocol.caseCount} casos · ${protocol.successRate.toStringAsFixed(1)}% de sucesso · confiança ${protocol.confidence.toStringAsFixed(1)}%',
         ),
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
-          Align(alignment: Alignment.centerLeft, child: Text(protocol.description)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(protocol.description),
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 28,
             runSpacing: 12,
             children: [
-              _Metric('Resposta média',
-                  '${protocol.averageResponseDays.toStringAsFixed(0)} dias'),
-              _Metric('Ganho médio',
-                  currency.format(protocol.averageEconomicGain)),
-              _Metric('Confiança',
-                  '${protocol.confidence.toStringAsFixed(1)}%'),
+              _Metric(
+                'Resposta média',
+                '${protocol.averageResponseDays.toStringAsFixed(0)} dias',
+              ),
+              _Metric(
+                'Ganho médio',
+                currency.format(protocol.averageEconomicGain),
+              ),
+              _Metric(
+                'Confiança',
+                '${protocol.confidence.toStringAsFixed(1)}%',
+              ),
             ],
           ),
         ],
@@ -404,14 +429,18 @@ class _CaseCard extends StatelessWidget {
               (item.success ? const Color(0xFF2E7D32) : const Color(0xFFEF6C00))
                   .withValues(alpha: 0.12),
           child: Icon(
-            item.success ? Icons.verified_outlined : Icons.warning_amber_outlined,
+            item.success
+                ? Icons.verified_outlined
+                : Icons.warning_amber_outlined,
             color: item.success
                 ? const Color(0xFF2E7D32)
                 : const Color(0xFFEF6C00),
           ),
         ),
-        title: Text(item.problem,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          item.problem,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Text(
           '${atlasFarmAuditAreaLabel(item.area)} · ${item.farmName} · ${_statusLabel(item.status)}',
         ),
@@ -429,9 +458,14 @@ class _CaseCard extends StatelessWidget {
                     : Icons.star_border,
               ),
             ),
-            IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined)),
             IconButton(
-                onPressed: onDelete, icon: const Icon(Icons.delete_outline)),
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline),
+            ),
           ],
         ),
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
@@ -498,13 +532,17 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
     intervention = TextEditingController(text: item?.intervention ?? '');
     outcome = TextEditingController(text: item?.outcome ?? '');
     before = TextEditingController(text: item?.beforeValue.toString() ?? '0');
-    predicted = TextEditingController(text: item?.predictedValue?.toString() ?? '');
+    predicted = TextEditingController(
+      text: item?.predictedValue?.toString() ?? '',
+    );
     after = TextEditingController(text: item?.afterValue.toString() ?? '0');
     days = TextEditingController(text: item?.responseDays.toString() ?? '0');
     predictedGain = TextEditingController(
-        text: item?.predictedEconomicGain?.toString() ?? '');
-    economicGain =
-        TextEditingController(text: item?.economicGain.toString() ?? '0');
+      text: item?.predictedEconomicGain?.toString() ?? '',
+    );
+    economicGain = TextEditingController(
+      text: item?.economicGain.toString() ?? '0',
+    );
     lessons = TextEditingController(text: item?.lessons.join('\n') ?? '');
     notes = TextEditingController(text: item?.notes ?? '');
     area = item?.area ?? AtlasFarmAuditArea.operational;
@@ -525,9 +563,9 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.initial == null
-          ? 'Registrar aprendizado'
-          : 'Editar aprendizado'),
+      title: Text(
+        widget.initial == null ? 'Registrar aprendizado' : 'Editar aprendizado',
+      ),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -538,7 +576,8 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
                 TextFormField(
                   controller: problem,
                   decoration: const InputDecoration(
-                      labelText: 'Problema ou decisão analisada'),
+                    labelText: 'Problema ou decisão analisada',
+                  ),
                   validator: (value) => value == null || value.trim().isEmpty
                       ? 'Informe o problema ou decisão'
                       : null,
@@ -554,10 +593,12 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
                         initialValue: area,
                         decoration: const InputDecoration(labelText: 'Área'),
                         items: AtlasFarmAuditArea.values
-                            .map((item) => DropdownMenuItem(
-                                  value: item,
-                                  child: Text(atlasFarmAuditAreaLabel(item)),
-                                ))
+                            .map(
+                              (item) => DropdownMenuItem(
+                                value: item,
+                                child: Text(atlasFarmAuditAreaLabel(item)),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) =>
                             setState(() => area = value ?? area),
@@ -569,10 +610,12 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
                         initialValue: status,
                         decoration: const InputDecoration(labelText: 'Status'),
                         items: AtlasKnowledgeStatus.values
-                            .map((item) => DropdownMenuItem(
-                                  value: item,
-                                  child: Text(_statusLabel(item)),
-                                ))
+                            .map(
+                              (item) => DropdownMenuItem(
+                                value: item,
+                                child: Text(_statusLabel(item)),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) =>
                             setState(() => status = value ?? status),
@@ -587,8 +630,9 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
                 ),
                 TextFormField(
                   controller: outcome,
-                  decoration:
-                      const InputDecoration(labelText: 'Resultado real'),
+                  decoration: const InputDecoration(
+                    labelText: 'Resultado real',
+                  ),
                   maxLines: 2,
                 ),
                 const SizedBox(height: 8),
@@ -644,23 +688,26 @@ class _KnowledgeDialogState extends State<_KnowledgeDialog> {
   }
 
   Widget _number(TextEditingController controller, String label) => SizedBox(
-        width: 220,
-        child: TextFormField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(labelText: label),
-        ),
-      );
+    width: 220,
+    child: TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(labelText: label),
+    ),
+  );
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
     Navigator.pop(
       context,
       AtlasKnowledgeCase(
-        id: widget.initial?.id ??
+        id:
+            widget.initial?.id ??
             'knowledge_${DateTime.now().microsecondsSinceEpoch}',
         farmId: widget.farmId,
-        farmName: farmName.text.trim().isEmpty ? 'Fazenda' : farmName.text.trim(),
+        farmName: farmName.text.trim().isEmpty
+            ? 'Fazenda'
+            : farmName.text.trim(),
         createdAt: widget.initial?.createdAt ?? DateTime.now(),
         area: area,
         problem: problem.text.trim(),
@@ -694,12 +741,12 @@ class _TextBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text('$label:\n$text', style: const TextStyle(height: 1.4)),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text('$label:\n$text', style: const TextStyle(height: 1.4)),
+    ),
+  );
 }
 
 class _Metric extends StatelessWidget {
@@ -709,16 +756,16 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: 150,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(color: Colors.black54)),
-            const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-      );
+    width: 150,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.black54)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    ),
+  );
 }
 
 class _HeroMetric extends StatelessWidget {
@@ -728,28 +775,28 @@ class _HeroMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        constraints: const BoxConstraints(minWidth: 145),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(14),
+    constraints: const BoxConstraints(minWidth: 145),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70)),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(color: Colors.white70)),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -759,15 +806,16 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: Colors.black54)),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 4),
+      Text(subtitle, style: const TextStyle(color: Colors.black54)),
+    ],
+  );
 }
 
 class _EmptyCard extends StatelessWidget {
@@ -776,16 +824,16 @@ class _EmptyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Text(text, textAlign: TextAlign.center),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(22),
+      child: Text(text, textAlign: TextAlign.center),
+    ),
+  );
 }
 
 String _statusLabel(AtlasKnowledgeStatus value) => switch (value) {
-      AtlasKnowledgeStatus.draft => 'Rascunho',
-      AtlasKnowledgeStatus.validated => 'Validado',
-      AtlasKnowledgeStatus.bestPractice => 'Boa prática',
-      AtlasKnowledgeStatus.needsReview => 'Requer revisão',
-    };
+  AtlasKnowledgeStatus.draft => 'Rascunho',
+  AtlasKnowledgeStatus.validated => 'Validado',
+  AtlasKnowledgeStatus.bestPractice => 'Boa prática',
+  AtlasKnowledgeStatus.needsReview => 'Requer revisão',
+};

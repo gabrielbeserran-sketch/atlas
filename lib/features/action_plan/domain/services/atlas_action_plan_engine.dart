@@ -11,36 +11,46 @@ class AtlasActionPlanEngine {
 
     for (final problem in audit.problems) {
       sequence++;
-      missions.add(AtlasActionMission(
-        id: 'mission_problem_${problem.id}',
-        title: problem.title,
-        description: problem.description,
-        area: problem.area,
-        priority: problem.priority,
-        status: AtlasMissionStatus.pending,
-        responsible: _responsible(problem.area),
-        startDate: now.add(Duration(days: _startOffset(problem.priority, sequence))),
-        dueDate: now.add(Duration(days: problem.recommendedDeadlineDays)),
-        expectedImpact: problem.estimatedAnnualImpact,
-        checklist: _checklist(problem.area, 'problem_${problem.id}'),
-      ));
+      missions.add(
+        AtlasActionMission(
+          id: 'mission_problem_${problem.id}',
+          title: problem.title,
+          description: problem.description,
+          area: problem.area,
+          priority: problem.priority,
+          status: AtlasMissionStatus.pending,
+          responsible: _responsible(problem.area),
+          startDate: now.add(
+            Duration(days: _startOffset(problem.priority, sequence)),
+          ),
+          dueDate: now.add(Duration(days: problem.recommendedDeadlineDays)),
+          expectedImpact: problem.estimatedAnnualImpact,
+          checklist: _checklist(problem.area, 'problem_${problem.id}'),
+        ),
+      );
     }
 
     for (final opportunity in audit.opportunities.take(4)) {
       sequence++;
-      missions.add(AtlasActionMission(
-        id: 'mission_opportunity_${opportunity.id}',
-        title: opportunity.title,
-        description: opportunity.description,
-        area: opportunity.area,
-        priority: opportunity.priority,
-        status: AtlasMissionStatus.pending,
-        responsible: _responsible(opportunity.area),
-        startDate: now.add(Duration(days: 7 + sequence)),
-        dueDate: now.add(Duration(days: 30 + sequence * 3)),
-        expectedImpact: opportunity.estimatedReturn - opportunity.estimatedInvestment,
-        checklist: _checklist(opportunity.area, 'opportunity_${opportunity.id}'),
-      ));
+      missions.add(
+        AtlasActionMission(
+          id: 'mission_opportunity_${opportunity.id}',
+          title: opportunity.title,
+          description: opportunity.description,
+          area: opportunity.area,
+          priority: opportunity.priority,
+          status: AtlasMissionStatus.pending,
+          responsible: _responsible(opportunity.area),
+          startDate: now.add(Duration(days: 7 + sequence)),
+          dueDate: now.add(Duration(days: 30 + sequence * 3)),
+          expectedImpact:
+              opportunity.estimatedReturn - opportunity.estimatedInvestment,
+          checklist: _checklist(
+            opportunity.area,
+            'opportunity_${opportunity.id}',
+          ),
+        ),
+      );
     }
 
     missions.sort((a, b) {
@@ -61,19 +71,27 @@ class AtlasActionPlanEngine {
 
   int _weight(AtlasFarmAuditPriority p) {
     switch (p) {
-      case AtlasFarmAuditPriority.critical: return 4;
-      case AtlasFarmAuditPriority.high: return 3;
-      case AtlasFarmAuditPriority.moderate: return 2;
-      case AtlasFarmAuditPriority.low: return 1;
+      case AtlasFarmAuditPriority.critical:
+        return 4;
+      case AtlasFarmAuditPriority.high:
+        return 3;
+      case AtlasFarmAuditPriority.moderate:
+        return 2;
+      case AtlasFarmAuditPriority.low:
+        return 1;
     }
   }
 
   int _startOffset(AtlasFarmAuditPriority p, int sequence) {
     switch (p) {
-      case AtlasFarmAuditPriority.critical: return 0;
-      case AtlasFarmAuditPriority.high: return 2 + sequence;
-      case AtlasFarmAuditPriority.moderate: return 5 + sequence;
-      case AtlasFarmAuditPriority.low: return 10 + sequence;
+      case AtlasFarmAuditPriority.critical:
+        return 0;
+      case AtlasFarmAuditPriority.high:
+        return 2 + sequence;
+      case AtlasFarmAuditPriority.moderate:
+        return 5 + sequence;
+      case AtlasFarmAuditPriority.low:
+        return 10 + sequence;
     }
   }
 
@@ -95,7 +113,10 @@ class AtlasActionPlanEngine {
     }
   }
 
-  List<AtlasMissionChecklistItem> _checklist(AtlasFarmAuditArea area, String prefix) {
+  List<AtlasMissionChecklistItem> _checklist(
+    AtlasFarmAuditArea area,
+    String prefix,
+  ) {
     final specific = switch (area) {
       AtlasFarmAuditArea.sanitary => 'Revisar protocolos sanitários',
       AtlasFarmAuditArea.reproduction => 'Revisar calendário reprodutivo',
@@ -116,6 +137,13 @@ class AtlasActionPlanEngine {
       'Reavaliar o resultado alcançado',
     ];
 
-    return List.generate(titles.length, (i) => AtlasMissionChecklistItem(id: '${prefix}_$i', title: titles[i], completed: false));
+    return List.generate(
+      titles.length,
+      (i) => AtlasMissionChecklistItem(
+        id: '${prefix}_$i',
+        title: titles[i],
+        completed: false,
+      ),
+    );
   }
 }

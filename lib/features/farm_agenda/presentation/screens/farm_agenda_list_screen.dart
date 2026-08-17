@@ -4,6 +4,8 @@ import 'package:projeto_atlas/features/farm_agenda/data/services/farm_agenda_sto
 import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_form_screen.dart';
 
+enum AgendaViewMode { list, week, month }
+
 class FarmAgendaListScreen extends StatefulWidget {
   const FarmAgendaListScreen({required this.farm, super.key});
 
@@ -26,6 +28,8 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
 
   String selectedFilter = 'Todas';
   String searchText = '';
+  AgendaViewMode viewMode = AgendaViewMode.list;
+  DateTime calendarAnchor = DateTime.now();
 
   @override
   void initState() {
@@ -102,7 +106,10 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
   }
 
   Future<void> loadTasks() async {
-    final savedTasks = await storage.loadTasks(widget.farm.name);
+    final savedTasks = await storage.loadTasks(
+      widget.farm.name,
+      farmId: widget.farm.id ?? '',
+    );
 
     savedTasks.sort(compareTasks);
 
@@ -134,20 +141,46 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
       return;
     }
 
-    setState(() {
-      tasks.add(newTask);
-      tasks.sort(compareTasks);
-    });
+    final farmId = widget.farm.id ?? '';
+    try {
+      final savedTask = farmId.isEmpty
+          ? newTask
+          : await storage.createTask(
+              farmName: widget.farm.name,
+              farmId: farmId,
+              task: newTask,
+            );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        tasks.removeWhere((item) => item.id == savedTask.id);
+        tasks.add(savedTask);
+        tasks.sort(compareTasks);
+      });
 
-    await saveTasks();
+      if (farmId.isEmpty) {
+        await saveTasks();
+      }
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Compromisso salvo e confirmado no servidor.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível salvar o compromisso: $error'),
+        ),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Compromisso adicionado à agenda.')),
-    );
   }
 
   Future<void> editTask(FarmAgendaData task) async {
@@ -164,26 +197,47 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
       return;
     }
 
-    final taskIndex = tasks.indexWhere((item) => item.id == task.id);
+    final farmId = widget.farm.id ?? '';
+    try {
+      final savedTask = farmId.isEmpty
+          ? editedTask
+          : await storage.updateTask(
+              farmName: widget.farm.name,
+              farmId: farmId,
+              task: editedTask,
+            );
+      final taskIndex = tasks.indexWhere((item) => item.id == task.id);
+      if (taskIndex == -1 || !mounted) {
+        return;
+      }
 
-    if (taskIndex == -1) {
-      return;
+      setState(() {
+        tasks[taskIndex] = savedTask;
+        tasks.sort(compareTasks);
+      });
+
+      if (farmId.isEmpty) {
+        await saveTasks();
+      }
+
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Alterações salvas e confirmadas no servidor.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível atualizar o compromisso: $error'),
+        ),
+      );
     }
-
-    setState(() {
-      tasks[taskIndex] = editedTask;
-      tasks.sort(compareTasks);
-    });
-
-    await saveTasks();
-
-    if (!mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Compromisso atualizado.')));
   }
 
   Future<void> toggleCompleted(FarmAgendaData task) async {
@@ -194,12 +248,21 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
     }
 
     final newStatus = task.isCompleted ? 'Pendente' : 'Concluída';
-
+    final updated = task.copyWith(status: newStatus);
+    final farmId = widget.farm.id ?? '';
+    final savedTask = farmId.isEmpty
+        ? updated
+        : await storage.updateTask(
+            farmName: widget.farm.name,
+            farmId: farmId,
+            task: updated,
+          );
+    if (!mounted) return;
     setState(() {
-      tasks[taskIndex] = task.copyWith(status: newStatus);
+      tasks[taskIndex] = savedTask;
     });
 
-    await saveTasks();
+    if (farmId.isEmpty) await saveTasks();
 
     if (!mounted) {
       return;
@@ -248,11 +311,16 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
       return;
     }
 
+    final farmId = widget.farm.id ?? '';
+    if (farmId.isNotEmpty) {
+      await storage.cancelTask(farmName: widget.farm.name, task: task);
+    }
+    if (!mounted) return;
     setState(() {
       tasks.removeWhere((item) => item.id == task.id);
     });
 
-    await saveTasks();
+    if (farmId.isEmpty) await saveTasks();
 
     if (!mounted) {
       return;
@@ -416,55 +484,116 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 28),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'Compromissos',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.bold,
+                        const SizedBox(height: 24),
+                        AgendaViewSelector(
+                          mode: viewMode,
+                          onChanged: (mode) {
+                            setState(() {
+                              viewMode = mode;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 18),
+                        if (viewMode != AgendaViewMode.list)
+                          AgendaCalendarNavigator(
+                            mode: viewMode,
+                            anchor: calendarAnchor,
+                            onPrevious: () {
+                              setState(() {
+                                calendarAnchor = viewMode == AgendaViewMode.week
+                                    ? calendarAnchor.subtract(
+                                        const Duration(days: 7),
+                                      )
+                                    : DateTime(
+                                        calendarAnchor.year,
+                                        calendarAnchor.month - 1,
+                                        1,
+                                      );
+                              });
+                            },
+                            onToday: () {
+                              setState(() {
+                                calendarAnchor = DateTime.now();
+                              });
+                            },
+                            onNext: () {
+                              setState(() {
+                                calendarAnchor = viewMode == AgendaViewMode.week
+                                    ? calendarAnchor.add(
+                                        const Duration(days: 7),
+                                      )
+                                    : DateTime(
+                                        calendarAnchor.year,
+                                        calendarAnchor.month + 1,
+                                        1,
+                                      );
+                              });
+                            },
+                          ),
+                        if (viewMode != AgendaViewMode.list)
+                          const SizedBox(height: 14),
+                        if (viewMode == AgendaViewMode.week)
+                          AgendaWeekCalendar(
+                            anchor: calendarAnchor,
+                            tasks: filteredTasks,
+                            onTaskTap: editTask,
+                          )
+                        else if (viewMode == AgendaViewMode.month)
+                          AgendaMonthCalendar(
+                            anchor: calendarAnchor,
+                            tasks: filteredTasks,
+                            onTaskTap: editTask,
+                          )
+                        else ...[
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  'Compromissos',
+                                  style: TextStyle(
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${filteredTasks.length} registros',
+                                style: const TextStyle(color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Atividades organizadas por data e horário.',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 16),
+                          if (filteredTasks.isEmpty)
+                            EmptyAgendaMessage(
+                              hasFilter:
+                                  selectedFilter != 'Todas' ||
+                                  searchText.trim().isNotEmpty,
+                            )
+                          else
+                            ...filteredTasks.map(
+                              (task) => Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: AgendaTaskCard(
+                                  task: task,
+                                  overdue: isOverdue(task),
+                                  onEdit: () {
+                                    editTask(task);
+                                  },
+                                  onComplete: () {
+                                    toggleCompleted(task);
+                                  },
+                                  onDelete: () {
+                                    deleteTask(task);
+                                  },
                                 ),
                               ),
                             ),
-                            Text(
-                              '${filteredTasks.length} registros',
-                              style: const TextStyle(color: Colors.black54),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Atividades organizadas por data e horário.',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 16),
-                        if (filteredTasks.isEmpty)
-                          EmptyAgendaMessage(
-                            hasFilter:
-                                selectedFilter != 'Todas' ||
-                                searchText.trim().isNotEmpty,
-                          )
-                        else
-                          ...filteredTasks.map(
-                            (task) => Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: AgendaTaskCard(
-                                task: task,
-                                overdue: isOverdue(task),
-                                onEdit: () {
-                                  editTask(task);
-                                },
-                                onComplete: () {
-                                  toggleCompleted(task);
-                                },
-                                onDelete: () {
-                                  deleteTask(task);
-                                },
-                              ),
-                            ),
-                          ),
+                        ],
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -944,6 +1073,317 @@ class EmptyAgendaMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+class AgendaViewSelector extends StatelessWidget {
+  const AgendaViewSelector({
+    required this.mode,
+    required this.onChanged,
+    super.key,
+  });
+  final AgendaViewMode mode;
+  final ValueChanged<AgendaViewMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<AgendaViewMode>(
+      segments: const [
+        ButtonSegment(
+          value: AgendaViewMode.list,
+          icon: Icon(Icons.view_list_outlined),
+          label: Text('Lista'),
+        ),
+        ButtonSegment(
+          value: AgendaViewMode.week,
+          icon: Icon(Icons.view_week_outlined),
+          label: Text('Semana'),
+        ),
+        ButtonSegment(
+          value: AgendaViewMode.month,
+          icon: Icon(Icons.calendar_month_outlined),
+          label: Text('Mês'),
+        ),
+      ],
+      selected: {mode},
+      onSelectionChanged: (values) => onChanged(values.first),
+    );
+  }
+}
+
+class AgendaCalendarNavigator extends StatelessWidget {
+  const AgendaCalendarNavigator({
+    required this.mode,
+    required this.anchor,
+    required this.onPrevious,
+    required this.onToday,
+    required this.onNext,
+    super.key,
+  });
+  final AgendaViewMode mode;
+  final DateTime anchor;
+  final VoidCallback onPrevious;
+  final VoidCallback onToday;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = mode == AgendaViewMode.week
+        ? _weekLabel(anchor)
+        : '${_monthName(anchor.month)} ${anchor.year}';
+    return Row(
+      children: [
+        IconButton(onPressed: onPrevious, icon: const Icon(Icons.chevron_left)),
+        Expanded(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        OutlinedButton(onPressed: onToday, child: const Text('Hoje')),
+        IconButton(onPressed: onNext, icon: const Icon(Icons.chevron_right)),
+      ],
+    );
+  }
+}
+
+class AgendaWeekCalendar extends StatelessWidget {
+  const AgendaWeekCalendar({
+    required this.anchor,
+    required this.tasks,
+    required this.onTaskTap,
+    super.key,
+  });
+  final DateTime anchor;
+  final List<FarmAgendaData> tasks;
+  final ValueChanged<FarmAgendaData> onTaskTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final start = _startOfWeek(anchor);
+    final days = List.generate(7, (i) => start.add(Duration(days: i)));
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth >= 980
+            ? (constraints.maxWidth - 48) / 7
+            : 220.0;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: days.map((day) {
+              final dayTasks =
+                  tasks
+                      .where(
+                        (task) => _sameDay(parseAgendaDate(task.date), day),
+                      )
+                      .toList()
+                    ..sort(compareTasks);
+              return Container(
+                width: width,
+                constraints: const BoxConstraints(minHeight: 340),
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _sameDay(day, DateTime.now())
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFF7F9F4),
+                  border: Border.all(color: const Color(0xFFD7DDCF)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_weekdayName(day.weekday)} ${day.day}/${day.month}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    if (dayTasks.isEmpty)
+                      const Text(
+                        'Sem tarefas',
+                        style: TextStyle(color: Colors.black45),
+                      )
+                    else
+                      ...dayTasks.map(
+                        (task) => _CalendarTaskTile(
+                          task: task,
+                          onTap: () => onTaskTap(task),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AgendaMonthCalendar extends StatelessWidget {
+  const AgendaMonthCalendar({
+    required this.anchor,
+    required this.tasks,
+    required this.onTaskTap,
+    super.key,
+  });
+  final DateTime anchor;
+  final List<FarmAgendaData> tasks;
+  final ValueChanged<FarmAgendaData> onTaskTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final first = DateTime(anchor.year, anchor.month, 1);
+    final gridStart = first.subtract(Duration(days: first.weekday - 1));
+    final days = List.generate(42, (i) => gridStart.add(Duration(days: i)));
+    return Column(
+      children: [
+        const Row(
+          children: [
+            Expanded(child: Center(child: Text('Seg'))),
+            Expanded(child: Center(child: Text('Ter'))),
+            Expanded(child: Center(child: Text('Qua'))),
+            Expanded(child: Center(child: Text('Qui'))),
+            Expanded(child: Center(child: Text('Sex'))),
+            Expanded(child: Center(child: Text('Sáb'))),
+            Expanded(child: Center(child: Text('Dom'))),
+          ],
+        ),
+        const SizedBox(height: 6),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            childAspectRatio: 1.05,
+          ),
+          itemCount: days.length,
+          itemBuilder: (context, index) {
+            final day = days[index];
+            final dayTasks =
+                tasks
+                    .where((task) => _sameDay(parseAgendaDate(task.date), day))
+                    .toList()
+                  ..sort(compareTasks);
+            final inMonth = day.month == anchor.month;
+            return Container(
+              margin: const EdgeInsets.all(3),
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: _sameDay(day, DateTime.now())
+                    ? const Color(0xFFE8F5E9)
+                    : Colors.white,
+                border: Border.all(color: const Color(0xFFD7DDCF)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${day.day}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: inMonth ? Colors.black87 : Colors.black38,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: ListView(
+                      children: dayTasks
+                          .take(3)
+                          .map(
+                            (task) => _CalendarTaskTile(
+                              task: task,
+                              compact: true,
+                              onTap: () => onTaskTap(task),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  if (dayTasks.length > 3)
+                    Text(
+                      '+${dayTasks.length - 3}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF1B5E20),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _CalendarTaskTile extends StatelessWidget {
+  const _CalendarTaskTile({
+    required this.task,
+    required this.onTap,
+    this.compact = false,
+  });
+  final FarmAgendaData task;
+  final VoidCallback onTap;
+  final bool compact;
+  @override
+  Widget build(BuildContext context) {
+    final color = taskStatusColor(task, isOverdue(task));
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 5),
+        padding: EdgeInsets.symmetric(horizontal: 7, vertical: compact ? 4 : 7),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          '${task.time.isEmpty ? '' : '${task.time} '} ${task.title}'.trim(),
+          maxLines: compact ? 1 : 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: compact ? 10 : 12,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+DateTime _startOfWeek(DateTime date) => DateTime(
+  date.year,
+  date.month,
+  date.day,
+).subtract(Duration(days: date.weekday - 1));
+bool _sameDay(DateTime? a, DateTime b) =>
+    a != null && a.year == b.year && a.month == b.month && a.day == b.day;
+String _weekdayName(int weekday) =>
+    const ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][weekday - 1];
+String _monthName(int month) => const [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+][month - 1];
+String _weekLabel(DateTime anchor) {
+  final start = _startOfWeek(anchor);
+  final end = start.add(const Duration(days: 6));
+  return '${start.day}/${start.month} – ${end.day}/${end.month}/${end.year}';
 }
 
 bool isToday(FarmAgendaData task) {

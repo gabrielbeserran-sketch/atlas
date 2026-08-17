@@ -44,35 +44,30 @@ class AtlasDiagnosticData {
 
   bool get hasCriticalRisk {
     return risks.any((item) {
-      return item.level ==
-          AtlasDiagnosticLevel.critical;
+      return item.level == AtlasDiagnosticLevel.critical;
     });
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'generatedAt':
-          generatedAt.toIso8601String(),
+      'generatedAt': generatedAt.toIso8601String(),
       'scopeLabel': scopeLabel,
       'score': score,
       'level': level.name,
       'title': title,
       'summary': summary,
       'mainDiagnosis': mainDiagnosis,
-      'mainPriority':
-          mainPriority.toJson(),
+      'mainPriority': mainPriority.toJson(),
       'areas': areas.map((item) {
         return item.toJson();
       }).toList(),
       'risks': risks.map((item) {
         return item.toJson();
       }).toList(),
-      'bottlenecks':
-          bottlenecks.map((item) {
+      'bottlenecks': bottlenecks.map((item) {
         return item.toJson();
       }).toList(),
-      'opportunities':
-          opportunities.map((item) {
+      'opportunities': opportunities.map((item) {
         return item.toJson();
       }).toList(),
       'strengths': strengths.map((item) {
@@ -81,12 +76,10 @@ class AtlasDiagnosticData {
       'plan7Days': plan7Days.map((item) {
         return item.toJson();
       }).toList(),
-      'plan30Days':
-          plan30Days.map((item) {
+      'plan30Days': plan30Days.map((item) {
         return item.toJson();
       }).toList(),
-      'plan90Days':
-          plan90Days.map((item) {
+      'plan90Days': plan90Days.map((item) {
         return item.toJson();
       }).toList(),
     };
@@ -122,8 +115,7 @@ class AtlasDiagnosticArea {
       'score': score,
       'level': level.name,
       'analysis': analysis,
-      'recommendation':
-          recommendation,
+      'recommendation': recommendation,
       'sourceArea': sourceArea.name,
     };
   }
@@ -155,8 +147,7 @@ class AtlasDiagnosticInsight {
       'id': id,
       'title': title,
       'description': description,
-      'recommendation':
-          recommendation,
+      'recommendation': recommendation,
       'level': level.name,
       'area': area.name,
       'impactScore': impactScore,
@@ -187,8 +178,7 @@ class AtlasDiagnosticPriority {
     return {
       'title': title,
       'description': description,
-      'recommendation':
-          recommendation,
+      'recommendation': recommendation,
       'area': area.name,
       'level': level.name,
       'score': score,
@@ -224,8 +214,7 @@ class AtlasDiagnosticAction {
       'id': id,
       'title': title,
       'description': description,
-      'expectedResult':
-          expectedResult,
+      'expectedResult': expectedResult,
       'area': area.name,
       'level': level.name,
       'horizon': horizon.name,
@@ -234,22 +223,11 @@ class AtlasDiagnosticAction {
   }
 }
 
-enum AtlasDiagnosticLevel {
-  excellent,
-  stable,
-  attention,
-  critical,
-}
+enum AtlasDiagnosticLevel { excellent, stable, attention, critical }
 
-enum AtlasDiagnosticHorizon {
-  sevenDays,
-  thirtyDays,
-  ninetyDays,
-}
+enum AtlasDiagnosticHorizon { sevenDays, thirtyDays, ninetyDays }
 
-String atlasDiagnosticLevelLabel(
-  AtlasDiagnosticLevel level,
-) {
+String atlasDiagnosticLevelLabel(AtlasDiagnosticLevel level) {
   switch (level) {
     case AtlasDiagnosticLevel.excellent:
       return 'Excelente';
@@ -265,9 +243,7 @@ String atlasDiagnosticLevelLabel(
   }
 }
 
-String atlasDiagnosticHorizonLabel(
-  AtlasDiagnosticHorizon horizon,
-) {
+String atlasDiagnosticHorizonLabel(AtlasDiagnosticHorizon horizon) {
   switch (horizon) {
     case AtlasDiagnosticHorizon.sevenDays:
       return 'Próximos 7 dias';

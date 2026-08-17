@@ -1,0 +1,29 @@
+{
+  "shared_preferences_total": 135,
+  "shared_preferences_categories": {
+    "local_history_cache": 8,
+    "offline_runtime": 4,
+    "device_preference": 2,
+    "advanced_local_planning": 28,
+    "advanced_local_feature": 70,
+    "remote_cache": 21,
+    "device_attachment_pending_object_storage": 2
+  },
+  "production_attachment_blockers": [
+    "lib/features/animal_document/data/services/animal_document_storage_service.dart",
+    "lib/features/animal_photo/data/services/animal_photo_storage_service.dart"
+  ],
+  "routes_without_ui_consumer_total": 203,
+  "route_categories": {
+    "advanced_backend_api": 119,
+    "platform_api": 33,
+    "marco5_security": 3,
+    "admin_or_business_api": 40,
+    "backend_capability": 8
+  },
+  "notes": [
+    "Rota sem consumidor Flutter não é automaticamente órfã; o backend também atende automações, integrações, admin e API.",
+    "SharedPreferences em remote_cache é contingência; não é autoridade quando conectado.",
+    "Fotos e documentos exigem object storage remoto antes de homologação multi-dispositivo/produção."
+  ]
+}

@@ -9,12 +9,10 @@ class AtlasImprovementHistoryService {
   static final AtlasImprovementHistoryService instance =
       AtlasImprovementHistoryService._();
 
-  static const String _storageKey =
-      'atlas_improvement_cycles_v1';
+  static const String _storageKey = 'atlas_improvement_cycles_v1';
 
   Future<List<AtlasImprovementCycle>> loadAll() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
 
     final raw = preferences.getString(_storageKey);
 
@@ -32,15 +30,13 @@ class AtlasImprovementHistoryService {
       final cycles = decoded
           .whereType<Map>()
           .map(
-            (item) => AtlasImprovementCycle.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) =>
+                AtlasImprovementCycle.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
 
       cycles.sort(
-        (first, second) =>
-            second.generatedAt.compareTo(first.generatedAt),
+        (first, second) => second.generatedAt.compareTo(first.generatedAt),
       );
 
       return cycles;
@@ -49,21 +45,14 @@ class AtlasImprovementHistoryService {
     }
   }
 
-  Future<List<AtlasImprovementCycle>> byFarmId(
-    String farmId,
-  ) async {
+  Future<List<AtlasImprovementCycle>> byFarmId(String farmId) async {
     final all = await loadAll();
 
-    return all
-        .where((item) => item.farmId == farmId)
-        .toList();
+    return all.where((item) => item.farmId == farmId).toList();
   }
 
-  Future<void> save(
-    AtlasImprovementCycle cycle,
-  ) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<void> save(AtlasImprovementCycle cycle) async {
+    final preferences = await SharedPreferences.getInstance();
 
     final current = await loadAll();
 
@@ -72,12 +61,7 @@ class AtlasImprovementHistoryService {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        current
-            .take(100)
-            .map((item) => item.toJson())
-            .toList(),
-      ),
+      jsonEncode(current.take(100).map((item) => item.toJson()).toList()),
     );
   }
 }

@@ -25,26 +25,19 @@ class AtlasEventAnalyticsData {
   final int criticalEvents;
   final int highPriorityEvents;
 
-  final Map<AtlasEventPriority, int>
-      priorityDistribution;
+  final Map<AtlasEventPriority, int> priorityDistribution;
 
-  final List<AtlasEventAnalyticsRankingItem>
-      moduleDistribution;
+  final List<AtlasEventAnalyticsRankingItem> moduleDistribution;
 
-  final List<AtlasEventAnalyticsRankingItem>
-      farmDistribution;
+  final List<AtlasEventAnalyticsRankingItem> farmDistribution;
 
-  final List<AtlasEventAnalyticsTypeItem>
-      typeDistribution;
+  final List<AtlasEventAnalyticsTypeItem> typeDistribution;
 
-  final List<AtlasEventAnalyticsDailyPoint>
-      dailyTrend;
+  final List<AtlasEventAnalyticsDailyPoint> dailyTrend;
 
-  final List<AtlasEventAnalyticsCriticalPattern>
-      recurringCriticalEvents;
+  final List<AtlasEventAnalyticsCriticalPattern> recurringCriticalEvents;
 
-  final List<AtlasEventAnalyticsRecommendation>
-      recommendations;
+  final List<AtlasEventAnalyticsRecommendation> recommendations;
 
   bool get hasData => totalEvents > 0;
 }

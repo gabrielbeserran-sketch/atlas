@@ -22,12 +22,10 @@ class AtlasSupplyChainScreen extends StatefulWidget {
   final AtlasSupplyChainModule initialModule;
 
   @override
-  State<AtlasSupplyChainScreen> createState() =>
-      _AtlasSupplyChainScreenState();
+  State<AtlasSupplyChainScreen> createState() => _AtlasSupplyChainScreenState();
 }
 
-class _AtlasSupplyChainScreenState
-    extends State<AtlasSupplyChainScreen> {
+class _AtlasSupplyChainScreenState extends State<AtlasSupplyChainScreen> {
   final AtlasSupplyChainStorageService storage =
       AtlasSupplyChainStorageService();
   final AtlasSupplyChainAnalyticsService analyticsService =
@@ -78,30 +76,26 @@ class _AtlasSupplyChainScreenState
   }
 
   List<AtlasSupplyChainRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasSupplyChainRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasSupplyChainRecord? current]) async {
     final result = await showDialog<AtlasSupplyChainRecord>(
       context: context,
-      builder: (context) => _SupplyRecordForm(
-        module: selectedModule,
-        record: current,
-      ),
+      builder: (context) =>
+          _SupplyRecordForm(module: selectedModule, record: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +109,7 @@ class _AtlasSupplyChainScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasSupplyChainRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasSupplyChainRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +117,11 @@ class _AtlasSupplyChainScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -206,8 +196,7 @@ class _AtlasSupplyChainScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -241,8 +230,7 @@ class _AtlasSupplyChainScreenState
                           EnterpriseMetricCard(
                             title: 'Valor total',
                             value: _money(analytics.totalValue),
-                            subtitle:
-                                'Média ${_money(analytics.averageValue)}',
+                            subtitle: 'Média ${_money(analytics.averageValue)}',
                             icon: Icons.attach_money,
                           ),
                         ],
@@ -269,12 +257,8 @@ class _AtlasSupplyChainScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro registro '
                               'para iniciar os indicadores.',
@@ -286,8 +270,7 @@ class _AtlasSupplyChainScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -301,10 +284,7 @@ class _AtlasSupplyChainScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasSupplyChainModule selected;
   final ValueChanged<AtlasSupplyChainModule> onSelected;
@@ -315,32 +295,32 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasSupplyChainModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasSupplyChainModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right:
-                      module == AtlasSupplyChainModule.values.last
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasSupplyChainModule.values.last
                           ? 0
                           : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -365,13 +345,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: feature == selected,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: feature == selected,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -399,12 +381,8 @@ class _RecordCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              statusColor.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: statusColor,
-          ),
+          backgroundColor: statusColor.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: statusColor),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -422,14 +400,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -438,21 +410,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _SupplyRecordForm extends StatefulWidget {
-  const _SupplyRecordForm({
-    required this.module,
-    this.record,
-  });
+  const _SupplyRecordForm({required this.module, this.record});
 
   final AtlasSupplyChainModule module;
   final AtlasSupplyChainRecord? record;
 
   @override
-  State<_SupplyRecordForm> createState() =>
-      _SupplyRecordFormState();
+  State<_SupplyRecordForm> createState() => _SupplyRecordFormState();
 }
 
-class _SupplyRecordFormState
-    extends State<_SupplyRecordForm> {
+class _SupplyRecordFormState extends State<_SupplyRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -479,8 +446,7 @@ class _SupplyRecordFormState
 
     title = TextEditingController(text: record?.title ?? '');
     date = TextEditingController(
-      text: record?.date ??
-          formatAtlasSupplyDate(DateTime.now()),
+      text: record?.date ?? formatAtlasSupplyDate(DateTime.now()),
     );
     quantity = TextEditingController(
       text: record == null ? '' : record.quantity.toString(),
@@ -488,21 +454,11 @@ class _SupplyRecordFormState
     unitValue = TextEditingController(
       text: record == null ? '' : record.unitValue.toString(),
     );
-    counterparty = TextEditingController(
-      text: record?.counterparty ?? '',
-    );
-    document = TextEditingController(
-      text: record?.document ?? '',
-    );
-    origin = TextEditingController(
-      text: record?.origin ?? '',
-    );
-    destination = TextEditingController(
-      text: record?.destination ?? '',
-    );
-    notes = TextEditingController(
-      text: record?.notes ?? '',
-    );
+    counterparty = TextEditingController(text: record?.counterparty ?? '');
+    document = TextEditingController(text: record?.document ?? '');
+    origin = TextEditingController(text: record?.origin ?? '');
+    destination = TextEditingController(text: record?.destination ?? '');
+    notes = TextEditingController(text: record?.notes ?? '');
   }
 
   @override
@@ -520,10 +476,7 @@ class _SupplyRecordFormState
   }
 
   double number(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   Future<void> chooseDate() async {
@@ -531,12 +484,9 @@ class _SupplyRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -555,8 +505,7 @@ class _SupplyRecordFormState
     Navigator.pop(
       context,
       AtlasSupplyChainRecord(
-        id: current?.id ??
-            'supply_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'supply_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -578,11 +527,7 @@ class _SupplyRecordFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.record == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.record == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 680,
         child: Form(
@@ -597,10 +542,8 @@ class _SupplyRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -611,9 +554,7 @@ class _SupplyRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -627,32 +568,29 @@ class _SupplyRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em andamento',
-                    'Aprovado',
-                    'Recebido',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em andamento',
+                            'Aprovado',
+                            'Recebido',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -661,18 +599,14 @@ class _SupplyRecordFormState
                 ),
                 TextFormField(
                   controller: quantity,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Quantidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Quantidade'),
                 ),
                 TextFormField(
                   controller: unitValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -682,8 +616,7 @@ class _SupplyRecordFormState
                 TextFormField(
                   controller: counterparty,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Fornecedor, comprador ou transportador',
+                    labelText: 'Fornecedor, comprador ou transportador',
                   ),
                 ),
                 TextFormField(
@@ -694,23 +627,17 @@ class _SupplyRecordFormState
                 ),
                 TextFormField(
                   controller: origin,
-                  decoration: const InputDecoration(
-                    labelText: 'Origem',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Origem'),
                 ),
                 TextFormField(
                   controller: destination,
-                  decoration: const InputDecoration(
-                    labelText: 'Destino',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Destino'),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -722,10 +649,7 @@ class _SupplyRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -733,12 +657,9 @@ class _SupplyRecordFormState
 
 IconData _moduleIcon(AtlasSupplyChainModule module) {
   return switch (module) {
-    AtlasSupplyChainModule.purchases =>
-      Icons.shopping_cart_outlined,
-    AtlasSupplyChainModule.commercialization =>
-      Icons.attach_money,
-    AtlasSupplyChainModule.logistics =>
-      Icons.local_shipping_outlined,
+    AtlasSupplyChainModule.purchases => Icons.shopping_cart_outlined,
+    AtlasSupplyChainModule.commercialization => Icons.attach_money,
+    AtlasSupplyChainModule.logistics => Icons.local_shipping_outlined,
   };
 }
 

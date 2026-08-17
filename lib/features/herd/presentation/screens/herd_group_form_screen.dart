@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class HerdGroupFormScreen extends StatefulWidget {
   const HerdGroupFormScreen({this.group, super.key});
@@ -62,7 +63,9 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
   }
 
   void saveGroup() {
-    if (isSaving || !formKey.currentState!.validate()) return;
+    if (isSaving || !formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => isSaving = true);
     final current = widget.group;
     Navigator.pop<HerdGroupData>(
@@ -96,7 +99,10 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
                   children: [
                     Text(
                       isEditing ? 'Atualizar lote' : 'Dados do lote',
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     const Text(
@@ -117,17 +123,30 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
                       initialValue: selectedCategory,
                       decoration: const InputDecoration(
                         labelText: 'Categoria',
-                        prefixIcon: Icon(Icons.pets_outlined),
+                        prefixIcon: Icon(AtlasLivestockIcons.cow),
                       ),
-                      items: const [
-                        'Vacas', 'Novilhas', 'Bezerros', 'Bezerras',
-                        'Touros', 'Garrotes', 'Bois', 'Misto'
-                      ].map((value) => DropdownMenuItem(
-                        value: value,
-                        child: Text(value),
-                      )).toList(),
+                      items:
+                          const [
+                                'Vacas',
+                                'Novilhas',
+                                'Bezerros',
+                                'Bezerras',
+                                'Touros',
+                                'Garrotes',
+                                'Bois',
+                                'Misto',
+                              ]
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (value) {
-                        if (value != null) setState(() => selectedCategory = value);
+                        if (value != null) {
+                          setState(() => selectedCategory = value);
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -167,7 +186,9 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
                       child: ElevatedButton.icon(
                         onPressed: isSaving ? null : saveGroup,
                         icon: const Icon(Icons.save_outlined),
-                        label: Text(isEditing ? 'Salvar alterações' : 'Salvar lote'),
+                        label: Text(
+                          isEditing ? 'Salvar alterações' : 'Salvar lote',
+                        ),
                       ),
                     ),
                   ],

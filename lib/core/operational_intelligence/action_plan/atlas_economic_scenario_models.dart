@@ -1,8 +1,4 @@
-enum AtlasAdvancedEconomicScenarioType {
-  pessimistic,
-  realistic,
-  optimistic,
-}
+enum AtlasAdvancedEconomicScenarioType { pessimistic, realistic, optimistic }
 
 String atlasAdvancedEconomicScenarioTypeLabel(
   AtlasAdvancedEconomicScenarioType value,

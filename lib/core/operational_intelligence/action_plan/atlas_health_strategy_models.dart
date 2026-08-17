@@ -70,20 +70,18 @@ class AtlasHealthAnnualPlan {
   final String notes;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'year': year,
-        'targetGroup': targetGroup,
-        'budget': budget,
-        'targetCoveragePercent': targetCoveragePercent,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'title': title,
+    'year': year,
+    'targetGroup': targetGroup,
+    'budget': budget,
+    'targetCoveragePercent': targetCoveragePercent,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasHealthAnnualPlan.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasHealthAnnualPlan.fromMap(Map<String, dynamic> map) {
     return AtlasHealthAnnualPlan(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
@@ -92,8 +90,7 @@ class AtlasHealthAnnualPlan {
       budget: (map['budget'] as num?)?.toDouble() ?? 0,
       targetCoveragePercent:
           (map['targetCoveragePercent'] as num?)?.toDouble() ?? 0,
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

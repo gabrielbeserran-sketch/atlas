@@ -1,0 +1,86 @@
+{
+  "date": "2026-08-13",
+  "milestone": "Marco 1 - Núcleo pecuário",
+  "status": "consolidado_estaticamente",
+  "components": {
+    "rebanho": {
+      "screen": "HerdOverviewScreen",
+      "backend": [
+        "GET /livestock/lots",
+        "GET /livestock/animals",
+        "POST/PATCH/DELETE lots",
+        "POST/PATCH/DELETE animals"
+      ],
+      "improvements": [
+        "sem N+1 por lote",
+        "todos os animais em uma leitura",
+        "animais sem lote preservados",
+        "timeout/fallback",
+        "área oficial preservada"
+      ]
+    },
+    "central_animal": {
+      "screen": "AnimalDetailScreen",
+      "sources": [
+        "pesagens",
+        "sanidade",
+        "reprodução",
+        "movimentações",
+        "documentos",
+        "eventos",
+        "fotos",
+        "timeline enterprise"
+      ],
+      "improvements": [
+        "isolamento por fonte",
+        "timeout",
+        "finally",
+        "carregamento parcial",
+        "farmId propagado"
+      ]
+    },
+    "pesagens": {
+      "backend": [
+        "GET/POST /livestock/animals/{animal_id}/weights"
+      ],
+      "offline_cache": true,
+      "remote_history_immutable": true
+    },
+    "movimentacoes": {
+      "backend": [
+        "GET/POST /livestock/animals/{animal_id}/movements"
+      ],
+      "offline_cache": true,
+      "remote_history_immutable": true
+    },
+    "reproducao_individual": {
+      "backend": [
+        "GET/POST /livestock/animals/{animal_id}/reproduction"
+      ],
+      "offline_cache": true
+    },
+    "sanidade_individual": {
+      "backend": [
+        "GET/POST /livestock/health"
+      ],
+      "offline_cache": true
+    },
+    "genealogia": {
+      "backend": [
+        "GET /animals/{animal_id}/genealogy"
+      ],
+      "connected": true
+    },
+    "documentos_fotos_eventos_manuais": {
+      "storage": "local/offline",
+      "note": "não há endpoint pecuário dedicado equivalente na API atual; mantidos sem criar backend paralelo nesta rodada"
+    }
+  },
+  "quality": {
+    "atlas_audit": "OK",
+    "python_compileall": "OK",
+    "unique_tables": 221,
+    "route_declarations": 490,
+    "duplicate_route_declarations": 0
+  }
+}

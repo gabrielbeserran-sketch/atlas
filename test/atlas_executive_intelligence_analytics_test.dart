@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_executive_intelligence/domain/model
 import 'package:projeto_atlas/features/atlas_executive_intelligence/domain/services/atlas_executive_intelligence_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasExecutiveIntelligenceAnalyticsService();
+  const service = AtlasExecutiveIntelligenceAnalyticsService();
 
   test('calculates executive intelligence analytics', () {
     final records = [
       AtlasExecutiveIntelligenceRecord(
         id: '1',
-        module:
-            AtlasExecutiveIntelligenceModule.enterpriseCrm,
+        module: AtlasExecutiveIntelligenceModule.enterpriseCrm,
         feature: 'Clientes e propriedades',
         title: 'Cliente principal',
         date: '04/08/2026',
@@ -33,8 +31,7 @@ void main() {
       ),
       AtlasExecutiveIntelligenceRecord(
         id: '2',
-        module:
-            AtlasExecutiveIntelligenceModule.enterpriseCrm,
+        module: AtlasExecutiveIntelligenceModule.enterpriseCrm,
         feature: 'Pipeline comercial',
         title: 'Proposta pendente',
         date: '04/08/2026',
@@ -57,8 +54,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasExecutiveIntelligenceModule.enterpriseCrm,
+      module: AtlasExecutiveIntelligenceModule.enterpriseCrm,
       records: records,
     );
 

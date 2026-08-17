@@ -52,8 +52,7 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
   }
 
   Future<void> _handleReactiveUpdate(AtlasReactiveUpdate update) async {
-    if (!mounted ||
-        !update.targets.contains(AtlasReactiveTarget.digitalTwin)) {
+    if (!mounted || !update.targets.contains(AtlasReactiveTarget.digitalTwin)) {
       return;
     }
 
@@ -71,7 +70,8 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
 
       setState(() {
         final twins = AtlasDigitalTwinService.instance.twins;
-        final selectedStillExists = selectedFarmId != null &&
+        final selectedStillExists =
+            selectedFarmId != null &&
             twins.any((twin) => twin.farmId == selectedFarmId);
 
         if (!selectedStillExists) {
@@ -157,8 +157,10 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
             const SizedBox(height: 16),
             _buildSummaryCards(twin),
             const SizedBox(height: 20),
-            const Text('Mapa operacional da propriedade',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Mapa operacional da propriedade',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             ...insights.map(_buildAreaCard),
             const SizedBox(height: 20),
@@ -174,7 +176,10 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
     );
   }
 
-  Widget _buildFarmSelector(List<AtlasDigitalTwin> twins, AtlasDigitalTwin twin) {
+  Widget _buildFarmSelector(
+    List<AtlasDigitalTwin> twins,
+    AtlasDigitalTwin twin,
+  ) {
     if (twins.isEmpty) {
       return Card(
         child: ListTile(
@@ -195,10 +200,12 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
         prefixIcon: Icon(Icons.agriculture),
       ),
       items: twins
-          .map((item) => DropdownMenuItem(
-                value: item.farmId,
-                child: Text(item.farmName),
-              ))
+          .map(
+            (item) => DropdownMenuItem(
+              value: item.farmId,
+              child: Text(item.farmName),
+            ),
+          )
           .toList(),
       onChanged: (value) {
         setState(() {
@@ -227,10 +234,16 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(twin.farmName,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('Tendência: ${atlasDigitalTwinTrendLabel(twin.trend)}'),
+                      Text(
+                        twin.farmName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Tendência: ${atlasDigitalTwinTrendLabel(twin.trend)}',
+                      ),
                     ],
                   ),
                 ),
@@ -245,17 +258,29 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
   }
 
   Widget _buildSummaryCards(AtlasDigitalTwin twin) {
-    final highRisks = twin.risks.where((risk) =>
-        risk.level == AtlasFarmRiskLevel.high ||
-        risk.level == AtlasFarmRiskLevel.critical).length;
+    final highRisks = twin.risks
+        .where(
+          (risk) =>
+              risk.level == AtlasFarmRiskLevel.high ||
+              risk.level == AtlasFarmRiskLevel.critical,
+        )
+        .length;
 
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: [
-        _metricCard('Score geral', twin.overallScore.toStringAsFixed(0), Icons.speed),
+        _metricCard(
+          'Score geral',
+          twin.overallScore.toStringAsFixed(0),
+          Icons.speed,
+        ),
         _metricCard('Riscos críticos', '$highRisks', Icons.warning_amber),
-        _metricCard('Eventos processados', '${twin.totalProcessedEvents}', Icons.timeline),
+        _metricCard(
+          'Eventos processados',
+          '${twin.totalProcessedEvents}',
+          Icons.timeline,
+        ),
         _metricCard('Áreas monitoradas', '6', Icons.grid_view),
       ],
     );
@@ -272,8 +297,13 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
             children: [
               Icon(icon),
               const SizedBox(height: 8),
-              Text(value,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Text(label),
             ],
           ),
@@ -292,8 +322,10 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Text(atlasDigitalTwinAreaLabel(insight.area),
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    atlasDigitalTwinAreaLabel(insight.area),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
                 Text('${insight.score.toStringAsFixed(0)} • ${insight.status}'),
               ],
@@ -316,18 +348,22 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Riscos prioritários',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Riscos prioritários',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             if (risks.isEmpty)
               const Text('Nenhum risco registrado no gêmeo digital.'),
-            ...risks.map((risk) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.warning_amber),
-                  title: Text(risk.title),
-                  subtitle: Text(risk.description),
-                  trailing: Text(atlasFarmRiskLevelLabel(risk.level)),
-                )),
+            ...risks.map(
+              (risk) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.warning_amber),
+                title: Text(risk.title),
+                subtitle: Text(risk.description),
+                trailing: Text(atlasFarmRiskLevelLabel(risk.level)),
+              ),
+            ),
           ],
         ),
       ),
@@ -342,22 +378,26 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Linha do tempo operacional',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Linha do tempo operacional',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             if (events.isEmpty)
               const Text('Os próximos eventos operacionais aparecerão aqui.'),
-            ...events.map((event) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.circle, size: 12),
-                  title: Text(event.title),
-                  subtitle: Text(
-                    '${atlasDigitalTwinAreaLabel(event.area)} • ${_date(event.occurredAt)}',
-                  ),
-                  trailing: Text(
-                    '${event.scoreBefore.toStringAsFixed(0)} → ${event.scoreAfter.toStringAsFixed(0)}',
-                  ),
-                )),
+            ...events.map(
+              (event) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.circle, size: 12),
+                title: Text(event.title),
+                subtitle: Text(
+                  '${atlasDigitalTwinAreaLabel(event.area)} • ${_date(event.occurredAt)}',
+                ),
+                trailing: Text(
+                  '${event.scoreBefore.toStringAsFixed(0)} → ${event.scoreAfter.toStringAsFixed(0)}',
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -372,12 +412,12 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Simulador de impacto',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
             const Text(
-              'Teste uma mudança antes de executá-la na propriedade.',
+              'Simulador de impacto',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 8),
+            const Text('Teste uma mudança antes de executá-la na propriedade.'),
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: () => _openSimulationDialog(twin),
@@ -386,8 +426,10 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
             ),
             if (result != null) ...[
               const Divider(height: 28),
-              Text(result.request.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                result.request.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Text(
                 'Score: ${result.currentScore.toStringAsFixed(1)} → ${result.projectedScore.toStringAsFixed(1)} '
@@ -430,10 +472,12 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
                       initialValue: area,
                       decoration: const InputDecoration(labelText: 'Área'),
                       items: AtlasDigitalTwinArea.values
-                          .map((item) => DropdownMenuItem(
-                                value: item,
-                                child: Text(atlasDigitalTwinAreaLabel(item)),
-                              ))
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(atlasDigitalTwinAreaLabel(item)),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
@@ -442,7 +486,9 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
                       },
                     ),
                     const SizedBox(height: 14),
-                    Text('Melhoria esperada: ${changePercent.toStringAsFixed(0)}%'),
+                    Text(
+                      'Melhoria esperada: ${changePercent.toStringAsFixed(0)}%',
+                    ),
                     Slider(
                       value: changePercent,
                       min: -20,
@@ -458,10 +504,8 @@ class _AtlasDigitalTwinScreenState extends State<AtlasDigitalTwinScreen> {
                         labelText: 'Investimento previsto (R\$)',
                       ),
                       onChanged: (value) {
-                        investmentValue = double.tryParse(
-                              value.replaceAll(',', '.'),
-                            ) ??
-                            0;
+                        investmentValue =
+                            double.tryParse(value.replaceAll(',', '.')) ?? 0;
                       },
                     ),
                     const SizedBox(height: 14),

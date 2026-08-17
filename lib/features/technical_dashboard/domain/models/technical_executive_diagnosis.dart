@@ -30,8 +30,10 @@ class TechnicalExecutiveDiagnosis {
     final strongPoints = ordered
         .where((pillar) => pillar.score >= 75)
         .take(3)
-        .map((pillar) =>
-            '${pillar.name}: ${pillar.roundedScore}/100 — desempenho consistente.')
+        .map(
+          (pillar) =>
+              '${pillar.name}: ${pillar.roundedScore}/100 — desempenho consistente.',
+        )
         .toList();
 
     final riskPoints = <String>[];
@@ -67,20 +69,20 @@ class TechnicalExecutiveDiagnosis {
     final status = score.total >= 800
         ? 'Gestão controlada'
         : score.total >= 650
-            ? 'Gestão em atenção'
-            : 'Intervenção necessária';
+        ? 'Gestão em atenção'
+        : 'Intervenção necessária';
 
     final headline = score.total >= 800
         ? 'A fazenda apresenta equilíbrio geral, com pontos específicos para evolução.'
         : score.total >= 650
-            ? 'A operação está funcional, mas há riscos que exigem acompanhamento próximo.'
-            : 'A operação possui riscos relevantes e precisa de ações corretivas imediatas.';
+        ? 'A operação está funcional, mas há riscos que exigem acompanhamento próximo.'
+        : 'A operação possui riscos relevantes e precisa de ações corretivas imediatas.';
 
     final trendText = balanceVariationPercent == null
         ? 'sem base financeira anterior suficiente para comparação'
         : balanceVariationPercent >= 0
-            ? 'com melhora de ${balanceVariationPercent.toStringAsFixed(1)}% no saldo em relação ao período anterior'
-            : 'com piora de ${balanceVariationPercent.abs().toStringAsFixed(1)}% no saldo em relação ao período anterior';
+        ? 'com melhora de ${balanceVariationPercent.toStringAsFixed(1)}% no saldo em relação ao período anterior'
+        : 'com piora de ${balanceVariationPercent.abs().toStringAsFixed(1)}% no saldo em relação ao período anterior';
 
     final summaryText =
         'Atlas Score de ${score.total}/1000 (${score.classification}), $trendText. '
@@ -99,7 +101,9 @@ class TechnicalExecutiveDiagnosis {
           : strongPoints,
       riskPoints: riskPoints.take(4).toList(growable: false),
       officialDecision: officialDecision,
-      nextReviewLabel: score.total < 650 ? 'Reavaliar em 7 dias' : 'Reavaliar em 30 dias',
+      nextReviewLabel: score.total < 650
+          ? 'Reavaliar em 7 dias'
+          : 'Reavaliar em 30 dias',
     );
   }
 }

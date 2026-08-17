@@ -80,7 +80,9 @@ class FarmFinanceData {
     final type = map['type'] as String? ?? 'Despesa';
     final legacyStatus = type == 'Receita' ? 'Recebido' : 'Pago';
     return FarmFinanceData(
-      id: map['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id:
+          map['id'] as String? ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
       type: type,
       category: map['category'] as String? ?? 'Outros',
       date: map['date'] as String? ?? '',
@@ -90,7 +92,8 @@ class FarmFinanceData {
       notes: map['notes'] as String? ?? '',
       status: map['status'] as String? ?? legacyStatus,
       dueDate: map['dueDate'] as String? ?? map['date'] as String? ?? '',
-      paymentDate: map['paymentDate'] as String? ?? map['date'] as String? ?? '',
+      paymentDate:
+          map['paymentDate'] as String? ?? map['date'] as String? ?? '',
       competence: map['competence'] as String? ?? '',
       costCenter: map['costCenter'] as String? ?? 'Geral',
       counterparty: map['counterparty'] as String? ?? '',

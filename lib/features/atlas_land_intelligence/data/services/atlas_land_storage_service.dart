@@ -7,16 +7,10 @@ class AtlasLandStorageService {
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_land_intelligence_'
         '${_normalize(farmName)}_${_normalize(animalId)}';
   }
@@ -34,9 +28,8 @@ class AtlasLandStorageService {
     try {
       return (jsonDecode(raw) as List<dynamic>)
           .map(
-            (item) => AtlasLandRecord.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AtlasLandRecord.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {
@@ -51,9 +44,7 @@ class AtlasLandStorageService {
   }) async {
     await _preferences.setString(
       _key(farmName: farmName, animalId: animalId),
-      jsonEncode(
-        records.map((record) => record.toMap()).toList(),
-      ),
+      jsonEncode(records.map((record) => record.toMap()).toList()),
     );
   }
 }

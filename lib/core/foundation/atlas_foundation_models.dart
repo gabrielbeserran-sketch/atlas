@@ -27,13 +27,13 @@ class AtlasFoundationCheck {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'description': description,
-        'area': area,
-        'isCompleted': isCompleted,
-        'isCritical': isCritical,
-      };
+    'id': id,
+    'title': title,
+    'description': description,
+    'area': area,
+    'isCompleted': isCompleted,
+    'isCritical': isCritical,
+  };
 
   factory AtlasFoundationCheck.fromMap(Map<String, dynamic> map) {
     return AtlasFoundationCheck(
@@ -56,9 +56,12 @@ class AtlasFoundationSnapshot {
   final List<AtlasFoundationCheck> checks;
   final DateTime? lastReviewAt;
 
-  int get completed => checks.where((AtlasFoundationCheck item) => item.isCompleted).length;
+  int get completed =>
+      checks.where((AtlasFoundationCheck item) => item.isCompleted).length;
   int get criticalPending => checks
-      .where((AtlasFoundationCheck item) => item.isCritical && !item.isCompleted)
+      .where(
+        (AtlasFoundationCheck item) => item.isCritical && !item.isCompleted,
+      )
       .length;
   double get progress => checks.isEmpty ? 0 : completed / checks.length;
 }

@@ -1,0 +1,43 @@
+services:
+  api:
+    build: ./backend
+    env_file: ./infrastructure/staging.env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_started}
+    restart: unless-stopped
+  postgres:
+    image: postgres:16-alpine
+    env_file: ./infrastructure/staging.env
+    volumes: ["atlas_staging_postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-atlas} -d ${POSTGRES_DB:-atlas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["atlas_staging_redis:/data"]
+    restart: unless-stopped
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    env_file: ./infrastructure/staging.env
+    volumes: ["atlas_staging_minio:/data"]
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infrastructure/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./infrastructure/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    restart: unless-stopped
+volumes:
+  atlas_staging_postgres:
+  atlas_staging_redis:
+  atlas_staging_minio:

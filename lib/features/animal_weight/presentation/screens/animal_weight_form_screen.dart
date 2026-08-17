@@ -92,11 +92,13 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
     if (isSaving || !formKey.currentState!.validate()) return;
     setState(() => isSaving = true);
     final record = AnimalWeightData(
-      id: widget.weightRecord?.id ??
+      id:
+          widget.weightRecord?.id ??
           DateTime.now().microsecondsSinceEpoch.toString(),
       date: dateController.text.trim(),
       weight: double.parse(weightController.text.trim().replaceAll(',', '.')),
-      bodyConditionScore: double.tryParse(
+      bodyConditionScore:
+          double.tryParse(
             bodyScoreController.text.trim().replaceAll(',', '.'),
           ) ??
           0,
@@ -130,7 +132,9 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Editar pesagem' : 'Nova pesagem')),
+      appBar: AppBar(
+        title: Text(isEditing ? 'Editar pesagem' : 'Nova pesagem'),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -143,7 +147,9 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      isEditing ? 'Atualizar pesagem local' : 'Registrar pesagem',
+                      isEditing
+                          ? 'Atualizar pesagem local'
+                          : 'Registrar pesagem',
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -207,7 +213,9 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Balança ou equipamento',
                         hintText: 'Modelo, patrimônio ou identificação',
-                        prefixIcon: Icon(Icons.precision_manufacturing_outlined),
+                        prefixIcon: Icon(
+                          Icons.precision_manufacturing_outlined,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),

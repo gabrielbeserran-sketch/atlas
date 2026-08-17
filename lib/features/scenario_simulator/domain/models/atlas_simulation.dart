@@ -56,18 +56,15 @@ class AtlasSimulation {
     };
   }
 
-  factory AtlasSimulation.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasSimulation.fromJson(Map<String, dynamic> json) {
     return AtlasSimulation(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? 'Cenário',
       description: json['description'] as String? ?? '',
       farmId: json['farmId'] as String? ?? 'global',
       farmName: json['farmName'] as String? ?? 'Operação',
-      createdAt: DateTime.tryParse(
-            json['createdAt'] as String? ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
       horizonMonths: json['horizonMonths'] as int? ?? 12,
       changes: AtlasSimulationChanges.fromJson(
@@ -117,9 +114,7 @@ class AtlasSimulationChanges {
         expectedMonthlyCostChange != 0;
   }
 
-  double changeForArea(
-    AtlasDigitalTwinArea area,
-  ) {
+  double changeForArea(AtlasDigitalTwinArea area) {
     switch (area) {
       case AtlasDigitalTwinArea.animal:
         return animalScoreChange;
@@ -151,12 +146,9 @@ class AtlasSimulationChanges {
     };
   }
 
-  factory AtlasSimulationChanges.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AtlasSimulationChanges.fromJson(Map<String, dynamic> json) {
     return AtlasSimulationChanges(
-      animalScoreChange:
-          (json['animalScoreChange'] as num?)?.toDouble() ?? 0,
+      animalScoreChange: (json['animalScoreChange'] as num?)?.toDouble() ?? 0,
       sanitaryScoreChange:
           (json['sanitaryScoreChange'] as num?)?.toDouble() ?? 0,
       reproductiveScoreChange:
@@ -168,8 +160,7 @@ class AtlasSimulationChanges {
       operationalScoreChange:
           (json['operationalScoreChange'] as num?)?.toDouble() ?? 0,
       herdSizeChange: json['herdSizeChange'] as int? ?? 0,
-      initialInvestment:
-          (json['initialInvestment'] as num?)?.toDouble() ?? 0,
+      initialInvestment: (json['initialInvestment'] as num?)?.toDouble() ?? 0,
       expectedMonthlyRevenueChange:
           (json['expectedMonthlyRevenueChange'] as num?)?.toDouble() ?? 0,
       expectedMonthlyCostChange:

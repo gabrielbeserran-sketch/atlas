@@ -1,14 +1,8 @@
 import 'package:projeto_atlas/features/dashboard/domain/services/atlas_copilot_service.dart';
 
-enum AtlasCopilotMessageAuthor {
-  user,
-  copilot,
-}
+enum AtlasCopilotMessageAuthor { user, copilot }
 
-enum AtlasCopilotMessageFeedback {
-  useful,
-  notUseful,
-}
+enum AtlasCopilotMessageFeedback { useful, notUseful }
 
 class AtlasCopilotMessage {
   const AtlasCopilotMessage({
@@ -65,67 +59,46 @@ class AtlasCopilotMessage {
       intent: intent ?? this.intent,
       confidence: confidence ?? this.confidence,
       actions: actions ?? this.actions,
-      feedback: clearFeedback
-          ? null
-          : feedback ?? this.feedback,
+      feedback: clearFeedback ? null : feedback ?? this.feedback,
     );
   }
 
-  factory AtlasCopilotMessage.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final authorName =
-        json['author']?.toString() ?? '';
+  factory AtlasCopilotMessage.fromJson(Map<String, dynamic> json) {
+    final authorName = json['author']?.toString() ?? '';
 
-    final intentName =
-        json['intent']?.toString();
+    final intentName = json['intent']?.toString();
 
-    final feedbackName =
-        json['feedback']?.toString();
+    final feedbackName = json['feedback']?.toString();
 
     final rawActions = json['actions'];
 
     return AtlasCopilotMessage(
       id: json['id']?.toString() ?? '',
       text: json['text']?.toString() ?? '',
-      author:
-          AtlasCopilotMessageAuthor.values.firstWhere(
+      author: AtlasCopilotMessageAuthor.values.firstWhere(
         (item) => item.name == authorName,
-        orElse: () =>
-            AtlasCopilotMessageAuthor.copilot,
+        orElse: () => AtlasCopilotMessageAuthor.copilot,
       ),
-      createdAt: DateTime.tryParse(
-            json['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
       intent: intentName == null
           ? null
           : AtlasCopilotIntent.values.firstWhere(
               (item) => item.name == intentName,
-              orElse: () =>
-                  AtlasCopilotIntent.unknown,
+              orElse: () => AtlasCopilotIntent.unknown,
             ),
-      confidence: _readDouble(
-        json['confidence'],
-      ),
+      confidence: _readDouble(json['confidence']),
       actions: rawActions is List
-          ? rawActions
-              .whereType<Map>()
-              .map((item) {
-                return _actionFromJson(
-                  Map<String, dynamic>.from(
-                    item,
-                  ),
-                );
-              })
-              .toList()
+          ? rawActions.whereType<Map>().map((item) {
+              return _actionFromJson(Map<String, dynamic>.from(item));
+            }).toList()
           : const [],
       feedback: feedbackName == null
           ? null
           : AtlasCopilotMessageFeedback.values.firstWhere(
               (item) => item.name == feedbackName,
-              orElse: () =>
-                  AtlasCopilotMessageFeedback.useful,
+              orElse: () => AtlasCopilotMessageFeedback.useful,
             ),
     );
   }
@@ -145,33 +118,24 @@ class AtlasCopilotMessage {
     };
   }
 
-  static AtlasCopilotAction _actionFromJson(
-    Map<String, dynamic> json,
-  ) {
-    final typeName =
-        json['type']?.toString() ?? '';
+  static AtlasCopilotAction _actionFromJson(Map<String, dynamic> json) {
+    final typeName = json['type']?.toString() ?? '';
 
     return AtlasCopilotAction(
       id: json['id']?.toString() ?? '',
       label: json['label']?.toString() ?? '',
-      type:
-          AtlasCopilotActionType.values.firstWhere(
+      type: AtlasCopilotActionType.values.firstWhere(
         (item) => item.name == typeName,
-        orElse: () =>
-            AtlasCopilotActionType.openIntelligence,
+        orElse: () => AtlasCopilotActionType.openIntelligence,
       ),
     );
   }
 
-  static double? _readDouble(
-    dynamic value,
-  ) {
+  static double? _readDouble(dynamic value) {
     if (value is num) {
       return value.toDouble();
     }
 
-    return double.tryParse(
-      value?.toString() ?? '',
-    );
+    return double.tryParse(value?.toString() ?? '');
   }
 }

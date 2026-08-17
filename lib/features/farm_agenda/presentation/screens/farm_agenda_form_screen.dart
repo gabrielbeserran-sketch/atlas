@@ -128,6 +128,8 @@ class _FarmAgendaFormScreenState extends State<FarmAgendaFormScreen> {
       priority: selectedPriority,
       status: selectedStatus,
       notes: notesController.text.trim(),
+      sourceType: widget.task?.sourceType ?? '',
+      sourceId: widget.task?.sourceId ?? '',
     );
 
     Navigator.pop<FarmAgendaData>(context, task);

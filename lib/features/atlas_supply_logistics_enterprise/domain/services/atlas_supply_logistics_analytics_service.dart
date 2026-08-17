@@ -33,8 +33,7 @@ class AtlasSupplyLogisticsAnalytics {
   final int score;
   final List<String> recommendations;
 
-  double get valueDeviation =>
-      totalActualValue - totalPlannedValue;
+  double get valueDeviation => totalActualValue - totalPlannedValue;
 }
 
 class AtlasSupplyLogisticsAnalyticsService {
@@ -61,8 +60,7 @@ class AtlasSupplyLogisticsAnalyticsService {
         .where((record) => record.isOperational)
         .length;
 
-    final overdue =
-        moduleRecords.where((record) => record.isOverdue).length;
+    final overdue = moduleRecords.where((record) => record.isOverdue).length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -73,13 +71,9 @@ class AtlasSupplyLogisticsAnalyticsService {
           (record.isOverdue ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasSupplyLogisticsRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasSupplyLogisticsRecord) selector) {
       if (moduleRecords.isEmpty) return 0;
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
@@ -100,10 +94,10 @@ class AtlasSupplyLogisticsAnalyticsService {
       (total, record) => total + record.totalCost,
     );
 
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageQuality =
-        averageOf((record) => record.qualityPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageQuality = averageOf((record) => record.qualityPercent);
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -139,60 +133,48 @@ class AtlasSupplyLogisticsAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasSupplyLogisticsModule.intelligentPurchasing =>
-            const [
-              'Conecte solicitação, cotação, aprovação, pedido e recebimento.',
-              'Registre centro de custo e responsável pela compra.',
-            ],
-          AtlasSupplyLogisticsModule.supplierManagement =>
-            const [
-              'Avalie qualidade, prazo, preço e conformidade.',
-              'Mantenha documentos e contatos atualizados.',
-            ],
-          AtlasSupplyLogisticsModule.automatedQuotation =>
-            const [
-              'Compare custo total, não apenas preço unitário.',
-              'Considere frete, prazo e condição de pagamento.',
-            ],
-          AtlasSupplyLogisticsModule.purchaseApproval =>
-            const [
-              'Defina regras por valor, categoria e centro de custo.',
-              'Mantenha histórico de aprovação e justificativa.',
-            ],
-          AtlasSupplyLogisticsModule.multiWarehouseStock =>
-            const [
-              'Controle saldo, reserva e transferência por depósito.',
-              'Evite estoque negativo e movimentações sem origem.',
-            ],
-          AtlasSupplyLogisticsModule.batchesAndExpiry =>
-            const [
-              'Registre lote, fabricação, validade e fornecedor.',
-              'Priorize consumo por validade e criticidade.',
-            ],
-          AtlasSupplyLogisticsModule.intelligentInventory =>
-            const [
-              'Realize contagens cíclicas e trate divergências.',
-              'Mantenha justificativa e aprovação para ajustes.',
-            ],
-          AtlasSupplyLogisticsModule.transportLogistics =>
-            const [
-              'Registre carga, rota, veículo, motorista e ocorrência.',
-              'Acompanhe prazo, custo e confirmação de entrega.',
-            ],
-          AtlasSupplyLogisticsModule.fuelManagement =>
-            const [
-              'Compare abastecimento, consumo e horímetro.',
-              'Investigue desvios por máquina, operação e período.',
-            ],
-          AtlasSupplyLogisticsModule.supplyLogisticsCenter =>
-            const [
-              'Centralize compras, estoque, transporte e combustível.',
-              'Priorize ruptura, validade, atraso e sobrecusto.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasSupplyLogisticsModule.intelligentPurchasing => const [
+          'Conecte solicitação, cotação, aprovação, pedido e recebimento.',
+          'Registre centro de custo e responsável pela compra.',
+        ],
+        AtlasSupplyLogisticsModule.supplierManagement => const [
+          'Avalie qualidade, prazo, preço e conformidade.',
+          'Mantenha documentos e contatos atualizados.',
+        ],
+        AtlasSupplyLogisticsModule.automatedQuotation => const [
+          'Compare custo total, não apenas preço unitário.',
+          'Considere frete, prazo e condição de pagamento.',
+        ],
+        AtlasSupplyLogisticsModule.purchaseApproval => const [
+          'Defina regras por valor, categoria e centro de custo.',
+          'Mantenha histórico de aprovação e justificativa.',
+        ],
+        AtlasSupplyLogisticsModule.multiWarehouseStock => const [
+          'Controle saldo, reserva e transferência por depósito.',
+          'Evite estoque negativo e movimentações sem origem.',
+        ],
+        AtlasSupplyLogisticsModule.batchesAndExpiry => const [
+          'Registre lote, fabricação, validade e fornecedor.',
+          'Priorize consumo por validade e criticidade.',
+        ],
+        AtlasSupplyLogisticsModule.intelligentInventory => const [
+          'Realize contagens cíclicas e trate divergências.',
+          'Mantenha justificativa e aprovação para ajustes.',
+        ],
+        AtlasSupplyLogisticsModule.transportLogistics => const [
+          'Registre carga, rota, veículo, motorista e ocorrência.',
+          'Acompanhe prazo, custo e confirmação de entrega.',
+        ],
+        AtlasSupplyLogisticsModule.fuelManagement => const [
+          'Compare abastecimento, consumo e horímetro.',
+          'Investigue desvios por máquina, operação e período.',
+        ],
+        AtlasSupplyLogisticsModule.supplyLogisticsCenter => const [
+          'Centralize compras, estoque, transporte e combustível.',
+          'Priorize ruptura, validade, atraso e sobrecusto.',
+        ],
+      });
     }
 
     return AtlasSupplyLogisticsAnalytics(

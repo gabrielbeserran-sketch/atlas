@@ -4,8 +4,7 @@ import 'package:projeto_atlas/features/copilot/domain/models/atlas_copilot_conve
 import 'package:projeto_atlas/features/copilot/domain/models/atlas_copilot_message.dart';
 import 'package:projeto_atlas/features/dashboard/domain/services/atlas_copilot_service.dart';
 
-class AtlasCopilotConversationViewerScreen
-    extends StatefulWidget {
+class AtlasCopilotConversationViewerScreen extends StatefulWidget {
   const AtlasCopilotConversationViewerScreen({
     required this.summary,
     required this.currentContextKey,
@@ -16,8 +15,7 @@ class AtlasCopilotConversationViewerScreen
   final String currentContextKey;
 
   @override
-  State<AtlasCopilotConversationViewerScreen>
-      createState() {
+  State<AtlasCopilotConversationViewerScreen> createState() {
     return _AtlasCopilotConversationViewerScreenState();
   }
 }
@@ -33,8 +31,7 @@ class _AtlasCopilotConversationViewerScreenState
   List<AtlasCopilotMessage> messages = [];
 
   bool get isCurrentContext {
-    return widget.summary.contextKey ==
-        widget.currentContextKey;
+    return widget.summary.contextKey == widget.currentContextKey;
   }
 
   @override
@@ -50,9 +47,7 @@ class _AtlasCopilotConversationViewerScreenState
     });
 
     try {
-      final loaded = await storage.load(
-        contextKey: widget.summary.contextKey,
-      );
+      final loaded = await storage.load(contextKey: widget.summary.contextKey);
 
       if (!mounted) {
         return;
@@ -68,8 +63,7 @@ class _AtlasCopilotConversationViewerScreenState
       }
 
       setState(() {
-        errorMessage =
-            'Não foi possível carregar esta conversa.';
+        errorMessage = 'Não foi possível carregar esta conversa.';
         isLoading = false;
       });
     }
@@ -80,28 +74,20 @@ class _AtlasCopilotConversationViewerScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Excluir conversa?',
-          ),
+          title: const Text('Excluir conversa?'),
           content: Text(
             'O histórico de "${widget.summary.contextLabel}" será apagado.',
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
+                Navigator.pop(dialogContext, false);
               },
               child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
+                Navigator.pop(dialogContext, true);
               },
               child: const Text('Excluir'),
             ),
@@ -114,9 +100,7 @@ class _AtlasCopilotConversationViewerScreenState
       return;
     }
 
-    await storage.clear(
-      contextKey: widget.summary.contextKey,
-    );
+    await storage.clear(contextKey: widget.summary.contextKey);
 
     if (!mounted) {
       return;
@@ -145,14 +129,11 @@ class _AtlasCopilotConversationViewerScreenState
       backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.summary.contextLabel,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             Text(
               '${widget.summary.messageCount} mensagens',
@@ -166,89 +147,59 @@ class _AtlasCopilotConversationViewerScreenState
         actions: [
           IconButton(
             tooltip: 'Excluir conversa',
-            onPressed:
-                isLoading ? null : confirmDelete,
-            icon: const Icon(
-              Icons.delete_outline,
-            ),
+            onPressed: isLoading ? null : confirmDelete,
+            icon: const Icon(Icons.delete_outline),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
-              ? _ConversationErrorView(
-                  message: errorMessage!,
-                  onRetry: loadConversation,
-                )
-              : messages.isEmpty
-                  ? const _ConversationEmptyView()
-                  : Column(
-                      children: [
-                        _ConversationContextBanner(
-                          summary: widget.summary,
-                          isCurrentContext:
-                              isCurrentContext,
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            padding:
-                                const EdgeInsets.fromLTRB(
-                              18,
-                              18,
-                              18,
-                              24,
-                            ),
-                            itemCount: messages.length,
-                            itemBuilder:
-                                (context, index) {
-                              return _ReadOnlyMessageBubble(
-                                message:
-                                    messages[index],
-                              );
-                            },
+          ? _ConversationErrorView(
+              message: errorMessage!,
+              onRetry: loadConversation,
+            )
+          : messages.isEmpty
+          ? const _ConversationEmptyView()
+          : Column(
+              children: [
+                _ConversationContextBanner(
+                  summary: widget.summary,
+                  isCurrentContext: isCurrentContext,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      return _ReadOnlyMessageBubble(message: messages[index]);
+                    },
+                  ),
+                ),
+                if (isCurrentContext)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.black.withValues(alpha: 0.08),
                           ),
                         ),
-                        if (isCurrentContext)
-                          SafeArea(
-                            top: false,
-                            child: Container(
-                              width: double.infinity,
-                              padding:
-                                  const EdgeInsets.fromLTRB(
-                                18,
-                                12,
-                                18,
-                                14,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border(
-                                  top: BorderSide(
-                                    color: Colors.black
-                                        .withValues(
-                                      alpha: 0.08,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              child: FilledButton.icon(
-                                onPressed:
-                                    continueConversation,
-                                icon: const Icon(
-                                  Icons.chat_outlined,
-                                ),
-                                label: const Text(
-                                  'Continuar conversa',
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+                      ),
+                      child: FilledButton.icon(
+                        onPressed: continueConversation,
+                        icon: const Icon(Icons.chat_outlined),
+                        label: const Text('Continuar conversa'),
+                      ),
                     ),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -263,8 +214,7 @@ class AtlasCopilotConversationViewerResult {
   final bool continueCurrentConversation;
 }
 
-class _ConversationContextBanner
-    extends StatelessWidget {
+class _ConversationContextBanner extends StatelessWidget {
   const _ConversationContextBanner({
     required this.summary,
     required this.isCurrentContext,
@@ -281,13 +231,8 @@ class _ConversationContextBanner
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 11,
-      ),
-      color: color.withValues(
-        alpha: 0.09,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+      color: color.withValues(alpha: 0.09),
       child: Row(
         children: [
           Icon(
@@ -312,16 +257,10 @@ class _ConversationContextBanner
           ),
           if (isCurrentContext)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 5,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
               decoration: BoxDecoration(
-                color: color.withValues(
-                  alpha: 0.12,
-                ),
-                borderRadius:
-                    BorderRadius.circular(10),
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 'Contexto atual',
@@ -335,10 +274,7 @@ class _ConversationContextBanner
           else
             const Text(
               'Somente leitura',
-              style: TextStyle(
-                color: Colors.black45,
-                fontSize: 9,
-              ),
+              style: TextStyle(color: Colors.black45, fontSize: 9),
             ),
         ],
       ),
@@ -346,11 +282,8 @@ class _ConversationContextBanner
   }
 }
 
-class _ReadOnlyMessageBubble
-    extends StatelessWidget {
-  const _ReadOnlyMessageBubble({
-    required this.message,
-  });
+class _ReadOnlyMessageBubble extends StatelessWidget {
+  const _ReadOnlyMessageBubble({required this.message});
 
   final AtlasCopilotMessage message;
 
@@ -359,65 +292,44 @@ class _ReadOnlyMessageBubble
     final isUser = message.isUser;
 
     return Align(
-      alignment: isUser
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 760,
-        ),
-        margin: const EdgeInsets.only(
-          bottom: 14,
-        ),
+        constraints: const BoxConstraints(maxWidth: 760),
+        margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isUser
-              ? const Color(0xFF1B5E20)
-              : Colors.white,
+          color: isUser ? const Color(0xFF1B5E20) : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
             topRight: const Radius.circular(18),
-            bottomLeft: Radius.circular(
-              isUser ? 18 : 4,
-            ),
-            bottomRight: Radius.circular(
-              isUser ? 4 : 18,
-            ),
+            bottomLeft: Radius.circular(isUser ? 18 : 4),
+            bottomRight: Radius.circular(isUser ? 4 : 18),
           ),
           boxShadow: isUser
               ? const []
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.05,
-                    ),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(
-                  isUser
-                      ? Icons.person_outline
-                      : Icons.auto_awesome_outlined,
+                  isUser ? Icons.person_outline : Icons.auto_awesome_outlined,
                   size: 17,
-                  color: isUser
-                      ? Colors.white70
-                      : const Color(0xFF1B5E20),
+                  color: isUser ? Colors.white70 : const Color(0xFF1B5E20),
                 ),
                 const SizedBox(width: 7),
                 Text(
                   isUser ? 'Você' : 'Copiloto Atlas',
                   style: TextStyle(
-                    color: isUser
-                        ? Colors.white70
-                        : const Color(0xFF1B5E20),
+                    color: isUser ? Colors.white70 : const Color(0xFF1B5E20),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -426,14 +338,10 @@ class _ReadOnlyMessageBubble
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      atlasCopilotIntentLabel(
-                        message.intent!,
-                      ),
+                      atlasCopilotIntentLabel(message.intent!),
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: isUser
-                            ? Colors.white54
-                            : Colors.black45,
+                        color: isUser ? Colors.white54 : Colors.black45,
                         fontSize: 10,
                       ),
                     ),
@@ -445,22 +353,16 @@ class _ReadOnlyMessageBubble
             SelectableText(
               message.text,
               style: TextStyle(
-                color: isUser
-                    ? Colors.white
-                    : const Color(0xFF263238),
+                color: isUser ? Colors.white : const Color(0xFF263238),
                 height: 1.48,
                 fontSize: 14,
               ),
             ),
             const SizedBox(height: 9),
             Text(
-              _formatDateTime(
-                message.createdAt,
-              ),
+              _formatDateTime(message.createdAt),
               style: TextStyle(
-                color: isUser
-                    ? Colors.white54
-                    : Colors.black38,
+                color: isUser ? Colors.white54 : Colors.black38,
                 fontSize: 9,
               ),
             ),
@@ -470,32 +372,22 @@ class _ReadOnlyMessageBubble
     );
   }
 
-  String _formatDateTime(
-    DateTime date,
-  ) {
-    final day =
-        date.day.toString().padLeft(2, '0');
+  String _formatDateTime(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
 
-    final month =
-        date.month.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
 
-    final hour =
-        date.hour.toString().padLeft(2, '0');
+    final hour = date.hour.toString().padLeft(2, '0');
 
-    final minute =
-        date.minute.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year} · '
         '$hour:$minute';
   }
 }
 
-class _ConversationErrorView
-    extends StatelessWidget {
-  const _ConversationErrorView({
-    required this.message,
-    required this.onRetry,
-  });
+class _ConversationErrorView extends StatelessWidget {
+  const _ConversationErrorView({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -508,28 +400,18 @@ class _ConversationErrorView
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 52,
-              color: Color(0xFFC62828),
-            ),
+            const Icon(Icons.error_outline, size: 52, color: Color(0xFFC62828)),
             const SizedBox(height: 14),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.black54,
-              ),
+              style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 15),
             FilledButton.icon(
               onPressed: onRetry,
-              icon: const Icon(
-                Icons.refresh,
-              ),
-              label: const Text(
-                'Tentar novamente',
-              ),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar novamente'),
             ),
           ],
         ),
@@ -538,8 +420,7 @@ class _ConversationErrorView
   }
 }
 
-class _ConversationEmptyView
-    extends StatelessWidget {
+class _ConversationEmptyView extends StatelessWidget {
   const _ConversationEmptyView();
 
   @override
@@ -550,17 +431,11 @@ class _ConversationEmptyView
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.chat_bubble_outline,
-              size: 52,
-              color: Colors.black38,
-            ),
+            Icon(Icons.chat_bubble_outline, size: 52, color: Colors.black38),
             SizedBox(height: 14),
             Text(
               'Esta conversa está vazia.',
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),

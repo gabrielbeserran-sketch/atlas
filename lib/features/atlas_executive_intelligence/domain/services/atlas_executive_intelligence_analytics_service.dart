@@ -50,8 +50,9 @@ class AtlasExecutiveIntelligenceAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -79,16 +80,16 @@ class AtlasExecutiveIntelligenceAnalyticsService {
     final averageScore = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.scoreValue)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.scoreValue)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -138,39 +139,30 @@ class AtlasExecutiveIntelligenceAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasExecutiveIntelligenceModule.enterpriseCrm =>
-            const [
-              'Mantenha próxima ação, responsável, valor potencial e probabilidade atualizados.',
-              'Compare custo de atendimento, receita, satisfação e recorrência por cliente.',
-            ],
-          AtlasExecutiveIntelligenceModule.financialCenter =>
-            const [
-              'Concilie caixa, contas e centros de custo antes de projetar resultados.',
-              'Compare realizado, orçamento e forecast com explicação dos desvios.',
-            ],
-          AtlasExecutiveIntelligenceModule.businessIntelligence =>
-            const [
-              'Defina fonte, fórmula, periodicidade e responsável para cada KPI.',
-              'Use benchmarks comparáveis e preserve contexto ao interpretar tendências.',
-            ],
-          AtlasExecutiveIntelligenceModule.strategicCenter =>
-            const [
-              'Conecte objetivos, indicadores, iniciativas, responsáveis, riscos e orçamento.',
-              'Revise cenários e prioridades sempre que premissas relevantes mudarem.',
-            ],
-          AtlasExecutiveIntelligenceModule.commandCenter =>
-            const [
-              'Centralize somente alertas acionáveis, com prioridade, dono e prazo.',
-              'Use o score global como síntese; valide sempre os indicadores que o compõem.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasExecutiveIntelligenceModule.enterpriseCrm => const [
+          'Mantenha próxima ação, responsável, valor potencial e probabilidade atualizados.',
+          'Compare custo de atendimento, receita, satisfação e recorrência por cliente.',
+        ],
+        AtlasExecutiveIntelligenceModule.financialCenter => const [
+          'Concilie caixa, contas e centros de custo antes de projetar resultados.',
+          'Compare realizado, orçamento e forecast com explicação dos desvios.',
+        ],
+        AtlasExecutiveIntelligenceModule.businessIntelligence => const [
+          'Defina fonte, fórmula, periodicidade e responsável para cada KPI.',
+          'Use benchmarks comparáveis e preserve contexto ao interpretar tendências.',
+        ],
+        AtlasExecutiveIntelligenceModule.strategicCenter => const [
+          'Conecte objetivos, indicadores, iniciativas, responsáveis, riscos e orçamento.',
+          'Revise cenários e prioridades sempre que premissas relevantes mudarem.',
+        ],
+        AtlasExecutiveIntelligenceModule.commandCenter => const [
+          'Centralize somente alertas acionáveis, com prioridade, dono e prazo.',
+          'Use o score global como síntese; valide sempre os indicadores que o compõem.',
+        ],
+      });
     }
 
     return items;

@@ -52,8 +52,9 @@ class AtlasGovernanceOperationAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final pending = moduleRecords.where((record) {
       return !record.isOperational && !record.isCritical;
@@ -86,16 +87,16 @@ class AtlasGovernanceOperationAnalyticsService {
     final averageScore = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.scoreValue)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.scoreValue)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(30, coverage.round() * 30 ~/ 100);
@@ -146,38 +147,30 @@ class AtlasGovernanceOperationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasGovernanceOperationModule.qualityManagement =>
-            const [
-              'Padronize procedimentos, critérios de inspeção e evidências obrigatórias.',
-              'Trate causa raiz, responsável, prazo e eficácia de cada ação corretiva.',
-            ],
-          AtlasGovernanceOperationModule.compliance => const [
-              'Associe riscos a controles, responsáveis, evidências e frequência de revisão.',
-              'Mantenha ocorrências protegidas, auditáveis e com plano de resposta.',
-            ],
-          AtlasGovernanceOperationModule.projectPortfolio =>
-            const [
-              'Priorize projetos por valor, urgência, risco, esforço e dependências.',
-              'Monitore marcos, orçamento, recursos, benefícios e desvios.',
-            ],
-          AtlasGovernanceOperationModule.workforceManagement =>
-            const [
-              'Planeje capacidade, escalas, metas e responsabilidades de forma transparente.',
-              'Registre feedback, desempenho, ocorrências e ações de desenvolvimento.',
-            ],
-          AtlasGovernanceOperationModule.trainingAcademy =>
-            const [
-              'Defina trilhas por função, pré-requisitos, avaliação e validade do certificado.',
-              'Acompanhe lacunas de competência e evolução do plano individual.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasGovernanceOperationModule.qualityManagement => const [
+          'Padronize procedimentos, critérios de inspeção e evidências obrigatórias.',
+          'Trate causa raiz, responsável, prazo e eficácia de cada ação corretiva.',
+        ],
+        AtlasGovernanceOperationModule.compliance => const [
+          'Associe riscos a controles, responsáveis, evidências e frequência de revisão.',
+          'Mantenha ocorrências protegidas, auditáveis e com plano de resposta.',
+        ],
+        AtlasGovernanceOperationModule.projectPortfolio => const [
+          'Priorize projetos por valor, urgência, risco, esforço e dependências.',
+          'Monitore marcos, orçamento, recursos, benefícios e desvios.',
+        ],
+        AtlasGovernanceOperationModule.workforceManagement => const [
+          'Planeje capacidade, escalas, metas e responsabilidades de forma transparente.',
+          'Registre feedback, desempenho, ocorrências e ações de desenvolvimento.',
+        ],
+        AtlasGovernanceOperationModule.trainingAcademy => const [
+          'Defina trilhas por função, pré-requisitos, avaliação e validade do certificado.',
+          'Acompanhe lacunas de competência e evolução do plano individual.',
+        ],
+      });
     }
 
     return items;

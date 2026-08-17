@@ -1,18 +1,15 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/atlas_livestock_integration/domain/models/atlas_livestock_integration_record.dart';
 import 'package:projeto_atlas/features/atlas_livestock_integration/domain/services/atlas_livestock_integration_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasLivestockIntegrationAnalyticsService();
+  const service = AtlasLivestockIntegrationAnalyticsService();
 
   test('calculates livestock integration analytics', () {
     const records = [
       AtlasLivestockIntegrationRecord(
         id: '1',
-        module:
-            AtlasLivestockIntegrationModule.eventIntegration,
+        module: AtlasLivestockIntegrationModule.eventIntegration,
         feature: 'Reflexos automáticos',
         title: 'Integração de evento sanitário',
         date: '04/08/2026',
@@ -36,8 +33,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasLivestockIntegrationModule.eventIntegration,
+      module: AtlasLivestockIntegrationModule.eventIntegration,
       records: records,
     );
 

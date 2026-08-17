@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
@@ -27,11 +26,9 @@ class AtlasQualityReleaseScreen extends StatefulWidget {
       _AtlasQualityReleaseScreenState();
 }
 
-class _AtlasQualityReleaseScreenState
-    extends State<AtlasQualityReleaseScreen> {
+class _AtlasQualityReleaseScreenState extends State<AtlasQualityReleaseScreen> {
   final storage = AtlasQualityReleaseStorageService();
-  final analyticsService =
-      const AtlasQualityReleaseAnalyticsService();
+  final analyticsService = const AtlasQualityReleaseAnalyticsService();
 
   late AtlasQualityReleaseModule selectedModule;
   List<AtlasQualityReleaseRecord> records = [];
@@ -54,8 +51,9 @@ class _AtlasQualityReleaseScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasQualityReleaseDate(b.date)
-          .compareTo(parseAtlasQualityReleaseDate(a.date)),
+      (a, b) => parseAtlasQualityReleaseDate(
+        b.date,
+      ).compareTo(parseAtlasQualityReleaseDate(a.date)),
     );
 
     if (!mounted) return;
@@ -67,27 +65,23 @@ class _AtlasQualityReleaseScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasQualityReleaseRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasQualityReleaseRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
-  Future<void> openForm([
-    AtlasQualityReleaseRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasQualityReleaseRecord? current]) async {
     final result = await showDialog<AtlasQualityReleaseRecord>(
       context: context,
-      builder: (_) => _QualityReleaseForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) =>
+          _QualityReleaseForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -106,9 +100,7 @@ class _AtlasQualityReleaseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasQualityReleaseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasQualityReleaseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -320,9 +312,7 @@ class _AtlasQualityReleaseScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre a primeira revisão, execução de teste, publicação ou atividade do piloto.',
                             ),
@@ -375,21 +365,16 @@ class _AtlasQualityReleaseScreenState
 }
 
 class _QualityReleaseForm extends StatefulWidget {
-  const _QualityReleaseForm({
-    required this.module,
-    this.current,
-  });
+  const _QualityReleaseForm({required this.module, this.current});
 
   final AtlasQualityReleaseModule module;
   final AtlasQualityReleaseRecord? current;
 
   @override
-  State<_QualityReleaseForm> createState() =>
-      _QualityReleaseFormState();
+  State<_QualityReleaseForm> createState() => _QualityReleaseFormState();
 }
 
-class _QualityReleaseFormState
-    extends State<_QualityReleaseForm> {
+class _QualityReleaseFormState extends State<_QualityReleaseForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -421,19 +406,14 @@ class _QualityReleaseFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasQualityReleaseDate(DateTime.now()),
+      text: current?.date ?? formatAtlasQualityReleaseDate(DateTime.now()),
     );
-    environment =
-        TextEditingController(text: current?.environment ?? '');
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
+    environment = TextEditingController(text: current?.environment ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
     scope = TextEditingController(text: current?.scope ?? '');
     evidence = TextEditingController(text: current?.evidence ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     passRatePercent = TextEditingController(
       text: current == null || current.passRatePercent == 0
@@ -486,10 +466,7 @@ class _QualityReleaseFormState
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
@@ -503,7 +480,8 @@ class _QualityReleaseFormState
     Navigator.pop(
       context,
       AtlasQualityReleaseRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'quality_release_'
                 '${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
@@ -516,18 +494,12 @@ class _QualityReleaseFormState
         responsible: responsible.text.trim(),
         scope: scope.text.trim(),
         evidence: evidence.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        passRatePercent:
-            decimal(passRatePercent).clamp(0, 100),
-        coveragePercent:
-            decimal(coveragePercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        failureCount:
-            integer(failureCount) < 0 ? 0 : integer(failureCount),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        passRatePercent: decimal(passRatePercent).clamp(0, 100),
+        coveragePercent: decimal(coveragePercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        failureCount: integer(failureCount) < 0 ? 0 : integer(failureCount),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -538,11 +510,7 @@ class _QualityReleaseFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -557,10 +525,8 @@ class _QualityReleaseFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -571,37 +537,33 @@ class _QualityReleaseFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Validado',
-                    'Aprovado',
-                    'Concluído',
-                    'Atenção',
-                    'Reprovado',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Validado',
+                            'Aprovado',
+                            'Concluído',
+                            'Atenção',
+                            'Reprovado',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -610,20 +572,11 @@ class _QualityReleaseFormState
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -647,18 +600,14 @@ class _QualityReleaseFormState
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -670,10 +619,7 @@ class _QualityReleaseFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -683,23 +629,15 @@ IconData _moduleIcon(AtlasQualityReleaseModule module) {
   return switch (module) {
     AtlasQualityReleaseModule.architecturalReview =>
       Icons.architecture_outlined,
-    AtlasQualityReleaseModule.comprehensiveUnitTests =>
-      Icons.science_outlined,
-    AtlasQualityReleaseModule.integrationTests =>
-      Icons.hub_outlined,
-    AtlasQualityReleaseModule.interfaceTests =>
-      Icons.devices_outlined,
-    AtlasQualityReleaseModule.securityTests =>
-      Icons.security_outlined,
-    AtlasQualityReleaseModule.performanceTests =>
-      Icons.speed_outlined,
+    AtlasQualityReleaseModule.comprehensiveUnitTests => Icons.science_outlined,
+    AtlasQualityReleaseModule.integrationTests => Icons.hub_outlined,
+    AtlasQualityReleaseModule.interfaceTests => Icons.devices_outlined,
+    AtlasQualityReleaseModule.securityTests => Icons.security_outlined,
+    AtlasQualityReleaseModule.performanceTests => Icons.speed_outlined,
     AtlasQualityReleaseModule.monitoringAndFailureHandling =>
       Icons.monitor_heart_outlined,
-    AtlasQualityReleaseModule.stagingPublication =>
-      Icons.cloud_upload_outlined,
-    AtlasQualityReleaseModule.farmPilotProgram =>
-      Icons.agriculture_outlined,
-    AtlasQualityReleaseModule.atlasVersionOne =>
-      Icons.rocket_launch_outlined,
+    AtlasQualityReleaseModule.stagingPublication => Icons.cloud_upload_outlined,
+    AtlasQualityReleaseModule.farmPilotProgram => Icons.agriculture_outlined,
+    AtlasQualityReleaseModule.atlasVersionOne => Icons.rocket_launch_outlined,
   };
 }

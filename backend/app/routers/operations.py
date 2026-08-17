@@ -49,7 +49,7 @@ def _farm_allowed(principal: Principal, farm_id: str | None) -> None:
     if farm_id is None or principal.membership.role in {"owner", "admin"}:
         return
     allowed = set(principal.membership.farm_ids or [])
-    if farm_id not in allowed:
+    if allowed and farm_id not in allowed:
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
 
 
@@ -314,10 +314,42 @@ def update_task(
     if task is None or task.company_id != principal.company.id:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
     _farm_allowed(principal, task.farm_id)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    source_backed = bool(task.source_id) and task.source_type in {
+        "reproduction_event", "health_event"
+    }
+    if source_backed:
+        changes.pop("source_type", None)
+    due_at_changed = "due_at" in changes
+    for field, value in changes.items():
         setattr(task, field, value)
     if task.status == "completed" and task.completed_at is None:
         task.completed_at = datetime.now(timezone.utc)
+    elif task.status != "completed":
+        task.completed_at = None
+
+    if source_backed and due_at_changed:
+        if task.source_type == "reproduction_event":
+            event = db.scalar(
+                select(ReproductionEvent).where(
+                    ReproductionEvent.id == task.source_id,
+                    ReproductionEvent.company_id == principal.company.id,
+                    ReproductionEvent.farm_id == task.farm_id,
+                )
+            )
+            if event is not None:
+                event.expected_date = task.due_at
+        elif task.source_type == "health_event":
+            event = db.scalar(
+                select(HealthEvent).where(
+                    HealthEvent.id == task.source_id,
+                    HealthEvent.company_id == principal.company.id,
+                    HealthEvent.farm_id == task.farm_id,
+                )
+            )
+            if event is not None:
+                event.next_date = task.due_at
+
     db.commit()
     db.refresh(task)
     return task

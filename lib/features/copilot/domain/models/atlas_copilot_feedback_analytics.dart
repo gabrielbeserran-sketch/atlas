@@ -22,14 +22,11 @@ class AtlasCopilotFeedbackAnalytics {
 
   final double approvalRate;
 
-  final List<AtlasCopilotIntentFeedbackMetric>
-      intentMetrics;
+  final List<AtlasCopilotIntentFeedbackMetric> intentMetrics;
 
-  final List<AtlasCopilotContextFeedbackMetric>
-      contextMetrics;
+  final List<AtlasCopilotContextFeedbackMetric> contextMetrics;
 
-  final List<AtlasCopilotRecentFeedbackItem>
-      recentFeedback;
+  final List<AtlasCopilotRecentFeedbackItem> recentFeedback;
 
   bool get hasFeedback {
     return evaluatedResponses > 0;

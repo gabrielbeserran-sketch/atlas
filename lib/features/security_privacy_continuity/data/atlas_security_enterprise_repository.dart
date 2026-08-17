@@ -1,10 +1,8 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasSecurityEnterpriseRepository {
-  AtlasSecurityEnterpriseRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasSecurityEnterpriseRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
@@ -17,10 +15,7 @@ class AtlasSecurityEnterpriseRepository {
   }
 
   Future<List<Map<String, dynamic>>> policies() async {
-    final response = await _client.send(
-      'GET',
-      '/security-enterprise/policies',
-    );
+    final response = await _client.send('GET', '/security-enterprise/policies');
     return response.asMapList();
   }
 
@@ -41,10 +36,7 @@ class AtlasSecurityEnterpriseRepository {
   }
 
   Future<List<Map<String, dynamic>>> risks() async {
-    final response = await _client.send(
-      'GET',
-      '/security-enterprise/risks',
-    );
+    final response = await _client.send('GET', '/security-enterprise/risks');
     return response.asMapList();
   }
 

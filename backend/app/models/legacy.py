@@ -331,6 +331,27 @@ class HerdLot(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
+
+class Paddock(Base):
+    __tablename__ = "paddocks"
+    __table_args__ = (
+        UniqueConstraint("company_id", "farm_id", "name", name="uq_paddock_company_farm_name"),
+    )
+
+    id: Mapped[str] = mapped_column(String(80), primary_key=True, default=lambda: new_id("paddock"))
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"), index=True)
+    farm_id: Mapped[str] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(180))
+    area: Mapped[float] = mapped_column(Float, default=0)
+    status: Mapped[str] = mapped_column(String(60), default="Descanso")
+    animals: Mapped[int] = mapped_column(Integer, default=0)
+    notes: Mapped[str] = mapped_column(Text, default="")
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
 class LivestockAnimal(Base):
     __tablename__ = "livestock_animals"
     __table_args__ = (
@@ -360,6 +381,52 @@ class LivestockAnimal(Base):
     expected_calving_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class AnimalMedia(Base):
+    __tablename__ = "animal_media"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "animal_id",
+            "kind",
+            "id",
+            name="uq_animal_media_company_animal_kind_id",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80),
+        primary_key=True,
+        default=lambda: new_id("media"),
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        index=True,
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"),
+        index=True,
+    )
+    animal_id: Mapped[str] = mapped_column(
+        ForeignKey("livestock_animals.id", ondelete="CASCADE"),
+        index=True,
+    )
+    kind: Mapped[str] = mapped_column(String(30), index=True)
+    original_filename: Mapped[str] = mapped_column(String(255), default="")
+    content_type: Mapped[str] = mapped_column(String(160), default="")
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    sha256: Mapped[str] = mapped_column(String(64), default="", index=True)
+    storage_key: Mapped[str] = mapped_column(String(700), default="")
+    metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_by: Mapped[str] = mapped_column(String(80), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
 
 
 class AnimalMovement(Base):
@@ -606,6 +673,9 @@ class NutritionPlan(Base):
     tdn_percent: Mapped[float] = mapped_column(Float, default=0)
     cost_per_kg: Mapped[float] = mapped_column(Float, default=0)
     ingredients_json: Mapped[list] = mapped_column(JSON, default=list)
+    stock_integration_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    inventory_deducted: Mapped[bool] = mapped_column(Boolean, default=False)
+    inventory_deduction_cost: Mapped[float] = mapped_column(Float, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     notes: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

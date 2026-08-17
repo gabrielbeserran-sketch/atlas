@@ -72,15 +72,11 @@ class AtlasSustainabilityEnterpriseAnalyticsService {
     );
 
     double averageOf(
-      double Function(
-        AtlasSustainabilityEnterpriseRecord,
-      ) selector,
+      double Function(AtlasSustainabilityEnterpriseRecord) selector,
     ) {
       if (moduleRecords.isEmpty) return 0.0;
 
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
@@ -97,10 +93,10 @@ class AtlasSustainabilityEnterpriseAnalyticsService {
       (total, record) => total + record.targetValue,
     );
 
-    final averageQuality =
-        averageOf((record) => record.qualityPercent);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
+    final averageQuality = averageOf((record) => record.qualityPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -151,66 +147,53 @@ class AtlasSustainabilityEnterpriseAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasSustainabilityEnterpriseModule.carbonFootprint =>
-          const [
-            'Padronize fatores de emissão, período e limites do inventário.',
-            'Separe redução real, remoção e compensação.',
-          ],
-        AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
-          const [
-            'Documente fontes, escopos e metodologia de cálculo.',
-            'Mantenha rastreabilidade dos dados usados no inventário.',
-          ],
-        AtlasSustainabilityEnterpriseModule.waterManagement =>
-          const [
-            'Meça captação, consumo, qualidade e reuso por atividade.',
-            'Priorize perdas, risco de abastecimento e eficiência.',
-          ],
-        AtlasSustainabilityEnterpriseModule.energyEfficiency =>
-          const [
-            'Compare consumo, produção e origem da energia.',
-            'Avalie eficiência antes de recomendar novos investimentos.',
-          ],
-        AtlasSustainabilityEnterpriseModule.wasteManagement =>
-          const [
-            'Classifique resíduos, riscos, volume e destinação.',
-            'Registre comprovantes e oportunidades de reaproveitamento.',
-          ],
-        AtlasSustainabilityEnterpriseModule.biodiversity =>
-          const [
-            'Associe observações a área, data e evidência.',
-            'Valide intervenções com profissionais ambientais.',
-          ],
-        AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
-          const [
-            'Controle licenças, condicionantes e evidências por prazo.',
-            'Trate não conformidades com responsável e plano corretivo.',
-          ],
-        AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
-          const [
-            'Mapeie requisitos, auditorias e validade de cada certificado.',
-            'Não confunda preparação interna com certificação emitida.',
-          ],
-        AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
-          const [
-            'Registre origem, fornecedores, evidências e destino.',
-            'Evite lacunas na cadeia de custódia.',
-          ],
-        AtlasSustainabilityEnterpriseModule.esgCenter =>
-          const [
-            'Integre ambiente, pessoas e governança no mesmo painel.',
-            'Priorize metas por impacto, risco e materialidade.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasSustainabilityEnterpriseModule.carbonFootprint => const [
+        'Padronize fatores de emissão, período e limites do inventário.',
+        'Separe redução real, remoção e compensação.',
+      ],
+      AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => const [
+        'Documente fontes, escopos e metodologia de cálculo.',
+        'Mantenha rastreabilidade dos dados usados no inventário.',
+      ],
+      AtlasSustainabilityEnterpriseModule.waterManagement => const [
+        'Meça captação, consumo, qualidade e reuso por atividade.',
+        'Priorize perdas, risco de abastecimento e eficiência.',
+      ],
+      AtlasSustainabilityEnterpriseModule.energyEfficiency => const [
+        'Compare consumo, produção e origem da energia.',
+        'Avalie eficiência antes de recomendar novos investimentos.',
+      ],
+      AtlasSustainabilityEnterpriseModule.wasteManagement => const [
+        'Classifique resíduos, riscos, volume e destinação.',
+        'Registre comprovantes e oportunidades de reaproveitamento.',
+      ],
+      AtlasSustainabilityEnterpriseModule.biodiversity => const [
+        'Associe observações a área, data e evidência.',
+        'Valide intervenções com profissionais ambientais.',
+      ],
+      AtlasSustainabilityEnterpriseModule.environmentalCompliance => const [
+        'Controle licenças, condicionantes e evidências por prazo.',
+        'Trate não conformidades com responsável e plano corretivo.',
+      ],
+      AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
+        const [
+          'Mapeie requisitos, auditorias e validade de cada certificado.',
+          'Não confunda preparação interna com certificação emitida.',
+        ],
+      AtlasSustainabilityEnterpriseModule.sustainableTraceability => const [
+        'Registre origem, fornecedores, evidências e destino.',
+        'Evite lacunas na cadeia de custódia.',
+      ],
+      AtlasSustainabilityEnterpriseModule.esgCenter => const [
+        'Integre ambiente, pessoas e governança no mesmo painel.',
+        'Priorize metas por impacto, risco e materialidade.',
+      ],
+    });
 
     return items;
   }

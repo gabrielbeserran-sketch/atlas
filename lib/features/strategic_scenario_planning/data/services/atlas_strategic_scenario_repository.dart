@@ -9,12 +9,10 @@ class AtlasStrategicScenarioRepository {
   static final AtlasStrategicScenarioRepository instance =
       AtlasStrategicScenarioRepository._();
 
-  static const String _storageKey =
-      'atlas_strategic_scenarios_v1';
+  static const String _storageKey = 'atlas_strategic_scenarios_v1';
 
   Future<List<AtlasStrategicScenario>> loadAll() async {
-    final preferences =
-        await SharedPreferences.getInstance();
+    final preferences = await SharedPreferences.getInstance();
     final raw = preferences.getString(_storageKey);
 
     if (raw == null || raw.isEmpty) {
@@ -31,30 +29,20 @@ class AtlasStrategicScenarioRepository {
       return decoded
           .whereType<Map>()
           .map(
-            (item) =>
-                AtlasStrategicScenario.fromJson(
+            (item) => AtlasStrategicScenario.fromJson(
               Map<String, dynamic>.from(item),
             ),
           )
           .toList()
-        ..sort(
-          (first, second) =>
-              second.createdAt.compareTo(
-            first.createdAt,
-          ),
-        );
+        ..sort((first, second) => second.createdAt.compareTo(first.createdAt));
     } catch (_) {
       return _seedScenarios();
     }
   }
 
-  Future<void> save(
-    AtlasStrategicScenario scenario,
-  ) async {
+  Future<void> save(AtlasStrategicScenario scenario) async {
     final scenarios = await loadAll();
-    final index = scenarios.indexWhere(
-      (item) => item.id == scenario.id,
-    );
+    final index = scenarios.indexWhere((item) => item.id == scenario.id);
 
     if (index >= 0) {
       scenarios[index] = scenario;
@@ -72,20 +60,12 @@ class AtlasStrategicScenarioRepository {
     await _write(scenarios);
   }
 
-  Future<void> _write(
-    List<AtlasStrategicScenario> scenarios,
-  ) async {
-    final preferences =
-        await SharedPreferences.getInstance();
+  Future<void> _write(List<AtlasStrategicScenario> scenarios) async {
+    final preferences = await SharedPreferences.getInstance();
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        scenarios
-            .take(100)
-            .map((item) => item.toJson())
-            .toList(),
-      ),
+      jsonEncode(scenarios.take(100).map((item) => item.toJson()).toList()),
     );
   }
 
@@ -100,8 +80,7 @@ class AtlasStrategicScenarioRepository {
         title: 'Intensificação de pastagens',
         description:
             'Recuperação, adubação e manejo rotacionado para elevar lotação e produção por hectare.',
-        type:
-            AtlasStrategicScenarioType.pastureIntensification,
+        type: AtlasStrategicScenarioType.pastureIntensification,
         createdAt: now,
         horizonYears: 5,
         initialInvestment: 320000,
@@ -137,9 +116,7 @@ class AtlasStrategicScenarioRepository {
         description:
             'Ampliação da taxa de serviço, concentração de partos e avanço genético do rebanho.',
         type: AtlasStrategicScenarioType.iatf,
-        createdAt: now.subtract(
-          const Duration(minutes: 1),
-        ),
+        createdAt: now.subtract(const Duration(minutes: 1)),
         horizonYears: 5,
         initialInvestment: 180000,
         workingCapital: 35000,
@@ -174,9 +151,7 @@ class AtlasStrategicScenarioRepository {
         description:
             'Estrutura modular para terminação intensiva e aumento do giro do capital.',
         type: AtlasStrategicScenarioType.feedlot,
-        createdAt: now.subtract(
-          const Duration(minutes: 2),
-        ),
+        createdAt: now.subtract(const Duration(minutes: 2)),
         horizonYears: 6,
         initialInvestment: 980000,
         workingCapital: 300000,

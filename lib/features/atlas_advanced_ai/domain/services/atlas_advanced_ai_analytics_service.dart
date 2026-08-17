@@ -70,16 +70,16 @@ class AtlasAdvancedAiAnalyticsService {
     final double averageConfidence = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.confidencePercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.confidencePercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final double averageRisk = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.riskPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.riskPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     final totalEstimatedImpact = moduleRecords.fold<double>(
       0.0,
@@ -89,9 +89,9 @@ class AtlasAdvancedAiAnalyticsService {
     final double averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(25, coveragePercent.round() * 25 ~/ 100);
@@ -143,56 +143,52 @@ class AtlasAdvancedAiAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
       return items;
     }
 
-    items.addAll(
-      switch (module) {
-        AtlasAdvancedAiModule.conversationalAssistant => const [
-            'Mantenha registro do contexto, da pergunta e da ação sugerida.',
-            'Não execute ações críticas sem confirmação explícita.',
-          ],
-        AtlasAdvancedAiModule.farmContextChat => const [
-            'Separe contexto da empresa, fazenda, lote e animal.',
-            'Mostre as fontes usadas para cada resposta relevante.',
-          ],
-        AtlasAdvancedAiModule.healthDecisionSupport => const [
-            'Use o módulo apenas como apoio de triagem.',
-            'Diagnóstico e tratamento exigem avaliação veterinária.',
-          ],
-        AtlasAdvancedAiModule.reproductiveIntelligence => const [
-            'Valide dados de ciclo, histórico e exame antes da recomendação.',
-            'Protocolos devem ser aprovados pelo responsável técnico.',
-          ],
-        AtlasAdvancedAiModule.nutritionalIntelligence => const [
-            'Considere peso, categoria, consumo, alimento e objetivo produtivo.',
-            'Ajustes de dieta exigem validação profissional.',
-          ],
-        AtlasAdvancedAiModule.geneticIntelligence => const [
-            'Documente objetivos de seleção e qualidade dos dados genealógicos.',
-            'Revise risco de consanguinidade antes do acasalamento.',
-          ],
-        AtlasAdvancedAiModule.financialIntelligence => const [
-            'Separe fatos, premissas e projeções.',
-            'Valide recomendações com registros financeiros confiáveis.',
-          ],
-        AtlasAdvancedAiModule.strategicIntelligence => const [
-            'Conecte cada recomendação a objetivo, responsável e prazo.',
-            'Revise o plano quando as premissas mudarem.',
-          ],
-        AtlasAdvancedAiModule.climateIntelligence => const [
-            'Registre fonte, horário e validade do dado meteorológico.',
-            'Não confunda previsão com garantia operacional.',
-          ],
-        AtlasAdvancedAiModule.explainableAi => const [
-            'Mostre motivos, evidências, limitações e incertezas.',
-            'Mantenha revisão humana para decisões de alto impacto.',
-          ],
-      },
-    );
+    items.addAll(switch (module) {
+      AtlasAdvancedAiModule.conversationalAssistant => const [
+        'Mantenha registro do contexto, da pergunta e da ação sugerida.',
+        'Não execute ações críticas sem confirmação explícita.',
+      ],
+      AtlasAdvancedAiModule.farmContextChat => const [
+        'Separe contexto da empresa, fazenda, lote e animal.',
+        'Mostre as fontes usadas para cada resposta relevante.',
+      ],
+      AtlasAdvancedAiModule.healthDecisionSupport => const [
+        'Use o módulo apenas como apoio de triagem.',
+        'Diagnóstico e tratamento exigem avaliação veterinária.',
+      ],
+      AtlasAdvancedAiModule.reproductiveIntelligence => const [
+        'Valide dados de ciclo, histórico e exame antes da recomendação.',
+        'Protocolos devem ser aprovados pelo responsável técnico.',
+      ],
+      AtlasAdvancedAiModule.nutritionalIntelligence => const [
+        'Considere peso, categoria, consumo, alimento e objetivo produtivo.',
+        'Ajustes de dieta exigem validação profissional.',
+      ],
+      AtlasAdvancedAiModule.geneticIntelligence => const [
+        'Documente objetivos de seleção e qualidade dos dados genealógicos.',
+        'Revise risco de consanguinidade antes do acasalamento.',
+      ],
+      AtlasAdvancedAiModule.financialIntelligence => const [
+        'Separe fatos, premissas e projeções.',
+        'Valide recomendações com registros financeiros confiáveis.',
+      ],
+      AtlasAdvancedAiModule.strategicIntelligence => const [
+        'Conecte cada recomendação a objetivo, responsável e prazo.',
+        'Revise o plano quando as premissas mudarem.',
+      ],
+      AtlasAdvancedAiModule.climateIntelligence => const [
+        'Registre fonte, horário e validade do dado meteorológico.',
+        'Não confunda previsão com garantia operacional.',
+      ],
+      AtlasAdvancedAiModule.explainableAi => const [
+        'Mostre motivos, evidências, limitações e incertezas.',
+        'Mantenha revisão humana para decisões de alto impacto.',
+      ],
+    });
 
     return items;
   }

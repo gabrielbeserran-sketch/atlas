@@ -30,8 +30,7 @@ class _AtlasReproductivePremiumScreenState
     extends State<AtlasReproductivePremiumScreen> {
   final AtlasReproductivePremiumStorageService storage =
       AtlasReproductivePremiumStorageService();
-  final AtlasReproductivePremiumAnalyticsService
-      analyticsService =
+  final AtlasReproductivePremiumAnalyticsService analyticsService =
       const AtlasReproductivePremiumAnalyticsService();
 
   late AtlasReproductivePremiumModule selectedModule;
@@ -55,12 +54,9 @@ class _AtlasReproductivePremiumScreenState
     );
 
     loaded.sort(
-      (first, second) =>
-          parseAtlasReproductivePremiumDate(
+      (first, second) => parseAtlasReproductivePremiumDate(
         second.date,
-      ).compareTo(
-        parseAtlasReproductivePremiumDate(first.date),
-      ),
+      ).compareTo(parseAtlasReproductivePremiumDate(first.date)),
     );
 
     if (!mounted) return;
@@ -80,31 +76,26 @@ class _AtlasReproductivePremiumScreenState
   }
 
   List<AtlasReproductivePremiumRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasReproductivePremiumRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasReproductivePremiumRecord>(
+  Future<void> openForm([AtlasReproductivePremiumRecord? current]) async {
+    final result = await showDialog<AtlasReproductivePremiumRecord>(
       context: context,
-      builder: (context) => _ReproductivePremiumForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _ReproductivePremiumForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -118,9 +109,7 @@ class _AtlasReproductivePremiumScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasReproductivePremiumRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasReproductivePremiumRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -128,13 +117,11 @@ class _AtlasReproductivePremiumScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -176,12 +163,9 @@ class _AtlasReproductivePremiumScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -198,9 +182,7 @@ class _AtlasReproductivePremiumScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 25 — Reprodução Premium',
-                          ),
+                          title: Text('Fase 25 — Reprodução Premium'),
                           subtitle: Text(
                             'A entrega organiza protocolos, genética e indicadores. '
                             'Procedimentos reais exigem médico-veterinário, laboratório e responsável técnico.',
@@ -309,12 +291,8 @@ class _AtlasReproductivePremiumScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro protocolo, análise ou evento.',
                             ),
@@ -325,8 +303,7 @@ class _AtlasReproductivePremiumScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -340,14 +317,10 @@ class _AtlasReproductivePremiumScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasReproductivePremiumModule selected;
-  final ValueChanged<AtlasReproductivePremiumModule>
-      onSelected;
+  final ValueChanged<AtlasReproductivePremiumModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -357,24 +330,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasReproductivePremiumModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasReproductivePremiumModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -397,15 +367,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -424,24 +394,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Falhou' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Falhou' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Validado' ||
-      'Em execução' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Validado' ||
+      'Em execução' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -458,14 +424,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -474,10 +434,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _ReproductivePremiumForm extends StatefulWidget {
-  const _ReproductivePremiumForm({
-    required this.module,
-    this.current,
-  });
+  const _ReproductivePremiumForm({required this.module, this.current});
 
   final AtlasReproductivePremiumModule module;
   final AtlasReproductivePremiumRecord? current;
@@ -487,8 +444,7 @@ class _ReproductivePremiumForm extends StatefulWidget {
       _ReproductivePremiumFormState();
 }
 
-class _ReproductivePremiumFormState
-    extends State<_ReproductivePremiumForm> {
+class _ReproductivePremiumFormState extends State<_ReproductivePremiumForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -520,64 +476,45 @@ class _ReproductivePremiumFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasReproductivePremiumDate(
-            DateTime.now(),
-          ),
+      text: current?.date ?? formatAtlasReproductivePremiumDate(DateTime.now()),
     );
     animalReference = TextEditingController(
       text: current?.animalReference ?? '',
     );
-    protocol = TextEditingController(
-      text: current?.protocol ?? '',
-    );
+    protocol = TextEditingController(text: current?.protocol ?? '');
     geneticReference = TextEditingController(
       text: current?.geneticReference ?? '',
     );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    metricName = TextEditingController(text: current?.metricName ?? '');
     metricValue = TextEditingController(
       text: current == null || current.metricValue == 0
           ? ''
           : current.metricValue.toString(),
     );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
+    unit = TextEditingController(text: current?.unit ?? '');
     confidencePercent = TextEditingController(
-      text: current == null ||
-              current.confidencePercent == 0
+      text: current == null || current.confidencePercent == 0
           ? ''
           : current.confidencePercent.toString(),
     );
     successPercent = TextEditingController(
-      text: current == null ||
-              current.successPercent == 0
+      text: current == null || current.successPercent == 0
           ? ''
           : current.successPercent.toString(),
     );
     cost = TextEditingController(
-      text: current == null || current.cost == 0
-          ? ''
-          : current.cost.toString(),
+      text: current == null || current.cost == 0 ? '' : current.cost.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -601,10 +538,7 @@ class _ReproductivePremiumFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -621,24 +555,19 @@ class _ReproductivePremiumFormState
   }
 
   Future<void> chooseDate() async {
-    final parsed =
-        parseAtlasReproductivePremiumDate(date.text);
+    final parsed = parseAtlasReproductivePremiumDate(date.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      date.text =
-          formatAtlasReproductivePremiumDate(selected);
+      date.text = formatAtlasReproductivePremiumDate(selected);
     });
   }
 
@@ -651,7 +580,8 @@ class _ReproductivePremiumFormState
     Navigator.pop(
       context,
       AtlasReproductivePremiumRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'repro_premium_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -664,12 +594,10 @@ class _ReproductivePremiumFormState
         metricName: metricName.text.trim(),
         metricValue: decimal(metricValue),
         unit: unit.text.trim(),
-        confidencePercent:
-            percent(confidencePercent),
+        confidencePercent: percent(confidencePercent),
         successPercent: percent(successPercent),
         cost: decimal(cost),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         responsible: responsible.text.trim(),
         notes: notes.text.trim(),
@@ -682,11 +610,7 @@ class _ReproductivePremiumFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -701,10 +625,8 @@ class _ReproductivePremiumFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -715,12 +637,9 @@ class _ReproductivePremiumFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -732,35 +651,32 @@ class _ReproductivePremiumFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Em execução',
-                    'Concluído',
-                    'Atenção',
-                    'Falhou',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Em execução',
+                            'Concluído',
+                            'Atenção',
+                            'Falhou',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -793,8 +709,7 @@ class _ReproductivePremiumFormState
                 ),
                 TextFormField(
                   controller: metricValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -803,14 +718,11 @@ class _ReproductivePremiumFormState
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 TextFormField(
                   controller: confidencePercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -819,8 +731,7 @@ class _ReproductivePremiumFormState
                 ),
                 TextFormField(
                   controller: successPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -829,13 +740,10 @@ class _ReproductivePremiumFormState
                 ),
                 TextFormField(
                   controller: cost,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Custo (R\$)',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Custo (R\$)'),
                 ),
                 TextFormField(
                   controller: progressPercent,
@@ -861,9 +769,7 @@ class _ReproductivePremiumFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -875,33 +781,22 @@ class _ReproductivePremiumFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasReproductivePremiumModule module,
-) {
+IconData _moduleIcon(AtlasReproductivePremiumModule module) {
   return switch (module) {
-    AtlasReproductivePremiumModule.advancedIatf =>
-      Icons.event_repeat_outlined,
+    AtlasReproductivePremiumModule.advancedIatf => Icons.event_repeat_outlined,
     AtlasReproductivePremiumModule.individualFertility =>
       Icons.favorite_border_outlined,
-    AtlasReproductivePremiumModule.embryos =>
-      Icons.science_outlined,
-    AtlasReproductivePremiumModule.ivf =>
-      Icons.biotech_outlined,
-    AtlasReproductivePremiumModule.embryoTransfer =>
-      Icons.swap_horiz_outlined,
-    AtlasReproductivePremiumModule.geneticCatalog =>
-      Icons.menu_book_outlined,
-    AtlasReproductivePremiumModule.intelligentMating =>
-      Icons.hub_outlined,
+    AtlasReproductivePremiumModule.embryos => Icons.science_outlined,
+    AtlasReproductivePremiumModule.ivf => Icons.biotech_outlined,
+    AtlasReproductivePremiumModule.embryoTransfer => Icons.swap_horiz_outlined,
+    AtlasReproductivePremiumModule.geneticCatalog => Icons.menu_book_outlined,
+    AtlasReproductivePremiumModule.intelligentMating => Icons.hub_outlined,
     AtlasReproductivePremiumModule.geneticPrediction =>
       Icons.auto_graph_outlined,
     AtlasReproductivePremiumModule.continuousBreeding =>

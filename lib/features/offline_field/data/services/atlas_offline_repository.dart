@@ -10,8 +10,7 @@ class AtlasOfflineRepository {
   static const String _autoSyncKey = 'atlas_offline_field_auto_sync_v1';
 
   Future<List<AtlasOfflineRecord>> loadRecords({String? farmId}) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     final String? raw = preferences.getString(_recordsKey);
 
     if (raw == null || raw.isEmpty) {
@@ -22,13 +21,11 @@ class AtlasOfflineRepository {
 
     try {
       final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
-      final List<AtlasOfflineRecord> records = decoded.map(
-        (dynamic item) {
-          return AtlasOfflineRecord.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          );
-        },
-      ).toList();
+      final List<AtlasOfflineRecord> records = decoded.map((dynamic item) {
+        return AtlasOfflineRecord.fromJson(
+          Map<String, dynamic>.from(item as Map),
+        );
+      }).toList();
 
       if (farmId == null) {
         return records;
@@ -43,8 +40,7 @@ class AtlasOfflineRepository {
   }
 
   Future<void> saveRecords(List<AtlasOfflineRecord> records) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _recordsKey,
       jsonEncode(
@@ -54,26 +50,22 @@ class AtlasOfflineRepository {
   }
 
   Future<bool> loadOnlineState() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     return preferences.getBool(_onlineKey) ?? false;
   }
 
   Future<void> saveOnlineState(bool value) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_onlineKey, value);
   }
 
   Future<bool> loadAutoSync() async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     return preferences.getBool(_autoSyncKey) ?? true;
   }
 
   Future<void> saveAutoSync(bool value) async {
-    final SharedPreferences preferences =
-        await SharedPreferences.getInstance();
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_autoSyncKey, value);
   }
 
@@ -88,10 +80,7 @@ class AtlasOfflineRepository {
         status: AtlasOfflineRecordStatus.pending,
         createdAt: now.subtract(const Duration(hours: 3)),
         updatedAt: now.subtract(const Duration(hours: 3)),
-        payload: const <String, dynamic>{
-          'animals': 24,
-          'averageWeight': 387.4,
-        },
+        payload: const <String, dynamic>{'animals': 24, 'averageWeight': 387.4},
         farmId: farmId,
       ),
       AtlasOfflineRecord(

@@ -36,23 +36,19 @@ class _AtlasExecutiveBrainHistoryScreenState
   }
 
   List<AtlasExecutiveBrainHistoryEntry> get filteredEntries {
-    final entries =
-        AtlasExecutiveBrainHistoryService.instance.entries;
+    final entries = AtlasExecutiveBrainHistoryService.instance.entries;
 
     if (selectedType == null) {
       return entries;
     }
 
-    return entries
-        .where((item) => item.changeType == selectedType)
-        .toList();
+    return entries.where((item) => item.changeType == selectedType).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final entries = filteredEntries;
-    final total =
-        AtlasExecutiveBrainHistoryService.instance.entries.length;
+    final total = AtlasExecutiveBrainHistoryService.instance.entries.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
@@ -71,102 +67,99 @@ class _AtlasExecutiveBrainHistoryScreenState
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 10),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.history,
-                            color: Color(0xFF1565C0),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              '${entries.length} de $total registros exibidos',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 280,
-                            child: DropdownButtonFormField<
-                                AtlasExecutiveBrainChangeType?>(
-                              initialValue: selectedType,
-                              decoration: const InputDecoration(
-                                labelText: 'Filtrar por alteração',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: [
-                                const DropdownMenuItem<
-                                    AtlasExecutiveBrainChangeType?>(
-                                  value: null,
-                                  child: Text('Todas'),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1100),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(22, 18, 22, 10),
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.history,
+                                  color: Color(0xFF1565C0),
                                 ),
-                                ...AtlasExecutiveBrainChangeType.values.map(
-                                  (type) {
-                                    return DropdownMenuItem<
-                                        AtlasExecutiveBrainChangeType?>(
-                                      value: type,
-                                      child: Text(
-                                        atlasExecutiveBrainChangeTypeLabel(
-                                          type,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${entries.length} de $total registros exibidos',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 280,
+                                  child:
+                                      DropdownButtonFormField<
+                                        AtlasExecutiveBrainChangeType?
+                                      >(
+                                        initialValue: selectedType,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Filtrar por alteração',
+                                          border: OutlineInputBorder(),
                                         ),
+                                        items: [
+                                          const DropdownMenuItem<
+                                            AtlasExecutiveBrainChangeType?
+                                          >(value: null, child: Text('Todas')),
+                                          ...AtlasExecutiveBrainChangeType
+                                              .values
+                                              .map((type) {
+                                                return DropdownMenuItem<
+                                                  AtlasExecutiveBrainChangeType?
+                                                >(
+                                                  value: type,
+                                                  child: Text(
+                                                    atlasExecutiveBrainChangeTypeLabel(
+                                                      type,
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                        ],
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedType = value;
+                                          });
+                                        },
                                       ),
-                                    );
-                                  },
                                 ),
                               ],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedType = value;
-                                });
-                              },
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Expanded(
+                        child: entries.isEmpty
+                            ? const _EmptyHistoryView()
+                            : ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(
+                                  22,
+                                  10,
+                                  22,
+                                  28,
+                                ),
+                                itemCount: entries.length,
+                                separatorBuilder: (context, index) {
+                                  return const SizedBox(height: 12);
+                                },
+                                itemBuilder: (context, index) {
+                                  return _HistoryCard(item: entries[index]);
+                                },
+                              ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: entries.isEmpty
-                      ? const _EmptyHistoryView()
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
-                            22,
-                            10,
-                            22,
-                            28,
-                          ),
-                          itemCount: entries.length,
-                          separatorBuilder: (context, index) {
-                            return const SizedBox(height: 12);
-                          },
-                          itemBuilder: (context, index) {
-                            return _HistoryCard(
-                              item: entries[index],
-                            );
-                          },
-                        ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -233,10 +226,7 @@ class _HistoryCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: color.withValues(alpha: 0.12),
-                  child: Icon(
-                    _changeIcon(item.changeType),
-                    color: color,
-                  ),
+                  child: Icon(_changeIcon(item.changeType), color: color),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -244,9 +234,7 @@ class _HistoryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        atlasExecutiveBrainChangeTypeLabel(
-                          item.changeType,
-                        ),
+                        atlasExecutiveBrainChangeTypeLabel(item.changeType),
                         style: TextStyle(
                           color: color,
                           fontSize: 16,
@@ -290,10 +278,7 @@ class _HistoryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            Text(
-              item.reason,
-              style: const TextStyle(height: 1.4),
-            ),
+            Text(item.reason, style: const TextStyle(height: 1.4)),
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -314,9 +299,7 @@ class _HistoryCard extends StatelessWidget {
                   Text(
                     'Atual: '
                     '${item.currentDecisionTitle ?? 'Nenhuma decisão'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
@@ -328,13 +311,9 @@ class _HistoryCard extends StatelessWidget {
               children: [
                 _MetricChip(
                   label: 'Confiança',
-                  value:
-                      '${item.currentConfidencePercent.toStringAsFixed(0)}%',
+                  value: '${item.currentConfidencePercent.toStringAsFixed(0)}%',
                 ),
-                _MetricChip(
-                  label: 'Status',
-                  value: item.currentStatus.name,
-                ),
+                _MetricChip(label: 'Status', value: item.currentStatus.name),
                 _MetricChip(
                   label: 'ID atual',
                   value: item.currentDecisionId ?? 'Sem decisão',
@@ -349,10 +328,7 @@ class _HistoryCard extends StatelessWidget {
 }
 
 class _MetricChip extends StatelessWidget {
-  const _MetricChip({
-    required this.label,
-    required this.value,
-  });
+  const _MetricChip({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -360,20 +336,14 @@ class _MetricChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(11),
       ),
       child: Text(
         '$label: $value',
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -390,11 +360,7 @@ class _EmptyHistoryView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.history_toggle_off,
-              size: 54,
-              color: Colors.black26,
-            ),
+            Icon(Icons.history_toggle_off, size: 54, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Nenhuma mudança registrada.',
@@ -423,9 +389,7 @@ String _formatDateTime(DateTime value) {
   return '$day/$month/${value.year} · $hour:$minute:$second';
 }
 
-Color _changeColor(
-  AtlasExecutiveBrainChangeType type,
-) {
+Color _changeColor(AtlasExecutiveBrainChangeType type) {
   switch (type) {
     case AtlasExecutiveBrainChangeType.initialized:
       return const Color(0xFF1565C0);
@@ -442,9 +406,7 @@ Color _changeColor(
   }
 }
 
-IconData _changeIcon(
-  AtlasExecutiveBrainChangeType type,
-) {
+IconData _changeIcon(AtlasExecutiveBrainChangeType type) {
   switch (type) {
     case AtlasExecutiveBrainChangeType.initialized:
       return Icons.play_circle_outline;

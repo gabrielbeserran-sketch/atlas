@@ -1,0 +1,140 @@
+{
+  "status": "INVENTORIED",
+  "ready_count": 15,
+  "blocker_count": 0,
+  "deferred_count": 0,
+  "inventory_errors": [],
+  "checks": [
+    {
+      "code": "SEC-001",
+      "title": "PostgreSQL obrigatório fora do desenvolvimento",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings.validate_secure_environment",
+      "recommendation": "Manter PostgreSQL obrigatório em staging/production."
+    },
+    {
+      "code": "SEC-002",
+      "title": "JWT secreto forte fora do desenvolvimento",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings.validate_secure_environment",
+      "recommendation": "Manter rejeição de segredo padrão/fraco."
+    },
+    {
+      "code": "SEC-003",
+      "title": "Bootstrap desabilitado em produção",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings rejeita bootstrap habilitado em staging/production.",
+      "recommendation": "Manter o bloqueio coberto por teste."
+    },
+    {
+      "code": "SEC-004",
+      "title": "Swagger/OpenAPI desabilitado em produção",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings rejeita documentação habilitada em production.",
+      "recommendation": "Manter documentação desligada no ambiente de produção."
+    },
+    {
+      "code": "SEC-005",
+      "title": "URL pública HTTPS em produção",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings exige HTTPS em staging/production e rejeita host local em production.",
+      "recommendation": "Manter URL pública HTTPS real no deploy."
+    },
+    {
+      "code": "SEC-006",
+      "title": "Chave IoT padrão proibida em produção",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Settings exige chave IoT forte e sem marcador inseguro em staging/production.",
+      "recommendation": "Gerar chave IoT por secret manager e rotacioná-la quando necessário."
+    },
+    {
+      "code": "AUTH-001",
+      "title": "Sessões, refresh, recuperação e MFA",
+      "status": "ready",
+      "next_marco": "5C",
+      "evidence": "auth.py expõe login/refresh/logout/sessions/password/MFA e security.py valida força de senha.",
+      "recommendation": "Homologar com testes negativos, revogação e isolamento por tenant."
+    },
+    {
+      "code": "NET-001",
+      "title": "Headers HTTP de segurança",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "security_middleware aplica nosniff, DENY, Referrer/Permissions e HSTS em ambiente production-like.",
+      "recommendation": "Manter e cobrir por teste."
+    },
+    {
+      "code": "NET-002",
+      "title": "Rate limit compartilhado entre instâncias",
+      "status": "ready",
+      "next_marco": "5F",
+      "evidence": "Rate limiter usa Redis compartilhado; fallback local existe apenas fora de production-like.",
+      "recommendation": "Manter Redis disponível e monitorado em produção."
+    },
+    {
+      "code": "NET-003",
+      "title": "Confiança de proxy/X-Forwarded-For",
+      "status": "ready",
+      "next_marco": "5B",
+      "evidence": "Forwarded headers só são honrados quando habilitados e o peer direto pertence a CIDR confiável.",
+      "recommendation": "Manter proxy trust explícito e desabilitado por padrão."
+    },
+    {
+      "code": "ATT-001",
+      "title": "Fotos multi-dispositivo com autoridade remota",
+      "status": "ready",
+      "next_marco": "5D",
+      "evidence": "Backend animal-media é autoridade; SharedPreferences guarda somente snapshot confirmado/cache.",
+      "recommendation": "Manter cache local subordinado ao backend."
+    },
+    {
+      "code": "ATT-002",
+      "title": "Documentos multi-dispositivo com autoridade remota",
+      "status": "ready",
+      "next_marco": "5D",
+      "evidence": "Backend animal-media é autoridade; SharedPreferences guarda somente snapshot confirmado/cache.",
+      "recommendation": "Manter cache local subordinado ao backend."
+    },
+    {
+      "code": "ATT-003",
+      "title": "Anexos Android portáveis",
+      "status": "ready",
+      "next_marco": "6",
+      "evidence": "Abertura de documento ainda contém comando Windows e foto pressupõe caminho manual.",
+      "recommendation": "No Marco 6 usar picker/câmera/intent compatíveis com Android."
+    },
+    {
+      "code": "BKP-001",
+      "title": "Backup PostgreSQL",
+      "status": "ready",
+      "next_marco": "5G",
+      "evidence": "BackupService usa pg_dump custom format e retenção.",
+      "recommendation": "Homologar execução real e retenção."
+    },
+    {
+      "code": "BKP-002",
+      "title": "Restauração testável",
+      "status": "ready",
+      "next_marco": "5G",
+      "evidence": "BackupService cria bundle banco+anexos e verifica restore em banco temporário.",
+      "recommendation": "Manter prova periódica de restore no ambiente operacional."
+    }
+  ],
+  "recommended_sequence": [
+    "5A baseline imutável + inventário de produção",
+    "5B configuração, secrets, HTTPS/proxy e superfície da API",
+    "5C autenticação, sessões, MFA, recuperação e isolamento tenant/fazenda",
+    "5D Fotos/Documentos com armazenamento remoto autenticado",
+    "5E transações, concorrência e idempotência dos fluxos críticos",
+    "5F rate limit distribuído, resiliência e observabilidade",
+    "5G backup + restauração comprovada",
+    "5H gate estrito de produção e release candidate",
+    "Marco 6 Android V1 e experiência nativa de anexos"
+  ]
+}

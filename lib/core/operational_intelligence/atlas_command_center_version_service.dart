@@ -20,21 +20,14 @@ class AtlasCommandCenterVersionService {
         );
   }
 
-  AtlasCommandCenterVersion advance(
-    AtlasOperationalInvalidation invalidation,
-  ) {
-    final keys = <String>{
-      _key(invalidation.farmName),
-      _key(null),
-    };
+  AtlasCommandCenterVersion advance(AtlasOperationalInvalidation invalidation) {
+    final keys = <String>{_key(invalidation.farmName), _key(null)};
 
     AtlasCommandCenterVersion? latest;
 
     for (final key in keys) {
       final currentVersion = _versions[key]?.number ?? 0;
-      final farmName = key == _key(null)
-          ? null
-          : invalidation.farmName;
+      final farmName = key == _key(null) ? null : invalidation.farmName;
 
       final next = AtlasCommandCenterVersion(
         number: currentVersion + 1,

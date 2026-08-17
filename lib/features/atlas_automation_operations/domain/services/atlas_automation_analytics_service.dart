@@ -42,8 +42,9 @@ class AtlasAutomationAnalyticsService {
         ? 0.0
         : represented.length * 100 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -54,9 +55,9 @@ class AtlasAutomationAnalyticsService {
     final averageProgress = moduleRecords.isEmpty
         ? 0.0
         : moduleRecords
-                .map((record) => record.progressPercent)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => record.progressPercent)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     var score = 30;
     score += math.min(35, coverage.round() * 35 ~/ 100);
@@ -102,30 +103,26 @@ class AtlasAutomationAnalyticsService {
     }
 
     if (records.isEmpty) {
-      items.add(
-        'Cadastre o primeiro registro do ${module.packageLabel}.',
-      );
+      items.add('Cadastre o primeiro registro do ${module.packageLabel}.');
     } else {
-      items.addAll(
-        switch (module) {
-          AtlasAutomationModule.drone => const [
-              'Valide plano de voo, autonomia, área, clima e restrições antes da operação.',
-              'Confirme em campo contagens e alertas produzidos pelas imagens.',
-            ],
-          AtlasAutomationModule.iot => const [
-              'Monitore conectividade, bateria, última leitura e qualidade do sensor.',
-              'Mantenha fila offline e reconciliação de dados no Gateway Atlas.',
-            ],
-          AtlasAutomationModule.managementAutomation => const [
-              'Automatize apenas protocolos previamente aprovados e com responsável definido.',
-              'Mantenha opção de intervenção manual e trilha de auditoria.',
-            ],
-          AtlasAutomationModule.workflow => const [
-              'Defina entrada, responsável, prazo, aprovação e evidência para cada processo.',
-              'Use indicadores de tempo, retrabalho e conformidade para melhoria contínua.',
-            ],
-        },
-      );
+      items.addAll(switch (module) {
+        AtlasAutomationModule.drone => const [
+          'Valide plano de voo, autonomia, área, clima e restrições antes da operação.',
+          'Confirme em campo contagens e alertas produzidos pelas imagens.',
+        ],
+        AtlasAutomationModule.iot => const [
+          'Monitore conectividade, bateria, última leitura e qualidade do sensor.',
+          'Mantenha fila offline e reconciliação de dados no Gateway Atlas.',
+        ],
+        AtlasAutomationModule.managementAutomation => const [
+          'Automatize apenas protocolos previamente aprovados e com responsável definido.',
+          'Mantenha opção de intervenção manual e trilha de auditoria.',
+        ],
+        AtlasAutomationModule.workflow => const [
+          'Defina entrada, responsável, prazo, aprovação e evidência para cada processo.',
+          'Use indicadores de tempo, retrabalho e conformidade para melhoria contínua.',
+        ],
+      });
     }
 
     return items;

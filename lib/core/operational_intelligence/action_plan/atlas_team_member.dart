@@ -8,9 +8,7 @@ enum AtlasTeamMemberRole {
   other,
 }
 
-String atlasTeamMemberRoleLabel(
-  AtlasTeamMemberRole role,
-) {
+String atlasTeamMemberRoleLabel(AtlasTeamMemberRole role) {
   switch (role) {
     case AtlasTeamMemberRole.owner:
       return 'Proprietário';
@@ -68,8 +66,7 @@ class AtlasTeamMember {
       role: role ?? this.role,
       phone: phone ?? this.phone,
       email: email ?? this.email,
-      farmName:
-          replaceFarmName ? farmName : this.farmName,
+      farmName: replaceFarmName ? farmName : this.farmName,
       active: active ?? this.active,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -90,9 +87,7 @@ class AtlasTeamMember {
     };
   }
 
-  factory AtlasTeamMember.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasTeamMember.fromMap(Map<String, dynamic> map) {
     return AtlasTeamMember(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
@@ -104,13 +99,11 @@ class AtlasTeamMember {
       email: map['email']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            map['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(map['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

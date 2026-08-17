@@ -7,10 +7,7 @@ class AnimalOperationalTaskStorageService {
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
   String _key({
@@ -30,11 +27,7 @@ class AnimalOperationalTaskStorageService {
     required String animalId,
   }) async {
     final raw = await _preferences.getString(
-      _key(
-        farmName: farmName,
-        groupName: groupName,
-        animalId: animalId,
-      ),
+      _key(farmName: farmName, groupName: groupName, animalId: animalId),
     );
 
     if (raw == null || raw.isEmpty) return [];
@@ -59,14 +52,8 @@ class AnimalOperationalTaskStorageService {
     required List<AnimalOperationalTask> tasks,
   }) async {
     await _preferences.setString(
-      _key(
-        farmName: farmName,
-        groupName: groupName,
-        animalId: animalId,
-      ),
-      jsonEncode(
-        tasks.map((task) => task.toMap()).toList(),
-      ),
+      _key(farmName: farmName, groupName: groupName, animalId: animalId),
+      jsonEncode(tasks.map((task) => task.toMap()).toList()),
     );
   }
 }

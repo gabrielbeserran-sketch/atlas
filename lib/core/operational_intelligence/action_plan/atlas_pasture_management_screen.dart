@@ -99,10 +99,12 @@ class _AtlasPastureManagementScreenState
                       border: OutlineInputBorder(),
                     ),
                     items: AtlasPaddockStatus.values
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(atlasPaddockStatusLabel(e)),
-                            ))
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(atlasPaddockStatusLabel(e)),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       if (value != null) {
@@ -211,8 +213,15 @@ class _AtlasPastureManagementScreenState
     );
 
     for (final c in [
-      name, area, forage, height, target, dryMatter,
-      support, latitude, longitude
+      name,
+      area,
+      forage,
+      height,
+      target,
+      dryMatter,
+      support,
+      latitude,
+      longitude,
     ]) {
       c.dispose();
     }
@@ -225,18 +234,18 @@ class _AtlasPastureManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    final totalArea =
-        paddocks.fold<double>(0, (sum, e) => sum + e.areaHectares);
+    final totalArea = paddocks.fold<double>(
+      0,
+      (sum, e) => sum + e.areaHectares,
+    );
     final totalDryMatter = paddocks.fold<double>(
       0,
       (sum, e) => sum + e.dryMatterKgHa * e.areaHectares,
     );
     final avgSupport = paddocks.isEmpty
         ? 0.0
-        : paddocks
-                .map((e) => e.supportCapacityAuHa)
-                .reduce((a, b) => a + b) /
-            paddocks.length;
+        : paddocks.map((e) => e.supportCapacityAuHa).reduce((a, b) => a + b) /
+              paddocks.length;
     final alerts = service.alerts(paddocks, operations);
 
     return DefaultTabController(
@@ -273,25 +282,31 @@ class _AtlasPastureManagementScreenState
             : TabBarView(
                 children: [
                   _list(
-                    paddocks.map((e) => ListTile(
-                          title: Text(e.name),
-                          subtitle: Text(
-                            '${e.forageSpecies} • ${e.areaHectares.toStringAsFixed(2)} ha • '
-                            '${atlasPaddockStatusLabel(e.status)}',
-                          ),
-                          trailing: Text('${e.currentHeightCm.toStringAsFixed(1)} cm'),
-                        )),
+                    paddocks.map(
+                      (e) => ListTile(
+                        title: Text(e.name),
+                        subtitle: Text(
+                          '${e.forageSpecies} • ${e.areaHectares.toStringAsFixed(2)} ha • '
+                          '${atlasPaddockStatusLabel(e.status)}',
+                        ),
+                        trailing: Text(
+                          '${e.currentHeightCm.toStringAsFixed(1)} cm',
+                        ),
+                      ),
+                    ),
                     'Nenhum piquete cadastrado.',
                   ),
                   _list(
-                    rotations.map((e) => ListTile(
-                          title: Text(e.lotName),
-                          subtitle: Text(
-                            '${DateFormat('dd/MM/yyyy').format(e.entryAt)} a '
-                            '${DateFormat('dd/MM/yyyy').format(e.exitAt)}',
-                          ),
-                          trailing: Text('${e.animalCount} animais'),
-                        )),
+                    rotations.map(
+                      (e) => ListTile(
+                        title: Text(e.lotName),
+                        subtitle: Text(
+                          '${DateFormat('dd/MM/yyyy').format(e.entryAt)} a '
+                          '${DateFormat('dd/MM/yyyy').format(e.exitAt)}',
+                        ),
+                        trailing: Text('${e.animalCount} animais'),
+                      ),
+                    ),
                     'Nenhuma rotação registrada.',
                   ),
                   _metrics([
@@ -299,67 +314,73 @@ class _AtlasPastureManagementScreenState
                     ('Capacidade média', avgSupport, 'UA/ha'),
                     ('Matéria seca total', totalDryMatter, 'kg'),
                   ]),
-                  _list(
-                    [
-                      ...paddocks.map((e) => ListTile(
-                            title: Text(e.name),
-                            subtitle: Text(
-                              'Altura ${e.currentHeightCm.toStringAsFixed(1)} cm • '
-                              '${e.dryMatterKgHa.toStringAsFixed(0)} kg MS/ha',
-                            ),
-                          )),
-                      ...alerts.map((e) => ListTile(
-                            leading: const Icon(Icons.warning_amber),
-                            title: Text(e),
-                          )),
-                    ],
-                    'Sem indicadores.',
-                  ),
-                  _list(
-                    operations.map((e) => ListTile(
-                          title: Text(atlasPastureOperationTypeLabel(e.type)),
-                          subtitle: Text(
-                            '${DateFormat('dd/MM/yyyy').format(e.scheduledAt)} • '
-                            '${e.product}',
-                          ),
-                          trailing: Text(
-                            e.isCompleted
-                                ? 'Concluída'
-                                : 'R\$ ${e.cost.toStringAsFixed(2)}',
-                          ),
-                        )),
-                    'Nenhuma operação cadastrada.',
-                  ),
-                  _list(
-                    [
-                      ...operations.map((e) => ListTile(
-                            leading: const Icon(Icons.event_note),
-                            title: Text(
-                              '${atlasPastureOperationTypeLabel(e.type)} — '
-                              '${DateFormat('MM/yyyy').format(e.scheduledAt)}',
-                            ),
-                          )),
-                      ListTile(
-                        title: const Text('Custo anual programado'),
-                        trailing: Text(
-                          'R\$ ${operations.fold<double>(0, (s, e) => s + e.cost).toStringAsFixed(2)}',
+                  _list([
+                    ...paddocks.map(
+                      (e) => ListTile(
+                        title: Text(e.name),
+                        subtitle: Text(
+                          'Altura ${e.currentHeightCm.toStringAsFixed(1)} cm • '
+                          '${e.dryMatterKgHa.toStringAsFixed(0)} kg MS/ha',
                         ),
                       ),
-                    ],
-                    '',
+                    ),
+                    ...alerts.map(
+                      (e) => ListTile(
+                        leading: const Icon(Icons.warning_amber),
+                        title: Text(e),
+                      ),
+                    ),
+                  ], 'Sem indicadores.'),
+                  _list(
+                    operations.map(
+                      (e) => ListTile(
+                        title: Text(atlasPastureOperationTypeLabel(e.type)),
+                        subtitle: Text(
+                          '${DateFormat('dd/MM/yyyy').format(e.scheduledAt)} • '
+                          '${e.product}',
+                        ),
+                        trailing: Text(
+                          e.isCompleted
+                              ? 'Concluída'
+                              : 'R\$ ${e.cost.toStringAsFixed(2)}',
+                        ),
+                      ),
+                    ),
+                    'Nenhuma operação cadastrada.',
                   ),
+                  _list([
+                    ...operations.map(
+                      (e) => ListTile(
+                        leading: const Icon(Icons.event_note),
+                        title: Text(
+                          '${atlasPastureOperationTypeLabel(e.type)} — '
+                          '${DateFormat('MM/yyyy').format(e.scheduledAt)}',
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      title: const Text('Custo anual programado'),
+                      trailing: Text(
+                        'R\$ ${operations.fold<double>(0, (s, e) => s + e.cost).toStringAsFixed(2)}',
+                      ),
+                    ),
+                  ], ''),
                   _list(
                     paddocks
                         .where((e) => e.latitude != 0 || e.longitude != 0)
-                        .map((e) => ListTile(
-                              leading: const Icon(Icons.location_on_outlined),
-                              title: Text(e.name),
-                              subtitle: Text(
-                                'Lat ${e.latitude.toStringAsFixed(6)} • '
-                                'Long ${e.longitude.toStringAsFixed(6)}',
-                              ),
-                              trailing: Text('${e.areaHectares.toStringAsFixed(2)} ha'),
-                            )),
+                        .map(
+                          (e) => ListTile(
+                            leading: const Icon(Icons.location_on_outlined),
+                            title: Text(e.name),
+                            subtitle: Text(
+                              'Lat ${e.latitude.toStringAsFixed(6)} • '
+                              'Long ${e.longitude.toStringAsFixed(6)}',
+                            ),
+                            trailing: Text(
+                              '${e.areaHectares.toStringAsFixed(2)} ha',
+                            ),
+                          ),
+                        ),
                     'Informe latitude e longitude nos piquetes.',
                   ),
                 ],
@@ -383,18 +404,20 @@ class _AtlasPastureManagementScreenState
     return ListView(
       padding: const EdgeInsets.all(16),
       children: values
-          .map((e) => Card(
-                child: ListTile(
-                  title: Text(e.$1),
-                  trailing: Text(
-                    '${e.$2.toStringAsFixed(2)} ${e.$3}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+          .map(
+            (e) => Card(
+              child: ListTile(
+                title: Text(e.$1),
+                trailing: Text(
+                  '${e.$2.toStringAsFixed(2)} ${e.$3}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }

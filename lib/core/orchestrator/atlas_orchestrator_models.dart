@@ -40,15 +40,15 @@ class AtlasOrchestratorTask {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'module': module,
-        'order': order,
-        'enabled': enabled,
-        'status': status.name,
-        'durationMs': durationMs,
-        'message': message,
-      };
+    'id': id,
+    'name': name,
+    'module': module,
+    'order': order,
+    'enabled': enabled,
+    'status': status.name,
+    'durationMs': durationMs,
+    'message': message,
+  };
 
   factory AtlasOrchestratorTask.fromJson(Map<String, dynamic> json) {
     return AtlasOrchestratorTask(
@@ -87,14 +87,14 @@ class AtlasOrchestratorRun {
   final int durationMs;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'startedAt': startedAt.toIso8601String(),
-        'finishedAt': finishedAt.toIso8601String(),
-        'status': status.name,
-        'successfulTasks': successfulTasks,
-        'totalTasks': totalTasks,
-        'durationMs': durationMs,
-      };
+    'id': id,
+    'startedAt': startedAt.toIso8601String(),
+    'finishedAt': finishedAt.toIso8601String(),
+    'status': status.name,
+    'successfulTasks': successfulTasks,
+    'totalTasks': totalTasks,
+    'durationMs': durationMs,
+  };
 
   factory AtlasOrchestratorRun.fromJson(Map<String, dynamic> json) {
     return AtlasOrchestratorRun(

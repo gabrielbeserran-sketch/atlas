@@ -7,18 +7,13 @@ import 'package:projeto_atlas/features/knowledge_learning/domain/models/atlas_kn
 import 'package:projeto_atlas/features/recommendation_intelligence/domain/models/atlas_intelligent_recommendation.dart';
 import 'package:projeto_atlas/features/recommendation_intelligence/domain/services/atlas_recommendation_intelligence_engine.dart';
 
-class AtlasRecommendationIntelligenceScreen
-    extends StatefulWidget {
-  const AtlasRecommendationIntelligenceScreen({
-    super.key,
-    this.farmId,
-  });
+class AtlasRecommendationIntelligenceScreen extends StatefulWidget {
+  const AtlasRecommendationIntelligenceScreen({super.key, this.farmId});
 
   final String? farmId;
 
   @override
-  State<AtlasRecommendationIntelligenceScreen>
-      createState() {
+  State<AtlasRecommendationIntelligenceScreen> createState() {
     return _AtlasRecommendationIntelligenceScreenState();
   }
 }
@@ -39,16 +34,11 @@ class _AtlasRecommendationIntelligenceScreenState
       loading = true;
     });
 
-    final audits =
-        await AtlasFarmAuditHistoryService.instance.loadAll();
+    final audits = await AtlasFarmAuditHistoryService.instance.loadAll();
 
     final filteredAudits = widget.farmId == null
         ? audits
-        : audits
-            .where(
-              (item) => item.farmId == widget.farmId,
-            )
-            .toList();
+        : audits.where((item) => item.farmId == widget.farmId).toList();
 
     if (filteredAudits.isEmpty) {
       if (!mounted) {
@@ -63,25 +53,17 @@ class _AtlasRecommendationIntelligenceScreenState
       return;
     }
 
-    final cases =
-        await AtlasKnowledgeRepository.instance.loadCases();
+    final cases = await AtlasKnowledgeRepository.instance.loadCases();
 
     final AtlasFarmAudit audit = filteredAudits.first;
 
-    final List<AtlasKnowledgeCase> relevantCases =
-        cases.where(
-      (item) {
-        return item.farmId == audit.farmId ||
-            cases.length < 10;
-      },
-    ).toList();
+    final List<AtlasKnowledgeCase> relevantCases = cases.where((item) {
+      return item.farmId == audit.farmId || cases.length < 10;
+    }).toList();
 
-    final generated =
-        const AtlasRecommendationIntelligenceEngine()
-            .generate(
+    final generated = const AtlasRecommendationIntelligenceEngine().generate(
       audit: audit,
-      knowledgeCases:
-          relevantCases.isEmpty ? cases : relevantCases,
+      knowledgeCases: relevantCases.isEmpty ? cases : relevantCases,
     );
 
     if (!mounted) {
@@ -103,9 +85,7 @@ class _AtlasRecommendationIntelligenceScreenState
       appBar: AppBar(
         title: const Text(
           'Recommendation Intelligence',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -132,46 +112,37 @@ class _AtlasRecommendationIntelligenceScreenState
         ],
       ),
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : current == null
-              ? const _EmptyView()
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1180),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(portfolio: current),
-                        const SizedBox(height: 20),
-                        const _SectionTitle(
-                          title:
-                              'Recomendações priorizadas',
-                          subtitle:
-                              'Sugestões explicáveis, apoiadas pela auditoria e pela memória técnica do Atlas.',
-                        ),
-                        const SizedBox(height: 12),
-                        ...current.recommendations.map(
-                          (item) =>
-                              _RecommendationCard(
-                            recommendation: item,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
+          ? const _EmptyView()
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1180),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(portfolio: current),
+                    const SizedBox(height: 20),
+                    const _SectionTitle(
+                      title: 'Recomendações priorizadas',
+                      subtitle:
+                          'Sugestões explicáveis, apoiadas pela auditoria e pela memória técnica do Atlas.',
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    ...current.recommendations.map(
+                      (item) => _RecommendationCard(recommendation: item),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.portfolio,
-  });
+  const _Hero({required this.portfolio});
 
   final AtlasRecommendationPortfolio portfolio;
 
@@ -190,14 +161,11 @@ class _Hero extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Inteligência de recomendação baseada em evidências',
-            style: TextStyle(
-              color: Colors.white70,
-            ),
+            style: TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 5),
           Text(
@@ -215,13 +183,11 @@ class _Hero extends StatelessWidget {
             children: [
               _HeroMetric(
                 label: 'Recomendações',
-                value:
-                    '${portfolio.recommendations.length}',
+                value: '${portfolio.recommendations.length}',
               ),
               _HeroMetric(
                 label: 'Confiança média',
-                value:
-                    '${portfolio.averageConfidence.toStringAsFixed(1)}%',
+                value: '${portfolio.averageConfidence.toStringAsFixed(1)}%',
               ),
               _HeroMetric(
                 label: 'Casos de evidência',
@@ -229,14 +195,11 @@ class _Hero extends StatelessWidget {
               ),
               _HeroMetric(
                 label: 'Ganho esperado',
-                value: _formatCurrency(
-                  portfolio.expectedEconomicGain,
-                ),
+                value: _formatCurrency(portfolio.expectedEconomicGain),
               ),
               _HeroMetric(
                 label: 'Farm Audit Index',
-                value:
-                    portfolio.auditIndex.toStringAsFixed(1),
+                value: portfolio.auditIndex.toStringAsFixed(1),
               ),
             ],
           ),
@@ -247,49 +210,35 @@ class _Hero extends StatelessWidget {
 }
 
 class _RecommendationCard extends StatelessWidget {
-  const _RecommendationCard({
-    required this.recommendation,
-  });
+  const _RecommendationCard({required this.recommendation});
 
   final AtlasIntelligentRecommendation recommendation;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _priorityColor(recommendation.priority);
+    final color = _priorityColor(recommendation.priority);
 
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            Icons.lightbulb_outline,
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(Icons.lightbulb_outline, color: color),
         ),
         title: Text(
           recommendation.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${atlasFarmAuditAreaLabel(recommendation.area)} · '
           '${atlasFarmAuditPriorityLabel(recommendation.priority)} · '
           '${recommendation.confidence.toStringAsFixed(1)}% de confiança',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
-          _TextBlock(
-            title: 'Diagnóstico',
-            text: recommendation.diagnosis,
-          ),
+          _TextBlock(title: 'Diagnóstico', text: recommendation.diagnosis),
           _TextBlock(
             title: 'Protocolo recomendado',
-            text:
-                recommendation.recommendedProtocol,
+            text: recommendation.recommendedProtocol,
           ),
           _TextBlock(
             title: 'Por que o Atlas recomenda isso?',
@@ -301,22 +250,19 @@ class _RecommendationCard extends StatelessWidget {
               Expanded(
                 child: _Metric(
                   label: 'Atual',
-                  value: recommendation.currentScore
-                      .toStringAsFixed(1),
+                  value: recommendation.currentScore.toStringAsFixed(1),
                 ),
               ),
               Expanded(
                 child: _Metric(
                   label: 'Meta',
-                  value: recommendation.targetScore
-                      .toStringAsFixed(1),
+                  value: recommendation.targetScore.toStringAsFixed(1),
                 ),
               ),
               Expanded(
                 child: _Metric(
                   label: 'Sucesso histórico',
-                  value:
-                      '${recommendation.successRate.toStringAsFixed(1)}%',
+                  value: '${recommendation.successRate.toStringAsFixed(1)}%',
                 ),
               ),
               Expanded(
@@ -329,26 +275,18 @@ class _RecommendationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _ListBlock(
-            title: 'Plano recomendado',
-            items: recommendation.steps,
-          ),
+          _ListBlock(title: 'Plano recomendado', items: recommendation.steps),
           _ListBlock(
             title: 'Evidências utilizadas',
             items: recommendation.evidence,
           ),
-          _ListBlock(
-            title: 'Riscos de execução',
-            items: recommendation.risks,
-          ),
+          _ListBlock(title: 'Riscos de execução', items: recommendation.risks),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Impacto econômico esperado: '
               '${_formatCurrency(recommendation.expectedEconomicGain)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -358,10 +296,7 @@ class _RecommendationCard extends StatelessWidget {
 }
 
 class _TextBlock extends StatelessWidget {
-  const _TextBlock({
-    required this.title,
-    required this.text,
-  });
+  const _TextBlock({required this.title, required this.text});
 
   final String title;
   final String text;
@@ -372,20 +307,14 @@ class _TextBlock extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-          '$title:\n$text',
-          style: const TextStyle(height: 1.45),
-        ),
+        child: Text('$title:\n$text', style: const TextStyle(height: 1.45)),
       ),
     );
   }
 }
 
 class _ListBlock extends StatelessWidget {
-  const _ListBlock({
-    required this.title,
-    required this.items,
-  });
+  const _ListBlock({required this.title, required this.items});
 
   final String title;
   final List<String> items;
@@ -397,20 +326,13 @@ class _ListBlock extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             ...items.map(
               (item) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Text('• $item'),
               ),
             ),
@@ -422,10 +344,7 @@ class _ListBlock extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -433,32 +352,18 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: Colors.black54)),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -466,23 +371,16 @@ class _HeroMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 150),
+      constraints: const BoxConstraints(minWidth: 150),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -499,10 +397,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -510,23 +405,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -543,25 +429,17 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.lightbulb_outline,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.lightbulb_outline, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existe auditoria para gerar recomendações.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Gere uma auditoria da fazenda antes de abrir este módulo.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -570,9 +448,7 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-Color _priorityColor(
-  AtlasFarmAuditPriority priority,
-) {
+Color _priorityColor(AtlasFarmAuditPriority priority) {
   switch (priority) {
     case AtlasFarmAuditPriority.low:
       return const Color(0xFF2E7D32);

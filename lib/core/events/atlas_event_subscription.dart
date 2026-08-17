@@ -1,9 +1,7 @@
 import 'package:projeto_atlas/core/events/atlas_event.dart';
 import 'package:projeto_atlas/core/events/atlas_event_filter.dart';
 
-typedef AtlasEventListener = Future<void> Function(
-  AtlasEvent event,
-);
+typedef AtlasEventListener = Future<void> Function(AtlasEvent event);
 
 class AtlasEventSubscription {
   const AtlasEventSubscription({

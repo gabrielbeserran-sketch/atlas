@@ -8,6 +8,7 @@ import 'package:projeto_atlas/features/herd/data/services/herd_enterprise_servic
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_group_form_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class HerdListScreen extends StatefulWidget {
   const HerdListScreen({required this.farm, super.key});
@@ -24,7 +25,8 @@ class _HerdListScreenState extends State<HerdListScreen> {
   final AnimalStorageService animalStorage = AnimalStorageService();
 
   List<HerdGroupData> groups = <HerdGroupData>[];
-  Map<String, HerdGroupStatistics> groupStatistics = <String, HerdGroupStatistics>{};
+  Map<String, HerdGroupStatistics> groupStatistics =
+      <String, HerdGroupStatistics>{};
   bool isLoading = true;
   bool usingOfflineCache = false;
 
@@ -37,24 +39,24 @@ class _HerdListScreenState extends State<HerdListScreen> {
   }
 
   int get totalRegisteredAnimals => groupStatistics.values.fold(
-        0,
-        (total, statistics) => total + statistics.totalAnimals,
-      );
+    0,
+    (total, statistics) => total + statistics.totalAnimals,
+  );
 
   int get totalActiveAnimals => groupStatistics.values.fold(
-        0,
-        (total, statistics) => total + statistics.activeAnimals,
-      );
+    0,
+    (total, statistics) => total + statistics.activeAnimals,
+  );
 
   int get totalFemales => groupStatistics.values.fold(
-        0,
-        (total, statistics) => total + statistics.females,
-      );
+    0,
+    (total, statistics) => total + statistics.females,
+  );
 
   int get totalMales => groupStatistics.values.fold(
-        0,
-        (total, statistics) => total + statistics.males,
-      );
+    0,
+    (total, statistics) => total + statistics.males,
+  );
 
   double get overallAverageWeight {
     var totalWeight = 0.0;
@@ -132,13 +134,18 @@ class _HerdListScreenState extends State<HerdListScreen> {
     if (draft == null || !mounted) return;
     if (farmId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Esta fazenda ainda não possui ID remoto.')),
+        const SnackBar(
+          content: Text('Esta fazenda ainda não possui ID remoto.'),
+        ),
       );
       return;
     }
 
     try {
-      final created = await enterprise.createGroup(farmId: farmId, group: draft);
+      final created = await enterprise.createGroup(
+        farmId: farmId,
+        group: draft,
+      );
       await loadDashboard();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,9 +153,9 @@ class _HerdListScreenState extends State<HerdListScreen> {
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -170,9 +177,9 @@ class _HerdListScreenState extends State<HerdListScreen> {
       );
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -208,14 +215,14 @@ class _HerdListScreenState extends State<HerdListScreen> {
       await enterprise.deleteGroup(group.id);
       await loadDashboard();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${group.name} foi inativado.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${group.name} foi inativado.')));
     } on AtlasEnterpriseApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
@@ -272,7 +279,10 @@ class _HerdListScreenState extends State<HerdListScreen> {
                         const SizedBox(height: 28),
                         const Text(
                           'Indicadores do rebanho',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         const Text(
@@ -288,7 +298,7 @@ class _HerdListScreenState extends State<HerdListScreen> {
                               title: 'Animais cadastrados',
                               value: totalRegisteredAnimals.toString(),
                               subtitle: 'Somatório de todos os lotes',
-                              icon: Icons.pets_outlined,
+                              icon: AtlasLivestockIcons.cow,
                             ),
                             HerdIndicatorCard(
                               title: 'Animais ativos',
@@ -338,10 +348,16 @@ class _HerdListScreenState extends State<HerdListScreen> {
                             const Expanded(
                               child: Text(
                                 'Lotes do rebanho',
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                            Text('${groups.length} lotes', style: const TextStyle(color: Colors.black54)),
+                            Text(
+                              '${groups.length} lotes',
+                              style: const TextStyle(color: Colors.black54),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 6),
@@ -354,7 +370,8 @@ class _HerdListScreenState extends State<HerdListScreen> {
                           const EmptyHerdMessage()
                         else
                           ...groups.map((group) {
-                            final statistics = groupStatistics[group.name] ??
+                            final statistics =
+                                groupStatistics[group.name] ??
                                 const HerdGroupStatistics.empty();
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
@@ -362,8 +379,12 @@ class _HerdListScreenState extends State<HerdListScreen> {
                                 group: group,
                                 statistics: statistics,
                                 onOpen: () => openGroup(group),
-                                onEdit: usingOfflineCache ? () {} : () => editGroup(group),
-                                onDelete: usingOfflineCache ? () {} : () => deleteGroup(group),
+                                onEdit: usingOfflineCache
+                                    ? () {}
+                                    : () => editGroup(group),
+                                onDelete: usingOfflineCache
+                                    ? () {}
+                                    : () => deleteGroup(group),
                               ),
                             );
                           }),
@@ -410,7 +431,7 @@ class HerdDashboardHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
-              Icons.pets_outlined,
+              AtlasLivestockIcons.cow,
               color: Colors.white,
               size: 40,
             ),
@@ -627,7 +648,7 @@ class HerdGroupCard extends StatelessWidget {
                       runSpacing: 10,
                       children: [
                         HerdGroupInformation(
-                          icon: Icons.pets_outlined,
+                          icon: AtlasLivestockIcons.cow,
                           text: '${statistics.totalAnimals} cadastrados',
                         ),
                         HerdGroupInformation(

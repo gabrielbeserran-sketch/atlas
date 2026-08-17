@@ -5,20 +5,15 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ag
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 
 class AtlasAgricultureScreen extends StatefulWidget {
-  const AtlasAgricultureScreen({
-    required this.actionController,
-    super.key,
-  });
+  const AtlasAgricultureScreen({required this.actionController, super.key});
 
   final AtlasCommandCenterActionController actionController;
 
   @override
-  State<AtlasAgricultureScreen> createState() =>
-      _AtlasAgricultureScreenState();
+  State<AtlasAgricultureScreen> createState() => _AtlasAgricultureScreenState();
 }
 
-class _AtlasAgricultureScreenState
-    extends State<AtlasAgricultureScreen> {
+class _AtlasAgricultureScreenState extends State<AtlasAgricultureScreen> {
   final service = AtlasAgricultureService.instance;
 
   List<AtlasCropField> fields = [];
@@ -123,17 +118,13 @@ class _AtlasAgricultureScreenState
                           .map(
                             (value) => DropdownMenuItem(
                               value: value,
-                              child: Text(
-                                atlasCropStatusLabel(value),
-                              ),
+                              child: Text(atlasCropStatusLabel(value)),
                             ),
                           )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => status = value,
-                          );
+                          setDialogState(() => status = value);
                         }
                       },
                     ),
@@ -142,9 +133,7 @@ class _AtlasAgricultureScreenState
                       title: 'Data de plantio',
                       date: plantingAt,
                       onChanged: (value) {
-                        setDialogState(
-                          () => plantingAt = value,
-                        );
+                        setDialogState(() => plantingAt = value);
                       },
                     ),
                     _dateTile(
@@ -152,20 +141,12 @@ class _AtlasAgricultureScreenState
                       title: 'Colheita prevista',
                       date: harvestAt,
                       onChanged: (value) {
-                        setDialogState(
-                          () => harvestAt = value,
-                        );
+                        setDialogState(() => harvestAt = value);
                       },
                     ),
                     _row(
-                      _number(
-                        target,
-                        'Produtividade-alvo (kg/ha)',
-                      ),
-                      _number(
-                        actual,
-                        'Produtividade realizada (kg/ha)',
-                      ),
+                      _number(target, 'Produtividade-alvo (kg/ha)'),
+                      _number(actual, 'Produtividade realizada (kg/ha)'),
                     ),
                     const SizedBox(height: 10),
                     _row(
@@ -173,14 +154,10 @@ class _AtlasAgricultureScreenState
                       _number(longitude, 'Longitude'),
                     ),
                     SwitchListTile(
-                      title: const Text(
-                        'Integração lavoura-pecuária',
-                      ),
+                      title: const Text('Integração lavoura-pecuária'),
                       value: integrated,
                       onChanged: (value) {
-                        setDialogState(
-                          () => integrated = value,
-                        );
+                        setDialogState(() => integrated = value);
                       },
                     ),
                     TextField(
@@ -196,20 +173,19 @@ class _AtlasAgricultureScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
                   onPressed: () {
-                    if (name.text.trim().isEmpty ||
-                        crop.text.trim().isEmpty) {
+                    if (name.text.trim().isEmpty || crop.text.trim().isEmpty) {
                       return;
                     }
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasCropField(
-                        id: 'crop_field_'
+                        id:
+                            'crop_field_'
                             '${now.microsecondsSinceEpoch}',
                         name: name.text.trim(),
                         crop: crop.text.trim(),
@@ -218,15 +194,12 @@ class _AtlasAgricultureScreenState
                         status: status,
                         plantingAt: plantingAt,
                         expectedHarvestAt: harvestAt,
-                        targetProductivityKgHa:
-                            _double(target.text),
-                        actualProductivityKgHa:
-                            _double(actual.text),
+                        targetProductivityKgHa: _double(target.text),
+                        actualProductivityKgHa: _double(actual.text),
                         latitude: _double(latitude.text),
                         longitude: _double(longitude.text),
                         integratedLivestock: integrated,
-                        farmName:
-                            widget.actionController.farmName,
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -305,9 +278,7 @@ class _AtlasAgricultureScreenState
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => fieldId = value,
-                          );
+                          setDialogState(() => fieldId = value);
                         }
                       },
                     ),
@@ -318,25 +289,13 @@ class _AtlasAgricultureScreenState
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        organicMatter,
-                        'Matéria orgânica (%)',
-                      ),
-                      _number(
-                        phosphorus,
-                        'Fósforo (mg/dm³)',
-                      ),
+                      _number(organicMatter, 'Matéria orgânica (%)'),
+                      _number(phosphorus, 'Fósforo (mg/dm³)'),
                     ),
                     const SizedBox(height: 10),
                     _row(
-                      _number(
-                        potassium,
-                        'Potássio (mg/dm³)',
-                      ),
-                      _number(
-                        saturation,
-                        'Saturação por bases (%)',
-                      ),
+                      _number(potassium, 'Potássio (mg/dm³)'),
+                      _number(saturation, 'Saturação por bases (%)'),
                     ),
                     const SizedBox(height: 10),
                     _number(clay, 'Argila (%)'),
@@ -345,9 +304,7 @@ class _AtlasAgricultureScreenState
                       title: 'Data da coleta',
                       date: sampledAt,
                       onChanged: (value) {
-                        setDialogState(
-                          () => sampledAt = value,
-                        );
+                        setDialogState(() => sampledAt = value);
                       },
                     ),
                     TextField(
@@ -371,8 +328,7 @@ class _AtlasAgricultureScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -380,25 +336,20 @@ class _AtlasAgricultureScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasSoilSample(
-                        id: 'soil_sample_'
+                        id:
+                            'soil_sample_'
                             '${now.microsecondsSinceEpoch}',
                         fieldId: fieldId,
                         sampledAt: sampledAt,
                         depthCm: _double(depth.text),
                         ph: _double(ph.text),
-                        organicMatterPercent:
-                            _double(organicMatter.text),
-                        phosphorusMgDm3:
-                            _double(phosphorus.text),
-                        potassiumMgDm3:
-                            _double(potassium.text),
-                        baseSaturationPercent:
-                            _double(saturation.text),
+                        organicMatterPercent: _double(organicMatter.text),
+                        phosphorusMgDm3: _double(phosphorus.text),
+                        potassiumMgDm3: _double(potassium.text),
+                        baseSaturationPercent: _double(saturation.text),
                         clayPercent: _double(clay.text),
-                        laboratory:
-                            laboratory.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        laboratory: laboratory.text.trim(),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -447,8 +398,7 @@ class _AtlasAgricultureScreenState
     final responsible = TextEditingController();
     final notes = TextEditingController();
 
-    final result =
-        await showDialog<AtlasAgriculturalOperation>(
+    final result = await showDialog<AtlasAgriculturalOperation>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -476,33 +426,27 @@ class _AtlasAgricultureScreenState
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          setDialogState(
-                            () => fieldId = value,
-                          );
+                          setDialogState(() => fieldId = value);
                         }
                       },
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<
-                        AtlasAgriculturalOperationType>(
+                    DropdownButtonFormField<AtlasAgriculturalOperationType>(
                       initialValue: type,
                       decoration: const InputDecoration(
                         labelText: 'Operação',
                         border: OutlineInputBorder(),
                       ),
-                      items:
-                          AtlasAgriculturalOperationType.values
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(
-                                    atlasAgriculturalOperationTypeLabel(
-                                      value,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                      items: AtlasAgriculturalOperationType.values
+                          .map(
+                            (value) => DropdownMenuItem(
+                              value: value,
+                              child: Text(
+                                atlasAgriculturalOperationTypeLabel(value),
+                              ),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (value) {
                         if (value != null) {
                           setDialogState(() => type = value);
@@ -527,18 +471,13 @@ class _AtlasAgricultureScreenState
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _row(
-                      _number(area, 'Área (ha)'),
-                      _number(cost, 'Custo'),
-                    ),
+                    _row(_number(area, 'Área (ha)'), _number(cost, 'Custo')),
                     _dateTile(
                       context: dialogContext,
                       title: 'Data programada',
                       date: scheduledAt,
                       onChanged: (value) {
-                        setDialogState(
-                          () => scheduledAt = value,
-                        );
+                        setDialogState(() => scheduledAt = value);
                       },
                     ),
                     TextField(
@@ -562,8 +501,7 @@ class _AtlasAgricultureScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -571,7 +509,8 @@ class _AtlasAgricultureScreenState
                     final now = DateTime.now();
                     Navigator.of(dialogContext).pop(
                       AtlasAgriculturalOperation(
-                        id: 'agriculture_operation_'
+                        id:
+                            'agriculture_operation_'
                             '${now.microsecondsSinceEpoch}',
                         fieldId: fieldId,
                         type: type,
@@ -581,10 +520,8 @@ class _AtlasAgricultureScreenState
                         dose: dose.text.trim(),
                         areaHectares: _double(area.text),
                         cost: _double(cost.text),
-                        responsibleName:
-                            responsible.text.trim(),
-                        farmName:
-                            widget.actionController.farmName,
+                        responsibleName: responsible.text.trim(),
+                        farmName: widget.actionController.farmName,
                         notes: notes.text.trim(),
                       ),
                     );
@@ -598,14 +535,7 @@ class _AtlasAgricultureScreenState
       },
     );
 
-    for (final controller in [
-      product,
-      dose,
-      area,
-      cost,
-      responsible,
-      notes,
-    ]) {
+    for (final controller in [product, dose, area, cost, responsible, notes]) {
       controller.dispose();
     }
 
@@ -645,23 +575,17 @@ class _AtlasAgricultureScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: _addField,
           icon: const Icon(Icons.add),
           label: const Text('Nova lavoura'),
         ),
         body: loading && current == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _Dashboard(snapshot: current),
-                  _Fields(
-                    fields: fields,
-                    onAdd: _addField,
-                  ),
+                  _Fields(fields: fields, onAdd: _addField),
                   _Soil(
                     samples: samples,
                     fields: fields,
@@ -672,15 +596,10 @@ class _AtlasAgricultureScreenState
                     fields: fields,
                     onAdd: _addOperation,
                   ),
-                  _Schedule(
-                    operations: operations,
-                    fields: fields,
-                  ),
+                  _Schedule(operations: operations, fields: fields),
                   _Costs(snapshot: current),
                   _Integration(fields: fields),
-                  _Intelligence(
-                    recommendations: recommendations,
-                  ),
+                  _Intelligence(recommendations: recommendations),
                 ],
               ),
       ),
@@ -697,14 +616,10 @@ class _AtlasAgricultureScreenState
     );
   }
 
-  static Widget _number(
-    TextEditingController controller,
-    String label,
-  ) {
+  static Widget _number(TextEditingController controller, String label) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -722,9 +637,7 @@ class _AtlasAgricultureScreenState
       contentPadding: EdgeInsets.zero,
       title: Text(title),
       subtitle: Text(
-        date == null
-            ? 'Não informada'
-            : DateFormat('dd/MM/yyyy').format(date),
+        date == null ? 'Não informada' : DateFormat('dd/MM/yyyy').format(date),
       ),
       trailing: const Icon(Icons.calendar_month),
       onTap: () async {
@@ -744,9 +657,7 @@ class _AtlasAgricultureScreenState
   static double _double(String value) {
     var normalized = value.trim();
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
     return double.tryParse(normalized) ?? 0;
   }
@@ -770,26 +681,10 @@ class _Dashboard extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _metricCard(
-              'Lavouras',
-              item.totalFields.toDouble(),
-              '',
-            ),
-            _metricCard(
-              'Área total',
-              item.totalAreaHectares,
-              'ha',
-            ),
-            _metricCard(
-              'Área plantada',
-              item.plantedAreaHectares,
-              'ha',
-            ),
-            _metricCard(
-              'Área ILP',
-              item.integratedAreaHectares,
-              'ha',
-            ),
+            _metricCard('Lavouras', item.totalFields.toDouble(), ''),
+            _metricCard('Área total', item.totalAreaHectares, 'ha'),
+            _metricCard('Área plantada', item.plantedAreaHectares, 'ha'),
+            _metricCard('Área ILP', item.integratedAreaHectares, 'ha'),
             _metricCard(
               'Produtividade-alvo',
               item.averageTargetProductivityKgHa,
@@ -800,16 +695,8 @@ class _Dashboard extends StatelessWidget {
               item.averageActualProductivityKgHa,
               'kg/ha',
             ),
-            _metricCard(
-              'Solo',
-              item.averageSoilScore,
-              '/100',
-            ),
-            _metricCard(
-              'Score',
-              item.agricultureScore,
-              '/100',
-            ),
+            _metricCard('Solo', item.averageSoilScore, '/100'),
+            _metricCard('Score', item.agricultureScore, '/100'),
           ],
         ),
       ],
@@ -818,10 +705,7 @@ class _Dashboard extends StatelessWidget {
 }
 
 class _Fields extends StatelessWidget {
-  const _Fields({
-    required this.fields,
-    required this.onAdd,
-  });
+  const _Fields({required this.fields, required this.onAdd});
 
   final List<AtlasCropField> fields;
   final VoidCallback onAdd;
@@ -843,26 +727,16 @@ class _Fields extends StatelessWidget {
         ),
         Expanded(
           child: fields.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma lavoura cadastrada.'),
-                )
+              ? const Center(child: Text('Nenhuma lavoura cadastrada.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: fields.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = fields[index];
                     return Card(
                       child: ListTile(
-                        title: Text(
-                          '${item.name} — ${item.crop}',
-                        ),
+                        title: Text('${item.name} — ${item.crop}'),
                         subtitle: Text(
                           '${item.variety} • '
                           '${item.areaHectares.toStringAsFixed(2)} ha • '
@@ -916,19 +790,11 @@ class _Soil extends StatelessWidget {
         ),
         Expanded(
           child: samples.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma análise de solo.'),
-                )
+              ? const Center(child: Text('Nenhuma análise de solo.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: samples.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = samples[index];
                     return Card(
@@ -987,36 +853,24 @@ class _Operations extends StatelessWidget {
         ),
         Expanded(
           child: operations.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma operação agrícola.'),
-                )
+              ? const Center(child: Text('Nenhuma operação agrícola.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: operations.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = operations[index];
                     return Card(
                       child: ListTile(
                         title: Text(
-                          atlasAgriculturalOperationTypeLabel(
-                            item.type,
-                          ),
+                          atlasAgriculturalOperationTypeLabel(item.type),
                         ),
                         subtitle: Text(
                           '${fieldName(item.fieldId)} • '
                           '${DateFormat('dd/MM/yyyy').format(item.scheduledAt)} • '
                           '${item.product}',
                         ),
-                        trailing: Text(
-                          'R\$ ${item.cost.toStringAsFixed(2)}',
-                        ),
+                        trailing: Text('R\$ ${item.cost.toStringAsFixed(2)}'),
                       ),
                     );
                   },
@@ -1028,10 +882,7 @@ class _Operations extends StatelessWidget {
 }
 
 class _Schedule extends StatelessWidget {
-  const _Schedule({
-    required this.operations,
-    required this.fields,
-  });
+  const _Schedule({required this.operations, required this.fields});
 
   final List<AtlasAgriculturalOperation> operations;
   final List<AtlasCropField> fields;
@@ -1057,9 +908,7 @@ class _Schedule extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.event_note),
-            title: Text(
-              atlasAgriculturalOperationTypeLabel(item.type),
-            ),
+            title: Text(atlasAgriculturalOperationTypeLabel(item.type)),
             subtitle: Text(fieldName(item.fieldId)),
             trailing: Text(
               DateFormat('dd/MM/yyyy').format(item.scheduledAt),
@@ -1093,21 +942,9 @@ class _Costs extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _line(
-          'Custo operacional total',
-          item.totalOperatingCost,
-          'R\$',
-        ),
-        _line(
-          'Custo por hectare',
-          costPerHectare,
-          'R\$/ha',
-        ),
-        _line(
-          'Operações atrasadas',
-          item.overdueOperations.toDouble(),
-          '',
-        ),
+        _line('Custo operacional total', item.totalOperatingCost, 'R\$'),
+        _line('Custo por hectare', costPerHectare, 'R\$/ha'),
+        _line('Operações atrasadas', item.overdueOperations.toDouble(), ''),
       ],
     );
   }
@@ -1120,13 +957,12 @@ class _Integration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final integrated =
-        fields.where((item) => item.integratedLivestock).toList();
+    final integrated = fields
+        .where((item) => item.integratedLivestock)
+        .toList();
     if (integrated.isEmpty) {
       return const Center(
-        child: Text(
-          'Nenhuma área marcada como integração lavoura-pecuária.',
-        ),
+        child: Text('Nenhuma área marcada como integração lavoura-pecuária.'),
       );
     }
     return ListView.separated(
@@ -1151,9 +987,7 @@ class _Integration extends StatelessWidget {
 }
 
 class _Intelligence extends StatelessWidget {
-  const _Intelligence({
-    required this.recommendations,
-  });
+  const _Intelligence({required this.recommendations});
 
   final List<String> recommendations;
 
@@ -1187,10 +1021,7 @@ Widget _metricCard(String title, double value, String unit) {
             Text(
               '${value.toStringAsFixed(unit.isEmpty ? 0 : 2)}'
               '${unit.isEmpty || unit == '/100' ? unit : ' $unit'}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -1207,9 +1038,7 @@ Widget _line(String title, double value, String unit) {
         '${unit == 'R\$' ? 'R\$ ' : ''}'
         '${value.toStringAsFixed(2)}'
         '${unit == 'R\$/ha' ? ' R\$/ha' : ''}',
-        style: const TextStyle(
-          fontWeight: FontWeight.w900,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w900),
       ),
     ),
   );

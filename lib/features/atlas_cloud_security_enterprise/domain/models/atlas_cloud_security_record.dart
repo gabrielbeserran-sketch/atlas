@@ -13,146 +13,120 @@ enum AtlasCloudSecurityModule {
 
 extension AtlasCloudSecurityModuleX on AtlasCloudSecurityModule {
   String get code => switch (this) {
-        AtlasCloudSecurityModule.professionalAuthentication =>
-          'professional_authentication',
-        AtlasCloudSecurityModule.usersAndCompanies =>
-          'users_and_companies',
-        AtlasCloudSecurityModule.cloudDatabase =>
-          'cloud_database',
-        AtlasCloudSecurityModule.offlineSynchronization =>
-          'offline_synchronization',
-        AtlasCloudSecurityModule.conflictResolution =>
-          'conflict_resolution',
-        AtlasCloudSecurityModule.automatedBackup =>
-          'automated_backup',
-        AtlasCloudSecurityModule.dataEncryption =>
-          'data_encryption',
-        AtlasCloudSecurityModule.userAuditLogs =>
-          'user_audit_logs',
-        AtlasCloudSecurityModule.integrationCenter =>
-          'integration_center',
-        AtlasCloudSecurityModule.securityCenter =>
-          'security_center',
-      };
+    AtlasCloudSecurityModule.professionalAuthentication =>
+      'professional_authentication',
+    AtlasCloudSecurityModule.usersAndCompanies => 'users_and_companies',
+    AtlasCloudSecurityModule.cloudDatabase => 'cloud_database',
+    AtlasCloudSecurityModule.offlineSynchronization =>
+      'offline_synchronization',
+    AtlasCloudSecurityModule.conflictResolution => 'conflict_resolution',
+    AtlasCloudSecurityModule.automatedBackup => 'automated_backup',
+    AtlasCloudSecurityModule.dataEncryption => 'data_encryption',
+    AtlasCloudSecurityModule.userAuditLogs => 'user_audit_logs',
+    AtlasCloudSecurityModule.integrationCenter => 'integration_center',
+    AtlasCloudSecurityModule.securityCenter => 'security_center',
+  };
 
   String get title => switch (this) {
-        AtlasCloudSecurityModule.professionalAuthentication =>
-          'Autenticação Profissional',
-        AtlasCloudSecurityModule.usersAndCompanies =>
-          'Gestão de Usuários e Empresas',
-        AtlasCloudSecurityModule.cloudDatabase =>
-          'Banco de Dados em Nuvem',
-        AtlasCloudSecurityModule.offlineSynchronization =>
-          'Sincronização Offline',
-        AtlasCloudSecurityModule.conflictResolution =>
-          'Resolução de Conflitos',
-        AtlasCloudSecurityModule.automatedBackup =>
-          'Backup Automatizado',
-        AtlasCloudSecurityModule.dataEncryption =>
-          'Criptografia de Dados',
-        AtlasCloudSecurityModule.userAuditLogs =>
-          'Logs e Auditoria de Usuários',
-        AtlasCloudSecurityModule.integrationCenter =>
-          'Central de Integrações',
-        AtlasCloudSecurityModule.securityCenter =>
-          'Central de Segurança Atlas',
-      };
+    AtlasCloudSecurityModule.professionalAuthentication =>
+      'Autenticação Profissional',
+    AtlasCloudSecurityModule.usersAndCompanies =>
+      'Gestão de Usuários e Empresas',
+    AtlasCloudSecurityModule.cloudDatabase => 'Banco de Dados em Nuvem',
+    AtlasCloudSecurityModule.offlineSynchronization => 'Sincronização Offline',
+    AtlasCloudSecurityModule.conflictResolution => 'Resolução de Conflitos',
+    AtlasCloudSecurityModule.automatedBackup => 'Backup Automatizado',
+    AtlasCloudSecurityModule.dataEncryption => 'Criptografia de Dados',
+    AtlasCloudSecurityModule.userAuditLogs => 'Logs e Auditoria de Usuários',
+    AtlasCloudSecurityModule.integrationCenter => 'Central de Integrações',
+    AtlasCloudSecurityModule.securityCenter => 'Central de Segurança Atlas',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasCloudSecurityModule.professionalAuthentication =>
-          'Pacote 231',
-        AtlasCloudSecurityModule.usersAndCompanies =>
-          'Pacote 232',
-        AtlasCloudSecurityModule.cloudDatabase =>
-          'Pacote 233',
-        AtlasCloudSecurityModule.offlineSynchronization =>
-          'Pacote 234',
-        AtlasCloudSecurityModule.conflictResolution =>
-          'Pacote 235',
-        AtlasCloudSecurityModule.automatedBackup =>
-          'Pacote 236',
-        AtlasCloudSecurityModule.dataEncryption =>
-          'Pacote 237',
-        AtlasCloudSecurityModule.userAuditLogs =>
-          'Pacote 238',
-        AtlasCloudSecurityModule.integrationCenter =>
-          'Pacote 239',
-        AtlasCloudSecurityModule.securityCenter =>
-          'Pacote 240',
-      };
+    AtlasCloudSecurityModule.professionalAuthentication => 'Pacote 231',
+    AtlasCloudSecurityModule.usersAndCompanies => 'Pacote 232',
+    AtlasCloudSecurityModule.cloudDatabase => 'Pacote 233',
+    AtlasCloudSecurityModule.offlineSynchronization => 'Pacote 234',
+    AtlasCloudSecurityModule.conflictResolution => 'Pacote 235',
+    AtlasCloudSecurityModule.automatedBackup => 'Pacote 236',
+    AtlasCloudSecurityModule.dataEncryption => 'Pacote 237',
+    AtlasCloudSecurityModule.userAuditLogs => 'Pacote 238',
+    AtlasCloudSecurityModule.integrationCenter => 'Pacote 239',
+    AtlasCloudSecurityModule.securityCenter => 'Pacote 240',
+  };
 
   List<String> get features => switch (this) {
-        AtlasCloudSecurityModule.professionalAuthentication => const [
-            'Login seguro',
-            'Recuperação de senha',
-            'Sessões',
-            'Bloqueios',
-            'Autenticação multifator',
-          ],
-        AtlasCloudSecurityModule.usersAndCompanies => const [
-            'Usuários',
-            'Empresas',
-            'Fazendas',
-            'Convites',
-            'Vínculos e papéis',
-          ],
-        AtlasCloudSecurityModule.cloudDatabase => const [
-            'Estrutura de dados',
-            'Persistência remota',
-            'Migração',
-            'Disponibilidade',
-            'Monitoramento',
-          ],
-        AtlasCloudSecurityModule.offlineSynchronization => const [
-            'Fila offline',
-            'Envio pendente',
-            'Recebimento de alterações',
-            'Status de sincronização',
-            'Retentativas',
-          ],
-        AtlasCloudSecurityModule.conflictResolution => const [
-            'Detecção de conflito',
-            'Versões',
-            'Regra de resolução',
-            'Revisão manual',
-            'Histórico',
-          ],
-        AtlasCloudSecurityModule.automatedBackup => const [
-            'Política de backup',
-            'Agendamento',
-            'Retenção',
-            'Restauração',
-            'Teste de integridade',
-          ],
-        AtlasCloudSecurityModule.dataEncryption => const [
-            'Dados em trânsito',
-            'Dados em repouso',
-            'Chaves',
-            'Rotação',
-            'Segredos',
-          ],
-        AtlasCloudSecurityModule.userAuditLogs => const [
-            'Acessos',
-            'Alterações',
-            'Exclusões',
-            'Exportações',
-            'Eventos críticos',
-          ],
-        AtlasCloudSecurityModule.integrationCenter => const [
-            'APIs',
-            'Webhooks',
-            'Gateways',
-            'Credenciais',
-            'Saúde das integrações',
-          ],
-        AtlasCloudSecurityModule.securityCenter => const [
-            'Sessões',
-            'Incidentes',
-            'Permissões',
-            'Backups',
-            'Painel executivo',
-          ],
-      };
+    AtlasCloudSecurityModule.professionalAuthentication => const [
+      'Login seguro',
+      'Recuperação de senha',
+      'Sessões',
+      'Bloqueios',
+      'Autenticação multifator',
+    ],
+    AtlasCloudSecurityModule.usersAndCompanies => const [
+      'Usuários',
+      'Empresas',
+      'Fazendas',
+      'Convites',
+      'Vínculos e papéis',
+    ],
+    AtlasCloudSecurityModule.cloudDatabase => const [
+      'Estrutura de dados',
+      'Persistência remota',
+      'Migração',
+      'Disponibilidade',
+      'Monitoramento',
+    ],
+    AtlasCloudSecurityModule.offlineSynchronization => const [
+      'Fila offline',
+      'Envio pendente',
+      'Recebimento de alterações',
+      'Status de sincronização',
+      'Retentativas',
+    ],
+    AtlasCloudSecurityModule.conflictResolution => const [
+      'Detecção de conflito',
+      'Versões',
+      'Regra de resolução',
+      'Revisão manual',
+      'Histórico',
+    ],
+    AtlasCloudSecurityModule.automatedBackup => const [
+      'Política de backup',
+      'Agendamento',
+      'Retenção',
+      'Restauração',
+      'Teste de integridade',
+    ],
+    AtlasCloudSecurityModule.dataEncryption => const [
+      'Dados em trânsito',
+      'Dados em repouso',
+      'Chaves',
+      'Rotação',
+      'Segredos',
+    ],
+    AtlasCloudSecurityModule.userAuditLogs => const [
+      'Acessos',
+      'Alterações',
+      'Exclusões',
+      'Exportações',
+      'Eventos críticos',
+    ],
+    AtlasCloudSecurityModule.integrationCenter => const [
+      'APIs',
+      'Webhooks',
+      'Gateways',
+      'Credenciais',
+      'Saúde das integrações',
+    ],
+    AtlasCloudSecurityModule.securityCenter => const [
+      'Sessões',
+      'Incidentes',
+      'Permissões',
+      'Backups',
+      'Painel executivo',
+    ],
+  };
 }
 
 class AtlasCloudSecurityRecord {
@@ -226,38 +200,35 @@ class AtlasCloudSecurityRecord {
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'module': module.code,
-        'feature': feature,
-        'title': title,
-        'date': date,
-        'dueDate': dueDate,
-        'status': status,
-        'priority': priority,
-        'environment': environment,
-        'resourceName': resourceName,
-        'userName': userName,
-        'companyName': companyName,
-        'providerName': providerName,
-        'versionLabel': versionLabel,
-        'progressPercent': progressPercent,
-        'availabilityPercent': availabilityPercent,
-        'riskPercent': riskPercent,
-        'alertCount': alertCount,
-        'retryCount': retryCount,
-        'notes': notes,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-      };
+    'id': id,
+    'module': module.code,
+    'feature': feature,
+    'title': title,
+    'date': date,
+    'dueDate': dueDate,
+    'status': status,
+    'priority': priority,
+    'environment': environment,
+    'resourceName': resourceName,
+    'userName': userName,
+    'companyName': companyName,
+    'providerName': providerName,
+    'versionLabel': versionLabel,
+    'progressPercent': progressPercent,
+    'availabilityPercent': availabilityPercent,
+    'riskPercent': riskPercent,
+    'alertCount': alertCount,
+    'retryCount': retryCount,
+    'notes': notes,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 
-  factory AtlasCloudSecurityRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCloudSecurityRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
     final module = AtlasCloudSecurityModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasCloudSecurityModule.professionalAuthentication,
+      orElse: () => AtlasCloudSecurityModule.professionalAuthentication,
     );
 
     return AtlasCloudSecurityRecord(
@@ -275,16 +246,12 @@ class AtlasCloudSecurityRecord {
       companyName: map['companyName']?.toString() ?? '',
       providerName: map['providerName']?.toString() ?? '',
       versionLabel: map['versionLabel']?.toString() ?? '',
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
       availabilityPercent:
           (map['availabilityPercent'] as num?)?.toDouble() ?? 0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
-      retryCount:
-          (map['retryCount'] as num?)?.toInt() ?? 0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
+      retryCount: (map['retryCount'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',
       updatedAt: map['updatedAt']?.toString() ?? '',

@@ -21,13 +21,10 @@ class AtlasEnterprise24BScreen extends StatefulWidget {
       _AtlasEnterprise24BScreenState();
 }
 
-class _AtlasEnterprise24BScreenState
-    extends State<AtlasEnterprise24BScreen> {
+class _AtlasEnterprise24BScreenState extends State<AtlasEnterprise24BScreen> {
   final enterprise = AtlasEnterprise24ARepository.instance;
-  final permissions =
-      AtlasEnterprisePermissionRepository.instance;
-  final authorization =
-      AtlasEnterpriseAuthorizationService.instance;
+  final permissions = AtlasEnterprisePermissionRepository.instance;
+  final authorization = AtlasEnterpriseAuthorizationService.instance;
   final audit = AtlasEnterpriseAuditService.instance;
   final session = AtlasEnterpriseSessionService.instance;
 
@@ -48,10 +45,8 @@ class _AtlasEnterprise24BScreenState
     await session.ensureInitialized();
     final value = await enterprise.load();
     final companyId = session.currentCompanyId;
-    final roles =
-        await permissions.loadCustomRoles(companyId: companyId);
-    final loadedPolicies =
-        await permissions.loadPolicies(companyId: companyId);
+    final roles = await permissions.loadCustomRoles(companyId: companyId);
+    final loadedPolicies = await permissions.loadPolicies(companyId: companyId);
     final records = await audit.search(companyId: companyId);
     final verified = await audit.verifyIntegrity();
 
@@ -69,10 +64,7 @@ class _AtlasEnterprise24BScreenState
   List<AtlasEnterpriseMembership> get companyMemberships {
     final companyId = session.currentCompanyId;
     return snapshot?.memberships
-            .where(
-              (item) =>
-                  item.companyId == companyId && item.active,
-            )
+            .where((item) => item.companyId == companyId && item.active)
             .toList() ??
         <AtlasEnterpriseMembership>[];
   }
@@ -129,14 +121,12 @@ class _AtlasEnterprise24BScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(
-                name.text.trim().isNotEmpty,
-              ),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(name.text.trim().isNotEmpty),
               child: const Text('Salvar'),
             ),
           ],
@@ -145,9 +135,7 @@ class _AtlasEnterprise24BScreenState
     );
 
     if (saved == true) {
-      await authorization.require(
-        'enterprise.permissions.manage',
-      );
+      await authorization.require('enterprise.permissions.manage');
       final now = DateTime.now();
       final companyId = session.currentCompanyId!;
       final role = AtlasCustomEnterpriseRole(
@@ -167,8 +155,7 @@ class _AtlasEnterprise24BScreenState
         module: 'permissions',
         entityType: 'custom_role',
         entityId: role.id,
-        description:
-            'Papel personalizado "${role.name}" criado.',
+        description: 'Papel personalizado "${role.name}" criado.',
         after: role.toMap(),
       );
       await _load();
@@ -178,12 +165,8 @@ class _AtlasEnterprise24BScreenState
     description.dispose();
   }
 
-  Future<void> _editUserPolicy(
-    AtlasEnterpriseMembership membership,
-  ) async {
-    await authorization.require(
-      'enterprise.permissions.manage',
-    );
+  Future<void> _editUserPolicy(AtlasEnterpriseMembership membership) async {
+    await authorization.require('enterprise.permissions.manage');
 
     final previous = await permissions.findPolicy(
       companyId: membership.companyId,
@@ -191,8 +174,7 @@ class _AtlasEnterprise24BScreenState
     );
 
     String? customRoleId = previous?.customRoleId;
-    final effects =
-        <String, AtlasPermissionEffect>{...?previous?.effects};
+    final effects = <String, AtlasPermissionEffect>{...?previous?.effects};
 
     if (!mounted) return;
 
@@ -231,69 +213,58 @@ class _AtlasEnterprise24BScreenState
                 const SizedBox(height: 14),
                 const Text(
                   'Overrides por usuário',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
                 ),
                 const Text(
                   'Padrão = herda do papel. Permitir e Negar sobrescrevem o padrão.',
                 ),
                 const SizedBox(height: 8),
-                ...AtlasEnterprisePermissions.catalog.map(
-                  (permission) {
-                    final effect = effects[permission.key];
-                    return Card(
-                      child: ListTile(
-                        title: Text(permission.label),
-                        subtitle: Text(permission.key),
-                        trailing:
-                            DropdownButton<AtlasPermissionEffect?>(
-                          value: effect,
-                          hint: const Text('Padrão'),
-                          items: const [
-                            DropdownMenuItem<
-                                AtlasPermissionEffect?>(
-                              value: null,
-                              child: Text('Padrão'),
-                            ),
-                            DropdownMenuItem<
-                                AtlasPermissionEffect?>(
-                              value: AtlasPermissionEffect.allow,
-                              child: Text('Permitir'),
-                            ),
-                            DropdownMenuItem<
-                                AtlasPermissionEffect?>(
-                              value: AtlasPermissionEffect.deny,
-                              child: Text('Negar'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setDialogState(() {
-                              if (value == null) {
-                                effects.remove(permission.key);
-                              } else {
-                                effects[permission.key] = value;
-                              }
-                            });
-                          },
-                        ),
+                ...AtlasEnterprisePermissions.catalog.map((permission) {
+                  final effect = effects[permission.key];
+                  return Card(
+                    child: ListTile(
+                      title: Text(permission.label),
+                      subtitle: Text(permission.key),
+                      trailing: DropdownButton<AtlasPermissionEffect?>(
+                        value: effect,
+                        hint: const Text('Padrão'),
+                        items: const [
+                          DropdownMenuItem<AtlasPermissionEffect?>(
+                            value: null,
+                            child: Text('Padrão'),
+                          ),
+                          DropdownMenuItem<AtlasPermissionEffect?>(
+                            value: AtlasPermissionEffect.allow,
+                            child: Text('Permitir'),
+                          ),
+                          DropdownMenuItem<AtlasPermissionEffect?>(
+                            value: AtlasPermissionEffect.deny,
+                            child: Text('Negar'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setDialogState(() {
+                            if (value == null) {
+                              effects.remove(permission.key);
+                            } else {
+                              effects[permission.key] = value;
+                            }
+                          });
+                        },
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('Salvar'),
             ),
           ],
@@ -304,7 +275,8 @@ class _AtlasEnterprise24BScreenState
     if (saved == true) {
       final now = DateTime.now();
       final policy = AtlasUserPermissionPolicy(
-        id: previous?.id ??
+        id:
+            previous?.id ??
             'policy_${membership.companyId}_'
                 '${membership.userId}',
         companyId: membership.companyId,
@@ -321,19 +293,15 @@ class _AtlasEnterprise24BScreenState
         module: 'permissions',
         entityType: 'user_policy',
         entityId: policy.id,
-        description:
-            'Política de acesso de ${membership.userName} atualizada.',
-        before: previous?.toMap() ??
-            const <String, dynamic>{},
+        description: 'Política de acesso de ${membership.userName} atualizada.',
+        before: previous?.toMap() ?? const <String, dynamic>{},
         after: policy.toMap(),
       );
       await _load();
     }
   }
 
-  Future<void> _showEffective(
-    AtlasEnterpriseMembership membership,
-  ) async {
+  Future<void> _showEffective(AtlasEnterpriseMembership membership) async {
     final effective = await authorization.effectivePermissions(
       companyId: membership.companyId,
       userId: membership.userId,
@@ -368,9 +336,7 @@ class _AtlasEnterprise24BScreenState
                   title: Text(permission.label),
                   subtitle: Text(permission.key),
                   trailing: Text(
-                    effective.allows(permission.key)
-                        ? 'Permitido'
-                        : 'Negado',
+                    effective.allows(permission.key) ? 'Permitido' : 'Negado',
                   ),
                 ),
               ),
@@ -379,8 +345,7 @@ class _AtlasEnterprise24BScreenState
         ),
         actions: [
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Fechar'),
           ),
         ],
@@ -409,8 +374,7 @@ class _AtlasEnterprise24BScreenState
       module: 'enterprise',
       entityType: 'authorization',
       entityId: '24b_security_suite',
-      description:
-          'Suite local de autorização 24B executada.',
+      description: 'Suite local de autorização 24B executada.',
       after: <String, dynamic>{
         'effectivePermissionCount': effective.allowed.length,
         'permissionReadCheck': permissionCheck,
@@ -433,8 +397,7 @@ class _AtlasEnterprise24BScreenState
         ),
         actions: [
           FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Fechar'),
           ),
         ],
@@ -445,9 +408,7 @@ class _AtlasEnterprise24BScreenState
 
   Future<void> _open24C() {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const AtlasEnterprise24CScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const AtlasEnterprise24CScreen()),
     );
   }
 
@@ -485,8 +446,7 @@ class _AtlasEnterprise24BScreenState
             ],
           ),
         ),
-        floatingActionButton:
-            FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: loading ? null : _createCustomRole,
           icon: const Icon(Icons.add),
           label: const Text('Papel personalizado'),
@@ -503,14 +463,8 @@ class _AtlasEnterprise24BScreenState
                     memberships: companyMemberships,
                     onOpen: _showEffective,
                   ),
-                  _AuditTab(
-                    records: auditRecords,
-                    integrity: integrity,
-                  ),
-                  _SecurityTab(
-                    integrity: integrity,
-                    onRun: _runSecurityTests,
-                  ),
+                  _AuditTab(records: auditRecords, integrity: integrity),
+                  _SecurityTab(integrity: integrity, onRun: _runSecurityTests),
                 ],
               ),
       ),
@@ -519,10 +473,7 @@ class _AtlasEnterprise24BScreenState
 }
 
 class _PermissionsTab extends StatelessWidget {
-  const _PermissionsTab({
-    required this.memberships,
-    required this.onEdit,
-  });
+  const _PermissionsTab({required this.memberships, required this.onEdit});
 
   final List<AtlasEnterpriseMembership> memberships;
   final ValueChanged<AtlasEnterpriseMembership> onEdit;
@@ -554,10 +505,7 @@ class _PermissionsTab extends StatelessWidget {
 }
 
 class _EffectiveAccessTab extends StatelessWidget {
-  const _EffectiveAccessTab({
-    required this.memberships,
-    required this.onOpen,
-  });
+  const _EffectiveAccessTab({required this.memberships, required this.onOpen});
 
   final List<AtlasEnterpriseMembership> memberships;
   final ValueChanged<AtlasEnterpriseMembership> onOpen;
@@ -574,9 +522,7 @@ class _EffectiveAccessTab extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.lock_open_outlined),
             title: Text(item.userName),
-            subtitle: Text(
-              atlasEnterpriseMembershipRoleLabel(item.role),
-            ),
+            subtitle: Text(atlasEnterpriseMembershipRoleLabel(item.role)),
             trailing: TextButton(
               onPressed: () => onOpen(item),
               child: const Text('Ver acesso efetivo'),
@@ -589,10 +535,7 @@ class _EffectiveAccessTab extends StatelessWidget {
 }
 
 class _AuditTab extends StatelessWidget {
-  const _AuditTab({
-    required this.records,
-    required this.integrity,
-  });
+  const _AuditTab({required this.records, required this.integrity});
 
   final List<AtlasEnterpriseAuditRecord> records;
   final AtlasAuditIntegrityResult? integrity;
@@ -619,19 +562,11 @@ class _AuditTab extends StatelessWidget {
         ),
         Expanded(
           child: records.isEmpty
-              ? const Center(
-                  child: Text('Nenhum evento de auditoria.'),
-                )
+              ? const Center(child: Text('Nenhum evento de auditoria.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: records.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = records[index];
                     return Card(
@@ -641,27 +576,24 @@ class _AuditTab extends StatelessWidget {
                           '${DateFormat('dd/MM/yyyy HH:mm:ss').format(item.occurredAt)} • '
                           '${item.userId} • ${item.result}',
                         ),
-                        childrenPadding:
-                            const EdgeInsets.all(16),
+                        childrenPadding: const EdgeInsets.all(16),
                         children: [
                           SelectableText(
-                            const JsonEncoder.withIndent('  ')
-                                .convert(
-                              <String, dynamic>{
-                                'action': item.action,
-                                'module': item.module,
-                                'entityType': item.entityType,
-                                'entityId': item.entityId,
-                                'farmId': item.farmId,
-                                'before': item.before,
-                                'after': item.after,
-                                'source': item.source,
-                                'device': item.device,
-                                'justification':
-                                    item.justification,
-                                'hash': item.integrityHash,
-                              },
-                            ),
+                            const JsonEncoder.withIndent(
+                              '  ',
+                            ).convert(<String, dynamic>{
+                              'action': item.action,
+                              'module': item.module,
+                              'entityType': item.entityType,
+                              'entityId': item.entityId,
+                              'farmId': item.farmId,
+                              'before': item.before,
+                              'after': item.after,
+                              'source': item.source,
+                              'device': item.device,
+                              'justification': item.justification,
+                              'hash': item.integrityHash,
+                            }),
                           ),
                         ],
                       ),
@@ -675,10 +607,7 @@ class _AuditTab extends StatelessWidget {
 }
 
 class _SecurityTab extends StatelessWidget {
-  const _SecurityTab({
-    required this.integrity,
-    required this.onRun,
-  });
+  const _SecurityTab({required this.integrity, required this.onRun});
 
   final AtlasAuditIntegrityResult? integrity;
   final VoidCallback onRun;
@@ -701,9 +630,7 @@ class _SecurityTab extends StatelessWidget {
           child: ListTile(
             leading: Icon(Icons.route_outlined),
             title: Text('Proteção de rotas e widgets'),
-            subtitle: Text(
-              'AtlasProtectedRoute e AtlasPermissionGate.',
-            ),
+            subtitle: Text('AtlasProtectedRoute e AtlasPermissionGate.'),
           ),
         ),
         const Card(

@@ -6,39 +6,27 @@ import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 class AtlasAiOperationActionsLoaderService {
   AtlasAiOperationActionsLoaderService({
     FarmStorageService? farmStorage,
-    AtlasAiTrackedActionStorageService?
-        actionStorage,
-  })  : farmStorage =
-            farmStorage ?? FarmStorageService(),
-        actionStorage =
-            actionStorage ??
-                const AtlasAiTrackedActionStorageService();
+    AtlasAiTrackedActionStorageService? actionStorage,
+  }) : farmStorage = farmStorage ?? FarmStorageService(),
+       actionStorage =
+           actionStorage ?? const AtlasAiTrackedActionStorageService();
 
   final FarmStorageService farmStorage;
 
-  final AtlasAiTrackedActionStorageService
-      actionStorage;
+  final AtlasAiTrackedActionStorageService actionStorage;
 
-  Future<AtlasAiOperationActionsLoadResult>
-      load() async {
+  Future<AtlasAiOperationActionsLoadResult> load() async {
     final farms = await farmStorage.loadFarms();
 
     final actionLists = await Future.wait(
       farms.map((farm) {
-        return actionStorage.load(
-          farmName: farm.name,
-        );
+        return actionStorage.load(farmName: farm.name);
       }),
     );
 
-    final actions = actionLists
-        .expand((items) => items)
-        .toList();
+    final actions = actionLists.expand((items) => items).toList();
 
-    return AtlasAiOperationActionsLoadResult(
-      farms: farms,
-      actions: actions,
-    );
+    return AtlasAiOperationActionsLoadResult(farms: farms, actions: actions);
   }
 }
 

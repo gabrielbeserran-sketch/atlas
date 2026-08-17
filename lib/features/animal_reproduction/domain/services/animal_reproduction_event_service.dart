@@ -20,10 +20,7 @@ class AnimalReproductionEventService {
       type: _eventType(record),
       sourceModule: 'animal_reproduction',
       title: _eventTitle(record),
-      description: _eventDescription(
-        animalName: animalName,
-        record: record,
-      ),
+      description: _eventDescription(animalName: animalName, record: record),
       priority: _eventPriority(record),
       farmId: farmName,
       farmName: farmName,
@@ -39,20 +36,14 @@ class AnimalReproductionEventService {
         'responsible': record.responsible,
         'notes': record.notes,
       },
-      tags: <String>[
-        'animal',
-        'reproduction',
-        _tagForRecord(record),
-      ],
+      tags: <String>['animal', 'reproduction', _tagForRecord(record)],
       occurredAt: _parseDate(record.date),
     );
 
     await AtlasEventBus.instance.publish(event);
   }
 
-  AtlasEventType _eventType(
-    AnimalReproductionData record,
-  ) {
+  AtlasEventType _eventType(AnimalReproductionData record) {
     switch (record.type) {
       case 'Inseminação artificial':
       case 'IATF':
@@ -71,9 +62,7 @@ class AnimalReproductionEventService {
     }
   }
 
-  AtlasEventPriority _eventPriority(
-    AnimalReproductionData record,
-  ) {
+  AtlasEventPriority _eventPriority(AnimalReproductionData record) {
     switch (record.type) {
       case 'Parto':
       case 'Aborto':
@@ -89,9 +78,7 @@ class AnimalReproductionEventService {
     }
   }
 
-  String _eventTitle(
-    AnimalReproductionData record,
-  ) {
+  String _eventTitle(AnimalReproductionData record) {
     switch (_eventType(record)) {
       case AtlasEventType.inseminationRecorded:
         return 'Inseminação registrada';
@@ -119,9 +106,9 @@ class AnimalReproductionEventService {
 
         return semen.isEmpty
             ? 'Foi registrada uma ${record.type.toLowerCase()} para '
-                '$animalName.'
+                  '$animalName.'
             : 'Foi registrada uma ${record.type.toLowerCase()} para '
-                '$animalName utilizando $semen.';
+                  '$animalName utilizando $semen.';
 
       case AtlasEventType.pregnancyConfirmed:
         return 'O diagnóstico de gestação de $animalName confirmou prenhez.';
@@ -135,13 +122,11 @@ class AnimalReproductionEventService {
         return result.isEmpty
             ? 'Foi registrado o evento ${record.type} para $animalName.'
             : 'Foi registrado o evento ${record.type} para $animalName: '
-                '$result.';
+                  '$result.';
     }
   }
 
-  String _tagForRecord(
-    AnimalReproductionData record,
-  ) {
+  String _tagForRecord(AnimalReproductionData record) {
     switch (record.type) {
       case 'Inseminação artificial':
       case 'IATF':
@@ -175,9 +160,7 @@ class AnimalReproductionEventService {
     }
   }
 
-  bool _isPregnancyConfirmed(
-    String result,
-  ) {
+  bool _isPregnancyConfirmed(String result) {
     final normalized = result.trim().toLowerCase();
 
     return normalized.contains('prenhe') ||
@@ -185,9 +168,7 @@ class AnimalReproductionEventService {
         normalized.contains('gestante');
   }
 
-  DateTime? _parseDate(
-    String value,
-  ) {
+  DateTime? _parseDate(String value) {
     final parts = value.split('/');
 
     if (parts.length != 3) {
@@ -198,16 +179,10 @@ class AnimalReproductionEventService {
     final month = int.tryParse(parts[1]);
     final year = int.tryParse(parts[2]);
 
-    if (day == null ||
-        month == null ||
-        year == null) {
+    if (day == null || month == null || year == null) {
       return null;
     }
 
-    return DateTime(
-      year,
-      month,
-      day,
-    );
+    return DateTime(year, month, day);
   }
 }

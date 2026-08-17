@@ -10,6 +10,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
+from cryptography.fernet import Fernet, InvalidToken
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -19,6 +20,50 @@ from .config import get_settings
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
+
+
+def _mfa_fernet() -> Fernet:
+    key_material = hashlib.sha256(
+        settings.atlas_mfa_encryption_key.encode("utf-8")
+    ).digest()
+    key = base64.urlsafe_b64encode(key_material)
+    return Fernet(key)
+
+
+def encrypt_mfa_secret(secret: str) -> str:
+    return _mfa_fernet().encrypt(secret.encode("utf-8")).decode("ascii")
+
+
+def decrypt_mfa_secret(value: str) -> str:
+    try:
+        return _mfa_fernet().decrypt(value.encode("ascii")).decode("utf-8")
+    except (InvalidToken, ValueError, UnicodeError) as exc:
+        # Compatibilidade somente para bancos locais antigos que armazenaram
+        # TOTP em texto puro antes do Marco 5C. Produção nunca aceita fallback.
+        if settings.atlas_env in {"development", "test"}:
+            return value
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Credencial MFA armazenada em formato inválido.",
+        ) from exc
+
+
+def consume_recovery_code(
+    stored_hashes: list[str],
+    candidate_code: str,
+) -> tuple[bool, list[str]]:
+    candidate_hash = token_digest(candidate_code.strip())
+    remaining: list[str] = []
+    consumed = False
+
+    for stored in stored_hashes:
+        matches = hmac.compare_digest(str(stored), candidate_hash)
+        if matches and not consumed:
+            consumed = True
+            continue
+        remaining.append(str(stored))
+
+    return consumed, remaining
 
 
 def validate_password_strength(password: str) -> None:
@@ -31,7 +76,7 @@ def validate_password_strength(password: str) -> None:
     )
     if not all(checks):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail=(
                 "A senha deve ter ao menos 10 caracteres, com maiúscula, "
                 "minúscula, número e símbolo."

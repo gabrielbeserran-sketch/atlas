@@ -20,14 +20,10 @@ class AtlasEventLogFilter {
   final DateTime? startDate;
   final DateTime? endDate;
 
-  bool matches(
-    AtlasEventLogEntry item,
-  ) {
-    final normalizedSearch =
-        search?.trim().toLowerCase();
+  bool matches(AtlasEventLogEntry item) {
+    final normalizedSearch = search?.trim().toLowerCase();
 
-    if (normalizedSearch != null &&
-        normalizedSearch.isNotEmpty) {
+    if (normalizedSearch != null && normalizedSearch.isNotEmpty) {
       final haystack = <String>[
         item.title,
         item.description,
@@ -37,51 +33,36 @@ class AtlasEventLogFilter {
         ...item.tags,
       ].join(' ').toLowerCase();
 
-      if (!haystack.contains(
-        normalizedSearch,
-      )) {
+      if (!haystack.contains(normalizedSearch)) {
         return false;
       }
     }
 
-    if (types != null &&
-        types!.isNotEmpty &&
-        !types!.contains(item.type)) {
+    if (types != null && types!.isNotEmpty && !types!.contains(item.type)) {
       return false;
     }
 
     if (priorities != null &&
         priorities!.isNotEmpty &&
-        !priorities!.contains(
-          item.priority,
-        )) {
+        !priorities!.contains(item.priority)) {
       return false;
     }
 
     if (sourceModule != null &&
         sourceModule!.isNotEmpty &&
-        item.sourceModule !=
-            sourceModule) {
+        item.sourceModule != sourceModule) {
       return false;
     }
 
-    if (farmName != null &&
-        farmName!.isNotEmpty &&
-        item.farmName != farmName) {
+    if (farmName != null && farmName!.isNotEmpty && item.farmName != farmName) {
       return false;
     }
 
-    if (startDate != null &&
-        item.occurredAt.isBefore(
-          startDate!,
-        )) {
+    if (startDate != null && item.occurredAt.isBefore(startDate!)) {
       return false;
     }
 
-    if (endDate != null &&
-        item.occurredAt.isAfter(
-          endDate!,
-        )) {
+    if (endDate != null && item.occurredAt.isAfter(endDate!)) {
       return false;
     }
 

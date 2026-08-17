@@ -233,16 +233,9 @@ class AtlasComparativePriority {
   }
 }
 
-enum AtlasComparativeHighlightType {
-  leader,
-  warning,
-  opportunity,
-  imbalance,
-}
+enum AtlasComparativeHighlightType { leader, warning, opportunity, imbalance }
 
-String atlasComparativeHighlightTypeLabel(
-  AtlasComparativeHighlightType type,
-) {
+String atlasComparativeHighlightTypeLabel(AtlasComparativeHighlightType type) {
   switch (type) {
     case AtlasComparativeHighlightType.leader:
       return 'Liderança';

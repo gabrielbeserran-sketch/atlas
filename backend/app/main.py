@@ -8,7 +8,10 @@ from .core.constants import API_PREFIX, SERVICE_NAME, SERVICE_VERSION
 from .core.errors import install_exception_handlers
 from .core.middleware import request_context_middleware
 from .core.openapi import install_openapi
-from .database import Base, SessionLocal, engine, database_health
+from .database import (
+    Base, SessionLocal, engine, database_health,
+    ensure_development_schema_compatibility,
+)
 from .routers import (
     release_engineering,
     security_enterprise,
@@ -69,6 +72,7 @@ from .routers import (
     data_platform,
     security_compliance,
     release_growth,
+    animal_media,
 )
 from .services.observability import observability_middleware
 from .services.security_middleware import security_middleware
@@ -81,6 +85,7 @@ async def lifespan(app: FastAPI):
     database_health()
     if settings.atlas_auto_create_schema and settings.atlas_env in {"development", "test"}:
         Base.metadata.create_all(bind=engine)
+        ensure_development_schema_compatibility()
     if settings.atlas_bootstrap_enabled and settings.atlas_env in {"development", "test"}:
         with SessionLocal() as db:
             bootstrap(db)
@@ -164,6 +169,7 @@ for router in (
     data_platform.router,
     security_compliance.router,
     release_growth.router,
+    animal_media.router,
 ):
     app.include_router(router, prefix=API_PREFIX)
 
@@ -171,4 +177,17 @@ for router in (
 
 @app.get("/", tags=["health"])
 def root() -> dict:
-    return {"service": SERVICE_NAME, "version": SERVICE_VERSION, "environment": settings.atlas_env, "docs": "/docs", "health": f"{API_PREFIX}/health", "readiness": f"{API_PREFIX}/health/ready"}
+    payload = {
+        "service": SERVICE_NAME,
+        "version": SERVICE_VERSION,
+        "health": f"{API_PREFIX}/health",
+        "readiness": f"{API_PREFIX}/health/ready",
+    }
+
+    if not settings.is_production_like:
+        payload["environment"] = settings.atlas_env
+
+    if settings.atlas_docs_enabled:
+        payload["docs"] = "/docs"
+
+    return payload

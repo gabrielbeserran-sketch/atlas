@@ -56,9 +56,7 @@ class AtlasVeterinaryCase {
     };
   }
 
-  factory AtlasVeterinaryCase.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasVeterinaryCase.fromMap(Map<String, dynamic> map) {
     return AtlasVeterinaryCase(
       id: map['id']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
@@ -67,17 +65,13 @@ class AtlasVeterinaryCase {
       symptoms: (map['symptoms'] as List<dynamic>? ?? const [])
           .map((item) => item.toString())
           .toList(growable: false),
-      temperatureCelsius:
-          (map['temperatureCelsius'] as num?)?.toDouble() ?? 0,
-      heartRateBpm:
-          (map['heartRateBpm'] as num?)?.toInt() ?? 0,
-      respiratoryRateBpm:
-          (map['respiratoryRateBpm'] as num?)?.toInt() ?? 0,
+      temperatureCelsius: (map['temperatureCelsius'] as num?)?.toDouble() ?? 0,
+      heartRateBpm: (map['heartRateBpm'] as num?)?.toInt() ?? 0,
+      respiratoryRateBpm: (map['respiratoryRateBpm'] as num?)?.toInt() ?? 0,
       appetite: map['appetite']?.toString() ?? 'Normal',
       hydration: map['hydration']?.toString() ?? 'Normal',
       locomotion: map['locomotion']?.toString() ?? 'Normal',
-      durationHours:
-          (map['durationHours'] as num?)?.toInt() ?? 0,
+      durationHours: (map['durationHours'] as num?)?.toInt() ?? 0,
       notes: map['notes']?.toString() ?? '',
       responsible: map['responsible']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

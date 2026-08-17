@@ -12,6 +12,7 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_financial_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_farm_summary.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_dashboard_service.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class TechnicalDashboardScreen extends StatefulWidget {
   const TechnicalDashboardScreen({super.key});
@@ -230,8 +231,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                       ),
                       const SizedBox(height: 18),
                       AtlasCommandCenterModuleCard(
-                        module:
-                            AtlasCommandCenterModule.technicalDashboard,
+                        module: AtlasCommandCenterModule.technicalDashboard,
                         farmName: selectedFarm?.name,
                       ),
                       const SizedBox(height: 24),
@@ -515,7 +515,7 @@ class _SummaryContent extends StatelessWidget {
             _MainIndicator(
               label: 'Animais ativos',
               value: summary.activeAnimals.toString(),
-              icon: Icons.pets_outlined,
+              icon: AtlasLivestockIcons.cow,
             ),
             _MainIndicator(
               label: 'Saldo financeiro',

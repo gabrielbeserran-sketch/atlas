@@ -51,17 +51,13 @@ class AtlasExecutiveKpi {
     }
 
     final result = switch (direction) {
-      AtlasExecutiveKpiDirection.higherIsBetter =>
-        value / targetValue * 100,
+      AtlasExecutiveKpiDirection.higherIsBetter => value / targetValue * 100,
       AtlasExecutiveKpiDirection.lowerIsBetter =>
-        value <= 0
-            ? 100
-            : targetValue / value * 100,
+        value <= 0 ? 100 : targetValue / value * 100,
       AtlasExecutiveKpiDirection.neutral =>
         100 -
             ((value - targetValue).abs() /
-                    targetValue.abs()
-                        .clamp(1.0, double.infinity) *
+                targetValue.abs().clamp(1.0, double.infinity) *
                 100),
     };
 
@@ -69,15 +65,12 @@ class AtlasExecutiveKpi {
   }
 
   bool get isCritical {
-    return status ==
-        AtlasExecutiveKpiStatus.critical;
+    return status == AtlasExecutiveKpiStatus.critical;
   }
 
   bool get isPositive {
-    return status ==
-            AtlasExecutiveKpiStatus.excellent ||
-        status ==
-            AtlasExecutiveKpiStatus.adequate;
+    return status == AtlasExecutiveKpiStatus.excellent ||
+        status == AtlasExecutiveKpiStatus.adequate;
   }
 
   Map<String, dynamic> toJson() {
@@ -141,10 +134,8 @@ class AtlasExecutiveFarmKpiSummary {
       'adequate': adequate,
       'attention': attention,
       'critical': critical,
-      'mainPositiveKpi':
-          mainPositiveKpi?.toJson(),
-      'mainCriticalKpi':
-          mainCriticalKpi?.toJson(),
+      'mainPositiveKpi': mainPositiveKpi?.toJson(),
+      'mainCriticalKpi': mainCriticalKpi?.toJson(),
     };
   }
 }
@@ -212,8 +203,7 @@ class AtlasExecutiveKpiDashboardData {
 
   final List<AtlasExecutiveFarmKpiSummary> farms;
 
-  final List<AtlasExecutiveKpiCategorySummary>
-      categories;
+  final List<AtlasExecutiveKpiCategorySummary> categories;
 
   final List<AtlasExecutiveKpi> criticalKpis;
 
@@ -223,8 +213,7 @@ class AtlasExecutiveKpiDashboardData {
     return kpis.isNotEmpty;
   }
 
-  AtlasExecutiveFarmKpiSummary?
-      get leadingFarm {
+  AtlasExecutiveFarmKpiSummary? get leadingFarm {
     if (farms.isEmpty) {
       return null;
     }
@@ -232,34 +221,26 @@ class AtlasExecutiveKpiDashboardData {
     return farms.first;
   }
 
-  AtlasExecutiveFarmKpiSummary?
-      get mostCriticalFarm {
+  AtlasExecutiveFarmKpiSummary? get mostCriticalFarm {
     if (farms.isEmpty) {
       return null;
     }
 
     final ordered = [...farms]
-      ..sort(
-        (first, second) {
-          if (first.critical != second.critical) {
-            return second.critical.compareTo(
-              first.critical,
-            );
-          }
+      ..sort((first, second) {
+        if (first.critical != second.critical) {
+          return second.critical.compareTo(first.critical);
+        }
 
-          return first.score.compareTo(
-            second.score,
-          );
-        },
-      );
+        return first.score.compareTo(second.score);
+      });
 
     return ordered.first;
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'generatedAt':
-          generatedAt.toIso8601String(),
+      'generatedAt': generatedAt.toIso8601String(),
       'operationScore': operationScore,
       'operationStatus': operationStatus.name,
       'summary': summary,
@@ -275,8 +256,7 @@ class AtlasExecutiveKpiDashboardData {
       'criticalKpis': criticalKpis.map((item) {
         return item.toJson();
       }).toList(),
-      'positiveHighlights':
-          positiveHighlights.map((item) {
+      'positiveHighlights': positiveHighlights.map((item) {
         return item.toJson();
       }).toList(),
     };
@@ -338,11 +318,7 @@ enum AtlasExecutiveKpiCategory {
   intelligence,
 }
 
-enum AtlasExecutiveKpiDirection {
-  higherIsBetter,
-  lowerIsBetter,
-  neutral,
-}
+enum AtlasExecutiveKpiDirection { higherIsBetter, lowerIsBetter, neutral }
 
 enum AtlasExecutiveKpiTrend {
   strongUp,
@@ -353,16 +329,9 @@ enum AtlasExecutiveKpiTrend {
   unavailable,
 }
 
-enum AtlasExecutiveKpiStatus {
-  excellent,
-  adequate,
-  attention,
-  critical,
-}
+enum AtlasExecutiveKpiStatus { excellent, adequate, attention, critical }
 
-String atlasExecutiveKpiCategoryLabel(
-  AtlasExecutiveKpiCategory category,
-) {
+String atlasExecutiveKpiCategoryLabel(AtlasExecutiveKpiCategory category) {
   switch (category) {
     case AtlasExecutiveKpiCategory.production:
       return 'Produção';
@@ -384,9 +353,7 @@ String atlasExecutiveKpiCategoryLabel(
   }
 }
 
-String atlasExecutiveKpiStatusLabel(
-  AtlasExecutiveKpiStatus status,
-) {
+String atlasExecutiveKpiStatusLabel(AtlasExecutiveKpiStatus status) {
   switch (status) {
     case AtlasExecutiveKpiStatus.excellent:
       return 'Excelente';
@@ -402,9 +369,7 @@ String atlasExecutiveKpiStatusLabel(
   }
 }
 
-String atlasExecutiveKpiTrendLabel(
-  AtlasExecutiveKpiTrend trend,
-) {
+String atlasExecutiveKpiTrendLabel(AtlasExecutiveKpiTrend trend) {
   switch (trend) {
     case AtlasExecutiveKpiTrend.strongUp:
       return 'Alta forte';

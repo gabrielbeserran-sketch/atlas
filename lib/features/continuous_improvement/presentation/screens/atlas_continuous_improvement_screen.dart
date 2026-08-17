@@ -10,12 +10,8 @@ import 'package:projeto_atlas/features/farm_audit/domain/models/atlas_farm_audit
 import 'package:projeto_atlas/features/performance_center/domain/models/atlas_performance_snapshot.dart';
 import 'package:projeto_atlas/features/performance_center/domain/services/atlas_performance_engine.dart';
 
-class AtlasContinuousImprovementScreen
-    extends StatefulWidget {
-  const AtlasContinuousImprovementScreen({
-    super.key,
-    this.farmId,
-  });
+class AtlasContinuousImprovementScreen extends StatefulWidget {
+  const AtlasContinuousImprovementScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -30,8 +26,7 @@ class _AtlasContinuousImprovementScreenState
   bool loading = true;
   bool generating = false;
   AtlasImprovementCycle? cycle;
-  List<AtlasImprovementCycle> history =
-      <AtlasImprovementCycle>[];
+  List<AtlasImprovementCycle> history = <AtlasImprovementCycle>[];
 
   @override
   void initState() {
@@ -44,17 +39,11 @@ class _AtlasContinuousImprovementScreenState
       loading = true;
     });
 
-    final allCycles =
-        await AtlasImprovementHistoryService.instance
-            .loadAll();
+    final allCycles = await AtlasImprovementHistoryService.instance.loadAll();
 
     final filtered = widget.farmId == null
         ? allCycles
-        : allCycles
-            .where(
-              (item) => item.farmId == widget.farmId,
-            )
-            .toList();
+        : allCycles.where((item) => item.farmId == widget.farmId).toList();
 
     if (!mounted) {
       return;
@@ -81,33 +70,24 @@ class _AtlasContinuousImprovementScreenState
     });
 
     try {
-      final audits =
-          await AtlasFarmAuditHistoryService.instance
-              .loadAll();
+      final audits = await AtlasFarmAuditHistoryService.instance.loadAll();
 
       final filteredAudits = widget.farmId == null
           ? audits
-          : audits
-              .where(
-                (item) => item.farmId == widget.farmId,
-              )
-              .toList();
+          : audits.where((item) => item.farmId == widget.farmId).toList();
 
       if (filteredAudits.isEmpty) {
         return;
       }
 
-      final AtlasFarmAudit currentAudit =
-          filteredAudits.first;
+      final AtlasFarmAudit currentAudit = filteredAudits.first;
 
-      final AtlasFarmAudit? previousAudit =
-          filteredAudits.length > 1
-              ? filteredAudits[1]
-              : null;
+      final AtlasFarmAudit? previousAudit = filteredAudits.length > 1
+          ? filteredAudits[1]
+          : null;
 
-      final AtlasActionPlan? plan =
-          await AtlasActionPlanStorageService.instance
-              .latestForFarm(currentAudit.farmId);
+      final AtlasActionPlan? plan = await AtlasActionPlanStorageService.instance
+          .latestForFarm(currentAudit.farmId);
 
       if (plan == null) {
         return;
@@ -115,25 +95,21 @@ class _AtlasContinuousImprovementScreenState
 
       final AtlasPerformanceSnapshot performance =
           const AtlasPerformanceEngine().generate(
-        plan: plan,
-        currentAudit: currentAudit,
-        previousAudit: previousAudit,
-      );
+            plan: plan,
+            currentAudit: currentAudit,
+            previousAudit: previousAudit,
+          );
 
-      final generated =
-          const AtlasContinuousImprovementEngine()
-              .generate(
+      final generated = const AtlasContinuousImprovementEngine().generate(
         performance: performance,
         audit: currentAudit,
         plan: plan,
       );
 
-      await AtlasImprovementHistoryService.instance
-          .save(generated);
+      await AtlasImprovementHistoryService.instance.save(generated);
 
-      final updatedHistory =
-          await AtlasImprovementHistoryService.instance
-              .byFarmId(currentAudit.farmId);
+      final updatedHistory = await AtlasImprovementHistoryService.instance
+          .byFarmId(currentAudit.farmId);
 
       if (!mounted) {
         return;
@@ -159,9 +135,7 @@ class _AtlasContinuousImprovementScreenState
       appBar: AppBar(
         title: const Text(
           'Melhoria Contínua',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -170,9 +144,7 @@ class _AtlasContinuousImprovementScreenState
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) {
-                    return AtlasKnowledgeLearningScreen(
-                      farmId: widget.farmId,
-                    );
+                    return AtlasKnowledgeLearningScreen(farmId: widget.farmId);
                   },
                 ),
               );
@@ -188,24 +160,16 @@ class _AtlasContinuousImprovementScreenState
         ],
       ),
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : cycle == null
-              ? const _EmptyView()
-              : _CycleBody(
-                  cycle: cycle!,
-                  history: history,
-                ),
+          ? const _EmptyView()
+          : _CycleBody(cycle: cycle!, history: history),
     );
   }
 }
 
 class _CycleBody extends StatelessWidget {
-  const _CycleBody({
-    required this.cycle,
-    required this.history,
-  });
+  const _CycleBody({required this.cycle, required this.history});
 
   final AtlasImprovementCycle cycle;
   final List<AtlasImprovementCycle> history;
@@ -214,8 +178,7 @@ class _CycleBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints:
-            const BoxConstraints(maxWidth: 1180),
+        constraints: const BoxConstraints(maxWidth: 1180),
         child: ListView(
           padding: const EdgeInsets.all(22),
           children: [
@@ -229,11 +192,7 @@ class _CycleBody extends StatelessWidget {
                   'Ações que devem ser mantidas, monitoradas, corrigidas ou recalibradas.',
             ),
             const SizedBox(height: 12),
-            ...cycle.decisions.map(
-              (item) => _DecisionCard(
-                decision: item,
-              ),
-            ),
+            ...cycle.decisions.map((item) => _DecisionCard(decision: item)),
             if (history.length > 1) ...[
               const SizedBox(height: 24),
               const _SectionTitle(
@@ -253,16 +212,13 @@ class _CycleBody extends StatelessWidget {
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.cycle,
-  });
+  const _Hero({required this.cycle});
 
   final AtlasImprovementCycle cycle;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        _classificationColor(cycle.classification);
+    final color = _classificationColor(cycle.classification);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -280,25 +236,17 @@ class _Hero extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 42,
-            backgroundColor:
-                color.withValues(alpha: 0.16),
-            child: Icon(
-              Icons.autorenew,
-              size: 42,
-              color: color,
-            ),
+            backgroundColor: color.withValues(alpha: 0.16),
+            child: Icon(Icons.autorenew, size: 42, color: color),
           ),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Atlas Continuous Improvement Engine',
-                  style: TextStyle(
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -314,10 +262,7 @@ class _Hero extends StatelessWidget {
                   '${atlasImprovementCycleClassificationLabel(cycle.classification)} · '
                   '${cycle.recalibrationDecisions} recalibrações · '
                   '${cycle.correctionDecisions} correções',
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -329,9 +274,7 @@ class _Hero extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.cycle,
-  });
+  const _SummaryCard({required this.cycle});
 
   final AtlasImprovementCycle cycle;
 
@@ -341,21 +284,14 @@ class _SummaryCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Síntese executiva',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Text(
-              cycle.summary,
-              style: const TextStyle(height: 1.5),
-            ),
+            Text(cycle.summary, style: const TextStyle(height: 1.5)),
             const SizedBox(height: 18),
             Wrap(
               spacing: 12,
@@ -363,19 +299,15 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 _Metric(
                   label: 'Execution Score',
-                  value: cycle.executionScore
-                      .toStringAsFixed(1),
+                  value: cycle.executionScore.toStringAsFixed(1),
                 ),
                 _Metric(
                   label: 'Farm Audit Index',
-                  value:
-                      cycle.auditIndex.toStringAsFixed(1),
+                  value: cycle.auditIndex.toStringAsFixed(1),
                 ),
                 _Metric(
                   label: 'Próxima revisão',
-                  value: _formatDate(
-                    cycle.nextReviewDate,
-                  ),
+                  value: _formatDate(cycle.nextReviewDate),
                 ),
               ],
             ),
@@ -387,9 +319,7 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _DecisionCard extends StatelessWidget {
-  const _DecisionCard({
-    required this.decision,
-  });
+  const _DecisionCard({required this.decision});
 
   final AtlasImprovementDecision decision;
 
@@ -400,26 +330,19 @@ class _DecisionCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _decisionIcon(decision.type),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_decisionIcon(decision.type), color: color),
         ),
         title: Text(
           decision.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
           '${atlasFarmAuditAreaLabel(decision.area)} · '
           '${atlasFarmAuditPriorityLabel(decision.priority)} · '
           'prazo de ${decision.deadlineDays} dias',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           Align(
             alignment: Alignment.centerLeft,
@@ -434,22 +357,19 @@ class _DecisionCard extends StatelessWidget {
               Expanded(
                 child: _Metric(
                   label: 'Atual',
-                  value: decision.currentValue
-                      .toStringAsFixed(1),
+                  value: decision.currentValue.toStringAsFixed(1),
                 ),
               ),
               Expanded(
                 child: _Metric(
                   label: 'Meta',
-                  value:
-                      decision.targetValue.toStringAsFixed(1),
+                  value: decision.targetValue.toStringAsFixed(1),
                 ),
               ),
               Expanded(
                 child: _Metric(
                   label: 'Ganho esperado',
-                  value:
-                      '+${decision.expectedGain.toStringAsFixed(1)}',
+                  value: '+${decision.expectedGain.toStringAsFixed(1)}',
                 ),
               ),
             ],
@@ -461,9 +381,7 @@ class _DecisionCard extends StatelessWidget {
 }
 
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({
-    required this.history,
-  });
+  const _HistoryCard({required this.history});
 
   final List<AtlasImprovementCycle> history;
 
@@ -475,15 +393,10 @@ class _HistoryCard extends StatelessWidget {
         child: Column(
           children: history.take(8).map((item) {
             return Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      _formatDate(item.generatedAt),
-                    ),
-                  ),
+                  Expanded(child: Text(_formatDate(item.generatedAt))),
                   Expanded(
                     child: Text(
                       atlasImprovementCycleClassificationLabel(
@@ -493,9 +406,7 @@ class _HistoryCard extends StatelessWidget {
                   ),
                   Text(
                     '${item.recalibrationDecisions} recalibrações',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -508,10 +419,7 @@ class _HistoryCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -519,30 +427,20 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          const BoxConstraints(minWidth: 150),
+      constraints: const BoxConstraints(minWidth: 150),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF4F6F8),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -551,10 +449,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -562,23 +457,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
@@ -595,25 +481,17 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.autorenew,
-              size: 58,
-              color: Colors.black26,
-            ),
+            Icon(Icons.autorenew, size: 58, color: Colors.black26),
             SizedBox(height: 12),
             Text(
               'Ainda não existem dados suficientes.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 6),
             Text(
               'Gere uma auditoria e um plano de ação antes de iniciar o ciclo de melhoria contínua.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black54,
-              ),
+              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -622,9 +500,7 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-IconData _decisionIcon(
-  AtlasImprovementDecisionType type,
-) {
+IconData _decisionIcon(AtlasImprovementDecisionType type) {
   switch (type) {
     case AtlasImprovementDecisionType.maintain:
       return Icons.verified_outlined;
@@ -637,9 +513,7 @@ IconData _decisionIcon(
   }
 }
 
-Color _classificationColor(
-  AtlasImprovementCycleClassification classification,
-) {
+Color _classificationColor(AtlasImprovementCycleClassification classification) {
   switch (classification) {
     case AtlasImprovementCycleClassification.excellent:
       return const Color(0xFF66BB6A);
@@ -652,9 +526,7 @@ Color _classificationColor(
   }
 }
 
-Color _priorityColor(
-  AtlasFarmAuditPriority priority,
-) {
+Color _priorityColor(AtlasFarmAuditPriority priority) {
   switch (priority) {
     case AtlasFarmAuditPriority.low:
       return const Color(0xFF2E7D32);

@@ -31,8 +31,7 @@ class AtlasIntelligenceData {
         recommendations.isNotEmpty;
   }
 
-  AtlasIntelligenceRecommendation?
-      get primaryRecommendation {
+  AtlasIntelligenceRecommendation? get primaryRecommendation {
     if (recommendations.isEmpty) {
       return null;
     }
@@ -158,12 +157,7 @@ class AtlasIntelligenceRecommendation {
   final List<String> actions;
 }
 
-enum AtlasIntelligenceStatus {
-  stable,
-  attention,
-  highRisk,
-  critical,
-}
+enum AtlasIntelligenceStatus { stable, attention, highRisk, critical }
 
 enum AtlasIntelligenceSignalType {
   operational,
@@ -173,12 +167,7 @@ enum AtlasIntelligenceSignalType {
   strategic,
 }
 
-enum AtlasIntelligenceSeverity {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasIntelligenceSeverity { low, medium, high, critical }
 
 enum AtlasIntelligencePatternType {
   recurring,
@@ -188,16 +177,9 @@ enum AtlasIntelligencePatternType {
   bottleneck,
 }
 
-enum AtlasIntelligencePriority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasIntelligencePriority { low, medium, high, critical }
 
-String atlasIntelligenceStatusLabel(
-  AtlasIntelligenceStatus status,
-) {
+String atlasIntelligenceStatusLabel(AtlasIntelligenceStatus status) {
   switch (status) {
     case AtlasIntelligenceStatus.stable:
       return 'Estável';
@@ -213,9 +195,7 @@ String atlasIntelligenceStatusLabel(
   }
 }
 
-String atlasIntelligenceSeverityLabel(
-  AtlasIntelligenceSeverity severity,
-) {
+String atlasIntelligenceSeverityLabel(AtlasIntelligenceSeverity severity) {
   switch (severity) {
     case AtlasIntelligenceSeverity.low:
       return 'Baixa';
@@ -231,9 +211,7 @@ String atlasIntelligenceSeverityLabel(
   }
 }
 
-String atlasIntelligencePatternTypeLabel(
-  AtlasIntelligencePatternType type,
-) {
+String atlasIntelligencePatternTypeLabel(AtlasIntelligencePatternType type) {
   switch (type) {
     case AtlasIntelligencePatternType.recurring:
       return 'Recorrente';
@@ -252,9 +230,7 @@ String atlasIntelligencePatternTypeLabel(
   }
 }
 
-String atlasIntelligencePriorityLabel(
-  AtlasIntelligencePriority priority,
-) {
+String atlasIntelligencePriorityLabel(AtlasIntelligencePriority priority) {
   switch (priority) {
     case AtlasIntelligencePriority.low:
       return 'Baixa';

@@ -45,11 +45,11 @@ class AtlasConsultancyVisit {
   final bool completed;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'date': date.toIso8601String(),
-        'summary': summary,
-        'completed': completed,
-      };
+    'id': id,
+    'date': date.toIso8601String(),
+    'summary': summary,
+    'completed': completed,
+  };
 
   factory AtlasConsultancyVisit.fromMap(Map<String, dynamic> map) {
     return AtlasConsultancyVisit(
@@ -87,12 +87,12 @@ class AtlasConsultancyAction {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'responsible': responsible,
-        'deadline': deadline.toIso8601String(),
-        'completed': completed,
-      };
+    'id': id,
+    'title': title,
+    'responsible': responsible,
+    'deadline': deadline.toIso8601String(),
+    'completed': completed,
+  };
 
   factory AtlasConsultancyAction.fromMap(Map<String, dynamic> map) {
     return AtlasConsultancyAction(
@@ -145,15 +145,15 @@ class AtlasConsultancyCase {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'clientName': clientName,
-        'farmName': farmName,
-        'stage': stage.name,
-        'createdAt': createdAt.toIso8601String(),
-        'visits': visits.map((item) => item.toMap()).toList(),
-        'actions': actions.map((item) => item.toMap()).toList(),
-        'notes': notes,
-      };
+    'id': id,
+    'clientName': clientName,
+    'farmName': farmName,
+    'stage': stage.name,
+    'createdAt': createdAt.toIso8601String(),
+    'visits': visits.map((item) => item.toMap()).toList(),
+    'actions': actions.map((item) => item.toMap()).toList(),
+    'notes': notes,
+  };
 
   String toJson() => jsonEncode(toMap());
 
@@ -167,16 +167,21 @@ class AtlasConsultancyCase {
         orElse: () => AtlasConsultancyStage.initialContact,
       ),
       createdAt:
-          DateTime.tryParse(map['createdAt'] as String? ?? '') ?? DateTime.now(),
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       visits: ((map['visits'] as List<dynamic>?) ?? <dynamic>[])
-          .map((item) => AtlasConsultancyVisit.fromMap(
-                Map<String, dynamic>.from(item as Map),
-              ))
+          .map(
+            (item) => AtlasConsultancyVisit.fromMap(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
           .toList(),
       actions: ((map['actions'] as List<dynamic>?) ?? <dynamic>[])
-          .map((item) => AtlasConsultancyAction.fromMap(
-                Map<String, dynamic>.from(item as Map),
-              ))
+          .map(
+            (item) => AtlasConsultancyAction.fromMap(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
           .toList(),
       notes: map['notes'] as String? ?? '',
     );

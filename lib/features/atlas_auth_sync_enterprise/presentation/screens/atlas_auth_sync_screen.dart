@@ -22,12 +22,10 @@ class AtlasAuthSyncScreen extends StatefulWidget {
   final AtlasAuthSyncModule initialModule;
 
   @override
-  State<AtlasAuthSyncScreen> createState() =>
-      _AtlasAuthSyncScreenState();
+  State<AtlasAuthSyncScreen> createState() => _AtlasAuthSyncScreenState();
 }
 
-class _AtlasAuthSyncScreenState
-    extends State<AtlasAuthSyncScreen> {
+class _AtlasAuthSyncScreenState extends State<AtlasAuthSyncScreen> {
   final storage = AtlasAuthSyncStorageService();
   final analyticsService = const AtlasAuthSyncAnalyticsService();
 
@@ -52,8 +50,9 @@ class _AtlasAuthSyncScreenState
     );
 
     loaded.sort(
-      (a, b) => parseAtlasAuthSyncDate(b.date)
-          .compareTo(parseAtlasAuthSyncDate(a.date)),
+      (a, b) => parseAtlasAuthSyncDate(
+        b.date,
+      ).compareTo(parseAtlasAuthSyncDate(a.date)),
     );
 
     if (!mounted) return;
@@ -65,25 +64,22 @@ class _AtlasAuthSyncScreenState
   }
 
   Future<void> persist() => storage.save(
-        farmName: widget.farm.name,
-        animalId: widget.animal.id,
-        records: records,
-      );
+    farmName: widget.farm.name,
+    animalId: widget.animal.id,
+    records: records,
+  );
 
-  List<AtlasAuthSyncRecord> get visibleRecords =>
-      records.where((record) {
+  List<AtlasAuthSyncRecord> get visibleRecords => records
+      .where((record) {
         return record.module == selectedModule &&
-            (selectedFeature == 'Todos' ||
-                record.feature == selectedFeature);
-      }).toList(growable: false);
+            (selectedFeature == 'Todos' || record.feature == selectedFeature);
+      })
+      .toList(growable: false);
 
   Future<void> openForm([AtlasAuthSyncRecord? current]) async {
     final result = await showDialog<AtlasAuthSyncRecord>(
       context: context,
-      builder: (_) => _AuthSyncForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (_) => _AuthSyncForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
@@ -313,9 +309,7 @@ class _AtlasAuthSyncScreenState
                         Card(
                           child: ListTile(
                             leading: Icon(_moduleIcon(selectedModule)),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro controle, fila, sessão ou conflito.',
                             ),
@@ -368,10 +362,7 @@ class _AtlasAuthSyncScreenState
 }
 
 class _AuthSyncForm extends StatefulWidget {
-  const _AuthSyncForm({
-    required this.module,
-    this.current,
-  });
+  const _AuthSyncForm({required this.module, this.current});
 
   final AtlasAuthSyncModule module;
   final AtlasAuthSyncRecord? current;
@@ -414,24 +405,16 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasAuthSyncDate(DateTime.now()),
+      text: current?.date ?? formatAtlasAuthSyncDate(DateTime.now()),
     );
-    environment =
-        TextEditingController(text: current?.environment ?? '');
+    environment = TextEditingController(text: current?.environment ?? '');
     userName = TextEditingController(text: current?.userName ?? '');
-    companyName =
-        TextEditingController(text: current?.companyName ?? '');
-    deviceName =
-        TextEditingController(text: current?.deviceName ?? '');
-    resourceName =
-        TextEditingController(text: current?.resourceName ?? '');
-    versionLabel =
-        TextEditingController(text: current?.versionLabel ?? '');
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    deviceName = TextEditingController(text: current?.deviceName ?? '');
+    resourceName = TextEditingController(text: current?.resourceName ?? '');
+    versionLabel = TextEditingController(text: current?.versionLabel ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     successRatePercent = TextEditingController(
       text: current == null || current.successRatePercent == 0
@@ -487,10 +470,7 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
   }
 
   double decimal(TextEditingController controller) =>
-      double.tryParse(
-        controller.text.trim().replaceAll(',', '.'),
-      ) ??
-      0;
+      double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
 
   int integer(TextEditingController controller) =>
       int.tryParse(controller.text.trim()) ?? 0;
@@ -504,8 +484,7 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
     Navigator.pop(
       context,
       AtlasAuthSyncRecord(
-        id: current?.id ??
-            'auth_sync_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'auth_sync_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -518,18 +497,12 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
         deviceName: deviceName.text.trim(),
         resourceName: resourceName.text.trim(),
         versionLabel: versionLabel.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
-        successRatePercent:
-            decimal(successRatePercent).clamp(0, 100),
-        riskPercent:
-            decimal(riskPercent).clamp(0, 100),
-        pendingCount:
-            integer(pendingCount) < 0 ? 0 : integer(pendingCount),
-        retryCount:
-            integer(retryCount) < 0 ? 0 : integer(retryCount),
-        alertCount:
-            integer(alertCount) < 0 ? 0 : integer(alertCount),
+        progressPercent: integer(progressPercent).clamp(0, 100),
+        successRatePercent: decimal(successRatePercent).clamp(0, 100),
+        riskPercent: decimal(riskPercent).clamp(0, 100),
+        pendingCount: integer(pendingCount) < 0 ? 0 : integer(pendingCount),
+        retryCount: integer(retryCount) < 0 ? 0 : integer(retryCount),
+        alertCount: integer(alertCount) < 0 ? 0 : integer(alertCount),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
         updatedAt: now,
@@ -540,11 +513,7 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -559,10 +528,8 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -573,37 +540,33 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Informe o título.'
-                          : null,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Informe o título.'
+                      : null,
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Ativo',
-                    'Validado',
-                    'Sincronizado',
-                    'Concluído',
-                    'Atenção',
-                    'Falha',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Ativo',
+                            'Validado',
+                            'Sincronizado',
+                            'Concluído',
+                            'Atenção',
+                            'Falha',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -612,20 +575,11 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: priority,
-                  decoration: const InputDecoration(
-                    labelText: 'Prioridade',
-                  ),
-                  items: const [
-                    'Baixa',
-                    'Média',
-                    'Alta',
-                    'Urgente',
-                  ]
+                  decoration: const InputDecoration(labelText: 'Prioridade'),
+                  items: const ['Baixa', 'Média', 'Alta', 'Urgente']
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -651,18 +605,14 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
                 ].map(
                   (item) => TextFormField(
                     controller: item.$1,
-                    decoration: InputDecoration(
-                      labelText: item.$2,
-                    ),
+                    decoration: InputDecoration(labelText: item.$2),
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -674,10 +624,7 @@ class _AuthSyncFormState extends State<_AuthSyncForm> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -687,23 +634,17 @@ IconData _moduleIcon(AtlasAuthSyncModule module) {
   return switch (module) {
     AtlasAuthSyncModule.secureUserRegistration =>
       Icons.person_add_alt_1_outlined,
-    AtlasAuthSyncModule.secureTokenLogin =>
-      Icons.key_outlined,
-    AtlasAuthSyncModule.passwordRecovery =>
-      Icons.lock_reset_outlined,
+    AtlasAuthSyncModule.secureTokenLogin => Icons.key_outlined,
+    AtlasAuthSyncModule.passwordRecovery => Icons.lock_reset_outlined,
     AtlasAuthSyncModule.multiFactorAuthentication =>
       Icons.phonelink_lock_outlined,
     AtlasAuthSyncModule.roleBasedAccessControl =>
       Icons.admin_panel_settings_outlined,
     AtlasAuthSyncModule.sensitiveDataProtection =>
       Icons.enhanced_encryption_outlined,
-    AtlasAuthSyncModule.immutableAuditLogs =>
-      Icons.manage_search_outlined,
-    AtlasAuthSyncModule.structuredOfflineDatabase =>
-      Icons.storage_outlined,
-    AtlasAuthSyncModule.synchronizationEngine =>
-      Icons.sync_outlined,
-    AtlasAuthSyncModule.realConflictResolution =>
-      Icons.merge_type_outlined,
+    AtlasAuthSyncModule.immutableAuditLogs => Icons.manage_search_outlined,
+    AtlasAuthSyncModule.structuredOfflineDatabase => Icons.storage_outlined,
+    AtlasAuthSyncModule.synchronizationEngine => Icons.sync_outlined,
+    AtlasAuthSyncModule.realConflictResolution => Icons.merge_type_outlined,
   };
 }

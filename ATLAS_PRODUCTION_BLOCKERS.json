@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-08-14",
+  "marco5": [
+    {
+      "id": "M5-ATTACHMENTS-PHOTO-REMOTE",
+      "area": "Fotos do animal",
+      "severity": "blocking",
+      "requirement": "Substituir SharedPreferences/caminho local por upload e download autenticados com armazenamento remoto persistente, escopo por empresa/fazenda/animal e backup."
+    },
+    {
+      "id": "M5-ATTACHMENTS-DOCUMENT-REMOTE",
+      "area": "Documentos do animal",
+      "severity": "blocking",
+      "requirement": "Substituir SharedPreferences/caminho local por upload e download autenticados com armazenamento remoto persistente, escopo por empresa/fazenda/animal e backup."
+    }
+  ],
+  "marco6": [
+    {
+      "id": "M6-ANDROID-DOCUMENT-OPEN",
+      "area": "Documentos do animal",
+      "severity": "blocking",
+      "requirement": "Remover abertura via cmd/Windows e implementar fluxo compatível com Android."
+    },
+    {
+      "id": "M6-ANDROID-PHOTO-PICKER",
+      "area": "Fotos do animal",
+      "severity": "blocking",
+      "requirement": "Substituir caminho manual de imagem por seletor/câmera compatível com Android e upload remoto."
+    }
+  ]
+}

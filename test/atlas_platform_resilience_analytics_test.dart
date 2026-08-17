@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_platform_resilience/domain/models/a
 import 'package:projeto_atlas/features/atlas_platform_resilience/domain/services/atlas_platform_resilience_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasPlatformResilienceAnalyticsService();
+  const service = AtlasPlatformResilienceAnalyticsService();
 
   test('calculates platform resilience analytics', () {
     final records = [
       AtlasPlatformResilienceRecord(
         id: '1',
-        module:
-            AtlasPlatformResilienceModule.dataGovernance,
+        module: AtlasPlatformResilienceModule.dataGovernance,
         feature: 'Catálogo de dados',
         title: 'Cadastro de animais',
         date: '04/08/2026',
@@ -33,8 +31,7 @@ void main() {
       ),
       AtlasPlatformResilienceRecord(
         id: '2',
-        module:
-            AtlasPlatformResilienceModule.dataGovernance,
+        module: AtlasPlatformResilienceModule.dataGovernance,
         feature: 'Qualidade e completude',
         title: 'Campos incompletos',
         date: '04/08/2026',
@@ -57,8 +54,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasPlatformResilienceModule.dataGovernance,
+      module: AtlasPlatformResilienceModule.dataGovernance,
       records: records,
     );
 

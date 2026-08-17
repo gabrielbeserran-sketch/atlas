@@ -54,11 +54,11 @@ class AtlasExecutivePlatformAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        moduleRecords.where((record) => record.isOperational).length;
+    final operational = moduleRecords
+        .where((record) => record.isOperational)
+        .length;
 
-    final overdue =
-        moduleRecords.where((record) => record.isOverdue).length;
+    final overdue = moduleRecords.where((record) => record.isOverdue).length;
 
     final alerts = moduleRecords.fold<int>(
       0,
@@ -69,29 +69,21 @@ class AtlasExecutivePlatformAnalyticsService {
           (record.isOverdue ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasExecutivePlatformRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasExecutivePlatformRecord) selector) {
       if (moduleRecords.isEmpty) return 0;
 
-      return moduleRecords
-              .map(selector)
-              .reduce((a, b) => a + b) /
+      return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
-    final averageCurrent =
-        averageOf((record) => record.currentValue);
-    final averageTarget =
-        averageOf((record) => record.targetValue);
-    final averageGap =
-        averageOf((record) => record.gap);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final averageConfidence =
-        averageOf((record) => record.confidencePercent);
-    final averageRisk =
-        averageOf((record) => record.riskPercent);
+    final averageCurrent = averageOf((record) => record.currentValue);
+    final averageTarget = averageOf((record) => record.targetValue);
+    final averageGap = averageOf((record) => record.gap);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
+    final averageConfidence = averageOf((record) => record.confidencePercent);
+    final averageRisk = averageOf((record) => record.riskPercent);
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -128,60 +120,48 @@ class AtlasExecutivePlatformAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasExecutivePlatformModule.globalExecutiveDashboard =>
-            const [
-              'Consolide somente indicadores com fonte e período definidos.',
-              'Destaque desvios, riscos e decisões prioritárias.',
-            ],
-          AtlasExecutivePlatformModule.farmBenchmarking =>
-            const [
-              'Compare fazendas com critérios equivalentes.',
-              'Use referências ajustadas por escala e sistema produtivo.',
-            ],
-          AtlasExecutivePlatformModule.corporateGoals =>
-            const [
-              'Associe cada meta a indicador, prazo e responsável.',
-              'Revise metas sem apagar o histórico original.',
-            ],
-          AtlasExecutivePlatformModule.unifiedAlerts =>
-            const [
-              'Elimine duplicidades e agrupe alertas correlacionados.',
-              'Defina severidade, responsável e tratamento.',
-            ],
-          AtlasExecutivePlatformModule.intelligentTasks =>
-            const [
-              'Converta alertas e recomendações em tarefas rastreáveis.',
-              'Mantenha dependências e critérios de conclusão.',
-            ],
-          AtlasExecutivePlatformModule.professionalReports =>
-            const [
-              'Controle versões e origem dos dados.',
-              'Diferencie relatório técnico, gerencial e executivo.',
-            ],
-          AtlasExecutivePlatformModule.exportAndSharing =>
-            const [
-              'Restrinja compartilhamento conforme o nível de acesso.',
-              'Registre exportações e mantenha validade dos links.',
-            ],
-          AtlasExecutivePlatformModule.plansAndSubscriptions =>
-            const [
-              'Defina limites, recursos e regras de renovação.',
-              'Mantenha histórico de alteração de plano.',
-            ],
-          AtlasExecutivePlatformModule.platformAdminPanel =>
-            const [
-              'Separe administração da plataforma e dados dos clientes.',
-              'Acompanhe usuários, empresas, suporte e estabilidade.',
-            ],
-          AtlasExecutivePlatformModule.enterpriseCommandCenter =>
-            const [
-              'Integre operações, finanças, riscos e inteligência.',
-              'Priorize decisões com impacto, confiança e prazo.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasExecutivePlatformModule.globalExecutiveDashboard => const [
+          'Consolide somente indicadores com fonte e período definidos.',
+          'Destaque desvios, riscos e decisões prioritárias.',
+        ],
+        AtlasExecutivePlatformModule.farmBenchmarking => const [
+          'Compare fazendas com critérios equivalentes.',
+          'Use referências ajustadas por escala e sistema produtivo.',
+        ],
+        AtlasExecutivePlatformModule.corporateGoals => const [
+          'Associe cada meta a indicador, prazo e responsável.',
+          'Revise metas sem apagar o histórico original.',
+        ],
+        AtlasExecutivePlatformModule.unifiedAlerts => const [
+          'Elimine duplicidades e agrupe alertas correlacionados.',
+          'Defina severidade, responsável e tratamento.',
+        ],
+        AtlasExecutivePlatformModule.intelligentTasks => const [
+          'Converta alertas e recomendações em tarefas rastreáveis.',
+          'Mantenha dependências e critérios de conclusão.',
+        ],
+        AtlasExecutivePlatformModule.professionalReports => const [
+          'Controle versões e origem dos dados.',
+          'Diferencie relatório técnico, gerencial e executivo.',
+        ],
+        AtlasExecutivePlatformModule.exportAndSharing => const [
+          'Restrinja compartilhamento conforme o nível de acesso.',
+          'Registre exportações e mantenha validade dos links.',
+        ],
+        AtlasExecutivePlatformModule.plansAndSubscriptions => const [
+          'Defina limites, recursos e regras de renovação.',
+          'Mantenha histórico de alteração de plano.',
+        ],
+        AtlasExecutivePlatformModule.platformAdminPanel => const [
+          'Separe administração da plataforma e dados dos clientes.',
+          'Acompanhe usuários, empresas, suporte e estabilidade.',
+        ],
+        AtlasExecutivePlatformModule.enterpriseCommandCenter => const [
+          'Integre operações, finanças, riscos e inteligência.',
+          'Priorize decisões com impacto, confiança e prazo.',
+        ],
+      });
     }
 
     return AtlasExecutivePlatformAnalytics(

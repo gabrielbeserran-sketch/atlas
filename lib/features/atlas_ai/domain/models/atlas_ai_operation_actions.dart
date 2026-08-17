@@ -18,11 +18,9 @@ class AtlasAiOperationActions {
 
   final List<AtlasAiFarmActionSummary> farms;
 
-  final List<AtlasAiOperationPriorityAction>
-      priorityActions;
+  final List<AtlasAiOperationPriorityAction> priorityActions;
 
-  final List<AtlasAiAreaActionSummary>
-      areaSummaries;
+  final List<AtlasAiAreaActionSummary> areaSummaries;
 
   bool get hasActions {
     return progress.total > 0;
@@ -35,10 +33,7 @@ class AtlasAiOperationActions {
 
     final ordered = [...farms]
       ..sort(
-        (first, second) =>
-            second.priorityScore.compareTo(
-          first.priorityScore,
-        ),
+        (first, second) => second.priorityScore.compareTo(first.priorityScore),
       );
 
     return ordered.first;
@@ -46,19 +41,16 @@ class AtlasAiOperationActions {
 
   Map<String, dynamic> toJson() {
     return {
-      'generatedAt':
-          generatedAt.toIso8601String(),
+      'generatedAt': generatedAt.toIso8601String(),
       'summary': summary,
       'progress': progress.toJson(),
       'farms': farms.map((item) {
         return item.toJson();
       }).toList(),
-      'priorityActions':
-          priorityActions.map((item) {
+      'priorityActions': priorityActions.map((item) {
         return item.toJson();
       }).toList(),
-      'areaSummaries':
-          areaSummaries.map((item) {
+      'areaSummaries': areaSummaries.map((item) {
         return item.toJson();
       }).toList(),
     };
@@ -97,8 +89,7 @@ class AtlasAiOperationActionProgress {
       'completed': completed,
       'cancelled': cancelled,
       'overdue': overdue,
-      'completionPercent':
-          completionPercent,
+      'completionPercent': completionPercent,
     };
   }
 }
@@ -140,8 +131,7 @@ class AtlasAiFarmActionSummary {
       'completed': completed,
       'cancelled': cancelled,
       'overdue': overdue,
-      'completionPercent':
-          completionPercent,
+      'completionPercent': completionPercent,
       'priorityScore': priorityScore,
       'nextActionTitle': nextActionTitle,
     };

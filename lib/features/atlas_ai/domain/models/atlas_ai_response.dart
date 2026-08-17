@@ -77,9 +77,7 @@ class AtlasAiResponse {
       buffer.writeln('Evidências');
 
       for (final evidence in evidences) {
-        buffer.writeln(
-          '- ${evidence.label}: ${evidence.value}',
-        );
+        buffer.writeln('- ${evidence.label}: ${evidence.value}');
       }
     }
 
@@ -176,11 +174,7 @@ class AtlasAiNavigationAction {
   final AtlasAiNavigationActionType type;
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'label': label,
-      'type': type.name,
-    };
+    return {'id': id, 'label': label, 'type': type.name};
   }
 }
 
@@ -220,9 +214,7 @@ enum AtlasAiNavigationActionType {
   openAgenda,
 }
 
-String atlasAiIntentLabel(
-  AtlasAiIntent intent,
-) {
+String atlasAiIntentLabel(AtlasAiIntent intent) {
   switch (intent) {
     case AtlasAiIntent.generalSituation:
       return 'Situação geral';

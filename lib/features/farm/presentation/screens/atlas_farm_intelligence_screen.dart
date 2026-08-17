@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intelligence_service.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasFarmIntelligenceScreen extends StatelessWidget {
   const AtlasFarmIntelligenceScreen({
@@ -352,7 +353,7 @@ class _AreaScoreGrid extends StatelessWidget {
         title: 'Rebanho',
         score: data.herd.score,
         level: data.herd.level,
-        icon: Icons.pets_outlined,
+        icon: AtlasLivestockIcons.cow,
       ),
       _AreaScoreItem(
         title: 'Piquetes',
@@ -665,7 +666,7 @@ class _AreaAnalysisList extends StatelessWidget {
         analysis: data.herd.analysis,
         score: data.herd.score,
         level: data.herd.level,
-        icon: Icons.pets_outlined,
+        icon: AtlasLivestockIcons.cow,
         onOpen: onOpenHerd,
       ),
       _AreaAnalysisItem(
@@ -815,7 +816,7 @@ IconData farmAreaIcon(AtlasFarmAnalysisArea area) {
     case AtlasFarmAnalysisArea.finance:
       return Icons.account_balance_wallet_outlined;
     case AtlasFarmAnalysisArea.herd:
-      return Icons.pets_outlined;
+      return AtlasLivestockIcons.cow;
     case AtlasFarmAnalysisArea.paddock:
       return Icons.grid_view_outlined;
     case AtlasFarmAnalysisArea.inventory:

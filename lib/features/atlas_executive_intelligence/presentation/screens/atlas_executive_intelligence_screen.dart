@@ -30,8 +30,7 @@ class _AtlasExecutiveIntelligenceScreenState
     extends State<AtlasExecutiveIntelligenceScreen> {
   final AtlasExecutiveIntelligenceStorageService storage =
       AtlasExecutiveIntelligenceStorageService();
-  final AtlasExecutiveIntelligenceAnalyticsService
-      analyticsService =
+  final AtlasExecutiveIntelligenceAnalyticsService analyticsService =
       const AtlasExecutiveIntelligenceAnalyticsService();
 
   late AtlasExecutiveIntelligenceModule selectedModule;
@@ -77,31 +76,26 @@ class _AtlasExecutiveIntelligenceScreenState
   }
 
   List<AtlasExecutiveIntelligenceRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasExecutiveIntelligenceRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasExecutiveIntelligenceRecord>(
+  Future<void> openForm([AtlasExecutiveIntelligenceRecord? current]) async {
+    final result = await showDialog<AtlasExecutiveIntelligenceRecord>(
       context: context,
-      builder: (context) => _ExecutiveIntelligenceForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _ExecutiveIntelligenceForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +109,7 @@ class _AtlasExecutiveIntelligenceScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasExecutiveIntelligenceRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasExecutiveIntelligenceRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +117,11 @@ class _AtlasExecutiveIntelligenceScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -192,9 +182,7 @@ class _AtlasExecutiveIntelligenceScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Central executiva de inteligência',
-                          ),
+                          title: Text('Central executiva de inteligência'),
                           subtitle: Text(
                             'Consolida registros e indicadores para apoiar decisões. '
                             'Resultados dependem da qualidade e atualização dos dados.',
@@ -265,8 +253,7 @@ class _AtlasExecutiveIntelligenceScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Nota média',
-                            value:
-                                analytics.averageScore.toStringAsFixed(1),
+                            value: analytics.averageScore.toStringAsFixed(1),
                             subtitle: 'Indicador informado',
                             icon: Icons.stars_outlined,
                           ),
@@ -275,8 +262,7 @@ class _AtlasExecutiveIntelligenceScreenState
                             value:
                                 'R\$ ${analytics.financialImpact.toStringAsFixed(2).replaceAll('.', ',')}',
                             subtitle: 'Impacto consolidado',
-                            icon:
-                                Icons.account_balance_wallet_outlined,
+                            icon: Icons.account_balance_wallet_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Progresso médio',
@@ -309,12 +295,8 @@ class _AtlasExecutiveIntelligenceScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro indicador ou processo.',
                             ),
@@ -325,8 +307,7 @@ class _AtlasExecutiveIntelligenceScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -340,14 +321,10 @@ class _AtlasExecutiveIntelligenceScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasExecutiveIntelligenceModule selected;
-  final ValueChanged<AtlasExecutiveIntelligenceModule>
-      onSelected;
+  final ValueChanged<AtlasExecutiveIntelligenceModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -357,22 +334,20 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasExecutiveIntelligenceModule.values.map(
-            (module) {
-              final active = module == selected;
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor: active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+          children: AtlasExecutiveIntelligenceModule.values
+              .map((module) {
+                final active = module == selected;
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -395,13 +370,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -420,13 +397,16 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Vencido' || 'Bloqueado' ||
-      'Em risco' =>
-        Colors.red.shade800,
+      'Crítico' ||
+      'Vencido' ||
+      'Bloqueado' ||
+      'Em risco' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Aprovado' || 'Em execução' ||
-      'Concluído' || 'Saudável' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Aprovado' ||
+      'Em execução' ||
+      'Concluído' ||
+      'Saudável' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
@@ -461,10 +441,7 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _ExecutiveIntelligenceForm extends StatefulWidget {
-  const _ExecutiveIntelligenceForm({
-    required this.module,
-    this.current,
-  });
+  const _ExecutiveIntelligenceForm({required this.module, this.current});
 
   final AtlasExecutiveIntelligenceModule module;
   final AtlasExecutiveIntelligenceRecord? current;
@@ -506,13 +483,10 @@ class _ExecutiveIntelligenceFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasExecutiveDate(DateTime.now()),
+      text: current?.date ?? formatAtlasExecutiveDate(DateTime.now()),
     );
-    responsible =
-        TextEditingController(text: current?.responsible ?? '');
-    externalId =
-        TextEditingController(text: current?.externalId ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    externalId = TextEditingController(text: current?.externalId ?? '');
     primaryValue = TextEditingController(
       text: current == null || current.primaryValue == 0
           ? ''
@@ -539,9 +513,7 @@ class _ExecutiveIntelligenceFormState
           : current.scoreValue.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
@@ -549,8 +521,7 @@ class _ExecutiveIntelligenceFormState
           : current.alertCount.toString(),
     );
     dueDate = TextEditingController(text: current?.dueDate ?? '');
-    reference =
-        TextEditingController(text: current?.reference ?? '');
+    reference = TextEditingController(text: current?.reference ?? '');
     notes = TextEditingController(text: current?.notes ?? '');
   }
 
@@ -574,28 +545,20 @@ class _ExecutiveIntelligenceFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
     return int.tryParse(controller.text.trim()) ?? 0;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
+  Future<void> chooseDate(TextEditingController controller) async {
     final parsed = parseAtlasExecutiveDate(controller.text);
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -615,8 +578,7 @@ class _ExecutiveIntelligenceFormState
     Navigator.pop(
       context,
       AtlasExecutiveIntelligenceRecord(
-        id: current?.id ??
-            'executive_${DateTime.now().microsecondsSinceEpoch}',
+        id: current?.id ?? 'executive_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
@@ -629,8 +591,7 @@ class _ExecutiveIntelligenceFormState
         financialImpact: decimal(financialImpact),
         quantity: _maxZero(integer(quantity)),
         scoreValue: decimal(scoreValue),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: _maxZero(integer(alertCount)),
         dueDate: dueDate.text.trim(),
         reference: reference.text.trim(),
@@ -644,11 +605,7 @@ class _ExecutiveIntelligenceFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 740,
         child: Form(
@@ -663,10 +620,8 @@ class _ExecutiveIntelligenceFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -677,8 +632,7 @@ class _ExecutiveIntelligenceFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration:
-                      const InputDecoration(labelText: 'Título'),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
@@ -692,35 +646,34 @@ class _ExecutiveIntelligenceFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon:
-                        Icon(Icons.calendar_month_outlined),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration:
-                      const InputDecoration(labelText: 'Situação'),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Aprovado',
-                    'Em execução',
-                    'Saudável',
-                    'Concluído',
-                    'Atenção',
-                    'Em risco',
-                    'Crítico',
-                    'Vencido',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Aprovado',
+                            'Em execução',
+                            'Saudável',
+                            'Concluído',
+                            'Atenção',
+                            'Em risco',
+                            'Crítico',
+                            'Vencido',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -736,14 +689,12 @@ class _ExecutiveIntelligenceFormState
                 TextFormField(
                   controller: externalId,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Cliente, indicador, objetivo ou alerta',
+                    labelText: 'Cliente, indicador, objetivo ou alerta',
                   ),
                 ),
                 TextFormField(
                   controller: primaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -752,8 +703,7 @@ class _ExecutiveIntelligenceFormState
                 ),
                 TextFormField(
                   controller: secondaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -762,8 +712,7 @@ class _ExecutiveIntelligenceFormState
                 ),
                 TextFormField(
                   controller: financialImpact,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -773,17 +722,14 @@ class _ExecutiveIntelligenceFormState
                 TextFormField(
                   controller: quantity,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Quantidade'),
+                  decoration: const InputDecoration(labelText: 'Quantidade'),
                 ),
                 TextFormField(
                   controller: scoreValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration:
-                      const InputDecoration(labelText: 'Nota'),
+                  decoration: const InputDecoration(labelText: 'Nota'),
                 ),
                 TextFormField(
                   controller: progressPercent,
@@ -811,17 +757,14 @@ class _ExecutiveIntelligenceFormState
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Documento, dashboard ou referência',
+                    labelText: 'Documento, dashboard ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -833,21 +776,15 @@ class _ExecutiveIntelligenceFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasExecutiveIntelligenceModule module,
-) {
+IconData _moduleIcon(AtlasExecutiveIntelligenceModule module) {
   return switch (module) {
-    AtlasExecutiveIntelligenceModule.enterpriseCrm =>
-      Icons.people_alt_outlined,
+    AtlasExecutiveIntelligenceModule.enterpriseCrm => Icons.people_alt_outlined,
     AtlasExecutiveIntelligenceModule.financialCenter =>
       Icons.account_balance_wallet_outlined,
     AtlasExecutiveIntelligenceModule.businessIntelligence =>

@@ -13,75 +13,53 @@ class CopilotChatBubble extends StatelessWidget {
   final AtlasCopilotMessage message;
   final ValueChanged<AtlasCopilotAction> onActionPressed;
 
-  final void Function(
-    String messageId,
-    AtlasCopilotMessageFeedback feedback,
-  ) onFeedback;
+  final void Function(String messageId, AtlasCopilotMessageFeedback feedback)
+  onFeedback;
 
   @override
   Widget build(BuildContext context) {
     final isUser = message.isUser;
 
     return Align(
-      alignment:
-          isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 760,
-        ),
-        margin: const EdgeInsets.only(
-          bottom: 14,
-        ),
+        constraints: const BoxConstraints(maxWidth: 760),
+        margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isUser
-              ? const Color(0xFF1B5E20)
-              : Colors.white,
+          color: isUser ? const Color(0xFF1B5E20) : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
             topRight: const Radius.circular(18),
-            bottomLeft: Radius.circular(
-              isUser ? 18 : 4,
-            ),
-            bottomRight: Radius.circular(
-              isUser ? 4 : 18,
-            ),
+            bottomLeft: Radius.circular(isUser ? 18 : 4),
+            bottomRight: Radius.circular(isUser ? 4 : 18),
           ),
           boxShadow: isUser
               ? const []
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.05,
-                    ),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isUser
-                      ? Icons.person_outline
-                      : Icons.auto_awesome_outlined,
+                  isUser ? Icons.person_outline : Icons.auto_awesome_outlined,
                   size: 17,
-                  color: isUser
-                      ? Colors.white70
-                      : const Color(0xFF1B5E20),
+                  color: isUser ? Colors.white70 : const Color(0xFF1B5E20),
                 ),
                 const SizedBox(width: 7),
                 Text(
                   isUser ? 'Você' : 'Copiloto Atlas',
                   style: TextStyle(
-                    color: isUser
-                        ? Colors.white70
-                        : const Color(0xFF1B5E20),
+                    color: isUser ? Colors.white70 : const Color(0xFF1B5E20),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -90,14 +68,10 @@ class CopilotChatBubble extends StatelessWidget {
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      atlasCopilotIntentLabel(
-                        message.intent!,
-                      ),
+                      atlasCopilotIntentLabel(message.intent!),
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: isUser
-                            ? Colors.white54
-                            : Colors.black45,
+                        color: isUser ? Colors.white54 : Colors.black45,
                         fontSize: 10,
                       ),
                     ),
@@ -109,9 +83,7 @@ class CopilotChatBubble extends StatelessWidget {
             SelectableText(
               message.text,
               style: TextStyle(
-                color: isUser
-                    ? Colors.white
-                    : const Color(0xFF263238),
+                color: isUser ? Colors.white : const Color(0xFF263238),
                 height: 1.48,
                 fontSize: 14,
               ),
@@ -127,18 +99,11 @@ class CopilotChatBubble extends StatelessWidget {
                       onActionPressed(action);
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          const Color(0xFF1B5E20),
-                      side: const BorderSide(
-                        color: Color(0xFF1B5E20),
-                      ),
-                      visualDensity:
-                          VisualDensity.compact,
+                      foregroundColor: const Color(0xFF1B5E20),
+                      side: const BorderSide(color: Color(0xFF1B5E20)),
+                      visualDensity: VisualDensity.compact,
                     ),
-                    icon: const Icon(
-                      Icons.arrow_forward,
-                      size: 16,
-                    ),
+                    icon: const Icon(Icons.arrow_forward, size: 16),
                     label: Text(action.label),
                   );
                 }).toList(),
@@ -163,8 +128,8 @@ class CopilotChatBubble extends StatelessWidget {
                     const Spacer(),
                   _FeedbackButton(
                     tooltip: 'Resposta útil',
-                    selected: message.feedback ==
-                        AtlasCopilotMessageFeedback.useful,
+                    selected:
+                        message.feedback == AtlasCopilotMessageFeedback.useful,
                     icon: Icons.thumb_up_outlined,
                     selectedIcon: Icons.thumb_up,
                     color: const Color(0xFF1B5E20),
@@ -178,7 +143,8 @@ class CopilotChatBubble extends StatelessWidget {
                   const SizedBox(width: 4),
                   _FeedbackButton(
                     tooltip: 'Resposta não útil',
-                    selected: message.feedback ==
+                    selected:
+                        message.feedback ==
                         AtlasCopilotMessageFeedback.notUseful,
                     icon: Icons.thumb_down_outlined,
                     selectedIcon: Icons.thumb_down,

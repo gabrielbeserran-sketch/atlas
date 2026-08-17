@@ -42,18 +42,15 @@ class AtlasOperationalInsightService {
 
     final ordered = unique.values.toList()
       ..sort((first, second) {
-        final priorityComparison =
-            _priorityWeight(second.priority).compareTo(
-          _priorityWeight(first.priority),
-        );
+        final priorityComparison = _priorityWeight(
+          second.priority,
+        ).compareTo(_priorityWeight(first.priority));
 
         if (priorityComparison != 0) {
           return priorityComparison;
         }
 
-        return second.confidencePercent.compareTo(
-          first.confidencePercent,
-        );
+        return second.confidencePercent.compareTo(first.confidencePercent);
       });
 
     return ordered.take(maxItems).toList(growable: false);
@@ -69,16 +66,14 @@ class AtlasOperationalInsightService {
               entry.priority == AtlasEventPriority.critical,
         )
         .map((entry) {
-          final critical =
-              entry.priority == AtlasEventPriority.critical;
+          final critical = entry.priority == AtlasEventPriority.critical;
 
           return AtlasOperationalInsight(
             id: 'insight_event_${entry.eventId}',
             title: critical
                 ? 'Ocorrência crítica exige decisão'
                 : 'Ocorrência relevante requer acompanhamento',
-            description:
-                '${entry.title}: ${entry.description}',
+            description: '${entry.title}: ${entry.description}',
             recommendation:
                 'Confirme o responsável, defina um prazo e registre o resultado no Atlas.',
             priority: critical
@@ -102,10 +97,7 @@ class AtlasOperationalInsightService {
     for (final entry in entries) {
       final key =
           '${entry.farmName ?? 'operacao'}|${entry.sourceModule}|${entry.title.toLowerCase()}';
-      groups.putIfAbsent(
-        key,
-        () => <AtlasOperationalMemoryEntry>[],
-      ).add(entry);
+      groups.putIfAbsent(key, () => <AtlasOperationalMemoryEntry>[]).add(entry);
     }
 
     final result = <AtlasOperationalInsight>[];
@@ -116,8 +108,7 @@ class AtlasOperationalInsightService {
       }
 
       group.sort(
-        (first, second) =>
-            second.occurredAt.compareTo(first.occurredAt),
+        (first, second) => second.occurredAt.compareTo(first.occurredAt),
       );
 
       final newest = group.first;
@@ -138,12 +129,12 @@ class AtlasOperationalInsightService {
           priority: group.length >= 5
               ? AtlasCanonicalPriority.high
               : AtlasCanonicalPriority.medium,
-          confidencePercent:
-              (65 + math.min(25, group.length * 4)).toDouble(),
+          confidencePercent: (65 + math.min(25, group.length * 4)).toDouble(),
           farmName: newest.farmName,
           modules: <String>{newest.sourceModule},
-          relatedEventIds:
-              group.map((entry) => entry.eventId).toList(growable: false),
+          relatedEventIds: group
+              .map((entry) => entry.eventId)
+              .toList(growable: false),
           generatedAt: DateTime.now(),
         ),
       );
@@ -160,9 +151,7 @@ class AtlasOperationalInsightService {
       maxItems: 15,
     );
 
-    return correlations
-        .map(_insightFromCorrelation)
-        .toList(growable: false);
+    return correlations.map(_insightFromCorrelation).toList(growable: false);
   }
 
   AtlasOperationalInsight _insightFromCorrelation(
@@ -177,10 +166,7 @@ class AtlasOperationalInsightService {
       priority: _canonicalPriority(correlation.priority),
       confidencePercent: correlation.confidencePercent,
       farmName: correlation.farmName,
-      modules: <String>{
-        correlation.firstModule,
-        correlation.secondModule,
-      },
+      modules: <String>{correlation.firstModule, correlation.secondModule},
       relatedEventIds: <String>[
         correlation.firstEventId,
         correlation.secondEventId,
@@ -189,9 +175,7 @@ class AtlasOperationalInsightService {
     );
   }
 
-  AtlasCanonicalPriority _canonicalPriority(
-    AtlasEventPriority priority,
-  ) {
+  AtlasCanonicalPriority _canonicalPriority(AtlasEventPriority priority) {
     switch (priority) {
       case AtlasEventPriority.low:
         return AtlasCanonicalPriority.low;

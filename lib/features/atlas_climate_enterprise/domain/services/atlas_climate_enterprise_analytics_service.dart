@@ -62,26 +62,20 @@ class AtlasClimateEnterpriseAnalyticsService {
           total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasClimateEnterpriseRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasClimateEnterpriseRecord) selector) {
       if (moduleRecords.isEmpty) return 0;
       return moduleRecords.map(selector).reduce((a, b) => a + b) /
           moduleRecords.length;
     }
 
-    final averageCurrent =
-        averageOf((record) => record.currentValue);
-    final averageProjected =
-        averageOf((record) => record.projectedValue);
-    final averageProbability =
-        averageOf((record) => record.probabilityPercent);
-    final averageConfidence =
-        averageOf((record) => record.confidencePercent);
-    final averageRisk =
-        averageOf((record) => record.riskPercent);
-    final averageProgress =
-        averageOf((record) => record.progressPercent.toDouble());
+    final averageCurrent = averageOf((record) => record.currentValue);
+    final averageProjected = averageOf((record) => record.projectedValue);
+    final averageProbability = averageOf((record) => record.probabilityPercent);
+    final averageConfidence = averageOf((record) => record.confidencePercent);
+    final averageRisk = averageOf((record) => record.riskPercent);
+    final averageProgress = averageOf(
+      (record) => record.progressPercent.toDouble(),
+    );
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -111,34 +105,32 @@ class AtlasClimateEnterpriseAnalyticsService {
         'Cadastre o primeiro registro do ${module.packageLabel}.',
       );
     } else {
-      recommendations.addAll(
-        switch (module) {
-          AtlasClimateEnterpriseModule.climateIntelligence => const [
-              'Conecte clima observado, tendência e impacto produtivo.',
-              'Registre a fonte e a confiança de cada recomendação.',
-            ],
-          AtlasClimateEnterpriseModule.advancedMeteorology => const [
-              'Diferencie observação, previsão e estimativa.',
-              'Mantenha horário, localização e fonte dos dados.',
-            ],
-          AtlasClimateEnterpriseModule.intelligentForagePlanning => const [
-              'Compare demanda animal, oferta e reserva estratégica.',
-              'Revise o plano quando chuva, lotação ou produção mudarem.',
-            ],
-          AtlasClimateEnterpriseModule.aiPastureManagement => const [
-              'Valide recomendações com inspeção de campo.',
-              'Considere descanso, lotação e condição real do pasto.',
-            ],
-          AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => const [
-              'Padronize fórmula, unidade, período e limites de cada indicador.',
-              'Evite interpretar uma métrica isoladamente.',
-            ],
-          _ => const [
-              'Documente premissas, fonte e incerteza.',
-              'Mantenha revisão humana para decisões operacionais.',
-            ],
-        },
-      );
+      recommendations.addAll(switch (module) {
+        AtlasClimateEnterpriseModule.climateIntelligence => const [
+          'Conecte clima observado, tendência e impacto produtivo.',
+          'Registre a fonte e a confiança de cada recomendação.',
+        ],
+        AtlasClimateEnterpriseModule.advancedMeteorology => const [
+          'Diferencie observação, previsão e estimativa.',
+          'Mantenha horário, localização e fonte dos dados.',
+        ],
+        AtlasClimateEnterpriseModule.intelligentForagePlanning => const [
+          'Compare demanda animal, oferta e reserva estratégica.',
+          'Revise o plano quando chuva, lotação ou produção mudarem.',
+        ],
+        AtlasClimateEnterpriseModule.aiPastureManagement => const [
+          'Valide recomendações com inspeção de campo.',
+          'Considere descanso, lotação e condição real do pasto.',
+        ],
+        AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => const [
+          'Padronize fórmula, unidade, período e limites de cada indicador.',
+          'Evite interpretar uma métrica isoladamente.',
+        ],
+        _ => const [
+          'Documente premissas, fonte e incerteza.',
+          'Mantenha revisão humana para decisões operacionais.',
+        ],
+      });
     }
 
     return AtlasClimateEnterpriseAnalytics(

@@ -7,8 +7,7 @@ import 'package:projeto_atlas/features/atlas_sustainability_enterprise/domain/se
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 
-class AtlasSustainabilityEnterpriseScreen
-    extends StatefulWidget {
+class AtlasSustainabilityEnterpriseScreen extends StatefulWidget {
   const AtlasSustainabilityEnterpriseScreen({
     required this.animal,
     required this.farm,
@@ -31,8 +30,7 @@ class _AtlasSustainabilityEnterpriseScreenState
     extends State<AtlasSustainabilityEnterpriseScreen> {
   final AtlasSustainabilityEnterpriseStorageService storage =
       AtlasSustainabilityEnterpriseStorageService();
-  final AtlasSustainabilityEnterpriseAnalyticsService
-      analyticsService =
+  final AtlasSustainabilityEnterpriseAnalyticsService analyticsService =
       const AtlasSustainabilityEnterpriseAnalyticsService();
 
   late AtlasSustainabilityEnterpriseModule selectedModule;
@@ -77,33 +75,27 @@ class _AtlasSustainabilityEnterpriseScreenState
     );
   }
 
-  List<AtlasSustainabilityEnterpriseRecord>
-      get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+  List<AtlasSustainabilityEnterpriseRecord> get visibleRecords {
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasSustainabilityEnterpriseRecord? current,
-  ]) async {
-    final result =
-        await showDialog<AtlasSustainabilityEnterpriseRecord>(
+  Future<void> openForm([AtlasSustainabilityEnterpriseRecord? current]) async {
+    final result = await showDialog<AtlasSustainabilityEnterpriseRecord>(
       context: context,
-      builder: (context) => _SustainabilityForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _SustainabilityForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -117,9 +109,7 @@ class _AtlasSustainabilityEnterpriseScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasSustainabilityEnterpriseRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasSustainabilityEnterpriseRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -127,13 +117,11 @@ class _AtlasSustainabilityEnterpriseScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -175,12 +163,9 @@ class _AtlasSustainabilityEnterpriseScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -197,9 +182,7 @@ class _AtlasSustainabilityEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fase 29 — Sustentabilidade Enterprise',
-                          ),
+                          title: Text('Fase 29 — Sustentabilidade Enterprise'),
                           subtitle: Text(
                             'A entrega organiza indicadores, metas e evidências ESG. '
                             'Inventários, licenças e certificações reais exigem metodologia e validação profissional.',
@@ -258,22 +241,25 @@ class _AtlasSustainabilityEnterpriseScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Valor atual',
-                            value:
-                                analytics.totalCurrentValue.toStringAsFixed(2),
+                            value: analytics.totalCurrentValue.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Total consolidado',
                             icon: Icons.assessment_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Linha de base',
-                            value:
-                                analytics.totalBaselineValue.toStringAsFixed(2),
+                            value: analytics.totalBaselineValue.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Referência consolidada',
                             icon: Icons.history_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Meta',
-                            value:
-                                analytics.totalTargetValue.toStringAsFixed(2),
+                            value: analytics.totalTargetValue.toStringAsFixed(
+                              2,
+                            ),
                             subtitle: 'Meta consolidada',
                             icon: Icons.flag_outlined,
                           ),
@@ -322,12 +308,8 @@ class _AtlasSustainabilityEnterpriseScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro indicador, evidência ou meta.',
                             ),
@@ -338,8 +320,7 @@ class _AtlasSustainabilityEnterpriseScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -353,14 +334,10 @@ class _AtlasSustainabilityEnterpriseScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasSustainabilityEnterpriseModule selected;
-  final ValueChanged<AtlasSustainabilityEnterpriseModule>
-      onSelected;
+  final ValueChanged<AtlasSustainabilityEnterpriseModule> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -370,24 +347,21 @@ class _ModuleSelector extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              AtlasSustainabilityEnterpriseModule.values.map(
-            (module) {
-              final active = module == selected;
+          children: AtlasSustainabilityEnterpriseModule.values
+              .map((module) {
+                final active = module == selected;
 
-              return FilledButton.tonalIcon(
-                onPressed: () => onSelected(module),
-                style: FilledButton.styleFrom(
-                  backgroundColor:
-                      active ? const Color(0xFF1B5E20) : null,
-                  foregroundColor:
-                      active ? Colors.white : null,
-                ),
-                icon: Icon(_moduleIcon(module)),
-                label: Text(module.packageLabel),
-              );
-            },
-          ).toList(growable: false),
+                return FilledButton.tonalIcon(
+                  onPressed: () => onSelected(module),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: active ? const Color(0xFF1B5E20) : null,
+                    foregroundColor: active ? Colors.white : null,
+                  ),
+                  icon: Icon(_moduleIcon(module)),
+                  label: Text(module.packageLabel),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -410,15 +384,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: ['Todos', ...module.features].map(
-        (feature) {
-          return ChoiceChip(
-            label: Text(feature),
-            selected: selected == feature,
-            onSelected: (_) => onSelected(feature),
-          );
-        },
-      ).toList(growable: false),
+      children: ['Todos', ...module.features]
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -437,24 +411,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Bloqueado' || 'Não conforme' =>
-        Colors.red.shade800,
+      'Crítico' || 'Bloqueado' || 'Não conforme' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Validado' ||
-      'Conforme' || 'Concluído' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Validado' ||
+      'Conforme' ||
+      'Concluído' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -471,14 +441,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -487,21 +451,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _SustainabilityForm extends StatefulWidget {
-  const _SustainabilityForm({
-    required this.module,
-    this.current,
-  });
+  const _SustainabilityForm({required this.module, this.current});
 
   final AtlasSustainabilityEnterpriseModule module;
   final AtlasSustainabilityEnterpriseRecord? current;
 
   @override
-  State<_SustainabilityForm> createState() =>
-      _SustainabilityFormState();
+  State<_SustainabilityForm> createState() => _SustainabilityFormState();
 }
 
-class _SustainabilityFormState
-    extends State<_SustainabilityForm> {
+class _SustainabilityFormState extends State<_SustainabilityForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -535,21 +494,12 @@ class _SustainabilityFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasSustainabilityDate(DateTime.now()),
+      text: current?.date ?? formatAtlasSustainabilityDate(DateTime.now()),
     );
-    companyName = TextEditingController(
-      text: current?.companyName ?? '',
-    );
-    farmName = TextEditingController(
-      text: current?.farmName ?? '',
-    );
-    scope = TextEditingController(
-      text: current?.scope ?? '',
-    );
-    metricName = TextEditingController(
-      text: current?.metricName ?? '',
-    );
+    companyName = TextEditingController(text: current?.companyName ?? '');
+    farmName = TextEditingController(text: current?.farmName ?? '');
+    scope = TextEditingController(text: current?.scope ?? '');
+    metricName = TextEditingController(text: current?.metricName ?? '');
     currentValue = TextEditingController(
       text: current == null || current.currentValue == 0
           ? ''
@@ -565,36 +515,24 @@ class _SustainabilityFormState
           ? ''
           : current.targetValue.toString(),
     );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
+    unit = TextEditingController(text: current?.unit ?? '');
     qualityPercent = TextEditingController(
       text: current == null || current.qualityPercent == 0
           ? ''
           : current.qualityPercent.toString(),
     );
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
       text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    dueDate = TextEditingController(
-      text: current?.dueDate ?? '',
-    );
-    responsible = TextEditingController(
-      text: current?.responsible ?? '',
-    );
-    evidence = TextEditingController(
-      text: current?.evidence ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    dueDate = TextEditingController(text: current?.dueDate ?? '');
+    responsible = TextEditingController(text: current?.responsible ?? '');
+    evidence = TextEditingController(text: current?.evidence ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -620,10 +558,7 @@ class _SustainabilityFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0.0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0.0;
   }
 
   int integer(TextEditingController controller) {
@@ -639,27 +574,20 @@ class _SustainabilityFormState
     return value < 0 ? 0 : value;
   }
 
-  Future<void> chooseDate(
-    TextEditingController controller,
-  ) async {
-    final parsed =
-        parseAtlasSustainabilityDate(controller.text);
+  Future<void> chooseDate(TextEditingController controller) async {
+    final parsed = parseAtlasSustainabilityDate(controller.text);
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
 
     setState(() {
-      controller.text =
-          formatAtlasSustainabilityDate(selected);
+      controller.text = formatAtlasSustainabilityDate(selected);
     });
   }
 
@@ -672,7 +600,8 @@ class _SustainabilityFormState
     Navigator.pop(
       context,
       AtlasSustainabilityEnterpriseRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'sustainability_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -688,8 +617,7 @@ class _SustainabilityFormState
         targetValue: decimal(targetValue),
         unit: unit.text.trim(),
         qualityPercent: percent(qualityPercent),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: nonNegative(alertCount),
         dueDate: dueDate.text.trim(),
         responsible: responsible.text.trim(),
@@ -704,11 +632,7 @@ class _SustainabilityFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 760,
         child: Form(
@@ -723,10 +647,8 @@ class _SustainabilityFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -737,12 +659,9 @@ class _SustainabilityFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -754,35 +673,32 @@ class _SustainabilityFormState
                   onTap: () => chooseDate(date),
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em análise',
-                    'Ativo',
-                    'Validado',
-                    'Conforme',
-                    'Concluído',
-                    'Atenção',
-                    'Não conforme',
-                    'Crítico',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em análise',
+                            'Ativo',
+                            'Validado',
+                            'Conforme',
+                            'Concluído',
+                            'Atenção',
+                            'Não conforme',
+                            'Crítico',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -791,15 +707,11 @@ class _SustainabilityFormState
                 ),
                 TextFormField(
                   controller: companyName,
-                  decoration: const InputDecoration(
-                    labelText: 'Empresa',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Empresa'),
                 ),
                 TextFormField(
                   controller: farmName,
-                  decoration: const InputDecoration(
-                    labelText: 'Fazenda',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Fazenda'),
                 ),
                 TextFormField(
                   controller: scope,
@@ -815,52 +727,39 @@ class _SustainabilityFormState
                 ),
                 TextFormField(
                   controller: currentValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Valor atual',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Valor atual'),
                 ),
                 TextFormField(
                   controller: baselineValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Linha de base',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Linha de base'),
                 ),
                 TextFormField(
                   controller: targetValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Meta',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Meta'),
                 ),
                 TextFormField(
                   controller: unit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unidade',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Unidade'),
                 ),
                 TextFormField(
                   controller: qualityPercent,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
-                    labelText:
-                        'Qualidade do dado (0 a 100%)',
+                    labelText: 'Qualidade do dado (0 a 100%)',
                   ),
                 ),
                 TextFormField(
@@ -883,16 +782,12 @@ class _SustainabilityFormState
                   onTap: () => chooseDate(dueDate),
                   decoration: const InputDecoration(
                     labelText: 'Prazo ou validade',
-                    suffixIcon: Icon(
-                      Icons.event_busy_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.event_busy_outlined),
                   ),
                 ),
                 TextFormField(
                   controller: responsible,
-                  decoration: const InputDecoration(
-                    labelText: 'Responsável',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Responsável'),
                 ),
                 TextFormField(
                   controller: evidence,
@@ -906,9 +801,7 @@ class _SustainabilityFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -920,38 +813,29 @@ class _SustainabilityFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasSustainabilityEnterpriseModule module,
-) {
+IconData _moduleIcon(AtlasSustainabilityEnterpriseModule module) {
   return switch (module) {
-    AtlasSustainabilityEnterpriseModule.carbonFootprint =>
-      Icons.cloud_outlined,
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => Icons.cloud_outlined,
     AtlasSustainabilityEnterpriseModule.greenhouseGasInventory =>
       Icons.co2_outlined,
     AtlasSustainabilityEnterpriseModule.waterManagement =>
       Icons.water_drop_outlined,
-    AtlasSustainabilityEnterpriseModule.energyEfficiency =>
-      Icons.bolt_outlined,
+    AtlasSustainabilityEnterpriseModule.energyEfficiency => Icons.bolt_outlined,
     AtlasSustainabilityEnterpriseModule.wasteManagement =>
       Icons.recycling_outlined,
-    AtlasSustainabilityEnterpriseModule.biodiversity =>
-      Icons.eco_outlined,
+    AtlasSustainabilityEnterpriseModule.biodiversity => Icons.eco_outlined,
     AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
       Icons.rule_outlined,
     AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
       Icons.workspace_premium_outlined,
     AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
       Icons.route_outlined,
-    AtlasSustainabilityEnterpriseModule.esgCenter =>
-      Icons.dashboard_outlined,
+    AtlasSustainabilityEnterpriseModule.esgCenter => Icons.dashboard_outlined,
   };
 }

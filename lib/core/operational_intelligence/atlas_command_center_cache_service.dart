@@ -18,10 +18,7 @@ class AtlasCommandCenterCacheService {
   int get currentVersion => _version;
   int get entryCount => _entries.length;
 
-  AtlasCommandCenterSnapshot? get({
-    required String? farmName,
-    DateTime? now,
-  }) {
+  AtlasCommandCenterSnapshot? get({required String? farmName, DateTime? now}) {
     final currentTime = now ?? DateTime.now();
     final key = createKey(farmName);
     final entry = _entries[key];
@@ -42,8 +39,7 @@ class AtlasCommandCenterCacheService {
     required String? farmName,
     required AtlasCommandCenterSnapshot snapshot,
     Duration? ttl,
-    Set<AtlasOperationalDomain> domains =
-        const <AtlasOperationalDomain>{
+    Set<AtlasOperationalDomain> domains = const <AtlasOperationalDomain>{
       AtlasOperationalDomain.animal,
       AtlasOperationalDomain.reproduction,
       AtlasOperationalDomain.health,
@@ -75,9 +71,7 @@ class AtlasCommandCenterCacheService {
     return entry;
   }
 
-  int invalidate(
-    AtlasOperationalInvalidation invalidation,
-  ) {
+  int invalidate(AtlasOperationalInvalidation invalidation) {
     final keysToRemove = <String>[];
 
     for (final entry in _entries.entries) {

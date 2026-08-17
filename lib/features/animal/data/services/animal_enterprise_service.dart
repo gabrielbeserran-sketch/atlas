@@ -2,9 +2,8 @@ import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class AnimalEnterpriseService {
-  AnimalEnterpriseService({
-    AtlasEnterpriseApiClient? api,
-  }) : _api = api ?? AtlasEnterpriseApiClient.instance;
+  AnimalEnterpriseService({AtlasEnterpriseApiClient? api})
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 

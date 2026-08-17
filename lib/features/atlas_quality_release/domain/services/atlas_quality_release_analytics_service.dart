@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 
 import 'package:projeto_atlas/features/atlas_quality_release/domain/models/atlas_quality_release_record.dart';
@@ -51,8 +50,7 @@ class AtlasQualityReleaseAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        items.where((record) => record.isOperational).length;
+    final operational = items.where((record) => record.isOperational).length;
 
     final failures = items.fold<int>(
       0,
@@ -62,25 +60,17 @@ class AtlasQualityReleaseAnalyticsService {
     final alerts = items.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasQualityReleaseRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasQualityReleaseRecord) selector) {
       if (items.isEmpty) return 0;
-      return items.map(selector).reduce((a, b) => a + b) /
-          items.length;
+      return items.map(selector).reduce((a, b) => a + b) / items.length;
     }
 
-    final progress =
-        averageOf((record) => record.progressPercent.toDouble());
-    final passRate =
-        averageOf((record) => record.passRatePercent);
-    final testCoverage =
-        averageOf((record) => record.coveragePercent);
+    final progress = averageOf((record) => record.progressPercent.toDouble());
+    final passRate = averageOf((record) => record.passRatePercent);
+    final testCoverage = averageOf((record) => record.coveragePercent);
     final risk = averageOf((record) => record.riskPercent);
 
     var score = 30;
@@ -96,8 +86,7 @@ class AtlasQualityReleaseAnalyticsService {
 
     final recommendations = <String>[
       for (final feature in module.features)
-        if (!represented.contains(feature))
-          'Implantar ou registrar: $feature.',
+        if (!represented.contains(feature)) 'Implantar ou registrar: $feature.',
       if (failures > 0)
         'Existem $failures falhas registradas; corrija e repita os testes.',
       if (alerts > 0)

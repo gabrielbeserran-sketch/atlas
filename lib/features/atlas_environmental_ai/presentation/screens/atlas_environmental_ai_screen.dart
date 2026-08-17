@@ -30,8 +30,7 @@ class _AtlasEnvironmentalAiScreenState
     extends State<AtlasEnvironmentalAiScreen> {
   final AtlasEnvironmentalAiStorageService storage =
       AtlasEnvironmentalAiStorageService();
-  final AtlasEnvironmentalAiEngine engine =
-      const AtlasEnvironmentalAiEngine();
+  final AtlasEnvironmentalAiEngine engine = const AtlasEnvironmentalAiEngine();
 
   late AtlasEnvironmentalAiModule selectedModule;
   List<AtlasEnvironmentalAiRecord> records = [];
@@ -78,30 +77,26 @@ class _AtlasEnvironmentalAiScreenState
   }
 
   List<AtlasEnvironmentalAiRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasEnvironmentalAiRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasEnvironmentalAiRecord? current]) async {
     final result = await showDialog<AtlasEnvironmentalAiRecord>(
       context: context,
-      builder: (context) => _EnvironmentalAiRecordForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _EnvironmentalAiRecordForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +110,7 @@ class _AtlasEnvironmentalAiScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasEnvironmentalAiRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasEnvironmentalAiRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +118,11 @@ class _AtlasEnvironmentalAiScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -160,9 +151,9 @@ class _AtlasEnvironmentalAiScreenState
     final averageScore = moduleRecords.isEmpty
         ? 0
         : moduleRecords
-                .map((record) => engine.evaluate(record).score)
-                .reduce((a, b) => a + b) /
-            moduleRecords.length;
+                  .map((record) => engine.evaluate(record).score)
+                  .reduce((a, b) => a + b) /
+              moduleRecords.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -183,12 +174,9 @@ class _AtlasEnvironmentalAiScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -205,9 +193,7 @@ class _AtlasEnvironmentalAiScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Análises ambientais de apoio',
-                          ),
+                          title: Text('Análises ambientais de apoio'),
                           subtitle: Text(
                             'As projeções dependem das premissas informadas. '
                             'Dados meteorológicos e imagens reais exigem integrações externas.',
@@ -237,8 +223,7 @@ class _AtlasEnvironmentalAiScreenState
                           ),
                           EnterpriseMetricCard(
                             title: 'Score médio',
-                            value:
-                                averageScore.toStringAsFixed(0),
+                            value: averageScore.toStringAsFixed(0),
                             subtitle: 'Condição analisada',
                             icon: Icons.analytics_outlined,
                           ),
@@ -268,12 +253,8 @@ class _AtlasEnvironmentalAiScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhuma análise cadastrada.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhuma análise cadastrada.'),
                             subtitle: const Text(
                               'Cadastre o primeiro cenário para gerar projeções.',
                             ),
@@ -285,8 +266,7 @@ class _AtlasEnvironmentalAiScreenState
                             record: record,
                             result: engine.evaluate(record),
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -300,10 +280,7 @@ class _AtlasEnvironmentalAiScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasEnvironmentalAiModule selected;
   final ValueChanged<AtlasEnvironmentalAiModule> onSelected;
@@ -314,32 +291,32 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasEnvironmentalAiModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasEnvironmentalAiModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right:
-                      module == AtlasEnvironmentalAiModule.values.last
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasEnvironmentalAiModule.values.last
                           ? 0
                           : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -364,13 +341,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -399,12 +378,8 @@ class _ResultCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -418,18 +393,11 @@ class _ResultCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         children: [
           Wrap(
             spacing: 12,
@@ -474,10 +442,7 @@ class _ResultCard extends StatelessWidget {
 }
 
 class _EnvironmentalAiRecordForm extends StatefulWidget {
-  const _EnvironmentalAiRecordForm({
-    required this.module,
-    this.current,
-  });
+  const _EnvironmentalAiRecordForm({required this.module, this.current});
 
   final AtlasEnvironmentalAiModule module;
   final AtlasEnvironmentalAiRecord? current;
@@ -518,60 +483,46 @@ class _EnvironmentalAiRecordFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasEnvironmentalDate(DateTime.now()),
+      text: current?.date ?? formatAtlasEnvironmentalDate(DateTime.now()),
     );
     temperature = TextEditingController(
-      text: current == null ||
-              current.temperatureCelsius == 0
+      text: current == null || current.temperatureCelsius == 0
           ? ''
           : current.temperatureCelsius.toString(),
     );
     rainfall = TextEditingController(
-      text: current == null ||
-              current.rainfallMillimeters == 0
+      text: current == null || current.rainfallMillimeters == 0
           ? ''
           : current.rainfallMillimeters.toString(),
     );
     humidity = TextEditingController(
-      text: current == null ||
-              current.humidityPercent == 0
+      text: current == null || current.humidityPercent == 0
           ? ''
           : current.humidityPercent.toString(),
     );
     primaryValue = TextEditingController(
-      text: current == null ||
-              current.primaryValue == 0
+      text: current == null || current.primaryValue == 0
           ? ''
           : current.primaryValue.toString(),
     );
     secondaryValue = TextEditingController(
-      text: current == null ||
-              current.secondaryValue == 0
+      text: current == null || current.secondaryValue == 0
           ? ''
           : current.secondaryValue.toString(),
     );
     areaHectares = TextEditingController(
-      text: current == null ||
-              current.areaHectares == 0
+      text: current == null || current.areaHectares == 0
           ? ''
           : current.areaHectares.toString(),
     );
     stockingRate = TextEditingController(
-      text: current == null ||
-              current.stockingRateUaHa == 0
+      text: current == null || current.stockingRateUaHa == 0
           ? ''
           : current.stockingRateUaHa.toString(),
     );
-    referenceName = TextEditingController(
-      text: current?.referenceName ?? '',
-    );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    referenceName = TextEditingController(text: current?.referenceName ?? '');
+    unit = TextEditingController(text: current?.unit ?? '');
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -592,10 +543,7 @@ class _EnvironmentalAiRecordFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   Future<void> chooseDate() async {
@@ -603,12 +551,9 @@ class _EnvironmentalAiRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -619,22 +564,16 @@ class _EnvironmentalAiRecordFormState
   }
 
   String get primaryLabel => switch (widget.module) {
-        AtlasEnvironmentalAiModule.climate =>
-          'Indicador climático principal',
-        AtlasEnvironmentalAiModule.pasture =>
-          'Índice de degradação (0 a 100)',
-        AtlasEnvironmentalAiModule.satellite =>
-          'NDVI (-1 a 1)',
-      };
+    AtlasEnvironmentalAiModule.climate => 'Indicador climático principal',
+    AtlasEnvironmentalAiModule.pasture => 'Índice de degradação (0 a 100)',
+    AtlasEnvironmentalAiModule.satellite => 'NDVI (-1 a 1)',
+  };
 
   String get secondaryLabel => switch (widget.module) {
-        AtlasEnvironmentalAiModule.climate =>
-          'Indicador climático secundário',
-        AtlasEnvironmentalAiModule.pasture =>
-          'Massa de forragem (kg MS/ha)',
-        AtlasEnvironmentalAiModule.satellite =>
-          'Umidade estimada (%)',
-      };
+    AtlasEnvironmentalAiModule.climate => 'Indicador climático secundário',
+    AtlasEnvironmentalAiModule.pasture => 'Massa de forragem (kg MS/ha)',
+    AtlasEnvironmentalAiModule.satellite => 'Umidade estimada (%)',
+  };
 
   void save() {
     if (!formKey.currentState!.validate()) return;
@@ -645,7 +584,8 @@ class _EnvironmentalAiRecordFormState
     Navigator.pop(
       context,
       AtlasEnvironmentalAiRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'environmental_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
@@ -690,10 +630,8 @@ class _EnvironmentalAiRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -704,12 +642,9 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -721,33 +656,30 @@ class _EnvironmentalAiRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Monitorado',
-                    'Ativo',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                    'Seca',
-                    'Alagado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Monitorado',
+                            'Ativo',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                            'Seca',
+                            'Alagado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -756,8 +688,7 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: temperature,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -766,8 +697,7 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: rainfall,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -776,8 +706,7 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: humidity,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -786,28 +715,21 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: primaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: primaryLabel,
-                  ),
+                  decoration: InputDecoration(labelText: primaryLabel),
                 ),
                 TextFormField(
                   controller: secondaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: InputDecoration(
-                    labelText: secondaryLabel,
-                  ),
+                  decoration: InputDecoration(labelText: secondaryLabel),
                 ),
                 TextFormField(
                   controller: areaHectares,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -816,8 +738,7 @@ class _EnvironmentalAiRecordFormState
                 ),
                 TextFormField(
                   controller: stockingRate,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -827,8 +748,8 @@ class _EnvironmentalAiRecordFormState
                 TextFormField(
                   controller: referenceName,
                   decoration: InputDecoration(
-                    labelText: widget.module ==
-                            AtlasEnvironmentalAiModule.satellite
+                    labelText:
+                        widget.module == AtlasEnvironmentalAiModule.satellite
                         ? 'Imagem, órbita ou referência'
                         : 'Piquete, estação ou referência',
                   ),
@@ -857,24 +778,16 @@ class _EnvironmentalAiRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Analisar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Analisar')),
       ],
     );
   }
 }
 
-IconData _moduleIcon(
-  AtlasEnvironmentalAiModule module,
-) {
+IconData _moduleIcon(AtlasEnvironmentalAiModule module) {
   return switch (module) {
-    AtlasEnvironmentalAiModule.climate =>
-      Icons.cloud_outlined,
-    AtlasEnvironmentalAiModule.pasture =>
-      Icons.grass_outlined,
-    AtlasEnvironmentalAiModule.satellite =>
-      Icons.satellite_alt_outlined,
+    AtlasEnvironmentalAiModule.climate => Icons.cloud_outlined,
+    AtlasEnvironmentalAiModule.pasture => Icons.grass_outlined,
+    AtlasEnvironmentalAiModule.satellite => Icons.satellite_alt_outlined,
   };
 }

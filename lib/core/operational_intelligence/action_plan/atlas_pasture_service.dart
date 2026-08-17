@@ -34,14 +34,11 @@ class AtlasPastureService {
     );
   }
 
-  Future<List<AtlasGrazingRotation>> loadRotations({
-    String? farmName,
-  }) async {
+  Future<List<AtlasGrazingRotation>> loadRotations({String? farmName}) async {
     final raw = await _prefs.getString(_rotationsKey);
     if (raw == null || raw.isEmpty) return [];
     final list = (jsonDecode(raw) as List)
-        .map((e) => AtlasGrazingRotation.fromMap(
-              Map<String, dynamic>.from(e)))
+        .map((e) => AtlasGrazingRotation.fromMap(Map<String, dynamic>.from(e)))
         .toList();
     return _farm(list, farmName, (e) => e.farmName);
   }
@@ -60,14 +57,11 @@ class AtlasPastureService {
     );
   }
 
-  Future<List<AtlasPastureOperation>> loadOperations({
-    String? farmName,
-  }) async {
+  Future<List<AtlasPastureOperation>> loadOperations({String? farmName}) async {
     final raw = await _prefs.getString(_operationsKey);
     if (raw == null || raw.isEmpty) return [];
     final list = (jsonDecode(raw) as List)
-        .map((e) => AtlasPastureOperation.fromMap(
-              Map<String, dynamic>.from(e)))
+        .map((e) => AtlasPastureOperation.fromMap(Map<String, dynamic>.from(e)))
         .toList();
     return _farm(list, farmName, (e) => e.farmName);
   }
@@ -92,8 +86,7 @@ class AtlasPastureService {
   ) {
     final result = <String>[
       for (final item in paddocks)
-        if (item.belowTargetHeight)
-          '${item.name}: altura abaixo da meta.',
+        if (item.belowTargetHeight) '${item.name}: altura abaixo da meta.',
       for (final item in paddocks)
         if (item.dryMatterKgHa < 1000)
           '${item.name}: baixa disponibilidade de matéria seca.',
@@ -101,9 +94,7 @@ class AtlasPastureService {
         if (item.isOverdue)
           '${atlasPastureOperationTypeLabel(item.type)} atrasada.',
     ];
-    return result.isEmpty
-        ? ['Nenhum alerta crítico de pastagem.']
-        : result;
+    return result.isEmpty ? ['Nenhum alerta crítico de pastagem.'] : result;
   }
 
   List<T> _farm<T>(

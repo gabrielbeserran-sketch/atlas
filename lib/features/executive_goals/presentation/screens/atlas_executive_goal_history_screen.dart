@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/executive_goals/domain/models/atlas_executive_goal_history.dart';
 
-class AtlasExecutiveGoalHistoryScreen
-    extends StatelessWidget {
-  const AtlasExecutiveGoalHistoryScreen({
-    required this.data,
-    super.key,
-  });
+class AtlasExecutiveGoalHistoryScreen extends StatelessWidget {
+  const AtlasExecutiveGoalHistoryScreen({required this.data, super.key});
 
   final AtlasExecutiveGoalHistorySummary data;
 
@@ -17,9 +13,7 @@ class AtlasExecutiveGoalHistoryScreen
       appBar: AppBar(
         title: const Text(
           'Histórico das Metas',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: data.hasHistory
@@ -30,12 +24,8 @@ class AtlasExecutiveGoalHistoryScreen
                 const SizedBox(height: 22),
                 ...data.series.map(
                   (series) => Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 12,
-                    ),
-                    child: _SeriesCard(
-                      series: series,
-                    ),
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _SeriesCard(series: series),
                   ),
                 ),
               ],
@@ -43,9 +33,7 @@ class AtlasExecutiveGoalHistoryScreen
           : const Center(
               child: Text(
                 'Nenhum histórico de metas disponível.',
-                style: TextStyle(
-                  color: Colors.black54,
-                ),
+                style: TextStyle(color: Colors.black54),
               ),
             ),
     );
@@ -53,9 +41,7 @@ class AtlasExecutiveGoalHistoryScreen
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.data,
-  });
+  const _Hero({required this.data});
 
   final AtlasExecutiveGoalHistorySummary data;
 
@@ -65,17 +51,12 @@ class _Hero extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2A1B3D),
-            Color(0xFF4A2C6D),
-            Color(0xFF68428C),
-          ],
+          colors: [Color(0xFF2A1B3D), Color(0xFF4A2C6D), Color(0xFF68428C)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Evolução das Metas',
@@ -88,10 +69,7 @@ class _Hero extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             data.summary,
-            style: const TextStyle(
-              color: Colors.white70,
-              height: 1.4,
-            ),
+            style: const TextStyle(color: Colors.white70, height: 1.4),
           ),
         ],
       ),
@@ -100,9 +78,7 @@ class _Hero extends StatelessWidget {
 }
 
 class _SeriesCard extends StatelessWidget {
-  const _SeriesCard({
-    required this.series,
-  });
+  const _SeriesCard({required this.series});
 
   final AtlasExecutiveGoalHistorySeries series;
 
@@ -114,90 +90,62 @@ class _SeriesCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(17),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.timeline_outlined,
-                  color: color,
-                ),
+                Icon(Icons.timeline_outlined, color: color),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     series.kpiTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 Text(
-                  atlasExecutiveGoalRiskLevelLabel(
-                    series.riskLevel,
-                  ),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  atlasExecutiveGoalRiskLevelLabel(series.riskLevel),
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               series.farmName,
-              style: const TextStyle(
-                color: Colors.black54,
-              ),
+              style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 12),
             LinearProgressIndicator(
               minHeight: 9,
-              value:
-                  series.currentProgressPercent / 100,
-              backgroundColor:
-                  color.withValues(alpha: 0.10),
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(
-                color,
-              ),
+              value: series.currentProgressPercent / 100,
+              backgroundColor: color.withValues(alpha: 0.10),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
             const SizedBox(height: 10),
             Text(
               '${series.currentProgressPercent.toStringAsFixed(0)}% concluído · '
               '${series.averageDailyProgress.toStringAsFixed(2)}% por dia',
-              style: const TextStyle(
-                color: Colors.black54,
-              ),
+              style: const TextStyle(color: Colors.black54),
             ),
             const SizedBox(height: 6),
             Text(
               series.projectedCompletionDate == null
                   ? 'Sem previsão de conclusão.'
                   : 'Previsão de conclusão: '
-                      '${_date(series.projectedCompletionDate!)}',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+                        '${_date(series.projectedCompletionDate!)}',
+              style: TextStyle(color: color, fontWeight: FontWeight.w600),
             ),
             if (series.events.isNotEmpty) ...[
               const SizedBox(height: 14),
               const Text(
                 'Últimos eventos',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               ...series.events.reversed
                   .take(6)
                   .map(
                     (event) => Padding(
-                      padding:
-                          const EdgeInsets.only(
-                        bottom: 6,
-                      ),
+                      padding: const EdgeInsets.only(bottom: 6),
                       child: Text(
                         '${_dateTime(event.recordedAt)} · '
                         '${event.description}',
@@ -216,9 +164,7 @@ class _SeriesCard extends StatelessWidget {
   }
 }
 
-Color _riskColor(
-  AtlasExecutiveGoalRiskLevel level,
-) {
+Color _riskColor(AtlasExecutiveGoalRiskLevel level) {
   switch (level) {
     case AtlasExecutiveGoalRiskLevel.onTrack:
       return const Color(0xFF1B5E20);
@@ -233,17 +179,14 @@ Color _riskColor(
 
 String _date(DateTime value) {
   final day = value.day.toString().padLeft(2, '0');
-  final month =
-      value.month.toString().padLeft(2, '0');
+  final month = value.month.toString().padLeft(2, '0');
 
   return '$day/$month/${value.year}';
 }
 
 String _dateTime(DateTime value) {
-  final hour =
-      value.hour.toString().padLeft(2, '0');
-  final minute =
-      value.minute.toString().padLeft(2, '0');
+  final hour = value.hour.toString().padLeft(2, '0');
+  final minute = value.minute.toString().padLeft(2, '0');
 
   return '${_date(value)} $hour:$minute';
 }

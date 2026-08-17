@@ -11,25 +11,20 @@ class AtlasDecisionTrackingService {
     final currentTime = approvedAt ?? DateTime.now();
 
     return AtlasDecisionExecution(
-      id:
-          'execution_${decision.id}_${currentTime.millisecondsSinceEpoch}',
+      id: 'execution_${decision.id}_${currentTime.millisecondsSinceEpoch}',
       decisionId: decision.id,
       farmName: decision.farmName,
       title: decision.title,
       description: decision.description,
       category: decision.category,
       priority: decision.priority,
-      status:
-          AtlasDecisionExecutionStatus.approved,
+      status: AtlasDecisionExecutionStatus.approved,
       approvedAt: currentTime,
       startedAt: null,
-      deadline: currentTime.add(
-        Duration(days: decision.deadlineDays),
-      ),
+      deadline: currentTime.add(Duration(days: decision.deadlineDays)),
       completedAt: null,
       progressPercent: 0,
-      expectedFinancialImpact:
-          decision.expectedFinancialImpact,
+      expectedFinancialImpact: decision.expectedFinancialImpact,
       realizedFinancialImpact: 0,
       expectedResult: decision.expectedResult,
       resultSummary: '',
@@ -55,8 +50,7 @@ class AtlasDecisionTrackingService {
     DateTime? startedAt,
   }) {
     return execution.copyWith(
-      status:
-          AtlasDecisionExecutionStatus.inProgress,
+      status: AtlasDecisionExecutionStatus.inProgress,
       startedAt: startedAt ?? DateTime.now(),
     );
   }
@@ -77,8 +71,7 @@ class AtlasDecisionTrackingService {
 
       return step.copyWith(
         completed: completed,
-        completedAt:
-            completed ? currentTime : null,
+        completedAt: completed ? currentTime : null,
       );
     }).toList();
 
@@ -86,23 +79,17 @@ class AtlasDecisionTrackingService {
       return step.completed;
     }).length;
 
-    final progress = steps.isEmpty
-        ? 0.0
-        : completedCount / steps.length * 100;
+    final progress = steps.isEmpty ? 0.0 : completedCount / steps.length * 100;
 
-    final allCompleted =
-        steps.isNotEmpty &&
-            completedCount == steps.length;
+    final allCompleted = steps.isNotEmpty && completedCount == steps.length;
 
     return execution.copyWith(
       steps: steps,
-      progressPercent:
-          progress.clamp(0.0, 100.0).toDouble(),
+      progressPercent: progress.clamp(0.0, 100.0).toDouble(),
       status: allCompleted
           ? AtlasDecisionExecutionStatus.completed
           : AtlasDecisionExecutionStatus.inProgress,
-      completedAt:
-          allCompleted ? currentTime : null,
+      completedAt: allCompleted ? currentTime : null,
     );
   }
 
@@ -110,19 +97,10 @@ class AtlasDecisionTrackingService {
     required AtlasDecisionExecution execution,
     required AtlasDecisionMeasurement measurement,
   }) {
-    final measurements = [
-      ...execution.measurements,
-      measurement,
-    ]..sort(
-        (first, second) =>
-            first.recordedAt.compareTo(
-          second.recordedAt,
-        ),
-      );
+    final measurements = [...execution.measurements, measurement]
+      ..sort((first, second) => first.recordedAt.compareTo(second.recordedAt));
 
-    return execution.copyWith(
-      measurements: measurements,
-    );
+    return execution.copyWith(measurements: measurements);
   }
 
   AtlasDecisionExecution registerResult({
@@ -132,12 +110,10 @@ class AtlasDecisionTrackingService {
     DateTime? completedAt,
   }) {
     return execution.copyWith(
-      status:
-          AtlasDecisionExecutionStatus.completed,
+      status: AtlasDecisionExecutionStatus.completed,
       completedAt: completedAt ?? DateTime.now(),
       progressPercent: 100,
-      realizedFinancialImpact:
-          realizedFinancialImpact,
+      realizedFinancialImpact: realizedFinancialImpact,
       resultSummary: resultSummary,
     );
   }
@@ -148,89 +124,60 @@ class AtlasDecisionTrackingService {
   }) {
     final currentTime = now ?? DateTime.now();
 
-    if (execution.status ==
-            AtlasDecisionExecutionStatus.completed ||
-        execution.status ==
-            AtlasDecisionExecutionStatus.cancelled) {
+    if (execution.status == AtlasDecisionExecutionStatus.completed ||
+        execution.status == AtlasDecisionExecutionStatus.cancelled) {
       return execution;
     }
 
     if (currentTime.isAfter(execution.deadline)) {
-      return execution.copyWith(
-        status:
-            AtlasDecisionExecutionStatus.delayed,
-      );
+      return execution.copyWith(status: AtlasDecisionExecutionStatus.delayed);
     }
 
     return execution;
   }
 
   AtlasDecisionTrackingData buildSummary({
-    required List<AtlasDecisionExecution>
-        executions,
+    required List<AtlasDecisionExecution> executions,
     DateTime? now,
   }) {
     final currentTime = now ?? DateTime.now();
 
     final normalized = executions.map((item) {
-      return updateDelayStatus(
-        execution: item,
-        now: currentTime,
-      );
+      return updateDelayStatus(execution: item, now: currentTime);
     }).toList();
 
-    final expectedImpact =
-        normalized.fold<double>(
+    final expectedImpact = normalized.fold<double>(
       0,
-      (sum, item) =>
-          sum + item.expectedFinancialImpact,
+      (sum, item) => sum + item.expectedFinancialImpact,
     );
 
-    final realizedImpact =
-        normalized.fold<double>(
+    final realizedImpact = normalized.fold<double>(
       0,
-      (sum, item) =>
-          sum + item.realizedFinancialImpact,
+      (sum, item) => sum + item.realizedFinancialImpact,
     );
 
-    final activeCount =
-        normalized.where((item) {
-      return item.status ==
-              AtlasDecisionExecutionStatus
-                  .approved ||
-          item.status ==
-              AtlasDecisionExecutionStatus
-                  .inProgress ||
-          item.status ==
-              AtlasDecisionExecutionStatus
-                  .delayed;
+    final activeCount = normalized.where((item) {
+      return item.status == AtlasDecisionExecutionStatus.approved ||
+          item.status == AtlasDecisionExecutionStatus.inProgress ||
+          item.status == AtlasDecisionExecutionStatus.delayed;
     }).length;
 
-    final completedCount =
-        normalized.where((item) {
-      return item.status ==
-          AtlasDecisionExecutionStatus.completed;
+    final completedCount = normalized.where((item) {
+      return item.status == AtlasDecisionExecutionStatus.completed;
     }).length;
 
     final executionRate = normalized.isEmpty
         ? 0.0
-        : completedCount /
-            normalized.length *
-            100;
+        : completedCount / normalized.length * 100;
 
-    final successfulCount =
-        normalized.where((item) {
-      return item.status ==
-              AtlasDecisionExecutionStatus
-                  .completed &&
+    final successfulCount = normalized.where((item) {
+      return item.status == AtlasDecisionExecutionStatus.completed &&
           item.financialAchievementPercent >= 80;
     }).length;
 
     final successRate = completedCount == 0
         ? 0.0
-        : successfulCount /
-            completedCount *
-            100;
+        : successfulCount / completedCount * 100;
 
     return AtlasDecisionTrackingData(
       generatedAt: currentTime,
@@ -242,14 +189,8 @@ class AtlasDecisionTrackingService {
       executions: normalized,
       totalExpectedImpact: expectedImpact,
       totalRealizedImpact: realizedImpact,
-      executionRatePercent:
-          executionRate
-              .clamp(0.0, 100.0)
-              .toDouble(),
-      successRatePercent:
-          successRate
-              .clamp(0.0, 100.0)
-              .toDouble(),
+      executionRatePercent: executionRate.clamp(0.0, 100.0).toDouble(),
+      successRatePercent: successRate.clamp(0.0, 100.0).toDouble(),
     );
   }
 }

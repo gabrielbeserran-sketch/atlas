@@ -1,0 +1,1 @@
+﻿param([Parameter(Mandatory=$true)][string]$Version); $ErrorActionPreference='Stop'; & "$PSScriptRoot\check_release.ps1"; git status --short; git tag -a "v$Version" -m "Atlas $Version"; Write-Host "Tag v$Version criada localmente. Revise e execute git push origin v$Version."

@@ -105,6 +105,7 @@ import 'package:projeto_atlas/features/animal_reproduction_enterprise/presentati
 import 'package:projeto_atlas/features/animal_health_enterprise/presentation/screens/animal_health_enterprise_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AnimalDetailScreen extends StatefulWidget {
   const AnimalDetailScreen({
@@ -134,12 +135,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   final AnimalEventStorageService eventStorage = AnimalEventStorageService();
   final AnimalEnterpriseTimelineService enterpriseTimelineService =
       AnimalEnterpriseTimelineService();
-  final AnimalPhotoStorageService photoStorage =
-      AnimalPhotoStorageService();
+  final AnimalPhotoStorageService photoStorage = AnimalPhotoStorageService();
 
   List<AnimalWeightData> weights = <AnimalWeightData>[];
-  List<AnimalReproductionData> reproductionRecords =
-      <AnimalReproductionData>[];
+  List<AnimalReproductionData> reproductionRecords = <AnimalReproductionData>[];
 
   int healthRecordCount = 0;
   int movementCount = 0;
@@ -151,6 +150,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   List<AnimalPhotoData> photos = <AnimalPhotoData>[];
 
   bool isLoading = true;
+  List<String> loadWarnings = <String>[];
   AnimalHubSection selectedSection = AnimalHubSection.summary;
 
   AnimalData get animal => widget.animal;
@@ -163,98 +163,166 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     loadDashboard();
   }
 
+  Future<List<T>> _safeLoad<T>({
+    required String label,
+    required Future<List<T>> Function() loader,
+    required List<String> warnings,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    try {
+      return await loader().timeout(timeout);
+    } catch (error) {
+      warnings.add('$label indisponível');
+      debugPrint('ATLAS Animal Central [$label]: $error');
+      return <T>[];
+    }
+  }
+
   Future<void> loadDashboard() async {
     if (mounted) {
-      setState(() => isLoading = true);
+      setState(() {
+        isLoading = true;
+        loadWarnings = <String>[];
+      });
     }
 
-    final results = await Future.wait<dynamic>([
-      weightStorage.loadWeights(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      healthStorage.loadRecords(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      reproductionStorage.loadRecords(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      movementStorage.loadRecords(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      documentStorage.loadDocuments(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      eventStorage.loadEvents(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      photoStorage.loadPhotos(
-        farmName: farm.name,
-        groupName: group.name,
-        animalId: animal.id,
-      ),
-      enterpriseTimelineService.loadTimeline(
-        animal.id,
-      ),
-    ]);
+    final warnings = <String>[];
 
-    final loadedWeights = results[0] as List<AnimalWeightData>;
-    final healthRecords = results[1] as List<dynamic>;
-    final loadedReproduction = results[2] as List<AnimalReproductionData>;
-    final movements = results[3] as List<dynamic>;
-    final documents = results[4] as List<dynamic>;
-    final manualEvents = results[5] as List<dynamic>;
-    final loadedPhotos = results[6] as List<AnimalPhotoData>;
-    final loadedEnterpriseTimeline =
-        results[7] as List<dynamic>;
+    try {
+      final results = await Future.wait<dynamic>([
+        _safeLoad<AnimalWeightData>(
+          label: 'Pesagens',
+          warnings: warnings,
+          loader: () => weightStorage.loadWeights(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<dynamic>(
+          label: 'Sanidade',
+          warnings: warnings,
+          loader: () => healthStorage.loadRecords(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+            farmId: farm.id ?? '',
+          ),
+        ),
+        _safeLoad<AnimalReproductionData>(
+          label: 'Reprodução',
+          warnings: warnings,
+          loader: () => reproductionStorage.loadRecords(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<dynamic>(
+          label: 'Movimentações',
+          warnings: warnings,
+          loader: () => movementStorage.loadRecords(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<dynamic>(
+          label: 'Documentos',
+          warnings: warnings,
+          loader: () => documentStorage.loadDocuments(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<dynamic>(
+          label: 'Eventos',
+          warnings: warnings,
+          loader: () => eventStorage.loadEvents(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<AnimalPhotoData>(
+          label: 'Fotos',
+          warnings: warnings,
+          loader: () => photoStorage.loadPhotos(
+            farmName: farm.name,
+            groupName: group.name,
+            animalId: animal.id,
+          ),
+        ),
+        _safeLoad<dynamic>(
+          label: 'Timeline Enterprise',
+          warnings: warnings,
+          timeout: const Duration(seconds: 6),
+          loader: () => enterpriseTimelineService.loadTimeline(animal.id),
+        ),
+      ]);
 
-    loadedWeights.sort(
-      (first, second) =>
-          parseDate(second.date).compareTo(parseDate(first.date)),
-    );
+      final loadedWeights = results[0] as List<AnimalWeightData>;
+      final healthRecords = results[1] as List<dynamic>;
+      final loadedReproduction = results[2] as List<AnimalReproductionData>;
+      final movements = results[3] as List<dynamic>;
+      final documents = results[4] as List<dynamic>;
+      final manualEvents = results[5] as List<dynamic>;
+      final loadedPhotos = results[6] as List<AnimalPhotoData>;
+      final loadedEnterpriseTimeline = results[7] as List<dynamic>;
 
-    loadedReproduction.sort(
-      (first, second) =>
-          parseDate(second.date).compareTo(parseDate(first.date)),
-    );
+      loadedWeights.sort(
+        (first, second) =>
+            parseDate(second.date).compareTo(parseDate(first.date)),
+      );
 
-    if (!mounted) return;
+      loadedReproduction.sort(
+        (first, second) =>
+            parseDate(second.date).compareTo(parseDate(first.date)),
+      );
 
-    setState(() {
-      weights = loadedWeights;
-      reproductionRecords = loadedReproduction;
-      healthRecordCount = healthRecords.length;
-      movementCount = movements.length;
-      documentCount = documents.length;
-      manualEventCount = manualEvents.length;
-      photos = loadedPhotos;
-      enterpriseTimelineCount = loadedEnterpriseTimeline.length;
-      documentExpirationCount = documents
-          .where((document) => document.hasExpiration)
-          .length;
-      consolidatedTimelineCount =
-          manualEvents.length +
-          loadedWeights.length +
-          healthRecords.length +
-          loadedReproduction.length +
-          movements.length +
-          documents.length +
-          documentExpirationCount +
-          loadedPhotos.length +
-          loadedEnterpriseTimeline.length;
-      isLoading = false;
-    });
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        weights = loadedWeights;
+        reproductionRecords = loadedReproduction;
+        healthRecordCount = healthRecords.length;
+        movementCount = movements.length;
+        documentCount = documents.length;
+        manualEventCount = manualEvents.length;
+        photos = loadedPhotos;
+        enterpriseTimelineCount = loadedEnterpriseTimeline.length;
+        documentExpirationCount = documents
+            .where((document) => document.hasExpiration)
+            .length;
+        consolidatedTimelineCount =
+            manualEvents.length +
+            loadedWeights.length +
+            healthRecords.length +
+            loadedReproduction.length +
+            movements.length +
+            documents.length +
+            documentExpirationCount +
+            loadedPhotos.length +
+            loadedEnterpriseTimeline.length;
+        loadWarnings = List<String>.unmodifiable(warnings);
+      });
+    } catch (error, stackTrace) {
+      debugPrint('ATLAS Animal Central: falha inesperada: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      warnings.add('Falha inesperada ao atualizar a central');
+      if (mounted) {
+        setState(() {
+          loadWarnings = List<String>.unmodifiable(warnings);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   double get currentWeight =>
@@ -292,9 +360,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
 
     final latest = weights[0];
     final previous = weights[1];
-    final days = parseDate(latest.date)
-        .difference(parseDate(previous.date))
-        .inDays;
+    final days = parseDate(
+      latest.date,
+    ).difference(parseDate(previous.date)).inDays;
 
     if (days <= 0) return null;
     return (latest.weight - previous.weight) / days;
@@ -320,19 +388,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     if (reproductionRecords.isEmpty) return 'Sem registros';
 
     final record = reproductionRecords.first;
-    return record.result.trim().isNotEmpty
-        ? record.result.trim()
-        : record.type;
+    return record.result.trim().isNotEmpty ? record.result.trim() : record.type;
   }
 
   Future<void> openTimeline() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalTimelineScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        builder: (context) =>
+            AnimalTimelineScreen(animal: animal, farm: farm, group: group),
       ),
     );
 
@@ -342,11 +405,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   Future<void> openWeights() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalWeightListScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        builder: (context) =>
+            AnimalWeightListScreen(animal: animal, farm: farm, group: group),
       ),
     );
 
@@ -356,11 +416,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   Future<void> openHealth() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalHealthListScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        builder: (context) =>
+            AnimalHealthListScreen(animal: animal, farm: farm, group: group),
       ),
     );
 
@@ -384,11 +441,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   Future<void> openMovements() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalMovementListScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        builder: (context) =>
+            AnimalMovementListScreen(animal: animal, farm: farm, group: group),
       ),
     );
 
@@ -398,11 +452,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   Future<void> openDocuments() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalDocumentListScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        builder: (context) =>
+            AnimalDocumentListScreen(animal: animal, farm: farm, group: group),
       ),
     );
 
@@ -430,37 +481,47 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1220),
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: loadDashboard,
-                    child: ListView(
-                      padding: const EdgeInsets.all(24),
-                      children: [
-                        AnimalHubHeader(
-                          animal: animal,
-                          farm: farm,
-                          group: group,
-                          currentWeight: currentWeight,
-                          ageText: ageText,
-                        ),
-                        const SizedBox(height: 18),
-                        AnimalHubNavigation(
-                          selected: selectedSection,
-                          onSelected: selectSection,
-                        ),
-                        const SizedBox(height: 22),
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 220),
-                          child: KeyedSubtree(
-                            key: ValueKey<AnimalHubSection>(selectedSection),
-                            child: buildSelectedSection(),
-                          ),
-                        ),
-                        const SizedBox(height: 36),
-                      ],
+            child: RefreshIndicator(
+              onRefresh: loadDashboard,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(24),
+                children: [
+                  if (isLoading) ...[
+                    const LinearProgressIndicator(),
+                    const SizedBox(height: 12),
+                  ],
+                  if (loadWarnings.isNotEmpty) ...[
+                    _AnimalCentralLoadWarning(
+                      warnings: loadWarnings,
+                      onRetry: isLoading ? null : loadDashboard,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  AnimalHubHeader(
+                    animal: animal,
+                    farm: farm,
+                    group: group,
+                    currentWeight: currentWeight,
+                    ageText: ageText,
+                  ),
+                  const SizedBox(height: 18),
+                  AnimalHubNavigation(
+                    selected: selectedSection,
+                    onSelected: selectSection,
+                  ),
+                  const SizedBox(height: 22),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: KeyedSubtree(
+                      key: ValueKey<AnimalHubSection>(selectedSection),
+                      child: buildSelectedSection(),
                     ),
                   ),
+                  const SizedBox(height: 36),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -477,62 +538,53 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.photos => buildPhotosSection(),
       AnimalHubSection.documents => buildDocumentsSection(),
       AnimalHubSection.healthEnterprise => buildHealthEnterpriseSection(),
-      AnimalHubSection.reproductionEnterprise => buildReproductionEnterpriseSection(),
+      AnimalHubSection.reproductionEnterprise =>
+        buildReproductionEnterpriseSection(),
       AnimalHubSection.weightIntelligence => buildWeightIntelligenceSection(),
       AnimalHubSection.nutritionEnterprise => buildNutritionEnterpriseSection(),
       AnimalHubSection.executivePanel => buildExecutivePanelSection(),
-      AnimalHubSection.validationCenter =>
-        buildOperationsSection(
-          view: AnimalOperationsView.validation,
-          title: 'Validação',
-          subtitle:
-              'Teste integrado, completude de dados e disponibilidade Enterprise.',
-          icon: Icons.fact_check_outlined,
-        ),
-      AnimalHubSection.smartAgenda =>
-        buildOperationsSection(
-          view: AnimalOperationsView.agenda,
-          title: 'Agenda',
-          subtitle:
-              'Tarefas, prazos, responsáveis e histórico de execução.',
-          icon: Icons.calendar_month_outlined,
-        ),
-      AnimalHubSection.pendingCenter =>
-        buildOperationsSection(
-          view: AnimalOperationsView.pending,
-          title: 'Pendências',
-          subtitle:
-              'Central de atenção por urgência, risco e lacunas de dados.',
-          icon: Icons.notification_important_outlined,
-        ),
-      AnimalHubSection.integrationCenter =>
-        buildOperationsSection(
-          view: AnimalOperationsView.integration,
-          title: 'Integração',
-          subtitle:
-              'Status local, API Enterprise e plano de sincronização.',
-          icon: Icons.sync_alt_outlined,
-        ),
-      AnimalHubSection.farmDashboard =>
-        buildOperationsSection(
-          view: AnimalOperationsView.farmDashboard,
-          title: 'Fazenda',
-          subtitle:
-              'Indicadores operacionais e gerenciais da propriedade.',
-          icon: Icons.agriculture_outlined,
-        ),
-      AnimalHubSection.companyDashboard =>
-        buildOperationsSection(
-          view: AnimalOperationsView.companyDashboard,
-          title: 'Empresa',
-          subtitle:
-              'Visão executiva do tenant e consolidação multfazendas.',
-          icon: Icons.domain_outlined,
-        ),
+      AnimalHubSection.validationCenter => buildOperationsSection(
+        view: AnimalOperationsView.validation,
+        title: 'Validação',
+        subtitle:
+            'Teste integrado, completude de dados e disponibilidade Enterprise.',
+        icon: Icons.fact_check_outlined,
+      ),
+      AnimalHubSection.smartAgenda => buildOperationsSection(
+        view: AnimalOperationsView.agenda,
+        title: 'Agenda',
+        subtitle: 'Tarefas, prazos, responsáveis e histórico de execução.',
+        icon: Icons.calendar_month_outlined,
+      ),
+      AnimalHubSection.pendingCenter => buildOperationsSection(
+        view: AnimalOperationsView.pending,
+        title: 'Pendências',
+        subtitle: 'Central de atenção por urgência, risco e lacunas de dados.',
+        icon: Icons.notification_important_outlined,
+      ),
+      AnimalHubSection.integrationCenter => buildOperationsSection(
+        view: AnimalOperationsView.integration,
+        title: 'Integração',
+        subtitle: 'Status local, API Enterprise e plano de sincronização.',
+        icon: Icons.sync_alt_outlined,
+      ),
+      AnimalHubSection.farmDashboard => buildOperationsSection(
+        view: AnimalOperationsView.farmDashboard,
+        title: 'Fazenda',
+        subtitle: 'Indicadores operacionais e gerenciais da propriedade.',
+        icon: Icons.agriculture_outlined,
+      ),
+      AnimalHubSection.companyDashboard => buildOperationsSection(
+        view: AnimalOperationsView.companyDashboard,
+        title: 'Empresa',
+        subtitle: 'Visão executiva do tenant e consolidação multfazendas.',
+        icon: Icons.domain_outlined,
+      ),
       AnimalHubSection.intelligence360 => buildIntelligence360Section(
         view: AnimalIntelligence360View.intelligence,
         title: 'Inteligência 360',
-        subtitle: 'Painel executivo, score, IA, diagnóstico, projeções e benchmark.',
+        subtitle:
+            'Painel executivo, score, IA, diagnóstico, projeções e benchmark.',
         icon: Icons.psychology_outlined,
       ),
       AnimalHubSection.operations360 => buildIntelligence360Section(
@@ -567,7 +619,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       ),
       AnimalHubSection.enterprise50 => _enterpriseLaunchSection(
         title: 'Atlas Enterprise 50',
-        subtitle: 'Pacotes 31 a 40 com 50 funcionalidades operacionais integradas.',
+        subtitle:
+            'Pacotes 31 a 40 com 50 funcionalidades operacionais integradas.',
         icon: Icons.hub_outlined,
         button: 'Abrir Enterprise 50',
         screen: AtlasEnterprise50Screen(
@@ -600,38 +653,33 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.logistics46 => buildSupplyModuleSection(
         module: AtlasSupplyChainModule.logistics,
         title: 'Logística Enterprise',
-        subtitle:
-            'Transportes, GTA, rotas, custos e movimentações.',
+        subtitle: 'Transportes, GTA, rotas, custos e movimentações.',
         icon: Icons.local_shipping_outlined,
       ),
 
       AnimalHubSection.commercialization45 => buildSupplyModuleSection(
         module: AtlasSupplyChainModule.commercialization,
         title: 'Comercialização Enterprise',
-        subtitle:
-            'Vendas, contratos, romaneios, rentabilidade e mercado.',
+        subtitle: 'Vendas, contratos, romaneios, rentabilidade e mercado.',
         icon: Icons.attach_money,
       ),
 
       AnimalHubSection.sustainability47 => buildEcosystemModuleSection(
         module: AtlasEcosystemModule.sustainability,
         title: 'Sustentabilidade Enterprise',
-        subtitle:
-            'Carbono, água, ESG, recuperação de pastagens e relatórios.',
+        subtitle: 'Carbono, água, ESG, recuperação de pastagens e relatórios.',
         icon: Icons.eco_outlined,
       ),
       AnimalHubSection.iot48 => buildEcosystemModuleSection(
         module: AtlasEcosystemModule.iot,
         title: 'IoT e Automação',
-        subtitle:
-            'Balanças, RFID, sensores, coleta automática e dispositivos.',
+        subtitle: 'Balanças, RFID, sensores, coleta automática e dispositivos.',
         icon: Icons.sensors_outlined,
       ),
       AnimalHubSection.consultancy49 => buildEcosystemModuleSection(
         module: AtlasEcosystemModule.consultancy,
         title: 'Ecossistema de Consultoria',
-        subtitle:
-            'Clientes, visitas, relatórios, comparativos e portal.',
+        subtitle: 'Clientes, visitas, relatórios, comparativos e portal.',
         icon: Icons.support_agent_outlined,
       ),
       AnimalHubSection.energySensors126 => buildIotSection(
@@ -651,8 +699,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.drones128 => buildIotSection(
         module: AtlasIotModule.drones,
         title: 'Integração com Drones',
-        subtitle:
-            'Aeronaves, missões, voos, imagens, inspeções e alertas.',
+        subtitle: 'Aeronaves, missões, voos, imagens, inspeções e alertas.',
         icon: Icons.flight_outlined,
       ),
       AnimalHubSection.satellites129 => buildIotSection(
@@ -705,12 +752,13 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle: 'Telas, consultas, sincronização, escala e memória.',
         icon: Icons.speed_outlined,
       ),
-      AnimalHubSection.monitoringAndFailureHandling297 => buildQualityReleaseSection(
-        module: AtlasQualityReleaseModule.monitoringAndFailureHandling,
-        title: 'Monitoramento e Tratamento de Falhas',
-        subtitle: 'Erros, logs, métricas, alertas e saúde.',
-        icon: Icons.monitor_heart_outlined,
-      ),
+      AnimalHubSection.monitoringAndFailureHandling297 =>
+        buildQualityReleaseSection(
+          module: AtlasQualityReleaseModule.monitoringAndFailureHandling,
+          title: 'Monitoramento e Tratamento de Falhas',
+          subtitle: 'Erros, logs, métricas, alertas e saúde.',
+          icon: Icons.monitor_heart_outlined,
+        ),
       AnimalHubSection.stagingPublication298 => buildQualityReleaseSection(
         module: AtlasQualityReleaseModule.stagingPublication,
         title: 'Publicação em Ambiente de Homologação',
@@ -729,90 +777,106 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle: 'Instalador, backend, banco, documentação e suporte.',
         icon: Icons.rocket_launch_outlined,
       ),
-      AnimalHubSection.consolidatedIndicatorEngine281 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
-        title: 'Motor de Indicadores Consolidado',
-        subtitle: 'Fórmulas, períodos, fontes, unidades e regras.',
-        icon: Icons.calculate_outlined,
-      ),
-      AnimalHubSection.realDataExecutiveDashboard282 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.realDataExecutiveDashboard,
-        title: 'Dashboard Executivo com Dados Reais',
-        subtitle: 'Consolidação automática, riscos, metas e decisões.',
-        icon: Icons.dashboard_outlined,
-      ),
-      AnimalHubSection.realFarmBenchmarking283 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.realFarmBenchmarking,
-        title: 'Comparação Real entre Fazendas',
-        subtitle: 'Sistema produtivo, escala, categoria, período e referência.',
-        icon: Icons.compare_arrows_outlined,
-      ),
-      AnimalHubSection.traceableRecommendationEngine284 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.traceableRecommendationEngine,
-        title: 'Motor de Recomendações Rastreável',
-        subtitle: 'Dados de origem, regras, confiança e justificativa.',
-        icon: Icons.psychology_outlined,
-      ),
-      AnimalHubSection.validatedPredictiveDiagnostics285 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics,
-        title: 'Diagnósticos Preditivos Validados',
-        subtitle: 'Premissas, cenários, confiança, limites e validação.',
-        icon: Icons.auto_graph_outlined,
-      ),
-      AnimalHubSection.technicalPdfReports286 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.technicalPdfReports,
-        title: 'Relatórios Técnicos em PDF',
-        subtitle: 'Identificação, tabelas, gráficos, conclusões e assinatura.',
-        icon: Icons.picture_as_pdf_outlined,
-      ),
-      AnimalHubSection.financialExecutiveReports287 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.financialExecutiveReports,
-        title: 'Relatórios Financeiros e Executivos',
-        subtitle: 'Custos, rentabilidade, caixa, indicadores e resumo.',
-        icon: Icons.request_quote_outlined,
-      ),
-      AnimalHubSection.spreadsheetCsvExport288 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.spreadsheetCsvExport,
-        title: 'Exportação para Planilhas e CSV',
-        subtitle: 'Animais, eventos, estoque, finanças e indicadores.',
-        icon: Icons.table_view_outlined,
-      ),
+      AnimalHubSection.consolidatedIndicatorEngine281 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.consolidatedIndicatorEngine,
+          title: 'Motor de Indicadores Consolidado',
+          subtitle: 'Fórmulas, períodos, fontes, unidades e regras.',
+          icon: Icons.calculate_outlined,
+        ),
+      AnimalHubSection.realDataExecutiveDashboard282 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.realDataExecutiveDashboard,
+          title: 'Dashboard Executivo com Dados Reais',
+          subtitle: 'Consolidação automática, riscos, metas e decisões.',
+          icon: Icons.dashboard_outlined,
+        ),
+      AnimalHubSection.realFarmBenchmarking283 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.realFarmBenchmarking,
+          title: 'Comparação Real entre Fazendas',
+          subtitle:
+              'Sistema produtivo, escala, categoria, período e referência.',
+          icon: Icons.compare_arrows_outlined,
+        ),
+      AnimalHubSection.traceableRecommendationEngine284 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.traceableRecommendationEngine,
+          title: 'Motor de Recomendações Rastreável',
+          subtitle: 'Dados de origem, regras, confiança e justificativa.',
+          icon: Icons.psychology_outlined,
+        ),
+      AnimalHubSection.validatedPredictiveDiagnostics285 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics,
+          title: 'Diagnósticos Preditivos Validados',
+          subtitle: 'Premissas, cenários, confiança, limites e validação.',
+          icon: Icons.auto_graph_outlined,
+        ),
+      AnimalHubSection.technicalPdfReports286 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.technicalPdfReports,
+          title: 'Relatórios Técnicos em PDF',
+          subtitle:
+              'Identificação, tabelas, gráficos, conclusões e assinatura.',
+          icon: Icons.picture_as_pdf_outlined,
+        ),
+      AnimalHubSection.financialExecutiveReports287 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.financialExecutiveReports,
+          title: 'Relatórios Financeiros e Executivos',
+          subtitle: 'Custos, rentabilidade, caixa, indicadores e resumo.',
+          icon: Icons.request_quote_outlined,
+        ),
+      AnimalHubSection.spreadsheetCsvExport288 =>
+        buildIntelligenceReportsSection(
+          module: AtlasIntelligenceReportsModule.spreadsheetCsvExport,
+          title: 'Exportação para Planilhas e CSV',
+          subtitle: 'Animais, eventos, estoque, finanças e indicadores.',
+          icon: Icons.table_view_outlined,
+        ),
       AnimalHubSection.secureSharing289 => buildIntelligenceReportsSection(
         module: AtlasIntelligenceReportsModule.secureSharing,
         title: 'Compartilhamento Seguro',
         subtitle: 'Links temporários, proteção, permissões e registro.',
         icon: Icons.share_outlined,
       ),
-      AnimalHubSection.professionalNavigationExperience290 => buildIntelligenceReportsSection(
-        module: AtlasIntelligenceReportsModule.professionalNavigationExperience,
-        title: 'Nova Experiência de Navegação',
-        subtitle: 'Menus por área, pesquisa, favoritos e atalhos.',
-        icon: Icons.menu_open_outlined,
-      ),
+      AnimalHubSection.professionalNavigationExperience290 =>
+        buildIntelligenceReportsSection(
+          module:
+              AtlasIntelligenceReportsModule.professionalNavigationExperience,
+          title: 'Nova Experiência de Navegação',
+          subtitle: 'Menus por área, pesquisa, favoritos e atalhos.',
+          icon: Icons.menu_open_outlined,
+        ),
       AnimalHubSection.herdMigration271 => buildLivestockIntegrationSection(
         module: AtlasLivestockIntegrationModule.herdMigration,
         title: 'Migração do Módulo Rebanho',
         subtitle: 'Animais, lotes, movimentações, filtros e histórico.',
-        icon: Icons.pets_outlined,
+        icon: AtlasLivestockIcons.cow,
       ),
-      AnimalHubSection.reproductionMigration272 => buildLivestockIntegrationSection(
-        module: AtlasLivestockIntegrationModule.reproductionMigration,
-        title: 'Migração do Módulo Reprodução',
-        subtitle: 'Protocolos, inseminações, coberturas, diagnósticos e partos.',
-        icon: Icons.favorite_outline,
-      ),
+      AnimalHubSection.reproductionMigration272 =>
+        buildLivestockIntegrationSection(
+          module: AtlasLivestockIntegrationModule.reproductionMigration,
+          title: 'Migração do Módulo Reprodução',
+          subtitle:
+              'Protocolos, inseminações, coberturas, diagnósticos e partos.',
+          icon: Icons.favorite_outline,
+        ),
       AnimalHubSection.healthMigration273 => buildLivestockIntegrationSection(
         module: AtlasLivestockIntegrationModule.healthMigration,
         title: 'Migração do Módulo Sanidade',
-        subtitle: 'Vacinas, medicamentos, diagnósticos, tratamentos e carências.',
+        subtitle:
+            'Vacinas, medicamentos, diagnósticos, tratamentos e carências.',
         icon: Icons.vaccines_outlined,
       ),
-      AnimalHubSection.nutritionMigration274 => buildLivestockIntegrationSection(
-        module: AtlasLivestockIntegrationModule.nutritionMigration,
-        title: 'Migração do Módulo Nutrição',
-        subtitle: 'Dietas, suplementos, consumo, lotes e custos.',
-        icon: Icons.restaurant_outlined,
-      ),
+      AnimalHubSection.nutritionMigration274 =>
+        buildLivestockIntegrationSection(
+          module: AtlasLivestockIntegrationModule.nutritionMigration,
+          title: 'Migração do Módulo Nutrição',
+          subtitle: 'Dietas, suplementos, consumo, lotes e custos.',
+          icon: Icons.restaurant_outlined,
+        ),
       AnimalHubSection.financeMigration275 => buildLivestockIntegrationSection(
         module: AtlasLivestockIntegrationModule.financeMigration,
         title: 'Migração do Módulo Financeiro',
@@ -834,7 +898,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.unifiedTimeline278 => buildLivestockIntegrationSection(
         module: AtlasLivestockIntegrationModule.unifiedTimeline,
         title: 'Linha do Tempo Unificada',
-        subtitle: 'Eventos produtivos, sanitários, reprodutivos, financeiros e operacionais.',
+        subtitle:
+            'Eventos produtivos, sanitários, reprodutivos, financeiros e operacionais.',
         icon: Icons.timeline_outlined,
       ),
       AnimalHubSection.integratedAlerts279 => buildLivestockIntegrationSection(
@@ -915,12 +980,13 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle: 'Rotas, serviços, validações, erros e saúde.',
         icon: Icons.dns_outlined,
       ),
-      AnimalHubSection.environmentConfiguration252 => buildBackendFoundationSection(
-        module: AtlasBackendFoundationModule.environmentConfiguration,
-        title: 'Configuração de Ambientes',
-        subtitle: 'Desenvolvimento, homologação, produção e segredos.',
-        icon: Icons.settings_suggest_outlined,
-      ),
+      AnimalHubSection.environmentConfiguration252 =>
+        buildBackendFoundationSection(
+          module: AtlasBackendFoundationModule.environmentConfiguration,
+          title: 'Configuração de Ambientes',
+          subtitle: 'Desenvolvimento, homologação, produção e segredos.',
+          icon: Icons.settings_suggest_outlined,
+        ),
       AnimalHubSection.postgresqlDatabase253 => buildBackendFoundationSection(
         module: AtlasBackendFoundationModule.postgresqlDatabase,
         title: 'Banco de Dados PostgreSQL',
@@ -933,12 +999,13 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle: 'Criação, execução, rollback, histórico e validação.',
         icon: Icons.schema_outlined,
       ),
-      AnimalHubSection.multiCompanyArchitecture255 => buildBackendFoundationSection(
-        module: AtlasBackendFoundationModule.multiCompanyArchitecture,
-        title: 'Arquitetura Multempresa',
-        subtitle: 'Empresas, fazendas, isolamento e auditoria.',
-        icon: Icons.account_tree_outlined,
-      ),
+      AnimalHubSection.multiCompanyArchitecture255 =>
+        buildBackendFoundationSection(
+          module: AtlasBackendFoundationModule.multiCompanyArchitecture,
+          title: 'Arquitetura Multempresa',
+          subtitle: 'Empresas, fazendas, isolamento e auditoria.',
+          icon: Icons.account_tree_outlined,
+        ),
       AnimalHubSection.usersCompaniesApi256 => buildBackendFoundationSection(
         module: AtlasBackendFoundationModule.usersCompaniesApi,
         title: 'API de Usuários e Empresas',
@@ -955,7 +1022,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         module: AtlasBackendFoundationModule.animalsApi,
         title: 'API de Animais',
         subtitle: 'Cadastro, edição, consulta, movimentação e histórico.',
-        icon: Icons.pets_outlined,
+        icon: AtlasLivestockIcons.cow,
       ),
       AnimalHubSection.livestockEventsApi259 => buildBackendFoundationSection(
         module: AtlasBackendFoundationModule.livestockEventsApi,
@@ -963,31 +1030,31 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle: 'Pesagens, sanidade, reprodução, nutrição e operações.',
         icon: Icons.event_note_outlined,
       ),
-      AnimalHubSection.backendAdministrationCenter260 => buildBackendFoundationSection(
-        module: AtlasBackendFoundationModule.backendAdministrationCenter,
-        title: 'Central de Administração do Backend',
-        subtitle: 'Serviços, banco, filas, falhas e painel técnico.',
-        icon: Icons.admin_panel_settings_outlined,
-      ),
-      AnimalHubSection.globalExecutiveDashboard241 => buildExecutivePlatformSection(
-        module: AtlasExecutivePlatformModule.globalExecutiveDashboard,
-        title: 'Dashboard Executivo Global',
-        subtitle:
-            'Indicadores, fazendas, riscos, resultados e resumo executivo.',
-        icon: Icons.dashboard_outlined,
-      ),
+      AnimalHubSection.backendAdministrationCenter260 =>
+        buildBackendFoundationSection(
+          module: AtlasBackendFoundationModule.backendAdministrationCenter,
+          title: 'Central de Administração do Backend',
+          subtitle: 'Serviços, banco, filas, falhas e painel técnico.',
+          icon: Icons.admin_panel_settings_outlined,
+        ),
+      AnimalHubSection.globalExecutiveDashboard241 =>
+        buildExecutivePlatformSection(
+          module: AtlasExecutivePlatformModule.globalExecutiveDashboard,
+          title: 'Dashboard Executivo Global',
+          subtitle:
+              'Indicadores, fazendas, riscos, resultados e resumo executivo.',
+          icon: Icons.dashboard_outlined,
+        ),
       AnimalHubSection.farmBenchmarking242 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.farmBenchmarking,
         title: 'Comparação entre Fazendas',
-        subtitle:
-            'Produtividade, custos, reprodução, sanidade e eficiência.',
+        subtitle: 'Produtividade, custos, reprodução, sanidade e eficiência.',
         icon: Icons.compare_arrows_outlined,
       ),
       AnimalHubSection.corporateGoals243 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.corporateGoals,
         title: 'Metas Corporativas',
-        subtitle:
-            'Objetivos, indicadores, metas, responsáveis e resultados.',
+        subtitle: 'Objetivos, indicadores, metas, responsáveis e resultados.',
         icon: Icons.flag_outlined,
       ),
       AnimalHubSection.unifiedAlerts244 => buildExecutivePlatformSection(
@@ -1000,57 +1067,52 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.intelligentTasks245 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.intelligentTasks,
         title: 'Central de Tarefas Inteligentes',
-        subtitle:
-            'Origem automática, responsáveis, prazos e dependências.',
+        subtitle: 'Origem automática, responsáveis, prazos e dependências.',
         icon: Icons.task_alt_outlined,
       ),
       AnimalHubSection.professionalReports246 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.professionalReports,
         title: 'Relatórios Profissionais',
-        subtitle:
-            'Relatórios técnicos, gerenciais, financeiros e executivos.',
+        subtitle: 'Relatórios técnicos, gerenciais, financeiros e executivos.',
         icon: Icons.description_outlined,
       ),
       AnimalHubSection.exportAndSharing247 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.exportAndSharing,
         title: 'Exportação e Compartilhamento',
-        subtitle:
-            'PDF, CSV, planilhas, compartilhamento e acesso.',
+        subtitle: 'PDF, CSV, planilhas, compartilhamento e acesso.',
         icon: Icons.ios_share_outlined,
       ),
-      AnimalHubSection.plansAndSubscriptions248 => buildExecutivePlatformSection(
-        module: AtlasExecutivePlatformModule.plansAndSubscriptions,
-        title: 'Gestão de Planos e Assinaturas',
-        subtitle:
-            'Planos, limites, recursos, cobrança e renovação.',
-        icon: Icons.workspace_premium_outlined,
-      ),
+      AnimalHubSection.plansAndSubscriptions248 =>
+        buildExecutivePlatformSection(
+          module: AtlasExecutivePlatformModule.plansAndSubscriptions,
+          title: 'Gestão de Planos e Assinaturas',
+          subtitle: 'Planos, limites, recursos, cobrança e renovação.',
+          icon: Icons.workspace_premium_outlined,
+        ),
       AnimalHubSection.platformAdminPanel249 => buildExecutivePlatformSection(
         module: AtlasExecutivePlatformModule.platformAdminPanel,
         title: 'Painel Administrativo da Plataforma',
-        subtitle:
-            'Usuários, empresas, assinaturas, suporte e métricas.',
+        subtitle: 'Usuários, empresas, assinaturas, suporte e métricas.',
         icon: Icons.admin_panel_settings_outlined,
       ),
-      AnimalHubSection.enterpriseCommandCenter250 => buildExecutivePlatformSection(
-        module: AtlasExecutivePlatformModule.enterpriseCommandCenter,
-        title: 'Atlas Enterprise Command Center',
-        subtitle:
-            'Operações, inteligência, finanças, riscos e desempenho.',
-        icon: Icons.hub_outlined,
-      ),
-      AnimalHubSection.professionalAuthentication231 => buildCloudSecuritySection(
-        module: AtlasCloudSecurityModule.professionalAuthentication,
-        title: 'Autenticação Profissional',
-        subtitle:
-            'Login seguro, recuperação, sessões, bloqueios e MFA.',
-        icon: Icons.login_outlined,
-      ),
+      AnimalHubSection.enterpriseCommandCenter250 =>
+        buildExecutivePlatformSection(
+          module: AtlasExecutivePlatformModule.enterpriseCommandCenter,
+          title: 'Atlas Enterprise Command Center',
+          subtitle: 'Operações, inteligência, finanças, riscos e desempenho.',
+          icon: Icons.hub_outlined,
+        ),
+      AnimalHubSection.professionalAuthentication231 =>
+        buildCloudSecuritySection(
+          module: AtlasCloudSecurityModule.professionalAuthentication,
+          title: 'Autenticação Profissional',
+          subtitle: 'Login seguro, recuperação, sessões, bloqueios e MFA.',
+          icon: Icons.login_outlined,
+        ),
       AnimalHubSection.usersAndCompanies232 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.usersAndCompanies,
         title: 'Gestão de Usuários e Empresas',
-        subtitle:
-            'Contas, empresas, fazendas, convites, vínculos e papéis.',
+        subtitle: 'Contas, empresas, fazendas, convites, vínculos e papéis.',
         icon: Icons.business_outlined,
       ),
       AnimalHubSection.cloudDatabase233 => buildCloudSecuritySection(
@@ -1063,85 +1125,77 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.offlineSynchronization234 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.offlineSynchronization,
         title: 'Sincronização Offline',
-        subtitle:
-            'Fila, envio, recebimento, status e retentativas.',
+        subtitle: 'Fila, envio, recebimento, status e retentativas.',
         icon: Icons.sync_outlined,
       ),
       AnimalHubSection.conflictResolution235 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.conflictResolution,
         title: 'Resolução de Conflitos',
-        subtitle:
-            'Detecção, versões, regras, revisão manual e histórico.',
+        subtitle: 'Detecção, versões, regras, revisão manual e histórico.',
         icon: Icons.merge_type_outlined,
       ),
       AnimalHubSection.automatedBackup236 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.automatedBackup,
         title: 'Backup Automatizado',
-        subtitle:
-            'Política, agenda, retenção, restauração e integridade.',
+        subtitle: 'Política, agenda, retenção, restauração e integridade.',
         icon: Icons.backup_outlined,
       ),
       AnimalHubSection.dataEncryption237 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.dataEncryption,
         title: 'Criptografia de Dados',
-        subtitle:
-            'Trânsito, repouso, chaves, rotação e segredos.',
+        subtitle: 'Trânsito, repouso, chaves, rotação e segredos.',
         icon: Icons.lock_outlined,
       ),
       AnimalHubSection.userAuditLogs238 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.userAuditLogs,
         title: 'Logs e Auditoria de Usuários',
-        subtitle:
-            'Acessos, alterações, exclusões, exportações e eventos.',
+        subtitle: 'Acessos, alterações, exclusões, exportações e eventos.',
         icon: Icons.manage_search_outlined,
       ),
       AnimalHubSection.integrationCenter239 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.integrationCenter,
         title: 'Central de Integrações',
-        subtitle:
-            'APIs, webhooks, gateways, credenciais e saúde.',
+        subtitle: 'APIs, webhooks, gateways, credenciais e saúde.',
         icon: Icons.hub_outlined,
       ),
       AnimalHubSection.securityCenter240 => buildCloudSecuritySection(
         module: AtlasCloudSecurityModule.securityCenter,
         title: 'Central de Segurança Atlas',
-        subtitle:
-            'Sessões, incidentes, permissões, backups e painel.',
+        subtitle: 'Sessões, incidentes, permissões, backups e painel.',
         icon: Icons.security_outlined,
       ),
       AnimalHubSection.peopleManagement221 => buildGovernancePeopleSection(
         module: AtlasGovernancePeopleModule.peopleManagement,
         title: 'Gestão de Pessoas',
-        subtitle:
-            'Colaboradores, cargos, contratos, documentos e histórico.',
+        subtitle: 'Colaboradores, cargos, contratos, documentos e histórico.',
         icon: Icons.badge_outlined,
       ),
-      AnimalHubSection.trainingAndQualification222 => buildGovernancePeopleSection(
-        module: AtlasGovernancePeopleModule.trainingAndQualification,
-        title: 'Treinamentos e Capacitações',
-        subtitle:
-            'Cursos, competências, certificados, validades e plano.',
-        icon: Icons.school_outlined,
-      ),
-      AnimalHubSection.occupationalHealthAndSafety223 => buildGovernancePeopleSection(
-        module: AtlasGovernancePeopleModule.occupationalHealthAndSafety,
-        title: 'Saúde e Segurança do Trabalho',
-        subtitle:
-            'Exames, riscos, acidentes, afastamentos e prevenção.',
-        icon: Icons.health_and_safety_outlined,
-      ),
-      AnimalHubSection.personalProtectiveEquipment224 => buildGovernancePeopleSection(
-        module: AtlasGovernancePeopleModule.personalProtectiveEquipment,
-        title: 'Equipamentos de Proteção Individual',
-        subtitle:
-            'Entrega, validade, substituição, devolução e responsabilidade.',
-        icon: Icons.shield_outlined,
-      ),
+      AnimalHubSection.trainingAndQualification222 =>
+        buildGovernancePeopleSection(
+          module: AtlasGovernancePeopleModule.trainingAndQualification,
+          title: 'Treinamentos e Capacitações',
+          subtitle: 'Cursos, competências, certificados, validades e plano.',
+          icon: Icons.school_outlined,
+        ),
+      AnimalHubSection.occupationalHealthAndSafety223 =>
+        buildGovernancePeopleSection(
+          module: AtlasGovernancePeopleModule.occupationalHealthAndSafety,
+          title: 'Saúde e Segurança do Trabalho',
+          subtitle: 'Exames, riscos, acidentes, afastamentos e prevenção.',
+          icon: Icons.health_and_safety_outlined,
+        ),
+      AnimalHubSection.personalProtectiveEquipment224 =>
+        buildGovernancePeopleSection(
+          module: AtlasGovernancePeopleModule.personalProtectiveEquipment,
+          title: 'Equipamentos de Proteção Individual',
+          subtitle:
+              'Entrega, validade, substituição, devolução e responsabilidade.',
+          icon: Icons.shield_outlined,
+        ),
       AnimalHubSection.documentManagement225 => buildGovernancePeopleSection(
         module: AtlasGovernancePeopleModule.documentManagement,
         title: 'Gestão de Documentos',
-        subtitle:
-            'Cadastro, categorias, versões, validades e evidências.',
+        subtitle: 'Cadastro, categorias, versões, validades e evidências.',
         icon: Icons.folder_copy_outlined,
       ),
       AnimalHubSection.complianceControl226 => buildGovernancePeopleSection(
@@ -1154,29 +1208,26 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.internalAudits227 => buildGovernancePeopleSection(
         module: AtlasGovernancePeopleModule.internalAudits,
         title: 'Auditorias Internas',
-        subtitle:
-            'Planejamento, execução, achados e acompanhamento.',
+        subtitle: 'Planejamento, execução, achados e acompanhamento.',
         icon: Icons.fact_check_outlined,
       ),
-      AnimalHubSection.corporateRiskManagement228 => buildGovernancePeopleSection(
-        module: AtlasGovernancePeopleModule.corporateRiskManagement,
-        title: 'Gestão de Riscos Corporativos',
-        subtitle:
-            'Riscos, probabilidade, impacto, controles e resposta.',
-        icon: Icons.warning_amber_outlined,
-      ),
+      AnimalHubSection.corporateRiskManagement228 =>
+        buildGovernancePeopleSection(
+          module: AtlasGovernancePeopleModule.corporateRiskManagement,
+          title: 'Gestão de Riscos Corporativos',
+          subtitle: 'Riscos, probabilidade, impacto, controles e resposta.',
+          icon: Icons.warning_amber_outlined,
+        ),
       AnimalHubSection.permissionMatrix229 => buildGovernancePeopleSection(
         module: AtlasGovernancePeopleModule.permissionMatrix,
         title: 'Matriz de Permissões',
-        subtitle:
-            'Usuários, papéis, módulos, operações e níveis.',
+        subtitle: 'Usuários, papéis, módulos, operações e níveis.',
         icon: Icons.admin_panel_settings_outlined,
       ),
       AnimalHubSection.governanceCenter230 => buildGovernancePeopleSection(
         module: AtlasGovernancePeopleModule.governanceCenter,
         title: 'Central de Governança Atlas',
-        subtitle:
-            'Pessoas, documentos, conformidade, riscos e painel.',
+        subtitle: 'Pessoas, documentos, conformidade, riscos e painel.',
         icon: Icons.dashboard_outlined,
       ),
       AnimalHubSection.intelligentPurchasing211 => buildSupplyLogisticsSection(
@@ -1189,22 +1240,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.supplierManagement212 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.supplierManagement,
         title: 'Gestão de Fornecedores',
-        subtitle:
-            'Cadastro, documentos, produtos, avaliação e histórico.',
+        subtitle: 'Cadastro, documentos, produtos, avaliação e histórico.',
         icon: Icons.handshake_outlined,
       ),
       AnimalHubSection.automatedQuotation213 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.automatedQuotation,
         title: 'Cotação Automatizada',
-        subtitle:
-            'Preço, pagamento, frete, prazo e custo final.',
+        subtitle: 'Preço, pagamento, frete, prazo e custo final.',
         icon: Icons.compare_arrows_outlined,
       ),
       AnimalHubSection.purchaseApproval214 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.purchaseApproval,
         title: 'Aprovação de Compras',
-        subtitle:
-            'Valor, categoria, centro de custo e aprovadores.',
+        subtitle: 'Valor, categoria, centro de custo e aprovadores.',
         icon: Icons.approval_outlined,
       ),
       AnimalHubSection.multiWarehouseStock215 => buildSupplyLogisticsSection(
@@ -1217,8 +1265,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.batchesAndExpiry216 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.batchesAndExpiry,
         title: 'Lotes e Validades',
-        subtitle:
-            'Lote, fabricação, validade, fornecedor e rastreabilidade.',
+        subtitle: 'Lote, fabricação, validade, fornecedor e rastreabilidade.',
         icon: Icons.qr_code_2_outlined,
       ),
       AnimalHubSection.intelligentInventory217 => buildSupplyLogisticsSection(
@@ -1231,38 +1278,35 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.transportLogistics218 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.transportLogistics,
         title: 'Logística de Transporte',
-        subtitle:
-            'Veículos, motoristas, cargas, rotas e entregas.',
+        subtitle: 'Veículos, motoristas, cargas, rotas e entregas.',
         icon: Icons.local_shipping_outlined,
       ),
       AnimalHubSection.fuelManagement219 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.fuelManagement,
         title: 'Gestão de Combustíveis',
-        subtitle:
-            'Abastecimentos, consumo, estoque, custo e desvios.',
+        subtitle: 'Abastecimentos, consumo, estoque, custo e desvios.',
         icon: Icons.local_gas_station_outlined,
       ),
       AnimalHubSection.supplyLogisticsCenter220 => buildSupplyLogisticsSection(
         module: AtlasSupplyLogisticsModule.supplyLogisticsCenter,
         title: 'Central de Suprimentos e Logística',
-        subtitle:
-            'Compras, fornecedores, estoque, transporte e painel.',
+        subtitle: 'Compras, fornecedores, estoque, transporte e painel.',
         icon: Icons.dashboard_outlined,
       ),
-      AnimalHubSection.farmOperationalPlanning201 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.farmOperationalPlanning,
-        title: 'Planejamento Operacional da Fazenda',
-        subtitle:
-            'Planos anuais, mensais, semanais e diários com metas.',
-        icon: Icons.event_note_outlined,
-      ),
-      AnimalHubSection.intelligentActivityAgenda202 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.intelligentActivityAgenda,
-        title: 'Agenda Inteligente de Atividades',
-        subtitle:
-            'Calendário, prioridades, dependências e conflitos.',
-        icon: Icons.calendar_month_outlined,
-      ),
+      AnimalHubSection.farmOperationalPlanning201 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.farmOperationalPlanning,
+          title: 'Planejamento Operacional da Fazenda',
+          subtitle: 'Planos anuais, mensais, semanais e diários com metas.',
+          icon: Icons.event_note_outlined,
+        ),
+      AnimalHubSection.intelligentActivityAgenda202 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.intelligentActivityAgenda,
+          title: 'Agenda Inteligente de Atividades',
+          subtitle: 'Calendário, prioridades, dependências e conflitos.',
+          icon: Icons.calendar_month_outlined,
+        ),
       AnimalHubSection.workOrders203 => buildOperationsEnterpriseSection(
         module: AtlasOperationsEnterpriseModule.workOrders,
         title: 'Ordens de Serviço',
@@ -1273,92 +1317,88 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.teamManagement204 => buildOperationsEnterpriseSection(
         module: AtlasOperationsEnterpriseModule.teamManagement,
         title: 'Gestão de Equipes',
-        subtitle:
-            'Colaboradores, competências, escalas e distribuição.',
+        subtitle: 'Colaboradores, competências, escalas e distribuição.',
         icon: Icons.groups_outlined,
       ),
       AnimalHubSection.workdayControl205 => buildOperationsEnterpriseSection(
         module: AtlasOperationsEnterpriseModule.workdayControl,
         title: 'Controle de Jornada',
-        subtitle:
-            'Entrada, saída, horas, extras, ausências e aprovação.',
+        subtitle: 'Entrada, saída, horas, extras, ausências e aprovação.',
         icon: Icons.punch_clock_outlined,
       ),
-      AnimalHubSection.machineryManagement206 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.machineryManagement,
-        title: 'Gestão de Máquinas',
-        subtitle:
-            'Máquinas, disponibilidade, uso, operadores e custos.',
-        icon: Icons.agriculture_outlined,
-      ),
-      AnimalHubSection.preventiveMaintenance207 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.preventiveMaintenance,
-        title: 'Manutenção Preventiva',
-        subtitle:
-            'Planos, horímetro, peças, agenda e conformidade.',
-        icon: Icons.build_circle_outlined,
-      ),
-      AnimalHubSection.correctiveMaintenance208 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.correctiveMaintenance,
-        title: 'Manutenção Corretiva',
-        subtitle:
-            'Falhas, diagnóstico, reparos, peças e tempo parado.',
-        icon: Icons.handyman_outlined,
-      ),
-      AnimalHubSection.operationalIndicators209 => buildOperationsEnterpriseSection(
-        module: AtlasOperationsEnterpriseModule.operationalIndicators,
-        title: 'Indicadores Operacionais',
-        subtitle:
-            'Produtividade, prazos, utilização, custos e eficiência.',
-        icon: Icons.insights_outlined,
-      ),
+      AnimalHubSection.machineryManagement206 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.machineryManagement,
+          title: 'Gestão de Máquinas',
+          subtitle: 'Máquinas, disponibilidade, uso, operadores e custos.',
+          icon: Icons.agriculture_outlined,
+        ),
+      AnimalHubSection.preventiveMaintenance207 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.preventiveMaintenance,
+          title: 'Manutenção Preventiva',
+          subtitle: 'Planos, horímetro, peças, agenda e conformidade.',
+          icon: Icons.build_circle_outlined,
+        ),
+      AnimalHubSection.correctiveMaintenance208 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.correctiveMaintenance,
+          title: 'Manutenção Corretiva',
+          subtitle: 'Falhas, diagnóstico, reparos, peças e tempo parado.',
+          icon: Icons.handyman_outlined,
+        ),
+      AnimalHubSection.operationalIndicators209 =>
+        buildOperationsEnterpriseSection(
+          module: AtlasOperationsEnterpriseModule.operationalIndicators,
+          title: 'Indicadores Operacionais',
+          subtitle: 'Produtividade, prazos, utilização, custos e eficiência.',
+          icon: Icons.insights_outlined,
+        ),
       AnimalHubSection.operationsCenter210 => buildOperationsEnterpriseSection(
         module: AtlasOperationsEnterpriseModule.operationsCenter,
         title: 'Central de Operações Atlas',
-        subtitle:
-            'Atividades, equipes, máquinas, ordens e painel executivo.',
+        subtitle: 'Atividades, equipes, máquinas, ordens e painel executivo.',
         icon: Icons.dashboard_outlined,
       ),
-      AnimalHubSection.climateRiskManagement196 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.climateRiskManagement,
-        title: 'Gestão de Riscos Climáticos',
-        subtitle:
-            'Riscos, probabilidade, impacto, mitigação e contingência.',
-        icon: Icons.shield_outlined,
-      ),
-      AnimalHubSection.predictiveClimateSimulations197 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.predictiveClimateSimulations,
-        title: 'Simulações Climáticas Preditivas',
-        subtitle:
-            'Cenários, impacto produtivo e análise de sensibilidade.',
-        icon: Icons.auto_graph_outlined,
-      ),
-      AnimalHubSection.intelligentClimateAlerts198 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.intelligentClimateAlerts,
-        title: 'Alertas Climáticos Inteligentes',
-        subtitle:
-            'Gatilhos, severidade, áreas, ações e encerramento.',
-        icon: Icons.notifications_active_outlined,
-      ),
-      AnimalHubSection.agroclimateDecisionCenter199 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.agroclimateDecisionCenter,
-        title: 'Central de Decisão Agroclimática',
-        subtitle:
-            'Decisões, janelas operacionais, riscos e planos de ação.',
-        icon: Icons.track_changes_outlined,
-      ),
-      AnimalHubSection.climateIntelligenceCenter200 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.climateIntelligenceCenter,
-        title: 'Atlas Climate Intelligence Center',
-        subtitle:
-            'Indicadores, previsões, alertas, cenários e governança.',
-        icon: Icons.dashboard_outlined,
-      ),
+      AnimalHubSection.climateRiskManagement196 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.climateRiskManagement,
+          title: 'Gestão de Riscos Climáticos',
+          subtitle: 'Riscos, probabilidade, impacto, mitigação e contingência.',
+          icon: Icons.shield_outlined,
+        ),
+      AnimalHubSection.predictiveClimateSimulations197 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.predictiveClimateSimulations,
+          title: 'Simulações Climáticas Preditivas',
+          subtitle: 'Cenários, impacto produtivo e análise de sensibilidade.',
+          icon: Icons.auto_graph_outlined,
+        ),
+      AnimalHubSection.intelligentClimateAlerts198 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.intelligentClimateAlerts,
+          title: 'Alertas Climáticos Inteligentes',
+          subtitle: 'Gatilhos, severidade, áreas, ações e encerramento.',
+          icon: Icons.notifications_active_outlined,
+        ),
+      AnimalHubSection.agroclimateDecisionCenter199 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.agroclimateDecisionCenter,
+          title: 'Central de Decisão Agroclimática',
+          subtitle: 'Decisões, janelas operacionais, riscos e planos de ação.',
+          icon: Icons.track_changes_outlined,
+        ),
+      AnimalHubSection.climateIntelligenceCenter200 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.climateIntelligenceCenter,
+          title: 'Atlas Climate Intelligence Center',
+          subtitle: 'Indicadores, previsões, alertas, cenários e governança.',
+          icon: Icons.dashboard_outlined,
+        ),
       AnimalHubSection.climateIntelligence191 => buildClimateEnterpriseSection(
         module: AtlasClimateEnterpriseModule.climateIntelligence,
         title: 'Inteligência Climática',
-        subtitle:
-            'Contexto, histórico, tendências, impactos e recomendações.',
+        subtitle: 'Contexto, histórico, tendências, impactos e recomendações.',
         icon: Icons.cloud_outlined,
       ),
       AnimalHubSection.advancedMeteorology192 => buildClimateEnterpriseSection(
@@ -1368,90 +1408,93 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             'Temperatura, chuva, vento, pressão, evapotranspiração e previsão.',
         icon: Icons.thunderstorm_outlined,
       ),
-      AnimalHubSection.intelligentForagePlanning193 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.intelligentForagePlanning,
-        title: 'Planejamento Forrageiro Inteligente',
-        subtitle:
-            'Demanda, oferta, sazonalidade, reserva e plano por período.',
-        icon: Icons.grass_outlined,
-      ),
+      AnimalHubSection.intelligentForagePlanning193 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.intelligentForagePlanning,
+          title: 'Planejamento Forrageiro Inteligente',
+          subtitle:
+              'Demanda, oferta, sazonalidade, reserva e plano por período.',
+          icon: Icons.grass_outlined,
+        ),
       AnimalHubSection.aiPastureManagement194 => buildClimateEnterpriseSection(
         module: AtlasClimateEnterpriseModule.aiPastureManagement,
         title: 'Gestão de Pastagens com IA',
-        subtitle:
-            'Condição, lotação, entrada, saída, descanso e ações.',
+        subtitle: 'Condição, lotação, entrada, saída, descanso e ações.',
         icon: Icons.eco_outlined,
       ),
-      AnimalHubSection.climateEnvironmentalIndicators195 => buildClimateEnterpriseSection(
-        module: AtlasClimateEnterpriseModule.climateEnvironmentalIndicators,
-        title: 'Indicadores Climáticos e Ambientais',
-        subtitle:
-            'Índice térmico, balanço hídrico, chuva, solo e pressão ambiental.',
-        icon: Icons.analytics_outlined,
-      ),
-      AnimalHubSection.carbonFootprint181 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.carbonFootprint,
-        title: 'Pegada de Carbono',
-        subtitle:
-            'Fontes, emissões, compensações e metas de redução.',
-        icon: Icons.cloud_outlined,
-      ),
-      AnimalHubSection.greenhouseGasInventory182 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.greenhouseGasInventory,
-        title: 'Inventário de Gases de Efeito Estufa',
-        subtitle:
-            'Escopos, fatores de emissão e relatório consolidado.',
-        icon: Icons.co2_outlined,
-      ),
-      AnimalHubSection.waterManagement183 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.waterManagement,
-        title: 'Gestão Hídrica',
-        subtitle:
-            'Captação, consumo, qualidade, reuso e eficiência.',
-        icon: Icons.water_drop_outlined,
-      ),
-      AnimalHubSection.energyEfficiency184 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.energyEfficiency,
-        title: 'Eficiência Energética',
-        subtitle:
-            'Consumo, fontes renováveis, eficiência e redução.',
-        icon: Icons.bolt_outlined,
-      ),
-      AnimalHubSection.wasteManagement185 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.wasteManagement,
-        title: 'Gestão de Resíduos',
-        subtitle:
-            'Resíduos, destinação, riscos e economia circular.',
-        icon: Icons.recycling_outlined,
-      ),
+      AnimalHubSection.climateEnvironmentalIndicators195 =>
+        buildClimateEnterpriseSection(
+          module: AtlasClimateEnterpriseModule.climateEnvironmentalIndicators,
+          title: 'Indicadores Climáticos e Ambientais',
+          subtitle:
+              'Índice térmico, balanço hídrico, chuva, solo e pressão ambiental.',
+          icon: Icons.analytics_outlined,
+        ),
+      AnimalHubSection.carbonFootprint181 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.carbonFootprint,
+          title: 'Pegada de Carbono',
+          subtitle: 'Fontes, emissões, compensações e metas de redução.',
+          icon: Icons.cloud_outlined,
+        ),
+      AnimalHubSection.greenhouseGasInventory182 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.greenhouseGasInventory,
+          title: 'Inventário de Gases de Efeito Estufa',
+          subtitle: 'Escopos, fatores de emissão e relatório consolidado.',
+          icon: Icons.co2_outlined,
+        ),
+      AnimalHubSection.waterManagement183 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.waterManagement,
+          title: 'Gestão Hídrica',
+          subtitle: 'Captação, consumo, qualidade, reuso e eficiência.',
+          icon: Icons.water_drop_outlined,
+        ),
+      AnimalHubSection.energyEfficiency184 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.energyEfficiency,
+          title: 'Eficiência Energética',
+          subtitle: 'Consumo, fontes renováveis, eficiência e redução.',
+          icon: Icons.bolt_outlined,
+        ),
+      AnimalHubSection.wasteManagement185 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.wasteManagement,
+          title: 'Gestão de Resíduos',
+          subtitle: 'Resíduos, destinação, riscos e economia circular.',
+          icon: Icons.recycling_outlined,
+        ),
       AnimalHubSection.biodiversity186 => buildSustainabilityEnterpriseSection(
         module: AtlasSustainabilityEnterpriseModule.biodiversity,
         title: 'Biodiversidade',
-        subtitle:
-            'Áreas, espécies, corredores, riscos e conservação.',
+        subtitle: 'Áreas, espécies, corredores, riscos e conservação.',
         icon: Icons.eco_outlined,
       ),
-      AnimalHubSection.environmentalCompliance187 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.environmentalCompliance,
-        title: 'Conformidade Ambiental',
-        subtitle:
-            'Licenças, condicionantes, prazos, evidências e não conformidades.',
-        icon: Icons.rule_outlined,
-      ),
-      AnimalHubSection.sustainabilityCertifications188 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.sustainabilityCertifications,
-        title: 'Certificações de Sustentabilidade',
-        subtitle:
-            'Certificações, requisitos, auditorias, validade e adequação.',
-        icon: Icons.workspace_premium_outlined,
-      ),
-      AnimalHubSection.sustainableTraceability189 => buildSustainabilityEnterpriseSection(
-        module: AtlasSustainabilityEnterpriseModule.sustainableTraceability,
-        title: 'Rastreabilidade Sustentável',
-        subtitle:
-            'Origem, cadeia, evidências, fornecedores e destino.',
-        icon: Icons.route_outlined,
-      ),
+      AnimalHubSection.environmentalCompliance187 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.environmentalCompliance,
+          title: 'Conformidade Ambiental',
+          subtitle:
+              'Licenças, condicionantes, prazos, evidências e não conformidades.',
+          icon: Icons.rule_outlined,
+        ),
+      AnimalHubSection.sustainabilityCertifications188 =>
+        buildSustainabilityEnterpriseSection(
+          module:
+              AtlasSustainabilityEnterpriseModule.sustainabilityCertifications,
+          title: 'Certificações de Sustentabilidade',
+          subtitle:
+              'Certificações, requisitos, auditorias, validade e adequação.',
+          icon: Icons.workspace_premium_outlined,
+        ),
+      AnimalHubSection.sustainableTraceability189 =>
+        buildSustainabilityEnterpriseSection(
+          module: AtlasSustainabilityEnterpriseModule.sustainableTraceability,
+          title: 'Rastreabilidade Sustentável',
+          subtitle: 'Origem, cadeia, evidências, fornecedores e destino.',
+          icon: Icons.route_outlined,
+        ),
       AnimalHubSection.esgCenter190 => buildSustainabilityEnterpriseSection(
         module: AtlasSustainabilityEnterpriseModule.esgCenter,
         title: 'Central ESG',
@@ -1462,38 +1505,37 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.premiumCrm171 => buildCommercialEnterpriseSection(
         module: AtlasCommercialEnterpriseModule.premiumCrm,
         title: 'CRM Premium',
-        subtitle:
-            'Leads, interações, tarefas, segmentação e histórico.',
+        subtitle: 'Leads, interações, tarefas, segmentação e histórico.',
         icon: Icons.contacts_outlined,
       ),
-      AnimalHubSection.intelligentPipeline172 => buildCommercialEnterpriseSection(
-        module: AtlasCommercialEnterpriseModule.intelligentPipeline,
-        title: 'Pipeline Inteligente',
-        subtitle:
-            'Etapas, probabilidade, valor, próxima ação e previsão.',
-        icon: Icons.filter_alt_outlined,
-      ),
+      AnimalHubSection.intelligentPipeline172 =>
+        buildCommercialEnterpriseSection(
+          module: AtlasCommercialEnterpriseModule.intelligentPipeline,
+          title: 'Pipeline Inteligente',
+          subtitle: 'Etapas, probabilidade, valor, próxima ação e previsão.',
+          icon: Icons.filter_alt_outlined,
+        ),
       AnimalHubSection.digitalContracts173 => buildCommercialEnterpriseSection(
         module: AtlasCommercialEnterpriseModule.digitalContracts,
         title: 'Contratos Digitais',
-        subtitle:
-            'Minutas, partes, versões, aprovação, vigência e renovação.',
+        subtitle: 'Minutas, partes, versões, aprovação, vigência e renovação.',
         icon: Icons.description_outlined,
       ),
-      AnimalHubSection.electronicSignature174 => buildCommercialEnterpriseSection(
-        module: AtlasCommercialEnterpriseModule.electronicSignature,
-        title: 'Assinatura Eletrônica',
-        subtitle:
-            'Signatários, ordem, envio, evidências e auditoria.',
-        icon: Icons.draw_outlined,
-      ),
-      AnimalHubSection.customerManagement175 => buildCommercialEnterpriseSection(
-        module: AtlasCommercialEnterpriseModule.customerManagement,
-        title: 'Gestão de Clientes',
-        subtitle:
-            'Cadastro, classificação, documentos, preferências e risco.',
-        icon: Icons.groups_outlined,
-      ),
+      AnimalHubSection.electronicSignature174 =>
+        buildCommercialEnterpriseSection(
+          module: AtlasCommercialEnterpriseModule.electronicSignature,
+          title: 'Assinatura Eletrônica',
+          subtitle: 'Signatários, ordem, envio, evidências e auditoria.',
+          icon: Icons.draw_outlined,
+        ),
+      AnimalHubSection.customerManagement175 =>
+        buildCommercialEnterpriseSection(
+          module: AtlasCommercialEnterpriseModule.customerManagement,
+          title: 'Gestão de Clientes',
+          subtitle:
+              'Cadastro, classificação, documentos, preferências e risco.',
+          icon: Icons.groups_outlined,
+        ),
       AnimalHubSection.afterSales176 => buildCommercialEnterpriseSection(
         module: AtlasCommercialEnterpriseModule.afterSales,
         title: 'Pós-venda',
@@ -1501,25 +1543,26 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             'Acompanhamento, solicitações, satisfação, renovação e expansão.',
         icon: Icons.support_agent_outlined,
       ),
-      AnimalHubSection.commercialIndicators177 => buildCommercialEnterpriseSection(
-        module: AtlasCommercialEnterpriseModule.commercialIndicators,
-        title: 'Indicadores Comerciais',
-        subtitle:
-            'Receita, ticket, conversão, ciclo e previsão versus realizado.',
-        icon: Icons.insights_outlined,
-      ),
-      AnimalHubSection.servicesMarketplace178 => buildCommercialEnterpriseSection(
-        module: AtlasCommercialEnterpriseModule.servicesMarketplace,
-        title: 'Marketplace de Serviços',
-        subtitle:
-            'Oferta, solicitações, propostas, contratações e avaliações.',
-        icon: Icons.storefront_outlined,
-      ),
+      AnimalHubSection.commercialIndicators177 =>
+        buildCommercialEnterpriseSection(
+          module: AtlasCommercialEnterpriseModule.commercialIndicators,
+          title: 'Indicadores Comerciais',
+          subtitle:
+              'Receita, ticket, conversão, ciclo e previsão versus realizado.',
+          icon: Icons.insights_outlined,
+        ),
+      AnimalHubSection.servicesMarketplace178 =>
+        buildCommercialEnterpriseSection(
+          module: AtlasCommercialEnterpriseModule.servicesMarketplace,
+          title: 'Marketplace de Serviços',
+          subtitle:
+              'Oferta, solicitações, propostas, contratações e avaliações.',
+          icon: Icons.storefront_outlined,
+        ),
       AnimalHubSection.auctions179 => buildCommercialEnterpriseSection(
         module: AtlasCommercialEnterpriseModule.auctions,
         title: 'Leilões',
-        subtitle:
-            'Eventos, lotes, lances, arremates e liquidação.',
+        subtitle: 'Eventos, lotes, lances, arremates e liquidação.',
         icon: Icons.gavel_outlined,
       ),
       AnimalHubSection.commercialCenter180 => buildCommercialEnterpriseSection(
@@ -1532,127 +1575,111 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.projectedCashFlow161 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.projectedCashFlow,
         title: 'Fluxo Financeiro Projetado',
-        subtitle:
-            'Receitas, despesas, saldos, caixa e alertas de liquidez.',
+        subtitle: 'Receitas, despesas, saldos, caixa e alertas de liquidez.',
         icon: Icons.trending_up_outlined,
       ),
       AnimalHubSection.consolidatedCashFlow162 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.consolidatedCashFlow,
         title: 'Fluxo Financeiro Consolidado',
-        subtitle:
-            'Empresas, fazendas, entradas, saídas e liquidez.',
+        subtitle: 'Empresas, fazendas, entradas, saídas e liquidez.',
         icon: Icons.account_balance_wallet_outlined,
       ),
       AnimalHubSection.annualBudget163 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.annualBudget,
         title: 'Orçamento Anual',
-        subtitle:
-            'Premissas, receitas, custos, investimentos e revisões.',
+        subtitle: 'Premissas, receitas, custos, investimentos e revisões.',
         icon: Icons.event_note_outlined,
       ),
       AnimalHubSection.actualVsPlanned164 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.actualVsPlanned,
         title: 'Realizado versus Planejado',
-        subtitle:
-            'Realizado, planejado, desvios e plano corretivo.',
+        subtitle: 'Realizado, planejado, desvios e plano corretivo.',
         icon: Icons.compare_arrows_outlined,
       ),
       AnimalHubSection.economicSimulations165 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.economicSimulations,
         title: 'Simulações Econômicas',
-        subtitle:
-            'Cenários, sensibilidade e ponto de equilíbrio.',
+        subtitle: 'Cenários, sensibilidade e ponto de equilíbrio.',
         icon: Icons.analytics_outlined,
       ),
       AnimalHubSection.bankingIndicators166 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.bankingIndicators,
         title: 'Indicadores Bancários',
-        subtitle:
-            'Endividamento, pagamento, cobertura, garantias e bancos.',
+        subtitle: 'Endividamento, pagamento, cobertura, garantias e bancos.',
         icon: Icons.account_balance_outlined,
       ),
       AnimalHubSection.roi167 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.roi,
         title: 'Retorno sobre Investimento',
-        subtitle:
-            'Investimento, retorno, prazo, ROI e alternativas.',
+        subtitle: 'Investimento, retorno, prazo, ROI e alternativas.',
         icon: Icons.percent_outlined,
       ),
       AnimalHubSection.ebitda168 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.ebitda,
         title: 'EBITDA',
-        subtitle:
-            'Receita, custos, despesas, EBITDA e margem.',
+        subtitle: 'Receita, custos, despesas, EBITDA e margem.',
         icon: Icons.bar_chart_outlined,
       ),
       AnimalHubSection.assetValuation169 => buildFinanceEnterpriseSection(
         module: AtlasFinanceEnterpriseModule.assetValuation,
         title: 'Valor Patrimonial',
-        subtitle:
-            'Terra, rebanho, máquinas, estoques e patrimônio.',
+        subtitle: 'Terra, rebanho, máquinas, estoques e patrimônio.',
         icon: Icons.home_work_outlined,
       ),
-      AnimalHubSection.enterpriseFinanceCenter170 => buildFinanceEnterpriseSection(
-        module: AtlasFinanceEnterpriseModule.enterpriseFinanceCenter,
-        title: 'Enterprise Finance Center',
-        subtitle:
-            'Indicadores, alertas, prioridades, cenários e painel.',
-        icon: Icons.dashboard_outlined,
-      ),
+      AnimalHubSection.enterpriseFinanceCenter170 =>
+        buildFinanceEnterpriseSection(
+          module: AtlasFinanceEnterpriseModule.enterpriseFinanceCenter,
+          title: 'Enterprise Finance Center',
+          subtitle: 'Indicadores, alertas, prioridades, cenários e painel.',
+          icon: Icons.dashboard_outlined,
+        ),
       AnimalHubSection.weightPrediction151 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.weightPrediction,
         title: 'Predição de Peso',
-        subtitle:
-            'Peso atual, curva, projeção, data-alvo, desvio e confiança.',
+        subtitle: 'Peso atual, curva, projeção, data-alvo, desvio e confiança.',
         icon: Icons.monitor_weight_outlined,
       ),
       AnimalHubSection.dailyGainPrediction152 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.dailyGainPrediction,
         title: 'Predição de Ganho Diário',
-        subtitle:
-            'GMD observado, projetado, tendência, meta e alertas.',
+        subtitle: 'GMD observado, projetado, tendência, meta e alertas.',
         icon: Icons.trending_up_outlined,
       ),
       AnimalHubSection.estimatedIntake153 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.estimatedIntake,
         title: 'Consumo Estimado',
-        subtitle:
-            'Matéria seca, peso vivo, alimento, estimativa e desvios.',
+        subtitle: 'Matéria seca, peso vivo, alimento, estimativa e desvios.',
         icon: Icons.restaurant_outlined,
       ),
       AnimalHubSection.feedEfficiency154 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.feedEfficiency,
         title: 'Eficiência Alimentar',
-        subtitle:
-            'Ganho, consumo, eficiência, comparação, tendência e classe.',
+        subtitle: 'Ganho, consumo, eficiência, comparação, tendência e classe.',
         icon: Icons.speed_outlined,
       ),
       AnimalHubSection.feedConversion155 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.feedConversion,
         title: 'Conversão Alimentar',
-        subtitle:
-            'Conversão, projeção, meta, custo e alertas.',
+        subtitle: 'Conversão, projeção, meta, custo e alertas.',
         icon: Icons.compare_arrows_outlined,
       ),
       AnimalHubSection.animalWelfare156 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.animalWelfare,
         title: 'Bem-estar Animal',
-        subtitle:
-            'Comportamento, locomoção, conforto, interação e score.',
-        icon: Icons.pets_outlined,
+        subtitle: 'Comportamento, locomoção, conforto, interação e score.',
+        icon: AtlasLivestockIcons.cow,
       ),
-      AnimalHubSection.earlyDiseaseDetection157 => buildPrecisionLivestockSection(
-        module: AtlasPrecisionLivestockModule.earlyDiseaseDetection,
-        title: 'Detecção Precoce de Doenças',
-        subtitle:
-            'Sinais, comportamento, consumo, triagem e encaminhamento.',
-        icon: Icons.health_and_safety_outlined,
-      ),
+      AnimalHubSection.earlyDiseaseDetection157 =>
+        buildPrecisionLivestockSection(
+          module: AtlasPrecisionLivestockModule.earlyDiseaseDetection,
+          title: 'Detecção Precoce de Doenças',
+          subtitle: 'Sinais, comportamento, consumo, triagem e encaminhamento.',
+          icon: Icons.health_and_safety_outlined,
+        ),
       AnimalHubSection.heatStress158 => buildPrecisionLivestockSection(
         module: AtlasPrecisionLivestockModule.heatStress,
         title: 'Estresse Térmico',
-        subtitle:
-            'Clima, índice térmico, risco, comportamento e prevenção.',
+        subtitle: 'Clima, índice térmico, risco, comportamento e prevenção.',
         icon: Icons.device_thermostat_outlined,
       ),
       AnimalHubSection.mortalityRisk159 => buildPrecisionLivestockSection(
@@ -1662,13 +1689,13 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             'Fatores, probabilidade, horizonte, intervenção e acompanhamento.',
         icon: Icons.warning_amber_outlined,
       ),
-      AnimalHubSection.generalEfficiencyIndex160 => buildPrecisionLivestockSection(
-        module: AtlasPrecisionLivestockModule.generalEfficiencyIndex,
-        title: 'Índice Geral de Eficiência',
-        subtitle:
-            'Peso, consumo, sanidade, clima e score consolidado.',
-        icon: Icons.dashboard_outlined,
-      ),
+      AnimalHubSection.generalEfficiencyIndex160 =>
+        buildPrecisionLivestockSection(
+          module: AtlasPrecisionLivestockModule.generalEfficiencyIndex,
+          title: 'Índice Geral de Eficiência',
+          subtitle: 'Peso, consumo, sanidade, clima e score consolidado.',
+          icon: Icons.dashboard_outlined,
+        ),
       AnimalHubSection.advancedIatf141 => buildReproductivePremiumSection(
         module: AtlasReproductivePremiumModule.advancedIatf,
         title: 'IATF Avançada',
@@ -1676,13 +1703,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             'Protocolos, elegibilidade, cronograma, inseminação e resultados.',
         icon: Icons.event_repeat_outlined,
       ),
-      AnimalHubSection.individualFertility142 => buildReproductivePremiumSection(
-        module: AtlasReproductivePremiumModule.individualFertility,
-        title: 'Fertilidade Individual',
-        subtitle:
-            'Histórico, concepção, intervalos, risco e score individual.',
-        icon: Icons.favorite_border_outlined,
-      ),
+      AnimalHubSection.individualFertility142 =>
+        buildReproductivePremiumSection(
+          module: AtlasReproductivePremiumModule.individualFertility,
+          title: 'Fertilidade Individual',
+          subtitle:
+              'Histórico, concepção, intervalos, risco e score individual.',
+          icon: Icons.favorite_border_outlined,
+        ),
       AnimalHubSection.embryos143 => buildReproductivePremiumSection(
         module: AtlasReproductivePremiumModule.embryos,
         title: 'Gestão de Embriões',
@@ -1693,8 +1721,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.ivf144 => buildReproductivePremiumSection(
         module: AtlasReproductivePremiumModule.ivf,
         title: 'Fertilização in Vitro',
-        subtitle:
-            'Aspiração, oócitos, fertilização, cultivo e laboratório.',
+        subtitle: 'Aspiração, oócitos, fertilização, cultivo e laboratório.',
         icon: Icons.biotech_outlined,
       ),
       AnimalHubSection.embryoTransfer145 => buildReproductivePremiumSection(
@@ -1721,15 +1748,13 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.geneticPrediction148 => buildReproductivePremiumSection(
         module: AtlasReproductivePremiumModule.geneticPrediction,
         title: 'Predição Genética',
-        subtitle:
-            'DEP, PTA, índices, progênie, confiança e cenários.',
+        subtitle: 'DEP, PTA, índices, progênie, confiança e cenários.',
         icon: Icons.auto_graph_outlined,
       ),
       AnimalHubSection.continuousBreeding149 => buildReproductivePremiumSection(
         module: AtlasReproductivePremiumModule.continuousBreeding,
         title: 'Melhoramento Contínuo',
-        subtitle:
-            'Metas, evolução, seleção, descarte e ganho genético.',
+        subtitle: 'Metas, evolução, seleção, descarte e ganho genético.',
         icon: Icons.trending_up_outlined,
       ),
       AnimalHubSection.reproductiveCenter150 => buildReproductivePremiumSection(
@@ -1749,8 +1774,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.smartPaddocks132 => buildGeospatialSection(
         module: AtlasGeospatialModule.smartPaddocks,
         title: 'Piquetes Inteligentes',
-        subtitle:
-            'Áreas, capacidade, forragem, lotação e alertas.',
+        subtitle: 'Áreas, capacidade, forragem, lotação e alertas.',
         icon: Icons.grid_on_outlined,
       ),
       AnimalHubSection.automaticRotation133 => buildGeospatialSection(
@@ -1763,57 +1787,49 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.pasturePlanning134 => buildGeospatialSection(
         module: AtlasGeospatialModule.pasturePlanning,
         title: 'Planejamento de Pastagens',
-        subtitle:
-            'Forrageiras, calendário, reforma, adubação e metas.',
+        subtitle: 'Forrageiras, calendário, reforma, adubação e metas.',
         icon: Icons.grass_outlined,
       ),
       AnimalHubSection.ndvi135 => buildGeospatialSection(
         module: AtlasGeospatialModule.ndvi,
         title: 'Inteligência NDVI',
-        subtitle:
-            'Índices, mapas, comparativos, anomalias e cobertura.',
+        subtitle: 'Índices, mapas, comparativos, anomalias e cobertura.',
         icon: Icons.eco_outlined,
       ),
       AnimalHubSection.biomass136 => buildGeospatialSection(
         module: AtlasGeospatialModule.biomass,
         title: 'Estimativa de Biomassa',
-        subtitle:
-            'Forragem, matéria seca, oferta, tendência e campo.',
+        subtitle: 'Forragem, matéria seca, oferta, tendência e campo.',
         icon: Icons.stacked_line_chart_outlined,
       ),
       AnimalHubSection.soil137 => buildGeospatialSection(
         module: AtlasGeospatialModule.soil,
         title: 'Inteligência de Solo',
-        subtitle:
-            'Amostras, fertilidade, textura, correção e zonas.',
+        subtitle: 'Amostras, fertilidade, textura, correção e zonas.',
         icon: Icons.landscape_outlined,
       ),
       AnimalHubSection.slope138 => buildGeospatialSection(
         module: AtlasGeospatialModule.slope,
         title: 'Análise de Declividade',
-        subtitle:
-            'Classes, erosão, acesso, uso e restrições.',
+        subtitle: 'Classes, erosão, acesso, uso e restrições.',
         icon: Icons.terrain_outlined,
       ),
       AnimalHubSection.irrigation139 => buildGeospatialSection(
         module: AtlasGeospatialModule.irrigation,
         title: 'Gestão de Irrigação',
-        subtitle:
-            'Setores, lâmina, demanda, programação e eficiência.',
+        subtitle: 'Setores, lâmina, demanda, programação e eficiência.',
         icon: Icons.water_outlined,
       ),
       AnimalHubSection.territorialPlanning140 => buildGeospatialSection(
         module: AtlasGeospatialModule.territorialPlanning,
         title: 'Planejamento Territorial',
-        subtitle:
-            'Zoneamento, infraestrutura, produção, proteção e cenários.',
+        subtitle: 'Zoneamento, infraestrutura, produção, proteção e cenários.',
         icon: Icons.account_tree_outlined,
       ),
       AnimalHubSection.smartScales121 => buildIotSection(
         module: AtlasIotModule.smartScales,
         title: 'Integração com Balanças',
-        subtitle:
-            'Balanças, leituras, calibração, sincronização e alertas.',
+        subtitle: 'Balanças, leituras, calibração, sincronização e alertas.',
         icon: Icons.monitor_weight_outlined,
       ),
       AnimalHubSection.rfidTags122 => buildIotSection(
@@ -1833,78 +1849,67 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.environmentalSensors124 => buildIotSection(
         module: AtlasIotModule.environmentalSensors,
         title: 'Sensores Ambientais',
-        subtitle:
-            'Temperatura, umidade, ar, conforto e alertas.',
+        subtitle: 'Temperatura, umidade, ar, conforto e alertas.',
         icon: Icons.device_thermostat_outlined,
       ),
       AnimalHubSection.waterSensors125 => buildIotSection(
         module: AtlasIotModule.waterSensors,
         title: 'Sensores de Água',
-        subtitle:
-            'Nível, vazão, qualidade, consumo e abastecimento.',
+        subtitle: 'Nível, vazão, qualidade, consumo e abastecimento.',
         icon: Icons.water_drop_outlined,
       ),
       AnimalHubSection.conversationalAssistant111 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.conversationalAssistant,
         title: 'Assistente Atlas IA',
-        subtitle:
-            'Perguntas, comandos, resumos, sugestões e histórico.',
+        subtitle: 'Perguntas, comandos, resumos, sugestões e histórico.',
         icon: Icons.smart_toy_outlined,
       ),
       AnimalHubSection.farmContextChat112 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.farmContextChat,
         title: 'Chat Contextual da Fazenda',
-        subtitle:
-            'Contexto da propriedade, rebanho, animal, memória e fontes.',
+        subtitle: 'Contexto da propriedade, rebanho, animal, memória e fontes.',
         icon: Icons.forum_outlined,
       ),
       AnimalHubSection.healthDecisionSupport113 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.healthDecisionSupport,
         title: 'IA de Apoio Sanitário',
-        subtitle:
-            'Sinais, triagem, prioridade, evidências e encaminhamento.',
+        subtitle: 'Sinais, triagem, prioridade, evidências e encaminhamento.',
         icon: Icons.health_and_safety_outlined,
       ),
       AnimalHubSection.reproductiveIntelligence114 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.reproductiveIntelligence,
         title: 'IA Reprodutiva',
-        subtitle:
-            'Indicadores, elegibilidade, riscos, agenda e recomendações.',
+        subtitle: 'Indicadores, elegibilidade, riscos, agenda e recomendações.',
         icon: Icons.favorite_outline,
       ),
       AnimalHubSection.nutritionalIntelligence115 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.nutritionalIntelligence,
         title: 'IA Nutricional',
-        subtitle:
-            'Demanda, consumo, alimento, custo e ajustes.',
+        subtitle: 'Demanda, consumo, alimento, custo e ajustes.',
         icon: Icons.restaurant_outlined,
       ),
       AnimalHubSection.geneticIntelligence116 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.geneticIntelligence,
         title: 'IA Genética',
-        subtitle:
-            'Seleção, genealogia, indicadores, acasalamentos e risco.',
+        subtitle: 'Seleção, genealogia, indicadores, acasalamentos e risco.',
         icon: Icons.schema_outlined,
       ),
       AnimalHubSection.financialIntelligence117 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.financialIntelligence,
         title: 'IA Financeira',
-        subtitle:
-            'Resultados, desvios, projeções, riscos e recomendações.',
+        subtitle: 'Resultados, desvios, projeções, riscos e recomendações.',
         icon: Icons.savings_outlined,
       ),
       AnimalHubSection.strategicIntelligence118 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.strategicIntelligence,
         title: 'IA Estratégica',
-        subtitle:
-            'Objetivos, prioridades, cenários, riscos e plano de ação.',
+        subtitle: 'Objetivos, prioridades, cenários, riscos e plano de ação.',
         icon: Icons.track_changes_outlined,
       ),
       AnimalHubSection.climateIntelligence119 => buildAdvancedAiSection(
         module: AtlasAdvancedAiModule.climateIntelligence,
         title: 'IA Climática Integrada',
-        subtitle:
-            'Clima, risco térmico, janelas, pastagens e alertas.',
+        subtitle: 'Clima, risco térmico, janelas, pastagens e alertas.',
         icon: Icons.cloud_outlined,
       ),
       AnimalHubSection.explainableAi120 => buildAdvancedAiSection(
@@ -1917,71 +1922,61 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.accessControl101 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.accessControl,
         title: 'Usuários e Perfis Enterprise',
-        subtitle:
-            'Usuários, funções, permissões, sessões e auditoria.',
+        subtitle: 'Usuários, funções, permissões, sessões e auditoria.',
         icon: Icons.admin_panel_settings_outlined,
       ),
       AnimalHubSection.multiCompany102 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.multiCompany,
         title: 'Multiempresa',
-        subtitle:
-            'Empresas, unidades, vínculos, configurações e consolidação.',
+        subtitle: 'Empresas, unidades, vínculos, configurações e consolidação.',
         icon: Icons.apartment_outlined,
       ),
       AnimalHubSection.multiFarm103 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.multiFarm,
         title: 'Multifazenda',
-        subtitle:
-            'Fazendas, acessos, configurações e comparativos.',
+        subtitle: 'Fazendas, acessos, configurações e comparativos.',
         icon: Icons.agriculture_outlined,
       ),
       AnimalHubSection.subscriptions104 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.subscriptions,
         title: 'Planos e Assinaturas',
-        subtitle:
-            'Planos, períodos, renovação, upgrade e cancelamento.',
+        subtitle: 'Planos, períodos, renovação, upgrade e cancelamento.',
         icon: Icons.workspace_premium_outlined,
       ),
       AnimalHubSection.billing105 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.billing,
         title: 'Cobrança e Billing',
-        subtitle:
-            'Faturas, cobranças, recebimentos e conciliação.',
+        subtitle: 'Faturas, cobranças, recebimentos e conciliação.',
         icon: Icons.receipt_long_outlined,
       ),
       AnimalHubSection.pixPayments106 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.pixPayments,
         title: 'Integração Pix',
-        subtitle:
-            'Chaves, cobranças, QR Code, recebimentos e devoluções.',
+        subtitle: 'Chaves, cobranças, QR Code, recebimentos e devoluções.',
         icon: Icons.qr_code_scanner_outlined,
       ),
       AnimalHubSection.cardPayments107 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.cardPayments,
         title: 'Integração com Cartões',
-        subtitle:
-            'Autorizações, parcelamentos, estornos e chargebacks.',
+        subtitle: 'Autorizações, parcelamentos, estornos e chargebacks.',
         icon: Icons.credit_card_outlined,
       ),
       AnimalHubSection.licensing108 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.licensing,
         title: 'Gestão de Licenças',
-        subtitle:
-            'Licenças, limites, ativações, expiração e bloqueios.',
+        subtitle: 'Licenças, limites, ativações, expiração e bloqueios.',
         icon: Icons.key_outlined,
       ),
       AnimalHubSection.consultantMarketplace109 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.consultantMarketplace,
         title: 'Marketplace de Consultores',
-        subtitle:
-            'Consultores, especialidades, solicitações e avaliações.',
+        subtitle: 'Consultores, especialidades, solicitações e avaliações.',
         icon: Icons.storefront_outlined,
       ),
       AnimalHubSection.producerPortal110 => buildSaasPlatformSection(
         module: AtlasSaasPlatformModule.producerPortal,
         title: 'Portal do Produtor',
-        subtitle:
-            'Painel, suporte, documentos, indicadores e comunicação.',
+        subtitle: 'Painel, suporte, documentos, indicadores e comunicação.',
         icon: Icons.dashboard_outlined,
       ),
       AnimalHubSection.aiOrchestrator99 => buildAutonomousEnterpriseSection(
@@ -1991,81 +1986,73 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             'Decisões, políticas, aprovação humana, execução e aprendizado.',
         icon: Icons.auto_awesome_motion_outlined,
       ),
-      AnimalHubSection.enterpriseReleaseCenter100 => buildAutonomousEnterpriseSection(
-        module: AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter,
-        title: 'Centro de Finalização Enterprise',
-        subtitle:
-            'Produção, testes, segurança, publicação, rollback e suporte.',
-        icon: Icons.rocket_launch_outlined,
-      ),
+      AnimalHubSection.enterpriseReleaseCenter100 =>
+        buildAutonomousEnterpriseSection(
+          module: AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter,
+          title: 'Centro de Finalização Enterprise',
+          subtitle:
+              'Produção, testes, segurança, publicação, rollback e suporte.',
+          icon: Icons.rocket_launch_outlined,
+        ),
       AnimalHubSection.dataGovernance94 => buildPlatformResilienceSection(
         module: AtlasPlatformResilienceModule.dataGovernance,
         title: 'Governança de Dados',
-        subtitle:
-            'Catálogo, qualidade, responsáveis, origem e retenção.',
+        subtitle: 'Catálogo, qualidade, responsáveis, origem e retenção.',
         icon: Icons.dataset_outlined,
       ),
       AnimalHubSection.integrationHub95 => buildPlatformResilienceSection(
         module: AtlasPlatformResilienceModule.integrationHub,
         title: 'Integration Hub',
-        subtitle:
-            'APIs, filas, eventos, mapeamento e sincronização.',
+        subtitle: 'APIs, filas, eventos, mapeamento e sincronização.',
         icon: Icons.hub_outlined,
       ),
       AnimalHubSection.cybersecurity96 => buildPlatformResilienceSection(
         module: AtlasPlatformResilienceModule.cybersecurity,
         title: 'Cibersegurança Atlas',
-        subtitle:
-            'Acessos, riscos, incidentes, controles e resposta.',
+        subtitle: 'Acessos, riscos, incidentes, controles e resposta.',
         icon: Icons.security_outlined,
       ),
       AnimalHubSection.observability97 => buildPlatformResilienceSection(
         module: AtlasPlatformResilienceModule.observability,
         title: 'Observabilidade Enterprise',
-        subtitle:
-            'Métricas, logs, disponibilidade, alertas e SLA.',
+        subtitle: 'Métricas, logs, disponibilidade, alertas e SLA.',
         icon: Icons.monitor_heart_outlined,
       ),
       AnimalHubSection.digitalTwin98 => buildPlatformResilienceSection(
         module: AtlasPlatformResilienceModule.digitalTwin,
         title: 'Gêmeo Digital da Fazenda',
-        subtitle:
-            'Modelo digital, ativos, estados, cenários e sincronização.',
+        subtitle: 'Modelo digital, ativos, estados, cenários e sincronização.',
         icon: Icons.view_in_ar_outlined,
       ),
       AnimalHubSection.enterpriseCrm89 => buildExecutiveIntelligenceSection(
         module: AtlasExecutiveIntelligenceModule.enterpriseCrm,
         title: 'CRM Enterprise',
-        subtitle:
-            'Clientes, visitas, propostas, contratos e rentabilidade.',
+        subtitle: 'Clientes, visitas, propostas, contratos e rentabilidade.',
         icon: Icons.people_alt_outlined,
       ),
       AnimalHubSection.financialCenter90 => buildExecutiveIntelligenceSection(
         module: AtlasExecutiveIntelligenceModule.financialCenter,
         title: 'Central Financeira',
-        subtitle:
-            'Caixa, contas, DRE, centros de custo e forecast.',
+        subtitle: 'Caixa, contas, DRE, centros de custo e forecast.',
         icon: Icons.account_balance_wallet_outlined,
       ),
-      AnimalHubSection.businessIntelligence91 => buildExecutiveIntelligenceSection(
-        module: AtlasExecutiveIntelligenceModule.businessIntelligence,
-        title: 'Business Intelligence',
-        subtitle:
-            'KPIs, dashboards, benchmarks, tendências e drill-down.',
-        icon: Icons.insights_outlined,
-      ),
+      AnimalHubSection.businessIntelligence91 =>
+        buildExecutiveIntelligenceSection(
+          module: AtlasExecutiveIntelligenceModule.businessIntelligence,
+          title: 'Business Intelligence',
+          subtitle: 'KPIs, dashboards, benchmarks, tendências e drill-down.',
+          icon: Icons.insights_outlined,
+        ),
       AnimalHubSection.strategicCenter92 => buildExecutiveIntelligenceSection(
         module: AtlasExecutiveIntelligenceModule.strategicCenter,
         title: 'Central Estratégica Atlas AI',
-        subtitle:
-            'OKRs, metas, riscos, cenários e planos de ação.',
+        subtitle: 'OKRs, metas, riscos, cenários e planos de ação.',
         icon: Icons.track_changes_outlined,
       ),
       AnimalHubSection.commandCenter93 => buildExecutiveIntelligenceSection(
         module: AtlasExecutiveIntelligenceModule.commandCenter,
         title: 'Enterprise Command Center',
-        subtitle:
-            'Saúde global, alertas, prioridades e score Atlas.',
+        subtitle: 'Saúde global, alertas, prioridades e score Atlas.',
         icon: Icons.dashboard_customize_outlined,
       ),
       AnimalHubSection.qualityManagement84 => buildGovernanceOperationSection(
@@ -2078,22 +2065,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.compliance85 => buildGovernanceOperationSection(
         module: AtlasGovernanceOperationModule.compliance,
         title: 'Compliance Enterprise',
-        subtitle:
-            'Políticas, riscos, evidências, adequação e ocorrências.',
+        subtitle: 'Políticas, riscos, evidências, adequação e ocorrências.',
         icon: Icons.policy_outlined,
       ),
       AnimalHubSection.projectPortfolio86 => buildGovernanceOperationSection(
         module: AtlasGovernanceOperationModule.projectPortfolio,
         title: 'Portfólio de Projetos',
-        subtitle:
-            'Demandas, projetos, marcos, orçamento, riscos e benefícios.',
+        subtitle: 'Demandas, projetos, marcos, orçamento, riscos e benefícios.',
         icon: Icons.account_tree_outlined,
       ),
       AnimalHubSection.workforceManagement87 => buildGovernanceOperationSection(
         module: AtlasGovernanceOperationModule.workforceManagement,
         title: 'Gestão de Equipes',
-        subtitle:
-            'Equipes, escalas, metas, feedback e capacidade.',
+        subtitle: 'Equipes, escalas, metas, feedback e capacidade.',
         icon: Icons.groups_outlined,
       ),
       AnimalHubSection.trainingAcademy88 => buildGovernanceOperationSection(
@@ -2106,113 +2090,98 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.procurement79 => buildEnterpriseOperationSection(
         module: AtlasEnterpriseOperationModule.procurement,
         title: 'Compras Enterprise',
-        subtitle:
-            'Requisições, cotações, pedidos, aprovações e recebimento.',
+        subtitle: 'Requisições, cotações, pedidos, aprovações e recebimento.',
         icon: Icons.shopping_cart_checkout_outlined,
       ),
       AnimalHubSection.supplierPortal80 => buildEnterpriseOperationSection(
         module: AtlasEnterpriseOperationModule.supplierPortal,
         title: 'Portal do Fornecedor',
-        subtitle:
-            'Cadastro, homologação, propostas, entregas e desempenho.',
+        subtitle: 'Cadastro, homologação, propostas, entregas e desempenho.',
         icon: Icons.factory_outlined,
       ),
-      AnimalHubSection.inventoryIntelligence81 => buildEnterpriseOperationSection(
-        module: AtlasEnterpriseOperationModule.inventoryIntelligence,
-        title: 'Estoque Inteligente',
-        subtitle:
-            'Saldo, reposição, lotes, inventário e consumo previsto.',
-        icon: Icons.inventory_2_outlined,
-      ),
+      AnimalHubSection.inventoryIntelligence81 =>
+        buildEnterpriseOperationSection(
+          module: AtlasEnterpriseOperationModule.inventoryIntelligence,
+          title: 'Estoque Inteligente',
+          subtitle: 'Saldo, reposição, lotes, inventário e consumo previsto.',
+          icon: Icons.inventory_2_outlined,
+        ),
       AnimalHubSection.maintenance82 => buildEnterpriseOperationSection(
         module: AtlasEnterpriseOperationModule.maintenance,
         title: 'Manutenção de Ativos',
-        subtitle:
-            'Ativos, planos, ordens, peças, custos e disponibilidade.',
+        subtitle: 'Ativos, planos, ordens, peças, custos e disponibilidade.',
         icon: Icons.build_circle_outlined,
       ),
       AnimalHubSection.fieldService83 => buildEnterpriseOperationSection(
         module: AtlasEnterpriseOperationModule.fieldService,
         title: 'Serviços de Campo',
-        subtitle:
-            'Chamados, agenda, checklist, evidências e satisfação.',
+        subtitle: 'Chamados, agenda, checklist, evidências e satisfação.',
         icon: Icons.engineering_outlined,
       ),
       AnimalHubSection.digitalAuction75 => buildCommercialOperationSection(
         module: AtlasCommercialOperationModule.digitalAuction,
         title: 'Leilão Digital',
-        subtitle:
-            'Lotes, lances, comissões, arrematação e documentos.',
+        subtitle: 'Lotes, lances, comissões, arrematação e documentos.',
         icon: Icons.gavel_outlined,
       ),
       AnimalHubSection.livestockLogistics76 => buildCommercialOperationSection(
         module: AtlasCommercialOperationModule.livestockLogistics,
         title: 'Logística Pecuária',
-        subtitle:
-            'Embarque, transportadores, rotas, bem-estar e entrega.',
+        subtitle: 'Embarque, transportadores, rotas, bem-estar e entrega.',
         icon: Icons.local_shipping_outlined,
       ),
       AnimalHubSection.originCertification77 => buildCommercialOperationSection(
         module: AtlasCommercialOperationModule.originCertification,
         title: 'Certificação de Origem',
-        subtitle:
-            'Origem, lote, evidências, auditoria e certificados.',
+        subtitle: 'Origem, lote, evidências, auditoria e certificados.',
         icon: Icons.verified_outlined,
       ),
       AnimalHubSection.ruralCrm78 => buildCommercialOperationSection(
         module: AtlasCommercialOperationModule.ruralCrm,
         title: 'CRM Pecuário',
-        subtitle:
-            'Leads, oportunidades, atividades, fechamento e pós-venda.',
+        subtitle: 'Leads, oportunidades, atividades, fechamento e pós-venda.',
         icon: Icons.handshake_outlined,
       ),
       AnimalHubSection.ruralCredit71 => buildRuralBusinessSection(
         module: AtlasRuralBusinessModule.ruralCredit,
         title: 'Crédito Rural',
-        subtitle:
-            'Linhas, propostas, garantias, parcelas e contratação.',
+        subtitle: 'Linhas, propostas, garantias, parcelas e contratação.',
         icon: Icons.request_quote_outlined,
       ),
       AnimalHubSection.ruralInsurance72 => buildRuralBusinessSection(
         module: AtlasRuralBusinessModule.ruralInsurance,
         title: 'Seguro Rural',
-        subtitle:
-            'Cotações, coberturas, apólices, sinistros e renovações.',
+        subtitle: 'Cotações, coberturas, apólices, sinistros e renovações.',
         icon: Icons.shield_outlined,
       ),
       AnimalHubSection.digitalContracts73 => buildRuralBusinessSection(
         module: AtlasRuralBusinessModule.digitalContracts,
         title: 'Contratos Digitais',
-        subtitle:
-            'Minutas, partes, assinaturas, obrigações e aditivos.',
+        subtitle: 'Minutas, partes, assinaturas, obrigações e aditivos.',
         icon: Icons.draw_outlined,
       ),
       AnimalHubSection.livestockMarketplace74 => buildRuralBusinessSection(
         module: AtlasRuralBusinessModule.livestockMarketplace,
         title: 'Marketplace Pecuário',
-        subtitle:
-            'Anúncios, ofertas, partes, logística e avaliação.',
+        subtitle: 'Anúncios, ofertas, partes, logística e avaliação.',
         icon: Icons.storefront_outlined,
       ),
       AnimalHubSection.receitaFederal67 => buildFinancialIntegrationSection(
         module: AtlasFinancialIntegrationModule.receitaFederal,
         title: 'Receita Federal',
-        subtitle:
-            'Cadastros fiscais, obrigações, declarações e pendências.',
+        subtitle: 'Cadastros fiscais, obrigações, declarações e pendências.',
         icon: Icons.receipt_long_outlined,
       ),
       AnimalHubSection.bancoBrasil68 => buildFinancialIntegrationSection(
         module: AtlasFinancialIntegrationModule.bancoBrasil,
         title: 'Banco do Brasil',
-        subtitle:
-            'Contas, cobranças, pagamentos, conciliação e extratos.',
+        subtitle: 'Contas, cobranças, pagamentos, conciliação e extratos.',
         icon: Icons.account_balance_outlined,
       ),
       AnimalHubSection.pix69 => buildFinancialIntegrationSection(
         module: AtlasFinancialIntegrationModule.pix,
         title: 'Pagamentos Pix',
-        subtitle:
-            'Chaves, cobranças, recebimentos, devoluções e conciliação.',
+        subtitle: 'Chaves, cobranças, recebimentos, devoluções e conciliação.',
         icon: Icons.qr_code_scanner_outlined,
       ),
       AnimalHubSection.nfe70 => buildFinancialIntegrationSection(
@@ -2225,8 +2194,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.sisbov63 => buildOfficialIntegrationSection(
         module: AtlasOfficialIntegrationModule.sisbov,
         title: 'SISBOV Enterprise',
-        subtitle:
-            'Identificação, rastreabilidade, eventos e conformidade.',
+        subtitle: 'Identificação, rastreabilidade, eventos e conformidade.',
         icon: Icons.qr_code_2_outlined,
       ),
       AnimalHubSection.gta64 => buildOfficialIntegrationSection(
@@ -2246,43 +2214,37 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.esocialRural66 => buildOfficialIntegrationSection(
         module: AtlasOfficialIntegrationModule.esocialRural,
         title: 'eSocial Rural',
-        subtitle:
-            'Trabalhadores, eventos, SST, prazos e pendências.',
+        subtitle: 'Trabalhadores, eventos, SST, prazos e pendências.',
         icon: Icons.badge_outlined,
       ),
       AnimalHubSection.drone59 => buildAutomationModuleSection(
         module: AtlasAutomationModule.drone,
         title: 'Drone Enterprise',
-        subtitle:
-            'Voos, contagem, cercas, bebedouros e pastagens.',
+        subtitle: 'Voos, contagem, cercas, bebedouros e pastagens.',
         icon: Icons.flight_takeoff_outlined,
       ),
       AnimalHubSection.iotEnterprise60 => buildAutomationModuleSection(
         module: AtlasAutomationModule.iot,
         title: 'IoT Enterprise',
-        subtitle:
-            'Sensores ambientais, água, ração, colares e Gateway Atlas.',
+        subtitle: 'Sensores ambientais, água, ração, colares e Gateway Atlas.',
         icon: Icons.sensors_outlined,
       ),
       AnimalHubSection.managementAutomation61 => buildAutomationModuleSection(
         module: AtlasAutomationModule.managementAutomation,
         title: 'Automação de Manejos',
-        subtitle:
-            'Manejos, agenda, protocolos, checklists e aprovações.',
+        subtitle: 'Manejos, agenda, protocolos, checklists e aprovações.',
         icon: Icons.precision_manufacturing_outlined,
       ),
       AnimalHubSection.workflow62 => buildAutomationModuleSection(
         module: AtlasAutomationModule.workflow,
         title: 'Workflow Operacional',
-        subtitle:
-            'Fluxos, auditoria, qualidade, Lean e processos.',
+        subtitle: 'Fluxos, auditoria, qualidade, Lean e processos.',
         icon: Icons.account_tree_outlined,
       ),
       AnimalHubSection.climateAi56 => buildEnvironmentalAiModuleSection(
         module: AtlasEnvironmentalAiModule.climate,
         title: 'IA Climática',
-        subtitle:
-            'Clima, impactos produtivos e plano preventivo.',
+        subtitle: 'Clima, impactos produtivos e plano preventivo.',
         icon: Icons.cloud_outlined,
       ),
       AnimalHubSection.pastureAi57 => buildEnvironmentalAiModuleSection(
@@ -2295,78 +2257,67 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       AnimalHubSection.satellite58 => buildEnvironmentalAiModuleSection(
         module: AtlasEnvironmentalAiModule.satellite,
         title: 'Monitoramento por Satélite',
-        subtitle:
-            'Sentinel, NDVI, biomassa, umidade e alertas.',
+        subtitle: 'Sentinel, NDVI, biomassa, umidade e alertas.',
         icon: Icons.satellite_alt_outlined,
       ),
       AnimalHubSection.nutritionalAi53 => buildPredictiveAiModuleSection(
         module: AtlasPredictiveAiModule.nutrition,
         title: 'IA Nutricional',
-        subtitle:
-            'Dietas, peso, consumo, eficiência e alertas de desperdício.',
+        subtitle: 'Dietas, peso, consumo, eficiência e alertas de desperdício.',
         icon: Icons.restaurant_outlined,
       ),
       AnimalHubSection.economicAi54 => buildPredictiveAiModuleSection(
         module: AtlasPredictiveAiModule.economics,
         title: 'IA Econômica',
-        subtitle:
-            'Lucro, fluxo de caixa, simulações, payback e ROI.',
+        subtitle: 'Lucro, fluxo de caixa, simulações, payback e ROI.',
         icon: Icons.account_balance_wallet_outlined,
       ),
       AnimalHubSection.commercialAi55 => buildPredictiveAiModuleSection(
         module: AtlasPredictiveAiModule.commercialization,
         title: 'IA de Comercialização',
-        subtitle:
-            'Preço, momento de venda, compradores e negociação.',
+        subtitle: 'Preço, momento de venda, compradores e negociação.',
         icon: Icons.sell_outlined,
       ),
-      AnimalHubSection.reproductiveAi52 =>
-        _enterpriseLaunchSection(
-          title: 'IA Reprodutiva',
-          subtitle:
-              'Predição de cio, prenhez, parto e sucesso da IATF.',
-          icon: Icons.favorite_outline,
-          button: 'Abrir Pacote 52',
-          screen: AtlasReproductiveAiScreen(
-            animal: animal,
-            farm: farm,
-            group: group,
-          ),
+      AnimalHubSection.reproductiveAi52 => _enterpriseLaunchSection(
+        title: 'IA Reprodutiva',
+        subtitle: 'Predição de cio, prenhez, parto e sucesso da IATF.',
+        icon: Icons.favorite_outline,
+        button: 'Abrir Pacote 52',
+        screen: AtlasReproductiveAiScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
         ),
-      AnimalHubSection.veterinaryAi51 =>
-        _enterpriseLaunchSection(
-          title: 'IA Veterinária',
-          subtitle:
-              'Triagem, avaliação de sinais, hipóteses e próximos exames.',
-          icon: Icons.medical_services_outlined,
-          button: 'Abrir Pacote 51',
-          screen: AtlasVeterinaryAiScreen(
-            animal: animal,
-            farm: farm,
-            group: group,
-          ),
+      ),
+      AnimalHubSection.veterinaryAi51 => _enterpriseLaunchSection(
+        title: 'IA Veterinária',
+        subtitle: 'Triagem, avaliação de sinais, hipóteses e próximos exames.',
+        icon: Icons.medical_services_outlined,
+        button: 'Abrir Pacote 51',
+        screen: AtlasVeterinaryAiScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
         ),
-      AnimalHubSection.globalPlatform50 =>
-        _enterpriseLaunchSection(
-          title: 'Plataforma Atlas Global',
-          subtitle:
-              'Multiempresa, multiusuário, marketplace, API pública e Command Center.',
-          icon: Icons.public_outlined,
-          button: 'Abrir Pacote 50',
-          screen: AtlasGlobalPlatformScreen(
-            animal: animal,
-            farm: farm,
-            group: group,
-          ),
+      ),
+      AnimalHubSection.globalPlatform50 => _enterpriseLaunchSection(
+        title: 'Plataforma Atlas Global',
+        subtitle:
+            'Multiempresa, multiusuário, marketplace, API pública e Command Center.',
+        icon: Icons.public_outlined,
+        button: 'Abrir Pacote 50',
+        screen: AtlasGlobalPlatformScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
         ),
+      ),
       AnimalHubSection.purchases44 => buildSupplyModuleSection(
         module: AtlasSupplyChainModule.purchases,
         title: 'Compras Enterprise',
-        subtitle:
-            'Solicitações, cotações, aprovações, recebimentos e preços.',
+        subtitle: 'Solicitações, cotações, aprovações, recebimentos e preços.',
         icon: Icons.shopping_cart_outlined,
       ),
-
     };
   }
 
@@ -3070,11 +3021,61 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     );
   }
 
-  Widget buildHealthEnterpriseSection() => _enterpriseLaunchSection(title: 'Sanidade inteligente Enterprise', subtitle: 'Calendário, risco, custos, retornos e recomendações sanitárias.', icon: Icons.health_and_safety_outlined, button: 'Abrir sanidade', screen: AnimalHealthEnterpriseScreen(animal: animal, farm: farm, group: group));
-  Widget buildReproductionEnterpriseSection() => _enterpriseLaunchSection(title: 'Reprodução Enterprise', subtitle: 'Serviços, protocolos, diagnósticos, eficiência e previsões.', icon: Icons.favorite_outline, button: 'Abrir reprodução', screen: AnimalReproductionEnterpriseScreen(animal: animal, farm: farm, group: group));
-  Widget buildWeightIntelligenceSection() => _enterpriseLaunchSection(title: 'Pesagens inteligentes', subtitle: 'GMD, tendência, projeções e alertas de desempenho.', icon: Icons.auto_graph_outlined, button: 'Abrir pesagens', screen: AnimalWeightIntelligenceScreen(animal: animal, farm: farm, group: group));
-  Widget buildNutritionEnterpriseSection() => _enterpriseLaunchSection(title: 'Nutrição Enterprise', subtitle: 'Dietas, consumo, matéria seca, custo e meta de ganho.', icon: Icons.restaurant_outlined, button: 'Abrir nutrição', screen: AnimalNutritionEnterpriseScreen(animal: animal, farm: farm, group: group));
-  Widget buildExecutivePanelSection() => _enterpriseLaunchSection(title: 'Painel executivo do animal', subtitle: 'Score geral, riscos, desempenho e próximas ações sugeridas.', icon: Icons.dashboard_customize_outlined, button: 'Abrir painel executivo', screen: AnimalExecutivePanelScreen(animal: animal, farm: farm, group: group));
+  Widget buildHealthEnterpriseSection() => _enterpriseLaunchSection(
+    title: 'Sanidade inteligente Enterprise',
+    subtitle: 'Calendário, risco, custos, retornos e recomendações sanitárias.',
+    icon: Icons.health_and_safety_outlined,
+    button: 'Abrir sanidade',
+    screen: AnimalHealthEnterpriseScreen(
+      animal: animal,
+      farm: farm,
+      group: group,
+    ),
+  );
+  Widget buildReproductionEnterpriseSection() => _enterpriseLaunchSection(
+    title: 'Reprodução Enterprise',
+    subtitle: 'Serviços, protocolos, diagnósticos, eficiência e previsões.',
+    icon: Icons.favorite_outline,
+    button: 'Abrir reprodução',
+    screen: AnimalReproductionEnterpriseScreen(
+      animal: animal,
+      farm: farm,
+      group: group,
+    ),
+  );
+  Widget buildWeightIntelligenceSection() => _enterpriseLaunchSection(
+    title: 'Pesagens inteligentes',
+    subtitle: 'GMD, tendência, projeções e alertas de desempenho.',
+    icon: Icons.auto_graph_outlined,
+    button: 'Abrir pesagens',
+    screen: AnimalWeightIntelligenceScreen(
+      animal: animal,
+      farm: farm,
+      group: group,
+    ),
+  );
+  Widget buildNutritionEnterpriseSection() => _enterpriseLaunchSection(
+    title: 'Nutrição Enterprise',
+    subtitle: 'Dietas, consumo, matéria seca, custo e meta de ganho.',
+    icon: Icons.restaurant_outlined,
+    button: 'Abrir nutrição',
+    screen: AnimalNutritionEnterpriseScreen(
+      animal: animal,
+      farm: farm,
+      group: group,
+    ),
+  );
+  Widget buildExecutivePanelSection() => _enterpriseLaunchSection(
+    title: 'Painel executivo do animal',
+    subtitle: 'Score geral, riscos, desempenho e próximas ações sugeridas.',
+    icon: Icons.dashboard_customize_outlined,
+    button: 'Abrir painel executivo',
+    screen: AnimalExecutivePanelScreen(
+      animal: animal,
+      farm: farm,
+      group: group,
+    ),
+  );
   Widget buildIntelligence360Section({
     required AnimalIntelligence360View view,
     required String title,
@@ -3114,7 +3115,32 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       ),
     );
   }
-  Widget _enterpriseLaunchSection({required String title, required String subtitle, required IconData icon, required String button, required Widget screen}) => Column(crossAxisAlignment: CrossAxisAlignment.start, children:[SectionTitle(title:title,subtitle:subtitle),const SizedBox(height:16),HubActionCard(icon:icon,title:title,subtitle:subtitle,buttonLabel:button,onPressed:() async {await Navigator.of(context).push(MaterialPageRoute<void>(builder:(_)=>screen));await loadDashboard();})]);
+
+  Widget _enterpriseLaunchSection({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String button,
+    required Widget screen,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SectionTitle(title: title, subtitle: subtitle),
+      const SizedBox(height: 16),
+      HubActionCard(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        buttonLabel: button,
+        onPressed: () async {
+          await Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => screen));
+          await loadDashboard();
+        },
+      ),
+    ],
+  );
 
   Widget buildSummarySection() {
     return Column(
@@ -3151,8 +3177,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               value: animal.bodyConditionScore <= 0
                   ? 'Não informado'
                   : animal.bodyConditionScore
-                      .toStringAsFixed(1)
-                      .replaceAll('.', ','),
+                        .toStringAsFixed(1)
+                        .replaceAll('.', ','),
               subtitle: 'Condição corporal atual',
               icon: Icons.analytics_outlined,
             ),
@@ -3177,11 +3203,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        AnimalInformationPanel(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+        AnimalInformationPanel(animal: animal, farm: farm, group: group),
       ],
     );
   }
@@ -3199,8 +3221,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         HubActionCard(
           icon: Icons.history_outlined,
           title: 'Abrir timeline unificada',
-          subtitle:
-              '$consolidatedTimelineCount eventos consolidados',
+          subtitle: '$consolidatedTimelineCount eventos consolidados',
           buttonLabel: 'Ver timeline',
           onPressed: openTimeline,
         ),
@@ -3217,22 +3238,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
             AnimalMetricCard(
               title: 'Pesagens e manejos',
-              value: (
-                weights.length +
-                healthRecordCount +
-                reproductionRecords.length +
-                movementCount
-              ).toString(),
+              value:
+                  (weights.length +
+                          healthRecordCount +
+                          reproductionRecords.length +
+                          movementCount)
+                      .toString(),
               subtitle: 'Zootecnia, sanidade, reprodução e lotes',
-              icon: Icons.pets_outlined,
+              icon: AtlasLivestockIcons.cow,
             ),
             AnimalMetricCard(
               title: 'Fotos e documentos',
-              value: (
-                photos.length +
-                documentCount +
-                documentExpirationCount
-              ).toString(),
+              value: (photos.length + documentCount + documentExpirationCount)
+                  .toString(),
               subtitle: 'Inclui vencimentos documentais',
               icon: Icons.folder_copy_outlined,
             ),
@@ -3267,8 +3285,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (context) =>
-                    AnimalZootechnicalDashboardScreen(
+                builder: (context) => AnimalZootechnicalDashboardScreen(
                   animal: animal,
                   farm: farm,
                   group: group,
@@ -3323,8 +3340,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             final columns = constraints.maxWidth >= 900
                 ? 3
                 : constraints.maxWidth >= 580
-                    ? 2
-                    : 1;
+                ? 2
+                : 1;
 
             return GridView.count(
               crossAxisCount: columns,
@@ -3393,9 +3410,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           onOpenCompleteTree: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (context) => AnimalGenealogyScreen(
-                  animalId: animal.id,
-                ),
+                builder: (context) =>
+                    AnimalGenealogyScreen(animalId: animal.id),
               ),
             );
           },
@@ -3449,17 +3465,11 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           const SizedBox(height: 16),
           Card(
             child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.star_outline),
-              ),
+              leading: const CircleAvatar(child: Icon(Icons.star_outline)),
               title: Text(
-                primary.title.isEmpty
-                    ? 'Foto principal'
-                    : primary.title,
+                primary.title.isEmpty ? 'Foto principal' : primary.title,
               ),
-              subtitle: Text(
-                '${primary.date}\n${primary.reference}',
-              ),
+              subtitle: Text('${primary.date}\n${primary.reference}'),
               isThreeLine: true,
             ),
           ),
@@ -3481,8 +3491,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         HubActionCard(
           icon: Icons.folder_copy_outlined,
           title: '$documentCount documentos vinculados',
-          subtitle:
-              'Abra o gerenciador documental individual do animal.',
+          subtitle: 'Abra o gerenciador documental individual do animal.',
           buttonLabel: 'Abrir documentos',
           onPressed: openDocuments,
         ),
@@ -3499,6 +3508,54 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AnimalCentralLoadWarning extends StatelessWidget {
+  const _AnimalCentralLoadWarning({
+    required this.warnings,
+    required this.onRetry,
+  });
+
+  final List<String> warnings;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final uniqueWarnings = warnings.toSet().toList(growable: false);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.cloud_off_outlined),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Central carregada parcialmente',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${uniqueWarnings.join(', ')}. Os demais dados continuam disponíveis.',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_outlined),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -3801,8 +3858,8 @@ class AnimalHubNavigation extends StatelessWidget {
   final AnimalHubSection selected;
   final ValueChanged<AnimalHubSection> onSelected;
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> firstRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  firstRow = [
     (
       value: AnimalHubSection.summary,
       label: 'Resumo',
@@ -3835,8 +3892,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> secondRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  secondRow = [
     (
       value: AnimalHubSection.documents,
       label: 'Documentos',
@@ -3869,8 +3926,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirdRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirdRow = [
     (
       value: AnimalHubSection.validationCenter,
       label: 'Validação',
@@ -3903,8 +3960,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fourthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fourthRow = [
     (
       value: AnimalHubSection.intelligence360,
       label: 'Inteligência 360',
@@ -3937,9 +3994,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fifthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fifthRow = [
     (
       value: AnimalHubSection.enterprise50,
       label: 'Atlas Enterprise 50',
@@ -3962,8 +4018,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> sixthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  sixthRow = [
     (
       value: AnimalHubSection.purchases44,
       label: 'Compras 44',
@@ -3981,8 +4037,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> seventhRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  seventhRow = [
     (
       value: AnimalHubSection.sustainability47,
       label: 'Sustentabilidade 47',
@@ -4000,8 +4056,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> eighthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  eighthRow = [
     (
       value: AnimalHubSection.globalPlatform50,
       label: 'Atlas Global 50',
@@ -4009,8 +4065,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> ninthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  ninthRow = [
     (
       value: AnimalHubSection.veterinaryAi51,
       label: 'IA Veterinária 51',
@@ -4023,8 +4079,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> tenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  tenthRow = [
     (
       value: AnimalHubSection.nutritionalAi53,
       label: 'IA Nutricional 53',
@@ -4042,8 +4098,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> eleventhRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  eleventhRow = [
     (
       value: AnimalHubSection.climateAi56,
       label: 'IA Climática 56',
@@ -4061,8 +4117,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twelfthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twelfthRow = [
     (
       value: AnimalHubSection.drone59,
       label: 'Drone 59',
@@ -4085,8 +4141,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirteenthRow = [
     (
       value: AnimalHubSection.sisbov63,
       label: 'SISBOV 63',
@@ -4109,8 +4165,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fourteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fourteenthRow = [
     (
       value: AnimalHubSection.receitaFederal67,
       label: 'Receita 67',
@@ -4133,8 +4189,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fifteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fifteenthRow = [
     (
       value: AnimalHubSection.ruralCredit71,
       label: 'Crédito 71',
@@ -4157,8 +4213,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> sixteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  sixteenthRow = [
     (
       value: AnimalHubSection.digitalAuction75,
       label: 'Leilão 75',
@@ -4181,8 +4237,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> seventeenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  seventeenthRow = [
     (
       value: AnimalHubSection.procurement79,
       label: 'Compras 79',
@@ -4210,8 +4266,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> eighteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  eighteenthRow = [
     (
       value: AnimalHubSection.qualityManagement84,
       label: 'Qualidade 84',
@@ -4239,8 +4295,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> nineteenthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  nineteenthRow = [
     (
       value: AnimalHubSection.enterpriseCrm89,
       label: 'CRM Ent. 89',
@@ -4268,8 +4324,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentiethRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentiethRow = [
     (
       value: AnimalHubSection.dataGovernance94,
       label: 'Dados 94',
@@ -4297,8 +4353,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyFirstRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyFirstRow = [
     (
       value: AnimalHubSection.aiOrchestrator99,
       label: 'Orquestrador 99',
@@ -4311,8 +4367,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentySecondRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentySecondRow = [
     (
       value: AnimalHubSection.accessControl101,
       label: 'Acessos 101',
@@ -4365,8 +4421,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyThirdRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyThirdRow = [
     (
       value: AnimalHubSection.conversationalAssistant111,
       label: 'Assistente 111',
@@ -4419,8 +4475,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyFourthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyFourthRow = [
     (
       value: AnimalHubSection.smartScales121,
       label: 'Balanças 121',
@@ -4473,8 +4529,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyFifthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyFifthRow = [
     (
       value: AnimalHubSection.gisMaps131,
       label: 'GIS 131',
@@ -4527,8 +4583,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentySixthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentySixthRow = [
     (
       value: AnimalHubSection.advancedIatf141,
       label: 'IATF 141',
@@ -4581,8 +4637,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentySeventhRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentySeventhRow = [
     (
       value: AnimalHubSection.weightPrediction151,
       label: 'Peso Previsto 151',
@@ -4611,7 +4667,7 @@ class AnimalHubNavigation extends StatelessWidget {
     (
       value: AnimalHubSection.animalWelfare156,
       label: 'Bem-estar 156',
-      icon: Icons.pets_outlined,
+      icon: AtlasLivestockIcons.cow,
     ),
     (
       value: AnimalHubSection.earlyDiseaseDetection157,
@@ -4635,8 +4691,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyEighthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyEighthRow = [
     (
       value: AnimalHubSection.projectedCashFlow161,
       label: 'Fluxo Projetado 161',
@@ -4689,8 +4745,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> twentyNinthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  twentyNinthRow = [
     (
       value: AnimalHubSection.premiumCrm171,
       label: 'CRM 171',
@@ -4743,8 +4799,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtiethRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtiethRow = [
     (
       value: AnimalHubSection.carbonFootprint181,
       label: 'Carbono 181',
@@ -4797,8 +4853,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyFirstRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyFirstRow = [
     (
       value: AnimalHubSection.climateIntelligence191,
       label: 'Clima 191',
@@ -4851,8 +4907,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtySecondRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtySecondRow = [
     (
       value: AnimalHubSection.farmOperationalPlanning201,
       label: 'Planejamento 201',
@@ -4905,8 +4961,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyThirdRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyThirdRow = [
     (
       value: AnimalHubSection.intelligentPurchasing211,
       label: 'Compras 211',
@@ -4959,8 +5015,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyFourthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyFourthRow = [
     (
       value: AnimalHubSection.peopleManagement221,
       label: 'Pessoas 221',
@@ -5013,8 +5069,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyFifthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyFifthRow = [
     (
       value: AnimalHubSection.professionalAuthentication231,
       label: 'Autenticação 231',
@@ -5067,8 +5123,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtySixthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtySixthRow = [
     (
       value: AnimalHubSection.globalExecutiveDashboard241,
       label: 'Dashboard Global 241',
@@ -5121,8 +5177,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtySeventhRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtySeventhRow = [
     (
       value: AnimalHubSection.backendFoundation251,
       label: 'Backend 251',
@@ -5161,7 +5217,7 @@ class AnimalHubNavigation extends StatelessWidget {
     (
       value: AnimalHubSection.animalsApi258,
       label: 'API Animais 258',
-      icon: Icons.pets_outlined,
+      icon: AtlasLivestockIcons.cow,
     ),
     (
       value: AnimalHubSection.livestockEventsApi259,
@@ -5175,8 +5231,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyEighthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyEighthRow = [
     (
       value: AnimalHubSection.secureUserRegistration261,
       label: 'Cadastro Seguro 261',
@@ -5229,12 +5285,12 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> thirtyNinthRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  thirtyNinthRow = [
     (
       value: AnimalHubSection.herdMigration271,
       label: 'Rebanho Real 271',
-      icon: Icons.pets_outlined,
+      icon: AtlasLivestockIcons.cow,
     ),
     (
       value: AnimalHubSection.reproductionMigration272,
@@ -5283,8 +5339,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fortiethRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fortiethRow = [
     (
       value: AnimalHubSection.consolidatedIndicatorEngine281,
       label: 'Indicadores Reais 281',
@@ -5337,8 +5393,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
-  static const List<
-      ({AnimalHubSection value, String label, IconData icon})> fortyFirstRow = [
+  static const List<({AnimalHubSection value, String label, IconData icon})>
+  fortyFirstRow = [
     (
       value: AnimalHubSection.architecturalReview291,
       label: 'Arquitetura 291',
@@ -5658,80 +5714,75 @@ class NavigationModuleRow extends StatelessWidget {
     super.key,
   });
 
-  final List<
-      ({AnimalHubSection value, String label, IconData icon})> items;
+  final List<({AnimalHubSection value, String label, IconData icon})> items;
   final AnimalHubSection selected;
   final ValueChanged<AnimalHubSection> onSelected;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: items.map((item) {
-        final isSelected = item.value == selected;
+      children: items
+          .map((item) {
+            final isSelected = item.value == selected;
 
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: item == items.last ? 0 : 8,
-            ),
-            child: Material(
-              color: isSelected
-                  ? const Color(0xFF1B5E20)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => onSelected(item.value),
-                child: Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                  ),
-                  decoration: BoxDecoration(
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: item == items.last ? 0 : 8),
+                child: Material(
+                  color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFF1B5E20)
-                          : const Color(0xFFB9C8B6),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        item.icon,
-                        size: 18,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF1B5E20),
-                      ),
-                      const SizedBox(width: 7),
-                      Flexible(
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF263238),
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w600,
-                            fontSize: 13,
-                          ),
+                    onTap: () => onSelected(item.value),
+                    child: Container(
+                      height: 46,
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF1B5E20)
+                              : const Color(0xFFB9C8B6),
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            item.icon,
+                            size: 18,
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF1B5E20),
+                          ),
+                          const SizedBox(width: 7),
+                          Flexible(
+                            child: Text(
+                              item.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF263238),
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      }).toList(growable: false),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -5762,10 +5813,7 @@ class AnimalHubHeader extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFFF3F8F1),
-              Color(0xFFFFFFFF),
-            ],
+            colors: [Color(0xFFF3F8F1), Color(0xFFFFFFFF)],
           ),
         ),
         child: LayoutBuilder(
@@ -5824,7 +5872,7 @@ class AnimalHubHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(
-                Icons.pets_outlined,
+                AtlasLivestockIcons.cow,
                 size: 56,
                 color: Color(0xFF1B5E20),
               ),
@@ -5832,9 +5880,7 @@ class AnimalHubHeader extends StatelessWidget {
 
             final status = Chip(
               avatar: Icon(
-                isActive
-                    ? Icons.check_circle_outline
-                    : Icons.info_outline,
+                isActive ? Icons.check_circle_outline : Icons.info_outline,
                 size: 18,
               ),
               label: Text(animal.status),
@@ -5846,11 +5892,7 @@ class AnimalHubHeader extends StatelessWidget {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      avatar,
-                      const SizedBox(width: 18),
-                      identity,
-                    ],
+                    children: [avatar, const SizedBox(width: 18), identity],
                   ),
                   const SizedBox(height: 16),
                   status,
@@ -5876,11 +5918,7 @@ class AnimalHubHeader extends StatelessWidget {
 }
 
 class HubPill extends StatelessWidget {
-  const HubPill({
-    required this.icon,
-    required this.label,
-    super.key,
-  });
+  const HubPill({required this.icon, required this.label, super.key});
 
   final IconData icon;
   final String label;
@@ -5906,11 +5944,7 @@ class HubPill extends StatelessWidget {
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({
-    required this.title,
-    required this.subtitle,
-    super.key,
-  });
+  const SectionTitle({required this.title, required this.subtitle, super.key});
 
   final String title;
   final String subtitle;
@@ -5922,10 +5956,7 @@ class SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 23,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(subtitle, style: const TextStyle(color: Colors.black54)),
@@ -5958,8 +5989,9 @@ class AnimalMetricCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                backgroundColor: const Color(
+                  0xFF1B5E20,
+                ).withValues(alpha: 0.10),
                 child: Icon(icon, color: const Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 14),
@@ -6020,8 +6052,9 @@ class AnimalHubModuleCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                backgroundColor: const Color(
+                  0xFF1B5E20,
+                ).withValues(alpha: 0.10),
                 child: Icon(icon, color: const Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 15),
@@ -6078,8 +6111,7 @@ class HubActionCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 27,
-              backgroundColor:
-                  const Color(0xFF1B5E20).withValues(alpha: 0.10),
+              backgroundColor: const Color(0xFF1B5E20).withValues(alpha: 0.10),
               child: Icon(icon, color: const Color(0xFF1B5E20)),
             ),
             const SizedBox(width: 17),
@@ -6095,10 +6127,7 @@ class HubActionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: Colors.black54),
-                  ),
+                  Text(subtitle, style: const TextStyle(color: Colors.black54)),
                 ],
               ),
             ),
@@ -6114,7 +6143,6 @@ class HubActionCard extends StatelessWidget {
     );
   }
 }
-
 
 class AnimalGenealogyInlinePanel extends StatefulWidget {
   const AnimalGenealogyInlinePanel({
@@ -6189,9 +6217,7 @@ class _AnimalGenealogyInlinePanelState
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => AnimalGenealogyScreen(
-          animalId: node.id,
-        ),
+        builder: (context) => AnimalGenealogyScreen(animalId: node.id),
       ),
     );
   }
@@ -6213,18 +6239,11 @@ class _AnimalGenealogyInlinePanelState
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const Icon(
-                Icons.cloud_off_outlined,
-                size: 46,
-                color: Colors.red,
-              ),
+              const Icon(Icons.cloud_off_outlined, size: 46, color: Colors.red),
               const SizedBox(height: 12),
               const Text(
                 'Não foi possível carregar a genealogia Enterprise.',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
               Text(
@@ -6255,8 +6274,9 @@ class _AnimalGenealogyInlinePanelState
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor:
-                      const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                  backgroundColor: const Color(
+                    0xFF1B5E20,
+                  ).withValues(alpha: 0.10),
                   child: const Icon(
                     Icons.account_tree_outlined,
                     color: Color(0xFF1B5E20),
@@ -6315,10 +6335,7 @@ class _AnimalGenealogyInlinePanelState
                         emptyLabel: 'Pai não informado',
                       ),
                       const _GenealogyConnector(),
-                      buildSingle(
-                        node: data.animal,
-                        highlighted: true,
-                      ),
+                      buildSingle(node: data.animal, highlighted: true),
                       const _GenealogyConnector(),
                       buildSingle(
                         node: data.mother,
@@ -6435,25 +6452,16 @@ class _AnimalGenealogyInlinePanelState
   }) {
     return Column(
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 9),
         Row(
           children: [
             Expanded(
-              child: buildSingle(
-                node: first,
-                emptyLabel: 'Não informado',
-              ),
+              child: buildSingle(node: first, emptyLabel: 'Não informado'),
             ),
             const SizedBox(width: 9),
             Expanded(
-              child: buildSingle(
-                node: second,
-                emptyLabel: 'Não informado',
-              ),
+              child: buildSingle(node: second, emptyLabel: 'Não informado'),
             ),
           ],
         ),
@@ -6472,8 +6480,8 @@ class _AnimalGenealogyInlinePanelState
       color: highlighted
           ? const Color(0xFF1B5E20).withValues(alpha: 0.12)
           : registered
-              ? Colors.white
-              : Colors.grey.withValues(alpha: 0.06),
+          ? Colors.white
+          : Colors.grey.withValues(alpha: 0.06),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: node == null ? null : () => openRelative(node),
@@ -6493,10 +6501,7 @@ class _AnimalGenealogyInlinePanelState
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.help_outline,
-                      color: Colors.black38,
-                    ),
+                    const Icon(Icons.help_outline, color: Colors.black38),
                     const SizedBox(height: 6),
                     Text(
                       emptyLabel,
@@ -6510,7 +6515,7 @@ class _AnimalGenealogyInlinePanelState
                   children: [
                     Icon(
                       registered
-                          ? Icons.pets_outlined
+                          ? AtlasLivestockIcons.cow
                           : Icons.link_off_outlined,
                       color: const Color(0xFF1B5E20),
                     ),
@@ -6518,9 +6523,7 @@ class _AnimalGenealogyInlinePanelState
                     Text(
                       node.displayName,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -6544,11 +6547,7 @@ class _GenealogyConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 2,
-      height: 24,
-      color: Colors.black12,
-    );
+    return Container(width: 2, height: 24, color: Colors.black12);
   }
 }
 
@@ -6573,8 +6572,9 @@ class _GenealogyRelationshipCounter extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    const Color(0xFF1B5E20).withValues(alpha: 0.10),
+                backgroundColor: const Color(
+                  0xFF1B5E20,
+                ).withValues(alpha: 0.10),
                 child: Icon(icon, color: const Color(0xFF1B5E20)),
               ),
               const SizedBox(width: 13),
@@ -6589,10 +6589,7 @@ class _GenealogyRelationshipCounter extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      title,
-                      style: const TextStyle(color: Colors.black54),
-                    ),
+                    Text(title, style: const TextStyle(color: Colors.black54)),
                   ],
                 ),
               ),
@@ -6605,10 +6602,7 @@ class _GenealogyRelationshipCounter extends StatelessWidget {
 }
 
 class GenealogyPanel extends StatelessWidget {
-  const GenealogyPanel({
-    required this.animal,
-    super.key,
-  });
+  const GenealogyPanel({required this.animal, super.key});
 
   final AnimalData animal;
 
@@ -6627,22 +6621,14 @@ class GenealogyPanel extends StatelessWidget {
               title: 'Pai',
               value: father.isEmpty ? 'Não informado' : father,
             ),
-            Container(
-              width: 2,
-              height: 28,
-              color: Colors.black12,
-            ),
+            Container(width: 2, height: 28, color: Colors.black12),
             GenealogyNode(
-              icon: Icons.pets_outlined,
+              icon: AtlasLivestockIcons.cow,
               title: 'Animal',
               value: '${animal.displayName} • ${animal.tag}',
               highlighted: true,
             ),
-            Container(
-              width: 2,
-              height: 28,
-              color: Colors.black12,
-            ),
+            Container(width: 2, height: 28, color: Colors.black12),
             GenealogyNode(
               icon: Icons.female,
               title: 'Mãe',
@@ -6749,28 +6735,30 @@ class AnimalInformationPanel extends StatelessWidget {
         child: Wrap(
           spacing: 18,
           runSpacing: 18,
-          children: items.map((item) {
-            return SizedBox(
-              width: 245,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
+          children: items
+              .map((item) {
+                return SizedBox(
+                  width: 245,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.label,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.value,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.value,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -6797,10 +6785,7 @@ class EmptyHubState extends StatelessWidget {
         const SizedBox(height: 14),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 6),
         Text(

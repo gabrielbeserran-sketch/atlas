@@ -10,9 +10,7 @@ enum AtlasInventoryItemCategory {
   other,
 }
 
-String atlasInventoryItemCategoryLabel(
-  AtlasInventoryItemCategory category,
-) {
+String atlasInventoryItemCategoryLabel(AtlasInventoryItemCategory category) {
   switch (category) {
     case AtlasInventoryItemCategory.medication:
       return 'Medicamento';
@@ -44,9 +42,7 @@ enum AtlasInventoryMovementType {
   automaticConsumption,
 }
 
-String atlasInventoryMovementTypeLabel(
-  AtlasInventoryMovementType type,
-) {
+String atlasInventoryMovementTypeLabel(AtlasInventoryMovementType type) {
   switch (type) {
     case AtlasInventoryMovementType.entry:
       return 'Entrada';
@@ -81,23 +77,20 @@ class AtlasInventoryLocation {
   final bool active;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'description': description,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'active': active,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'active': active,
+  };
 
-  factory AtlasInventoryLocation.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasInventoryLocation.fromMap(Map<String, dynamic> map) {
     return AtlasInventoryLocation(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
     );
@@ -126,19 +119,17 @@ class AtlasSupplier {
   final bool active;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'document': document,
-        'phone': phone,
-        'email': email,
-        'notes': notes,
-        'farmName': farmName,
-        'active': active,
-      };
+    'id': id,
+    'name': name,
+    'document': document,
+    'phone': phone,
+    'email': email,
+    'notes': notes,
+    'farmName': farmName,
+    'active': active,
+  };
 
-  factory AtlasSupplier.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasSupplier.fromMap(Map<String, dynamic> map) {
     return AtlasSupplier(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
@@ -187,11 +178,9 @@ class AtlasInventoryItem {
   final String? farmName;
   final bool active;
 
-  bool get needsRestock =>
-      active && currentQuantity <= minimumQuantity;
+  bool get needsRestock => active && currentQuantity <= minimumQuantity;
 
-  double get stockValue =>
-      currentQuantity * averageUnitCost;
+  double get stockValue => currentQuantity * averageUnitCost;
 
   double get suggestedPurchaseQuantity {
     if (!needsRestock) {
@@ -200,17 +189,14 @@ class AtlasInventoryItem {
     final target = maximumQuantity > minimumQuantity
         ? maximumQuantity
         : minimumQuantity * 2;
-    return (target - currentQuantity)
-        .clamp(0, double.infinity);
+    return (target - currentQuantity).clamp(0, double.infinity);
   }
 
   int? get estimatedDaysUntilStockout {
-    if (!automaticConsumptionEnabled ||
-        automaticConsumptionPerDay <= 0) {
+    if (!automaticConsumptionEnabled || automaticConsumptionPerDay <= 0) {
       return null;
     }
-    return (currentQuantity / automaticConsumptionPerDay)
-        .floor();
+    return (currentQuantity / automaticConsumptionPerDay).floor();
   }
 
   AtlasInventoryItem copyWith({
@@ -236,81 +222,61 @@ class AtlasInventoryItem {
       name: name ?? this.name,
       category: category ?? this.category,
       unit: unit ?? this.unit,
-      currentQuantity:
-          currentQuantity ?? this.currentQuantity,
-      minimumQuantity:
-          minimumQuantity ?? this.minimumQuantity,
-      maximumQuantity:
-          maximumQuantity ?? this.maximumQuantity,
-      averageUnitCost:
-          averageUnitCost ?? this.averageUnitCost,
-      locationId: clearLocationId
-          ? null
-          : locationId ?? this.locationId,
+      currentQuantity: currentQuantity ?? this.currentQuantity,
+      minimumQuantity: minimumQuantity ?? this.minimumQuantity,
+      maximumQuantity: maximumQuantity ?? this.maximumQuantity,
+      averageUnitCost: averageUnitCost ?? this.averageUnitCost,
+      locationId: clearLocationId ? null : locationId ?? this.locationId,
       preferredSupplierId: clearPreferredSupplierId
           ? null
-          : preferredSupplierId ??
-              this.preferredSupplierId,
+          : preferredSupplierId ?? this.preferredSupplierId,
       automaticConsumptionEnabled:
-          automaticConsumptionEnabled ??
-              this.automaticConsumptionEnabled,
+          automaticConsumptionEnabled ?? this.automaticConsumptionEnabled,
       automaticConsumptionPerDay:
-          automaticConsumptionPerDay ??
-              this.automaticConsumptionPerDay,
+          automaticConsumptionPerDay ?? this.automaticConsumptionPerDay,
       farmName: farmName,
       active: active ?? this.active,
     );
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'code': code,
-        'name': name,
-        'category': category.name,
-        'unit': unit,
-        'currentQuantity': currentQuantity,
-        'minimumQuantity': minimumQuantity,
-        'maximumQuantity': maximumQuantity,
-        'averageUnitCost': averageUnitCost,
-        'locationId': locationId,
-        'preferredSupplierId': preferredSupplierId,
-        'automaticConsumptionEnabled':
-            automaticConsumptionEnabled,
-        'automaticConsumptionPerDay':
-            automaticConsumptionPerDay,
-        'farmName': farmName,
-        'active': active,
-      };
+    'id': id,
+    'code': code,
+    'name': name,
+    'category': category.name,
+    'unit': unit,
+    'currentQuantity': currentQuantity,
+    'minimumQuantity': minimumQuantity,
+    'maximumQuantity': maximumQuantity,
+    'averageUnitCost': averageUnitCost,
+    'locationId': locationId,
+    'preferredSupplierId': preferredSupplierId,
+    'automaticConsumptionEnabled': automaticConsumptionEnabled,
+    'automaticConsumptionPerDay': automaticConsumptionPerDay,
+    'farmName': farmName,
+    'active': active,
+  };
 
-  factory AtlasInventoryItem.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasInventoryItem.fromMap(Map<String, dynamic> map) {
     return AtlasInventoryItem(
       id: map['id']?.toString() ?? '',
       code: map['code']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
-      category:
-          AtlasInventoryItemCategory.values.firstWhere(
-        (value) =>
-            value.name == map['category']?.toString(),
+      category: AtlasInventoryItemCategory.values.firstWhere(
+        (value) => value.name == map['category']?.toString(),
         orElse: () => AtlasInventoryItemCategory.other,
       ),
       unit: map['unit']?.toString() ?? '',
-      currentQuantity:
-          _readDouble(map['currentQuantity']),
-      minimumQuantity:
-          _readDouble(map['minimumQuantity']),
-      maximumQuantity:
-          _readDouble(map['maximumQuantity']),
-      averageUnitCost:
-          _readDouble(map['averageUnitCost']),
+      currentQuantity: _readDouble(map['currentQuantity']),
+      minimumQuantity: _readDouble(map['minimumQuantity']),
+      maximumQuantity: _readDouble(map['maximumQuantity']),
+      averageUnitCost: _readDouble(map['averageUnitCost']),
       locationId: map['locationId']?.toString(),
-      preferredSupplierId:
-          map['preferredSupplierId']?.toString(),
-      automaticConsumptionEnabled:
-          map['automaticConsumptionEnabled'] == true,
-      automaticConsumptionPerDay:
-          _readDouble(map['automaticConsumptionPerDay']),
+      preferredSupplierId: map['preferredSupplierId']?.toString(),
+      automaticConsumptionEnabled: map['automaticConsumptionEnabled'] == true,
+      automaticConsumptionPerDay: _readDouble(
+        map['automaticConsumptionPerDay'],
+      ),
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
     );
@@ -352,8 +318,7 @@ class AtlasInventoryBatch {
   final String? farmName;
 
   bool get isExpired =>
-      expiresAt != null &&
-      expiresAt!.isBefore(DateTime.now());
+      expiresAt != null && expiresAt!.isBefore(DateTime.now());
 
   bool get expiresSoon =>
       expiresAt != null &&
@@ -361,41 +326,34 @@ class AtlasInventoryBatch {
       expiresAt!.difference(DateTime.now()).inDays <= 30;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'itemId': itemId,
-        'batchNumber': batchNumber,
-        'manufacturedAt':
-            manufacturedAt?.toIso8601String(),
-        'expiresAt': expiresAt?.toIso8601String(),
-        'quantity': quantity,
-        'unitCost': unitCost,
-        'supplierId': supplierId,
-        'locationId': locationId,
-        'receivedAt': receivedAt.toIso8601String(),
-        'farmName': farmName,
-      };
+    'id': id,
+    'itemId': itemId,
+    'batchNumber': batchNumber,
+    'manufacturedAt': manufacturedAt?.toIso8601String(),
+    'expiresAt': expiresAt?.toIso8601String(),
+    'quantity': quantity,
+    'unitCost': unitCost,
+    'supplierId': supplierId,
+    'locationId': locationId,
+    'receivedAt': receivedAt.toIso8601String(),
+    'farmName': farmName,
+  };
 
-  factory AtlasInventoryBatch.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasInventoryBatch.fromMap(Map<String, dynamic> map) {
     return AtlasInventoryBatch(
       id: map['id']?.toString() ?? '',
       itemId: map['itemId']?.toString() ?? '',
-      batchNumber:
-          map['batchNumber']?.toString() ?? '',
+      batchNumber: map['batchNumber']?.toString() ?? '',
       manufacturedAt: DateTime.tryParse(
         map['manufacturedAt']?.toString() ?? '',
       ),
-      expiresAt: DateTime.tryParse(
-        map['expiresAt']?.toString() ?? '',
-      ),
+      expiresAt: DateTime.tryParse(map['expiresAt']?.toString() ?? ''),
       quantity: _readDouble(map['quantity']),
       unitCost: _readDouble(map['unitCost']),
       supplierId: map['supplierId']?.toString(),
       locationId: map['locationId']?.toString(),
-      receivedAt: DateTime.tryParse(
-            map['receivedAt']?.toString() ?? '',
-          ) ??
+      receivedAt:
+          DateTime.tryParse(map['receivedAt']?.toString() ?? '') ??
           DateTime.now(),
       farmName: map['farmName']?.toString(),
     );
@@ -443,25 +401,22 @@ class AtlasInventoryMovement {
   double get totalValue => quantity * unitCost;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'itemId': itemId,
-        'batchId': batchId,
-        'type': type.name,
-        'quantity': quantity,
-        'unitCost': unitCost,
-        'occurredAt': occurredAt.toIso8601String(),
-        'sourceLocationId': sourceLocationId,
-        'destinationLocationId':
-            destinationLocationId,
-        'responsibleName': responsibleName,
-        'reference': reference,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'itemId': itemId,
+    'batchId': batchId,
+    'type': type.name,
+    'quantity': quantity,
+    'unitCost': unitCost,
+    'occurredAt': occurredAt.toIso8601String(),
+    'sourceLocationId': sourceLocationId,
+    'destinationLocationId': destinationLocationId,
+    'responsibleName': responsibleName,
+    'reference': reference,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasInventoryMovement.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasInventoryMovement.fromMap(Map<String, dynamic> map) {
     return AtlasInventoryMovement(
       id: map['id']?.toString() ?? '',
       itemId: map['itemId']?.toString() ?? '',
@@ -472,16 +427,12 @@ class AtlasInventoryMovement {
       ),
       quantity: _readDouble(map['quantity']),
       unitCost: _readDouble(map['unitCost']),
-      occurredAt: DateTime.tryParse(
-            map['occurredAt']?.toString() ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
           DateTime.now(),
-      sourceLocationId:
-          map['sourceLocationId']?.toString(),
-      destinationLocationId:
-          map['destinationLocationId']?.toString(),
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      sourceLocationId: map['sourceLocationId']?.toString(),
+      destinationLocationId: map['destinationLocationId']?.toString(),
+      responsibleName: map['responsibleName']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
@@ -506,9 +457,7 @@ enum AtlasPurchaseOrderStatus {
   cancelled,
 }
 
-String atlasPurchaseOrderStatusLabel(
-  AtlasPurchaseOrderStatus status,
-) {
+String atlasPurchaseOrderStatusLabel(AtlasPurchaseOrderStatus status) {
   switch (status) {
     case AtlasPurchaseOrderStatus.draft:
       return 'Rascunho';
@@ -541,14 +490,12 @@ class AtlasPurchaseOrderLine {
   double get total => quantity * unitCost;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'itemId': itemId,
-        'quantity': quantity,
-        'unitCost': unitCost,
-      };
+    'itemId': itemId,
+    'quantity': quantity,
+    'unitCost': unitCost,
+  };
 
-  factory AtlasPurchaseOrderLine.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPurchaseOrderLine.fromMap(Map<String, dynamic> map) {
     return AtlasPurchaseOrderLine(
       itemId: map['itemId']?.toString() ?? '',
       quantity: _readDouble(map['quantity']),
@@ -589,56 +536,45 @@ class AtlasPurchaseOrder {
   final String notes;
   final String? farmName;
 
-  double get totalValue => lines.fold<double>(
-        0,
-        (total, line) => total + line.total,
-      );
+  double get totalValue =>
+      lines.fold<double>(0, (total, line) => total + line.total);
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'supplierId': supplierId,
-        'status': status.name,
-        'createdAt': createdAt.toIso8601String(),
-        'expectedAt': expectedAt?.toIso8601String(),
-        'receivedAt': receivedAt?.toIso8601String(),
-        'lines': lines.map((item) => item.toMap()).toList(),
-        'responsibleName': responsibleName,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'supplierId': supplierId,
+    'status': status.name,
+    'createdAt': createdAt.toIso8601String(),
+    'expectedAt': expectedAt?.toIso8601String(),
+    'receivedAt': receivedAt?.toIso8601String(),
+    'lines': lines.map((item) => item.toMap()).toList(),
+    'responsibleName': responsibleName,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasPurchaseOrder.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPurchaseOrder.fromMap(Map<String, dynamic> map) {
     return AtlasPurchaseOrder(
       id: map['id']?.toString() ?? '',
       supplierId: map['supplierId']?.toString(),
       status: AtlasPurchaseOrderStatus.values.firstWhere(
-        (value) =>
-            value.name == map['status']?.toString(),
+        (value) => value.name == map['status']?.toString(),
         orElse: () => AtlasPurchaseOrderStatus.draft,
       ),
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      expectedAt: DateTime.tryParse(
-        map['expectedAt']?.toString() ?? '',
-      ),
-      receivedAt: DateTime.tryParse(
-        map['receivedAt']?.toString() ?? '',
-      ),
+      expectedAt: DateTime.tryParse(map['expectedAt']?.toString() ?? ''),
+      receivedAt: DateTime.tryParse(map['receivedAt']?.toString() ?? ''),
       lines: map['lines'] is List
           ? (map['lines'] as List)
-              .map(
-                (item) => AtlasPurchaseOrderLine.fromMap(
-                  Map<String, dynamic>.from(item as Map),
-                ),
-              )
-              .toList()
+                .map(
+                  (item) => AtlasPurchaseOrderLine.fromMap(
+                    Map<String, dynamic>.from(item as Map),
+                  ),
+                )
+                .toList()
           : <AtlasPurchaseOrderLine>[],
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
     );

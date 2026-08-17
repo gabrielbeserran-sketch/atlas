@@ -9,8 +9,7 @@ class AtlasStrategyExecutionRepository {
   static final AtlasStrategyExecutionRepository instance =
       AtlasStrategyExecutionRepository._();
 
-  static const String _storageKey =
-      'atlas_strategy_execution_plans_v1';
+  static const String _storageKey = 'atlas_strategy_execution_plans_v1';
 
   Future<List<AtlasStrategyExecutionPlan>> loadAll() async {
     final preferences = await SharedPreferences.getInstance();
@@ -37,8 +36,7 @@ class AtlasStrategyExecutionRepository {
           .toList();
 
       plans.sort(
-        (first, second) =>
-            second.createdAt.compareTo(first.createdAt),
+        (first, second) => second.createdAt.compareTo(first.createdAt),
       );
 
       return plans;
@@ -47,12 +45,9 @@ class AtlasStrategyExecutionRepository {
     }
   }
 
-  Future<void> save(
-    AtlasStrategyExecutionPlan plan,
-  ) async {
+  Future<void> save(AtlasStrategyExecutionPlan plan) async {
     final plans = await loadAll();
-    final index =
-        plans.indexWhere((item) => item.id == plan.id);
+    final index = plans.indexWhere((item) => item.id == plan.id);
 
     if (index >= 0) {
       plans[index] = plan;
@@ -64,15 +59,11 @@ class AtlasStrategyExecutionRepository {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        plans.take(100).map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(plans.take(100).map((item) => item.toJson()).toList()),
     );
   }
 
-  Future<AtlasStrategyExecutionPlan?> findByScenario(
-    String scenarioId,
-  ) async {
+  Future<AtlasStrategyExecutionPlan?> findByScenario(String scenarioId) async {
     final plans = await loadAll();
 
     for (final plan in plans) {

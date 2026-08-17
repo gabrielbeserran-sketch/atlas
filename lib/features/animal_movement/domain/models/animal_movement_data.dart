@@ -26,26 +26,26 @@ class AnimalMovementData {
   final bool isRemote;
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'type': type,
-        'date': date,
-        'origin': origin,
-        'destination': destination,
-        'reason': reason,
-        'responsible': responsible,
-        'notes': notes,
-        'fromLotId': fromLotId,
-        'toLotId': toLotId,
-        'isRemote': isRemote,
-      };
+    'id': id,
+    'type': type,
+    'date': date,
+    'origin': origin,
+    'destination': destination,
+    'reason': reason,
+    'responsible': responsible,
+    'notes': notes,
+    'fromLotId': fromLotId,
+    'toLotId': toLotId,
+    'isRemote': isRemote,
+  };
 
   Map<String, dynamic> toRemoteBody() => {
-        'movement_type': _typeToCode(type),
-        'to_lot_id': toLotId.trim().isEmpty ? null : toLotId.trim(),
-        'occurred_at': _toIsoDate(date),
-        'reason': reason,
-        'document_reference': _encodeDetails(),
-      };
+    'movement_type': _typeToCode(type),
+    'to_lot_id': toLotId.trim().isEmpty ? null : toLotId.trim(),
+    'occurred_at': _toIsoDate(date),
+    'reason': reason,
+    'document_reference': _encodeDetails(),
+  };
 
   String _encodeDetails() {
     final values = <String>[

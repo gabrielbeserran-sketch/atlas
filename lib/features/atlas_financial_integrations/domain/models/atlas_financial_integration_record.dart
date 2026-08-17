@@ -1,73 +1,57 @@
-enum AtlasFinancialIntegrationModule {
-  receitaFederal,
-  bancoBrasil,
-  pix,
-  nfe,
-}
+enum AtlasFinancialIntegrationModule { receitaFederal, bancoBrasil, pix, nfe }
 
-extension AtlasFinancialIntegrationModuleX
-    on AtlasFinancialIntegrationModule {
+extension AtlasFinancialIntegrationModuleX on AtlasFinancialIntegrationModule {
   String get code => switch (this) {
-        AtlasFinancialIntegrationModule.receitaFederal =>
-          'receita_federal',
-        AtlasFinancialIntegrationModule.bancoBrasil =>
-          'banco_brasil',
-        AtlasFinancialIntegrationModule.pix => 'pix',
-        AtlasFinancialIntegrationModule.nfe => 'nfe',
-      };
+    AtlasFinancialIntegrationModule.receitaFederal => 'receita_federal',
+    AtlasFinancialIntegrationModule.bancoBrasil => 'banco_brasil',
+    AtlasFinancialIntegrationModule.pix => 'pix',
+    AtlasFinancialIntegrationModule.nfe => 'nfe',
+  };
 
   String get title => switch (this) {
-        AtlasFinancialIntegrationModule.receitaFederal =>
-          'Receita Federal',
-        AtlasFinancialIntegrationModule.bancoBrasil =>
-          'Banco do Brasil',
-        AtlasFinancialIntegrationModule.pix =>
-          'Pagamentos Pix',
-        AtlasFinancialIntegrationModule.nfe =>
-          'NF-e Rural',
-      };
+    AtlasFinancialIntegrationModule.receitaFederal => 'Receita Federal',
+    AtlasFinancialIntegrationModule.bancoBrasil => 'Banco do Brasil',
+    AtlasFinancialIntegrationModule.pix => 'Pagamentos Pix',
+    AtlasFinancialIntegrationModule.nfe => 'NF-e Rural',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasFinancialIntegrationModule.receitaFederal =>
-          'Pacote 67',
-        AtlasFinancialIntegrationModule.bancoBrasil =>
-          'Pacote 68',
-        AtlasFinancialIntegrationModule.pix =>
-          'Pacote 69',
-        AtlasFinancialIntegrationModule.nfe =>
-          'Pacote 70',
-      };
+    AtlasFinancialIntegrationModule.receitaFederal => 'Pacote 67',
+    AtlasFinancialIntegrationModule.bancoBrasil => 'Pacote 68',
+    AtlasFinancialIntegrationModule.pix => 'Pacote 69',
+    AtlasFinancialIntegrationModule.nfe => 'Pacote 70',
+  };
 
   List<String> get features => switch (this) {
-        AtlasFinancialIntegrationModule.receitaFederal => const [
-            'Cadastro fiscal',
-            'Obrigações tributárias',
-            'Documentos e declarações',
-            'Protocolos de atendimento',
-            'Pendências fiscais',
-          ],
-        AtlasFinancialIntegrationModule.bancoBrasil => const [
-            'Contas e convênios',
-            'Cobranças e recebimentos',
-            'Pagamentos e transferências',
-            'Conciliação bancária',
-            'Extratos e comprovantes',
-          ],
-        AtlasFinancialIntegrationModule.pix => const [
-            'Chaves Pix',
-            'Cobrança imediata',
-            'Cobrança com vencimento',
-            'Recebimentos e devoluções',
-            'Conciliação Pix',
-          ],
-        AtlasFinancialIntegrationModule.nfe => const [
-            'Emissão de NF-e',
-            'Itens e tributação',
-            'Destinatário e transporte',
-            'Autorização e cancelamento',
-            'XML, DANFE e eventos',
-          ],
-      };
+    AtlasFinancialIntegrationModule.receitaFederal => const [
+      'Cadastro fiscal',
+      'Obrigações tributárias',
+      'Documentos e declarações',
+      'Protocolos de atendimento',
+      'Pendências fiscais',
+    ],
+    AtlasFinancialIntegrationModule.bancoBrasil => const [
+      'Contas e convênios',
+      'Cobranças e recebimentos',
+      'Pagamentos e transferências',
+      'Conciliação bancária',
+      'Extratos e comprovantes',
+    ],
+    AtlasFinancialIntegrationModule.pix => const [
+      'Chaves Pix',
+      'Cobrança imediata',
+      'Cobrança com vencimento',
+      'Recebimentos e devoluções',
+      'Conciliação Pix',
+    ],
+    AtlasFinancialIntegrationModule.nfe => const [
+      'Emissão de NF-e',
+      'Itens e tributação',
+      'Destinatário e transporte',
+      'Autorização e cancelamento',
+      'XML, DANFE e eventos',
+    ],
+  };
 }
 
 class AtlasFinancialIntegrationRecord {
@@ -162,16 +146,12 @@ class AtlasFinancialIntegrationRecord {
     };
   }
 
-  factory AtlasFinancialIntegrationRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasFinancialIntegrationRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasFinancialIntegrationModule.values.firstWhere(
+    final module = AtlasFinancialIntegrationModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasFinancialIntegrationModule.receitaFederal,
+      orElse: () => AtlasFinancialIntegrationModule.receitaFederal,
     );
 
     return AtlasFinancialIntegrationRecord(
@@ -183,16 +163,12 @@ class AtlasFinancialIntegrationRecord {
       status: map['status']?.toString() ?? 'Rascunho',
       externalId: map['externalId']?.toString() ?? '',
       counterparty: map['counterparty']?.toString() ?? '',
-      documentNumber:
-          map['documentNumber']?.toString() ?? '',
+      documentNumber: map['documentNumber']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-      feeAmount:
-          (map['feeAmount'] as num?)?.toDouble() ?? 0.0,
+      feeAmount: (map['feeAmount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

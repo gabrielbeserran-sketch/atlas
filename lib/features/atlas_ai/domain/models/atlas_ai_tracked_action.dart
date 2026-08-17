@@ -38,26 +38,20 @@ class AtlasAiTrackedAction {
   final String sourceQuestion;
 
   DateTime get dueDate {
-    return createdAt.add(
-      Duration(days: deadlineDays),
-    );
+    return createdAt.add(Duration(days: deadlineDays));
   }
 
   bool get isOpen {
-    return status ==
-            AtlasAiTrackedActionStatus.pending ||
-        status ==
-            AtlasAiTrackedActionStatus.inProgress;
+    return status == AtlasAiTrackedActionStatus.pending ||
+        status == AtlasAiTrackedActionStatus.inProgress;
   }
 
   bool get isCompleted {
-    return status ==
-        AtlasAiTrackedActionStatus.completed;
+    return status == AtlasAiTrackedActionStatus.completed;
   }
 
   bool get isOverdue {
-    return isOpen &&
-        dueDate.isBefore(DateTime.now());
+    return isOpen && dueDate.isBefore(DateTime.now());
   }
 
   AtlasAiTrackedAction copyWith({
@@ -80,22 +74,16 @@ class AtlasAiTrackedAction {
       id: id ?? this.id,
       farmName: farmName ?? this.farmName,
       title: title ?? this.title,
-      description:
-          description ?? this.description,
-      expectedResult:
-          expectedResult ?? this.expectedResult,
+      description: description ?? this.description,
+      expectedResult: expectedResult ?? this.expectedResult,
       area: area ?? this.area,
-      deadlineDays:
-          deadlineDays ?? this.deadlineDays,
+      deadlineDays: deadlineDays ?? this.deadlineDays,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: clearCompletedAt
-          ? null
-          : completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : completedAt ?? this.completedAt,
       status: status ?? this.status,
       notes: notes ?? this.notes,
-      sourceQuestion:
-          sourceQuestion ?? this.sourceQuestion,
+      sourceQuestion: sourceQuestion ?? this.sourceQuestion,
     );
   }
 
@@ -110,68 +98,46 @@ class AtlasAiTrackedAction {
       'deadlineDays': deadlineDays,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      'completedAt':
-          completedAt?.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
       'status': status.name,
       'notes': notes,
       'sourceQuestion': sourceQuestion,
     };
   }
 
-  factory AtlasAiTrackedAction.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final areaName =
-        json['area']?.toString() ?? '';
+  factory AtlasAiTrackedAction.fromJson(Map<String, dynamic> json) {
+    final areaName = json['area']?.toString() ?? '';
 
-    final statusName =
-        json['status']?.toString() ?? '';
+    final statusName = json['status']?.toString() ?? '';
 
     return AtlasAiTrackedAction(
       id: json['id']?.toString() ?? '',
-      farmName:
-          json['farmName']?.toString() ?? '',
+      farmName: json['farmName']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
-      description:
-          json['description']?.toString() ?? '',
-      expectedResult:
-          json['expectedResult']?.toString() ?? '',
-      area:
-          AtlasFarmAnalysisArea.values.firstWhere(
+      description: json['description']?.toString() ?? '',
+      expectedResult: json['expectedResult']?.toString() ?? '',
+      area: AtlasFarmAnalysisArea.values.firstWhere(
         (item) => item.name == areaName,
-        orElse: () =>
-            AtlasFarmAnalysisArea.general,
+        orElse: () => AtlasFarmAnalysisArea.general,
       ),
-      deadlineDays:
-          _readInt(json['deadlineDays'], 1),
-      createdAt: DateTime.tryParse(
-            json['createdAt']?.toString() ?? '',
-          ) ??
+      deadlineDays: _readInt(json['deadlineDays'], 1),
+      createdAt:
+          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
-            json['updatedAt']?.toString() ?? '',
-          ) ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
-      completedAt: DateTime.tryParse(
-        json['completedAt']?.toString() ?? '',
-      ),
-      status:
-          AtlasAiTrackedActionStatus.values
-              .firstWhere(
+      completedAt: DateTime.tryParse(json['completedAt']?.toString() ?? ''),
+      status: AtlasAiTrackedActionStatus.values.firstWhere(
         (item) => item.name == statusName,
-        orElse: () =>
-            AtlasAiTrackedActionStatus.pending,
+        orElse: () => AtlasAiTrackedActionStatus.pending,
       ),
       notes: json['notes']?.toString() ?? '',
-      sourceQuestion:
-          json['sourceQuestion']?.toString() ?? '',
+      sourceQuestion: json['sourceQuestion']?.toString() ?? '',
     );
   }
 
-  static int _readInt(
-    dynamic value,
-    int fallback,
-  ) {
+  static int _readInt(dynamic value, int fallback) {
     if (value is int) {
       return value;
     }
@@ -180,10 +146,7 @@ class AtlasAiTrackedAction {
       return value.toInt();
     }
 
-    return int.tryParse(
-          value?.toString() ?? '',
-        ) ??
-        fallback;
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
   }
 }
 
@@ -212,16 +175,9 @@ class AtlasAiActionProgress {
   }
 }
 
-enum AtlasAiTrackedActionStatus {
-  pending,
-  inProgress,
-  completed,
-  cancelled,
-}
+enum AtlasAiTrackedActionStatus { pending, inProgress, completed, cancelled }
 
-String atlasAiTrackedActionStatusLabel(
-  AtlasAiTrackedActionStatus status,
-) {
+String atlasAiTrackedActionStatusLabel(AtlasAiTrackedActionStatus status) {
   switch (status) {
     case AtlasAiTrackedActionStatus.pending:
       return 'Pendente';

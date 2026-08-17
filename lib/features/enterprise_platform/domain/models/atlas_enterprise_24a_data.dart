@@ -1,9 +1,4 @@
-enum AtlasEnterpriseCompanyStatus {
-  trial,
-  active,
-  suspended,
-  archived,
-}
+enum AtlasEnterpriseCompanyStatus { trial, active, suspended, archived }
 
 enum AtlasEnterpriseMembershipRole {
   superAdministrator,
@@ -19,9 +14,7 @@ enum AtlasEnterpriseMembershipRole {
   auditor,
 }
 
-String atlasEnterpriseMembershipRoleLabel(
-  AtlasEnterpriseMembershipRole role,
-) {
+String atlasEnterpriseMembershipRoleLabel(AtlasEnterpriseMembershipRole role) {
   switch (role) {
     case AtlasEnterpriseMembershipRole.superAdministrator:
       return 'Superadministrador';
@@ -89,14 +82,14 @@ class AtlasEntityScope {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'tenantId': tenantId,
-        'companyId': companyId,
-        'farmId': farmId,
-        'createdBy': createdBy,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedBy': updatedBy,
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+    'tenantId': tenantId,
+    'companyId': companyId,
+    'farmId': farmId,
+    'createdBy': createdBy,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedBy': updatedBy,
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 
   factory AtlasEntityScope.fromMap(Map<String, dynamic> map) {
     final now = DateTime.now();
@@ -105,11 +98,9 @@ class AtlasEntityScope {
       companyId: map['companyId']?.toString() ?? '',
       farmId: map['farmId']?.toString(),
       createdBy: map['createdBy']?.toString() ?? 'system',
-      createdAt:
-          DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? now,
+      createdAt: DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? now,
       updatedBy: map['updatedBy']?.toString() ?? 'system',
-      updatedAt:
-          DateTime.tryParse(map['updatedAt']?.toString() ?? '') ?? now,
+      updatedAt: DateTime.tryParse(map['updatedAt']?.toString() ?? '') ?? now,
     );
   }
 }
@@ -149,17 +140,15 @@ class AtlasEnterpriseCompany {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'document': document,
-        'status': status.name,
-        'subscriptionPlan': subscriptionPlan,
-        'scope': scope.toMap(),
-      };
+    'id': id,
+    'name': name,
+    'document': document,
+    'status': status.name,
+    'subscriptionPlan': subscriptionPlan,
+    'scope': scope.toMap(),
+  };
 
-  factory AtlasEnterpriseCompany.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnterpriseCompany.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseCompany(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
@@ -168,8 +157,7 @@ class AtlasEnterpriseCompany {
         (item) => item.name == map['status']?.toString(),
         orElse: () => AtlasEnterpriseCompanyStatus.active,
       ),
-      subscriptionPlan:
-          map['subscriptionPlan']?.toString() ?? 'professional',
+      subscriptionPlan: map['subscriptionPlan']?.toString() ?? 'professional',
       scope: AtlasEntityScope.fromMap(
         Map<String, dynamic>.from(
           (map['scope'] as Map?) ?? const <String, dynamic>{},
@@ -197,13 +185,13 @@ class AtlasEnterpriseFarm {
   final AtlasEntityScope scope;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'city': city,
-        'state': state,
-        'active': active,
-        'scope': scope.toMap(),
-      };
+    'id': id,
+    'name': name,
+    'city': city,
+    'state': state,
+    'active': active,
+    'scope': scope.toMap(),
+  };
 
   factory AtlasEnterpriseFarm.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseFarm(
@@ -247,21 +235,19 @@ class AtlasEnterpriseMembership {
   final AtlasEntityScope scope;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'userId': userId,
-        'userName': userName,
-        'email': email,
-        'companyId': companyId,
-        'role': role.name,
-        'active': active,
-        'startedAt': startedAt.toIso8601String(),
-        'endedAt': endedAt?.toIso8601String(),
-        'scope': scope.toMap(),
-      };
+    'id': id,
+    'userId': userId,
+    'userName': userName,
+    'email': email,
+    'companyId': companyId,
+    'role': role.name,
+    'active': active,
+    'startedAt': startedAt.toIso8601String(),
+    'endedAt': endedAt?.toIso8601String(),
+    'scope': scope.toMap(),
+  };
 
-  factory AtlasEnterpriseMembership.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnterpriseMembership.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseMembership(
       id: map['id']?.toString() ?? '',
       userId: map['userId']?.toString() ?? '',
@@ -275,10 +261,8 @@ class AtlasEnterpriseMembership {
       active: map['active'] != false,
       startedAt:
           DateTime.tryParse(map['startedAt']?.toString() ?? '') ??
-              DateTime.now(),
-      endedAt: DateTime.tryParse(
-        map['endedAt']?.toString() ?? '',
-      ),
+          DateTime.now(),
+      endedAt: DateTime.tryParse(map['endedAt']?.toString() ?? ''),
       scope: AtlasEntityScope.fromMap(
         Map<String, dynamic>.from(
           (map['scope'] as Map?) ?? const <String, dynamic>{},
@@ -313,29 +297,25 @@ class AtlasConsultantCompanyLink {
   final DateTime? endedAt;
   final AtlasEntityScope scope;
 
-  bool grantsFarm(String farmId) =>
-      farmIds.isEmpty || farmIds.contains(farmId);
+  bool grantsFarm(String farmId) => farmIds.isEmpty || farmIds.contains(farmId);
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'consultantUserId': consultantUserId,
-        'consultantName': consultantName,
-        'companyId': companyId,
-        'farmIds': farmIds,
-        'isLeadConsultant': isLeadConsultant,
-        'active': active,
-        'startedAt': startedAt.toIso8601String(),
-        'endedAt': endedAt?.toIso8601String(),
-        'scope': scope.toMap(),
-      };
+    'id': id,
+    'consultantUserId': consultantUserId,
+    'consultantName': consultantName,
+    'companyId': companyId,
+    'farmIds': farmIds,
+    'isLeadConsultant': isLeadConsultant,
+    'active': active,
+    'startedAt': startedAt.toIso8601String(),
+    'endedAt': endedAt?.toIso8601String(),
+    'scope': scope.toMap(),
+  };
 
-  factory AtlasConsultantCompanyLink.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasConsultantCompanyLink.fromMap(Map<String, dynamic> map) {
     return AtlasConsultantCompanyLink(
       id: map['id']?.toString() ?? '',
-      consultantUserId:
-          map['consultantUserId']?.toString() ?? '',
+      consultantUserId: map['consultantUserId']?.toString() ?? '',
       consultantName: map['consultantName']?.toString() ?? '',
       companyId: map['companyId']?.toString() ?? '',
       farmIds: ((map['farmIds'] as List?) ?? const <dynamic>[])
@@ -345,9 +325,8 @@ class AtlasConsultantCompanyLink {
       active: map['active'] != false,
       startedAt:
           DateTime.tryParse(map['startedAt']?.toString() ?? '') ??
-              DateTime.now(),
-      endedAt:
-          DateTime.tryParse(map['endedAt']?.toString() ?? ''),
+          DateTime.now(),
+      endedAt: DateTime.tryParse(map['endedAt']?.toString() ?? ''),
       scope: AtlasEntityScope.fromMap(
         Map<String, dynamic>.from(
           (map['scope'] as Map?) ?? const <String, dynamic>{},
@@ -386,22 +365,20 @@ class AtlasEnterpriseSession {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'userId': userId,
-        'companyId': companyId,
-        'farmId': farmId,
-        'startedAt': startedAt.toIso8601String(),
-      };
+    'userId': userId,
+    'companyId': companyId,
+    'farmId': farmId,
+    'startedAt': startedAt.toIso8601String(),
+  };
 
-  factory AtlasEnterpriseSession.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasEnterpriseSession.fromMap(Map<String, dynamic> map) {
     return AtlasEnterpriseSession(
       userId: map['userId']?.toString() ?? '',
       companyId: map['companyId']?.toString() ?? '',
       farmId: map['farmId']?.toString(),
       startedAt:
           DateTime.tryParse(map['startedAt']?.toString() ?? '') ??
-              DateTime.now(),
+          DateTime.now(),
     );
   }
 }
@@ -436,10 +413,8 @@ class AtlasEnterprise24ASnapshot {
       companies: companies ?? this.companies,
       farms: farms ?? this.farms,
       memberships: memberships ?? this.memberships,
-      consultantLinks:
-          consultantLinks ?? this.consultantLinks,
-      session:
-          replaceSession ? session : session ?? this.session,
+      consultantLinks: consultantLinks ?? this.consultantLinks,
+      session: replaceSession ? session : session ?? this.session,
       migrationVersion: migrationVersion ?? this.migrationVersion,
     );
   }

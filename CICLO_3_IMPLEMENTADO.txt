@@ -1,0 +1,3 @@
+CICLO 3 IMPLEMENTADO
+Sprints 141 a 145
+Reprodução, sanidade, nutrição, estoque e financeiro integrados à fazenda ativa.

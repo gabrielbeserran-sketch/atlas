@@ -11,149 +11,124 @@ enum AtlasPrecisionLivestockModule {
   generalEfficiencyIndex,
 }
 
-extension AtlasPrecisionLivestockModuleX
-    on AtlasPrecisionLivestockModule {
+extension AtlasPrecisionLivestockModuleX on AtlasPrecisionLivestockModule {
   String get code => switch (this) {
-        AtlasPrecisionLivestockModule.weightPrediction =>
-          'weight_prediction',
-        AtlasPrecisionLivestockModule.dailyGainPrediction =>
-          'daily_gain_prediction',
-        AtlasPrecisionLivestockModule.estimatedIntake =>
-          'estimated_intake',
-        AtlasPrecisionLivestockModule.feedEfficiency =>
-          'feed_efficiency',
-        AtlasPrecisionLivestockModule.feedConversion =>
-          'feed_conversion',
-        AtlasPrecisionLivestockModule.animalWelfare =>
-          'animal_welfare',
-        AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
-          'early_disease_detection',
-        AtlasPrecisionLivestockModule.heatStress =>
-          'heat_stress',
-        AtlasPrecisionLivestockModule.mortalityRisk =>
-          'mortality_risk',
-        AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
-          'general_efficiency_index',
-      };
+    AtlasPrecisionLivestockModule.weightPrediction => 'weight_prediction',
+    AtlasPrecisionLivestockModule.dailyGainPrediction =>
+      'daily_gain_prediction',
+    AtlasPrecisionLivestockModule.estimatedIntake => 'estimated_intake',
+    AtlasPrecisionLivestockModule.feedEfficiency => 'feed_efficiency',
+    AtlasPrecisionLivestockModule.feedConversion => 'feed_conversion',
+    AtlasPrecisionLivestockModule.animalWelfare => 'animal_welfare',
+    AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
+      'early_disease_detection',
+    AtlasPrecisionLivestockModule.heatStress => 'heat_stress',
+    AtlasPrecisionLivestockModule.mortalityRisk => 'mortality_risk',
+    AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
+      'general_efficiency_index',
+  };
 
   String get title => switch (this) {
-        AtlasPrecisionLivestockModule.weightPrediction =>
-          'Predição de Peso',
-        AtlasPrecisionLivestockModule.dailyGainPrediction =>
-          'Predição de Ganho Diário',
-        AtlasPrecisionLivestockModule.estimatedIntake =>
-          'Consumo Estimado',
-        AtlasPrecisionLivestockModule.feedEfficiency =>
-          'Eficiência Alimentar',
-        AtlasPrecisionLivestockModule.feedConversion =>
-          'Conversão Alimentar',
-        AtlasPrecisionLivestockModule.animalWelfare =>
-          'Bem-estar Animal',
-        AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
-          'Detecção Precoce de Doenças',
-        AtlasPrecisionLivestockModule.heatStress =>
-          'Estresse Térmico',
-        AtlasPrecisionLivestockModule.mortalityRisk =>
-          'Mortalidade Prevista',
-        AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
-          'Índice Geral de Eficiência',
-      };
+    AtlasPrecisionLivestockModule.weightPrediction => 'Predição de Peso',
+    AtlasPrecisionLivestockModule.dailyGainPrediction =>
+      'Predição de Ganho Diário',
+    AtlasPrecisionLivestockModule.estimatedIntake => 'Consumo Estimado',
+    AtlasPrecisionLivestockModule.feedEfficiency => 'Eficiência Alimentar',
+    AtlasPrecisionLivestockModule.feedConversion => 'Conversão Alimentar',
+    AtlasPrecisionLivestockModule.animalWelfare => 'Bem-estar Animal',
+    AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
+      'Detecção Precoce de Doenças',
+    AtlasPrecisionLivestockModule.heatStress => 'Estresse Térmico',
+    AtlasPrecisionLivestockModule.mortalityRisk => 'Mortalidade Prevista',
+    AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
+      'Índice Geral de Eficiência',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasPrecisionLivestockModule.weightPrediction =>
-          'Pacote 151',
-        AtlasPrecisionLivestockModule.dailyGainPrediction =>
-          'Pacote 152',
-        AtlasPrecisionLivestockModule.estimatedIntake =>
-          'Pacote 153',
-        AtlasPrecisionLivestockModule.feedEfficiency =>
-          'Pacote 154',
-        AtlasPrecisionLivestockModule.feedConversion =>
-          'Pacote 155',
-        AtlasPrecisionLivestockModule.animalWelfare =>
-          'Pacote 156',
-        AtlasPrecisionLivestockModule.earlyDiseaseDetection =>
-          'Pacote 157',
-        AtlasPrecisionLivestockModule.heatStress =>
-          'Pacote 158',
-        AtlasPrecisionLivestockModule.mortalityRisk =>
-          'Pacote 159',
-        AtlasPrecisionLivestockModule.generalEfficiencyIndex =>
-          'Pacote 160',
-      };
+    AtlasPrecisionLivestockModule.weightPrediction => 'Pacote 151',
+    AtlasPrecisionLivestockModule.dailyGainPrediction => 'Pacote 152',
+    AtlasPrecisionLivestockModule.estimatedIntake => 'Pacote 153',
+    AtlasPrecisionLivestockModule.feedEfficiency => 'Pacote 154',
+    AtlasPrecisionLivestockModule.feedConversion => 'Pacote 155',
+    AtlasPrecisionLivestockModule.animalWelfare => 'Pacote 156',
+    AtlasPrecisionLivestockModule.earlyDiseaseDetection => 'Pacote 157',
+    AtlasPrecisionLivestockModule.heatStress => 'Pacote 158',
+    AtlasPrecisionLivestockModule.mortalityRisk => 'Pacote 159',
+    AtlasPrecisionLivestockModule.generalEfficiencyIndex => 'Pacote 160',
+  };
 
   List<String> get features => switch (this) {
-        AtlasPrecisionLivestockModule.weightPrediction => const [
-            'Peso atual',
-            'Curva de crescimento',
-            'Peso projetado',
-            'Data-alvo',
-            'Desvio e confiança',
-          ],
-        AtlasPrecisionLivestockModule.dailyGainPrediction => const [
-            'GMD observado',
-            'GMD projetado',
-            'Tendência',
-            'Meta de ganho',
-            'Alertas de desempenho',
-          ],
-        AtlasPrecisionLivestockModule.estimatedIntake => const [
-            'Consumo de matéria seca',
-            'Consumo por peso vivo',
-            'Disponibilidade de alimento',
-            'Estimativa diária',
-            'Desvios de consumo',
-          ],
-        AtlasPrecisionLivestockModule.feedEfficiency => const [
-            'Ganho por consumo',
-            'Eficiência individual',
-            'Comparação de lote',
-            'Tendência',
-            'Classificação',
-          ],
-        AtlasPrecisionLivestockModule.feedConversion => const [
-            'Conversão observada',
-            'Conversão projetada',
-            'Meta de conversão',
-            'Custo por ganho',
-            'Alertas de ineficiência',
-          ],
-        AtlasPrecisionLivestockModule.animalWelfare => const [
-            'Comportamento',
-            'Locomoção',
-            'Conforto',
-            'Interações sociais',
-            'Score de bem-estar',
-          ],
-        AtlasPrecisionLivestockModule.earlyDiseaseDetection => const [
-            'Sinais precoces',
-            'Mudança comportamental',
-            'Queda de consumo',
-            'Prioridade de triagem',
-            'Encaminhamento veterinário',
-          ],
-        AtlasPrecisionLivestockModule.heatStress => const [
-            'Temperatura e umidade',
-            'Índice térmico',
-            'Risco por animal',
-            'Resposta comportamental',
-            'Ações preventivas',
-          ],
-        AtlasPrecisionLivestockModule.mortalityRisk => const [
-            'Fatores de risco',
-            'Probabilidade estimada',
-            'Horizonte de risco',
-            'Prioridade de intervenção',
-            'Acompanhamento',
-          ],
-        AtlasPrecisionLivestockModule.generalEfficiencyIndex => const [
-            'Peso e ganho',
-            'Consumo e eficiência',
-            'Sanidade e bem-estar',
-            'Risco climático',
-            'Score consolidado',
-          ],
-      };
+    AtlasPrecisionLivestockModule.weightPrediction => const [
+      'Peso atual',
+      'Curva de crescimento',
+      'Peso projetado',
+      'Data-alvo',
+      'Desvio e confiança',
+    ],
+    AtlasPrecisionLivestockModule.dailyGainPrediction => const [
+      'GMD observado',
+      'GMD projetado',
+      'Tendência',
+      'Meta de ganho',
+      'Alertas de desempenho',
+    ],
+    AtlasPrecisionLivestockModule.estimatedIntake => const [
+      'Consumo de matéria seca',
+      'Consumo por peso vivo',
+      'Disponibilidade de alimento',
+      'Estimativa diária',
+      'Desvios de consumo',
+    ],
+    AtlasPrecisionLivestockModule.feedEfficiency => const [
+      'Ganho por consumo',
+      'Eficiência individual',
+      'Comparação de lote',
+      'Tendência',
+      'Classificação',
+    ],
+    AtlasPrecisionLivestockModule.feedConversion => const [
+      'Conversão observada',
+      'Conversão projetada',
+      'Meta de conversão',
+      'Custo por ganho',
+      'Alertas de ineficiência',
+    ],
+    AtlasPrecisionLivestockModule.animalWelfare => const [
+      'Comportamento',
+      'Locomoção',
+      'Conforto',
+      'Interações sociais',
+      'Score de bem-estar',
+    ],
+    AtlasPrecisionLivestockModule.earlyDiseaseDetection => const [
+      'Sinais precoces',
+      'Mudança comportamental',
+      'Queda de consumo',
+      'Prioridade de triagem',
+      'Encaminhamento veterinário',
+    ],
+    AtlasPrecisionLivestockModule.heatStress => const [
+      'Temperatura e umidade',
+      'Índice térmico',
+      'Risco por animal',
+      'Resposta comportamental',
+      'Ações preventivas',
+    ],
+    AtlasPrecisionLivestockModule.mortalityRisk => const [
+      'Fatores de risco',
+      'Probabilidade estimada',
+      'Horizonte de risco',
+      'Prioridade de intervenção',
+      'Acompanhamento',
+    ],
+    AtlasPrecisionLivestockModule.generalEfficiencyIndex => const [
+      'Peso e ganho',
+      'Consumo e eficiência',
+      'Sanidade e bem-estar',
+      'Risco climático',
+      'Score consolidado',
+    ],
+  };
 }
 
 class AtlasPrecisionLivestockRecord {
@@ -247,16 +222,12 @@ class AtlasPrecisionLivestockRecord {
     };
   }
 
-  factory AtlasPrecisionLivestockRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasPrecisionLivestockRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
-    final module =
-        AtlasPrecisionLivestockModule.values.firstWhere(
+    final module = AtlasPrecisionLivestockModule.values.firstWhere(
       (item) => item.code == code,
-      orElse: () =>
-          AtlasPrecisionLivestockModule.weightPrediction,
+      orElse: () => AtlasPrecisionLivestockModule.weightPrediction,
     );
 
     return AtlasPrecisionLivestockRecord(
@@ -266,32 +237,19 @@ class AtlasPrecisionLivestockRecord {
       title: map['title']?.toString() ?? '',
       date: map['date']?.toString() ?? '',
       status: map['status']?.toString() ?? 'Planejado',
-      animalReference:
-          map['animalReference']?.toString() ?? '',
-      groupReference:
-          map['groupReference']?.toString() ?? '',
+      animalReference: map['animalReference']?.toString() ?? '',
+      groupReference: map['groupReference']?.toString() ?? '',
       metricName: map['metricName']?.toString() ?? '',
-      currentValue:
-          (map['currentValue'] as num?)?.toDouble() ?? 0.0,
-      projectedValue:
-          (map['projectedValue'] as num?)?.toDouble() ?? 0.0,
-      targetValue:
-          (map['targetValue'] as num?)?.toDouble() ?? 0.0,
+      currentValue: (map['currentValue'] as num?)?.toDouble() ?? 0.0,
+      projectedValue: (map['projectedValue'] as num?)?.toDouble() ?? 0.0,
+      targetValue: (map['targetValue'] as num?)?.toDouble() ?? 0.0,
       unit: map['unit']?.toString() ?? '',
-      confidencePercent:
-          (map['confidencePercent'] as num?)?.toDouble() ??
-              0.0,
-      riskPercent:
-          (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
-      financialImpact:
-          (map['financialImpact'] as num?)?.toDouble() ??
-              0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
-      horizonDays:
-          (map['horizonDays'] as num?)?.toInt() ?? 0,
+      confidencePercent: (map['confidencePercent'] as num?)?.toDouble() ?? 0.0,
+      riskPercent: (map['riskPercent'] as num?)?.toDouble() ?? 0.0,
+      financialImpact: (map['financialImpact'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
+      horizonDays: (map['horizonDays'] as num?)?.toInt() ?? 0,
       responsible: map['responsible']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',
       createdAt: map['createdAt']?.toString() ?? '',

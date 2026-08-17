@@ -124,23 +124,23 @@ class AtlasInvestmentProject {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'farmId': farmId,
-        'name': name,
-        'description': description,
-        'category': category.name,
-        'initialInvestment': initialInvestment,
-        'workingCapital': workingCapital,
-        'annualRevenue': annualRevenue,
-        'annualOperatingCost': annualOperatingCost,
-        'residualValue': residualValue,
-        'horizonYears': horizonYears,
-        'strategicAlignment': strategicAlignment,
-        'operationalCapacity': operationalCapacity,
-        'riskScore': riskScore,
-        'mandatory': mandatory,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'farmId': farmId,
+    'name': name,
+    'description': description,
+    'category': category.name,
+    'initialInvestment': initialInvestment,
+    'workingCapital': workingCapital,
+    'annualRevenue': annualRevenue,
+    'annualOperatingCost': annualOperatingCost,
+    'residualValue': residualValue,
+    'horizonYears': horizonYears,
+    'strategicAlignment': strategicAlignment,
+    'operationalCapacity': operationalCapacity,
+    'riskScore': riskScore,
+    'mandatory': mandatory,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory AtlasInvestmentProject.fromJson(Map<String, dynamic> json) {
     return AtlasInvestmentProject(
@@ -165,7 +165,8 @@ class AtlasInvestmentProject {
           (json['operationalCapacity'] as num?)?.toDouble() ?? 50,
       riskScore: (json['riskScore'] as num?)?.toDouble() ?? 50,
       mandatory: json['mandatory'] as bool? ?? false,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
     );
   }

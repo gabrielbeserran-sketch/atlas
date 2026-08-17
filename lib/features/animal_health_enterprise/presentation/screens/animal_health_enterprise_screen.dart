@@ -26,8 +26,7 @@ class AnimalHealthEnterpriseScreen extends StatefulWidget {
 
 class _AnimalHealthEnterpriseScreenState
     extends State<AnimalHealthEnterpriseScreen> {
-  final AnimalHealthStorageService storage =
-      AnimalHealthStorageService();
+  final AnimalHealthStorageService storage = AnimalHealthStorageService();
 
   List<AnimalHealthData> records = <AnimalHealthData>[];
   bool loading = true;
@@ -71,17 +70,14 @@ class _AnimalHealthEnterpriseScreenState
     }).length;
   }
 
-  int get quarantine =>
-      records.where((record) => record.isQuarantine).length;
+  int get quarantine => records.where((record) => record.isQuarantine).length;
 
-  double get cost => records.fold<double>(
-        0,
-        (total, record) => total + record.treatmentCost,
-      );
+  double get cost =>
+      records.fold<double>(0, (total, record) => total + record.treatmentCost);
 
   int get exams => records.where((record) {
-        return record.type.toLowerCase().contains('exame');
-      }).length;
+    return record.type.toLowerCase().contains('exame');
+  }).length;
 
   int get risk {
     var value = 0;
@@ -141,8 +137,7 @@ class _AnimalHealthEnterpriseScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title:
-                            'Sanidade de ${widget.animal.displayName}',
+                        title: 'Sanidade de ${widget.animal.displayName}',
                         subtitle:
                             'Calendário, risco, custos e retornos sanitários consolidados.',
                         icon: Icons.health_and_safety_outlined,
@@ -161,8 +156,7 @@ class _AnimalHealthEnterpriseScreenState
                           EnterpriseMetricCard(
                             title: 'Retornos programados',
                             value: '$scheduled',
-                            subtitle:
-                                'Próximas aplicações e avaliações',
+                            subtitle: 'Próximas aplicações e avaliações',
                             icon: Icons.event_available_outlined,
                             warning: scheduled > 0,
                           ),
@@ -221,13 +215,13 @@ class _AnimalHealthEnterpriseScreenState
                       if (records.isEmpty)
                         const Card(
                           child: ListTile(
-                            title: Text(
-                              'Nenhum manejo sanitário cadastrado.',
-                            ),
+                            title: Text('Nenhum manejo sanitário cadastrado.'),
                           ),
                         )
                       else
-                        ...records.take(8).map(
+                        ...records
+                            .take(8)
+                            .map(
                               (record) => Card(
                                 child: ListTile(
                                   leading: const CircleAvatar(
@@ -240,9 +234,7 @@ class _AnimalHealthEnterpriseScreenState
                                         ? record.type
                                         : record.product,
                                   ),
-                                  subtitle: Text(
-                                    _healthSubtitle(record),
-                                  ),
+                                  subtitle: Text(_healthSubtitle(record)),
                                   trailing: record.isQuarantine
                                       ? const Icon(
                                           Icons.warning_amber,

@@ -10,9 +10,7 @@ enum AtlasReproductiveEventType {
   postpartumEvaluation,
 }
 
-String atlasReproductiveEventTypeLabel(
-  AtlasReproductiveEventType type,
-) {
+String atlasReproductiveEventTypeLabel(AtlasReproductiveEventType type) {
   switch (type) {
     case AtlasReproductiveEventType.heat:
       return 'Cio';
@@ -57,31 +55,25 @@ class AtlasReproductiveProtocol {
   final List<String> steps;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'description': description,
-        'startAt': startAt.toIso8601String(),
-        'endAt': endAt.toIso8601String(),
-        'farmName': farmName,
-        'active': active,
-        'steps': steps,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'startAt': startAt.toIso8601String(),
+    'endAt': endAt.toIso8601String(),
+    'farmName': farmName,
+    'active': active,
+    'steps': steps,
+  };
 
-  factory AtlasReproductiveProtocol.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasReproductiveProtocol.fromMap(Map<String, dynamic> map) {
     return AtlasReproductiveProtocol(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      startAt: DateTime.tryParse(
-            map['startAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(
-            map['endAt']?.toString() ?? '',
-          ) ??
-          DateTime.now(),
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ?? DateTime.now(),
       farmName: map['farmName']?.toString(),
       active: map['active'] != false,
       steps: _strings(map['steps']),
@@ -134,23 +126,21 @@ class AtlasReproductiveEvent {
       result.trim().toLowerCase().contains('negat');
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'animalId': animalId,
-        'animalName': animalName,
-        'type': type.name,
-        'occurredAt': occurredAt.toIso8601String(),
-        'protocolId': protocolId,
-        'sireId': sireId,
-        'semenBatch': semenBatch,
-        'professional': professional,
-        'result': result,
-        'notes': notes,
-        'farmName': farmName,
-      };
+    'id': id,
+    'animalId': animalId,
+    'animalName': animalName,
+    'type': type.name,
+    'occurredAt': occurredAt.toIso8601String(),
+    'protocolId': protocolId,
+    'sireId': sireId,
+    'semenBatch': semenBatch,
+    'professional': professional,
+    'result': result,
+    'notes': notes,
+    'farmName': farmName,
+  };
 
-  factory AtlasReproductiveEvent.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasReproductiveEvent.fromMap(Map<String, dynamic> map) {
     return AtlasReproductiveEvent(
       id: map['id']?.toString() ?? '',
       animalId: map['animalId']?.toString() ?? '',
@@ -159,9 +149,8 @@ class AtlasReproductiveEvent {
         (value) => value.name == map['type']?.toString(),
         orElse: () => AtlasReproductiveEventType.heat,
       ),
-      occurredAt: DateTime.tryParse(
-            map['occurredAt']?.toString() ?? '',
-          ) ??
+      occurredAt:
+          DateTime.tryParse(map['occurredAt']?.toString() ?? '') ??
           DateTime.now(),
       protocolId: map['protocolId']?.toString(),
       sireId: map['sireId']?.toString() ?? '',
@@ -208,22 +197,20 @@ class AtlasGeneticAnimal {
       maternalScore * 0.20;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'sex': sex,
-        'breed': breed,
-        'sireId': sireId,
-        'damId': damId,
-        'geneticIndex': geneticIndex,
-        'fertilityScore': fertilityScore,
-        'calvingEaseScore': calvingEaseScore,
-        'maternalScore': maternalScore,
-        'farmName': farmName,
-      };
+    'id': id,
+    'name': name,
+    'sex': sex,
+    'breed': breed,
+    'sireId': sireId,
+    'damId': damId,
+    'geneticIndex': geneticIndex,
+    'fertilityScore': fertilityScore,
+    'calvingEaseScore': calvingEaseScore,
+    'maternalScore': maternalScore,
+    'farmName': farmName,
+  };
 
-  factory AtlasGeneticAnimal.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasGeneticAnimal.fromMap(Map<String, dynamic> map) {
     return AtlasGeneticAnimal(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',

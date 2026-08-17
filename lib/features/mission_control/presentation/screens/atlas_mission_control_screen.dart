@@ -17,9 +17,7 @@ class AtlasMissionControlScreen extends StatefulWidget {
   final AtlasMissionControlData data;
   final AtlasExecutiveBrainData? executiveBrainData;
 
-  final Future<void> Function(
-    AtlasReactiveUpdate update,
-  )? onReactiveRefresh;
+  final Future<void> Function(AtlasReactiveUpdate update)? onReactiveRefresh;
 
   final VoidCallback? onOpenExecutiveBrain;
   final ValueChanged<String>? onOpenFarm;
@@ -51,22 +49,17 @@ class _AtlasMissionControlScreenState extends State<AtlasMissionControlScreen> {
   }
 
   @override
-  void didUpdateWidget(
-    covariant AtlasMissionControlScreen oldWidget,
-  ) {
+  void didUpdateWidget(covariant AtlasMissionControlScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (!identical(oldWidget.data, widget.data)) {
       final completedByPosition = <int, bool>{
-        for (final item in dailyPlan)
-          item.position: item.completed,
+        for (final item in dailyPlan) item.position: item.completed,
       };
 
       dailyPlan = widget.data.dailyPlan.map((item) {
         return item.copyWith(
-          completed:
-              completedByPosition[item.position] ??
-                  item.completed,
+          completed: completedByPosition[item.position] ?? item.completed,
         );
       }).toList();
     }
@@ -74,19 +67,13 @@ class _AtlasMissionControlScreenState extends State<AtlasMissionControlScreen> {
 
   @override
   void dispose() {
-    reactiveCoordinator.unregisterHandler(
-      AtlasReactiveTarget.missionControl,
-    );
+    reactiveCoordinator.unregisterHandler(AtlasReactiveTarget.missionControl);
     super.dispose();
   }
 
-  Future<void> _handleReactiveUpdate(
-    AtlasReactiveUpdate update,
-  ) async {
+  Future<void> _handleReactiveUpdate(AtlasReactiveUpdate update) async {
     if (!mounted ||
-        !update.targets.contains(
-          AtlasReactiveTarget.missionControl,
-        )) {
+        !update.targets.contains(AtlasReactiveTarget.missionControl)) {
       return;
     }
 

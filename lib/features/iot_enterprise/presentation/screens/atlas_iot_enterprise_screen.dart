@@ -1,12 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/iot_enterprise/data/atlas_iot_repository.dart';
 
 class AtlasIotEnterpriseScreen extends StatefulWidget {
-  const AtlasIotEnterpriseScreen({
-    required this.farmId,
-    super.key,
-  });
+  const AtlasIotEnterpriseScreen({required this.farmId, super.key});
 
   final String farmId;
 
@@ -15,8 +11,7 @@ class AtlasIotEnterpriseScreen extends StatefulWidget {
       _AtlasIotEnterpriseScreenState();
 }
 
-class _AtlasIotEnterpriseScreenState
-    extends State<AtlasIotEnterpriseScreen> {
+class _AtlasIotEnterpriseScreenState extends State<AtlasIotEnterpriseScreen> {
   final repository = AtlasIotRepository();
 
   Map<String, dynamic> dashboard = {};
@@ -71,91 +66,77 @@ class _AtlasIotEnterpriseScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null
-              ? Center(child: Text(error!))
-              : ListView(
-                  padding: const EdgeInsets.all(20),
+          ? Center(child: Text(error!))
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        _MetricCard(
-                          title: 'Dispositivos',
-                          value:
-                              '${dashboard['total_devices'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Online',
-                          value:
-                              '${dashboard['online_devices'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Offline',
-                          value:
-                              '${dashboard['offline_devices'] ?? 0}',
-                        ),
-                        _MetricCard(
-                          title: 'Bateria baixa',
-                          value:
-                              '${dashboard['low_battery_devices'] ?? 0}',
-                        ),
-                      ],
+                    _MetricCard(
+                      title: 'Dispositivos',
+                      value: '${dashboard['total_devices'] ?? 0}',
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Dispositivos',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall,
+                    _MetricCard(
+                      title: 'Online',
+                      value: '${dashboard['online_devices'] ?? 0}',
                     ),
-                    const SizedBox(height: 10),
-                    if (devices.isEmpty)
-                      const Card(
-                        child: ListTile(
-                          title: Text(
-                            'Nenhum dispositivo cadastrado.',
-                          ),
+                    _MetricCard(
+                      title: 'Offline',
+                      value: '${dashboard['offline_devices'] ?? 0}',
+                    ),
+                    _MetricCard(
+                      title: 'Bateria baixa',
+                      value: '${dashboard['low_battery_devices'] ?? 0}',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Dispositivos',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 10),
+                if (devices.isEmpty)
+                  const Card(
+                    child: ListTile(
+                      title: Text('Nenhum dispositivo cadastrado.'),
+                    ),
+                  )
+                else
+                  ...devices.map(
+                    (device) => Card(
+                      child: ListTile(
+                        leading: Icon(
+                          device['status'] == 'online'
+                              ? Icons.sensors
+                              : Icons.sensors_off,
                         ),
-                      )
-                    else
-                      ...devices.map(
-                        (device) => Card(
-                          child: ListTile(
-                            leading: Icon(
-                              device['status'] == 'online'
-                                  ? Icons.sensors
-                                  : Icons.sensors_off,
-                            ),
-                            title: Text(
-                              device['name']?.toString() ?? '',
-                            ),
-                            subtitle: Text(
-                              '${device['device_type'] ?? ''} • '
-                              '${device['external_id'] ?? ''}\n'
-                              'Bateria: ${device['battery_percent'] ?? '-'}% • '
-                              'Sinal: ${device['signal_strength'] ?? '-'}',
-                            ),
-                            isThreeLine: true,
-                            trailing: Chip(
-                              label: Text(
-                                device['status']?.toString() ??
-                                    'offline',
-                              ),
-                            ),
+                        title: Text(device['name']?.toString() ?? ''),
+                        subtitle: Text(
+                          '${device['device_type'] ?? ''} • '
+                          '${device['external_id'] ?? ''}\n'
+                          'Bateria: ${device['battery_percent'] ?? '-'}% • '
+                          'Sinal: ${device['signal_strength'] ?? '-'}',
+                        ),
+                        isThreeLine: true,
+                        trailing: Chip(
+                          label: Text(
+                            device['status']?.toString() ?? 'offline',
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
 
 class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.title,
-    required this.value,
-  });
+  const _MetricCard({required this.title, required this.value});
 
   final String title;
   final String value;
@@ -168,16 +149,11 @@ class _MetricCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title),
               const SizedBox(height: 8),
-              Text(
-                value,
-                style:
-                    Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(value, style: Theme.of(context).textTheme.headlineSmall),
             ],
           ),
         ),

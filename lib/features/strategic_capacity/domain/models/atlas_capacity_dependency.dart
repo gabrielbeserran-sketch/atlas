@@ -34,20 +34,14 @@ class AtlasCapacityAssessment {
   int get criticalConflicts {
     return conflicts
         .where(
-          (item) =>
-              item.severity ==
-              AtlasCapacityConflictSeverity.critical,
+          (item) => item.severity == AtlasCapacityConflictSeverity.critical,
         )
         .length;
   }
 
   int get blockedDependencies {
     return dependencies
-        .where(
-          (item) =>
-              item.status ==
-              AtlasStrategyDependencyStatus.blocked,
-        )
+        .where((item) => item.status == AtlasStrategyDependencyStatus.blocked)
         .length;
   }
 }
@@ -110,22 +104,11 @@ class AtlasCapacityConflict {
   final String recommendation;
 }
 
-enum AtlasStrategyDependencyStatus {
-  satisfied,
-  pending,
-  blocked,
-}
+enum AtlasStrategyDependencyStatus { satisfied, pending, blocked }
 
-enum AtlasCapacityConflictSeverity {
-  low,
-  moderate,
-  high,
-  critical,
-}
+enum AtlasCapacityConflictSeverity { low, moderate, high, critical }
 
-String atlasDependencyStatusLabel(
-  AtlasStrategyDependencyStatus status,
-) {
+String atlasDependencyStatusLabel(AtlasStrategyDependencyStatus status) {
   switch (status) {
     case AtlasStrategyDependencyStatus.satisfied:
       return 'Atendida';

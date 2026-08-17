@@ -8,7 +8,8 @@ class AtlasQualityCenterScreen extends StatefulWidget {
   const AtlasQualityCenterScreen({super.key});
 
   @override
-  State<AtlasQualityCenterScreen> createState() => _AtlasQualityCenterScreenState();
+  State<AtlasQualityCenterScreen> createState() =>
+      _AtlasQualityCenterScreenState();
 }
 
 class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
@@ -25,7 +26,9 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
 
   Future<void> _load() async {
     final AtlasQualityState state = await _repository.load();
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _state = state;
       _loading = false;
@@ -34,30 +37,47 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
 
   Future<void> _save(AtlasQualityState state) async {
     await _repository.save(state);
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _state = state);
   }
 
   Future<void> _toggleCheck(AtlasQualityCheck check, bool completed) async {
     final AtlasQualityState current = _state!;
-    final List<AtlasQualityCheck> updated = current.checks.map((AtlasQualityCheck item) {
-      if (item.id != check.id) return item;
+    final List<AtlasQualityCheck> updated = current.checks.map((
+      AtlasQualityCheck item,
+    ) {
+      if (item.id != check.id) {
+        return item;
+      }
       return item.copyWith(
         completed: completed,
         completedAt: completed ? DateTime.now() : null,
       );
     }).toList();
-    await _save(current.copyWith(checks: updated, lastReviewAt: DateTime.now()));
+    await _save(
+      current.copyWith(checks: updated, lastReviewAt: DateTime.now()),
+    );
   }
 
   Future<void> _toggleIncident(AtlasQualityIncident incident) async {
     final AtlasQualityState current = _state!;
-    final List<AtlasQualityIncident> updated = current.incidents.map((AtlasQualityIncident item) {
-      if (item.id != incident.id) return item;
+    final List<AtlasQualityIncident> updated = current.incidents.map((
+      AtlasQualityIncident item,
+    ) {
+      if (item.id != incident.id) {
+        return item;
+      }
       final bool resolved = !item.resolved;
-      return item.copyWith(resolved: resolved, resolvedAt: resolved ? DateTime.now() : null);
+      return item.copyWith(
+        resolved: resolved,
+        resolvedAt: resolved ? DateTime.now() : null,
+      );
     }).toList();
-    await _save(current.copyWith(incidents: updated, lastReviewAt: DateTime.now()));
+    await _save(
+      current.copyWith(incidents: updated, lastReviewAt: DateTime.now()),
+    );
   }
 
   Future<void> _addIncident() async {
@@ -77,9 +97,15 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    TextField(controller: title, decoration: const InputDecoration(labelText: 'Título')),
+                    TextField(
+                      controller: title,
+                      decoration: const InputDecoration(labelText: 'Título'),
+                    ),
                     const SizedBox(height: 12),
-                    TextField(controller: module, decoration: const InputDecoration(labelText: 'Módulo')),
+                    TextField(
+                      controller: module,
+                      decoration: const InputDecoration(labelText: 'Módulo'),
+                    ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: description,
@@ -89,20 +115,35 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: severity,
-                      decoration: const InputDecoration(labelText: 'Severidade'),
+                      decoration: const InputDecoration(
+                        labelText: 'Severidade',
+                      ),
                       items: const <String>['Baixa', 'Média', 'Alta', 'Crítica']
-                          .map((String value) => DropdownMenuItem<String>(value: value, child: Text(value)))
+                          .map(
+                            (String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
                           .toList(),
                       onChanged: (String? value) {
-                        if (value != null) setDialogState(() => severity = value);
+                        if (value != null) {
+                          setDialogState(() => severity = value);
+                        }
                       },
                     ),
                   ],
                 ),
               ),
               actions: <Widget>[
-                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-                FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Salvar')),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Salvar'),
+                ),
               ],
             );
           },
@@ -110,7 +151,11 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
       },
     );
 
-    if (confirmed != true || title.text.trim().isEmpty || module.text.trim().isEmpty) return;
+    if (confirmed != true ||
+        title.text.trim().isEmpty ||
+        module.text.trim().isEmpty) {
+      return;
+    }
     final AtlasQualityState current = _state!;
     final AtlasQualityIncident incident = AtlasQualityIncident(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
@@ -121,10 +166,12 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
       createdAt: DateTime.now(),
       resolved: false,
     );
-    await _save(current.copyWith(
-      incidents: <AtlasQualityIncident>[incident, ...current.incidents],
-      lastReviewAt: DateTime.now(),
-    ));
+    await _save(
+      current.copyWith(
+        incidents: <AtlasQualityIncident>[incident, ...current.incidents],
+        lastReviewAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -150,11 +197,7 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : TabBarView(
-                children: <Widget>[
-                  _overview(),
-                  _checklist(),
-                  _incidents(),
-                ],
+                children: <Widget>[_overview(), _checklist(), _incidents()],
               ),
       ),
     );
@@ -172,13 +215,27 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text('Índice de estabilidade', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Índice de estabilidade',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: <Widget>[
-                    Text('${summary.score}%', style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold)),
+                    Text(
+                      '${summary.score}%',
+                      style: const TextStyle(
+                        fontSize: 42,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(width: 18),
-                    Expanded(child: LinearProgressIndicator(value: summary.score / 100, minHeight: 12)),
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: summary.score / 100,
+                        minHeight: 12,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -192,21 +249,45 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
           spacing: 12,
           runSpacing: 12,
           children: <Widget>[
-            _metric('Checklist concluído', '${summary.completedChecks}/${summary.totalChecks}', Icons.task_alt),
-            _metric('Ocorrências abertas', '${summary.openIncidents}', Icons.report_problem_outlined),
-            _metric('Críticos pendentes', '${summary.criticalPending}', Icons.priority_high),
+            _metric(
+              'Checklist concluído',
+              '${summary.completedChecks}/${summary.totalChecks}',
+              Icons.task_alt,
+            ),
+            _metric(
+              'Ocorrências abertas',
+              '${summary.openIncidents}',
+              Icons.report_problem_outlined,
+            ),
+            _metric(
+              'Críticos pendentes',
+              '${summary.criticalPending}',
+              Icons.priority_high,
+            ),
           ],
         ),
         const SizedBox(height: 20),
-        const Text('Próximas prioridades', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Próximas prioridades',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
-        ...state.checks.where((AtlasQualityCheck item) => !item.completed).take(4).map(
+        ...state.checks
+            .where((AtlasQualityCheck item) => !item.completed)
+            .take(4)
+            .map(
               (AtlasQualityCheck item) => Card(
                 child: ListTile(
-                  leading: Icon(item.critical ? Icons.warning_amber_rounded : Icons.check_circle_outline),
+                  leading: Icon(
+                    item.critical
+                        ? Icons.warning_amber_rounded
+                        : Icons.check_circle_outline,
+                  ),
                   title: Text(item.title),
                   subtitle: Text(item.description),
-                  trailing: item.critical ? const Chip(label: Text('Crítico')) : null,
+                  trailing: item.critical
+                      ? const Chip(label: Text('Crítico'))
+                      : null,
                 ),
               ),
             ),
@@ -228,7 +309,13 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Text(title),
                   ],
                 ),
@@ -250,7 +337,9 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
             onChanged: (bool? value) => _toggleCheck(check, value ?? false),
             title: Text(check.title),
             subtitle: Text('${check.category} • ${check.description}'),
-            secondary: check.critical ? const Icon(Icons.priority_high) : const Icon(Icons.fact_check_outlined),
+            secondary: check.critical
+                ? const Icon(Icons.priority_high)
+                : const Icon(Icons.fact_check_outlined),
           ),
         );
       }).toList(),
@@ -259,15 +348,23 @@ class _AtlasQualityCenterScreenState extends State<AtlasQualityCenterScreen> {
 
   Widget _incidents() {
     final List<AtlasQualityIncident> incidents = _state!.incidents;
-    if (incidents.isEmpty) return const Center(child: Text('Nenhuma ocorrência registrada.'));
+    if (incidents.isEmpty) {
+      return const Center(child: Text('Nenhuma ocorrência registrada.'));
+    }
     return ListView(
       padding: const EdgeInsets.all(20),
       children: incidents.map((AtlasQualityIncident incident) {
         return Card(
           child: ListTile(
-            leading: Icon(incident.resolved ? Icons.check_circle_outline : Icons.error_outline),
+            leading: Icon(
+              incident.resolved
+                  ? Icons.check_circle_outline
+                  : Icons.error_outline,
+            ),
             title: Text(incident.title),
-            subtitle: Text('${incident.module} • ${incident.severity}\n${incident.description}'),
+            subtitle: Text(
+              '${incident.module} • ${incident.severity}\n${incident.description}',
+            ),
             isThreeLine: true,
             trailing: TextButton(
               onPressed: () => _toggleIncident(incident),

@@ -20,17 +20,16 @@ class AtlasBenefitsRealizationEngine {
         .inDays
         .clamp(1, 100000);
 
-    final plannedProgress =
-        (elapsedDays / totalDays * 100)
-            .clamp(0.0, 100.0)
-            .toDouble();
+    final plannedProgress = (elapsedDays / totalDays * 100)
+        .clamp(0.0, 100.0)
+        .toDouble();
 
     final actualProgress = plan.progressPercent;
 
     final actualRoi = actualCost <= 0
         ? actualNetGain > 0
-            ? 100.0
-            : 0.0
+              ? 100.0
+              : 0.0
         : actualNetGain / actualCost * 100;
 
     final plannedIndicator = 85.0;
@@ -101,14 +100,12 @@ class AtlasBenefitsRealizationEngine {
     required double plannedIndicator,
     required double actualIndicator,
   }) {
-    final budgetRatio = plannedBudget <= 0
-        ? 1.0
-        : actualCost / plannedBudget;
+    final budgetRatio = plannedBudget <= 0 ? 1.0 : actualCost / plannedBudget;
 
     final gainRatio = plannedNetGain <= 0
         ? actualNetGain > 0
-            ? 1.0
-            : 0.0
+              ? 1.0
+              : 0.0
         : actualNetGain / plannedNetGain;
 
     final progressGap = plannedProgress - actualProgress;
@@ -176,15 +173,11 @@ class AtlasBenefitsRealizationEngine {
     final actions = <String>[];
 
     if (actualCost > plannedBudget) {
-      actions.add(
-        'Revisar imediatamente os itens que excederam o orçamento.',
-      );
+      actions.add('Revisar imediatamente os itens que excederam o orçamento.');
     }
 
     if (actualProgress < plannedProgress) {
-      actions.add(
-        'Reprogramar marcos atrasados e redefinir responsáveis.',
-      );
+      actions.add('Reprogramar marcos atrasados e redefinir responsáveis.');
     }
 
     if (actualNetGain < plannedNetGain) {
@@ -199,9 +192,7 @@ class AtlasBenefitsRealizationEngine {
           'Manter a execução e confirmar os resultados na próxima revisão.',
         );
       case AtlasBenefitRealizationStatus.attention:
-        actions.add(
-          'Executar uma revisão gerencial em até 15 dias.',
-        );
+        actions.add('Executar uma revisão gerencial em até 15 dias.');
       case AtlasBenefitRealizationStatus.offTrack:
         actions.add(
           'Abrir plano corretivo e revisar o próximo gate de decisão.',

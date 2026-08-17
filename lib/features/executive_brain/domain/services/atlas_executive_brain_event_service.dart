@@ -11,8 +11,7 @@ class AtlasExecutiveBrainEventService {
   static final AtlasExecutiveBrainEventService instance =
       AtlasExecutiveBrainEventService._();
 
-  final AtlasEventFactory eventFactory =
-      const AtlasEventFactory();
+  final AtlasEventFactory eventFactory = const AtlasEventFactory();
 
   AtlasExecutiveBrainData? _lastPublishedData;
   String? _lastFingerprint;
@@ -22,13 +21,10 @@ class AtlasExecutiveBrainEventService {
     return _lastPublishedData;
   }
 
-  void publishIfChangedDetached(
-    AtlasExecutiveBrainData current,
-  ) {
+  void publishIfChangedDetached(AtlasExecutiveBrainData current) {
     final fingerprint = _fingerprint(current);
 
-    if (_isPublishing ||
-        fingerprint == _lastFingerprint) {
+    if (_isPublishing || fingerprint == _lastFingerprint) {
       return;
     }
 
@@ -37,21 +33,13 @@ class AtlasExecutiveBrainEventService {
     _lastFingerprint = fingerprint;
     _lastPublishedData = current;
 
-    final change = _detectChange(
-      previous: previous,
-      current: current,
-    );
+    final change = _detectChange(previous: previous, current: current);
 
-    final historyService =
-        AtlasExecutiveBrainHistoryService.instance;
+    final historyService = AtlasExecutiveBrainHistoryService.instance;
 
     historyService.load().then((_) {
       historyService.add(
-        _historyEntry(
-          previous: previous,
-          current: current,
-          change: change,
-        ),
+        _historyEntry(previous: previous, current: current, change: change),
       );
     });
 
@@ -65,49 +53,34 @@ class AtlasExecutiveBrainEventService {
       description: decision == null
           ? 'A decisão oficial foi removida ou ainda não está disponível.'
           : 'Nova visão executiva consolidada: ${decision.title}.',
-      priority: _eventPriority(
-        current,
-      ),
+      priority: _eventPriority(current),
       farmName: decision?.farmName,
       entityId: decision?.id,
       entityType: 'executive_brain_decision',
       payload: <String, dynamic>{
         'changeType': change.name,
         'brainScore': current.brainScore,
-        'confidencePercent':
-            current.confidencePercent,
+        'confidencePercent': current.confidencePercent,
         'status': current.status.name,
         'decisionId': decision?.id,
         'decisionTitle': decision?.title,
-        'decisionDescription':
-            decision?.description,
-        'decisionPriority':
-            decision?.priority.name,
+        'decisionDescription': decision?.description,
+        'decisionPriority': decision?.priority.name,
         'decisionScore': decision?.score,
-        'decisionConfidencePercent':
-            decision?.confidencePercent,
-        'expectedFinancialImpact':
-            decision?.expectedFinancialImpact,
-        'deadlineHours':
-            decision?.deadlineHours,
-        'expectedResult':
-            decision?.expectedResult,
+        'decisionConfidencePercent': decision?.confidencePercent,
+        'expectedFinancialImpact': decision?.expectedFinancialImpact,
+        'deadlineHours': decision?.deadlineHours,
+        'expectedResult': decision?.expectedResult,
         'strategyId': strategy?.id,
         'strategyTitle': strategy?.title,
-        'strategyHorizonDays':
-            strategy?.horizonDays,
+        'strategyHorizonDays': strategy?.horizonDays,
         'strategySuccessProbabilityPercent':
             strategy?.successProbabilityPercent,
-        'dailyPlanCount':
-            current.dailyPlan.length,
-        'weeklyPlanCount':
-            current.weeklyPlan.length,
-        'monthlyPlanCount':
-            current.monthlyPlan.length,
-        'conflictCount':
-            current.conflicts.length,
-        'crossImpactCount':
-            current.crossImpacts.length,
+        'dailyPlanCount': current.dailyPlan.length,
+        'weeklyPlanCount': current.weeklyPlan.length,
+        'monthlyPlanCount': current.monthlyPlan.length,
+        'conflictCount': current.conflicts.length,
+        'crossImpactCount': current.crossImpacts.length,
       },
       tags: <String>[
         'executive',
@@ -120,9 +93,7 @@ class AtlasExecutiveBrainEventService {
 
     _isPublishing = true;
 
-    AtlasEventBus.instance
-        .publish(event)
-        .whenComplete(() {
+    AtlasEventBus.instance.publish(event).whenComplete(() {
       _isPublishing = false;
     });
   }
@@ -133,29 +104,18 @@ class AtlasExecutiveBrainEventService {
     _isPublishing = false;
   }
 
-  String _fingerprint(
-    AtlasExecutiveBrainData data,
-  ) {
+  String _fingerprint(AtlasExecutiveBrainData data) {
     final decision = data.officialDecision;
     final strategy = data.strategy;
 
-    final dailyIds = data.dailyPlan
-        .map((item) => item.id)
-        .join('|');
+    final dailyIds = data.dailyPlan.map((item) => item.id).join('|');
 
-    final weeklyIds = data.weeklyPlan
-        .map((item) => item.id)
-        .join('|');
+    final weeklyIds = data.weeklyPlan.map((item) => item.id).join('|');
 
-    final monthlyIds = data.monthlyPlan
-        .map((item) => item.id)
-        .join('|');
+    final monthlyIds = data.monthlyPlan.map((item) => item.id).join('|');
 
     final conflicts = data.conflicts
-        .map(
-          (item) =>
-              '${item.id}:${item.severity.name}',
-        )
+        .map((item) => '${item.id}:${item.severity.name}')
         .join('|');
 
     return <Object?>[
@@ -163,16 +123,13 @@ class AtlasExecutiveBrainEventService {
       decision?.title,
       decision?.priority.name,
       decision?.score.toStringAsFixed(2),
-      decision?.confidencePercent
-          .toStringAsFixed(2),
-      decision?.expectedFinancialImpact
-          .toStringAsFixed(2),
+      decision?.confidencePercent.toStringAsFixed(2),
+      decision?.expectedFinancialImpact.toStringAsFixed(2),
       decision?.deadlineHours,
       decision?.expectedResult,
       strategy?.id,
       strategy?.title,
-      strategy?.successProbabilityPercent
-          .toStringAsFixed(2),
+      strategy?.successProbabilityPercent.toStringAsFixed(2),
       data.brainScore.toStringAsFixed(2),
       data.confidencePercent.toStringAsFixed(2),
       data.status.name,
@@ -191,41 +148,28 @@ class AtlasExecutiveBrainEventService {
       return AtlasExecutiveBrainChangeType.initialized;
     }
 
-    final previousDecision =
-        previous.officialDecision;
-    final currentDecision =
-        current.officialDecision;
+    final previousDecision = previous.officialDecision;
+    final currentDecision = current.officialDecision;
 
-    if (previousDecision != null &&
-        currentDecision == null) {
-      return AtlasExecutiveBrainChangeType
-          .decisionRemoved;
+    if (previousDecision != null && currentDecision == null) {
+      return AtlasExecutiveBrainChangeType.decisionRemoved;
     }
 
-    if (previousDecision?.id !=
-            currentDecision?.id ||
-        previousDecision?.title !=
-            currentDecision?.title) {
-      return AtlasExecutiveBrainChangeType
-          .decisionChanged;
+    if (previousDecision?.id != currentDecision?.id ||
+        previousDecision?.title != currentDecision?.title) {
+      return AtlasExecutiveBrainChangeType.decisionChanged;
     }
 
-    if (previousDecision?.priority !=
-        currentDecision?.priority) {
-      return AtlasExecutiveBrainChangeType
-          .priorityChanged;
+    if (previousDecision?.priority != currentDecision?.priority) {
+      return AtlasExecutiveBrainChangeType.priorityChanged;
     }
 
-    if (previous.strategy?.id !=
-            current.strategy?.id ||
-        previous.strategy?.title !=
-            current.strategy?.title) {
-      return AtlasExecutiveBrainChangeType
-          .strategyChanged;
+    if (previous.strategy?.id != current.strategy?.id ||
+        previous.strategy?.title != current.strategy?.title) {
+      return AtlasExecutiveBrainChangeType.strategyChanged;
     }
 
-    return AtlasExecutiveBrainChangeType
-        .scoreChanged;
+    return AtlasExecutiveBrainChangeType.scoreChanged;
   }
 
   AtlasExecutiveBrainHistoryEntry _historyEntry({
@@ -236,26 +180,17 @@ class AtlasExecutiveBrainEventService {
     final timestamp = DateTime.now();
 
     return AtlasExecutiveBrainHistoryEntry(
-      id:
-          'brain_history_${timestamp.microsecondsSinceEpoch}',
+      id: 'brain_history_${timestamp.microsecondsSinceEpoch}',
       recordedAt: timestamp,
       changeType: change,
-      previousDecisionId:
-          previous?.officialDecision?.id,
-      currentDecisionId:
-          current.officialDecision?.id,
-      previousDecisionTitle:
-          previous?.officialDecision?.title,
-      currentDecisionTitle:
-          current.officialDecision?.title,
-      previousScore:
-          previous?.brainScore,
-      currentScore:
-          current.brainScore,
-      previousConfidencePercent:
-          previous?.confidencePercent,
-      currentConfidencePercent:
-          current.confidencePercent,
+      previousDecisionId: previous?.officialDecision?.id,
+      currentDecisionId: current.officialDecision?.id,
+      previousDecisionTitle: previous?.officialDecision?.title,
+      currentDecisionTitle: current.officialDecision?.title,
+      previousScore: previous?.brainScore,
+      currentScore: current.brainScore,
+      previousConfidencePercent: previous?.confidencePercent,
+      currentConfidencePercent: current.confidencePercent,
       currentStatus: current.status,
       reason: _changeReason(
         previous: previous,
@@ -294,20 +229,15 @@ class AtlasExecutiveBrainEventService {
     }
   }
 
-  AtlasEventPriority _eventPriority(
-    AtlasExecutiveBrainData data,
-  ) {
-    if (data.status ==
-            AtlasExecutiveBrainStatus.critical ||
+  AtlasEventPriority _eventPriority(AtlasExecutiveBrainData data) {
+    if (data.status == AtlasExecutiveBrainStatus.critical ||
         data.officialDecision?.priority ==
             AtlasExecutiveBrainPriority.critical) {
       return AtlasEventPriority.critical;
     }
 
-    if (data.status ==
-            AtlasExecutiveBrainStatus.attention ||
-        data.officialDecision?.priority ==
-            AtlasExecutiveBrainPriority.high) {
+    if (data.status == AtlasExecutiveBrainStatus.attention ||
+        data.officialDecision?.priority == AtlasExecutiveBrainPriority.high) {
       return AtlasEventPriority.high;
     }
 

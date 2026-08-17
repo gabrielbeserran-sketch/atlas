@@ -3,6 +3,7 @@ import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_service.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_form_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class PaddockListScreen extends StatefulWidget {
   const PaddockListScreen({required this.farm, super.key});
@@ -26,40 +27,30 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
   }
 
   Future<void> loadPaddocks() async {
-    final savedPaddocks = await storage.loadPaddocks(widget.farm.name);
-
-    if (savedPaddocks.isEmpty) {
-      paddocks = [
-        const PaddockData(
-          name: 'Piquete 01',
-          area: 18.5,
-          status: 'Em pastejo',
-          animals: 42,
-        ),
-        const PaddockData(
-          name: 'Piquete 02',
-          area: 21,
-          status: 'Descanso',
-          animals: 0,
-        ),
-      ];
-
-      await savePaddocks();
-    } else {
-      paddocks = savedPaddocks;
+    if (mounted) {
+      setState(() => isLoading = true);
     }
-
-    if (!mounted) {
-      return;
+    try {
+      final savedPaddocks = await storage
+          .loadPaddocks(widget.farm.id ?? '')
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) {
+        return;
+      }
+      setState(() => paddocks = savedPaddocks);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível carregar os piquetes: $error'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
-
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-  Future<void> savePaddocks() async {
-    await storage.savePaddocks(farmName: widget.farm.name, paddocks: paddocks);
   }
 
   Future<void> openPaddockForm() async {
@@ -74,11 +65,16 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
       return;
     }
 
+    final created = await storage.createPaddock(
+      farmId: widget.farm.id ?? '',
+      paddock: newPaddock,
+    );
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      paddocks.add(newPaddock);
+      paddocks.add(created);
     });
-
-    await savePaddocks();
 
     if (!mounted) {
       return;
@@ -107,11 +103,23 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
       return;
     }
 
+    final updated = await storage.updatePaddock(
+      farmId: widget.farm.id ?? '',
+      paddock: PaddockData(
+        id: paddock.id,
+        name: editedPaddock.name,
+        area: editedPaddock.area,
+        status: editedPaddock.status,
+        animals: editedPaddock.animals,
+        notes: editedPaddock.notes,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      paddocks[paddockIndex] = editedPaddock;
+      paddocks[paddockIndex] = updated;
     });
-
-    await savePaddocks();
 
     if (!mounted) {
       return;
@@ -156,11 +164,13 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
       return;
     }
 
+    await storage.deletePaddock(farmId: widget.farm.id ?? '', id: paddock.id);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       paddocks.remove(paddock);
     });
-
-    await savePaddocks();
 
     if (!mounted) {
       return;
@@ -276,121 +286,183 @@ class PaddockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isInUse = paddock.animals > 0;
+    final isInUse = paddock.animals > 0;
 
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onEdit,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B5E20).withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.grid_view_outlined,
-                  color: Color(0xFF1B5E20),
-                  size: 30,
-                ),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      paddock.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 20,
-                      runSpacing: 10,
-                      children: [
-                        PaddockInformation(
-                          icon: Icons.straighten_outlined,
-                          text: '${formatArea(paddock.area)} hectares',
-                        ),
-                        PaddockInformation(
-                          icon: Icons.pets_outlined,
-                          text: '${paddock.animals} animais',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isInUse
-                      ? const Color(0xFFE8F5E9)
-                      : const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  paddock.status,
-                  style: TextStyle(
-                    color: isInUse
-                        ? const Color(0xFF1B5E20)
-                        : const Color(0xFF8D6E00),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              PopupMenuButton<String>(
-                tooltip: 'Opções',
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  }
-
-                  if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (context) {
-                  return const [
-                    PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
-                          SizedBox(width: 10),
-                          Text('Editar piquete'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: Colors.red),
-                          SizedBox(width: 10),
-                          Text('Excluir piquete'),
-                        ],
-                      ),
-                    ),
-                  ];
-                },
-              ),
-            ],
+    Widget statusChip() {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isInUse ? const Color(0xFFE8F5E9) : const Color(0xFFFFF8E1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          paddock.status,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: isInUse ? const Color(0xFF1B5E20) : const Color(0xFF8D6E00),
+            fontWeight: FontWeight.w600,
           ),
         ),
-      ),
+      );
+    }
+
+    Widget menu() {
+      return PopupMenuButton<String>(
+        tooltip: 'Opções',
+        onSelected: (value) {
+          if (value == 'edit') {
+            onEdit();
+          }
+          if (value == 'delete') {
+            onDelete();
+          }
+        },
+        itemBuilder: (context) {
+          return const [
+            PopupMenuItem<String>(
+              value: 'edit',
+              child: Row(
+                children: [
+                  Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
+                  SizedBox(width: 10),
+                  Text('Editar piquete'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete_outline, color: Colors.red),
+                  SizedBox(width: 10),
+                  Text('Excluir piquete'),
+                ],
+              ),
+            ),
+          ];
+        },
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+
+        return Card(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onEdit,
+            child: Padding(
+              padding: EdgeInsets.all(compact ? 16 : 20),
+              child: compact
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF1B5E20,
+                            ).withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.grid_view_outlined,
+                            color: Color(0xFF1B5E20),
+                            size: 26,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                paddock.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              PaddockInformation(
+                                icon: Icons.straighten_outlined,
+                                text: '${formatArea(paddock.area)} hectares',
+                              ),
+                              const SizedBox(height: 7),
+                              PaddockInformation(
+                                icon: AtlasLivestockIcons.cow,
+                                text: '${paddock.animals} animais',
+                              ),
+                              const SizedBox(height: 12),
+                              statusChip(),
+                            ],
+                          ),
+                        ),
+                        menu(),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF1B5E20,
+                            ).withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.grid_view_outlined,
+                            color: Color(0xFF1B5E20),
+                            size: 30,
+                          ),
+                        ),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                paddock.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 20,
+                                runSpacing: 10,
+                                children: [
+                                  PaddockInformation(
+                                    icon: Icons.straighten_outlined,
+                                    text:
+                                        '${formatArea(paddock.area)} hectares',
+                                  ),
+                                  PaddockInformation(
+                                    icon: AtlasLivestockIcons.cow,
+                                    text: '${paddock.animals} animais',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        statusChip(),
+                        menu(),
+                      ],
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -398,7 +470,6 @@ class PaddockCard extends StatelessWidget {
     if (area == area.roundToDouble()) {
       return area.toInt().toString();
     }
-
     return area.toStringAsFixed(2).replaceAll('.', ',');
   }
 }

@@ -575,7 +575,7 @@ def create_animal(
     tag = request.tag.strip()
     if not tag:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail="O brinco do animal é obrigatório.",
         )
 
@@ -647,7 +647,7 @@ def update_animal(
         tag = str(changes["tag"] or "").strip()
         if not tag:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="O brinco do animal é obrigatório.",
             )
         changes["tag"] = tag

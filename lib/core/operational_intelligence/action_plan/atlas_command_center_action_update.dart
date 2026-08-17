@@ -26,20 +26,15 @@ class AtlasCommandCenterActionUpdate {
     };
   }
 
-  factory AtlasCommandCenterActionUpdate.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCommandCenterActionUpdate.fromMap(Map<String, dynamic> map) {
     return AtlasCommandCenterActionUpdate(
       id: map['id']?.toString() ?? '',
       actionId: map['actionId']?.toString() ?? '',
       createdAt:
           DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      progressPercent: _readInt(
-        map['progressPercent'],
-      ).clamp(0, 100),
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      progressPercent: _readInt(map['progressPercent']).clamp(0, 100),
+      responsibleName: map['responsibleName']?.toString() ?? '',
       note: map['note']?.toString() ?? '',
     );
   }

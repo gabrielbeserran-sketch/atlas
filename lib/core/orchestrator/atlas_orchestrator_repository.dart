@@ -16,9 +16,11 @@ class AtlasOrchestratorRepository {
     }
     final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
     return decoded
-        .map((dynamic item) => AtlasOrchestratorTask.fromJson(
-              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-            ))
+        .map(
+          (dynamic item) => AtlasOrchestratorTask.fromJson(
+            Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+          ),
+        )
         .toList();
   }
 
@@ -26,7 +28,9 @@ class AtlasOrchestratorRepository {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _tasksKey,
-      jsonEncode(tasks.map((AtlasOrchestratorTask task) => task.toJson()).toList()),
+      jsonEncode(
+        tasks.map((AtlasOrchestratorTask task) => task.toJson()).toList(),
+      ),
     );
   }
 
@@ -38,9 +42,11 @@ class AtlasOrchestratorRepository {
     }
     final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
     return decoded
-        .map((dynamic item) => AtlasOrchestratorRun.fromJson(
-              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-            ))
+        .map(
+          (dynamic item) => AtlasOrchestratorRun.fromJson(
+            Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+          ),
+        )
         .toList();
   }
 
@@ -48,17 +54,75 @@ class AtlasOrchestratorRepository {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString(
       _runsKey,
-      jsonEncode(runs.take(20).map((AtlasOrchestratorRun run) => run.toJson()).toList()),
+      jsonEncode(
+        runs.take(20).map((AtlasOrchestratorRun run) => run.toJson()).toList(),
+      ),
     );
   }
 
   List<AtlasOrchestratorTask> defaultTasks() => const <AtlasOrchestratorTask>[
-        AtlasOrchestratorTask(id: 'collect', name: 'Coleta de dados', module: 'Integration Core', order: 1, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'validate', name: 'Validação do contexto', module: 'Data Governance', order: 2, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'consolidate', name: 'Consolidação operacional', module: 'Digital Twin', order: 3, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'analytics', name: 'Execução analítica', module: 'Business Intelligence', order: 4, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'decision', name: 'Priorização de decisões', module: 'Executive Brain', order: 5, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'automation', name: 'Distribuição de ações', module: 'Workflow Automation', order: 6, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-        AtlasOrchestratorTask(id: 'audit', name: 'Auditoria e observabilidade', module: 'Observability', order: 7, enabled: true, status: AtlasPipelineStatus.idle, durationMs: 0),
-      ];
+    AtlasOrchestratorTask(
+      id: 'collect',
+      name: 'Coleta de dados',
+      module: 'Integration Core',
+      order: 1,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'validate',
+      name: 'Validação do contexto',
+      module: 'Data Governance',
+      order: 2,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'consolidate',
+      name: 'Consolidação operacional',
+      module: 'Digital Twin',
+      order: 3,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'analytics',
+      name: 'Execução analítica',
+      module: 'Business Intelligence',
+      order: 4,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'decision',
+      name: 'Priorização de decisões',
+      module: 'Executive Brain',
+      order: 5,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'automation',
+      name: 'Distribuição de ações',
+      module: 'Workflow Automation',
+      order: 6,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+    AtlasOrchestratorTask(
+      id: 'audit',
+      name: 'Auditoria e observabilidade',
+      module: 'Observability',
+      order: 7,
+      enabled: true,
+      status: AtlasPipelineStatus.idle,
+      durationMs: 0,
+    ),
+  ];
 }

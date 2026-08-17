@@ -57,19 +57,19 @@ class AtlasSyncItem {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'module': module,
-        'entityType': entityType,
-        'entityId': entityId,
-        'operation': operation,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
-        'status': status.name,
-        'priority': priority.name,
-        'attempts': attempts,
-        'payload': payload,
-        'lastError': lastError,
-      };
+    'id': id,
+    'module': module,
+    'entityType': entityType,
+    'entityId': entityId,
+    'operation': operation,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+    'status': status.name,
+    'priority': priority.name,
+    'attempts': attempts,
+    'payload': payload,
+    'lastError': lastError,
+  };
 
   factory AtlasSyncItem.fromJson(Map<String, dynamic> json) {
     return AtlasSyncItem(
@@ -78,8 +78,12 @@ class AtlasSyncItem {
       entityType: json['entityType'] as String? ?? 'registro',
       entityId: json['entityId'] as String? ?? '',
       operation: json['operation'] as String? ?? 'update',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+          DateTime.now(),
       status: AtlasSyncStatus.values.firstWhere(
         (AtlasSyncStatus value) => value.name == json['status'],
         orElse: () => AtlasSyncStatus.pending,
@@ -89,7 +93,9 @@ class AtlasSyncItem {
         orElse: () => AtlasSyncPriority.normal,
       ),
       attempts: (json['attempts'] as num?)?.toInt() ?? 0,
-      payload: Map<String, dynamic>.from(json['payload'] as Map? ?? <String, dynamic>{}),
+      payload: Map<String, dynamic>.from(
+        json['payload'] as Map? ?? <String, dynamic>{},
+      ),
       lastError: json['lastError'] as String?,
     );
   }
@@ -123,11 +129,11 @@ class AtlasSyncSettings {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'online': online,
-        'automaticSync': automaticSync,
-        'wifiOnly': wifiOnly,
-        'lastSyncAt': lastSyncAt?.toIso8601String(),
-      };
+    'online': online,
+    'automaticSync': automaticSync,
+    'wifiOnly': wifiOnly,
+    'lastSyncAt': lastSyncAt?.toIso8601String(),
+  };
 
   factory AtlasSyncSettings.fromJson(Map<String, dynamic> json) {
     return AtlasSyncSettings(
@@ -145,7 +151,8 @@ class AtlasSyncState {
   final List<AtlasSyncItem> items;
   final AtlasSyncSettings settings;
 
-  String encodeItems() => jsonEncode(items.map((AtlasSyncItem item) => item.toJson()).toList());
+  String encodeItems() =>
+      jsonEncode(items.map((AtlasSyncItem item) => item.toJson()).toList());
 }
 
 class AtlasSyncSummary {

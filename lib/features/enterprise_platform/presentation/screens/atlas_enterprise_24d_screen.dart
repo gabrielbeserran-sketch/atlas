@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/network/atlas_environment.dart';
 
 import '../../data/services/atlas_enterprise_remote_auth_store.dart';
 import '../../domain/models/atlas_enterprise_remote_session.dart';
@@ -14,8 +15,7 @@ class AtlasEnterprise24DScreen extends StatefulWidget {
       _AtlasEnterprise24DScreenState();
 }
 
-class _AtlasEnterprise24DScreenState
-    extends State<AtlasEnterprise24DScreen> {
+class _AtlasEnterprise24DScreenState extends State<AtlasEnterprise24DScreen> {
   final api = AtlasEnterpriseApiClient.instance;
   final store = AtlasEnterpriseRemoteAuthStore.instance;
 
@@ -54,6 +54,7 @@ class _AtlasEnterprise24DScreenState
   }
 
   Future<void> _saveBaseUrl() async {
+    if (AtlasEnvironmentConfig.isProduction) return;
     await store.saveBaseUrl(baseUrl.text);
     if (!mounted) return;
     setState(() {
@@ -92,8 +93,7 @@ class _AtlasEnterprise24DScreenState
       if (!mounted) return;
       setState(() {
         session = result;
-        status =
-            'Autenticado em ${result.companyId} (${result.role}).';
+        status = 'Autenticado em ${result.companyId} (${result.role}).';
       });
     } catch (error) {
       if (!mounted) return;
@@ -158,8 +158,7 @@ class _AtlasEnterprise24DScreenState
       final value = await api.runBackup();
       if (!mounted) return;
       setState(() {
-        status =
-            'Backup criado: ${value['filename'] ?? ''}.';
+        status = 'Backup criado: ${value['filename'] ?? ''}.';
       });
       await _loadBackups();
     } catch (error) {
@@ -190,12 +189,7 @@ class _AtlasEnterprise24DScreenState
           ),
         ),
         body: TabBarView(
-          children: [
-            _serverTab(),
-            _authTab(),
-            _syncTab(),
-            _backupTab(),
-          ],
+          children: [_serverTab(), _authTab(), _syncTab(), _backupTab()],
         ),
       ),
     );
@@ -207,10 +201,16 @@ class _AtlasEnterprise24DScreenState
       children: [
         TextField(
           controller: baseUrl,
-          decoration: const InputDecoration(
+          readOnly: AtlasEnvironmentConfig.isProduction,
+          decoration: InputDecoration(
             labelText: 'URL da API',
-            hintText: 'http://localhost:8000/api/v1',
-            border: OutlineInputBorder(),
+            hintText: AtlasEnvironmentConfig.isProduction
+                ? 'Definida na assinatura de produção'
+                : 'http://localhost:8000/api/v1',
+            helperText: AtlasEnvironmentConfig.isProduction
+                ? 'Imutável nesta versão publicada.'
+                : null,
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 12),
@@ -262,9 +262,7 @@ class _AtlasEnterprise24DScreenState
         if (session != null)
           Card(
             child: ListTile(
-              leading: const Icon(
-                Icons.verified_user_outlined,
-              ),
+              leading: const Icon(Icons.verified_user_outlined),
               title: Text(session!.userName),
               subtitle: Text(
                 '${session!.email}\n'
@@ -294,8 +292,7 @@ class _AtlasEnterprise24DScreenState
           ),
         ),
         FilledButton.icon(
-          onPressed:
-              loading || session == null ? null : _remoteSync,
+          onPressed: loading || session == null ? null : _remoteSync,
           icon: const Icon(Icons.sync),
           label: const Text('Sincronizar com o servidor'),
         ),
@@ -313,9 +310,7 @@ class _AtlasEnterprise24DScreenState
             children: [
               Expanded(
                 child: FilledButton.tonalIcon(
-                  onPressed: loading || session == null
-                      ? null
-                      : _loadBackups,
+                  onPressed: loading || session == null ? null : _loadBackups,
                   icon: const Icon(Icons.refresh),
                   label: const Text('Listar backups'),
                 ),
@@ -323,9 +318,7 @@ class _AtlasEnterprise24DScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: loading || session == null
-                      ? null
-                      : _runBackup,
+                  onPressed: loading || session == null ? null : _runBackup,
                   icon: const Icon(Icons.backup),
                   label: const Text('Executar backup'),
                 ),
@@ -335,28 +328,17 @@ class _AtlasEnterprise24DScreenState
         ),
         Expanded(
           child: backups.isEmpty
-              ? const Center(
-                  child: Text('Nenhum backup carregado.'),
-                )
+              ? const Center(child: Text('Nenhum backup carregado.'))
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    0,
-                    16,
-                    24,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   itemCount: backups.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final item = backups[index];
                     return Card(
                       child: ListTile(
-                        leading:
-                            const Icon(Icons.storage_outlined),
-                        title: Text(
-                          item['filename']?.toString() ?? '',
-                        ),
+                        leading: const Icon(Icons.storage_outlined),
+                        title: Text(item['filename']?.toString() ?? ''),
                         subtitle: Text(
                           '${item['engine'] ?? ''} • '
                           '${item['size_bytes'] ?? 0} bytes',
@@ -366,10 +348,7 @@ class _AtlasEnterprise24DScreenState
                   },
                 ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: _statusCard(),
-        ),
+        Padding(padding: const EdgeInsets.all(16), child: _statusCard()),
       ],
     );
   }
@@ -382,9 +361,7 @@ class _AtlasEnterprise24DScreenState
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.info_outline),
         title: Text(status),

@@ -1,13 +1,26 @@
-enum AtlasFeedCategory { roughage, concentrate, mineral, additive, byproduct, other }
+enum AtlasFeedCategory {
+  roughage,
+  concentrate,
+  mineral,
+  additive,
+  byproduct,
+  other,
+}
 
 String atlasFeedCategoryLabel(AtlasFeedCategory value) {
   switch (value) {
-    case AtlasFeedCategory.roughage: return 'Volumoso';
-    case AtlasFeedCategory.concentrate: return 'Concentrado';
-    case AtlasFeedCategory.mineral: return 'Mineral';
-    case AtlasFeedCategory.additive: return 'Aditivo';
-    case AtlasFeedCategory.byproduct: return 'Subproduto';
-    case AtlasFeedCategory.other: return 'Outro';
+    case AtlasFeedCategory.roughage:
+      return 'Volumoso';
+    case AtlasFeedCategory.concentrate:
+      return 'Concentrado';
+    case AtlasFeedCategory.mineral:
+      return 'Mineral';
+    case AtlasFeedCategory.additive:
+      return 'Aditivo';
+    case AtlasFeedCategory.byproduct:
+      return 'Subproduto';
+    case AtlasFeedCategory.other:
+      return 'Outro';
   }
 }
 
@@ -142,16 +155,18 @@ class AtlasDietPlan {
       name: map['name']?.toString() ?? '',
       lotName: map['lotName']?.toString() ?? '',
       animalCount: (map['animalCount'] as num?)?.toInt() ?? 0,
-      targetDailyGainKg:
-          (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
+      targetDailyGainKg: (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
       ingredients: (map['ingredients'] as List? ?? const [])
-          .map((e) => AtlasDietIngredient.fromMap(
-                Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => AtlasDietIngredient.fromMap(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
           .toList(),
-      startAt: DateTime.tryParse(map['startAt']?.toString() ?? '') ??
-          DateTime.now(),
-      endAt: DateTime.tryParse(map['endAt']?.toString() ?? '') ??
-          DateTime.now(),
+      startAt:
+          DateTime.tryParse(map['startAt']?.toString() ?? '') ?? DateTime.now(),
+      endAt:
+          DateTime.tryParse(map['endAt']?.toString() ?? '') ?? DateTime.now(),
       active: map['active'] != false,
       farmName: map['farmName']?.toString(),
     );
@@ -207,14 +222,14 @@ class AtlasFeedConsumptionRecord {
       id: map['id']?.toString() ?? '',
       dietId: map['dietId']?.toString() ?? '',
       lotName: map['lotName']?.toString() ?? '',
-      recordedAt: DateTime.tryParse(map['recordedAt']?.toString() ?? '') ??
+      recordedAt:
+          DateTime.tryParse(map['recordedAt']?.toString() ?? '') ??
           DateTime.now(),
       offeredKg: (map['offeredKg'] as num?)?.toDouble() ?? 0,
       leftoverKg: (map['leftoverKg'] as num?)?.toDouble() ?? 0,
       animalCount: (map['animalCount'] as num?)?.toInt() ?? 0,
       averageWeightKg: (map['averageWeightKg'] as num?)?.toDouble() ?? 0,
-      averageDailyGainKg:
-          (map['averageDailyGainKg'] as num?)?.toDouble() ?? 0,
+      averageDailyGainKg: (map['averageDailyGainKg'] as num?)?.toDouble() ?? 0,
       farmName: map['farmName']?.toString(),
     );
   }

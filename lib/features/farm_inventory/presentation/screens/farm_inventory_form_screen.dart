@@ -68,10 +68,10 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
           ? ''
           : _formatNumber(item.lastPurchaseValue, decimals: 2),
     );
-    _manufacturingDate =
-        TextEditingController(text: item?.manufacturingDate ?? '');
-    _expirationDate =
-        TextEditingController(text: item?.expirationDate ?? '');
+    _manufacturingDate = TextEditingController(
+      text: item?.manufacturingDate ?? '',
+    );
+    _expirationDate = TextEditingController(text: item?.expirationDate ?? '');
     _supplier = TextEditingController(text: item?.supplier ?? '');
     _batch = TextEditingController(text: item?.batch ?? '');
     _withdrawalDays = TextEditingController(
@@ -79,12 +79,13 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
           ? ''
           : item.withdrawalDays.toString(),
     );
-    _storageLocation =
-        TextEditingController(text: item?.storageLocation ?? '');
-    _activeIngredient =
-        TextEditingController(text: item?.activeIngredient ?? '');
-    _purchaseDocument =
-        TextEditingController(text: item?.purchaseDocument ?? '');
+    _storageLocation = TextEditingController(text: item?.storageLocation ?? '');
+    _activeIngredient = TextEditingController(
+      text: item?.activeIngredient ?? '',
+    );
+    _purchaseDocument = TextEditingController(
+      text: item?.purchaseDocument ?? '',
+    );
     _notes = TextEditingController(text: item?.notes ?? '');
   }
 
@@ -221,22 +222,42 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                     _section('Identificação do produto'),
                     _responsive([
                       _dropdownCategory(),
-                      _field(_name, 'Nome do produto', Icons.inventory_2_outlined,
-                          validator: _required),
+                      _field(
+                        _name,
+                        'Nome do produto',
+                        Icons.inventory_2_outlined,
+                        validator: _required,
+                      ),
                     ]),
                     _responsive([
-                      _field(_internalCode, 'Código interno', Icons.tag_outlined),
-                      _field(_barcode, 'Código de barras', Icons.qr_code_2_outlined,
-                          keyboardType: TextInputType.number),
+                      _field(
+                        _internalCode,
+                        'Código interno',
+                        Icons.tag_outlined,
+                      ),
+                      _field(
+                        _barcode,
+                        'Código de barras',
+                        Icons.qr_code_2_outlined,
+                        keyboardType: TextInputType.number,
+                      ),
                     ]),
                     _responsive([
                       _field(_brand, 'Marca', Icons.sell_outlined),
-                      _field(_manufacturer, 'Fabricante', Icons.factory_outlined),
+                      _field(
+                        _manufacturer,
+                        'Fabricante',
+                        Icons.factory_outlined,
+                      ),
                     ]),
                     const SizedBox(height: 22),
                     _section('Controle de quantidade'),
                     _responsive([
-                      _numberField(_quantity, 'Quantidade atual', required: true),
+                      _numberField(
+                        _quantity,
+                        'Quantidade atual',
+                        required: true,
+                      ),
                       _dropdownUnit(),
                     ]),
                     _responsive([
@@ -244,7 +265,11 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                       _numberField(_maximum, 'Estoque máximo'),
                     ]),
                     _responsive([
-                      _numberField(_unitValue, 'Custo médio (R\$)', money: true),
+                      _numberField(
+                        _unitValue,
+                        'Custo médio (R\$)',
+                        money: true,
+                      ),
                       _numberField(
                         _lastPurchaseValue,
                         'Último custo de compra (R\$)',
@@ -266,7 +291,11 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                       _dateField(_expirationDate, 'Data de validade'),
                     ]),
                     _responsive([
-                      _field(_activeIngredient, 'Princípio ativo', Icons.science_outlined),
+                      _field(
+                        _activeIngredient,
+                        'Princípio ativo',
+                        Icons.science_outlined,
+                      ),
                       _field(
                         _withdrawalDays,
                         'Carência (dias)',
@@ -278,7 +307,11 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                     const SizedBox(height: 22),
                     _section('Compra e armazenamento'),
                     _responsive([
-                      _field(_supplier, 'Fornecedor', Icons.local_shipping_outlined),
+                      _field(
+                        _supplier,
+                        'Fornecedor',
+                        Icons.local_shipping_outlined,
+                      ),
                       _field(
                         _storageLocation,
                         'Local de armazenamento',
@@ -295,7 +328,9 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                     FilledButton.icon(
                       onPressed: _saving ? null : _save,
                       icon: const Icon(Icons.save_outlined),
-                      label: Text(_isEditing ? 'Salvar alterações' : 'Cadastrar produto'),
+                      label: Text(
+                        _isEditing ? 'Salvar alterações' : 'Cadastrar produto',
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF1B5E20),
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -312,12 +347,12 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
   }
 
   Widget _section(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    ),
+  );
 
   Widget _responsive(List<Widget> children) {
     return LayoutBuilder(
@@ -325,10 +360,12 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
         if (constraints.maxWidth < 620) {
           return Column(
             children: children
-                .map((child) => Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: child,
-                    ))
+                .map(
+                  (child) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: child,
+                  ),
+                )
                 .toList(),
           );
         }
@@ -435,10 +472,10 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
           prefixIcon: Icon(Icons.category_outlined),
         ),
         items: categories
-            .map((category) => DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                ))
+            .map(
+              (category) =>
+                  DropdownMenuItem(value: category, child: Text(category)),
+            )
             .toList(),
         onChanged: (value) => setState(() => _category = value ?? 'Outro'),
       ),

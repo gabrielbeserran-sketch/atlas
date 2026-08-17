@@ -1,10 +1,8 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasAiRepository {
-  AtlasAiRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasAiRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
@@ -33,17 +31,12 @@ class AtlasAiRepository {
     final response = await _client.send(
       'POST',
       '/ai/conversations/$conversationId/messages',
-      body: {
-        'content': content,
-        'context': context,
-      },
+      body: {'content': content, 'context': context},
     );
     return response.asMapList();
   }
 
-  Future<List<Map<String, dynamic>>> messages(
-    String conversationId,
-  ) async {
+  Future<List<Map<String, dynamic>>> messages(String conversationId) async {
     final response = await _client.send(
       'GET',
       '/ai/conversations/$conversationId/messages',
@@ -60,11 +53,7 @@ class AtlasAiRepository {
     final response = await _client.send(
       'POST',
       '/ai/analyze/$area',
-      body: {
-        'farm_id': farmId,
-        'animal_id': animalId,
-        'context': context,
-      },
+      body: {'farm_id': farmId, 'animal_id': animalId, 'context': context},
     );
     return response.asMapList();
   }
@@ -76,11 +65,7 @@ class AtlasAiRepository {
     final response = await _client.send(
       'POST',
       '/ai/executive',
-      body: {
-        'farm_id': farmId,
-        'animal_id': null,
-        'context': context,
-      },
+      body: {'farm_id': farmId, 'animal_id': null, 'context': context},
     );
     return response.asMap();
   }

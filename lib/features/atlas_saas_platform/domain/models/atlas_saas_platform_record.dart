@@ -13,146 +13,117 @@ enum AtlasSaasPlatformModule {
 
 extension AtlasSaasPlatformModuleX on AtlasSaasPlatformModule {
   String get code => switch (this) {
-        AtlasSaasPlatformModule.accessControl =>
-          'access_control',
-        AtlasSaasPlatformModule.multiCompany =>
-          'multi_company',
-        AtlasSaasPlatformModule.multiFarm =>
-          'multi_farm',
-        AtlasSaasPlatformModule.subscriptions =>
-          'subscriptions',
-        AtlasSaasPlatformModule.billing =>
-          'billing',
-        AtlasSaasPlatformModule.pixPayments =>
-          'pix_payments',
-        AtlasSaasPlatformModule.cardPayments =>
-          'card_payments',
-        AtlasSaasPlatformModule.licensing =>
-          'licensing',
-        AtlasSaasPlatformModule.consultantMarketplace =>
-          'consultant_marketplace',
-        AtlasSaasPlatformModule.producerPortal =>
-          'producer_portal',
-      };
+    AtlasSaasPlatformModule.accessControl => 'access_control',
+    AtlasSaasPlatformModule.multiCompany => 'multi_company',
+    AtlasSaasPlatformModule.multiFarm => 'multi_farm',
+    AtlasSaasPlatformModule.subscriptions => 'subscriptions',
+    AtlasSaasPlatformModule.billing => 'billing',
+    AtlasSaasPlatformModule.pixPayments => 'pix_payments',
+    AtlasSaasPlatformModule.cardPayments => 'card_payments',
+    AtlasSaasPlatformModule.licensing => 'licensing',
+    AtlasSaasPlatformModule.consultantMarketplace => 'consultant_marketplace',
+    AtlasSaasPlatformModule.producerPortal => 'producer_portal',
+  };
 
   String get title => switch (this) {
-        AtlasSaasPlatformModule.accessControl =>
-          'Usuários e Perfis Enterprise',
-        AtlasSaasPlatformModule.multiCompany =>
-          'Multiempresa',
-        AtlasSaasPlatformModule.multiFarm =>
-          'Multifazenda',
-        AtlasSaasPlatformModule.subscriptions =>
-          'Planos e Assinaturas',
-        AtlasSaasPlatformModule.billing =>
-          'Cobrança e Billing',
-        AtlasSaasPlatformModule.pixPayments =>
-          'Integração Pix',
-        AtlasSaasPlatformModule.cardPayments =>
-          'Integração com Cartões',
-        AtlasSaasPlatformModule.licensing =>
-          'Gestão de Licenças',
-        AtlasSaasPlatformModule.consultantMarketplace =>
-          'Marketplace de Consultores',
-        AtlasSaasPlatformModule.producerPortal =>
-          'Portal do Produtor',
-      };
+    AtlasSaasPlatformModule.accessControl => 'Usuários e Perfis Enterprise',
+    AtlasSaasPlatformModule.multiCompany => 'Multiempresa',
+    AtlasSaasPlatformModule.multiFarm => 'Multifazenda',
+    AtlasSaasPlatformModule.subscriptions => 'Planos e Assinaturas',
+    AtlasSaasPlatformModule.billing => 'Cobrança e Billing',
+    AtlasSaasPlatformModule.pixPayments => 'Integração Pix',
+    AtlasSaasPlatformModule.cardPayments => 'Integração com Cartões',
+    AtlasSaasPlatformModule.licensing => 'Gestão de Licenças',
+    AtlasSaasPlatformModule.consultantMarketplace =>
+      'Marketplace de Consultores',
+    AtlasSaasPlatformModule.producerPortal => 'Portal do Produtor',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasSaasPlatformModule.accessControl =>
-          'Pacote 101',
-        AtlasSaasPlatformModule.multiCompany =>
-          'Pacote 102',
-        AtlasSaasPlatformModule.multiFarm =>
-          'Pacote 103',
-        AtlasSaasPlatformModule.subscriptions =>
-          'Pacote 104',
-        AtlasSaasPlatformModule.billing =>
-          'Pacote 105',
-        AtlasSaasPlatformModule.pixPayments =>
-          'Pacote 106',
-        AtlasSaasPlatformModule.cardPayments =>
-          'Pacote 107',
-        AtlasSaasPlatformModule.licensing =>
-          'Pacote 108',
-        AtlasSaasPlatformModule.consultantMarketplace =>
-          'Pacote 109',
-        AtlasSaasPlatformModule.producerPortal =>
-          'Pacote 110',
-      };
+    AtlasSaasPlatformModule.accessControl => 'Pacote 101',
+    AtlasSaasPlatformModule.multiCompany => 'Pacote 102',
+    AtlasSaasPlatformModule.multiFarm => 'Pacote 103',
+    AtlasSaasPlatformModule.subscriptions => 'Pacote 104',
+    AtlasSaasPlatformModule.billing => 'Pacote 105',
+    AtlasSaasPlatformModule.pixPayments => 'Pacote 106',
+    AtlasSaasPlatformModule.cardPayments => 'Pacote 107',
+    AtlasSaasPlatformModule.licensing => 'Pacote 108',
+    AtlasSaasPlatformModule.consultantMarketplace => 'Pacote 109',
+    AtlasSaasPlatformModule.producerPortal => 'Pacote 110',
+  };
 
   List<String> get features => switch (this) {
-        AtlasSaasPlatformModule.accessControl => const [
-            'Usuários',
-            'Perfis e funções',
-            'Permissões',
-            'Sessões e dispositivos',
-            'Auditoria de acesso',
-          ],
-        AtlasSaasPlatformModule.multiCompany => const [
-            'Empresas',
-            'Unidades de negócio',
-            'Vínculos de usuários',
-            'Configurações por empresa',
-            'Consolidação empresarial',
-          ],
-        AtlasSaasPlatformModule.multiFarm => const [
-            'Fazendas por empresa',
-            'Acesso por propriedade',
-            'Configuração operacional',
-            'Consolidação de fazendas',
-            'Comparativos',
-          ],
-        AtlasSaasPlatformModule.subscriptions => const [
-            'Catálogo de planos',
-            'Assinaturas',
-            'Períodos e renovação',
-            'Upgrade e downgrade',
-            'Cancelamentos',
-          ],
-        AtlasSaasPlatformModule.billing => const [
-            'Faturas',
-            'Cobranças',
-            'Recebimentos',
-            'Inadimplência',
-            'Conciliação',
-          ],
-        AtlasSaasPlatformModule.pixPayments => const [
-            'Chaves Pix',
-            'Cobranças Pix',
-            'QR Code',
-            'Recebimentos',
-            'Devoluções',
-          ],
-        AtlasSaasPlatformModule.cardPayments => const [
-            'Clientes e cartões',
-            'Autorizações',
-            'Parcelamentos',
-            'Estornos',
-            'Chargebacks',
-          ],
-        AtlasSaasPlatformModule.licensing => const [
-            'Licenças',
-            'Limites de uso',
-            'Ativações',
-            'Expiração',
-            'Bloqueios e exceções',
-          ],
-        AtlasSaasPlatformModule.consultantMarketplace => const [
-            'Consultores',
-            'Especialidades',
-            'Solicitações',
-            'Propostas',
-            'Avaliações',
-          ],
-        AtlasSaasPlatformModule.producerPortal => const [
-            'Painel do produtor',
-            'Solicitações e suporte',
-            'Documentos',
-            'Indicadores compartilhados',
-            'Comunicação',
-          ],
-      };
+    AtlasSaasPlatformModule.accessControl => const [
+      'Usuários',
+      'Perfis e funções',
+      'Permissões',
+      'Sessões e dispositivos',
+      'Auditoria de acesso',
+    ],
+    AtlasSaasPlatformModule.multiCompany => const [
+      'Empresas',
+      'Unidades de negócio',
+      'Vínculos de usuários',
+      'Configurações por empresa',
+      'Consolidação empresarial',
+    ],
+    AtlasSaasPlatformModule.multiFarm => const [
+      'Fazendas por empresa',
+      'Acesso por propriedade',
+      'Configuração operacional',
+      'Consolidação de fazendas',
+      'Comparativos',
+    ],
+    AtlasSaasPlatformModule.subscriptions => const [
+      'Catálogo de planos',
+      'Assinaturas',
+      'Períodos e renovação',
+      'Upgrade e downgrade',
+      'Cancelamentos',
+    ],
+    AtlasSaasPlatformModule.billing => const [
+      'Faturas',
+      'Cobranças',
+      'Recebimentos',
+      'Inadimplência',
+      'Conciliação',
+    ],
+    AtlasSaasPlatformModule.pixPayments => const [
+      'Chaves Pix',
+      'Cobranças Pix',
+      'QR Code',
+      'Recebimentos',
+      'Devoluções',
+    ],
+    AtlasSaasPlatformModule.cardPayments => const [
+      'Clientes e cartões',
+      'Autorizações',
+      'Parcelamentos',
+      'Estornos',
+      'Chargebacks',
+    ],
+    AtlasSaasPlatformModule.licensing => const [
+      'Licenças',
+      'Limites de uso',
+      'Ativações',
+      'Expiração',
+      'Bloqueios e exceções',
+    ],
+    AtlasSaasPlatformModule.consultantMarketplace => const [
+      'Consultores',
+      'Especialidades',
+      'Solicitações',
+      'Propostas',
+      'Avaliações',
+    ],
+    AtlasSaasPlatformModule.producerPortal => const [
+      'Painel do produtor',
+      'Solicitações e suporte',
+      'Documentos',
+      'Indicadores compartilhados',
+      'Comunicação',
+    ],
+  };
 }
 
 class AtlasSaasPlatformRecord {
@@ -249,9 +220,7 @@ class AtlasSaasPlatformRecord {
     };
   }
 
-  factory AtlasSaasPlatformRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasSaasPlatformRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasSaasPlatformModule.values.firstWhere(
@@ -272,12 +241,9 @@ class AtlasSaasPlatformRecord {
       farmName: map['farmName']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
-      usagePercent:
-          (map['usagePercent'] as num?)?.toDouble() ?? 0.0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      usagePercent: (map['usagePercent'] as num?)?.toDouble() ?? 0.0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

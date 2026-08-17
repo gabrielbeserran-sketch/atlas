@@ -2,15 +2,12 @@ import '../models/atlas_enterprise_sync_data.dart';
 import 'atlas_enterprise_api_client.dart';
 import 'atlas_enterprise_sync_transport.dart';
 
-class AtlasHttpSyncTransport
-    implements AtlasEnterpriseSyncTransport {
+class AtlasHttpSyncTransport implements AtlasEnterpriseSyncTransport {
   AtlasHttpSyncTransport._();
 
-  static final AtlasHttpSyncTransport instance =
-      AtlasHttpSyncTransport._();
+  static final AtlasHttpSyncTransport instance = AtlasHttpSyncTransport._();
 
-  final AtlasEnterpriseApiClient _api =
-      AtlasEnterpriseApiClient.instance;
+  final AtlasEnterpriseApiClient _api = AtlasEnterpriseApiClient.instance;
 
   @override
   Future<AtlasPushOperationResult> push(
@@ -37,11 +34,9 @@ class AtlasHttpSyncTransport
     return AtlasPushOperationResult(
       accepted: response['accepted'] == true,
       conflict: response['conflict'] == true,
-      remoteVersion:
-          (response['remote_version'] as num?)?.toInt() ?? 0,
+      remoteVersion: (response['remote_version'] as num?)?.toInt() ?? 0,
       remotePayload: Map<String, dynamic>.from(
-        (response['remote_payload'] as Map?) ??
-            const <String, dynamic>{},
+        (response['remote_payload'] as Map?) ?? const <String, dynamic>{},
       ),
       error: response['error']?.toString() ?? '',
     );
@@ -60,15 +55,11 @@ class AtlasHttpSyncTransport
     return values
         .map(
           (item) => AtlasRemoteEntityState(
-            entityType:
-                item['entity_type']?.toString() ?? '',
-            entityId:
-                item['entity_id']?.toString() ?? '',
-            version:
-                (item['version'] as num?)?.toInt() ?? 0,
+            entityType: item['entity_type']?.toString() ?? '',
+            entityId: item['entity_id']?.toString() ?? '',
+            version: (item['version'] as num?)?.toInt() ?? 0,
             payload: Map<String, dynamic>.from(
-              (item['payload'] as Map?) ??
-                  const <String, dynamic>{},
+              (item['payload'] as Map?) ?? const <String, dynamic>{},
             ),
             deleted: item['deleted'] == true,
             cursor: item['cursor']?.toString() ?? '',

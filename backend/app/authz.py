@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -6,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .models import Company, Membership, User
+from .models import Company, Membership, RefreshSession, User
 from .security import decode_access_token
 
 bearer = HTTPBearer(auto_error=True)
@@ -96,12 +97,16 @@ KNOWN_PERMISSIONS: set[str] = {
     "finance.write",
     "platform.read",
     "platform.manage",
+    "operations.read",
+    "operations.manage",
+    "sync.write",
 }
 
 ROLE_PERMISSIONS: dict[str, set[str]] = {
     "superAdministrator": {"*"},
     "companyAdministrator": {"*"},
     "owner": {"*"},
+    "admin": {"*"},
     "manager": {
         "companies.read",
         "members.read",
@@ -120,7 +125,13 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "animals.delete",
 
         "analytics.read",
-        "analytics.manage",    },
+        "analytics.manage",
+        "operations.read",
+    "operations.manage",
+    "sync.write",
+        "operations.manage",
+        "sync.write",
+    },
     "consultant": {
         "farms.read",
         "sync.read",
@@ -251,9 +262,11 @@ def get_principal(
     claims = decode_access_token(credentials.credentials)
     user_id = str(claims.get("sub", ""))
     company_id = str(claims.get("company_id", ""))
+    session_id = str(claims.get("session_id", ""))
 
     user = db.get(User, user_id)
     company = db.get(Company, company_id)
+    session = db.get(RefreshSession, session_id) if session_id else None
 
     membership = db.scalar(
         select(Membership).where(
@@ -267,7 +280,12 @@ def get_principal(
         user is None
         or company is None
         or membership is None
+        or session is None
         or not user.active
+        or company.status != "active"
+        or session.user_id != user_id
+        or session.company_id != company_id
+        or session.revoked_at is not None
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -278,6 +296,15 @@ def get_principal(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Tenant inválido para a empresa ativa.",
+        )
+
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at <= datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sessão expirada.",
         )
 
     return Principal(

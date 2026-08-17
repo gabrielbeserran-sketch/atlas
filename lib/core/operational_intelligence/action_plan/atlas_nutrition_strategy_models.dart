@@ -68,33 +68,29 @@ class AtlasNutritionAnnualPlan {
   final String notes;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'year': year,
-        'targetLot': targetLot,
-        'targetDailyGainKg': targetDailyGainKg,
-        'targetFeedConversion': targetFeedConversion,
-        'budget': budget,
-        'responsibleName': responsibleName,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'title': title,
+    'year': year,
+    'targetLot': targetLot,
+    'targetDailyGainKg': targetDailyGainKg,
+    'targetFeedConversion': targetFeedConversion,
+    'budget': budget,
+    'responsibleName': responsibleName,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasNutritionAnnualPlan.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasNutritionAnnualPlan.fromMap(Map<String, dynamic> map) {
     return AtlasNutritionAnnualPlan(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       year: (map['year'] as num?)?.toInt() ?? 0,
       targetLot: map['targetLot']?.toString() ?? '',
-      targetDailyGainKg:
-          (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
+      targetDailyGainKg: (map['targetDailyGainKg'] as num?)?.toDouble() ?? 0,
       targetFeedConversion:
           (map['targetFeedConversion'] as num?)?.toDouble() ?? 0,
       budget: (map['budget'] as num?)?.toDouble() ?? 0,
-      responsibleName:
-          map['responsibleName']?.toString() ?? '',
+      responsibleName: map['responsibleName']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
     );

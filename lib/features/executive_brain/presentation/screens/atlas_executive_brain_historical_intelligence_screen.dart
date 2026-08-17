@@ -5,8 +5,7 @@ import 'package:projeto_atlas/core/event_center/atlas_event_log_service.dart';
 import 'package:projeto_atlas/core/events/atlas_event.dart';
 import 'package:projeto_atlas/features/executive_brain/domain/models/atlas_executive_brain_data.dart';
 
-class AtlasExecutiveBrainHistoricalIntelligenceScreen
-    extends StatefulWidget {
+class AtlasExecutiveBrainHistoricalIntelligenceScreen extends StatefulWidget {
   const AtlasExecutiveBrainHistoricalIntelligenceScreen({
     required this.brainData,
     super.key,
@@ -15,15 +14,13 @@ class AtlasExecutiveBrainHistoricalIntelligenceScreen
   final AtlasExecutiveBrainData brainData;
 
   @override
-  State<AtlasExecutiveBrainHistoricalIntelligenceScreen>
-      createState() {
+  State<AtlasExecutiveBrainHistoricalIntelligenceScreen> createState() {
     return _AtlasExecutiveBrainHistoricalIntelligenceScreenState();
   }
 }
 
 class _AtlasExecutiveBrainHistoricalIntelligenceScreenState
-    extends State<
-        AtlasExecutiveBrainHistoricalIntelligenceScreen> {
+    extends State<AtlasExecutiveBrainHistoricalIntelligenceScreen> {
   final AtlasEventAnalyticsService analyticsService =
       const AtlasEventAnalyticsService();
 
@@ -66,9 +63,7 @@ class _AtlasExecutiveBrainHistoricalIntelligenceScreenState
       appBar: AppBar(
         title: const Text(
           'Inteligência histórica',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
@@ -80,99 +75,86 @@ class _AtlasExecutiveBrainHistoricalIntelligenceScreenState
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : current == null || !current.hasData
-              ? const _EmptyHistoricalView()
-              : SafeArea(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: 1180,
+          ? const _EmptyHistoricalView()
+          : SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1180),
+                  child: ListView(
+                    padding: const EdgeInsets.all(22),
+                    children: [
+                      _HistoricalHero(
+                        brainData: widget.brainData,
+                        analytics: current,
                       ),
-                      child: ListView(
-                        padding: const EdgeInsets.all(22),
-                        children: [
-                          _HistoricalHero(
-                            brainData: widget.brainData,
-                            analytics: current,
-                          ),
-                          const SizedBox(height: 20),
-                          _EvidenceMetricGrid(
-                            analytics: current,
-                          ),
-                          const SizedBox(height: 24),
-                          const _SectionTitle(
-                            title: 'Influência no Executive Brain',
-                            subtitle:
-                                'Como o histórico altera score, confiança e classificação.',
-                          ),
-                          const SizedBox(height: 12),
-                          _BrainInfluenceCard(
-                            brainData: widget.brainData,
-                            analytics: current,
-                          ),
-                          const SizedBox(height: 24),
-                          const _SectionTitle(
-                            title: 'Padrões recorrentes utilizados',
-                            subtitle:
-                                'Ocorrências repetidas que formam memória executiva.',
-                          ),
-                          const SizedBox(height: 12),
-                          _RecurringPatternList(
-                            items:
-                                current.recurringCriticalEvents,
-                          ),
-                          const SizedBox(height: 24),
-                          const _SectionTitle(
-                            title: 'Memórias históricas no cérebro',
-                            subtitle:
-                                'Aprendizados, riscos e padrões presentes na análise atual.',
-                          ),
-                          const SizedBox(height: 12),
-                          _HistoricalMemoryList(
-                            items: widget
-                                .brainData.memoryInsights
-                                .where(
-                                  (item) =>
-                                      item.type ==
-                                          AtlasExecutiveMemoryInsightType
-                                              .recurringPattern ||
-                                      item.type ==
-                                          AtlasExecutiveMemoryInsightType
-                                              .historicalRisk ||
-                                      item.type ==
-                                          AtlasExecutiveMemoryInsightType
-                                              .decisionLesson,
-                                )
-                                .toList(),
-                          ),
-                          const SizedBox(height: 24),
-                          const _SectionTitle(
-                            title: 'Recomendações do histórico',
-                            subtitle:
-                                'Ações sugeridas a partir das ocorrências acumuladas.',
-                          ),
-                          const SizedBox(height: 12),
-                          _RecommendationList(
-                            items: current.recommendations,
-                          ),
-                          const SizedBox(height: 30),
-                        ],
+                      const SizedBox(height: 20),
+                      _EvidenceMetricGrid(analytics: current),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Influência no Executive Brain',
+                        subtitle:
+                            'Como o histórico altera score, confiança e classificação.',
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      _BrainInfluenceCard(
+                        brainData: widget.brainData,
+                        analytics: current,
+                      ),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Padrões recorrentes utilizados',
+                        subtitle:
+                            'Ocorrências repetidas que formam memória executiva.',
+                      ),
+                      const SizedBox(height: 12),
+                      _RecurringPatternList(
+                        items: current.recurringCriticalEvents,
+                      ),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Memórias históricas no cérebro',
+                        subtitle:
+                            'Aprendizados, riscos e padrões presentes na análise atual.',
+                      ),
+                      const SizedBox(height: 12),
+                      _HistoricalMemoryList(
+                        items: widget.brainData.memoryInsights
+                            .where(
+                              (item) =>
+                                  item.type ==
+                                      AtlasExecutiveMemoryInsightType
+                                          .recurringPattern ||
+                                  item.type ==
+                                      AtlasExecutiveMemoryInsightType
+                                          .historicalRisk ||
+                                  item.type ==
+                                      AtlasExecutiveMemoryInsightType
+                                          .decisionLesson,
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 24),
+                      const _SectionTitle(
+                        title: 'Recomendações do histórico',
+                        subtitle:
+                            'Ações sugeridas a partir das ocorrências acumuladas.',
+                      ),
+                      const SizedBox(height: 12),
+                      _RecommendationList(items: current.recommendations),
+                      const SizedBox(height: 30),
+                    ],
                   ),
                 ),
+              ),
+            ),
     );
   }
 }
 
 class _HistoricalHero extends StatelessWidget {
-  const _HistoricalHero({
-    required this.brainData,
-    required this.analytics,
-  });
+  const _HistoricalHero({required this.brainData, required this.analytics});
 
   final AtlasExecutiveBrainData brainData;
   final AtlasEventAnalyticsData analytics;
@@ -183,11 +165,7 @@ class _HistoricalHero extends StatelessWidget {
       padding: const EdgeInsets.all(23),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF07111F),
-            Color(0xFF18364B),
-            Color(0xFF245D72),
-          ],
+          colors: [Color(0xFF07111F), Color(0xFF18364B), Color(0xFF245D72)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),
@@ -216,10 +194,7 @@ class _HistoricalHero extends StatelessWidget {
                   '${analytics.totalEvents} eventos sustentam a análise atual, '
                   'com ${analytics.recurringCriticalEvents.length} padrões '
                   'recorrentes e ${brainData.memoryInsights.length} memórias executivas.',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: Colors.white70, height: 1.4),
                 ),
               ],
             ),
@@ -231,9 +206,7 @@ class _HistoricalHero extends StatelessWidget {
 }
 
 class _EvidenceMetricGrid extends StatelessWidget {
-  const _EvidenceMetricGrid({
-    required this.analytics,
-  });
+  const _EvidenceMetricGrid({required this.analytics});
 
   final AtlasEventAnalyticsData analytics;
 
@@ -262,8 +235,7 @@ class _EvidenceMetricGrid extends StatelessWidget {
       ),
       _MetricData(
         label: 'Padrões recorrentes',
-        value:
-            analytics.recurringCriticalEvents.length.toString(),
+        value: analytics.recurringCriticalEvents.length.toString(),
         icon: Icons.repeat,
       ),
       _MetricData(
@@ -278,13 +250,10 @@ class _EvidenceMetricGrid extends StatelessWidget {
         final columns = constraints.maxWidth >= 960
             ? 3
             : constraints.maxWidth >= 620
-                ? 2
-                : 1;
+            ? 2
+            : 1;
 
-        final width = (
-          constraints.maxWidth -
-          ((columns - 1) * 12)
-        ) / columns;
+        final width = (constraints.maxWidth - ((columns - 1) * 12)) / columns;
 
         return Wrap(
           spacing: 12,
@@ -297,14 +266,11 @@ class _EvidenceMetricGrid extends StatelessWidget {
                   padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        child: Icon(item.icon),
-                      ),
+                      CircleAvatar(child: Icon(item.icon)),
                       const SizedBox(width: 13),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               item.value,
@@ -315,9 +281,7 @@ class _EvidenceMetricGrid extends StatelessWidget {
                             ),
                             Text(
                               item.label,
-                              style: const TextStyle(
-                                color: Colors.black54,
-                              ),
+                              style: const TextStyle(color: Colors.black54),
                             ),
                           ],
                         ),
@@ -335,20 +299,17 @@ class _EvidenceMetricGrid extends StatelessWidget {
 }
 
 class _BrainInfluenceCard extends StatelessWidget {
-  const _BrainInfluenceCard({
-    required this.brainData,
-    required this.analytics,
-  });
+  const _BrainInfluenceCard({required this.brainData, required this.analytics});
 
   final AtlasExecutiveBrainData brainData;
   final AtlasEventAnalyticsData analytics;
 
   double get riskPenalty {
-    return (
-      analytics.criticalEvents * 1.8 +
-      analytics.highPriorityEvents * 0.45 +
-      analytics.recurringCriticalEvents.length * 1.4
-    ).clamp(0.0, 22.0).toDouble();
+    return (analytics.criticalEvents * 1.8 +
+            analytics.highPriorityEvents * 0.45 +
+            analytics.recurringCriticalEvents.length * 1.4)
+        .clamp(0.0, 22.0)
+        .toDouble();
   }
 
   double get evidenceBonus {
@@ -359,13 +320,12 @@ class _BrainInfluenceCard extends StatelessWidget {
     final volumeBonus = analytics.totalEvents >= 100
         ? 7.0
         : analytics.totalEvents >= 30
-            ? 5.0
-            : 3.0;
+        ? 5.0
+        : 3.0;
 
-    return (
-      volumeBonus +
-      (analytics.last30DaysEvents > 0 ? 2.0 : 0.0)
-    ).clamp(0.0, 9.0).toDouble();
+    return (volumeBonus + (analytics.last30DaysEvents > 0 ? 2.0 : 0.0))
+        .clamp(0.0, 9.0)
+        .toDouble();
   }
 
   @override
@@ -379,34 +339,26 @@ class _BrainInfluenceCard extends StatelessWidget {
           children: [
             _InfluenceItem(
               title: 'Score atual',
-              value:
-                  brainData.brainScore.toStringAsFixed(1),
-              description:
-                  'Resultado após aplicar o risco histórico.',
+              value: brainData.brainScore.toStringAsFixed(1),
+              description: 'Resultado após aplicar o risco histórico.',
               icon: Icons.speed_outlined,
             ),
             _InfluenceItem(
               title: 'Penalidade histórica',
-              value:
-                  '-${riskPenalty.toStringAsFixed(1)}',
-              description:
-                  'Redução provocada por riscos e recorrências.',
+              value: '-${riskPenalty.toStringAsFixed(1)}',
+              description: 'Redução provocada por riscos e recorrências.',
               icon: Icons.trending_down,
             ),
             _InfluenceItem(
               title: 'Confiança atual',
-              value:
-                  '${brainData.confidencePercent.toStringAsFixed(1)}%',
-              description:
-                  'Confiança após considerar as evidências.',
+              value: '${brainData.confidencePercent.toStringAsFixed(1)}%',
+              description: 'Confiança após considerar as evidências.',
               icon: Icons.verified_outlined,
             ),
             _InfluenceItem(
               title: 'Bônus de evidência',
-              value:
-                  '+${evidenceBonus.toStringAsFixed(1)}',
-              description:
-                  'Aumento baseado em volume e atualidade.',
+              value: '+${evidenceBonus.toStringAsFixed(1)}',
+              description: 'Aumento baseado em volume e atualidade.',
               icon: Icons.trending_up,
             ),
           ],
@@ -436,15 +388,11 @@ class _InfluenceItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF1565C0),
-          ),
+          Icon(icon, color: const Color(0xFF1565C0)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   value,
@@ -455,17 +403,12 @@ class _InfluenceItem extends StatelessWidget {
                 ),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.black54, fontSize: 12),
                 ),
               ],
             ),
@@ -477,9 +420,7 @@ class _InfluenceItem extends StatelessWidget {
 }
 
 class _RecurringPatternList extends StatelessWidget {
-  const _RecurringPatternList({
-    required this.items,
-  });
+  const _RecurringPatternList({required this.items});
 
   final List<AtlasEventAnalyticsCriticalPattern> items;
 
@@ -487,8 +428,7 @@ class _RecurringPatternList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const _EmptySection(
-        message:
-            'Nenhum padrão crítico recorrente foi encontrado.',
+        message: 'Nenhum padrão crítico recorrente foi encontrado.',
       );
     }
 
@@ -497,20 +437,12 @@ class _RecurringPatternList extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  const Color(0xFFC62828).withValues(
-                alpha: 0.12,
-              ),
-              child: const Icon(
-                Icons.repeat,
-                color: Color(0xFFC62828),
-              ),
+              backgroundColor: const Color(0xFFC62828).withValues(alpha: 0.12),
+              child: const Icon(Icons.repeat, color: Color(0xFFC62828)),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${item.sourceModule} · ${item.farmName}\n'
@@ -533,9 +465,7 @@ class _RecurringPatternList extends StatelessWidget {
 }
 
 class _HistoricalMemoryList extends StatelessWidget {
-  const _HistoricalMemoryList({
-    required this.items,
-  });
+  const _HistoricalMemoryList({required this.items});
 
   final List<AtlasExecutiveMemoryInsight> items;
 
@@ -543,8 +473,7 @@ class _HistoricalMemoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const _EmptySection(
-        message:
-            'Nenhuma memória histórica foi adicionada ao cérebro.',
+        message: 'Nenhuma memória histórica foi adicionada ao cérebro.',
       );
     }
 
@@ -558,16 +487,13 @@ class _HistoricalMemoryList extends StatelessWidget {
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               '${atlasExecutiveMemoryInsightTypeLabel(item.type)} · '
               '${item.relevanceScore.toStringAsFixed(0)} pontos',
             ),
-            childrenPadding:
-                const EdgeInsets.fromLTRB(18, 0, 18, 18),
+            childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
@@ -581,9 +507,7 @@ class _HistoricalMemoryList extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Recomendação: ${item.recommendation}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -595,9 +519,7 @@ class _HistoricalMemoryList extends StatelessWidget {
 }
 
 class _RecommendationList extends StatelessWidget {
-  const _RecommendationList({
-    required this.items,
-  });
+  const _RecommendationList({required this.items});
 
   final List<AtlasEventAnalyticsRecommendation> items;
 
@@ -614,25 +536,17 @@ class _RecommendationList extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor:
-                  color.withValues(alpha: 0.12),
+              backgroundColor: color.withValues(alpha: 0.12),
               child: Text(
                 item.position.toString(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
               ),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              '${item.description}\n${item.reason}',
-            ),
+            subtitle: Text('${item.description}\n${item.reason}'),
             isThreeLine: true,
           ),
         );
@@ -654,10 +568,7 @@ class _MetricData {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionTitle({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -665,32 +576,21 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: Colors.black54,
-          ),
-        ),
+        Text(subtitle, style: const TextStyle(color: Colors.black54)),
       ],
     );
   }
 }
 
 class _EmptySection extends StatelessWidget {
-  const _EmptySection({
-    this.message = 'Nenhum item disponível.',
-  });
+  const _EmptySection({this.message = 'Nenhum item disponível.'});
 
   final String message;
 
@@ -700,12 +600,7 @@ class _EmptySection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Center(
-          child: Text(
-            message,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          child: Text(message, style: const TextStyle(color: Colors.black54)),
         ),
       ),
     );
@@ -723,18 +618,14 @@ class _EmptyHistoricalView extends StatelessWidget {
         child: Text(
           'Ainda não existem eventos suficientes para formar inteligência histórica.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.black54,
-          ),
+          style: TextStyle(color: Colors.black54),
         ),
       ),
     );
   }
 }
 
-Color _priorityColor(
-  AtlasEventPriority priority,
-) {
+Color _priorityColor(AtlasEventPriority priority) {
   switch (priority) {
     case AtlasEventPriority.low:
       return const Color(0xFF2E7D32);
@@ -747,9 +638,7 @@ Color _priorityColor(
   }
 }
 
-Color _memoryColor(
-  AtlasExecutiveMemoryInsightType type,
-) {
+Color _memoryColor(AtlasExecutiveMemoryInsightType type) {
   switch (type) {
     case AtlasExecutiveMemoryInsightType.recurringPattern:
       return const Color(0xFFEF6C00);
@@ -764,9 +653,7 @@ Color _memoryColor(
   }
 }
 
-IconData _memoryIcon(
-  AtlasExecutiveMemoryInsightType type,
-) {
+IconData _memoryIcon(AtlasExecutiveMemoryInsightType type) {
   switch (type) {
     case AtlasExecutiveMemoryInsightType.recurringPattern:
       return Icons.repeat;

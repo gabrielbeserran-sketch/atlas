@@ -1,18 +1,13 @@
-
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 
 class AtlasAiEnterpriseRepository {
-  AtlasAiEnterpriseRepository({
-    AtlasHttpClient? client,
-  }) : _client = client ?? AtlasHttpClient();
+  AtlasAiEnterpriseRepository({AtlasHttpClient? client})
+    : _client = client ?? AtlasHttpClient();
 
   final AtlasHttpClient _client;
 
   Future<Map<String, dynamic>> dashboard() async {
-    final response = await _client.send(
-      'GET',
-      '/atlas-ai/dashboard',
-    );
+    final response = await _client.send('GET', '/atlas-ai/dashboard');
     return response.asMap();
   }
 
@@ -29,35 +24,26 @@ class AtlasAiEnterpriseRepository {
         if (sessionId != null) 'session_id': sessionId,
         if (farmId != null) 'farm_id': farmId,
         'message': message,
-        if (specialty != null)
-          'requested_specialty': specialty,
+        if (specialty != null) 'requested_specialty': specialty,
       },
     );
     return response.asMap();
   }
 
-  Future<List<Map<String, dynamic>>> recommendations({
-    String? farmId,
-  }) async {
+  Future<List<Map<String, dynamic>>> recommendations({String? farmId}) async {
     final response = await _client.send(
       'GET',
       '/atlas-ai/recommendations',
-      queryParameters: {
-        if (farmId != null) 'farm_id': farmId,
-      },
+      queryParameters: {if (farmId != null) 'farm_id': farmId},
     );
     return response.asMapList();
   }
 
-  Future<List<Map<String, dynamic>>> plans({
-    String? farmId,
-  }) async {
+  Future<List<Map<String, dynamic>>> plans({String? farmId}) async {
     final response = await _client.send(
       'GET',
       '/atlas-ai/plans',
-      queryParameters: {
-        if (farmId != null) 'farm_id': farmId,
-      },
+      queryParameters: {if (farmId != null) 'farm_id': farmId},
     );
     return response.asMapList();
   }
@@ -69,10 +55,7 @@ class AtlasAiEnterpriseRepository {
     final response = await _client.send(
       'POST',
       '/atlas-ai/plans',
-      body: {
-        if (farmId != null) 'farm_id': farmId,
-        'horizon': horizon,
-      },
+      body: {if (farmId != null) 'farm_id': farmId, 'horizon': horizon},
     );
     return response.asMap();
   }

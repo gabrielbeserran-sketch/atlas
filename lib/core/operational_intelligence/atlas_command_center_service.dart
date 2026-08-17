@@ -10,14 +10,13 @@ class AtlasCommandCenterService {
     AtlasOperationalPriorityService? priorityService,
     AtlasOperationalInsightService? insightService,
     AtlasOperationalMetricsService? metricsService,
-  })  : _timelineService =
-            timelineService ?? AtlasOperationalTimelineService(),
-        _priorityService =
-            priorityService ?? const AtlasOperationalPriorityService(),
-        _insightService =
-            insightService ?? const AtlasOperationalInsightService(),
-        _metricsService =
-            metricsService ?? const AtlasOperationalMetricsService();
+  }) : _timelineService = timelineService ?? AtlasOperationalTimelineService(),
+       _priorityService =
+           priorityService ?? const AtlasOperationalPriorityService(),
+       _insightService =
+           insightService ?? const AtlasOperationalInsightService(),
+       _metricsService =
+           metricsService ?? const AtlasOperationalMetricsService();
 
   final AtlasOperationalTimelineService _timelineService;
   final AtlasOperationalPriorityService _priorityService;

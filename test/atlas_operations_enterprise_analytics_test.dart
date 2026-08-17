@@ -9,8 +9,7 @@ void main() {
     final records = [
       AtlasOperationsEnterpriseRecord(
         id: '1',
-        module:
-            AtlasOperationsEnterpriseModule.farmOperationalPlanning,
+        module: AtlasOperationsEnterpriseModule.farmOperationalPlanning,
         feature: 'Plano semanal',
         title: 'Plano da semana',
         date: '04/08/2026',
@@ -35,8 +34,7 @@ void main() {
       ),
       AtlasOperationsEnterpriseRecord(
         id: '2',
-        module:
-            AtlasOperationsEnterpriseModule.farmOperationalPlanning,
+        module: AtlasOperationsEnterpriseModule.farmOperationalPlanning,
         feature: 'Metas e responsáveis',
         title: 'Meta atrasada',
         date: '04/08/2026',
@@ -62,8 +60,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasOperationsEnterpriseModule.farmOperationalPlanning,
+      module: AtlasOperationsEnterpriseModule.farmOperationalPlanning,
       records: records,
     );
 

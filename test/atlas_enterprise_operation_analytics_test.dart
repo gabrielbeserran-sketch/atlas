@@ -3,8 +3,7 @@ import 'package:projeto_atlas/features/atlas_enterprise_operations/domain/models
 import 'package:projeto_atlas/features/atlas_enterprise_operations/domain/services/atlas_enterprise_operation_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasEnterpriseOperationAnalyticsService();
+  const service = AtlasEnterpriseOperationAnalyticsService();
 
   test('calculates enterprise operation analytics', () {
     final records = [

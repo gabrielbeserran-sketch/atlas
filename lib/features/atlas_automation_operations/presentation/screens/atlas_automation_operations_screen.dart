@@ -28,8 +28,7 @@ class AtlasAutomationOperationsScreen extends StatefulWidget {
 
 class _AtlasAutomationOperationsScreenState
     extends State<AtlasAutomationOperationsScreen> {
-  final AtlasAutomationStorageService storage =
-      AtlasAutomationStorageService();
+  final AtlasAutomationStorageService storage = AtlasAutomationStorageService();
   final AtlasAutomationAnalyticsService analyticsService =
       const AtlasAutomationAnalyticsService();
 
@@ -78,30 +77,26 @@ class _AtlasAutomationOperationsScreenState
   }
 
   List<AtlasAutomationRecord> get visibleRecords {
-    return records.where((record) {
-      final moduleMatches = record.module == selectedModule;
-      final featureMatches = selectedFeature == 'Todos' ||
-          record.feature == selectedFeature;
-      return moduleMatches && featureMatches;
-    }).toList(growable: false);
+    return records
+        .where((record) {
+          final moduleMatches = record.module == selectedModule;
+          final featureMatches =
+              selectedFeature == 'Todos' || record.feature == selectedFeature;
+          return moduleMatches && featureMatches;
+        })
+        .toList(growable: false);
   }
 
-  Future<void> openForm([
-    AtlasAutomationRecord? current,
-  ]) async {
+  Future<void> openForm([AtlasAutomationRecord? current]) async {
     final result = await showDialog<AtlasAutomationRecord>(
       context: context,
-      builder: (context) => _AutomationRecordForm(
-        module: selectedModule,
-        current: current,
-      ),
+      builder: (context) =>
+          _AutomationRecordForm(module: selectedModule, current: current),
     );
 
     if (result == null || !mounted) return;
 
-    final index = records.indexWhere(
-      (record) => record.id == result.id,
-    );
+    final index = records.indexWhere((record) => record.id == result.id);
 
     setState(() {
       if (index < 0) {
@@ -115,9 +110,7 @@ class _AtlasAutomationOperationsScreenState
     await load();
   }
 
-  Future<void> deleteRecord(
-    AtlasAutomationRecord record,
-  ) async {
+  Future<void> deleteRecord(AtlasAutomationRecord record) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -125,13 +118,11 @@ class _AtlasAutomationOperationsScreenState
         content: Text('Deseja excluir "${record.title}"?'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Excluir'),
           ),
         ],
@@ -173,12 +164,9 @@ class _AtlasAutomationOperationsScreenState
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(maxWidth: 1240),
+            constraints: const BoxConstraints(maxWidth: 1240),
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
@@ -195,9 +183,7 @@ class _AtlasAutomationOperationsScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Fundação operacional e de integração',
-                          ),
+                          title: Text('Fundação operacional e de integração'),
                           subtitle: Text(
                             'A comunicação real com drones, sensores e controladores '
                             'depende de hardware, SDKs, APIs e credenciais dos fabricantes.',
@@ -223,8 +209,7 @@ class _AtlasAutomationOperationsScreenState
                             title: 'Cobertura',
                             value:
                                 '${analytics.coveragePercent.toStringAsFixed(0)}%',
-                            subtitle:
-                                'Funcionalidades com registros',
+                            subtitle: 'Funcionalidades com registros',
                             icon: Icons.grid_view_outlined,
                           ),
                           EnterpriseMetricCard(
@@ -245,15 +230,13 @@ class _AtlasAutomationOperationsScreenState
                           EnterpriseMetricCard(
                             title: 'Operacionais',
                             value: '${analytics.operationalCount}',
-                            subtitle:
-                                'Ativos, conectados ou concluídos',
+                            subtitle: 'Ativos, conectados ou concluídos',
                             icon: Icons.task_alt_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Alertas',
                             value: '${analytics.alertCount}',
-                            subtitle:
-                                'Falhas, bloqueios e pendências',
+                            subtitle: 'Falhas, bloqueios e pendências',
                             icon: Icons.warning_amber_outlined,
                             warning: analytics.alertCount > 0,
                           ),
@@ -288,12 +271,8 @@ class _AtlasAutomationOperationsScreenState
                       if (visibleRecords.isEmpty)
                         Card(
                           child: ListTile(
-                            leading: Icon(
-                              _moduleIcon(selectedModule),
-                            ),
-                            title: const Text(
-                              'Nenhum registro encontrado.',
-                            ),
+                            leading: Icon(_moduleIcon(selectedModule)),
+                            title: const Text('Nenhum registro encontrado.'),
                             subtitle: const Text(
                               'Cadastre o primeiro componente ou processo.',
                             ),
@@ -304,8 +283,7 @@ class _AtlasAutomationOperationsScreenState
                           (record) => _RecordCard(
                             record: record,
                             onEdit: () => openForm(record),
-                            onDelete: () =>
-                                deleteRecord(record),
+                            onDelete: () => deleteRecord(record),
                           ),
                         ),
                       const SizedBox(height: 90),
@@ -319,10 +297,7 @@ class _AtlasAutomationOperationsScreenState
 }
 
 class _ModuleSelector extends StatelessWidget {
-  const _ModuleSelector({
-    required this.selected,
-    required this.onSelected,
-  });
+  const _ModuleSelector({required this.selected, required this.onSelected});
 
   final AtlasAutomationModule selected;
   final ValueChanged<AtlasAutomationModule> onSelected;
@@ -333,31 +308,32 @@ class _ModuleSelector extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
-          children: AtlasAutomationModule.values.map((module) {
-            final active = module == selected;
+          children: AtlasAutomationModule.values
+              .map((module) {
+                final active = module == selected;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: module == AtlasAutomationModule.values.last
-                      ? 0
-                      : 8,
-                ),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onSelected(module),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: active
-                        ? const Color(0xFF1B5E20)
-                        : null,
-                    foregroundColor:
-                        active ? Colors.white : null,
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: module == AtlasAutomationModule.values.last
+                          ? 0
+                          : 8,
+                    ),
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => onSelected(module),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: active
+                            ? const Color(0xFF1B5E20)
+                            : null,
+                        foregroundColor: active ? Colors.white : null,
+                      ),
+                      icon: Icon(_moduleIcon(module)),
+                      label: Text(module.packageLabel),
+                    ),
                   ),
-                  icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
@@ -382,13 +358,15 @@ class _FeatureFilter extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.map((feature) {
-        return ChoiceChip(
-          label: Text(feature),
-          selected: selected == feature,
-          onSelected: (_) => onSelected(feature),
-        );
-      }).toList(growable: false),
+      children: options
+          .map((feature) {
+            return ChoiceChip(
+              label: Text(feature),
+              selected: selected == feature,
+              onSelected: (_) => onSelected(feature),
+            );
+          })
+          .toList(growable: false),
     );
   }
 }
@@ -407,24 +385,20 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (record.status) {
-      'Crítico' || 'Offline' || 'Bloqueado' =>
-        Colors.red.shade800,
+      'Crítico' || 'Offline' || 'Bloqueado' => Colors.red.shade800,
       'Atenção' => Colors.orange.shade800,
-      'Ativo' || 'Conectado' || 'Concluído' ||
-      'Aprovado' =>
-        Colors.green.shade800,
+      'Ativo' ||
+      'Conectado' ||
+      'Concluído' ||
+      'Aprovado' => Colors.green.shade800,
       _ => Colors.blueGrey,
     };
 
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              color.withValues(alpha: 0.12),
-          child: Icon(
-            _moduleIcon(record.module),
-            color: color,
-          ),
+          backgroundColor: color.withValues(alpha: 0.12),
+          child: Icon(_moduleIcon(record.module), color: color),
         ),
         title: Text(record.title),
         subtitle: Text(
@@ -440,14 +414,8 @@ class _RecordCard extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'edit',
-              child: Text('Editar'),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Text('Excluir'),
-            ),
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Excluir')),
           ],
         ),
       ),
@@ -456,21 +424,16 @@ class _RecordCard extends StatelessWidget {
 }
 
 class _AutomationRecordForm extends StatefulWidget {
-  const _AutomationRecordForm({
-    required this.module,
-    this.current,
-  });
+  const _AutomationRecordForm({required this.module, this.current});
 
   final AtlasAutomationModule module;
   final AtlasAutomationRecord? current;
 
   @override
-  State<_AutomationRecordForm> createState() =>
-      _AutomationRecordFormState();
+  State<_AutomationRecordForm> createState() => _AutomationRecordFormState();
 }
 
-class _AutomationRecordFormState
-    extends State<_AutomationRecordForm> {
+class _AutomationRecordFormState extends State<_AutomationRecordForm> {
   final formKey = GlobalKey<FormState>();
 
   late String feature;
@@ -498,44 +461,32 @@ class _AutomationRecordFormState
 
     title = TextEditingController(text: current?.title ?? '');
     date = TextEditingController(
-      text: current?.date ??
-          formatAtlasAutomationDate(DateTime.now()),
+      text: current?.date ?? formatAtlasAutomationDate(DateTime.now()),
     );
     deviceOrResponsible = TextEditingController(
       text: current?.deviceOrResponsible ?? '',
     );
-    reference = TextEditingController(
-      text: current?.reference ?? '',
-    );
+    reference = TextEditingController(text: current?.reference ?? '');
     primaryValue = TextEditingController(
-      text: current == null ||
-              current.primaryValue == 0
+      text: current == null || current.primaryValue == 0
           ? ''
           : current.primaryValue.toString(),
     );
     secondaryValue = TextEditingController(
-      text: current == null ||
-              current.secondaryValue == 0
+      text: current == null || current.secondaryValue == 0
           ? ''
           : current.secondaryValue.toString(),
     );
-    unit = TextEditingController(
-      text: current?.unit ?? '',
-    );
+    unit = TextEditingController(text: current?.unit ?? '');
     progressPercent = TextEditingController(
-      text: current == null
-          ? ''
-          : current.progressPercent.toString(),
+      text: current == null ? '' : current.progressPercent.toString(),
     );
     alertCount = TextEditingController(
-      text: current == null ||
-              current.alertCount == 0
+      text: current == null || current.alertCount == 0
           ? ''
           : current.alertCount.toString(),
     );
-    notes = TextEditingController(
-      text: current?.notes ?? '',
-    );
+    notes = TextEditingController(text: current?.notes ?? '');
   }
 
   @override
@@ -554,10 +505,7 @@ class _AutomationRecordFormState
   }
 
   double decimal(TextEditingController controller) {
-    return double.tryParse(
-          controller.text.trim().replaceAll(',', '.'),
-        ) ??
-        0;
+    return double.tryParse(controller.text.trim().replaceAll(',', '.')) ?? 0;
   }
 
   int integer(TextEditingController controller) {
@@ -569,12 +517,9 @@ class _AutomationRecordFormState
 
     final selected = await showDatePicker(
       context: context,
-      initialDate:
-          parsed.year == 1900 ? DateTime.now() : parsed,
+      initialDate: parsed.year == 1900 ? DateTime.now() : parsed,
       firstDate: DateTime(1990),
-      lastDate: DateTime.now().add(
-        const Duration(days: 3650),
-      ),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
 
     if (selected == null) return;
@@ -593,21 +538,20 @@ class _AutomationRecordFormState
     Navigator.pop(
       context,
       AtlasAutomationRecord(
-        id: current?.id ??
+        id:
+            current?.id ??
             'automation_${DateTime.now().microsecondsSinceEpoch}',
         module: widget.module,
         feature: feature,
         title: title.text.trim(),
         date: date.text.trim(),
         status: status,
-        deviceOrResponsible:
-            deviceOrResponsible.text.trim(),
+        deviceOrResponsible: deviceOrResponsible.text.trim(),
         reference: reference.text.trim(),
         primaryValue: decimal(primaryValue),
         secondaryValue: decimal(secondaryValue),
         unit: unit.text.trim(),
-        progressPercent:
-            integer(progressPercent).clamp(0, 100),
+        progressPercent: integer(progressPercent).clamp(0, 100),
         alertCount: mathMaxZero(integer(alertCount)),
         notes: notes.text.trim(),
         createdAt: current?.createdAt ?? now,
@@ -621,11 +565,7 @@ class _AutomationRecordFormState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-        widget.current == null
-            ? 'Novo registro'
-            : 'Editar registro',
-      ),
+      title: Text(widget.current == null ? 'Novo registro' : 'Editar registro'),
       content: SizedBox(
         width: 720,
         child: Form(
@@ -640,10 +580,8 @@ class _AutomationRecordFormState
                   ),
                   items: widget.module.features
                       .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
+                        (item) =>
+                            DropdownMenuItem(value: item, child: Text(item)),
                       )
                       .toList(growable: false),
                   onChanged: (value) {
@@ -654,12 +592,9 @@ class _AutomationRecordFormState
                 ),
                 TextFormField(
                   controller: title,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Título'),
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Informe o título.';
                     }
                     return null;
@@ -671,35 +606,32 @@ class _AutomationRecordFormState
                   onTap: chooseDate,
                   decoration: const InputDecoration(
                     labelText: 'Data',
-                    suffixIcon: Icon(
-                      Icons.calendar_month_outlined,
-                    ),
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
                   ),
                 ),
                 DropdownButtonFormField<String>(
                   initialValue: status,
-                  decoration: const InputDecoration(
-                    labelText: 'Situação',
-                  ),
-                  items: const [
-                    'Planejado',
-                    'Em implantação',
-                    'Ativo',
-                    'Conectado',
-                    'Aprovado',
-                    'Concluído',
-                    'Atenção',
-                    'Crítico',
-                    'Offline',
-                    'Bloqueado',
-                  ]
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item,
-                          child: Text(item),
-                        ),
-                      )
-                      .toList(growable: false),
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items:
+                      const [
+                            'Planejado',
+                            'Em implantação',
+                            'Ativo',
+                            'Conectado',
+                            'Aprovado',
+                            'Concluído',
+                            'Atenção',
+                            'Crítico',
+                            'Offline',
+                            'Bloqueado',
+                          ]
+                          .map(
+                            (item) => DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            ),
+                          )
+                          .toList(growable: false),
                   onChanged: (value) {
                     if (value != null) {
                       setState(() => status = value);
@@ -709,21 +641,18 @@ class _AutomationRecordFormState
                 TextFormField(
                   controller: deviceOrResponsible,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Dispositivo, operador ou responsável',
+                    labelText: 'Dispositivo, operador ou responsável',
                   ),
                 ),
                 TextFormField(
                   controller: reference,
                   decoration: const InputDecoration(
-                    labelText:
-                        'Identificação, rota, processo ou referência',
+                    labelText: 'Identificação, rota, processo ou referência',
                   ),
                 ),
                 TextFormField(
                   controller: primaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -732,8 +661,7 @@ class _AutomationRecordFormState
                 ),
                 TextFormField(
                   controller: secondaryValue,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
+                  keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   decoration: const InputDecoration(
@@ -744,8 +672,7 @@ class _AutomationRecordFormState
                   controller: unit,
                   decoration: const InputDecoration(
                     labelText: 'Unidade',
-                    hintText:
-                        'Ex.: ha, km, animais, leituras, minutos, %',
+                    hintText: 'Ex.: ha, km, animais, leituras, minutos, %',
                   ),
                 ),
                 TextFormField(
@@ -766,9 +693,7 @@ class _AutomationRecordFormState
                   controller: notes,
                   minLines: 3,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Observações',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Observações'),
                 ),
               ],
             ),
@@ -780,10 +705,7 @@ class _AutomationRecordFormState
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: save,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: save, child: const Text('Salvar')),
       ],
     );
   }
@@ -791,13 +713,10 @@ class _AutomationRecordFormState
 
 IconData _moduleIcon(AtlasAutomationModule module) {
   return switch (module) {
-    AtlasAutomationModule.drone =>
-      Icons.flight_takeoff_outlined,
-    AtlasAutomationModule.iot =>
-      Icons.sensors_outlined,
+    AtlasAutomationModule.drone => Icons.flight_takeoff_outlined,
+    AtlasAutomationModule.iot => Icons.sensors_outlined,
     AtlasAutomationModule.managementAutomation =>
       Icons.precision_manufacturing_outlined,
-    AtlasAutomationModule.workflow =>
-      Icons.account_tree_outlined,
+    AtlasAutomationModule.workflow => Icons.account_tree_outlined,
   };
 }

@@ -4,8 +4,7 @@ import 'package:projeto_atlas/features/digital_twin/domain/services/atlas_digita
 
 class AtlasDigitalTwinEventReducer {
   const AtlasDigitalTwinEventReducer({
-    this.scoreService =
-        const AtlasDigitalTwinScoreService(),
+    this.scoreService = const AtlasDigitalTwinScoreService(),
   });
 
   final AtlasDigitalTwinScoreService scoreService;
@@ -27,8 +26,7 @@ class AtlasDigitalTwinEventReducer {
       variation: rule.variation,
     );
 
-    final overallScore =
-        scoreService.calculateOverall(health);
+    final overallScore = scoreService.calculateOverall(health);
 
     final risks = _updateRisks(
       current: current.risks,
@@ -38,8 +36,7 @@ class AtlasDigitalTwinEventReducer {
 
     final timeline = <AtlasFarmTimelineEvent>[
       AtlasFarmTimelineEvent(
-        id:
-            'twin_timeline_${DateTime.now().microsecondsSinceEpoch}',
+        id: 'twin_timeline_${DateTime.now().microsecondsSinceEpoch}',
         eventId: event.id,
         title: event.title,
         description: event.description,
@@ -53,8 +50,7 @@ class AtlasDigitalTwinEventReducer {
     ].take(200).toList();
 
     return current.copyWith(
-      farmName:
-          event.farmName ?? current.farmName,
+      farmName: event.farmName ?? current.farmName,
       updatedAt: DateTime.now(),
       health: health,
       overallScore: overallScore,
@@ -64,8 +60,7 @@ class AtlasDigitalTwinEventReducer {
       ),
       risks: risks,
       timeline: timeline,
-      totalProcessedEvents:
-          current.totalProcessedEvents + 1,
+      totalProcessedEvents: current.totalProcessedEvents + 1,
       lastEventId: event.id,
     );
   }
@@ -78,45 +73,27 @@ class AtlasDigitalTwinEventReducer {
     switch (area) {
       case AtlasDigitalTwinArea.animal:
         return current.copyWith(
-          animal: scoreService.apply(
-            current.animal,
-            variation,
-          ),
+          animal: scoreService.apply(current.animal, variation),
         );
       case AtlasDigitalTwinArea.sanitary:
         return current.copyWith(
-          sanitary: scoreService.apply(
-            current.sanitary,
-            variation,
-          ),
+          sanitary: scoreService.apply(current.sanitary, variation),
         );
       case AtlasDigitalTwinArea.reproductive:
         return current.copyWith(
-          reproductive: scoreService.apply(
-            current.reproductive,
-            variation,
-          ),
+          reproductive: scoreService.apply(current.reproductive, variation),
         );
       case AtlasDigitalTwinArea.financial:
         return current.copyWith(
-          financial: scoreService.apply(
-            current.financial,
-            variation,
-          ),
+          financial: scoreService.apply(current.financial, variation),
         );
       case AtlasDigitalTwinArea.inventory:
         return current.copyWith(
-          inventory: scoreService.apply(
-            current.inventory,
-            variation,
-          ),
+          inventory: scoreService.apply(current.inventory, variation),
         );
       case AtlasDigitalTwinArea.operational:
         return current.copyWith(
-          operational: scoreService.apply(
-            current.operational,
-            variation,
-          ),
+          operational: scoreService.apply(current.operational, variation),
         );
     }
   }
@@ -126,19 +103,12 @@ class AtlasDigitalTwinEventReducer {
     required AtlasEvent event,
     required _DigitalTwinEventRule rule,
   }) {
-    final result = List<AtlasFarmRisk>.from(
-      current,
-    );
+    final result = List<AtlasFarmRisk>.from(current);
 
-    final riskId =
-        'risk_${rule.area.name}_${event.type.name}';
+    final riskId = 'risk_${rule.area.name}_${event.type.name}';
 
     if (rule.riskScore <= 0) {
-      result.removeWhere(
-        (item) =>
-            item.area == rule.area &&
-            item.score <= 45,
-      );
+      result.removeWhere((item) => item.area == rule.area && item.score <= 45);
 
       return result.take(25).toList();
     }
@@ -154,9 +124,7 @@ class AtlasDigitalTwinEventReducer {
       sourceEventType: event.type.name,
     );
 
-    final index = result.indexWhere(
-      (item) => item.id == riskId,
-    );
+    final index = result.indexWhere((item) => item.id == riskId);
 
     if (index >= 0) {
       result[index] = risk;
@@ -164,17 +132,12 @@ class AtlasDigitalTwinEventReducer {
       result.insert(0, risk);
     }
 
-    result.sort(
-      (first, second) =>
-          second.score.compareTo(first.score),
-    );
+    result.sort((first, second) => second.score.compareTo(first.score));
 
     return result.take(25).toList();
   }
 
-  AtlasFarmRiskLevel _riskLevel(
-    double score,
-  ) {
+  AtlasFarmRiskLevel _riskLevel(double score) {
     if (score >= 80) {
       return AtlasFarmRiskLevel.critical;
     }
@@ -190,9 +153,7 @@ class AtlasDigitalTwinEventReducer {
     return AtlasFarmRiskLevel.low;
   }
 
-  _DigitalTwinEventRule _ruleFor(
-    AtlasEvent event,
-  ) {
+  _DigitalTwinEventRule _ruleFor(AtlasEvent event) {
     final type = event.type.name;
     final priority = event.priority.name;
 
@@ -246,8 +207,7 @@ class AtlasDigitalTwinEventReducer {
       );
     }
 
-    if (type == 'pregnancyConfirmed' ||
-        type == 'calvingRecorded') {
+    if (type == 'pregnancyConfirmed' || type == 'calvingRecorded') {
       return const _DigitalTwinEventRule(
         area: AtlasDigitalTwinArea.reproductive,
         variation: 1.6,
@@ -257,8 +217,7 @@ class AtlasDigitalTwinEventReducer {
       );
     }
 
-    if (type == 'inseminationRecorded' ||
-        type == 'reproductionEventCreated') {
+    if (type == 'inseminationRecorded' || type == 'reproductionEventCreated') {
       return const _DigitalTwinEventRule(
         area: AtlasDigitalTwinArea.reproductive,
         variation: 0.6,
@@ -310,8 +269,7 @@ class AtlasDigitalTwinEventReducer {
       );
     }
 
-    if (type == 'inventoryItemCreated' ||
-        type == 'inventoryItemUpdated') {
+    if (type == 'inventoryItemCreated' || type == 'inventoryItemUpdated') {
       return const _DigitalTwinEventRule(
         area: AtlasDigitalTwinArea.inventory,
         variation: 0.7,
@@ -321,8 +279,7 @@ class AtlasDigitalTwinEventReducer {
       );
     }
 
-    if (type == 'taskCompleted' ||
-        type == 'workflowCompleted') {
+    if (type == 'taskCompleted' || type == 'workflowCompleted') {
       return const _DigitalTwinEventRule(
         area: AtlasDigitalTwinArea.operational,
         variation: 1.2,
@@ -332,8 +289,7 @@ class AtlasDigitalTwinEventReducer {
       );
     }
 
-    if (type == 'taskDelayed' ||
-        type == 'workflowDelayed') {
+    if (type == 'taskDelayed' || type == 'workflowDelayed') {
       return const _DigitalTwinEventRule(
         area: AtlasDigitalTwinArea.operational,
         variation: -2.7,

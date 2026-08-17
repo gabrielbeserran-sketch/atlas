@@ -28,8 +28,7 @@ class AnimalWeightIntelligenceScreen extends StatefulWidget {
 
 class _AnimalWeightIntelligenceScreenState
     extends State<AnimalWeightIntelligenceScreen> {
-  final AnimalWeightStorageService storage =
-      AnimalWeightStorageService();
+  final AnimalWeightStorageService storage = AnimalWeightStorageService();
 
   List<AnimalWeightData> data = <AnimalWeightData>[];
   bool loading = true;
@@ -65,15 +64,14 @@ class _AnimalWeightIntelligenceScreenState
     });
   }
 
-  double get current =>
-      data.isEmpty ? widget.animal.weight : data.last.weight;
+  double get current => data.isEmpty ? widget.animal.weight : data.last.weight;
 
   double? get gmd {
     if (data.length < 2) return null;
 
-    final days = parseEnterpriseDate(data.last.date)
-        .difference(parseEnterpriseDate(data.first.date))
-        .inDays;
+    final days = parseEnterpriseDate(
+      data.last.date,
+    ).difference(parseEnterpriseDate(data.first.date)).inDays;
 
     if (days <= 0) return null;
     return (data.last.weight - data.first.weight) / days;
@@ -134,8 +132,7 @@ class _AnimalWeightIntelligenceScreenState
                     padding: const EdgeInsets.all(24),
                     children: [
                       EnterpriseModuleHeader(
-                        title:
-                            'Desempenho de ${widget.animal.displayName}',
+                        title: 'Desempenho de ${widget.animal.displayName}',
                         subtitle:
                             'GMD, tendência, projeção e consistência do crescimento.',
                         icon: Icons.auto_graph_outlined,
@@ -177,18 +174,14 @@ class _AnimalWeightIntelligenceScreenState
                           EnterpriseMetricCard(
                             title: 'Histórico',
                             value: '${data.length} pesagens',
-                            subtitle:
-                                'Qualidade: ${_qualityLabel()}',
+                            subtitle: 'Qualidade: ${_qualityLabel()}',
                             icon: Icons.fact_check_outlined,
                           ),
                           EnterpriseMetricCard(
                             title: 'Variação total',
                             value: data.length < 2
                                 ? 'Dados insuficientes'
-                                : kg(
-                                    data.last.weight -
-                                        data.first.weight,
-                                  ),
+                                : kg(data.last.weight - data.first.weight),
                             subtitle: 'Do início ao fim da série',
                             icon: Icons.compare_arrows_outlined,
                           ),
@@ -219,19 +212,17 @@ class _AnimalWeightIntelligenceScreenState
                       if (data.isEmpty)
                         const Card(
                           child: ListTile(
-                            title: Text(
-                              'Nenhuma pesagem cadastrada.',
-                            ),
+                            title: Text('Nenhuma pesagem cadastrada.'),
                           ),
                         )
                       else
-                        ...data.reversed.take(12).map(
+                        ...data.reversed
+                            .take(12)
+                            .map(
                               (record) => Card(
                                 child: ListTile(
                                   leading: const CircleAvatar(
-                                    child: Icon(
-                                      Icons.monitor_weight_outlined,
-                                    ),
+                                    child: Icon(Icons.monitor_weight_outlined),
                                   ),
                                   title: Text(kg(record.weight)),
                                   subtitle: Text(

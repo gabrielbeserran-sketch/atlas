@@ -61,42 +61,35 @@ class AtlasExecutionMeeting {
       'participants': participants,
       'summary': summary,
       'agendaItems': agendaItems,
-      'decisions':
-          decisions.map((item) => item.toMap()).toList(),
+      'decisions': decisions.map((item) => item.toMap()).toList(),
       'closed': closed,
     };
   }
 
-  factory AtlasExecutionMeeting.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasExecutionMeeting.fromMap(Map<String, dynamic> map) {
     final decisionValues = map['decisions'];
 
     return AtlasExecutionMeeting(
       id: map['id']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
-      createdAt: DateTime.tryParse(
-            map['createdAt']?.toString() ?? '',
-          ) ??
+      createdAt:
+          DateTime.tryParse(map['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      meetingAt: DateTime.tryParse(
-            map['meetingAt']?.toString() ?? '',
-          ) ??
+      meetingAt:
+          DateTime.tryParse(map['meetingAt']?.toString() ?? '') ??
           DateTime.now(),
-      title: map['title']?.toString() ??
-          'Reunião de execução',
+      title: map['title']?.toString() ?? 'Reunião de execução',
       participants: _readStrings(map['participants']),
       summary: map['summary']?.toString() ?? '',
       agendaItems: _readStrings(map['agendaItems']),
       decisions: decisionValues is List
           ? decisionValues
-              .map(
-                (item) =>
-                    AtlasExecutionMeetingDecision.fromMap(
-                  Map<String, dynamic>.from(item as Map),
-                ),
-              )
-              .toList(growable: false)
+                .map(
+                  (item) => AtlasExecutionMeetingDecision.fromMap(
+                    Map<String, dynamic>.from(item as Map),
+                  ),
+                )
+                .toList(growable: false)
           : <AtlasExecutionMeetingDecision>[],
       closed: map['closed'] == true,
     );
@@ -107,8 +100,6 @@ class AtlasExecutionMeeting {
       return <String>[];
     }
 
-    return value
-        .map((item) => item.toString())
-        .toList(growable: false);
+    return value.map((item) => item.toString()).toList(growable: false);
   }
 }

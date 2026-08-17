@@ -13,48 +13,32 @@ class AtlasEventAnalyticsBrainBridge {
       return brain;
     }
 
-    final historicalInsights =
-        _buildHistoricalInsights(
-      analytics,
-    );
+    final historicalInsights = _buildHistoricalInsights(analytics);
 
     final mergedInsights = _mergeInsights(
       current: brain.memoryInsights,
       historical: historicalInsights,
     );
 
-    final score = (
-      brain.brainScore -
-      _riskPenalty(analytics)
-    ).clamp(
-      0.0,
-      100.0,
-    ).toDouble();
+    final score = (brain.brainScore - _riskPenalty(analytics))
+        .clamp(0.0, 100.0)
+        .toDouble();
 
-    final confidence = (
-      brain.confidencePercent +
-      _evidenceBonus(analytics)
-    ).clamp(
-      0.0,
-      100.0,
-    ).toDouble();
+    final confidence = (brain.confidencePercent + _evidenceBonus(analytics))
+        .clamp(0.0, 100.0)
+        .toDouble();
 
     return AtlasExecutiveBrainData(
       generatedAt: brain.generatedAt,
       summary: _buildSummary(
         originalSummary: brain.summary,
         analytics: analytics,
-        historicalInsights:
-            historicalInsights,
+        historicalInsights: historicalInsights,
       ),
       brainScore: score,
       confidencePercent: confidence,
-      status: _status(
-        score: score,
-        analytics: analytics,
-      ),
-      officialDecision:
-          brain.officialDecision,
+      status: _status(score: score, analytics: analytics),
+      officialDecision: brain.officialDecision,
       strategy: brain.strategy,
       crossImpacts: brain.crossImpacts,
       conflicts: brain.conflicts,
@@ -67,17 +51,12 @@ class AtlasEventAnalyticsBrainBridge {
     );
   }
 
-  List<AtlasExecutiveMemoryInsight>
-      _buildHistoricalInsights(
+  List<AtlasExecutiveMemoryInsight> _buildHistoricalInsights(
     AtlasEventAnalyticsData analytics,
   ) {
-    final result =
-        <AtlasExecutiveMemoryInsight>[];
+    final result = <AtlasExecutiveMemoryInsight>[];
 
-    for (final pattern
-        in analytics
-            .recurringCriticalEvents
-            .take(8)) {
+    for (final pattern in analytics.recurringCriticalEvents.take(8)) {
       result.add(
         AtlasExecutiveMemoryInsight(
           id:
@@ -94,17 +73,9 @@ class AtlasEventAnalyticsBrainBridge {
               'registradas em '
               '${pattern.farmName}, com origem '
               'em ${pattern.sourceModule}.',
-          type:
-              AtlasExecutiveMemoryInsightType
-                  .recurringPattern,
+          type: AtlasExecutiveMemoryInsightType.recurringPattern,
           farmName: pattern.farmName,
-          relevanceScore:
-              (55 + pattern.count * 8)
-                  .clamp(
-                    0,
-                    100,
-                  )
-                  .toDouble(),
+          relevanceScore: (55 + pattern.count * 8).clamp(0, 100).toDouble(),
           recommendation:
               'Investigar a causa comum, '
               'definir um responsável e '
@@ -114,8 +85,7 @@ class AtlasEventAnalyticsBrainBridge {
       );
     }
 
-    for (final recommendation
-        in analytics.recommendations.take(8)) {
+    for (final recommendation in analytics.recommendations.take(8)) {
       result.add(
         AtlasExecutiveMemoryInsight(
           id:
@@ -123,31 +93,20 @@ class AtlasEventAnalyticsBrainBridge {
               '${recommendation.position}_'
               '${recommendation.priority.name}',
           title: recommendation.title,
-          description:
-              recommendation.description,
-          type:
-              _memoryInsightType(
-            recommendation.priority,
-          ),
+          description: recommendation.description,
+          type: _memoryInsightType(recommendation.priority),
           farmName: 'Operação',
-          relevanceScore:
-              _priorityScore(
-            recommendation.priority,
-          ),
-          recommendation:
-              recommendation.reason,
+          relevanceScore: _priorityScore(recommendation.priority),
+          recommendation: recommendation.reason,
         ),
       );
     }
 
-    final leadingFarm =
-        analytics.farmDistribution.isEmpty
-            ? null
-            : analytics
-                .farmDistribution.first;
+    final leadingFarm = analytics.farmDistribution.isEmpty
+        ? null
+        : analytics.farmDistribution.first;
 
-    if (leadingFarm != null &&
-        leadingFarm.count >= 5) {
+    if (leadingFarm != null && leadingFarm.count >= 5) {
       result.add(
         AtlasExecutiveMemoryInsight(
           id:
@@ -161,19 +120,11 @@ class AtlasEventAnalyticsBrainBridge {
               'representam '
               '${leadingFarm.percent.toStringAsFixed(1)}% '
               'do histórico analisado.',
-          type:
-              AtlasExecutiveMemoryInsightType
-                  .decisionLesson,
+          type: AtlasExecutiveMemoryInsightType.decisionLesson,
           farmName: leadingFarm.label,
-          relevanceScore:
-              (45 +
-                      leadingFarm.percent *
-                          0.5)
-                  .clamp(
-                    0,
-                    100,
-                  )
-                  .toDouble(),
+          relevanceScore: (45 + leadingFarm.percent * 0.5)
+              .clamp(0, 100)
+              .toDouble(),
           recommendation:
               'Comparar essa concentração '
               'com o tamanho e a complexidade '
@@ -183,14 +134,11 @@ class AtlasEventAnalyticsBrainBridge {
       );
     }
 
-    final leadingModule =
-        analytics.moduleDistribution.isEmpty
-            ? null
-            : analytics
-                .moduleDistribution.first;
+    final leadingModule = analytics.moduleDistribution.isEmpty
+        ? null
+        : analytics.moduleDistribution.first;
 
-    if (leadingModule != null &&
-        leadingModule.count >= 5) {
+    if (leadingModule != null && leadingModule.count >= 5) {
       result.add(
         AtlasExecutiveMemoryInsight(
           id:
@@ -205,19 +153,11 @@ class AtlasEventAnalyticsBrainBridge {
               'representando '
               '${leadingModule.percent.toStringAsFixed(1)}% '
               'do histórico.',
-          type:
-              AtlasExecutiveMemoryInsightType
-                  .decisionLesson,
+          type: AtlasExecutiveMemoryInsightType.decisionLesson,
           farmName: 'Operação',
-          relevanceScore:
-              (42 +
-                      leadingModule.percent *
-                          0.45)
-                  .clamp(
-                    0,
-                    100,
-                  )
-                  .toDouble(),
+          relevanceScore: (42 + leadingModule.percent * 0.45)
+              .clamp(0, 100)
+              .toDouble(),
           recommendation:
               'Verificar se o volume representa '
               'atividade normal ou concentração '
@@ -226,166 +166,97 @@ class AtlasEventAnalyticsBrainBridge {
       );
     }
 
-    result.sort(
-      (
-        first,
-        second,
-      ) {
-        return second.relevanceScore
-            .compareTo(
-          first.relevanceScore,
-        );
-      },
-    );
+    result.sort((first, second) {
+      return second.relevanceScore.compareTo(first.relevanceScore);
+    });
 
     return result.take(15).toList();
   }
 
-  List<AtlasExecutiveMemoryInsight>
-      _mergeInsights({
-    required List<
-            AtlasExecutiveMemoryInsight>
-        current,
-    required List<
-            AtlasExecutiveMemoryInsight>
-        historical,
+  List<AtlasExecutiveMemoryInsight> _mergeInsights({
+    required List<AtlasExecutiveMemoryInsight> current,
+    required List<AtlasExecutiveMemoryInsight> historical,
   }) {
-    final byId =
-        <String,
-            AtlasExecutiveMemoryInsight>{};
+    final byId = <String, AtlasExecutiveMemoryInsight>{};
 
-    for (final item in [
-      ...historical,
-      ...current,
-    ]) {
+    for (final item in [...historical, ...current]) {
       final existing = byId[item.id];
 
-      if (existing == null ||
-          item.relevanceScore >
-              existing.relevanceScore) {
+      if (existing == null || item.relevanceScore > existing.relevanceScore) {
         byId[item.id] = item;
       }
     }
 
-    final merged =
-        byId.values.toList()
-          ..sort(
-            (
-              first,
-              second,
-            ) {
-              return second
-                  .relevanceScore
-                  .compareTo(
-                first.relevanceScore,
-              );
-            },
-          );
+    final merged = byId.values.toList()
+      ..sort((first, second) {
+        return second.relevanceScore.compareTo(first.relevanceScore);
+      });
 
     return merged.take(30).toList();
   }
 
-  double _riskPenalty(
-    AtlasEventAnalyticsData analytics,
-  ) {
-    final criticalPenalty =
-        analytics.criticalEvents * 1.8;
+  double _riskPenalty(AtlasEventAnalyticsData analytics) {
+    final criticalPenalty = analytics.criticalEvents * 1.8;
 
-    final highPenalty =
-        analytics.highPriorityEvents *
-            0.45;
+    final highPenalty = analytics.highPriorityEvents * 0.45;
 
-    final recurringPenalty =
-        analytics
-                .recurringCriticalEvents
-                .length *
-            1.4;
+    final recurringPenalty = analytics.recurringCriticalEvents.length * 1.4;
 
-    return (
-      criticalPenalty +
-      highPenalty +
-      recurringPenalty
-    ).clamp(
-      0.0,
-      22.0,
-    ).toDouble();
+    return (criticalPenalty + highPenalty + recurringPenalty)
+        .clamp(0.0, 22.0)
+        .toDouble();
   }
 
-  double _evidenceBonus(
-    AtlasEventAnalyticsData analytics,
-  ) {
+  double _evidenceBonus(AtlasEventAnalyticsData analytics) {
     if (analytics.totalEvents < 5) {
       return 0;
     }
 
-    final volumeBonus =
-        analytics.totalEvents >= 100
-            ? 7.0
-            : analytics.totalEvents >=
-                    30
-                ? 5.0
-                : 3.0;
+    final volumeBonus = analytics.totalEvents >= 100
+        ? 7.0
+        : analytics.totalEvents >= 30
+        ? 5.0
+        : 3.0;
 
-    final recencyBonus =
-        analytics.last30DaysEvents > 0
-            ? 2.0
-            : 0.0;
+    final recencyBonus = analytics.last30DaysEvents > 0 ? 2.0 : 0.0;
 
-    return (
-      volumeBonus +
-      recencyBonus
-    ).clamp(
-      0.0,
-      9.0,
-    ).toDouble();
+    return (volumeBonus + recencyBonus).clamp(0.0, 9.0).toDouble();
   }
 
   AtlasExecutiveBrainStatus _status({
     required double score,
-    required AtlasEventAnalyticsData
-        analytics,
+    required AtlasEventAnalyticsData analytics,
   }) {
-    if (analytics.criticalEvents >= 5 ||
-        score < 35) {
-      return AtlasExecutiveBrainStatus
-          .critical;
+    if (analytics.criticalEvents >= 5 || score < 35) {
+      return AtlasExecutiveBrainStatus.critical;
     }
 
-    if (analytics.criticalEvents > 0 ||
-        score < 60) {
-      return AtlasExecutiveBrainStatus
-          .attention;
+    if (analytics.criticalEvents > 0 || score < 60) {
+      return AtlasExecutiveBrainStatus.attention;
     }
 
     if (score < 80) {
-      return AtlasExecutiveBrainStatus
-          .adequate;
+      return AtlasExecutiveBrainStatus.adequate;
     }
 
-    return AtlasExecutiveBrainStatus
-        .excellent;
+    return AtlasExecutiveBrainStatus.excellent;
   }
 
-  AtlasExecutiveMemoryInsightType
-      _memoryInsightType(
+  AtlasExecutiveMemoryInsightType _memoryInsightType(
     AtlasEventPriority priority,
   ) {
     switch (priority) {
       case AtlasEventPriority.low:
       case AtlasEventPriority.normal:
-        return AtlasExecutiveMemoryInsightType
-            .decisionLesson;
+        return AtlasExecutiveMemoryInsightType.decisionLesson;
 
       case AtlasEventPriority.high:
       case AtlasEventPriority.critical:
-        return AtlasExecutiveMemoryInsightType
-            .historicalRisk;
+        return AtlasExecutiveMemoryInsightType.historicalRisk;
     }
   }
 
-  double _priorityScore(
-    AtlasEventPriority priority,
-  ) {
+  double _priorityScore(AtlasEventPriority priority) {
     switch (priority) {
       case AtlasEventPriority.low:
         return 35;
@@ -403,11 +274,8 @@ class AtlasEventAnalyticsBrainBridge {
 
   String _buildSummary({
     required String originalSummary,
-    required AtlasEventAnalyticsData
-        analytics,
-    required List<
-            AtlasExecutiveMemoryInsight>
-        historicalInsights,
+    required AtlasEventAnalyticsData analytics,
+    required List<AtlasExecutiveMemoryInsight> historicalInsights,
   }) {
     return '$originalSummary '
         'O histórico acrescentou '

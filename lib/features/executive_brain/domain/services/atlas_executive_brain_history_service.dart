@@ -10,8 +10,7 @@ class AtlasExecutiveBrainHistoryService {
   static final AtlasExecutiveBrainHistoryService instance =
       AtlasExecutiveBrainHistoryService._();
 
-  static const String _storageKey =
-      'atlas_executive_brain_history_v1';
+  static const String _storageKey = 'atlas_executive_brain_history_v1';
 
   final List<AtlasExecutiveBrainHistoryEntry> _entries =
       <AtlasExecutiveBrainHistoryEntry>[];
@@ -59,18 +58,19 @@ class AtlasExecutiveBrainHistoryService {
         final decoded = jsonDecode(stored);
 
         if (decoded is List) {
-          final loaded = decoded
-              .whereType<Map>()
-              .map(
-                (item) => AtlasExecutiveBrainHistoryEntry.fromJson(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList()
-            ..sort(
-              (first, second) =>
-                  first.recordedAt.compareTo(second.recordedAt),
-            );
+          final loaded =
+              decoded
+                  .whereType<Map>()
+                  .map(
+                    (item) => AtlasExecutiveBrainHistoryEntry.fromJson(
+                      Map<String, dynamic>.from(item),
+                    ),
+                  )
+                  .toList()
+                ..sort(
+                  (first, second) =>
+                      first.recordedAt.compareTo(second.recordedAt),
+                );
 
           _entries.addAll(
             loaded.length > maxItems
@@ -108,9 +108,7 @@ class AtlasExecutiveBrainHistoryService {
 
     await preferences.setString(
       _storageKey,
-      jsonEncode(
-        _entries.map((item) => item.toJson()).toList(),
-      ),
+      jsonEncode(_entries.map((item) => item.toJson()).toList()),
     );
   }
 }

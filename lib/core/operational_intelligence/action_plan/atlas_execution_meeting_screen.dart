@@ -34,16 +34,14 @@ class _AtlasExecutionMeetingScreenState
   final AtlasDecisionActionAutoSyncService autoSyncService =
       AtlasDecisionActionAutoSyncService.instance;
 
-  List<AtlasExecutionMeeting> meetings =
-      <AtlasExecutionMeeting>[];
+  List<AtlasExecutionMeeting> meetings = <AtlasExecutionMeeting>[];
   bool isLoading = false;
   late final AtlasMeetingDecisionActionSyncController syncController;
 
   @override
   void initState() {
     super.initState();
-    syncController =
-        AtlasMeetingDecisionActionSyncController(
+    syncController = AtlasMeetingDecisionActionSyncController(
       farmName: widget.actionController.farmName,
     );
     autoSyncService.start(
@@ -62,9 +60,7 @@ class _AtlasExecutionMeetingScreenState
   Future<void> _load() async {
     setState(() => isLoading = true);
 
-    meetings = await service.load(
-      farmName: widget.actionController.farmName,
-    );
+    meetings = await service.load(farmName: widget.actionController.farmName);
 
     if (mounted) {
       setState(() => isLoading = false);
@@ -87,9 +83,7 @@ class _AtlasExecutionMeetingScreenState
     await _openMeeting(meeting);
   }
 
-  Future<void> _openMeeting(
-    AtlasExecutionMeeting initialMeeting,
-  ) async {
+  Future<void> _openMeeting(AtlasExecutionMeeting initialMeeting) async {
     var meeting = initialMeeting;
 
     await showDialog<void>(
@@ -97,9 +91,7 @@ class _AtlasExecutionMeetingScreenState
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            Future<void> save(
-              AtlasExecutionMeeting updated,
-            ) async {
+            Future<void> save(AtlasExecutionMeeting updated) async {
               meeting = updated;
               await service.save(meeting);
               setDialogState(() {});
@@ -113,8 +105,7 @@ class _AtlasExecutionMeetingScreenState
                 child: ListView(
                   children: [
                     Text(
-                      DateFormat('dd/MM/yyyy HH:mm')
-                          .format(meeting.meetingAt),
+                      DateFormat('dd/MM/yyyy HH:mm').format(meeting.meetingAt),
                     ),
                     const SizedBox(height: 14),
                     _MeetingSection(
@@ -124,9 +115,7 @@ class _AtlasExecutionMeetingScreenState
                           .map(
                             (item) => ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: const Icon(
-                                Icons.chevron_right,
-                              ),
+                              leading: const Icon(Icons.chevron_right),
                               title: Text(item),
                             ),
                           )
@@ -153,27 +142,19 @@ class _AtlasExecutionMeetingScreenState
                                       '${decision.dueAt == null ? '' : ' • Prazo ${DateFormat('dd/MM/yyyy').format(decision.dueAt!)}'}',
                                     ),
                                     onChanged: (value) async {
-                                      final updatedDecisions =
-                                          meeting.decisions
-                                              .map(
-                                                (item) =>
-                                                    item.id ==
-                                                            decision.id
-                                                        ? item.copyWith(
-                                                            completed:
-                                                                value ??
-                                                                    false,
-                                                          )
-                                                        : item,
-                                              )
-                                              .toList(
-                                                growable: false,
-                                              );
+                                      final updatedDecisions = meeting.decisions
+                                          .map(
+                                            (item) => item.id == decision.id
+                                                ? item.copyWith(
+                                                    completed: value ?? false,
+                                                  )
+                                                : item,
+                                          )
+                                          .toList(growable: false);
 
                                       await save(
                                         meeting.copyWith(
-                                          decisions:
-                                              updatedDecisions,
+                                          decisions: updatedDecisions,
                                         ),
                                       );
                                     },
@@ -185,8 +166,7 @@ class _AtlasExecutionMeetingScreenState
                                     children: [
                                       OutlinedButton.icon(
                                         onPressed: () async {
-                                          final edited =
-                                              await _editDecision(
+                                          final edited = await _editDecision(
                                             dialogContext,
                                             decision,
                                           );
@@ -195,84 +175,73 @@ class _AtlasExecutionMeetingScreenState
                                             return;
                                           }
 
-                                          final updatedDecisions =
-                                              meeting.decisions
-                                                  .map(
-                                                    (item) =>
-                                                        item.id ==
-                                                                decision.id
-                                                            ? edited
-                                                            : item,
-                                                  )
-                                                  .toList(
-                                                    growable: false,
-                                                  );
+                                          final updatedDecisions = meeting
+                                              .decisions
+                                              .map(
+                                                (item) => item.id == decision.id
+                                                    ? edited
+                                                    : item,
+                                              )
+                                              .toList(growable: false);
 
                                           await save(
                                             meeting.copyWith(
-                                              decisions:
-                                                  updatedDecisions,
+                                              decisions: updatedDecisions,
                                             ),
                                           );
 
                                           await autoSyncService
                                               .synchronizeNow();
-                                          await widget.actionController
-                                              .load();
+                                          await widget.actionController.load();
                                         },
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                        ),
+                                        icon: const Icon(Icons.edit_outlined),
                                         label: const Text('Editar'),
                                       ),
                                       FilledButton.tonalIcon(
-                                      onPressed: decision.linkedActionId != null
-                                          ? null
-                                          : () async {
-                                              final action =
-                                                  await decisionActionService
-                                                      .createAction(
-                                                meeting: meeting,
-                                                decision: decision,
-                                              );
+                                        onPressed:
+                                            decision.linkedActionId != null
+                                            ? null
+                                            : () async {
+                                                final action =
+                                                    await decisionActionService
+                                                        .createAction(
+                                                          meeting: meeting,
+                                                          decision: decision,
+                                                        );
 
-                                              final updatedDecisions =
-                                                  meeting.decisions
-                                                      .map(
-                                                        (item) =>
-                                                            item.id ==
-                                                                    decision.id
-                                                                ? item.copyWith(
-                                                                    linkedActionId:
-                                                                        action.id,
-                                                                  )
-                                                                : item,
-                                                      )
-                                                      .toList(
-                                                        growable: false,
-                                                      );
+                                                final updatedDecisions = meeting
+                                                    .decisions
+                                                    .map(
+                                                      (item) =>
+                                                          item.id == decision.id
+                                                          ? item.copyWith(
+                                                              linkedActionId:
+                                                                  action.id,
+                                                            )
+                                                          : item,
+                                                    )
+                                                    .toList(growable: false);
 
-                                              await save(
-                                                meeting.copyWith(
-                                                  decisions:
-                                                      updatedDecisions,
-                                                ),
-                                              );
+                                                await save(
+                                                  meeting.copyWith(
+                                                    decisions: updatedDecisions,
+                                                  ),
+                                                );
 
-                                              await widget.actionController
-                                                  .load();
-                                            },
-                                      icon: Icon(
-                                        decision.linkedActionId == null
-                                            ? Icons.playlist_add_check
-                                            : Icons.link,
+                                                await widget.actionController
+                                                    .load();
+                                              },
+                                        icon: Icon(
+                                          decision.linkedActionId == null
+                                              ? Icons.playlist_add_check
+                                              : Icons.link,
+                                        ),
+                                        label: Text(
+                                          decision.linkedActionId == null
+                                              ? 'Transformar em ação'
+                                              : 'Ação criada',
+                                        ),
                                       ),
-                                      label: Text(
-                                        decision.linkedActionId == null
-                                            ? 'Transformar em ação'
-                                            : 'Ação criada',
-                                      ),
-                                    ),
                                     ],
                                   ),
                                 ],
@@ -284,8 +253,7 @@ class _AtlasExecutionMeetingScreenState
                           alignment: Alignment.centerLeft,
                           child: FilledButton.tonalIcon(
                             onPressed: () async {
-                              final decision =
-                                  await _createDecision(
+                              final decision = await _createDecision(
                                 dialogContext,
                               );
 
@@ -295,17 +263,12 @@ class _AtlasExecutionMeetingScreenState
 
                               await save(
                                 meeting.copyWith(
-                                  decisions: [
-                                    ...meeting.decisions,
-                                    decision,
-                                  ],
+                                  decisions: [...meeting.decisions, decision],
                                 ),
                               );
                             },
                             icon: const Icon(Icons.add),
-                            label: const Text(
-                              'Adicionar decisão',
-                            ),
+                            label: const Text('Adicionar decisão'),
                           ),
                         ),
                       ],
@@ -324,9 +287,7 @@ class _AtlasExecutionMeetingScreenState
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) {
-                            meeting = meeting.copyWith(
-                              summary: value,
-                            );
+                            meeting = meeting.copyWith(summary: value);
                           },
                         ),
                       ],
@@ -336,24 +297,19 @@ class _AtlasExecutionMeetingScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Fechar'),
                 ),
                 FilledButton.icon(
                   onPressed: () async {
-                    await service.save(
-                      meeting.copyWith(closed: true),
-                    );
+                    await service.save(meeting.copyWith(closed: true));
 
                     if (dialogContext.mounted) {
                       Navigator.of(dialogContext).pop();
                     }
                   },
                   icon: const Icon(Icons.task_alt),
-                  label: const Text(
-                    'Encerrar reunião',
-                  ),
+                  label: const Text('Encerrar reunião'),
                 ),
               ],
             );
@@ -365,25 +321,17 @@ class _AtlasExecutionMeetingScreenState
     await _load();
   }
 
-
   Future<AtlasExecutionMeetingDecision?> _editDecision(
     BuildContext context,
     AtlasExecutionMeetingDecision decision,
   ) async {
-    final title = TextEditingController(
-      text: decision.title,
-    );
-    final description = TextEditingController(
-      text: decision.description,
-    );
-    final responsible = TextEditingController(
-      text: decision.responsibleName,
-    );
+    final title = TextEditingController(text: decision.title);
+    final description = TextEditingController(text: decision.description);
+    final responsible = TextEditingController(text: decision.responsibleName);
     var dueAt = decision.dueAt;
     var completed = decision.completed;
 
-    final result =
-        await showDialog<AtlasExecutionMeetingDecision>(
+    final result = await showDialog<AtlasExecutionMeetingDecision>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -427,8 +375,7 @@ class _AtlasExecutionMeetingScreenState
                         subtitle: Text(
                           dueAt == null
                               ? 'Sem prazo definido'
-                              : DateFormat('dd/MM/yyyy')
-                                  .format(dueAt!),
+                              : DateFormat('dd/MM/yyyy').format(dueAt!),
                         ),
                         trailing: Wrap(
                           spacing: 4,
@@ -437,22 +384,17 @@ class _AtlasExecutionMeetingScreenState
                               IconButton(
                                 tooltip: 'Remover prazo',
                                 onPressed: () {
-                                  setDialogState(
-                                    () => dueAt = null,
-                                  );
+                                  setDialogState(() => dueAt = null);
                                 },
                                 icon: const Icon(Icons.clear),
                               ),
                             IconButton(
                               tooltip: 'Escolher prazo',
                               onPressed: () async {
-                                final selected =
-                                    await showDatePicker(
+                                final selected = await showDatePicker(
                                   context: dialogContext,
-                                  initialDate:
-                                      dueAt ?? DateTime.now(),
-                                  firstDate: DateTime.now()
-                                      .subtract(
+                                  initialDate: dueAt ?? DateTime.now(),
+                                  firstDate: DateTime.now().subtract(
                                     const Duration(days: 1),
                                   ),
                                   lastDate: DateTime.now().add(
@@ -461,14 +403,10 @@ class _AtlasExecutionMeetingScreenState
                                 );
 
                                 if (selected != null) {
-                                  setDialogState(
-                                    () => dueAt = selected,
-                                  );
+                                  setDialogState(() => dueAt = selected);
                                 }
                               },
-                              icon: const Icon(
-                                Icons.calendar_month,
-                              ),
+                              icon: const Icon(Icons.calendar_month),
                             ),
                           ],
                         ),
@@ -478,9 +416,7 @@ class _AtlasExecutionMeetingScreenState
                         title: const Text('Decisão concluída'),
                         value: completed,
                         onChanged: (value) {
-                          setDialogState(
-                            () => completed = value,
-                          );
+                          setDialogState(() => completed = value);
                         },
                       ),
                     ],
@@ -489,8 +425,7 @@ class _AtlasExecutionMeetingScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -502,10 +437,8 @@ class _AtlasExecutionMeetingScreenState
                     Navigator.of(dialogContext).pop(
                       decision.copyWith(
                         title: title.text.trim(),
-                        description:
-                            description.text.trim(),
-                        responsibleName:
-                            responsible.text.trim(),
+                        description: description.text.trim(),
+                        responsibleName: responsible.text.trim(),
                         dueAt: dueAt,
                         clearDueAt: dueAt == null,
                         completed: completed,
@@ -528,8 +461,7 @@ class _AtlasExecutionMeetingScreenState
     return result;
   }
 
-  Future<AtlasExecutionMeetingDecision?>
-      _createDecision(
+  Future<AtlasExecutionMeetingDecision?> _createDecision(
     BuildContext context,
   ) async {
     final title = TextEditingController();
@@ -537,8 +469,7 @@ class _AtlasExecutionMeetingScreenState
     final responsible = TextEditingController();
     DateTime? dueAt;
 
-    final result =
-        await showDialog<AtlasExecutionMeetingDecision>(
+    final result = await showDialog<AtlasExecutionMeetingDecision>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
@@ -581,17 +512,14 @@ class _AtlasExecutionMeetingScreenState
                       subtitle: Text(
                         dueAt == null
                             ? 'Sem prazo definido'
-                            : DateFormat('dd/MM/yyyy')
-                                .format(dueAt!),
+                            : DateFormat('dd/MM/yyyy').format(dueAt!),
                       ),
                       trailing: IconButton(
                         tooltip: 'Definir prazo',
                         onPressed: () async {
-                          final selected =
-                              await showDatePicker(
+                          final selected = await showDatePicker(
                             context: dialogContext,
-                            initialDate:
-                                dueAt ?? DateTime.now(),
+                            initialDate: dueAt ?? DateTime.now(),
                             firstDate: DateTime.now(),
                             lastDate: DateTime.now().add(
                               const Duration(days: 3650),
@@ -599,14 +527,10 @@ class _AtlasExecutionMeetingScreenState
                           );
 
                           if (selected != null) {
-                            setDialogState(
-                              () => dueAt = selected,
-                            );
+                            setDialogState(() => dueAt = selected);
                           }
                         },
-                        icon: const Icon(
-                          Icons.calendar_month,
-                        ),
+                        icon: const Icon(Icons.calendar_month),
                       ),
                     ),
                   ],
@@ -614,8 +538,7 @@ class _AtlasExecutionMeetingScreenState
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Cancelar'),
                 ),
                 FilledButton(
@@ -628,13 +551,12 @@ class _AtlasExecutionMeetingScreenState
 
                     Navigator.of(dialogContext).pop(
                       AtlasExecutionMeetingDecision(
-                        id: 'meeting_decision_'
+                        id:
+                            'meeting_decision_'
                             '${now.microsecondsSinceEpoch}',
                         title: title.text.trim(),
-                        description:
-                            description.text.trim(),
-                        responsibleName:
-                            responsible.text.trim(),
+                        description: description.text.trim(),
+                        responsibleName: responsible.text.trim(),
                         dueAt: dueAt,
                         completed: false,
                         linkedActionId: null,
@@ -699,57 +621,42 @@ class _AtlasExecutionMeetingScreenState
         label: const Text('Nova reunião'),
       ),
       body: isLoading && meetings.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : meetings.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Nenhuma reunião de execução foi registrada.',
-                      textAlign: TextAlign.center,
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Nenhuma reunião de execução foi registrada.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              itemCount: meetings.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final meeting = meetings[index];
+
+                return Card(
+                  child: ListTile(
+                    onTap: () => _openMeeting(meeting),
+                    leading: Icon(
+                      meeting.closed ? Icons.task_alt : Icons.groups_outlined,
+                    ),
+                    title: Text(meeting.title),
+                    subtitle: Text(
+                      '${DateFormat('dd/MM/yyyy HH:mm').format(meeting.meetingAt)} • '
+                      '${meeting.decisions.length} decisão(ões)',
+                    ),
+                    trailing: Chip(
+                      label: Text(meeting.closed ? 'Encerrada' : 'Aberta'),
                     ),
                   ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    16,
-                    16,
-                    16,
-                    96,
-                  ),
-                  itemCount: meetings.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final meeting = meetings[index];
-
-                    return Card(
-                      child: ListTile(
-                        onTap: () =>
-                            _openMeeting(meeting),
-                        leading: Icon(
-                          meeting.closed
-                              ? Icons.task_alt
-                              : Icons.groups_outlined,
-                        ),
-                        title: Text(meeting.title),
-                        subtitle: Text(
-                          '${DateFormat('dd/MM/yyyy HH:mm').format(meeting.meetingAt)} • '
-                          '${meeting.decisions.length} decisão(ões)',
-                        ),
-                        trailing: Chip(
-                          label: Text(
-                            meeting.closed
-                                ? 'Encerrada'
-                                : 'Aberta',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                );
+              },
+            ),
     );
   }
 }
@@ -771,8 +678,7 @@ class _MeetingSection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [

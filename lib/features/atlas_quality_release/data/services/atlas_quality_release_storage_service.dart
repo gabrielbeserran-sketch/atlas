@@ -1,24 +1,16 @@
-
 import 'dart:convert';
 
 import 'package:projeto_atlas/features/atlas_quality_release/domain/models/atlas_quality_release_record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtlasQualityReleaseStorageService {
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_quality_release_'
         '${_normalize(farmName)}_'
         '${_normalize(animalId)}';

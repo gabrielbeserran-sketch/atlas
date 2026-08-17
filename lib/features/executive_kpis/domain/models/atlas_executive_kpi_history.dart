@@ -41,54 +41,38 @@ class AtlasExecutiveKpiHistoryPoint {
     };
   }
 
-  factory AtlasExecutiveKpiHistoryPoint.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final categoryName =
-        json['category']?.toString() ?? '';
+  factory AtlasExecutiveKpiHistoryPoint.fromJson(Map<String, dynamic> json) {
+    final categoryName = json['category']?.toString() ?? '';
 
-    final statusName =
-        json['status']?.toString() ?? '';
+    final statusName = json['status']?.toString() ?? '';
 
     return AtlasExecutiveKpiHistoryPoint(
       kpiId: json['kpiId']?.toString() ?? '',
-      farmName:
-          json['farmName']?.toString() ?? '',
+      farmName: json['farmName']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
-      category:
-          AtlasExecutiveKpiCategory.values.firstWhere(
+      category: AtlasExecutiveKpiCategory.values.firstWhere(
         (item) => item.name == categoryName,
-        orElse: () =>
-            AtlasExecutiveKpiCategory.intelligence,
+        orElse: () => AtlasExecutiveKpiCategory.intelligence,
       ),
       value: _readDouble(json['value']),
-      targetValue:
-          _readDouble(json['targetValue']),
+      targetValue: _readDouble(json['targetValue']),
       unit: json['unit']?.toString() ?? '',
-      status:
-          AtlasExecutiveKpiStatus.values.firstWhere(
+      status: AtlasExecutiveKpiStatus.values.firstWhere(
         (item) => item.name == statusName,
-        orElse: () =>
-            AtlasExecutiveKpiStatus.attention,
+        orElse: () => AtlasExecutiveKpiStatus.attention,
       ),
-      recordedAt: DateTime.tryParse(
-            json['recordedAt']?.toString() ?? '',
-          ) ??
+      recordedAt:
+          DateTime.tryParse(json['recordedAt']?.toString() ?? '') ??
           DateTime.now(),
     );
   }
 
-  static double _readDouble(
-    dynamic value,
-  ) {
+  static double _readDouble(dynamic value) {
     if (value is num) {
       return value.toDouble();
     }
 
-    return double.tryParse(
-          value?.toString() ?? '',
-        ) ??
-        0;
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 }
 
@@ -154,8 +138,7 @@ class AtlasExecutiveKpiHistorySummary {
 
   final DateTime generatedAt;
 
-  final List<AtlasExecutiveKpiHistorySeries>
-      series;
+  final List<AtlasExecutiveKpiHistorySeries> series;
 
   final int improvingCount;
   final int stableCount;
@@ -167,23 +150,17 @@ class AtlasExecutiveKpiHistorySummary {
     return series.any((item) => item.hasHistory);
   }
 
-  List<AtlasExecutiveKpiHistorySeries>
-      get improvingSeries {
+  List<AtlasExecutiveKpiHistorySeries> get improvingSeries {
     return series.where((item) {
-      return item.trend ==
-              AtlasExecutiveKpiTrend.up ||
-          item.trend ==
-              AtlasExecutiveKpiTrend.strongUp;
+      return item.trend == AtlasExecutiveKpiTrend.up ||
+          item.trend == AtlasExecutiveKpiTrend.strongUp;
     }).toList();
   }
 
-  List<AtlasExecutiveKpiHistorySeries>
-      get worseningSeries {
+  List<AtlasExecutiveKpiHistorySeries> get worseningSeries {
     return series.where((item) {
-      return item.trend ==
-              AtlasExecutiveKpiTrend.down ||
-          item.trend ==
-              AtlasExecutiveKpiTrend.strongDown;
+      return item.trend == AtlasExecutiveKpiTrend.down ||
+          item.trend == AtlasExecutiveKpiTrend.strongDown;
     }).toList();
   }
 }

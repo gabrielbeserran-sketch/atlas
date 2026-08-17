@@ -6,20 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtlasCommercialService {
   AtlasCommercialService._();
 
-  static final AtlasCommercialService instance =
-      AtlasCommercialService._();
+  static final AtlasCommercialService instance = AtlasCommercialService._();
 
-  static const String _partnersKey =
-      'atlas_commercial_partners_v1';
-  static const String _dealsKey =
-      'atlas_commercial_deals_v1';
+  static const String _partnersKey = 'atlas_commercial_partners_v1';
+  static const String _dealsKey = 'atlas_commercial_deals_v1';
 
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
-  Future<List<AtlasCommercialPartner>> loadPartners({
-    String? farmName,
-  }) async {
+  Future<List<AtlasCommercialPartner>> loadPartners({String? farmName}) async {
     final values = await _decodeList(
       _partnersKey,
       AtlasCommercialPartner.fromMap,
@@ -28,41 +22,25 @@ class AtlasCommercialService {
       ..sort((a, b) => a.name.compareTo(b.name));
   }
 
-  Future<void> savePartner(
-    AtlasCommercialPartner partner,
-  ) async {
+  Future<void> savePartner(AtlasCommercialPartner partner) async {
     final values = await _decodeList(
       _partnersKey,
       AtlasCommercialPartner.fromMap,
     );
     _upsert(values, partner, (item) => item.id);
-    await _saveList(
-      _partnersKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_partnersKey, values.map((item) => item.toMap()).toList());
   }
 
-  Future<List<AtlasCommercialDeal>> loadDeals({
-    String? farmName,
-  }) async {
-    final values = await _decodeList(
-      _dealsKey,
-      AtlasCommercialDeal.fromMap,
-    );
+  Future<List<AtlasCommercialDeal>> loadDeals({String? farmName}) async {
+    final values = await _decodeList(_dealsKey, AtlasCommercialDeal.fromMap);
     return _filterFarm(values, farmName, (item) => item.farmName)
       ..sort((a, b) => b.negotiatedAt.compareTo(a.negotiatedAt));
   }
 
   Future<void> saveDeal(AtlasCommercialDeal deal) async {
-    final values = await _decodeList(
-      _dealsKey,
-      AtlasCommercialDeal.fromMap,
-    );
+    final values = await _decodeList(_dealsKey, AtlasCommercialDeal.fromMap);
     _upsert(values, deal, (item) => item.id);
-    await _saveList(
-      _dealsKey,
-      values.map((item) => item.toMap()).toList(),
-    );
+    await _saveList(_dealsKey, values.map((item) => item.toMap()).toList());
   }
 
   Future<AtlasCommercialExecutiveSnapshot> buildSnapshot({
@@ -97,16 +75,18 @@ class AtlasCommercialService {
     final marginPercent = completedSales.isEmpty
         ? 0.0
         : completedSales.fold<double>(
-              0,
-              (total, item) => total + item.marginPercent,
-            ) /
-            completedSales.length;
-    final open = deals.where(
-      (item) =>
-          item.status == AtlasCommercialDealStatus.prospecting ||
-          item.status == AtlasCommercialDealStatus.negotiating ||
-          item.status == AtlasCommercialDealStatus.contracted,
-    ).length;
+                0,
+                (total, item) => total + item.marginPercent,
+              ) /
+              completedSales.length;
+    final open = deals
+        .where(
+          (item) =>
+              item.status == AtlasCommercialDealStatus.prospecting ||
+              item.status == AtlasCommercialDealStatus.negotiating ||
+              item.status == AtlasCommercialDealStatus.contracted,
+        )
+        .length;
 
     var score = 50.0;
     score += marginPercent.clamp(-20, 30);
@@ -149,17 +129,17 @@ class AtlasCommercialService {
         'Existem muitas negociações abertas. Priorize propostas com maior margem e probabilidade.',
       );
     }
-    final delayed = deals.where(
-      (item) =>
-          item.deliveryAt != null &&
-          item.deliveryAt!.isBefore(DateTime.now()) &&
-          item.status != AtlasCommercialDealStatus.completed &&
-          item.status != AtlasCommercialDealStatus.cancelled,
-    ).length;
+    final delayed = deals
+        .where(
+          (item) =>
+              item.deliveryAt != null &&
+              item.deliveryAt!.isBefore(DateTime.now()) &&
+              item.status != AtlasCommercialDealStatus.completed &&
+              item.status != AtlasCommercialDealStatus.cancelled,
+        )
+        .length;
     if (delayed > 0) {
-      recommendations.add(
-        '$delayed negociação(ões) possuem entrega vencida.',
-      );
+      recommendations.add('$delayed negociação(ões) possuem entrega vencida.');
     }
     if (snapshot.completedSales == 0) {
       recommendations.add(
@@ -196,32 +176,19 @@ class AtlasCommercialService {
     if (raw == null || raw.trim().isEmpty) return <T>[];
     try {
       return (jsonDecode(raw) as List)
-          .map(
-            (item) => fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
+          .map((item) => fromMap(Map<String, dynamic>.from(item as Map)))
           .toList();
     } catch (_) {
       return <T>[];
     }
   }
 
-  Future<void> _saveList(
-    String key,
-    List<Map<String, dynamic>> values,
-  ) {
+  Future<void> _saveList(String key, List<Map<String, dynamic>> values) {
     return _preferences.setString(key, jsonEncode(values));
   }
 
-  void _upsert<T>(
-    List<T> values,
-    T value,
-    String Function(T) readId,
-  ) {
-    final index = values.indexWhere(
-      (item) => readId(item) == readId(value),
-    );
+  void _upsert<T>(List<T> values, T value, String Function(T) readId) {
+    final index = values.indexWhere((item) => readId(item) == readId(value));
     if (index == -1) {
       values.add(value);
     } else {
@@ -237,8 +204,7 @@ class AtlasCommercialService {
     final normalized = farmName?.trim().toLowerCase();
     if (normalized == null || normalized.isEmpty) return values;
     return values.where((value) {
-      return readFarm(value)?.trim().toLowerCase() ==
-          normalized;
+      return readFarm(value)?.trim().toLowerCase() == normalized;
     }).toList();
   }
 }

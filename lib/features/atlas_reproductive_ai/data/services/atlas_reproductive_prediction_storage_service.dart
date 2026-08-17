@@ -4,20 +4,13 @@ import 'package:projeto_atlas/features/atlas_reproductive_ai/domain/models/atlas
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtlasReproductivePredictionStorageService {
-  final SharedPreferencesAsync _preferences =
-      SharedPreferencesAsync();
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
 
   String _normalize(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
   }
 
-  String _key({
-    required String farmName,
-    required String animalId,
-  }) {
+  String _key({required String farmName, required String animalId}) {
     return 'atlas_reproductive_ai_'
         '${_normalize(farmName)}_'
         '${_normalize(animalId)}';
@@ -36,8 +29,7 @@ class AtlasReproductivePredictionStorageService {
     try {
       return (jsonDecode(raw) as List<dynamic>)
           .map(
-            (item) =>
-                AtlasReproductivePredictionCase.fromMap(
+            (item) => AtlasReproductivePredictionCase.fromMap(
               Map<String, dynamic>.from(item as Map),
             ),
           )
@@ -54,9 +46,7 @@ class AtlasReproductivePredictionStorageService {
   }) async {
     await _preferences.setString(
       _key(farmName: farmName, animalId: animalId),
-      jsonEncode(
-        cases.map((item) => item.toMap()).toList(),
-      ),
+      jsonEncode(cases.map((item) => item.toMap()).toList()),
     );
   }
 }

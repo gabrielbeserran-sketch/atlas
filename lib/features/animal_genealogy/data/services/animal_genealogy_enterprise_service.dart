@@ -2,19 +2,13 @@ import 'package:projeto_atlas/features/animal_genealogy/domain/models/animal_gen
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class AnimalGenealogyEnterpriseService {
-  AnimalGenealogyEnterpriseService({
-    AtlasEnterpriseApiClient? api,
-  }) : _api = api ?? AtlasEnterpriseApiClient.instance;
+  AnimalGenealogyEnterpriseService({AtlasEnterpriseApiClient? api})
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 
-  Future<AnimalGenealogyData> loadGenealogy(
-    String animalId,
-  ) async {
-    final response = await _api.request(
-      'GET',
-      '/animals/$animalId/genealogy',
-    );
+  Future<AnimalGenealogyData> loadGenealogy(String animalId) async {
+    final response = await _api.request('GET', '/animals/$animalId/genealogy');
 
     return AnimalGenealogyData.fromMap(response);
   }

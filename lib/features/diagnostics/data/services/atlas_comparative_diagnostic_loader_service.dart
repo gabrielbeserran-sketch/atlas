@@ -21,29 +21,16 @@ class AtlasComparativeDiagnosticLoaderService {
     FarmAgendaStorageService? agendaStorage,
     AtlasFarmIntelligenceService? farmIntelligenceService,
     AtlasDiagnosticService? diagnosticService,
-  })  : farmStorage =
-            farmStorage ?? FarmStorageService(),
-        herdStorage =
-            herdStorage ?? HerdStorageService(),
-        animalStorage =
-            animalStorage ?? AnimalStorageService(),
-        paddockStorage =
-            paddockStorage ?? PaddockStorageService(),
-        financeStorage =
-            financeStorage ??
-                FarmFinanceStorageService(),
-        inventoryStorage =
-            inventoryStorage ??
-                FarmInventoryStorageService(),
-        agendaStorage =
-            agendaStorage ??
-                FarmAgendaStorageService(),
-        farmIntelligenceService =
-            farmIntelligenceService ??
-                const AtlasFarmIntelligenceService(),
-        diagnosticService =
-            diagnosticService ??
-                const AtlasDiagnosticService();
+  }) : farmStorage = farmStorage ?? FarmStorageService(),
+       herdStorage = herdStorage ?? HerdStorageService(),
+       animalStorage = animalStorage ?? AnimalStorageService(),
+       paddockStorage = paddockStorage ?? PaddockStorageService(),
+       financeStorage = financeStorage ?? FarmFinanceStorageService(),
+       inventoryStorage = inventoryStorage ?? FarmInventoryStorageService(),
+       agendaStorage = agendaStorage ?? FarmAgendaStorageService(),
+       farmIntelligenceService =
+           farmIntelligenceService ?? const AtlasFarmIntelligenceService(),
+       diagnosticService = diagnosticService ?? const AtlasDiagnosticService();
 
   final FarmStorageService farmStorage;
   final HerdStorageService herdStorage;
@@ -53,18 +40,14 @@ class AtlasComparativeDiagnosticLoaderService {
   final FarmInventoryStorageService inventoryStorage;
   final FarmAgendaStorageService agendaStorage;
 
-  final AtlasFarmIntelligenceService
-      farmIntelligenceService;
+  final AtlasFarmIntelligenceService farmIntelligenceService;
 
   final AtlasDiagnosticService diagnosticService;
 
-  Future<AtlasComparativeDiagnosticLoadResult>
-      load() async {
+  Future<AtlasComparativeDiagnosticLoadResult> load() async {
     final farms = await farmStorage.loadFarms();
 
-    final diagnostics = await Future.wait(
-      farms.map(_loadFarmDiagnostic),
-    );
+    final diagnostics = await Future.wait(farms.map(_loadFarmDiagnostic));
 
     return AtlasComparativeDiagnosticLoadResult(
       farms: farms,
@@ -72,31 +55,16 @@ class AtlasComparativeDiagnosticLoaderService {
     );
   }
 
-  Future<AtlasDiagnosticData> _loadFarmDiagnostic(
-    FarmData farm,
-  ) async {
-    final groups =
-        await herdStorage.loadGroups(farm.name);
+  Future<AtlasDiagnosticData> _loadFarmDiagnostic(FarmData farm) async {
+    final groups = await herdStorage.loadGroups(farm.name);
 
-    final paddocks =
-        await paddockStorage.loadPaddocks(
-      farm.name,
-    );
+    final paddocks = await paddockStorage.loadPaddocks(farm.id ?? '');
 
-    final financeRecords =
-        await financeStorage.loadRecords(
-      farm.name,
-    );
+    final financeRecords = await financeStorage.loadRecords(farm.name);
 
-    final inventoryItems =
-        await inventoryStorage.loadItems(
-      farm.name,
-    );
+    final inventoryItems = await inventoryStorage.loadItems(farm.name);
 
-    final agendaTasks =
-        await agendaStorage.loadTasks(
-      farm.name,
-    );
+    final agendaTasks = await agendaStorage.loadTasks(farm.name);
 
     final animalLists = await Future.wait(
       groups.map((group) {
@@ -107,12 +75,9 @@ class AtlasComparativeDiagnosticLoaderService {
       }),
     );
 
-    final animals = animalLists.expand(
-      (items) => items,
-    ).toList();
+    final animals = animalLists.expand((items) => items).toList();
 
-    final intelligence =
-        farmIntelligenceService.analyze(
+    final intelligence = farmIntelligenceService.analyze(
       farm: farm,
       animals: animals,
       groups: groups,
@@ -122,9 +87,7 @@ class AtlasComparativeDiagnosticLoaderService {
       agendaTasks: agendaTasks,
     );
 
-    return diagnosticService.buildFarmDiagnostic(
-      farm: intelligence,
-    );
+    return diagnosticService.buildFarmDiagnostic(farm: intelligence);
   }
 }
 

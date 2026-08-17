@@ -9,27 +9,17 @@ class AtlasStrategyLoaderService {
   AtlasStrategyInput buildInput({
     required AtlasExecutiveKpiDashboardData kpis,
     required AtlasExecutiveGoalDashboardData goals,
-    required AtlasExecutiveGoalHistorySummary
-        goalHistory,
+    required AtlasExecutiveGoalHistorySummary goalHistory,
   }) {
     return AtlasStrategyInput(
       title: 'Estratégia Consolidada Atlas',
       mission:
           'Transformar dados da fazenda em decisões, execução e resultado sustentável.',
       objectives: _buildObjectives(goals.goals),
-      priorities: _buildPriorities(
-        goals.priorityGoals,
-      ),
-      initiatives: _buildInitiatives(
-        goals.goals,
-      ),
-      risks: _buildRisks(
-        kpis: kpis,
-        history: goalHistory,
-      ),
-      opportunities: _buildOpportunities(
-        kpis,
-      ),
+      priorities: _buildPriorities(goals.priorityGoals),
+      initiatives: _buildInitiatives(goals.goals),
+      risks: _buildRisks(kpis: kpis, history: goalHistory),
+      opportunities: _buildOpportunities(kpis),
     );
   }
 
@@ -38,8 +28,7 @@ class AtlasStrategyLoaderService {
   ) {
     return goals
         .where((goal) {
-          return goal.status !=
-              AtlasExecutiveGoalStatus.cancelled;
+          return goal.status != AtlasExecutiveGoalStatus.cancelled;
         })
         .map((goal) {
           return AtlasStrategyObjective(
@@ -49,35 +38,22 @@ class AtlasStrategyLoaderService {
             description: goal.notes.isEmpty
                 ? 'Alcançar o valor-alvo definido para o indicador.'
                 : goal.notes,
-            category:
-                _categoryFromKpi(goal.category),
-            progressPercent:
-                goal.progressPercent,
+            category: _categoryFromKpi(goal.category),
+            progressPercent: goal.progressPercent,
             deadline: goal.deadline,
-            status: _statusFromGoal(
-              goal.status,
-            ),
-            priority: _priorityFromGoal(
-              goal.priority,
-            ),
-            responsibleName:
-                goal.responsibleName,
+            status: _statusFromGoal(goal.status),
+            priority: _priorityFromGoal(goal.priority),
+            responsibleName: goal.responsibleName,
           );
         })
         .toList();
   }
 
-  List<AtlasStrategyPriority> _buildPriorities(
-    List<AtlasExecutiveGoal> goals,
-  ) {
+  List<AtlasStrategyPriority> _buildPriorities(List<AtlasExecutiveGoal> goals) {
     return goals
         .where((goal) {
-          return goal.status !=
-                  AtlasExecutiveGoalStatus
-                      .completed &&
-              goal.status !=
-                  AtlasExecutiveGoalStatus
-                      .cancelled;
+          return goal.status != AtlasExecutiveGoalStatus.completed &&
+              goal.status != AtlasExecutiveGoalStatus.cancelled;
         })
         .take(12)
         .map((goal) {
@@ -88,56 +64,38 @@ class AtlasStrategyLoaderService {
             description:
                 'Prioridade estratégica derivada de uma meta executiva '
                 '${atlasExecutiveGoalStatusLabel(goal.status).toLowerCase()}.',
-            category:
-                _categoryFromKpi(goal.category),
-            priority: _priorityFromGoal(
-              goal.priority,
-            ),
-            status: _statusFromGoal(
-              goal.status,
-            ),
+            category: _categoryFromKpi(goal.category),
+            priority: _priorityFromGoal(goal.priority),
+            status: _statusFromGoal(goal.status),
             deadline: goal.deadline,
-            progressPercent:
-                goal.progressPercent,
+            progressPercent: goal.progressPercent,
           );
         })
         .toList();
   }
 
-  List<AtlasStrategyInitiative>
-      _buildInitiatives(
+  List<AtlasStrategyInitiative> _buildInitiatives(
     List<AtlasExecutiveGoal> goals,
   ) {
     return goals
         .where((goal) {
-          return goal.status ==
-                  AtlasExecutiveGoalStatus
-                      .active ||
-              goal.status ==
-                  AtlasExecutiveGoalStatus
-                      .atRisk ||
-              goal.status ==
-                  AtlasExecutiveGoalStatus
-                      .overdue;
+          return goal.status == AtlasExecutiveGoalStatus.active ||
+              goal.status == AtlasExecutiveGoalStatus.atRisk ||
+              goal.status == AtlasExecutiveGoalStatus.overdue;
         })
         .map((goal) {
           return AtlasStrategyInitiative(
             id: 'initiative_${goal.id}',
             farmName: goal.farmName,
-            title:
-                'Plano de execução — ${goal.kpiTitle}',
+            title: 'Plano de execução — ${goal.kpiTitle}',
             description:
                 'Executar ações para evoluir de '
                 '${_value(goal.startValue, goal.unit)} '
                 'para '
                 '${_value(goal.targetValue, goal.unit)}.',
-            category:
-                _categoryFromKpi(goal.category),
-            status: _statusFromGoal(
-              goal.status,
-            ),
-            progressPercent:
-                goal.progressPercent,
+            category: _categoryFromKpi(goal.category),
+            status: _statusFromGoal(goal.status),
+            progressPercent: goal.progressPercent,
             deadline: goal.deadline,
             expectedImpact:
                 'Atingir ${_value(goal.targetValue, goal.unit)} '
@@ -148,10 +106,8 @@ class AtlasStrategyLoaderService {
   }
 
   List<AtlasStrategyRisk> _buildRisks({
-    required AtlasExecutiveKpiDashboardData
-        kpis,
-    required AtlasExecutiveGoalHistorySummary
-        history,
+    required AtlasExecutiveKpiDashboardData kpis,
+    required AtlasExecutiveGoalHistorySummary history,
   }) {
     final risks = <AtlasStrategyRisk>[];
 
@@ -162,16 +118,11 @@ class AtlasStrategyLoaderService {
           farmName: kpi.farmName,
           title: kpi.title,
           description: kpi.description,
-          category:
-              _categoryFromKpi(kpi.category),
-          probability:
-              AtlasStrategyRiskLevel.high,
-          impact:
-              kpi.targetAchievementPercent < 40
-                  ? AtlasStrategyRiskLevel
-                      .critical
-                  : AtlasStrategyRiskLevel
-                      .high,
+          category: _categoryFromKpi(kpi.category),
+          probability: AtlasStrategyRiskLevel.high,
+          impact: kpi.targetAchievementPercent < 40
+              ? AtlasStrategyRiskLevel.critical
+              : AtlasStrategyRiskLevel.high,
           mitigation:
               'Criar ou atualizar uma meta, definir responsável e acompanhar o indicador semanalmente.',
         ),
@@ -179,24 +130,18 @@ class AtlasStrategyLoaderService {
     }
 
     for (final series in history.series.where(
-      (item) =>
-          item.riskLevel ==
-              AtlasExecutiveGoalRiskLevel.high,
+      (item) => item.riskLevel == AtlasExecutiveGoalRiskLevel.high,
     )) {
       risks.add(
         AtlasStrategyRisk(
           id: 'goal_risk_${series.goalId}',
           farmName: series.farmName,
-          title:
-              'Risco de atraso — ${series.kpiTitle}',
+          title: 'Risco de atraso — ${series.kpiTitle}',
           description:
               'A projeção atual indica risco elevado de a meta não ser concluída no prazo.',
-          category:
-              AtlasStrategyCategory.management,
-          probability:
-              AtlasStrategyRiskLevel.high,
-          impact:
-              AtlasStrategyRiskLevel.high,
+          category: AtlasStrategyCategory.management,
+          probability: AtlasStrategyRiskLevel.high,
+          impact: AtlasStrategyRiskLevel.high,
           mitigation:
               'Revisar prazo, recursos, responsável e plano de execução.',
         ),
@@ -206,42 +151,31 @@ class AtlasStrategyLoaderService {
     return risks;
   }
 
-  List<AtlasStrategyOpportunity>
-      _buildOpportunities(
+  List<AtlasStrategyOpportunity> _buildOpportunities(
     AtlasExecutiveKpiDashboardData kpis,
   ) {
-    return kpis.positiveHighlights
-        .take(12)
-        .map((kpi) {
-          final excess =
-              kpi.targetAchievementPercent - 100;
+    return kpis.positiveHighlights.take(12).map((kpi) {
+      final excess = kpi.targetAchievementPercent - 100;
 
-          return AtlasStrategyOpportunity(
-            id: 'opportunity_${kpi.id}',
-            farmName: kpi.farmName,
-            title:
-                'Potencial de expansão — ${kpi.title}',
-            description:
-                'O indicador superou a meta e pode servir como referência para outras áreas ou fazendas.',
-            category:
-                _categoryFromKpi(kpi.category),
-            impactValue:
-                excess.clamp(0.0, 100.0).toDouble(),
-            impactUnit: '% acima da meta',
-            confidencePercent:
-                kpi.targetAchievementPercent
-                    .clamp(0.0, 100.0)
-                    .toDouble(),
-            recommendation:
-                'Documentar a prática, validar a consistência do resultado e replicar o padrão.',
-          );
-        })
-        .toList();
+      return AtlasStrategyOpportunity(
+        id: 'opportunity_${kpi.id}',
+        farmName: kpi.farmName,
+        title: 'Potencial de expansão — ${kpi.title}',
+        description:
+            'O indicador superou a meta e pode servir como referência para outras áreas ou fazendas.',
+        category: _categoryFromKpi(kpi.category),
+        impactValue: excess.clamp(0.0, 100.0).toDouble(),
+        impactUnit: '% acima da meta',
+        confidencePercent: kpi.targetAchievementPercent
+            .clamp(0.0, 100.0)
+            .toDouble(),
+        recommendation:
+            'Documentar a prática, validar a consistência do resultado e replicar o padrão.',
+      );
+    }).toList();
   }
 
-  AtlasStrategyCategory _categoryFromKpi(
-    AtlasExecutiveKpiCategory category,
-  ) {
+  AtlasStrategyCategory _categoryFromKpi(AtlasExecutiveKpiCategory category) {
     switch (category) {
       case AtlasExecutiveKpiCategory.production:
         return AtlasStrategyCategory.production;
@@ -263,9 +197,7 @@ class AtlasStrategyLoaderService {
     }
   }
 
-  AtlasStrategyItemStatus _statusFromGoal(
-    AtlasExecutiveGoalStatus status,
-  ) {
+  AtlasStrategyItemStatus _statusFromGoal(AtlasExecutiveGoalStatus status) {
     switch (status) {
       case AtlasExecutiveGoalStatus.active:
         return AtlasStrategyItemStatus.active;
@@ -302,12 +234,8 @@ class AtlasStrategyLoaderService {
     }
   }
 
-  String _value(
-    double value,
-    String unit,
-  ) {
-    final decimals =
-        value == value.roundToDouble() ? 0 : 1;
+  String _value(double value, String unit) {
+    final decimals = value == value.roundToDouble() ? 0 : 1;
 
     if (unit.isEmpty) {
       return value.toStringAsFixed(decimals);
@@ -316,14 +244,10 @@ class AtlasStrategyLoaderService {
     return '${value.toStringAsFixed(decimals)} $unit';
   }
 
-  String _date(
-    DateTime date,
-  ) {
-    final day =
-        date.day.toString().padLeft(2, '0');
+  String _date(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
 
-    final month =
-        date.month.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year}';
   }

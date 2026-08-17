@@ -7,10 +7,7 @@ import 'package:projeto_atlas/features/value_governance/domain/models/atlas_valu
 import 'package:projeto_atlas/features/value_governance/domain/services/atlas_value_governance_engine.dart';
 
 class AtlasValueGovernanceScreen extends StatefulWidget {
-  const AtlasValueGovernanceScreen({
-    super.key,
-    this.farmId,
-  });
+  const AtlasValueGovernanceScreen({super.key, this.farmId});
 
   final String? farmId;
 
@@ -22,8 +19,7 @@ class AtlasValueGovernanceScreen extends StatefulWidget {
 class _AtlasValueGovernanceScreenState
     extends State<AtlasValueGovernanceScreen> {
   bool loading = true;
-  List<AtlasBenefitRealization> realizations =
-      <AtlasBenefitRealization>[];
+  List<AtlasBenefitRealization> realizations = <AtlasBenefitRealization>[];
   List<AtlasValueGovernanceDecision> decisions =
       <AtlasValueGovernanceDecision>[];
 
@@ -34,21 +30,18 @@ class _AtlasValueGovernanceScreenState
   }
 
   Future<void> _load() async {
-    final allRealizations =
-        await AtlasBenefitsRealizationRepository.instance
-            .loadAll();
-    final allDecisions =
-        await AtlasValueGovernanceRepository.instance
-            .loadAll();
+    final allRealizations = await AtlasBenefitsRealizationRepository.instance
+        .loadAll();
+    final allDecisions = await AtlasValueGovernanceRepository.instance
+        .loadAll();
 
     final filtered = widget.farmId == null
         ? allRealizations
         : allRealizations
-            .where((item) => item.farmId == widget.farmId)
-            .toList();
+              .where((item) => item.farmId == widget.farmId)
+              .toList();
 
-    final planIds =
-        filtered.map((item) => item.strategyPlanId).toSet();
+    final planIds = filtered.map((item) => item.strategyPlanId).toSet();
 
     if (!mounted) {
       return;
@@ -57,17 +50,13 @@ class _AtlasValueGovernanceScreenState
     setState(() {
       realizations = filtered;
       decisions = allDecisions
-          .where(
-            (item) => planIds.contains(item.strategyPlanId),
-          )
+          .where((item) => planIds.contains(item.strategyPlanId))
           .toList();
       loading = false;
     });
   }
 
-  AtlasValueGovernanceDecision? _findDecision(
-    String planId,
-  ) {
+  AtlasValueGovernanceDecision? _findDecision(String planId) {
     for (final item in decisions) {
       if (item.strategyPlanId == planId) {
         return item;
@@ -76,17 +65,10 @@ class _AtlasValueGovernanceScreenState
     return null;
   }
 
-  Future<void> _govern(
-    AtlasBenefitRealization realization,
-  ) async {
-    final decision =
-        const AtlasValueGovernanceEngine().govern(
-      realization,
-    );
+  Future<void> _govern(AtlasBenefitRealization realization) async {
+    final decision = const AtlasValueGovernanceEngine().govern(realization);
 
-    await AtlasValueGovernanceRepository.instance.save(
-      decision,
-    );
+    await AtlasValueGovernanceRepository.instance.save(decision);
 
     await _load();
   }
@@ -126,50 +108,47 @@ class _AtlasValueGovernanceScreenState
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : realizations.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(28),
-                    child: Text(
-                      'Registre benefícios realizados antes de gerar decisões executivas.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              : Center(
-                  child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 1180),
-                    child: ListView(
-                      padding: const EdgeInsets.all(22),
-                      children: [
-                        _Hero(decisions: decisions),
-                        const SizedBox(height: 22),
-                        const Text(
-                          'Comitê executivo de valor',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Aprovação, correção, pausa ou encerramento dos investimentos.',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                        const SizedBox(height: 14),
-                        ...realizations.map(
-                          (realization) => _DecisionCard(
-                            realization: realization,
-                            decision: _findDecision(
-                              realization.strategyPlanId,
-                            ),
-                            onGovern: () => _govern(realization),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(28),
+                child: Text(
+                  'Registre benefícios realizados antes de gerar decisões executivas.',
+                  textAlign: TextAlign.center,
                 ),
+              ),
+            )
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1180),
+                child: ListView(
+                  padding: const EdgeInsets.all(22),
+                  children: [
+                    _Hero(decisions: decisions),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Comitê executivo de valor',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Aprovação, correção, pausa ou encerramento dos investimentos.',
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 14),
+                    ...realizations.map(
+                      (realization) => _DecisionCard(
+                        realization: realization,
+                        decision: _findDecision(realization.strategyPlanId),
+                        onGovern: () => _govern(realization),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
@@ -183,11 +162,8 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final average = decisions.isEmpty
         ? 0.0
-        : decisions.fold<double>(
-              0,
-              (sum, item) => sum + item.valueScore,
-            ) /
-            decisions.length;
+        : decisions.fold<double>(0, (sum, item) => sum + item.valueScore) /
+              decisions.length;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -257,11 +233,10 @@ class _DecisionCard extends StatelessWidget {
           current == null
               ? '${realization.farmName} · aguardando governança'
               : '${realization.farmName} · '
-                  '${atlasValueGovernanceDecisionLabel(current.decision)} · '
-                  'score ${current.valueScore.toStringAsFixed(1)}',
+                    '${atlasValueGovernanceDecisionLabel(current.decision)} · '
+                    'score ${current.valueScore.toStringAsFixed(1)}',
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         children: [
           if (current != null) ...[
             Align(
@@ -275,18 +250,15 @@ class _DecisionCard extends StatelessWidget {
               children: [
                 _Metric(
                   label: 'Financeiro',
-                  value:
-                      current.financialScore.toStringAsFixed(1),
+                  value: current.financialScore.toStringAsFixed(1),
                 ),
                 _Metric(
                   label: 'Execução',
-                  value:
-                      current.executionScore.toStringAsFixed(1),
+                  value: current.executionScore.toStringAsFixed(1),
                 ),
                 _Metric(
                   label: 'Risco',
-                  value:
-                      current.riskScore.toStringAsFixed(1),
+                  value: current.riskScore.toStringAsFixed(1),
                 ),
                 _Metric(
                   label: 'Próxima revisão',
@@ -323,10 +295,7 @@ class _DecisionCard extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.label,
-    required this.value,
-  });
+  const _Metric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -343,15 +312,9 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.black54),
-          ),
+          Text(label, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -359,10 +322,7 @@ class _Metric extends StatelessWidget {
 }
 
 class _HeroMetric extends StatelessWidget {
-  const _HeroMetric({
-    required this.label,
-    required this.value,
-  });
+  const _HeroMetric({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -379,10 +339,7 @@ class _HeroMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -399,10 +356,7 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _ListBlock extends StatelessWidget {
-  const _ListBlock({
-    required this.title,
-    required this.items,
-  });
+  const _ListBlock({required this.title, required this.items});
 
   final String title;
   final List<String> items;
@@ -416,11 +370,7 @@ class _ListBlock extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             ...items.map((item) => Text('• $item')),
           ],

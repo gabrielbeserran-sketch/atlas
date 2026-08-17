@@ -9,8 +9,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_ex
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_recommendation_effectiveness.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_recommendation_effectiveness_service.dart';
 
-class AtlasResultsIntelligenceScreen
-    extends StatefulWidget {
+class AtlasResultsIntelligenceScreen extends StatefulWidget {
   const AtlasResultsIntelligenceScreen({
     required this.actionController,
     super.key,
@@ -29,28 +28,23 @@ class _AtlasResultsIntelligenceScreenState
       AtlasActionOutcomeService.instance;
   final AtlasExecutionCycleReportService reportService =
       AtlasExecutionCycleReportService.instance;
-  final AtlasRecommendationEffectivenessService
-      effectivenessService =
+  final AtlasRecommendationEffectivenessService effectivenessService =
       const AtlasRecommendationEffectivenessService();
 
-  List<AtlasActionOutcome> outcomes =
-      <AtlasActionOutcome>[];
-  List<AtlasExecutionCycleReport> reports =
-      <AtlasExecutionCycleReport>[];
+  List<AtlasActionOutcome> outcomes = <AtlasActionOutcome>[];
+  List<AtlasExecutionCycleReport> reports = <AtlasExecutionCycleReport>[];
   bool isLoading = false;
   bool isGeneratingReport = false;
 
   Map<String, AtlasActionOutcome> get outcomesByAction => {
-        for (final outcome in outcomes)
-          outcome.actionId: outcome,
-      };
+    for (final outcome in outcomes) outcome.actionId: outcome,
+  };
 
-  List<AtlasRecommendationEffectiveness>
-      get effectivenessRanking =>
-          effectivenessService.build(
-            actions: widget.actionController.actions,
-            outcomes: outcomes,
-          );
+  List<AtlasRecommendationEffectiveness> get effectivenessRanking =>
+      effectivenessService.build(
+        actions: widget.actionController.actions,
+        outcomes: outcomes,
+      );
 
   @override
   void initState() {
@@ -74,45 +68,32 @@ class _AtlasResultsIntelligenceScreenState
     }
   }
 
-  Future<void> _editOutcome(
-    AtlasCommandCenterAction action,
-  ) async {
+  Future<void> _editOutcome(AtlasCommandCenterAction action) async {
     final existing = outcomesByAction[action.id];
     final technical = TextEditingController(
       text: existing?.technicalResult ?? '',
     );
-    final lessons = TextEditingController(
-      text: existing?.lessonsLearned ?? '',
-    );
-    final evidence = TextEditingController(
-      text: existing?.evidence ?? '',
-    );
+    final lessons = TextEditingController(text: existing?.lessonsLearned ?? '');
+    final evidence = TextEditingController(text: existing?.evidence ?? '');
     final realizedImpact = TextEditingController(
-      text: existing == null ||
-              existing.realizedFinancialImpact == 0
+      text: existing == null || existing.realizedFinancialImpact == 0
           ? ''
-          : existing.realizedFinancialImpact
-              .toStringAsFixed(2),
+          : existing.realizedFinancialImpact.toStringAsFixed(2),
     );
     final cost = TextEditingController(
-      text:
-          existing == null || existing.executionCost == 0
-              ? ''
-              : existing.executionCost.toStringAsFixed(2),
+      text: existing == null || existing.executionCost == 0
+          ? ''
+          : existing.executionCost.toStringAsFixed(2),
     );
     final revenue = TextEditingController(
-      text:
-          existing == null || existing.revenueGenerated == 0
-              ? ''
-              : existing.revenueGenerated
-                  .toStringAsFixed(2),
+      text: existing == null || existing.revenueGenerated == 0
+          ? ''
+          : existing.revenueGenerated.toStringAsFixed(2),
     );
     final savings = TextEditingController(
-      text:
-          existing == null || existing.savingsGenerated == 0
-              ? ''
-              : existing.savingsGenerated
-                  .toStringAsFixed(2),
+      text: existing == null || existing.savingsGenerated == 0
+          ? ''
+          : existing.savingsGenerated.toStringAsFixed(2),
     );
 
     final confirmed = await showDialog<bool>(
@@ -131,8 +112,7 @@ class _AtlasResultsIntelligenceScreenState
                     maxLines: 4,
                     decoration: const InputDecoration(
                       labelText: 'Resultado técnico obtido',
-                      hintText:
-                          'Descreva o que mudou após a execução.',
+                      hintText: 'Descreva o que mudou após a execução.',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -142,8 +122,7 @@ class _AtlasResultsIntelligenceScreenState
                     maxLines: 3,
                     decoration: const InputDecoration(
                       labelText: 'Aprendizado registrado',
-                      hintText:
-                          'O que deve ser repetido ou evitado?',
+                      hintText: 'O que deve ser repetido ou evitado?',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -153,8 +132,7 @@ class _AtlasResultsIntelligenceScreenState
                     maxLines: 2,
                     decoration: const InputDecoration(
                       labelText: 'Evidências',
-                      hintText:
-                          'Indicadores, documentos ou observações.',
+                      hintText: 'Indicadores, documentos ou observações.',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -164,9 +142,7 @@ class _AtlasResultsIntelligenceScreenState
                     child: Text(
                       'Impacto esperado: '
                       'R\$ ${action.expectedFinancialImpact.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -175,33 +151,22 @@ class _AtlasResultsIntelligenceScreenState
                     label: 'Impacto financeiro realizado',
                   ),
                   const SizedBox(height: 10),
-                  _MoneyField(
-                    controller: cost,
-                    label: 'Custo da execução',
-                  ),
+                  _MoneyField(controller: cost, label: 'Custo da execução'),
                   const SizedBox(height: 10),
-                  _MoneyField(
-                    controller: revenue,
-                    label: 'Receita gerada',
-                  ),
+                  _MoneyField(controller: revenue, label: 'Receita gerada'),
                   const SizedBox(height: 10),
-                  _MoneyField(
-                    controller: savings,
-                    label: 'Economia gerada',
-                  ),
+                  _MoneyField(controller: savings, label: 'Economia gerada'),
                 ],
               ),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('Salvar resultado'),
             ),
           ],
@@ -215,8 +180,7 @@ class _AtlasResultsIntelligenceScreenState
         technicalResult: technical.text,
         lessonsLearned: lessons.text,
         evidence: evidence.text,
-        realizedFinancialImpact:
-            _parseMoney(realizedImpact.text),
+        realizedFinancialImpact: _parseMoney(realizedImpact.text),
         executionCost: _parseMoney(cost.text),
         revenueGenerated: _parseMoney(revenue.text),
         savingsGenerated: _parseMoney(savings.text),
@@ -257,9 +221,7 @@ class _AtlasResultsIntelligenceScreenState
     }
   }
 
-  Future<void> _openReport(
-    AtlasExecutionCycleReport report,
-  ) {
+  Future<void> _openReport(AtlasExecutionCycleReport report) {
     return showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -285,25 +247,11 @@ class _AtlasResultsIntelligenceScreenState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    Chip(label: Text('${report.totalActions} ações')),
+                    Chip(label: Text('${report.completedActions} concluídas')),
+                    Chip(label: Text('${report.overdueActions} atrasadas')),
                     Chip(
-                      label: Text(
-                        '${report.totalActions} ações',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${report.completedActions} concluídas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${report.overdueActions} atrasadas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${report.actionsWithOutcome} com resultado',
-                      ),
+                      label: Text('${report.actionsWithOutcome} com resultado'),
                     ),
                     Chip(
                       label: Text(
@@ -342,8 +290,7 @@ class _AtlasResultsIntelligenceScreenState
           ),
           actions: [
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Fechar'),
             ),
           ],
@@ -358,9 +305,7 @@ class _AtlasResultsIntelligenceScreenState
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Resultados e inteligência financeira',
-          ),
+          title: const Text('Resultados e inteligência financeira'),
           actions: [
             IconButton(
               tooltip: 'Atualizar',
@@ -371,45 +316,26 @@ class _AtlasResultsIntelligenceScreenState
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(
-                icon: Icon(Icons.fact_check_outlined),
-                text: 'Resultados',
-              ),
-              Tab(
-                icon: Icon(Icons.attach_money),
-                text: 'Financeiro',
-              ),
-              Tab(
-                icon: Icon(Icons.emoji_events_outlined),
-                text: 'Ranking',
-              ),
-              Tab(
-                icon: Icon(Icons.description_outlined),
-                text: 'Relatórios',
-              ),
+              Tab(icon: Icon(Icons.fact_check_outlined), text: 'Resultados'),
+              Tab(icon: Icon(Icons.attach_money), text: 'Financeiro'),
+              Tab(icon: Icon(Icons.emoji_events_outlined), text: 'Ranking'),
+              Tab(icon: Icon(Icons.description_outlined), text: 'Relatórios'),
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: isGeneratingReport
-              ? null
-              : _generateReport,
+          onPressed: isGeneratingReport ? null : _generateReport,
           icon: isGeneratingReport
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.auto_awesome),
           label: const Text('Gerar relatório'),
         ),
-        body: isLoading &&
-                widget.actionController.actions.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
+        body: isLoading && widget.actionController.actions.isEmpty
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _ResultsTab(
@@ -421,9 +347,7 @@ class _AtlasResultsIntelligenceScreenState
                     actions: widget.actionController.actions,
                     outcomes: outcomes,
                   ),
-                  _RankingTab(
-                    items: effectivenessRanking,
-                  ),
+                  _RankingTab(items: effectivenessRanking),
                   _ReportsTab(
                     reports: reports,
                     onOpen: _openReport,
@@ -442,9 +366,7 @@ class _AtlasResultsIntelligenceScreenState
     var normalized = value.trim();
 
     if (normalized.contains(',')) {
-      normalized = normalized
-          .replaceAll('.', '')
-          .replaceAll(',', '.');
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
     }
 
     return double.tryParse(normalized) ?? 0;
@@ -452,10 +374,7 @@ class _AtlasResultsIntelligenceScreenState
 }
 
 class _MoneyField extends StatelessWidget {
-  const _MoneyField({
-    required this.controller,
-    required this.label,
-  });
+  const _MoneyField({required this.controller, required this.label});
 
   final TextEditingController controller;
   final String label;
@@ -464,10 +383,7 @@ class _MoneyField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(
-        decimal: true,
-      ),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: label,
         prefixText: 'R\$ ',
@@ -491,33 +407,22 @@ class _ResultsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (actions.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma ação disponível.'),
-      );
+      return const Center(child: Text('Nenhuma ação disponível.'));
     }
 
-    final ordered = List<AtlasCommandCenterAction>.from(
-      actions,
-    )..sort((first, second) {
+    final ordered = List<AtlasCommandCenterAction>.from(actions)
+      ..sort((first, second) {
         if (first.isCompleted != second.isCompleted) {
           return first.isCompleted ? -1 : 1;
         }
 
-        return second.updatedAt.compareTo(
-          first.updatedAt,
-        );
+        return second.updatedAt.compareTo(first.updatedAt);
       });
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        96,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       itemCount: ordered.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final action = ordered[index];
         final outcome = outcomesByAction[action.id];
@@ -526,8 +431,7 @@ class _ResultsTab extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
@@ -560,9 +464,7 @@ class _ResultsTab extends StatelessWidget {
                   'Responsável: '
                   '${action.responsibleName.trim().isEmpty ? 'Não definido' : action.responsibleName}',
                 ),
-                Text(
-                  'Progresso: ${action.progressPercent}%',
-                ),
+                Text('Progresso: ${action.progressPercent}%'),
                 if (outcome != null) ...[
                   const SizedBox(height: 10),
                   Text(
@@ -576,9 +478,7 @@ class _ResultsTab extends StatelessWidget {
                     '${outcome.expectedFinancialImpact.toStringAsFixed(2)} • '
                     'Realizado: R\$ '
                     '${outcome.realizedFinancialImpact.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -604,10 +504,7 @@ class _ResultsTab extends StatelessWidget {
 }
 
 class _FinancialTab extends StatelessWidget {
-  const _FinancialTab({
-    required this.actions,
-    required this.outcomes,
-  });
+  const _FinancialTab({required this.actions, required this.outcomes});
 
   final List<AtlasCommandCenterAction> actions;
   final List<AtlasActionOutcome> outcomes;
@@ -616,37 +513,29 @@ class _FinancialTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final expected = actions.fold<double>(
       0,
-      (total, action) =>
-          total + action.expectedFinancialImpact,
+      (total, action) => total + action.expectedFinancialImpact,
     );
     final realized = outcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.realizedFinancialImpact,
+      (total, outcome) => total + outcome.realizedFinancialImpact,
     );
     final cost = outcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.executionCost,
+      (total, outcome) => total + outcome.executionCost,
     );
     final revenue = outcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.revenueGenerated,
+      (total, outcome) => total + outcome.revenueGenerated,
     );
     final savings = outcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.savingsGenerated,
+      (total, outcome) => total + outcome.savingsGenerated,
     );
     final net = outcomes.fold<double>(
       0,
-      (total, outcome) =>
-          total + outcome.netFinancialResult,
+      (total, outcome) => total + outcome.netFinancialResult,
     );
-    final roi = cost <= 0
-        ? (net > 0 ? 100.0 : 0.0)
-        : net / cost * 100;
+    final roi = cost <= 0 ? (net > 0 ? 100.0 : 0.0) : net / cost * 100;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -655,51 +544,26 @@ class _FinancialTab extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
-            _FinancialMetric(
-              title: 'Impacto esperado',
-              value: expected,
-            ),
-            _FinancialMetric(
-              title: 'Impacto realizado',
-              value: realized,
-            ),
-            _FinancialMetric(
-              title: 'Custo de execução',
-              value: cost,
-            ),
-            _FinancialMetric(
-              title: 'Receita gerada',
-              value: revenue,
-            ),
-            _FinancialMetric(
-              title: 'Economia gerada',
-              value: savings,
-            ),
-            _FinancialMetric(
-              title: 'Resultado líquido',
-              value: net,
-            ),
+            _FinancialMetric(title: 'Impacto esperado', value: expected),
+            _FinancialMetric(title: 'Impacto realizado', value: realized),
+            _FinancialMetric(title: 'Custo de execução', value: cost),
+            _FinancialMetric(title: 'Receita gerada', value: revenue),
+            _FinancialMetric(title: 'Economia gerada', value: savings),
+            _FinancialMetric(title: 'Resultado líquido', value: net),
           ],
         ),
         const SizedBox(height: 16),
         Card(
           child: ListTile(
-            leading: const CircleAvatar(
-              child: Icon(Icons.trending_up),
-            ),
-            title: const Text(
-              'Retorno sobre o investimento',
-            ),
+            leading: const CircleAvatar(child: Icon(Icons.trending_up)),
+            title: const Text('Retorno sobre o investimento'),
             subtitle: const Text(
               'Resultado líquido dividido pelo custo '
               'total da execução.',
             ),
             trailing: Text(
               '${roi.toStringAsFixed(1)}%',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ),
         ),
@@ -707,18 +571,14 @@ class _FinancialTab extends StatelessWidget {
         ...outcomes.map(
           (outcome) => Card(
             child: ListTile(
-              title: Text(
-                'Ação ${outcome.actionId}',
-              ),
+              title: Text('Ação ${outcome.actionId}'),
               subtitle: Text(
                 'Líquido R\$ '
                 '${outcome.netFinancialResult.toStringAsFixed(2)}',
               ),
               trailing: Text(
                 'ROI ${outcome.roiPercent.toStringAsFixed(1)}%',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
           ),
@@ -729,10 +589,7 @@ class _FinancialTab extends StatelessWidget {
 }
 
 class _FinancialMetric extends StatelessWidget {
-  const _FinancialMetric({
-    required this.title,
-    required this.value,
-  });
+  const _FinancialMetric({required this.title, required this.value});
 
   final String title;
   final double value;
@@ -745,8 +602,7 @@ class _FinancialMetric extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title),
               const SizedBox(height: 8),
@@ -766,9 +622,7 @@ class _FinancialMetric extends StatelessWidget {
 }
 
 class _RankingTab extends StatelessWidget {
-  const _RankingTab({
-    required this.items,
-  });
+  const _RankingTab({required this.items});
 
   final List<AtlasRecommendationEffectiveness> items;
 
@@ -776,17 +630,14 @@ class _RankingTab extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return const Center(
-        child: Text(
-          'Não há dados suficientes para o ranking.',
-        ),
+        child: Text('Não há dados suficientes para o ranking.'),
       );
     }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final item = items[index];
 
@@ -794,14 +645,11 @@ class _RankingTab extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      child: Text('${index + 1}'),
-                    ),
+                    CircleAvatar(child: Text('${index + 1}')),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -814,9 +662,7 @@ class _RankingTab extends StatelessWidget {
                     ),
                     Text(
                       '${item.effectivenessScore.toStringAsFixed(0)} pontos',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                   ],
                 ),
@@ -831,21 +677,9 @@ class _RankingTab extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    Chip(
-                      label: Text(
-                        '${item.actionCount} ações',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${item.completedCount} concluídas',
-                      ),
-                    ),
-                    Chip(
-                      label: Text(
-                        '${item.outcomeCount} com resultado',
-                      ),
-                    ),
+                    Chip(label: Text('${item.actionCount} ações')),
+                    Chip(label: Text('${item.completedCount} concluídas')),
+                    Chip(label: Text('${item.outcomeCount} com resultado')),
                     Chip(
                       label: Text(
                         'ROI médio '
@@ -895,15 +729,9 @@ class _ReportsTab extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        96,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       itemCount: reports.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: 10),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final report = reports[index];
 
@@ -932,14 +760,8 @@ class _ReportsTab extends StatelessWidget {
                 }
               },
               itemBuilder: (_) => const [
-                PopupMenuItem(
-                  value: 'open',
-                  child: Text('Abrir'),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Excluir'),
-                ),
+                PopupMenuItem(value: 'open', child: Text('Abrir')),
+                PopupMenuItem(value: 'delete', child: Text('Excluir')),
               ],
             ),
           ),
@@ -966,8 +788,7 @@ class _ReportSection extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -985,18 +806,13 @@ class _ReportSection extends StatelessWidget {
             const SizedBox(height: 10),
             ...items.map(
               (item) => Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
                       padding: EdgeInsets.only(top: 7),
-                      child: Icon(
-                        Icons.circle,
-                        size: 7,
-                      ),
+                      child: Icon(Icons.circle, size: 7),
                     ),
                     const SizedBox(width: 10),
                     Expanded(child: Text(item)),

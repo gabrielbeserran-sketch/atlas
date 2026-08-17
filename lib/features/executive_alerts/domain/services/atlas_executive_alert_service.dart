@@ -9,8 +9,7 @@ class AtlasExecutiveAlertService {
   const AtlasExecutiveAlertService();
 
   AtlasExecutiveAlertSummary build({
-    required List<AtlasExecutiveFarmAlertInput>
-        farms,
+    required List<AtlasExecutiveFarmAlertInput> farms,
     DateTime? now,
   }) {
     final currentTime = now ?? DateTime.now();
@@ -18,46 +17,31 @@ class AtlasExecutiveAlertService {
     final alerts = <AtlasExecutiveAlert>[];
 
     for (final farm in farms) {
-      alerts.addAll(
-        _buildFarmAlerts(
-          input: farm,
-          now: currentTime,
-        ),
-      );
+      alerts.addAll(_buildFarmAlerts(input: farm, now: currentTime));
     }
 
     alerts.sort(
-      (first, second) =>
-          second.priorityScore.compareTo(
-        first.priorityScore,
-      ),
+      (first, second) => second.priorityScore.compareTo(first.priorityScore),
     );
 
-    final farmSummaries =
-        _buildFarmSummaries(alerts);
+    final farmSummaries = _buildFarmSummaries(alerts);
 
-    final areaSummaries =
-        _buildAreaSummaries(alerts);
+    final areaSummaries = _buildAreaSummaries(alerts);
 
     final informational = alerts.where((item) {
-      return item.severity ==
-          AtlasExecutiveAlertSeverity
-              .informational;
+      return item.severity == AtlasExecutiveAlertSeverity.informational;
     }).length;
 
     final attention = alerts.where((item) {
-      return item.severity ==
-          AtlasExecutiveAlertSeverity.attention;
+      return item.severity == AtlasExecutiveAlertSeverity.attention;
     }).length;
 
     final high = alerts.where((item) {
-      return item.severity ==
-          AtlasExecutiveAlertSeverity.high;
+      return item.severity == AtlasExecutiveAlertSeverity.high;
     }).length;
 
     final critical = alerts.where((item) {
-      return item.severity ==
-          AtlasExecutiveAlertSeverity.critical;
+      return item.severity == AtlasExecutiveAlertSeverity.critical;
     }).length;
 
     return AtlasExecutiveAlertSummary(
@@ -67,12 +51,8 @@ class AtlasExecutiveAlertService {
         attention: attention,
         high: high,
         critical: critical,
-        mainAlert:
-            alerts.isEmpty ? null : alerts.first,
-        mostCriticalFarm:
-            farmSummaries.isEmpty
-                ? null
-                : farmSummaries.first,
+        mainAlert: alerts.isEmpty ? null : alerts.first,
+        mostCriticalFarm: farmSummaries.isEmpty ? null : farmSummaries.first,
       ),
       total: alerts.length,
       informational: informational,
@@ -86,157 +66,81 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _buildFarmAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
     final alerts = <AtlasExecutiveAlert>[];
 
-    alerts.addAll(
-      _diagnosticRiskAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_diagnosticRiskAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _trackedActionAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_trackedActionAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _agendaAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_agendaAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _inventoryAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_inventoryAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _financeAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_financeAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _herdAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_herdAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _paddockAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_paddockAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _healthAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_healthAlerts(input: input, now: now));
 
-    alerts.addAll(
-      _reproductionAlerts(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.addAll(_reproductionAlerts(input: input, now: now));
 
-    alerts.add(
-      _mainPriorityAlert(
-        input: input,
-        now: now,
-      ),
-    );
+    alerts.add(_mainPriorityAlert(input: input, now: now));
 
     return alerts;
   }
 
-  List<AtlasExecutiveAlert>
-      _diagnosticRiskAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+  List<AtlasExecutiveAlert> _diagnosticRiskAlerts({
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
     return input.diagnostic.risks
         .where((item) {
-          return item.level ==
-                  AtlasDiagnosticLevel.critical ||
-              item.level ==
-                  AtlasDiagnosticLevel.attention;
+          return item.level == AtlasDiagnosticLevel.critical ||
+              item.level == AtlasDiagnosticLevel.attention;
         })
         .map((item) {
-          final severity =
-              item.level ==
-                      AtlasDiagnosticLevel.critical
-                  ? AtlasExecutiveAlertSeverity
-                      .critical
-                  : AtlasExecutiveAlertSeverity.high;
+          final severity = item.level == AtlasDiagnosticLevel.critical
+              ? AtlasExecutiveAlertSeverity.critical
+              : AtlasExecutiveAlertSeverity.high;
 
           return AtlasExecutiveAlert(
             id: _id(
               farmName: input.farmName,
-              type:
-                  AtlasExecutiveAlertType
-                      .diagnosticRisk,
+              type: AtlasExecutiveAlertType.diagnosticRisk,
               suffix: item.title,
             ),
             generatedAt: now,
             farmName: input.farmName,
             title: item.title,
             description: item.description,
-            recommendation:
-                item.recommendation,
-            type:
-                AtlasExecutiveAlertType
-                    .diagnosticRisk,
+            recommendation: item.recommendation,
+            type: AtlasExecutiveAlertType.diagnosticRisk,
             severity: severity,
             area: item.area,
-            priorityScore:
-                _priorityScore(
+            priorityScore: _priorityScore(
               severity: severity,
-              baseImpact:
-                  item.impactScore,
-              deadlineDays:
-                  severity ==
-                          AtlasExecutiveAlertSeverity
-                              .critical
-                      ? 1
-                      : 3,
+              baseImpact: item.impactScore,
+              deadlineDays: severity == AtlasExecutiveAlertSeverity.critical
+                  ? 1
+                  : 3,
             ),
             responseDeadlineDays:
-                severity ==
-                        AtlasExecutiveAlertSeverity
-                            .critical
-                    ? 1
-                    : 3,
-            sourceLabel:
-                'Diagnóstico Inteligente',
-            numericValue:
-                item.impactScore,
+                severity == AtlasExecutiveAlertSeverity.critical ? 1 : 3,
+            sourceLabel: 'Diagnóstico Inteligente',
+            numericValue: item.impactScore,
             unitLabel: 'impacto',
           );
         })
         .toList();
   }
 
-  List<AtlasExecutiveAlert>
-      _trackedActionAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+  List<AtlasExecutiveAlert> _trackedActionAlerts({
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
     return input.trackedActions
@@ -244,50 +148,38 @@ class AtlasExecutiveAlertService {
           return action.isOverdue;
         })
         .map((action) {
-          final delay = now
-              .difference(action.dueDate)
-              .inDays;
+          final delay = now.difference(action.dueDate).inDays;
 
           final severity = delay >= 7
-              ? AtlasExecutiveAlertSeverity
-                  .critical
-              : AtlasExecutiveAlertSeverity
-                  .high;
+              ? AtlasExecutiveAlertSeverity.critical
+              : AtlasExecutiveAlertSeverity.high;
 
           return AtlasExecutiveAlert(
             id: _id(
               farmName: input.farmName,
-              type: AtlasExecutiveAlertType
-                  .trackedActionOverdue,
+              type: AtlasExecutiveAlertType.trackedActionOverdue,
               suffix: action.id,
             ),
             generatedAt: now,
             farmName: input.farmName,
-            title:
-                'Ação atrasada: ${action.title}',
+            title: 'Ação atrasada: ${action.title}',
             description:
                 'A recomendação está atrasada há '
                 '$delay '
                 '${delay == 1 ? 'dia' : 'dias'}.',
             recommendation:
                 'Atualize o status, registre o impedimento ou execute a ação.',
-            type: AtlasExecutiveAlertType
-                .trackedActionOverdue,
+            type: AtlasExecutiveAlertType.trackedActionOverdue,
             severity: severity,
             area: action.area,
-            priorityScore:
-                _priorityScore(
+            priorityScore: _priorityScore(
               severity: severity,
-              baseImpact:
-                  75.0 +
-                      delay.clamp(0, 25).toDouble(),
+              baseImpact: 75.0 + delay.clamp(0, 25).toDouble(),
               deadlineDays: 0,
             ),
             responseDeadlineDays: 0,
-            sourceLabel:
-                'Ações da Consultoria',
-            numericValue:
-                delay.toDouble(),
+            sourceLabel: 'Ações da Consultoria',
+            numericValue: delay.toDouble(),
             unitLabel: 'dias de atraso',
           );
         })
@@ -295,53 +187,43 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _agendaAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
     final alerts = <AtlasExecutiveAlert>[];
     final agenda = input.intelligence.agenda;
 
     if (agenda.overdueCount > 0) {
-      final severity =
-          agenda.overdueCount >= 5
-              ? AtlasExecutiveAlertSeverity
-                  .critical
-              : AtlasExecutiveAlertSeverity
-                  .high;
+      final severity = agenda.overdueCount >= 5
+          ? AtlasExecutiveAlertSeverity.critical
+          : AtlasExecutiveAlertSeverity.high;
 
       alerts.add(
         AtlasExecutiveAlert(
           id: _id(
             farmName: input.farmName,
-            type: AtlasExecutiveAlertType
-                .agendaOverdue,
+            type: AtlasExecutiveAlertType.agendaOverdue,
             suffix: 'overdue',
           ),
           generatedAt: now,
           farmName: input.farmName,
-          title:
-              'Tarefas atrasadas na agenda',
+          title: 'Tarefas atrasadas na agenda',
           description:
               'Existem ${agenda.overdueCount} '
               '${agenda.overdueCount == 1 ? 'tarefa atrasada' : 'tarefas atrasadas'}.',
           recommendation:
               'Reorganize responsáveis e prazos, priorizando atividades de maior risco.',
-          type: AtlasExecutiveAlertType
-              .agendaOverdue,
+          type: AtlasExecutiveAlertType.agendaOverdue,
           severity: severity,
           area: AtlasFarmAnalysisArea.agenda,
-          priorityScore:
-              _priorityScore(
+          priorityScore: _priorityScore(
             severity: severity,
-            baseImpact:
-                60 + agenda.overdueCount * 4,
+            baseImpact: 60 + agenda.overdueCount * 4,
             deadlineDays: 1,
           ),
           responseDeadlineDays: 1,
           sourceLabel: 'Agenda',
-          numericValue:
-              agenda.overdueCount.toDouble(),
+          numericValue: agenda.overdueCount.toDouble(),
           unitLabel: 'tarefas',
         ),
       );
@@ -352,37 +234,27 @@ class AtlasExecutiveAlertService {
         AtlasExecutiveAlert(
           id: _id(
             farmName: input.farmName,
-            type: AtlasExecutiveAlertType
-                .agendaUrgent,
+            type: AtlasExecutiveAlertType.agendaUrgent,
             suffix: 'urgent',
           ),
           generatedAt: now,
           farmName: input.farmName,
-          title:
-              'Atividades urgentes pendentes',
+          title: 'Atividades urgentes pendentes',
           description:
               'A agenda possui ${agenda.urgentCount} '
               '${agenda.urgentCount == 1 ? 'atividade urgente' : 'atividades urgentes'}.',
-          recommendation:
-              'Confirme responsáveis e execução ainda hoje.',
-          type: AtlasExecutiveAlertType
-              .agendaUrgent,
-          severity:
-              AtlasExecutiveAlertSeverity.high,
+          recommendation: 'Confirme responsáveis e execução ainda hoje.',
+          type: AtlasExecutiveAlertType.agendaUrgent,
+          severity: AtlasExecutiveAlertSeverity.high,
           area: AtlasFarmAnalysisArea.agenda,
-          priorityScore:
-              _priorityScore(
-            severity:
-                AtlasExecutiveAlertSeverity
-                    .high,
-            baseImpact:
-                65 + agenda.urgentCount * 3,
+          priorityScore: _priorityScore(
+            severity: AtlasExecutiveAlertSeverity.high,
+            baseImpact: 65 + agenda.urgentCount * 3,
             deadlineDays: 0,
           ),
           responseDeadlineDays: 0,
           sourceLabel: 'Agenda',
-          numericValue:
-              agenda.urgentCount.toDouble(),
+          numericValue: agenda.urgentCount.toDouble(),
           unitLabel: 'atividades',
         ),
       );
@@ -392,52 +264,39 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _inventoryAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
     final alerts = <AtlasExecutiveAlert>[];
-    final inventory =
-        input.intelligence.inventory;
+    final inventory = input.intelligence.inventory;
 
     if (inventory.expiredCount > 0) {
       alerts.add(
         AtlasExecutiveAlert(
           id: _id(
             farmName: input.farmName,
-            type: AtlasExecutiveAlertType
-                .inventoryExpired,
+            type: AtlasExecutiveAlertType.inventoryExpired,
             suffix: 'expired',
           ),
           generatedAt: now,
           farmName: input.farmName,
-          title:
-              'Produtos vencidos no estoque',
+          title: 'Produtos vencidos no estoque',
           description:
               'Foram encontrados ${inventory.expiredCount} '
               '${inventory.expiredCount == 1 ? 'item vencido' : 'itens vencidos'}.',
           recommendation:
               'Isole os produtos, registre o descarte e revise o processo de compras.',
-          type: AtlasExecutiveAlertType
-              .inventoryExpired,
-          severity:
-              AtlasExecutiveAlertSeverity
-                  .critical,
-          area:
-              AtlasFarmAnalysisArea.inventory,
-          priorityScore:
-              _priorityScore(
-            severity:
-                AtlasExecutiveAlertSeverity
-                    .critical,
-            baseImpact:
-                85 + inventory.expiredCount * 2,
+          type: AtlasExecutiveAlertType.inventoryExpired,
+          severity: AtlasExecutiveAlertSeverity.critical,
+          area: AtlasFarmAnalysisArea.inventory,
+          priorityScore: _priorityScore(
+            severity: AtlasExecutiveAlertSeverity.critical,
+            baseImpact: 85 + inventory.expiredCount * 2,
             deadlineDays: 0,
           ),
           responseDeadlineDays: 0,
           sourceLabel: 'Estoque',
-          numericValue:
-              inventory.expiredCount.toDouble(),
+          numericValue: inventory.expiredCount.toDouble(),
           unitLabel: 'itens',
         ),
       );
@@ -448,43 +307,28 @@ class AtlasExecutiveAlertService {
         AtlasExecutiveAlert(
           id: _id(
             farmName: input.farmName,
-            type: AtlasExecutiveAlertType
-                .inventoryNearExpiration,
+            type: AtlasExecutiveAlertType.inventoryNearExpiration,
             suffix: 'near_expiration',
           ),
           generatedAt: now,
           farmName: input.farmName,
-          title:
-              'Produtos próximos do vencimento',
+          title: 'Produtos próximos do vencimento',
           description:
               'Existem ${inventory.nearExpirationCount} '
               '${inventory.nearExpirationCount == 1 ? 'item próximo do vencimento' : 'itens próximos do vencimento'}.',
           recommendation:
               'Priorize o uso, remaneje quando possível e ajuste as próximas compras.',
-          type: AtlasExecutiveAlertType
-              .inventoryNearExpiration,
-          severity:
-              AtlasExecutiveAlertSeverity
-                  .attention,
-          area:
-              AtlasFarmAnalysisArea.inventory,
-          priorityScore:
-              _priorityScore(
-            severity:
-                AtlasExecutiveAlertSeverity
-                    .attention,
-            baseImpact:
-                50 +
-                    inventory
-                            .nearExpirationCount *
-                        2,
+          type: AtlasExecutiveAlertType.inventoryNearExpiration,
+          severity: AtlasExecutiveAlertSeverity.attention,
+          area: AtlasFarmAnalysisArea.inventory,
+          priorityScore: _priorityScore(
+            severity: AtlasExecutiveAlertSeverity.attention,
+            baseImpact: 50 + inventory.nearExpirationCount * 2,
             deadlineDays: 7,
           ),
           responseDeadlineDays: 7,
           sourceLabel: 'Estoque',
-          numericValue: inventory
-              .nearExpirationCount
-              .toDouble(),
+          numericValue: inventory.nearExpirationCount.toDouble(),
           unitLabel: 'itens',
         ),
       );
@@ -494,12 +338,10 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _financeAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
-    final finance =
-        input.intelligence.finance;
+    final finance = input.intelligence.finance;
 
     if (finance.balance >= 0) {
       return const [];
@@ -507,34 +349,27 @@ class AtlasExecutiveAlertService {
 
     final severity =
         finance.totalIncome <= 0 ||
-                finance.balance.abs() >
-                    finance.totalIncome * 0.25
-            ? AtlasExecutiveAlertSeverity
-                .critical
-            : AtlasExecutiveAlertSeverity.high;
+            finance.balance.abs() > finance.totalIncome * 0.25
+        ? AtlasExecutiveAlertSeverity.critical
+        : AtlasExecutiveAlertSeverity.high;
 
     return [
       AtlasExecutiveAlert(
         id: _id(
           farmName: input.farmName,
-          type: AtlasExecutiveAlertType
-              .negativeFinancialResult,
+          type: AtlasExecutiveAlertType.negativeFinancialResult,
           suffix: 'negative_balance',
         ),
         generatedAt: now,
         farmName: input.farmName,
-        title:
-            'Resultado financeiro negativo',
-        description:
-            'O saldo atual é ${_currency(finance.balance)}.',
+        title: 'Resultado financeiro negativo',
+        description: 'O saldo atual é ${_currency(finance.balance)}.',
         recommendation:
             'Revise despesas, receitas pendentes e custos evitáveis.',
-        type: AtlasExecutiveAlertType
-            .negativeFinancialResult,
+        type: AtlasExecutiveAlertType.negativeFinancialResult,
         severity: severity,
         area: AtlasFarmAnalysisArea.finance,
-        priorityScore:
-            _priorityScore(
+        priorityScore: _priorityScore(
           severity: severity,
           baseImpact: 80,
           deadlineDays: 2,
@@ -548,13 +383,10 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _herdAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
-    final coverage =
-        input.intelligence.herd
-            .registrationCoverage;
+    final coverage = input.intelligence.herd.registrationCoverage;
 
     if (coverage >= 95) {
       return const [];
@@ -570,28 +402,23 @@ class AtlasExecutiveAlertService {
       AtlasExecutiveAlert(
         id: _id(
           farmName: input.farmName,
-          type: AtlasExecutiveAlertType
-              .herdRegistrationGap,
+          type: AtlasExecutiveAlertType.herdRegistrationGap,
           suffix: 'registration',
         ),
         generatedAt: now,
         farmName: input.farmName,
-        title:
-            'Cadastro do rebanho incompleto',
+        title: 'Cadastro do rebanho incompleto',
         description:
             'A cobertura cadastral está em '
             '${coverage.toStringAsFixed(1)}%.',
         recommendation:
             'Complete identificação, lote, peso e demais informações pendentes.',
-        type: AtlasExecutiveAlertType
-            .herdRegistrationGap,
+        type: AtlasExecutiveAlertType.herdRegistrationGap,
         severity: severity,
         area: AtlasFarmAnalysisArea.herd,
-        priorityScore:
-            _priorityScore(
+        priorityScore: _priorityScore(
           severity: severity,
-          baseImpact:
-              45 + gap * 0.7,
+          baseImpact: 45 + gap * 0.7,
           deadlineDays: 15,
         ),
         responseDeadlineDays: 15,
@@ -603,12 +430,10 @@ class AtlasExecutiveAlertService {
   }
 
   List<AtlasExecutiveAlert> _paddockAlerts({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
-    final score =
-        input.intelligence.paddocks.score;
+    final score = input.intelligence.paddocks.score;
 
     if (score >= 70) {
       return const [];
@@ -622,26 +447,21 @@ class AtlasExecutiveAlertService {
       AtlasExecutiveAlert(
         id: _id(
           farmName: input.farmName,
-          type: AtlasExecutiveAlertType
-              .paddockProblem,
+          type: AtlasExecutiveAlertType.paddockProblem,
           suffix: 'paddock_score',
         ),
         generatedAt: now,
         farmName: input.farmName,
-        title:
-            'Baixo desempenho dos piquetes',
+        title: 'Baixo desempenho dos piquetes',
         description:
             'O score de piquetes está em '
             '${score.toStringAsFixed(0)}/100.',
         recommendation:
             'Revise ocupação, descanso, área e distribuição do rebanho.',
-        type: AtlasExecutiveAlertType
-            .paddockProblem,
+        type: AtlasExecutiveAlertType.paddockProblem,
         severity: severity,
-        area:
-            AtlasFarmAnalysisArea.paddock,
-        priorityScore:
-            _priorityScore(
+        area: AtlasFarmAnalysisArea.paddock,
+        priorityScore: _priorityScore(
           severity: severity,
           baseImpact: 100 - score,
           deadlineDays: 10,
@@ -703,8 +523,8 @@ class AtlasExecutiveAlertService {
           final severity = overdue
               ? AtlasExecutiveAlertSeverity.critical
               : days <= 2
-                  ? AtlasExecutiveAlertSeverity.high
-                  : AtlasExecutiveAlertSeverity.attention;
+              ? AtlasExecutiveAlertSeverity.high
+              : AtlasExecutiveAlertSeverity.attention;
           alerts.add(
             AtlasExecutiveAlert(
               id: _id(
@@ -810,8 +630,8 @@ class AtlasExecutiveAlertService {
       final severity = overdue
           ? AtlasExecutiveAlertSeverity.critical
           : days <= 7
-              ? AtlasExecutiveAlertSeverity.high
-              : AtlasExecutiveAlertSeverity.attention;
+          ? AtlasExecutiveAlertSeverity.high
+          : AtlasExecutiveAlertSeverity.attention;
 
       alerts.add(
         AtlasExecutiveAlert(
@@ -850,114 +670,80 @@ class AtlasExecutiveAlertService {
   }
 
   AtlasExecutiveAlert _mainPriorityAlert({
-    required AtlasExecutiveFarmAlertInput
-        input,
+    required AtlasExecutiveFarmAlertInput input,
     required DateTime now,
   }) {
-    final priority =
-        input.diagnostic.mainPriority;
+    final priority = input.diagnostic.mainPriority;
 
-    final severity = priority.level ==
-            AtlasDiagnosticLevel.critical
+    final severity = priority.level == AtlasDiagnosticLevel.critical
         ? AtlasExecutiveAlertSeverity.critical
-        : priority.level ==
-                AtlasDiagnosticLevel.attention
-            ? AtlasExecutiveAlertSeverity.high
-            : AtlasExecutiveAlertSeverity
-                .informational;
+        : priority.level == AtlasDiagnosticLevel.attention
+        ? AtlasExecutiveAlertSeverity.high
+        : AtlasExecutiveAlertSeverity.informational;
 
     return AtlasExecutiveAlert(
       id: _id(
         farmName: input.farmName,
-        type:
-            AtlasExecutiveAlertType.mainPriority,
+        type: AtlasExecutiveAlertType.mainPriority,
         suffix: priority.title,
       ),
       generatedAt: now,
       farmName: input.farmName,
-      title:
-          'Prioridade principal: ${priority.title}',
+      title: 'Prioridade principal: ${priority.title}',
       description: priority.description,
-      recommendation:
-          priority.recommendation,
-      type:
-          AtlasExecutiveAlertType.mainPriority,
+      recommendation: priority.recommendation,
+      type: AtlasExecutiveAlertType.mainPriority,
       severity: severity,
       area: priority.area,
-      priorityScore:
-          _priorityScore(
+      priorityScore: _priorityScore(
         severity: severity,
         baseImpact: priority.score,
-        deadlineDays:
-            severity ==
-                    AtlasExecutiveAlertSeverity
-                        .critical
-                ? 1
-                : 7,
+        deadlineDays: severity == AtlasExecutiveAlertSeverity.critical ? 1 : 7,
       ),
-      responseDeadlineDays:
-          severity ==
-                  AtlasExecutiveAlertSeverity
-                      .critical
-              ? 1
-              : 7,
-      sourceLabel:
-          'Diagnóstico Inteligente',
+      responseDeadlineDays: severity == AtlasExecutiveAlertSeverity.critical
+          ? 1
+          : 7,
+      sourceLabel: 'Diagnóstico Inteligente',
       numericValue: priority.score,
       unitLabel: 'prioridade',
     );
   }
 
-  List<AtlasExecutiveFarmAlertSummary>
-      _buildFarmSummaries(
+  List<AtlasExecutiveFarmAlertSummary> _buildFarmSummaries(
     List<AtlasExecutiveAlert> alerts,
   ) {
-    final grouped =
-        <String, List<AtlasExecutiveAlert>>{};
+    final grouped = <String, List<AtlasExecutiveAlert>>{};
 
     for (final alert in alerts) {
-      grouped.putIfAbsent(
-        alert.farmName,
-        () => [],
-      );
+      grouped.putIfAbsent(alert.farmName, () => []);
 
       grouped[alert.farmName]!.add(alert);
     }
 
-    final result =
-        <AtlasExecutiveFarmAlertSummary>[];
+    final result = <AtlasExecutiveFarmAlertSummary>[];
 
     for (final entry in grouped.entries) {
       final items = entry.value
         ..sort(
           (first, second) =>
-              second.priorityScore.compareTo(
-            first.priorityScore,
-          ),
+              second.priorityScore.compareTo(first.priorityScore),
         );
 
       final critical = items.where((item) {
-        return item.severity ==
-            AtlasExecutiveAlertSeverity.critical;
+        return item.severity == AtlasExecutiveAlertSeverity.critical;
       }).length;
 
       final high = items.where((item) {
-        return item.severity ==
-            AtlasExecutiveAlertSeverity.high;
+        return item.severity == AtlasExecutiveAlertSeverity.high;
       }).length;
 
       final attention = items.where((item) {
-        return item.severity ==
-            AtlasExecutiveAlertSeverity.attention;
+        return item.severity == AtlasExecutiveAlertSeverity.attention;
       }).length;
 
       final priorityScore =
-          items.fold<double>(
-                0,
-                (sum, item) =>
-                    sum + item.priorityScore,
-              ) /
-              items.length;
+          items.fold<double>(0, (sum, item) => sum + item.priorityScore) /
+          items.length;
 
       result.add(
         AtlasExecutiveFarmAlertSummary(
@@ -966,125 +752,85 @@ class AtlasExecutiveAlertService {
           critical: critical,
           high: high,
           attention: attention,
-          priorityScore:
-              priorityScore.clamp(
-            0.0,
-            100.0,
-          ),
-          mainAlertTitle:
-              items.first.title,
+          priorityScore: priorityScore.clamp(0.0, 100.0),
+          mainAlertTitle: items.first.title,
         ),
       );
     }
 
-    result.sort(
-      (first, second) {
-        if (first.critical !=
-            second.critical) {
-          return second.critical.compareTo(
-            first.critical,
-          );
-        }
+    result.sort((first, second) {
+      if (first.critical != second.critical) {
+        return second.critical.compareTo(first.critical);
+      }
 
-        return second.priorityScore.compareTo(
-          first.priorityScore,
-        );
-      },
-    );
+      return second.priorityScore.compareTo(first.priorityScore);
+    });
 
     return result;
   }
 
-  List<AtlasExecutiveAreaAlertSummary>
-      _buildAreaSummaries(
+  List<AtlasExecutiveAreaAlertSummary> _buildAreaSummaries(
     List<AtlasExecutiveAlert> alerts,
   ) {
-    final grouped = <
-        AtlasFarmAnalysisArea,
-        List<AtlasExecutiveAlert>>{};
+    final grouped = <AtlasFarmAnalysisArea, List<AtlasExecutiveAlert>>{};
 
     for (final alert in alerts) {
-      grouped.putIfAbsent(
-        alert.area,
-        () => [],
-      );
+      grouped.putIfAbsent(alert.area, () => []);
 
       grouped[alert.area]!.add(alert);
     }
 
-    final result =
-        <AtlasExecutiveAreaAlertSummary>[];
+    final result = <AtlasExecutiveAreaAlertSummary>[];
 
     for (final entry in grouped.entries) {
       result.add(
         AtlasExecutiveAreaAlertSummary(
           area: entry.key,
-          label:
-              atlasFarmAreaLabel(entry.key),
+          label: atlasFarmAreaLabel(entry.key),
           total: entry.value.length,
-          critical:
-              entry.value.where((item) {
-            return item.severity ==
-                AtlasExecutiveAlertSeverity
-                    .critical;
+          critical: entry.value.where((item) {
+            return item.severity == AtlasExecutiveAlertSeverity.critical;
           }).length,
           high: entry.value.where((item) {
-            return item.severity ==
-                AtlasExecutiveAlertSeverity.high;
+            return item.severity == AtlasExecutiveAlertSeverity.high;
           }).length,
         ),
       );
     }
 
-    result.sort(
-      (first, second) {
-        if (first.critical !=
-            second.critical) {
-          return second.critical.compareTo(
-            first.critical,
-          );
-        }
+    result.sort((first, second) {
+      if (first.critical != second.critical) {
+        return second.critical.compareTo(first.critical);
+      }
 
-        return second.total.compareTo(
-          first.total,
-        );
-      },
-    );
+      return second.total.compareTo(first.total);
+    });
 
     return result;
   }
 
   double _priorityScore({
-    required AtlasExecutiveAlertSeverity
-        severity,
+    required AtlasExecutiveAlertSeverity severity,
     required double baseImpact,
     required int deadlineDays,
   }) {
-    final severityWeight =
-        switch (severity) {
-      AtlasExecutiveAlertSeverity
-            .informational =>
-        20.0,
-      AtlasExecutiveAlertSeverity.attention =>
-        45.0,
-      AtlasExecutiveAlertSeverity.high =>
-        70.0,
-      AtlasExecutiveAlertSeverity.critical =>
-        90.0,
+    final severityWeight = switch (severity) {
+      AtlasExecutiveAlertSeverity.informational => 20.0,
+      AtlasExecutiveAlertSeverity.attention => 45.0,
+      AtlasExecutiveAlertSeverity.high => 70.0,
+      AtlasExecutiveAlertSeverity.critical => 90.0,
     };
 
-    final deadlineWeight =
-        deadlineDays <= 0
-            ? 10.0
-            : deadlineDays == 1
-                ? 8.0
-                : deadlineDays <= 3
-                    ? 5.0
-                    : 2.0;
+    final deadlineWeight = deadlineDays <= 0
+        ? 10.0
+        : deadlineDays == 1
+        ? 8.0
+        : deadlineDays <= 3
+        ? 5.0
+        : 2.0;
 
     return (severityWeight * 0.65 +
-            baseImpact.clamp(0.0, 100.0) *
-                0.25 +
+            baseImpact.clamp(0.0, 100.0) * 0.25 +
             deadlineWeight)
         .clamp(0.0, 100.0);
   }
@@ -1095,8 +841,7 @@ class AtlasExecutiveAlertService {
     required int high,
     required int critical,
     required AtlasExecutiveAlert? mainAlert,
-    required AtlasExecutiveFarmAlertSummary?
-        mostCriticalFarm,
+    required AtlasExecutiveFarmAlertSummary? mostCriticalFarm,
   }) {
     if (total == 0) {
       return 'Nenhum alerta executivo foi identificado na operação.';
@@ -1138,9 +883,7 @@ class AtlasExecutiveAlertService {
         '${_normalize(suffix)}';
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     return value
         .trim()
         .toLowerCase()
@@ -1156,21 +899,12 @@ class AtlasExecutiveAlertService {
         .replaceAll('õ', 'o')
         .replaceAll('ú', 'u')
         .replaceAll('ç', 'c')
-        .replaceAll(
-          RegExp(r'[^a-z0-9]+'),
-          '_',
-        )
-        .replaceAll(
-          RegExp(r'_+'),
-          '_',
-        );
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
   }
 
-  String _currency(
-    double value,
-  ) {
-    final fixed =
-        value.abs().toStringAsFixed(2);
+  String _currency(double value) {
+    final fixed = value.abs().toStringAsFixed(2);
 
     final parts = fixed.split('.');
 
@@ -1179,20 +913,12 @@ class AtlasExecutiveAlertService {
 
     final buffer = StringBuffer();
 
-    for (
-      var index = 0;
-      index < integer.length;
-      index++
-    ) {
-      final remaining =
-          integer.length - index;
+    for (var index = 0; index < integer.length; index++) {
+      final remaining = integer.length - index;
 
       buffer.write(integer[index]);
 
-      if (
-        remaining > 1 &&
-        remaining % 3 == 1
-      ) {
+      if (remaining > 1 && remaining % 3 == 1) {
         buffer.write('.');
       }
     }

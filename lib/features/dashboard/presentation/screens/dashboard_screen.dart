@@ -19,9 +19,14 @@ import 'package:projeto_atlas/features/reports/data/services/report_action_stora
 import 'package:projeto_atlas/features/reports/domain/models/report_action_item_data.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/report_action_list_screen.dart';
 import 'package:projeto_atlas/features/technical_dashboard/presentation/screens/technical_dashboard_screen.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onNavigateModule});
+
+  /// Navegação fornecida pelo AtlasHomeShell para módulos que pertencem ao
+  /// menu principal. Evita empilhar uma segunda tela sem a navegação oficial.
+  final ValueChanged<String>? onNavigateModule;
 
   @override
   State<DashboardScreen> createState() {
@@ -158,46 +163,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> loadDashboard() async {
-    if (mounted) {
+    if (mounted) setState(() => isLoading = true);
+
+    try {
+      final loadedFarms = await farmStorage.loadFarms();
+      final loadedActions = await actionStorage.loadActions();
+      final loadedContexts = <DashboardAgendaContext>[];
+
+      for (final farm in loadedFarms) {
+        try {
+          final tasks = await agendaStorage.loadTasks(farm.name);
+          loadedContexts.addAll(
+            tasks.map((task) => DashboardAgendaContext(farm: farm, task: task)),
+          );
+        } catch (_) {
+          // Agenda não pode impedir o Dashboard inteiro de abrir.
+        }
+      }
+
+      loadedContexts.sort(compareAgendaContexts);
+      if (!mounted) return;
       setState(() {
-        isLoading = true;
+        farms = loadedFarms;
+        agendaContexts = loadedContexts;
+        managementActions = loadedActions;
+        dashboardRefreshVersion++;
       });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao atualizar o Dashboard: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
+  }
 
-    final loadedFarms = await farmStorage.loadFarms();
-
-    final loadedActions = await actionStorage.loadActions();
-
-    final agendaLists = await Future.wait(
-      loadedFarms.map((farm) async {
-        final tasks = await agendaStorage.loadTasks(farm.name);
-
-        return tasks.map((task) {
-          return DashboardAgendaContext(farm: farm, task: task);
-        }).toList();
-      }),
-    );
-
-    final loadedContexts = agendaLists
-        .expand((farmTasks) => farmTasks)
-        .toList();
-
-    loadedContexts.sort(compareAgendaContexts);
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      farms = loadedFarms;
-      agendaContexts = loadedContexts;
-      managementActions = loadedActions;
-      dashboardRefreshVersion++;
-      isLoading = false;
-    });
+  bool _navigateThroughShell(String label) {
+    final callback = widget.onNavigateModule;
+    if (callback == null) return false;
+    callback(label);
+    return true;
   }
 
   Future<void> openFarms() async {
+    if (_navigateThroughShell('Fazendas')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -220,7 +230,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     await loadDashboard();
   }
-
 
   Future<void> openTechnicalDashboard() async {
     await Navigator.of(context).push(
@@ -247,6 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> openHerd() async {
+    if (_navigateThroughShell('Rebanho')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -259,6 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> openHealth() async {
+    if (_navigateThroughShell('Sanidade')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -271,6 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> openReproduction() async {
+    if (_navigateThroughShell('Reprodução')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -282,8 +294,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await loadDashboard();
   }
 
-
   Future<void> openNutrition() async {
+    if (_navigateThroughShell('Nutrição')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -296,6 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> openFinance() async {
+    if (_navigateThroughShell('Financeiro')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -307,8 +320,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await loadDashboard();
   }
 
-
   Future<void> openInventory() async {
+    if (_navigateThroughShell('Estoque')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -321,6 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> openReports() async {
+    if (_navigateThroughShell('Relatórios')) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) {
@@ -629,39 +643,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
-        title: const Text(
-          'Projeto Atlas',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar Dashboard',
-            onPressed: isLoading ? null : loadDashboard,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-          IconButton(
-            tooltip: 'Notificações',
-            onPressed: showAlertSummary,
-            icon: Badge(
-              isLabelVisible: alertCount > 0,
-              label: Text(alertCount.toString()),
-              child: const Icon(Icons.notifications_outlined),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      drawer: AtlasDrawer(
-        onOpenExecutiveDashboard: openExecutiveDashboard,
-        onOpenIndicators: openIndicators,
-        onOpenAgenda: chooseFarmAgenda,
-        onOpenReports: openReports,
-        onOpenActions: openActions,
-      ),
-      body: SafeArea(
+    return ColoredBox(
+      color: const Color(0xFFF6F7F9),
+      child: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
@@ -780,7 +764,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-
 class TechnicalDashboardAccessCard extends StatelessWidget {
   const TechnicalDashboardAccessCard({required this.onOpen, super.key});
 
@@ -801,10 +784,7 @@ class TechnicalDashboardAccessCard extends StatelessWidget {
               const CircleAvatar(
                 radius: 26,
                 backgroundColor: Color(0xFF1B5E20),
-                child: Icon(
-                  Icons.analytics_outlined,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.analytics_outlined, color: Colors.white),
               ),
               const SizedBox(width: 18),
               const Expanded(
@@ -1335,7 +1315,7 @@ class ModulesGrid extends StatelessWidget {
       ModuleData('Indicadores', Icons.analytics_outlined),
       ModuleData('Agenda', Icons.calendar_month_outlined),
       ModuleData('Relatórios', Icons.bar_chart_outlined),
-      ModuleData('Rebanho', Icons.pets_outlined),
+      ModuleData('Rebanho', AtlasLivestockIcons.cow),
       ModuleData('Reprodução', Icons.favorite_outline),
       ModuleData('Sanidade', Icons.medical_services_outlined),
       ModuleData('Nutrição', Icons.grass_outlined),
@@ -1940,136 +1920,6 @@ class AlertSummaryTile extends StatelessWidget {
           color: color,
           fontSize: 20,
           fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-class AtlasDrawer extends StatelessWidget {
-  const AtlasDrawer({
-    required this.onOpenExecutiveDashboard,
-    required this.onOpenIndicators,
-    required this.onOpenAgenda,
-    required this.onOpenReports,
-    required this.onOpenActions,
-    super.key,
-  });
-
-  final VoidCallback onOpenExecutiveDashboard;
-  final VoidCallback onOpenIndicators;
-  final VoidCallback onOpenAgenda;
-  final VoidCallback onOpenReports;
-  final VoidCallback onOpenActions;
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: Color(0xFF1B5E20),
-                    child: Icon(Icons.person_outline, color: Colors.white),
-                  ),
-                  SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gabriel Beserra',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Consultor veterinário',
-                          style: TextStyle(color: Colors.black54, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.dashboard_outlined),
-              title: const Text('Dashboard'),
-              selected: true,
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.analytics_outlined),
-              title: const Text('Dashboard Executivo'),
-              subtitle: const Text('Inteligência e parecer gerencial'),
-              onTap: () {
-                Navigator.pop(context);
-                onOpenExecutiveDashboard();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.analytics_outlined),
-              title: const Text('Indicadores'),
-              onTap: () {
-                Navigator.pop(context);
-                onOpenIndicators();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_month_outlined),
-              title: const Text('Agenda'),
-              onTap: () {
-                Navigator.pop(context);
-                onOpenAgenda();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart_outlined),
-              title: const Text('Relatórios'),
-              onTap: () {
-                Navigator.pop(context);
-                onOpenReports();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.assignment_turned_in_outlined),
-              title: const Text('Ações gerenciais'),
-              onTap: () {
-                Navigator.pop(context);
-                onOpenActions();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Configurações'),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'O módulo Configurações será implementado posteriormente.',
-                    ),
-                  ),
-                );
-              },
-            ),
-            const Spacer(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Sair'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-            const SizedBox(height: 12),
-          ],
         ),
       ),
     );

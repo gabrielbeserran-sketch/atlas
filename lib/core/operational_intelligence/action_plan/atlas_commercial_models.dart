@@ -1,12 +1,6 @@
-enum AtlasCommercialPartnerType {
-  buyer,
-  supplier,
-  both,
-}
+enum AtlasCommercialPartnerType { buyer, supplier, both }
 
-String atlasCommercialPartnerTypeLabel(
-  AtlasCommercialPartnerType value,
-) {
+String atlasCommercialPartnerTypeLabel(AtlasCommercialPartnerType value) {
   switch (value) {
     case AtlasCommercialPartnerType.buyer:
       return 'Comprador';
@@ -17,15 +11,10 @@ String atlasCommercialPartnerTypeLabel(
   }
 }
 
-enum AtlasCommercialDealType {
-  sale,
-  purchase,
-}
+enum AtlasCommercialDealType { sale, purchase }
 
 String atlasCommercialDealTypeLabel(AtlasCommercialDealType value) {
-  return value == AtlasCommercialDealType.sale
-      ? 'Venda'
-      : 'Compra';
+  return value == AtlasCommercialDealType.sale ? 'Venda' : 'Compra';
 }
 
 enum AtlasCommercialDealStatus {
@@ -36,9 +25,7 @@ enum AtlasCommercialDealStatus {
   cancelled,
 }
 
-String atlasCommercialDealStatusLabel(
-  AtlasCommercialDealStatus value,
-) {
+String atlasCommercialDealStatusLabel(AtlasCommercialDealStatus value) {
   switch (value) {
     case AtlasCommercialDealStatus.prospecting:
       return 'Prospecção';
@@ -81,22 +68,20 @@ class AtlasCommercialPartner {
   final String notes;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'name': name,
-        'type': type.name,
-        'document': document,
-        'phone': phone,
-        'email': email,
-        'city': city,
-        'state': state,
-        'rating': rating,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'name': name,
+    'type': type.name,
+    'document': document,
+    'phone': phone,
+    'email': email,
+    'city': city,
+    'state': state,
+    'rating': rating,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasCommercialPartner.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasCommercialPartner.fromMap(Map<String, dynamic> map) {
     return AtlasCommercialPartner(
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
@@ -153,36 +138,31 @@ class AtlasCommercialDeal {
 
   double get grossValue => quantity * unitPrice;
   double get totalCost => quantity * costPerUnit;
-  double get marginValue => type == AtlasCommercialDealType.sale
-      ? grossValue - totalCost
-      : 0;
-  double get marginPercent => grossValue <= 0
-      ? 0
-      : marginValue / grossValue * 100;
+  double get marginValue =>
+      type == AtlasCommercialDealType.sale ? grossValue - totalCost : 0;
+  double get marginPercent =>
+      grossValue <= 0 ? 0 : marginValue / grossValue * 100;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'partnerId': partnerId,
-        'type': type.name,
-        'status': status.name,
-        'product': product,
-        'quantity': quantity,
-        'unit': unit,
-        'unitPrice': unitPrice,
-        'costPerUnit': costPerUnit,
-        'negotiatedAt': negotiatedAt.toIso8601String(),
-        'deliveryAt': deliveryAt?.toIso8601String(),
-        'contractReference': contractReference,
-        'paymentTerms': paymentTerms,
-        'farmName': farmName,
-        'notes': notes,
-      };
+    'id': id,
+    'partnerId': partnerId,
+    'type': type.name,
+    'status': status.name,
+    'product': product,
+    'quantity': quantity,
+    'unit': unit,
+    'unitPrice': unitPrice,
+    'costPerUnit': costPerUnit,
+    'negotiatedAt': negotiatedAt.toIso8601String(),
+    'deliveryAt': deliveryAt?.toIso8601String(),
+    'contractReference': contractReference,
+    'paymentTerms': paymentTerms,
+    'farmName': farmName,
+    'notes': notes,
+  };
 
-  factory AtlasCommercialDeal.fromMap(
-    Map<String, dynamic> map,
-  ) {
-    double value(String key) =>
-        (map[key] as num?)?.toDouble() ?? 0;
+  factory AtlasCommercialDeal.fromMap(Map<String, dynamic> map) {
+    double value(String key) => (map[key] as num?)?.toDouble() ?? 0;
 
     return AtlasCommercialDeal(
       id: map['id']?.toString() ?? '',
@@ -200,15 +180,11 @@ class AtlasCommercialDeal {
       unit: map['unit']?.toString() ?? '',
       unitPrice: value('unitPrice'),
       costPerUnit: value('costPerUnit'),
-      negotiatedAt: DateTime.tryParse(
-            map['negotiatedAt']?.toString() ?? '',
-          ) ??
+      negotiatedAt:
+          DateTime.tryParse(map['negotiatedAt']?.toString() ?? '') ??
           DateTime.now(),
-      deliveryAt: DateTime.tryParse(
-        map['deliveryAt']?.toString() ?? '',
-      ),
-      contractReference:
-          map['contractReference']?.toString() ?? '',
+      deliveryAt: DateTime.tryParse(map['deliveryAt']?.toString() ?? ''),
+      contractReference: map['contractReference']?.toString() ?? '',
       paymentTerms: map['paymentTerms']?.toString() ?? '',
       farmName: map['farmName']?.toString(),
       notes: map['notes']?.toString() ?? '',
@@ -231,10 +207,8 @@ class AtlasCommercialPriceScenario {
 
   double get currentRevenue => currentPrice * quantity;
   double get projectedRevenue => projectedPrice * quantity;
-  double get projectedMargin =>
-      projectedRevenue - costPerUnit * quantity;
-  double get opportunityValue =>
-      projectedRevenue - currentRevenue;
+  double get projectedMargin => projectedRevenue - costPerUnit * quantity;
+  double get opportunityValue => projectedRevenue - currentRevenue;
 }
 
 class AtlasCommercialExecutiveSnapshot {

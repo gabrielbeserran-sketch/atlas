@@ -37,13 +37,13 @@ class AtlasHealthCheck {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'module': module,
-        'description': description,
-        'status': status.name,
-        'responseTimeMs': responseTimeMs,
-        'checkedAt': checkedAt.toIso8601String(),
-      };
+    'id': id,
+    'module': module,
+    'description': description,
+    'status': status.name,
+    'responseTimeMs': responseTimeMs,
+    'checkedAt': checkedAt.toIso8601String(),
+  };
 
   factory AtlasHealthCheck.fromMap(Map<String, dynamic> map) {
     return AtlasHealthCheck(
@@ -55,7 +55,8 @@ class AtlasHealthCheck {
         orElse: () => AtlasHealthStatus.warning,
       ),
       responseTimeMs: map['responseTimeMs'] as int? ?? 0,
-      checkedAt: DateTime.tryParse(map['checkedAt'] as String? ?? '') ??
+      checkedAt:
+          DateTime.tryParse(map['checkedAt'] as String? ?? '') ??
           DateTime.now(),
     );
   }
@@ -90,13 +91,13 @@ class AtlasSystemLog {
   }
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'id': id,
-        'module': module,
-        'message': message,
-        'level': level.name,
-        'createdAt': createdAt.toIso8601String(),
-        'resolved': resolved,
-      };
+    'id': id,
+    'module': module,
+    'message': message,
+    'level': level.name,
+    'createdAt': createdAt.toIso8601String(),
+    'resolved': resolved,
+  };
 
   factory AtlasSystemLog.fromMap(Map<String, dynamic> map) {
     return AtlasSystemLog(
@@ -107,7 +108,8 @@ class AtlasSystemLog {
         (AtlasLogLevel item) => item.name == map['level'],
         orElse: () => AtlasLogLevel.info,
       ),
-      createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
       resolved: map['resolved'] as bool? ?? false,
     );
@@ -126,31 +128,35 @@ class AtlasObservabilityData {
   final DateTime? lastDiagnosticAt;
 
   Map<String, dynamic> toMap() => <String, dynamic>{
-        'healthChecks': healthChecks
-            .map((AtlasHealthCheck item) => item.toMap())
-            .toList(),
-        'logs': logs.map((AtlasSystemLog item) => item.toMap()).toList(),
-        'lastDiagnosticAt': lastDiagnosticAt?.toIso8601String(),
-      };
+    'healthChecks': healthChecks
+        .map((AtlasHealthCheck item) => item.toMap())
+        .toList(),
+    'logs': logs.map((AtlasSystemLog item) => item.toMap()).toList(),
+    'lastDiagnosticAt': lastDiagnosticAt?.toIso8601String(),
+  };
 
   String toJson() => jsonEncode(toMap());
 
   factory AtlasObservabilityData.fromJson(String source) {
-    final Map<String, dynamic> map =
-        jsonDecode(source) as Map<String, dynamic>;
+    final Map<String, dynamic> map = jsonDecode(source) as Map<String, dynamic>;
     return AtlasObservabilityData(
       healthChecks: (map['healthChecks'] as List<dynamic>? ?? <dynamic>[])
-          .map((dynamic item) => AtlasHealthCheck.fromMap(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
+          .map(
+            (dynamic item) => AtlasHealthCheck.fromMap(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
+          )
           .toList(),
       logs: (map['logs'] as List<dynamic>? ?? <dynamic>[])
-          .map((dynamic item) => AtlasSystemLog.fromMap(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
+          .map(
+            (dynamic item) => AtlasSystemLog.fromMap(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
+          )
           .toList(),
-      lastDiagnosticAt:
-          DateTime.tryParse(map['lastDiagnosticAt'] as String? ?? ''),
+      lastDiagnosticAt: DateTime.tryParse(
+        map['lastDiagnosticAt'] as String? ?? '',
+      ),
     );
   }
 }

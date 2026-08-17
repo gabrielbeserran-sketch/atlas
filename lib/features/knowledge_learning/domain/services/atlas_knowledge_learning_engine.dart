@@ -26,7 +26,8 @@ class AtlasKnowledgeLearningEngine {
       final before = decision?.currentValue ?? 0;
       final expected = decision?.expectedGain ?? 0;
       final after = before + expected;
-      final success = expected > 0 ||
+      final success =
+          expected > 0 ||
           decision?.type == AtlasImprovementDecisionType.maintain;
       final responseDays = mission.completedAt == null
           ? mission.dueDate.difference(mission.startDate).inDays.abs()
@@ -75,20 +76,15 @@ class AtlasKnowledgeLearningEngine {
 
       final successes = related.where((item) => item.success).length;
       final successRate = successes / related.length * 100;
-      final response = related.fold<double>(
-            0,
-            (sum, item) => sum + item.responseDays,
-          ) /
+      final response =
+          related.fold<double>(0, (sum, item) => sum + item.responseDays) /
           related.length;
-      final gain = related.fold<double>(
-            0,
-            (sum, item) => sum + item.economicGain,
-          ) /
+      final gain =
+          related.fold<double>(0, (sum, item) => sum + item.economicGain) /
           related.length;
-      final confidence =
-          (45 + related.length * 7 + successRate * 0.35)
-              .clamp(45.0, 98.0)
-              .toDouble();
+      final confidence = (45 + related.length * 7 + successRate * 0.35)
+          .clamp(45.0, 98.0)
+          .toDouble();
 
       protocols.add(
         AtlasKnowledgeProtocol(

@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 
 import 'package:projeto_atlas/features/atlas_intelligence_reports_experience/domain/models/atlas_intelligence_reports_record.dart';
@@ -53,33 +52,25 @@ class AtlasIntelligenceReportsAnalyticsService {
         ? 0.0
         : represented.length * 100.0 / module.features.length;
 
-    final operational =
-        items.where((record) => record.isOperational).length;
+    final operational = items.where((record) => record.isOperational).length;
 
     final alerts = items.fold<int>(
       0,
       (total, record) =>
-          total +
-          record.alertCount +
-          (record.isCritical ? 1 : 0),
+          total + record.alertCount + (record.isCritical ? 1 : 0),
     );
 
-    double averageOf(
-      double Function(AtlasIntelligenceReportsRecord) selector,
-    ) {
+    double averageOf(double Function(AtlasIntelligenceReportsRecord) selector) {
       if (items.isEmpty) return 0;
-      return items.map(selector).reduce((a, b) => a + b) /
-          items.length;
+      return items.map(selector).reduce((a, b) => a + b) / items.length;
     }
 
     final current = averageOf((record) => record.currentValue);
     final target = averageOf((record) => record.targetValue);
     final gap = averageOf((record) => record.gap);
-    final confidence =
-        averageOf((record) => record.confidencePercent);
+    final confidence = averageOf((record) => record.confidencePercent);
     final risk = averageOf((record) => record.riskPercent);
-    final progress =
-        averageOf((record) => record.progressPercent.toDouble());
+    final progress = averageOf((record) => record.progressPercent.toDouble());
 
     var score = 30;
     score += math.min(25, coverage.round() * 25 ~/ 100);
@@ -92,8 +83,7 @@ class AtlasIntelligenceReportsAnalyticsService {
 
     final recommendations = <String>[
       for (final feature in module.features)
-        if (!represented.contains(feature))
-          'Implantar ou registrar: $feature.',
+        if (!represented.contains(feature)) 'Implantar ou registrar: $feature.',
       if (alerts > 0)
         'Existem $alerts alertas; revise fontes, regras, permissões e responsáveis.',
       if (items.isEmpty)

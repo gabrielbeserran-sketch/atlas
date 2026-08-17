@@ -17,12 +17,10 @@ class AtlasPermissionGate extends StatefulWidget {
   final String? farmId;
 
   @override
-  State<AtlasPermissionGate> createState() =>
-      _AtlasPermissionGateState();
+  State<AtlasPermissionGate> createState() => _AtlasPermissionGateState();
 }
 
-class _AtlasPermissionGateState
-    extends State<AtlasPermissionGate> {
+class _AtlasPermissionGateState extends State<AtlasPermissionGate> {
   bool? allowed;
 
   @override
@@ -41,8 +39,7 @@ class _AtlasPermissionGateState
   }
 
   Future<void> _check() async {
-    final value =
-        await AtlasEnterpriseAuthorizationService.instance.can(
+    final value = await AtlasEnterpriseAuthorizationService.instance.can(
       widget.permissionKey,
       farmId: widget.farmId,
     );
@@ -66,8 +63,7 @@ abstract final class AtlasProtectedRoute {
     required WidgetBuilder builder,
     String? farmId,
   }) async {
-    final allowed =
-        await AtlasEnterpriseAuthorizationService.instance.can(
+    final allowed = await AtlasEnterpriseAuthorizationService.instance.can(
       permissionKey,
       farmId: farmId,
       auditDenied: true,
@@ -77,17 +73,13 @@ abstract final class AtlasProtectedRoute {
 
     if (!allowed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Acesso bloqueado: $permissionKey',
-          ),
-        ),
+        SnackBar(content: Text('Acesso bloqueado: $permissionKey')),
       );
       return null;
     }
 
-    return Navigator.of(context).push<T>(
-      MaterialPageRoute<T>(builder: builder),
-    );
+    return Navigator.of(
+      context,
+    ).push<T>(MaterialPageRoute<T>(builder: builder));
   }
 }

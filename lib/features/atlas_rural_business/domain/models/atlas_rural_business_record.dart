@@ -7,63 +7,56 @@ enum AtlasRuralBusinessModule {
 
 extension AtlasRuralBusinessModuleX on AtlasRuralBusinessModule {
   String get code => switch (this) {
-        AtlasRuralBusinessModule.ruralCredit => 'rural_credit',
-        AtlasRuralBusinessModule.ruralInsurance => 'rural_insurance',
-        AtlasRuralBusinessModule.digitalContracts =>
-          'digital_contracts',
-        AtlasRuralBusinessModule.livestockMarketplace =>
-          'livestock_marketplace',
-      };
+    AtlasRuralBusinessModule.ruralCredit => 'rural_credit',
+    AtlasRuralBusinessModule.ruralInsurance => 'rural_insurance',
+    AtlasRuralBusinessModule.digitalContracts => 'digital_contracts',
+    AtlasRuralBusinessModule.livestockMarketplace => 'livestock_marketplace',
+  };
 
   String get title => switch (this) {
-        AtlasRuralBusinessModule.ruralCredit =>
-          'Crédito Rural',
-        AtlasRuralBusinessModule.ruralInsurance =>
-          'Seguro Rural',
-        AtlasRuralBusinessModule.digitalContracts =>
-          'Contratos Digitais',
-        AtlasRuralBusinessModule.livestockMarketplace =>
-          'Marketplace Pecuário',
-      };
+    AtlasRuralBusinessModule.ruralCredit => 'Crédito Rural',
+    AtlasRuralBusinessModule.ruralInsurance => 'Seguro Rural',
+    AtlasRuralBusinessModule.digitalContracts => 'Contratos Digitais',
+    AtlasRuralBusinessModule.livestockMarketplace => 'Marketplace Pecuário',
+  };
 
   String get packageLabel => switch (this) {
-        AtlasRuralBusinessModule.ruralCredit => 'Pacote 71',
-        AtlasRuralBusinessModule.ruralInsurance => 'Pacote 72',
-        AtlasRuralBusinessModule.digitalContracts => 'Pacote 73',
-        AtlasRuralBusinessModule.livestockMarketplace =>
-          'Pacote 74',
-      };
+    AtlasRuralBusinessModule.ruralCredit => 'Pacote 71',
+    AtlasRuralBusinessModule.ruralInsurance => 'Pacote 72',
+    AtlasRuralBusinessModule.digitalContracts => 'Pacote 73',
+    AtlasRuralBusinessModule.livestockMarketplace => 'Pacote 74',
+  };
 
   List<String> get features => switch (this) {
-        AtlasRuralBusinessModule.ruralCredit => const [
-            'Linhas de crédito',
-            'Propostas e simulações',
-            'Garantias e documentos',
-            'Cronograma de parcelas',
-            'Acompanhamento da contratação',
-          ],
-        AtlasRuralBusinessModule.ruralInsurance => const [
-            'Cotações e propostas',
-            'Coberturas e franquias',
-            'Apólices',
-            'Sinistros',
-            'Renovações e vencimentos',
-          ],
-        AtlasRuralBusinessModule.digitalContracts => const [
-            'Minutas e modelos',
-            'Partes e responsabilidades',
-            'Assinaturas e aprovações',
-            'Obrigações e prazos',
-            'Aditivos e encerramento',
-          ],
-        AtlasRuralBusinessModule.livestockMarketplace => const [
-            'Anúncios de animais',
-            'Ofertas e negociações',
-            'Compradores e vendedores',
-            'Logística e documentos',
-            'Avaliação pós-negócio',
-          ],
-      };
+    AtlasRuralBusinessModule.ruralCredit => const [
+      'Linhas de crédito',
+      'Propostas e simulações',
+      'Garantias e documentos',
+      'Cronograma de parcelas',
+      'Acompanhamento da contratação',
+    ],
+    AtlasRuralBusinessModule.ruralInsurance => const [
+      'Cotações e propostas',
+      'Coberturas e franquias',
+      'Apólices',
+      'Sinistros',
+      'Renovações e vencimentos',
+    ],
+    AtlasRuralBusinessModule.digitalContracts => const [
+      'Minutas e modelos',
+      'Partes e responsabilidades',
+      'Assinaturas e aprovações',
+      'Obrigações e prazos',
+      'Aditivos e encerramento',
+    ],
+    AtlasRuralBusinessModule.livestockMarketplace => const [
+      'Anúncios de animais',
+      'Ofertas e negociações',
+      'Compradores e vendedores',
+      'Logística e documentos',
+      'Avaliação pós-negócio',
+    ],
+  };
 }
 
 class AtlasRuralBusinessRecord {
@@ -157,9 +150,7 @@ class AtlasRuralBusinessRecord {
     };
   }
 
-  factory AtlasRuralBusinessRecord.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory AtlasRuralBusinessRecord.fromMap(Map<String, dynamic> map) {
     final code = map['module']?.toString() ?? '';
 
     final module = AtlasRuralBusinessModule.values.firstWhere(
@@ -177,14 +168,11 @@ class AtlasRuralBusinessRecord {
       counterparty: map['counterparty']?.toString() ?? '',
       externalId: map['externalId']?.toString() ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-      costAmount:
-          (map['costAmount'] as num?)?.toDouble() ?? 0.0,
+      costAmount: (map['costAmount'] as num?)?.toDouble() ?? 0.0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 0,
       termDays: (map['termDays'] as num?)?.toInt() ?? 0,
-      progressPercent:
-          (map['progressPercent'] as num?)?.toInt() ?? 0,
-      alertCount:
-          (map['alertCount'] as num?)?.toInt() ?? 0,
+      progressPercent: (map['progressPercent'] as num?)?.toInt() ?? 0,
+      alertCount: (map['alertCount'] as num?)?.toInt() ?? 0,
       dueDate: map['dueDate']?.toString() ?? '',
       reference: map['reference']?.toString() ?? '',
       notes: map['notes']?.toString() ?? '',

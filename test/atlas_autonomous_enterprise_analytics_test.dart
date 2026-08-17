@@ -3,15 +3,13 @@ import 'package:projeto_atlas/features/atlas_autonomous_enterprise/domain/models
 import 'package:projeto_atlas/features/atlas_autonomous_enterprise/domain/services/atlas_autonomous_enterprise_analytics_service.dart';
 
 void main() {
-  const service =
-      AtlasAutonomousEnterpriseAnalyticsService();
+  const service = AtlasAutonomousEnterpriseAnalyticsService();
 
   test('calculates autonomous enterprise analytics', () {
     final records = [
       AtlasAutonomousEnterpriseRecord(
         id: '1',
-        module:
-            AtlasAutonomousEnterpriseModule.aiOrchestrator,
+        module: AtlasAutonomousEnterpriseModule.aiOrchestrator,
         feature: 'Fila de decisões',
         title: 'Recomendação aprovada',
         date: '04/08/2026',
@@ -33,8 +31,7 @@ void main() {
       ),
       AtlasAutonomousEnterpriseRecord(
         id: '2',
-        module:
-            AtlasAutonomousEnterpriseModule.aiOrchestrator,
+        module: AtlasAutonomousEnterpriseModule.aiOrchestrator,
         feature: 'Aprovação humana',
         title: 'Decisão pendente',
         date: '04/08/2026',
@@ -57,8 +54,7 @@ void main() {
     ];
 
     final result = service.analyze(
-      module:
-          AtlasAutonomousEnterpriseModule.aiOrchestrator,
+      module: AtlasAutonomousEnterpriseModule.aiOrchestrator,
       records: records,
     );
 

@@ -20,34 +20,34 @@ class AtlasDecisionEngineV2Service {
       ..._fromPredictive(predictive),
     ];
 
-    final actions = _rankActions(
-      candidates: candidates,
-      workflow: workflow,
-    );
+    final actions = _rankActions(candidates: candidates, workflow: workflow);
 
-    final dailyPlan = actions.where((item) {
-      return item.horizon ==
-          AtlasDecisionV2Horizon.today;
-    }).take(5).toList();
+    final dailyPlan = actions
+        .where((item) {
+          return item.horizon == AtlasDecisionV2Horizon.today;
+        })
+        .take(5)
+        .toList();
 
-    final weeklyPlan = actions.where((item) {
-      return item.horizon ==
-          AtlasDecisionV2Horizon.week;
-    }).take(8).toList();
+    final weeklyPlan = actions
+        .where((item) {
+          return item.horizon == AtlasDecisionV2Horizon.week;
+        })
+        .take(8)
+        .toList();
 
-    final monthlyPlan = actions.where((item) {
-      return item.horizon ==
-          AtlasDecisionV2Horizon.month;
-    }).take(10).toList();
+    final monthlyPlan = actions
+        .where((item) {
+          return item.horizon == AtlasDecisionV2Horizon.month;
+        })
+        .take(10)
+        .toList();
 
-    final simulations = _buildSimulations(
-      actions.take(8).toList(),
-    );
+    final simulations = _buildSimulations(actions.take(8).toList());
 
     final score = _buildScore(actions);
 
-    final confidence =
-        _buildConfidence(actions);
+    final confidence = _buildConfidence(actions);
 
     final status = _statusFromScore(score);
 
@@ -65,8 +65,7 @@ class AtlasDecisionEngineV2Service {
       score: score,
       confidencePercent: confidence,
       status: status,
-      bestActionToday:
-          dailyPlan.isEmpty ? null : dailyPlan.first,
+      bestActionToday: dailyPlan.isEmpty ? null : dailyPlan.first,
       dailyPlan: dailyPlan,
       weeklyPlan: weeklyPlan,
       monthlyPlan: monthlyPlan,
@@ -75,9 +74,7 @@ class AtlasDecisionEngineV2Service {
     );
   }
 
-  List<_DecisionV2Candidate> _fromDecisionEngine(
-    AtlasDecisionEngineData data,
-  ) {
+  List<_DecisionV2Candidate> _fromDecisionEngine(AtlasDecisionEngineData data) {
     return data.decisions.map((item) {
       return _DecisionV2Candidate(
         id: 'decision_${item.id}',
@@ -87,30 +84,23 @@ class AtlasDecisionEngineV2Service {
         category: item.category,
         baseScore:
             _priorityWeight(item.priority) * 18 +
-                _urgencyWeight(item.urgency) * 13 +
-                _riskWeight(item.risk) * 9 +
-                item.confidencePercent * 0.30,
-        confidencePercent:
-            item.confidencePercent,
-        expectedFinancialImpact:
-            item.expectedFinancialImpact,
-        investmentValue:
-            item.investmentValue,
-        expectedReturnValue:
-            item.expectedReturnValue,
+            _urgencyWeight(item.urgency) * 13 +
+            _riskWeight(item.risk) * 9 +
+            item.confidencePercent * 0.30,
+        confidencePercent: item.confidencePercent,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
         roiPercent: item.roiPercent,
         deadlineDays: item.deadlineDays,
         risk: _riskFromDecision(item.risk),
         effort: _effortFromDecision(item),
-        expectedResult:
-            item.expectedResult,
-        reasoning:
-            item.reasoningSummary,
-        dependencies:
-            item.executionPlan
-                .skip(1)
-                .map((step) => step.title)
-                .toList(),
+        expectedResult: item.expectedResult,
+        reasoning: item.reasoningSummary,
+        dependencies: item.executionPlan
+            .skip(1)
+            .map((step) => step.title)
+            .toList(),
       );
     }).toList();
   }
@@ -118,32 +108,29 @@ class AtlasDecisionEngineV2Service {
   List<_DecisionV2Candidate> _fromPredictive(
     AtlasPredictiveAnalyticsData data,
   ) {
-    final candidates =
-        <_DecisionV2Candidate>[];
+    final candidates = <_DecisionV2Candidate>[];
 
     for (final item in data.recommendations) {
-      final relatedRisk =
-          data.risks.cast<AtlasPredictiveRisk?>().firstWhere(
-                (risk) =>
-                    risk?.farmName == item.farmName &&
-                    risk?.category == item.category,
-                orElse: () => null,
-              );
+      final relatedRisk = data.risks.cast<AtlasPredictiveRisk?>().firstWhere(
+        (risk) =>
+            risk?.farmName == item.farmName && risk?.category == item.category,
+        orElse: () => null,
+      );
 
-      final relatedScenario =
-          data.scenarios.cast<AtlasPredictiveScenario?>().firstWhere(
-                (scenario) =>
-                    scenario?.farmName == item.farmName &&
-                    scenario?.category == item.category &&
-                    scenario?.type ==
-                        AtlasPredictiveScenarioType.whatIf,
-                orElse: () => null,
-              );
+      final relatedScenario = data.scenarios
+          .cast<AtlasPredictiveScenario?>()
+          .firstWhere(
+            (scenario) =>
+                scenario?.farmName == item.farmName &&
+                scenario?.category == item.category &&
+                scenario?.type == AtlasPredictiveScenarioType.whatIf,
+            orElse: () => null,
+          );
 
       final financialImpact =
           relatedScenario?.projectedFinancialImpact ??
-              relatedRisk?.financialImpactValue ??
-              0;
+          relatedRisk?.financialImpactValue ??
+          0;
 
       candidates.add(
         _DecisionV2Candidate(
@@ -154,33 +141,22 @@ class AtlasDecisionEngineV2Service {
           category: item.category,
           baseScore:
               _predictivePriorityWeight(item.priority) * 18 +
-                  item.confidencePercent * 0.35 +
-                  (relatedRisk?.probabilityPercent ?? 0) *
-                      0.25,
-          confidencePercent:
-              item.confidencePercent,
-          expectedFinancialImpact:
-              financialImpact,
+              item.confidencePercent * 0.35 +
+              (relatedRisk?.probabilityPercent ?? 0) * 0.25,
+          confidencePercent: item.confidencePercent,
+          expectedFinancialImpact: financialImpact,
           investmentValue: 0,
-          expectedReturnValue:
-              financialImpact,
+          expectedReturnValue: financialImpact,
           roiPercent: 0,
           deadlineDays:
-              item.priority ==
-                      AtlasPredictiveAnalyticsPriority.critical
-                  ? 7
-                  : item.priority ==
-                          AtlasPredictiveAnalyticsPriority.high
-                      ? 14
-                      : 30,
-          risk:
-              _riskFromPredictive(
-            relatedRisk?.level,
-          ),
-          effort:
-              AtlasDecisionV2Effort.medium,
-          expectedResult:
-              item.expectedImpact,
+              item.priority == AtlasPredictiveAnalyticsPriority.critical
+              ? 7
+              : item.priority == AtlasPredictiveAnalyticsPriority.high
+              ? 14
+              : 30,
+          risk: _riskFromPredictive(relatedRisk?.level),
+          effort: AtlasDecisionV2Effort.medium,
+          expectedResult: item.expectedImpact,
           reasoning:
               'A ação foi recomendada pelo Predictive Analytics com base em risco futuro e impacto projetado.',
           dependencies: const [],
@@ -197,16 +173,13 @@ class AtlasDecisionEngineV2Service {
   }) {
     final activeTaskTitles = workflow.allTasks
         .where((task) {
-          return task.status !=
-                  AtlasWorkflowTaskStatus.completed &&
-              task.status !=
-                  AtlasWorkflowTaskStatus.cancelled;
+          return task.status != AtlasWorkflowTaskStatus.completed &&
+              task.status != AtlasWorkflowTaskStatus.cancelled;
         })
         .map((task) => task.title.toLowerCase())
         .toSet();
 
-    final merged =
-        <String, _DecisionV2Candidate>{};
+    final merged = <String, _DecisionV2Candidate>{};
 
     for (final item in candidates) {
       final key =
@@ -220,8 +193,7 @@ class AtlasDecisionEngineV2Service {
       }
 
       merged[key] = existing.copyWith(
-        baseScore:
-            math.max(existing.baseScore, item.baseScore),
+        baseScore: math.max(existing.baseScore, item.baseScore),
         confidencePercent: math.max(
           existing.confidencePercent,
           item.confidencePercent,
@@ -234,164 +206,111 @@ class AtlasDecisionEngineV2Service {
           existing.expectedReturnValue,
           item.expectedReturnValue,
         ),
-        investmentValue:
-            existing.investmentValue > 0
-                ? existing.investmentValue
-                : item.investmentValue,
-        roiPercent:
-            math.max(existing.roiPercent, item.roiPercent),
-        deadlineDays:
-            math.min(existing.deadlineDays, item.deadlineDays),
-        risk: _higherRisk(
-          existing.risk,
-          item.risk,
-        ),
-        dependencies: {
-          ...existing.dependencies,
-          ...item.dependencies,
-        }.toList(),
-        reasoning:
-            '${existing.reasoning} ${item.reasoning}',
+        investmentValue: existing.investmentValue > 0
+            ? existing.investmentValue
+            : item.investmentValue,
+        roiPercent: math.max(existing.roiPercent, item.roiPercent),
+        deadlineDays: math.min(existing.deadlineDays, item.deadlineDays),
+        risk: _higherRisk(existing.risk, item.risk),
+        dependencies: {...existing.dependencies, ...item.dependencies}.toList(),
+        reasoning: '${existing.reasoning} ${item.reasoning}',
       );
     }
 
-    final candidatesList =
-        merged.values.toList();
+    final candidatesList = merged.values.toList();
 
-    candidatesList.sort(
-      (first, second) {
-        final firstPenalty = activeTaskTitles.any(
-          (title) =>
-              title.contains(
-                _normalize(first.title),
-              ) ||
-              _normalize(first.title).contains(title),
-        )
-            ? 8
-            : 0;
+    candidatesList.sort((first, second) {
+      final firstPenalty =
+          activeTaskTitles.any(
+            (title) =>
+                title.contains(_normalize(first.title)) ||
+                _normalize(first.title).contains(title),
+          )
+          ? 8
+          : 0;
 
-        final secondPenalty = activeTaskTitles.any(
-          (title) =>
-              title.contains(
-                _normalize(second.title),
-              ) ||
-              _normalize(second.title).contains(title),
-        )
-            ? 8
-            : 0;
+      final secondPenalty =
+          activeTaskTitles.any(
+            (title) =>
+                title.contains(_normalize(second.title)) ||
+                _normalize(second.title).contains(title),
+          )
+          ? 8
+          : 0;
 
-        return (second.baseScore - secondPenalty)
-            .compareTo(
-          first.baseScore - firstPenalty,
-        );
-      },
-    );
+      return (second.baseScore - secondPenalty).compareTo(
+        first.baseScore - firstPenalty,
+      );
+    });
 
-    return List.generate(
-      math.min(candidatesList.length, 20),
-      (index) {
-        final item = candidatesList[index];
+    return List.generate(math.min(candidatesList.length, 20), (index) {
+      final item = candidatesList[index];
 
-        final score = item.baseScore
-            .clamp(0.0, 100.0)
-            .toDouble();
+      final score = item.baseScore.clamp(0.0, 100.0).toDouble();
 
-        final horizon =
-            _horizonFromDeadline(
-          item.deadlineDays,
-        );
+      final horizon = _horizonFromDeadline(item.deadlineDays);
 
-        final priority =
-            _priorityFromScore(score);
+      final priority = _priorityFromScore(score);
 
-        final urgency =
-            _urgencyFromDeadline(
-          item.deadlineDays,
-          item.risk,
-        );
+      final urgency = _urgencyFromDeadline(item.deadlineDays, item.risk);
 
-        final canBePostponed =
-            urgency != AtlasDecisionV2Urgency.immediate &&
-                item.risk != AtlasDecisionV2Risk.critical;
+      final canBePostponed =
+          urgency != AtlasDecisionV2Urgency.immediate &&
+          item.risk != AtlasDecisionV2Risk.critical;
 
-        return AtlasDecisionV2Action(
-          position: index + 1,
-          id: item.id,
-          farmName: item.farmName,
-          title: item.title,
-          description: item.description,
-          category: item.category,
-          horizon: horizon,
-          priority: priority,
-          urgency: urgency,
-          risk: item.risk,
-          effort: item.effort,
-          confidencePercent:
-              item.confidencePercent,
-          impactScore:
-              _impactScore(item),
-          decisionScore: score,
-          expectedFinancialImpact:
-              item.expectedFinancialImpact,
-          investmentValue:
-              item.investmentValue,
-          expectedReturnValue:
-              item.expectedReturnValue,
-          roiPercent: item.roiPercent,
-          deadlineDays: item.deadlineDays,
-          canBePostponed: canBePostponed,
-          maximumPostponementDays:
-              canBePostponed
-                  ? math.max(
-                      1,
-                      math.min(
-                        14,
-                        item.deadlineDays ~/ 2,
-                      ),
-                    )
-                  : 0,
-          expectedResult:
-              item.expectedResult,
-          reasoning: item.reasoning,
-          dependencies:
-              item.dependencies,
-        );
-      },
-    );
+      return AtlasDecisionV2Action(
+        position: index + 1,
+        id: item.id,
+        farmName: item.farmName,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        horizon: horizon,
+        priority: priority,
+        urgency: urgency,
+        risk: item.risk,
+        effort: item.effort,
+        confidencePercent: item.confidencePercent,
+        impactScore: _impactScore(item),
+        decisionScore: score,
+        expectedFinancialImpact: item.expectedFinancialImpact,
+        investmentValue: item.investmentValue,
+        expectedReturnValue: item.expectedReturnValue,
+        roiPercent: item.roiPercent,
+        deadlineDays: item.deadlineDays,
+        canBePostponed: canBePostponed,
+        maximumPostponementDays: canBePostponed
+            ? math.max(1, math.min(14, item.deadlineDays ~/ 2))
+            : 0,
+        expectedResult: item.expectedResult,
+        reasoning: item.reasoning,
+        dependencies: item.dependencies,
+      );
+    });
   }
 
-  List<AtlasDecisionV2Simulation>
-      _buildSimulations(
+  List<AtlasDecisionV2Simulation> _buildSimulations(
     List<AtlasDecisionV2Action> actions,
   ) {
-    final simulations =
-        <AtlasDecisionV2Simulation>[];
+    final simulations = <AtlasDecisionV2Simulation>[];
 
     for (final action in actions) {
-      final baseImpact =
-          action.expectedFinancialImpact.abs();
+      final baseImpact = action.expectedFinancialImpact.abs();
 
-      final baseInvestment =
-          action.investmentValue;
+      final baseInvestment = action.investmentValue;
 
       simulations.addAll([
         AtlasDecisionV2Simulation(
           id: '${action.id}_now',
           actionId: action.id,
           farmName: action.farmName,
-          title:
-              '${action.title} — executar agora',
-          type:
-              AtlasDecisionV2SimulationType.executeNow,
+          title: '${action.title} — executar agora',
+          type: AtlasDecisionV2SimulationType.executeNow,
           delayDays: 0,
-          investmentValue:
-              baseInvestment,
-          projectedFinancialImpact:
-              baseImpact,
-          projectedRiskPercent:
-              _simulationRisk(action.risk, 0),
-          projectedConfidencePercent:
-              action.confidencePercent,
+          investmentValue: baseInvestment,
+          projectedFinancialImpact: baseImpact,
+          projectedRiskPercent: _simulationRisk(action.risk, 0),
+          projectedConfidencePercent: action.confidencePercent,
           recommendation:
               'Executar imediatamente para preservar o impacto esperado e reduzir a exposição ao risco.',
         ),
@@ -399,50 +318,34 @@ class AtlasDecisionEngineV2Service {
           id: '${action.id}_wait',
           actionId: action.id,
           farmName: action.farmName,
-          title:
-              '${action.title} — esperar 7 dias',
-          type:
-              AtlasDecisionV2SimulationType.waitSevenDays,
+          title: '${action.title} — esperar 7 dias',
+          type: AtlasDecisionV2SimulationType.waitSevenDays,
           delayDays: 7,
-          investmentValue:
-              baseInvestment,
-          projectedFinancialImpact:
-              baseImpact * 0.88,
-          projectedRiskPercent:
-              _simulationRisk(action.risk, 7),
-          projectedConfidencePercent:
-              (action.confidencePercent - 5)
-                  .clamp(30.0, 95.0)
-                  .toDouble(),
-          recommendation:
-              action.canBePostponed
-                  ? 'O adiamento é possível, mas reduz o impacto esperado e aumenta o risco.'
-                  : 'O adiamento não é recomendado para esta ação.',
+          investmentValue: baseInvestment,
+          projectedFinancialImpact: baseImpact * 0.88,
+          projectedRiskPercent: _simulationRisk(action.risk, 7),
+          projectedConfidencePercent: (action.confidencePercent - 5)
+              .clamp(30.0, 95.0)
+              .toDouble(),
+          recommendation: action.canBePostponed
+              ? 'O adiamento é possível, mas reduz o impacto esperado e aumenta o risco.'
+              : 'O adiamento não é recomendado para esta ação.',
         ),
         AtlasDecisionV2Simulation(
-          id:
-              '${action.id}_increase_investment',
+          id: '${action.id}_increase_investment',
           actionId: action.id,
           farmName: action.farmName,
-          title:
-              '${action.title} — aumentar investimento',
-          type:
-              AtlasDecisionV2SimulationType.increaseInvestment,
+          title: '${action.title} — aumentar investimento',
+          type: AtlasDecisionV2SimulationType.increaseInvestment,
           delayDays: 0,
-          investmentValue:
-              baseInvestment > 0
-                  ? baseInvestment * 1.25
-                  : 12500,
-          projectedFinancialImpact:
-              baseImpact * 1.18,
-          projectedRiskPercent:
-              (_simulationRisk(action.risk, 0) - 8)
-                  .clamp(0.0, 100.0)
-                  .toDouble(),
-          projectedConfidencePercent:
-              (action.confidencePercent + 4)
-                  .clamp(0.0, 98.0)
-                  .toDouble(),
+          investmentValue: baseInvestment > 0 ? baseInvestment * 1.25 : 12500,
+          projectedFinancialImpact: baseImpact * 1.18,
+          projectedRiskPercent: (_simulationRisk(action.risk, 0) - 8)
+              .clamp(0.0, 100.0)
+              .toDouble(),
+          projectedConfidencePercent: (action.confidencePercent + 4)
+              .clamp(0.0, 98.0)
+              .toDouble(),
           recommendation:
               'Aumentar recursos pode acelerar a execução, desde que o gargalo seja realmente financeiro.',
         ),
@@ -452,15 +355,10 @@ class AtlasDecisionEngineV2Service {
     return simulations;
   }
 
-  double _impactScore(
-    _DecisionV2Candidate item,
-  ) {
-    final financialComponent =
-        item.expectedFinancialImpact.abs() /
-            1000;
+  double _impactScore(_DecisionV2Candidate item) {
+    final financialComponent = item.expectedFinancialImpact.abs() / 1000;
 
-    final roiComponent =
-        item.roiPercent.clamp(0.0, 150.0);
+    final roiComponent = item.roiPercent.clamp(0.0, 150.0);
 
     return (financialComponent * 0.40 +
             roiComponent * 0.25 +
@@ -470,56 +368,35 @@ class AtlasDecisionEngineV2Service {
         .toDouble();
   }
 
-  double _buildScore(
-    List<AtlasDecisionV2Action> actions,
-  ) {
+  double _buildScore(List<AtlasDecisionV2Action> actions) {
     if (actions.isEmpty) {
       return 0;
     }
 
-    final top = actions.take(
-      math.min(actions.length, 8),
-    );
+    final top = actions.take(math.min(actions.length, 8));
 
-    final average = top.fold<double>(
-          0,
-          (sum, item) =>
-              sum + item.decisionScore,
-        ) /
+    final average =
+        top.fold<double>(0, (sum, item) => sum + item.decisionScore) /
         top.length;
 
-    return average
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return average.clamp(0.0, 100.0).toDouble();
   }
 
-  double _buildConfidence(
-    List<AtlasDecisionV2Action> actions,
-  ) {
+  double _buildConfidence(List<AtlasDecisionV2Action> actions) {
     if (actions.isEmpty) {
       return 0;
     }
 
-    final top = actions.take(
-      math.min(actions.length, 10),
-    );
+    final top = actions.take(math.min(actions.length, 10));
 
-    final average = top.fold<double>(
-          0,
-          (sum, item) =>
-              sum + item.confidencePercent,
-        ) /
+    final average =
+        top.fold<double>(0, (sum, item) => sum + item.confidencePercent) /
         top.length;
 
-    return average
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return average.clamp(0.0, 100.0).toDouble();
   }
 
-  AtlasDecisionEngineV2Status
-      _statusFromScore(
-    double score,
-  ) {
+  AtlasDecisionEngineV2Status _statusFromScore(double score) {
     if (score >= 85) {
       return AtlasDecisionEngineV2Status.critical;
     }
@@ -535,10 +412,7 @@ class AtlasDecisionEngineV2Service {
     return AtlasDecisionEngineV2Status.excellent;
   }
 
-  AtlasDecisionV2Horizon
-      _horizonFromDeadline(
-    int deadlineDays,
-  ) {
+  AtlasDecisionV2Horizon _horizonFromDeadline(int deadlineDays) {
     if (deadlineDays <= 1) {
       return AtlasDecisionV2Horizon.today;
     }
@@ -550,9 +424,7 @@ class AtlasDecisionEngineV2Service {
     return AtlasDecisionV2Horizon.month;
   }
 
-  AtlasDecisionV2Priority _priorityFromScore(
-    double score,
-  ) {
+  AtlasDecisionV2Priority _priorityFromScore(double score) {
     if (score >= 85) {
       return AtlasDecisionV2Priority.critical;
     }
@@ -568,18 +440,15 @@ class AtlasDecisionEngineV2Service {
     return AtlasDecisionV2Priority.low;
   }
 
-  AtlasDecisionV2Urgency
-      _urgencyFromDeadline(
+  AtlasDecisionV2Urgency _urgencyFromDeadline(
     int deadlineDays,
     AtlasDecisionV2Risk risk,
   ) {
-    if (deadlineDays <= 1 ||
-        risk == AtlasDecisionV2Risk.critical) {
+    if (deadlineDays <= 1 || risk == AtlasDecisionV2Risk.critical) {
       return AtlasDecisionV2Urgency.immediate;
     }
 
-    if (deadlineDays <= 7 ||
-        risk == AtlasDecisionV2Risk.high) {
+    if (deadlineDays <= 7 || risk == AtlasDecisionV2Risk.high) {
       return AtlasDecisionV2Urgency.high;
     }
 
@@ -590,9 +459,7 @@ class AtlasDecisionEngineV2Service {
     return AtlasDecisionV2Urgency.low;
   }
 
-  AtlasDecisionV2Risk _riskFromDecision(
-    AtlasDecisionRisk risk,
-  ) {
+  AtlasDecisionV2Risk _riskFromDecision(AtlasDecisionRisk risk) {
     switch (risk) {
       case AtlasDecisionRisk.low:
         return AtlasDecisionV2Risk.low;
@@ -629,16 +496,12 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  AtlasDecisionV2Effort _effortFromDecision(
-    AtlasDecisionRecommendation item,
-  ) {
-    if (item.investmentValue >= 50000 ||
-        item.executionPlan.length >= 5) {
+  AtlasDecisionV2Effort _effortFromDecision(AtlasDecisionRecommendation item) {
+    if (item.investmentValue >= 50000 || item.executionPlan.length >= 5) {
       return AtlasDecisionV2Effort.high;
     }
 
-    if (item.investmentValue >= 10000 ||
-        item.executionPlan.length >= 3) {
+    if (item.investmentValue >= 10000 || item.executionPlan.length >= 3) {
       return AtlasDecisionV2Effort.medium;
     }
 
@@ -649,15 +512,10 @@ class AtlasDecisionEngineV2Service {
     AtlasDecisionV2Risk first,
     AtlasDecisionV2Risk second,
   ) {
-    return _riskWeightV2(first) >=
-            _riskWeightV2(second)
-        ? first
-        : second;
+    return _riskWeightV2(first) >= _riskWeightV2(second) ? first : second;
   }
 
-  int _priorityWeight(
-    AtlasDecisionPriority priority,
-  ) {
+  int _priorityWeight(AtlasDecisionPriority priority) {
     switch (priority) {
       case AtlasDecisionPriority.low:
         return 1;
@@ -673,9 +531,7 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  int _urgencyWeight(
-    AtlasDecisionUrgency urgency,
-  ) {
+  int _urgencyWeight(AtlasDecisionUrgency urgency) {
     switch (urgency) {
       case AtlasDecisionUrgency.low:
         return 1;
@@ -691,9 +547,7 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  int _riskWeight(
-    AtlasDecisionRisk risk,
-  ) {
+  int _riskWeight(AtlasDecisionRisk risk) {
     switch (risk) {
       case AtlasDecisionRisk.low:
         return 1;
@@ -709,9 +563,7 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  int _predictivePriorityWeight(
-    AtlasPredictiveAnalyticsPriority priority,
-  ) {
+  int _predictivePriorityWeight(AtlasPredictiveAnalyticsPriority priority) {
     switch (priority) {
       case AtlasPredictiveAnalyticsPriority.low:
         return 1;
@@ -727,9 +579,7 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  int _riskWeightV2(
-    AtlasDecisionV2Risk risk,
-  ) {
+  int _riskWeightV2(AtlasDecisionV2Risk risk) {
     switch (risk) {
       case AtlasDecisionV2Risk.low:
         return 1;
@@ -745,10 +595,7 @@ class AtlasDecisionEngineV2Service {
     }
   }
 
-  double _simulationRisk(
-    AtlasDecisionV2Risk risk,
-    int delayDays,
-  ) {
+  double _simulationRisk(AtlasDecisionV2Risk risk, int delayDays) {
     final base = switch (risk) {
       AtlasDecisionV2Risk.low => 20.0,
       AtlasDecisionV2Risk.medium => 45.0,
@@ -756,20 +603,13 @@ class AtlasDecisionEngineV2Service {
       AtlasDecisionV2Risk.critical => 90.0,
     };
 
-    return (base + delayDays * 1.5)
-        .clamp(0.0, 100.0)
-        .toDouble();
+    return (base + delayDays * 1.5).clamp(0.0, 100.0).toDouble();
   }
 
-  String _normalize(
-    String value,
-  ) {
+  String _normalize(String value) {
     return value
         .toLowerCase()
-        .replaceAll(
-          RegExp(r'[^a-z0-9áàâãéêíóôõúç ]'),
-          '',
-        )
+        .replaceAll(RegExp(r'[^a-z0-9áàâãéêíóôõúç ]'), '')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }
@@ -863,31 +703,19 @@ class _DecisionV2Candidate {
       title: title,
       description: description,
       category: category,
-      baseScore:
-          baseScore ?? this.baseScore,
-      confidencePercent:
-          confidencePercent ??
-              this.confidencePercent,
+      baseScore: baseScore ?? this.baseScore,
+      confidencePercent: confidencePercent ?? this.confidencePercent,
       expectedFinancialImpact:
-          expectedFinancialImpact ??
-              this.expectedFinancialImpact,
-      investmentValue:
-          investmentValue ??
-              this.investmentValue,
-      expectedReturnValue:
-          expectedReturnValue ??
-              this.expectedReturnValue,
-      roiPercent:
-          roiPercent ?? this.roiPercent,
-      deadlineDays:
-          deadlineDays ?? this.deadlineDays,
+          expectedFinancialImpact ?? this.expectedFinancialImpact,
+      investmentValue: investmentValue ?? this.investmentValue,
+      expectedReturnValue: expectedReturnValue ?? this.expectedReturnValue,
+      roiPercent: roiPercent ?? this.roiPercent,
+      deadlineDays: deadlineDays ?? this.deadlineDays,
       risk: risk ?? this.risk,
       effort: effort,
       expectedResult: expectedResult,
-      reasoning:
-          reasoning ?? this.reasoning,
-      dependencies:
-          dependencies ?? this.dependencies,
+      reasoning: reasoning ?? this.reasoning,
+      dependencies: dependencies ?? this.dependencies,
     );
   }
 }

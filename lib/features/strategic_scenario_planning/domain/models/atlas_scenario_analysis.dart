@@ -48,9 +48,7 @@ class AtlasScenarioPortfolioAnalysis {
 
     return items.reduce(
       (first, second) =>
-          first.netPresentValue >= second.netPresentValue
-              ? first
-              : second,
+          first.netPresentValue >= second.netPresentValue ? first : second,
     );
   }
 
@@ -60,10 +58,7 @@ class AtlasScenarioPortfolioAnalysis {
     }
 
     return items.reduce(
-      (first, second) =>
-          first.riskScore <= second.riskScore
-              ? first
-              : second,
+      (first, second) => first.riskScore <= second.riskScore ? first : second,
     );
   }
 
@@ -73,19 +68,14 @@ class AtlasScenarioPortfolioAnalysis {
     }
 
     return items.reduce(
-      (first, second) =>
-          _balance(first) >= _balance(second)
-              ? first
-              : second,
+      (first, second) => _balance(first) >= _balance(second) ? first : second,
     );
   }
 
   double _balance(AtlasScenarioAnalysis item) {
-    return (
-      item.roiPercent * 0.40 +
-      item.resilienceScore * 0.35 +
-      (100 - item.riskScore) * 0.25
-    );
+    return (item.roiPercent * 0.40 +
+        item.resilienceScore * 0.35 +
+        (100 - item.riskScore) * 0.25);
   }
 }
 

@@ -4,10 +4,7 @@ import '../../data/services/atlas_sprints_21_25_service.dart';
 import '../../domain/models/atlas_sprints_21_25_data.dart';
 
 class AtlasSprints2125DashboardScreen extends StatefulWidget {
-  const AtlasSprints2125DashboardScreen({
-    super.key,
-    required this.farmId,
-  });
+  const AtlasSprints2125DashboardScreen({super.key, required this.farmId});
 
   final String farmId;
 
@@ -56,9 +53,7 @@ class _AtlasSprints2125DashboardScreenState
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -161,14 +156,14 @@ class _DashboardSectionCard extends StatelessWidget {
                 ),
               ]
             : entries
-                .map<Widget>(
-                  (entry) => ListTile(
-                    dense: true,
-                    title: Text(_formatLabel(entry.key)),
-                    subtitle: Text(_formatValue(entry.value)),
-                  ),
-                )
-                .toList(),
+                  .map<Widget>(
+                    (entry) => ListTile(
+                      dense: true,
+                      title: Text(_formatLabel(entry.key)),
+                      subtitle: Text(_formatValue(entry.value)),
+                    ),
+                  )
+                  .toList(),
       ),
     );
   }
@@ -211,10 +206,7 @@ class _DashboardSectionCard extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -227,15 +219,9 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-            ),
+            const Icon(Icons.error_outline, size: 48),
             const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: onRetry,

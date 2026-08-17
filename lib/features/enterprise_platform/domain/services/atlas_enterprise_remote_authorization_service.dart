@@ -23,12 +23,9 @@ class AtlasEnterpriseRemoteAuthorizationService {
 
   final AtlasEnterpriseRemoteAuthStore _store =
       AtlasEnterpriseRemoteAuthStore.instance;
-  final AtlasEnterpriseApiClient _api =
-      AtlasEnterpriseApiClient.instance;
+  final AtlasEnterpriseApiClient _api = AtlasEnterpriseApiClient.instance;
 
-  Future<AtlasRemoteSession?> session({
-    bool refresh = false,
-  }) async {
+  Future<AtlasRemoteSession?> session({bool refresh = false}) async {
     if (refresh) {
       try {
         return await _api.me();
@@ -44,10 +41,7 @@ class AtlasEnterpriseRemoteAuthorizationService {
     return _store.loadSession();
   }
 
-  Future<bool> can(
-    String permissionKey, {
-    bool refresh = true,
-  }) async {
+  Future<bool> can(String permissionKey, {bool refresh = true}) async {
     final current = await session(refresh: refresh);
     if (current == null) return false;
     return current.allows(permissionKey);
@@ -58,14 +52,12 @@ class AtlasEnterpriseRemoteAuthorizationService {
     bool refresh = true,
     String? reason,
   }) async {
-    final allowed = await can(
-      permissionKey,
-      refresh: refresh,
-    );
+    final allowed = await can(permissionKey, refresh: refresh);
     if (!allowed) {
       throw AtlasRemoteAuthorizationException(
         permissionKey: permissionKey,
-        message: reason ??
+        message:
+            reason ??
             'Operação bloqueada. Permissão necessária: $permissionKey.',
       );
     }

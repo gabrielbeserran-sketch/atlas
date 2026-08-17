@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_remote_authorization_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class FarmFormScreen extends StatefulWidget {
   const FarmFormScreen({this.farm, super.key});
@@ -84,9 +85,9 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
     } on AtlasRemoteAuthorizationException catch (error) {
       if (!mounted) return;
       setState(() => allowed = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
       return;
     }
 
@@ -136,149 +137,149 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
         child: checkingPermission
             ? const Center(child: CircularProgressIndicator())
             : !allowed
-                ? Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(28),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.lock_outline,
-                                size: 48,
-                                color: Color(0xFFB3261E),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Acesso bloqueado',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Seu perfil não possui a permissão $permissionKey.',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 20),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Voltar'),
-                              ),
-                            ],
+            ? Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 48,
+                            color: Color(0xFFB3261E),
                           ),
-                        ),
-                      ),
-                    ),
-                  )
-                : Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 700),
-                        child: Form(
-                          key: formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const Text(
-                                'Dados da propriedade',
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF263238),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'Preencha as informações principais da fazenda.',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                              const SizedBox(height: 28),
-                              TextFormField(
-                                controller: nameController,
-                                validator: requiredValidator,
-                                decoration: const InputDecoration(
-                                  labelText: 'Nome da fazenda',
-                                  prefixIcon: Icon(Icons.landscape_outlined),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: cityController,
-                                validator: requiredValidator,
-                                decoration: const InputDecoration(
-                                  labelText: 'Município',
-                                  prefixIcon: Icon(Icons.location_city_outlined),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: stateController,
-                                validator: (value) {
-                                  final requiredError = requiredValidator(value);
-                                  if (requiredError != null) return requiredError;
-                                  if (value!.trim().length != 2) {
-                                    return 'Digite a sigla do estado com duas letras.';
-                                  }
-                                  return null;
-                                },
-                                textCapitalization: TextCapitalization.characters,
-                                maxLength: 2,
-                                decoration: const InputDecoration(
-                                  labelText: 'Estado',
-                                  hintText: 'GO',
-                                  prefixIcon: Icon(Icons.map_outlined),
-                                  counterText: '',
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: animalsController,
-                                validator: numberValidator,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Quantidade de animais',
-                                  prefixIcon: Icon(Icons.pets_outlined),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: areaController,
-                                validator: numberValidator,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Área em hectares',
-                                  prefixIcon: Icon(Icons.straighten_outlined),
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              SizedBox(
-                                height: 54,
-                                child: ElevatedButton.icon(
-                                  onPressed: saveFarm,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1B5E20),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  icon: const Icon(Icons.save_outlined),
-                                  label: Text(
-                                    widget.farm == null
-                                        ? 'Salvar fazenda'
-                                        : 'Salvar alterações',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Acesso bloqueado',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Seu perfil não possui a permissão $permissionKey.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Voltar'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
+              )
+            : Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 700),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Dados da propriedade',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF263238),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Preencha as informações principais da fazenda.',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 28),
+                          TextFormField(
+                            controller: nameController,
+                            validator: requiredValidator,
+                            decoration: const InputDecoration(
+                              labelText: 'Nome da fazenda',
+                              prefixIcon: Icon(Icons.landscape_outlined),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: cityController,
+                            validator: requiredValidator,
+                            decoration: const InputDecoration(
+                              labelText: 'Município',
+                              prefixIcon: Icon(Icons.location_city_outlined),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: stateController,
+                            validator: (value) {
+                              final requiredError = requiredValidator(value);
+                              if (requiredError != null) return requiredError;
+                              if (value!.trim().length != 2) {
+                                return 'Digite a sigla do estado com duas letras.';
+                              }
+                              return null;
+                            },
+                            textCapitalization: TextCapitalization.characters,
+                            maxLength: 2,
+                            decoration: const InputDecoration(
+                              labelText: 'Estado',
+                              hintText: 'GO',
+                              prefixIcon: Icon(Icons.map_outlined),
+                              counterText: '',
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: animalsController,
+                            validator: numberValidator,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Quantidade de animais',
+                              prefixIcon: Icon(AtlasLivestockIcons.cow),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: areaController,
+                            validator: numberValidator,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Área em hectares',
+                              prefixIcon: Icon(Icons.straighten_outlined),
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          SizedBox(
+                            height: 54,
+                            child: ElevatedButton.icon(
+                              onPressed: saveFarm,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1B5E20),
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.save_outlined),
+                              label: Text(
+                                widget.farm == null
+                                    ? 'Salvar fazenda'
+                                    : 'Salvar alterações',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }

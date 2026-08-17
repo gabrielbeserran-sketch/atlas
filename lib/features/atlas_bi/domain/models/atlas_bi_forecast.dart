@@ -116,16 +116,9 @@ enum AtlasBiForecastTrend {
   unavailable,
 }
 
-enum AtlasBiForecastRisk {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum AtlasBiForecastRisk { low, medium, high, critical }
 
-String atlasBiForecastTrendLabel(
-  AtlasBiForecastTrend trend,
-) {
+String atlasBiForecastTrendLabel(AtlasBiForecastTrend trend) {
   switch (trend) {
     case AtlasBiForecastTrend.strongGrowth:
       return 'Crescimento forte';
@@ -147,9 +140,7 @@ String atlasBiForecastTrendLabel(
   }
 }
 
-String atlasBiForecastRiskLabel(
-  AtlasBiForecastRisk risk,
-) {
+String atlasBiForecastRiskLabel(AtlasBiForecastRisk risk) {
   switch (risk) {
     case AtlasBiForecastRisk.low:
       return 'Baixo';

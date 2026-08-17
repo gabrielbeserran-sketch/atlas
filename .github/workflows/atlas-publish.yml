@@ -1,0 +1,27 @@
+name: Atlas Publish Artifacts
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        required: true
+      confirmation:
+        description: Type PUBLISH
+        required: true
+jobs:
+  validate:
+    if: ${{ inputs.confirmation == 'PUBLISH' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-web-${{ inputs.version }}
+          path: build/web

@@ -8,10 +8,12 @@ class AtlasCommandEngine {
               item.isOpen && item.priority == AtlasCommandPriority.critical,
         )
         .length;
-    final int openCount =
-        state.items.where((AtlasCommandItem item) => item.isOpen).length;
-    final int overdueCount =
-        state.items.where((AtlasCommandItem item) => item.isOverdue).length;
+    final int openCount = state.items
+        .where((AtlasCommandItem item) => item.isOpen)
+        .length;
+    final int overdueCount = state.items
+        .where((AtlasCommandItem item) => item.isOverdue)
+        .length;
     final int completedCount = state.items
         .where(
           (AtlasCommandItem item) =>
@@ -19,7 +21,8 @@ class AtlasCommandEngine {
         )
         .length;
 
-    final int rawScore = 100 -
+    final int rawScore =
+        100 -
         (criticalCount * 24) -
         (overdueCount * 16) -
         ((openCount - criticalCount) * 5);
@@ -45,8 +48,9 @@ class AtlasCommandEngine {
   }
 
   List<AtlasCommandItem> orderedItems(AtlasCommandCenterState state) {
-    final List<AtlasCommandItem> result =
-        List<AtlasCommandItem>.from(state.items);
+    final List<AtlasCommandItem> result = List<AtlasCommandItem>.from(
+      state.items,
+    );
     result.sort((AtlasCommandItem first, AtlasCommandItem second) {
       if (first.isOpen != second.isOpen) {
         return first.isOpen ? -1 : 1;
@@ -54,8 +58,9 @@ class AtlasCommandEngine {
       if (first.isOverdue != second.isOverdue) {
         return first.isOverdue ? -1 : 1;
       }
-      final int priorityComparison =
-          first.priority.index.compareTo(second.priority.index);
+      final int priorityComparison = first.priority.index.compareTo(
+        second.priority.index,
+      );
       if (priorityComparison != 0) {
         return priorityComparison;
       }
