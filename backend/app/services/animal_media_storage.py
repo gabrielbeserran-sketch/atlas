@@ -51,12 +51,30 @@ def _validate_upload(upload: UploadFile) -> tuple[str, str]:
     return content_type or "application/octet-stream", suffix
 
 
-def _supabase_headers(content_type: str | None = None) -> dict[str, str]:
-    key = settings.atlas_supabase_service_role_key.strip()
-    headers = {"apikey": key, "Authorization": f"Bearer {key}"}
+def _supabase_headers_for_key(
+    key: str,
+    content_type: str | None = None,
+) -> dict[str, str]:
+    normalized = key.strip()
+    headers = {"apikey": normalized}
+
+    # Chaves legadas service_role são JWTs e podem ser usadas como Bearer.
+    # As novas sb_secret_* são opaque API keys e devem permanecer no header
+    # apikey; o gateway Supabase traduz a identidade server-side.
+    if normalized and not normalized.startswith("sb_secret_"):
+        headers["Authorization"] = f"Bearer {normalized}"
+
     if content_type:
         headers["Content-Type"] = content_type
+
     return headers
+
+
+def _supabase_headers(content_type: str | None = None) -> dict[str, str]:
+    return _supabase_headers_for_key(
+        settings.atlas_supabase_service_role_key,
+        content_type,
+    )
 
 
 def _supabase_object_url(storage_key: str, *, authenticated: bool = False) -> str:

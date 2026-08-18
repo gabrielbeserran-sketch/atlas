@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+import os
 from ipaddress import ip_network
 from pathlib import Path
 from typing import Literal
@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
 
 
 INSECURE_SECRET_MARKERS = (
@@ -80,57 +82,110 @@ class Settings(BaseSettings):
     @field_validator("atlas_database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, value: object) -> str:
-        """Normaliza a URL PostgreSQL oficial do Atlas para psycopg v3.
+        """Normaliza e valida a URL PostgreSQL usada pelo Atlas.
 
-        O Supabase pode fornecer connection strings em formatos voltados a
-        clientes/ORMs diferentes. O Atlas usa SQLAlchemy + ``psycopg[binary]``
-        v3 e, por isso:
+        A rotina usa o parser do próprio SQLAlchemy em vez de ``urllib``.
+        Isso evita que caracteres reservados da senha sejam confundidos com
+        sintaxe de host/IPv6 e permite hostnames DNS normais do Supavisor.
 
-        - ``postgres://`` é convertido para ``postgresql+psycopg://``;
-        - ``postgresql://`` é convertido para ``postgresql+psycopg://``;
-        - URLs já explícitas como ``postgresql+psycopg://`` são preservadas;
-        - parâmetros específicos de outros clientes, como ``pgbouncer``, são
-          removidos antes que sejam repassados ao psycopg;
-        - parâmetros PostgreSQL legítimos continuam presentes.
-
-        URLs não PostgreSQL (por exemplo SQLite em desenvolvimento/testes) são
-        preservadas.
+        Também:
+        - converte ``postgres://`` e ``postgresql://`` para psycopg v3;
+        - rejeita placeholders de senha antes do deploy;
+        - remove parâmetros pertencentes a outros ORMs/clientes;
+        - preserva parâmetros PostgreSQL válidos;
+        - renderiza novamente credenciais com escaping seguro.
         """
-        text = str(value or "").strip()
+        raw = str(value or "").strip()
+        if not raw:
+            return raw
 
-        if not text:
-            return text
+        if raw.startswith("postgres://"):
+            raw = "postgresql://" + raw[len("postgres://"):]
 
-        if text.startswith("postgres://"):
-            text = "postgresql://" + text[len("postgres://"):]
+        if not raw.startswith(("postgresql://", "postgresql+")):
+            return raw
 
-        if text.startswith("postgresql://"):
-            text = "postgresql+psycopg://" + text[len("postgresql://"):]
-
-        if not text.startswith("postgresql+psycopg://"):
-            return text
-
-        parts = urlsplit(text)
-        filtered_query = [
-            (key, item_value)
-            for key, item_value in parse_qsl(
-                parts.query,
-                keep_blank_values=True,
-            )
-            if key.lower() not in {
-                "pgbouncer",
-            }
-        ]
-
-        return urlunsplit(
-            (
-                parts.scheme,
-                parts.netloc,
-                parts.path,
-                urlencode(filtered_query, doseq=True),
-                parts.fragment,
-            )
+        placeholder_markers = (
+            "[YOUR-PASSWORD]",
+            "YOUR-PASSWORD",
+            "YOUR_PASSWORD",
+            "<PASSWORD>",
+            "CHANGE_ME_DATABASE_PASSWORD",
         )
+        upper_raw = raw.upper()
+        if any(marker in upper_raw for marker in placeholder_markers):
+            raise ValueError(
+                "ATLAS_DATABASE_URL ainda contém placeholder de senha. "
+                "No Supabase, substitua [YOUR-PASSWORD] pela senha real "
+                "antes de salvar a variável no Render."
+            )
+
+        try:
+            parsed = make_url(raw)
+        except (ArgumentError, ValueError) as exc:
+            raise ValueError(
+                "ATLAS_DATABASE_URL inválida. Use a connection string "
+                "PostgreSQL do Supabase e, se a senha tiver caracteres "
+                "reservados, mantenha o valor percent-encoded."
+            ) from exc
+
+        if parsed.get_backend_name() != "postgresql":
+            return raw
+
+        if parsed.drivername != "postgresql+psycopg":
+            parsed = parsed.set(drivername="postgresql+psycopg")
+
+        if not parsed.username:
+            raise ValueError("ATLAS_DATABASE_URL não contém usuário PostgreSQL")
+        if parsed.password in {None, ""}:
+            raise ValueError("ATLAS_DATABASE_URL não contém senha PostgreSQL")
+        if not parsed.host:
+            raise ValueError("ATLAS_DATABASE_URL não contém host PostgreSQL")
+        if not parsed.database:
+            raise ValueError("ATLAS_DATABASE_URL não contém nome do banco")
+
+        password_upper = str(parsed.password).upper()
+        if any(marker in password_upper for marker in placeholder_markers):
+            raise ValueError(
+                "ATLAS_DATABASE_URL ainda contém placeholder de senha. "
+                "Substitua-o pela senha real do banco Supabase."
+            )
+
+        # Parâmetros usados por Prisma/asyncpg/outros clientes e que não são
+        # opções de conexão válidas para psycopg3.
+        incompatible_query_keys = {
+            "pgbouncer",
+            "connection_limit",
+            "pool_timeout",
+            "statement_cache_size",
+            "prepared_statements",
+        }
+        query = {
+            key: item_value
+            for key, item_value in parsed.query.items()
+            if key.lower() not in incompatible_query_keys
+        }
+        parsed = parsed.set(query=query)
+
+        return parsed.render_as_string(hide_password=False)
+
+    @field_validator("atlas_public_base_url", mode="before")
+    @classmethod
+    def normalize_public_base_url(cls, value: object) -> str:
+        configured = str(value or "").strip().rstrip("/")
+        render_url = os.environ.get("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
+
+        # Se o serviço estiver no Render e a URL configurada também for um
+        # endereço onrender.com, a URL fornecida pelo próprio runtime é a
+        # autoridade. Isso evita hostname manual incorreto.
+        if (
+            render_url.startswith("https://")
+            and configured.startswith("https://")
+            and configured.lower().endswith(".onrender.com")
+        ):
+            return render_url
+
+        return configured
 
     @field_validator(
         "atlas_database_url",
@@ -164,6 +219,8 @@ class Settings(BaseSettings):
 
         if self.atlas_database_url.startswith("sqlite"):
             raise ValueError("staging/production exigem PostgreSQL")
+
+        self._validate_database_contract()
 
         if self._secret_is_weak(self.atlas_jwt_secret, minimum=32):
             raise ValueError(
@@ -239,6 +296,63 @@ class Settings(BaseSettings):
             return True
         return any(marker in normalized for marker in INSECURE_SECRET_MARKERS)
 
+    def _validate_database_contract(self) -> None:
+        try:
+            parsed = make_url(self.atlas_database_url)
+        except (ArgumentError, ValueError) as exc:
+            raise ValueError("ATLAS_DATABASE_URL PostgreSQL inválida") from exc
+
+        if parsed.drivername != "postgresql+psycopg":
+            raise ValueError(
+                "ATLAS_DATABASE_URL deve usar o driver psycopg3 em produção"
+            )
+
+        host = (parsed.host or "").strip().lower()
+        if not host:
+            raise ValueError("ATLAS_DATABASE_URL exige host PostgreSQL")
+
+        # Hostname DNS é válido. O erro anterior que citava IPv4/IPv6 era
+        # causado pelos colchetes do placeholder [YOUR-PASSWORD], não pelo
+        # hostname do Supabase.
+        if host in {"localhost", "127.0.0.1", "::1"}:
+            raise ValueError(
+                "ATLAS_DATABASE_URL não pode apontar para banco local "
+                "em staging/production"
+            )
+
+        if host.endswith(".pooler.supabase.com"):
+            port = parsed.port or 5432
+            if port not in {5432, 6543}:
+                raise ValueError(
+                    "Pooler Supabase deve usar porta 5432 (Session) "
+                    "ou 6543 (Transaction)"
+                )
+
+    @property
+    def database_target(self) -> str:
+        """Destino do banco sem senha, seguro para logs."""
+        try:
+            parsed = make_url(self.atlas_database_url)
+        except Exception:
+            return "database-url-invalid"
+
+        username = parsed.username or "?"
+        host = parsed.host or "?"
+        port = parsed.port or 5432
+        database = parsed.database or "?"
+        return f"{username}@{host}:{port}/{database}"
+
+    @property
+    def is_supabase_transaction_pooler(self) -> bool:
+        try:
+            parsed = make_url(self.atlas_database_url)
+        except Exception:
+            return False
+        return (
+            (parsed.host or "").lower().endswith(".pooler.supabase.com")
+            and parsed.port == 6543
+        )
+
     def _validate_public_base_url(self) -> None:
         parsed = urlparse(self.atlas_public_base_url)
         if parsed.scheme.lower() != "https" or not parsed.hostname:
@@ -305,11 +419,17 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> list[str]:
-        return [
-            item.strip()
+        origins = [
+            item.strip().rstrip("/")
             for item in self.atlas_cors_origins.split(",")
             if item.strip()
         ]
+
+        render_url = os.environ.get("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
+        if render_url.startswith("https://") and render_url not in origins:
+            origins.append(render_url)
+
+        return origins
 
     @property
     def trusted_proxy_cidrs(self) -> list[str]:

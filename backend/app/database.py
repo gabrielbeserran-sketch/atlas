@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import create_engine, inspect, literal, text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import NullPool
 from sqlalchemy.sql.schema import Column, MetaData
 
 from .config import get_settings
@@ -14,31 +15,43 @@ from .config import get_settings
 settings = get_settings()
 
 
-def build_engine() -> Engine:
-    if settings.atlas_database_url.startswith("sqlite"):
-        return create_engine(
-            settings.atlas_database_url,
-            pool_pre_ping=True,
-            connect_args={"check_same_thread": False},
-        )
-    connect_args: dict[str, Any] = {
+def postgres_connect_args() -> dict[str, Any]:
+    args: dict[str, Any] = {
         "connect_timeout": settings.atlas_db_connect_timeout_seconds,
     }
 
-    # O Supabase Transaction Pooler distribui transações entre conexões.
-    # Desativar prepared statements do psycopg evita que estado preparado
-    # dependa de uma conexão física específica do pool.
+    # Transaction Pooler do Supabase não suporta prepared statements.
+    # O valor None também é seguro no Session Pooler e mantém um único
+    # contrato entre API e Alembic.
     if settings.atlas_database_url.startswith("postgresql+psycopg://"):
-        connect_args["prepare_threshold"] = None
+        args["prepare_threshold"] = None
 
-    return create_engine(
-        settings.atlas_database_url,
-        pool_pre_ping=True,
-        pool_size=settings.atlas_db_pool_size,
-        max_overflow=settings.atlas_db_max_overflow,
-        pool_recycle=1800,
-        connect_args=connect_args,
-    )
+    return args
+
+
+def build_engine(*, for_migrations: bool = False) -> Engine:
+    if settings.atlas_database_url.startswith("sqlite"):
+        kwargs: dict[str, Any] = {
+            "pool_pre_ping": True,
+            "connect_args": {"check_same_thread": False},
+        }
+        if for_migrations:
+            kwargs["poolclass"] = NullPool
+        return create_engine(settings.atlas_database_url, **kwargs)
+
+    kwargs = {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
+        "connect_args": postgres_connect_args(),
+    }
+
+    if for_migrations:
+        kwargs["poolclass"] = NullPool
+    else:
+        kwargs["pool_size"] = settings.atlas_db_pool_size
+        kwargs["max_overflow"] = settings.atlas_db_max_overflow
+
+    return create_engine(settings.atlas_database_url, **kwargs)
 
 
 engine = build_engine()
