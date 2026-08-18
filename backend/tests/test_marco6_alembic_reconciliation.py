@@ -10,12 +10,12 @@ def test_alembic_env_installs_reconciliation_guards() -> None:
     text = (BACKEND_ROOT / "alembic" / "env.py").read_text(
         encoding="utf-8"
     )
-    assert "install_reconciliation_guards" in text
+    assert "from app.migrations.reconciliation import install_reconciliation_guards" in text
     assert "with install_reconciliation_guards():" in text
 
 
 def test_reconciliation_covers_destructive_duplicate_risks() -> None:
-    text = (BACKEND_ROOT / "alembic" / "reconcile.py").read_text(
+    text = (BACKEND_ROOT / "app" / "migrations" / "reconciliation.py").read_text(
         encoding="utf-8"
     )
     assert "safe_create_table" in text
@@ -46,3 +46,24 @@ def test_schema_contract_is_blocking_for_missing_tables_and_columns() -> None:
     assert "tabela ausente:" in text
     assert "coluna ausente:" in text
     assert "ATLAS SCHEMA CONTRACT: FAIL" in text
+
+
+def test_alembic_reconciler_does_not_collide_with_external_alembic_package() -> None:
+    assert not (BACKEND_ROOT / "alembic" / "reconcile.py").exists()
+    assert (
+        BACKEND_ROOT
+        / "app"
+        / "migrations"
+        / "reconciliation.py"
+    ).is_file()
+
+
+def test_startup_runs_import_contract_before_preflight() -> None:
+    text = (BACKEND_ROOT / "scripts" / "render_start.sh").read_text(
+        encoding="utf-8"
+    )
+    import_pos = text.index("python -m scripts.render_import_contract_check")
+    preflight_pos = text.index("python -m scripts.render_preflight")
+    alembic_pos = text.index("python -m alembic upgrade head")
+
+    assert import_pos < preflight_pos < alembic_pos

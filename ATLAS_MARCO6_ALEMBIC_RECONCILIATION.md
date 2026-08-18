@@ -52,3 +52,23 @@ A nova cadeia reduz os próximos riscos prováveis:
 O startup só libera Uvicorn depois de:
 
 `preflight -> Alembic -> head check -> schema contract -> API`.
+
+
+## Correção de namespace Alembic
+
+A primeira versão do reconciliador foi colocada em
+`backend/alembic/reconcile.py`. Isso colidia com o pacote externo `alembic`,
+pois `python -m alembic` resolve o namespace da biblioteca instalada, não o
+arquivo local.
+
+A implementação foi movida para:
+
+`backend/app/migrations/reconciliation.py`
+
+e `backend/alembic/env.py` agora importa:
+
+`from app.migrations.reconciliation import install_reconciliation_guards`
+
+Também foi adicionada uma barreira de startup (`render_import_contract_check`)
+que importa explicitamente todos os módulos críticos antes de testar
+PostgreSQL/Redis/Storage ou executar migrations.

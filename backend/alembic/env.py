@@ -4,7 +4,7 @@ from alembic import context
 
 from app import models  # noqa: F401
 from app.database import Base, build_engine
-from alembic.reconcile import install_reconciliation_guards
+from app.migrations.reconciliation import install_reconciliation_guards
 
 config = context.config
 

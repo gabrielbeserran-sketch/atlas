@@ -8,6 +8,9 @@ PORT="${PORT:-10000}"
 echo "ATLAS STARTUP: diretorio=$(pwd)"
 echo "ATLAS STARTUP: Python=$(python --version 2>&1)"
 
+echo "ATLAS STARTUP: validando imports e namespaces..."
+python -m scripts.render_import_contract_check
+
 echo "ATLAS STARTUP: executando preflight de dependencias..."
 python -m scripts.render_preflight
 
