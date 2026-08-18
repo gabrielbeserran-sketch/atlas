@@ -4,6 +4,7 @@ from alembic import context
 
 from app import models  # noqa: F401
 from app.database import Base, build_engine
+from alembic.reconcile import install_reconciliation_guards
 
 config = context.config
 
@@ -35,8 +36,9 @@ def run_migrations_online() -> None:
                 target_metadata=target_metadata,
                 compare_type=True,
             )
-            with context.begin_transaction():
-                context.run_migrations()
+            with install_reconciliation_guards():
+                with context.begin_transaction():
+                    context.run_migrations()
     finally:
         connectable.dispose()
 

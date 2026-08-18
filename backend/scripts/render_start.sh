@@ -11,13 +11,16 @@ echo "ATLAS STARTUP: Python=$(python --version 2>&1)"
 echo "ATLAS STARTUP: executando preflight de dependencias..."
 python -m scripts.render_preflight
 
-echo "ATLAS STARTUP: aplicando migrations Alembic..."
+echo "ATLAS STARTUP: aplicando migrations Alembic com reconciliacao segura..."
 python -m alembic upgrade head
 
 echo "ATLAS STARTUP: verificando head das migrations..."
 python -m scripts.render_post_migration_check
 
-echo "ATLAS STARTUP: dependencias e migrations aprovadas."
+echo "ATLAS STARTUP: auditando contrato final do schema..."
+python -m scripts.render_schema_contract_check
+
+echo "ATLAS STARTUP: dependencias, migrations e schema aprovados."
 echo "ATLAS STARTUP: iniciando API na porta ${PORT}..."
 
 exec python -m uvicorn app.main:app   --host 0.0.0.0   --port "$PORT"
