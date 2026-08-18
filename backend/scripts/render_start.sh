@@ -1,17 +1,23 @@
 #!/bin/sh
 set -eu
 
+cd /app
+
 PORT="${PORT:-10000}"
 
-echo "ATLAS STARTUP: executando preflight de dependências..."
-python /app/scripts/render_preflight.py
+echo "ATLAS STARTUP: diretorio=$(pwd)"
+echo "ATLAS STARTUP: Python=$(python --version 2>&1)"
+
+echo "ATLAS STARTUP: executando preflight de dependencias..."
+python -m scripts.render_preflight
 
 echo "ATLAS STARTUP: aplicando migrations Alembic..."
 python -m alembic upgrade head
 
 echo "ATLAS STARTUP: verificando head das migrations..."
-python /app/scripts/render_post_migration_check.py
+python -m scripts.render_post_migration_check
 
-echo "ATLAS STARTUP: dependências e migrations aprovadas."
+echo "ATLAS STARTUP: dependencias e migrations aprovadas."
 echo "ATLAS STARTUP: iniciando API na porta ${PORT}..."
-exec uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
+
+exec python -m uvicorn app.main:app   --host 0.0.0.0   --port "$PORT"

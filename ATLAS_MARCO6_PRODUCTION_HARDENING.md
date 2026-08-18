@@ -47,3 +47,25 @@ placeholders com uma mensagem direta.
 Para o Web Service Render, prefira o **Supabase Session Pooler (porta 5432)**,
 mostrado como `DIRECT_URL` no fluxo Prisma/Connect. Transaction Pooler (6543)
 continua suportado pelo Atlas, mas exige prepared statements desativados.
+
+
+## Correção Render — import dos scripts de startup
+
+O Render chegou corretamente ao `render_preflight.py`, porém a execução direta:
+
+`python /app/scripts/render_preflight.py`
+
+colocava `/app/scripts` como primeiro caminho de importação. Com isso, o pacote
+principal `/app/app` não era encontrado e o startup falhava com:
+
+`ModuleNotFoundError: No module named 'app'`
+
+A cadeia de produção agora usa execução modular a partir de `/app`:
+
+- `python -m scripts.render_preflight`
+- `python -m alembic upgrade head`
+- `python -m scripts.render_post_migration_check`
+- `python -m uvicorn app.main:app`
+
+Também foi criado `backend/scripts/__init__.py` para tornar o contrato de pacote
+explícito e reduzir diferenças entre execução local e container.
