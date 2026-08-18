@@ -21,15 +21,23 @@ def build_engine() -> Engine:
             pool_pre_ping=True,
             connect_args={"check_same_thread": False},
         )
+    connect_args: dict[str, Any] = {
+        "connect_timeout": settings.atlas_db_connect_timeout_seconds,
+    }
+
+    # O Supabase Transaction Pooler distribui transações entre conexões.
+    # Desativar prepared statements do psycopg evita que estado preparado
+    # dependa de uma conexão física específica do pool.
+    if settings.atlas_database_url.startswith("postgresql+psycopg://"):
+        connect_args["prepare_threshold"] = None
+
     return create_engine(
         settings.atlas_database_url,
         pool_pre_ping=True,
         pool_size=settings.atlas_db_pool_size,
         max_overflow=settings.atlas_db_max_overflow,
         pool_recycle=1800,
-        connect_args={
-            "connect_timeout": settings.atlas_db_connect_timeout_seconds,
-        },
+        connect_args=connect_args,
     )
 
 

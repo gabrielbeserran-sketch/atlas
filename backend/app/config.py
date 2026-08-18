@@ -76,6 +76,29 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
+    @field_validator("atlas_database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: object) -> str:
+        """Normaliza URLs PostgreSQL para o driver psycopg v3.
+
+        O Supabase fornece connection strings no formato ``postgresql://``.
+        Quando SQLAlchemy recebe esse esquema sem driver explícito, ele tenta
+        carregar ``psycopg2``. O Atlas usa ``psycopg[binary]`` v3, portanto a
+        URL oficial de runtime precisa ser ``postgresql+psycopg://``.
+
+        URLs SQLite de desenvolvimento e URLs que já declaram um driver são
+        preservadas.
+        """
+        text = str(value or "").strip()
+
+        if text.startswith("postgres://"):
+            text = "postgresql://" + text[len("postgres://"):]
+
+        if text.startswith("postgresql://"):
+            text = "postgresql+psycopg://" + text[len("postgresql://"):]
+
+        return text
+
     @field_validator(
         "atlas_database_url",
         "atlas_jwt_secret",

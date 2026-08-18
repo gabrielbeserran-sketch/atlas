@@ -32,3 +32,22 @@ Senha do banco, connection string completa, JWT secret, MFA key, IoT key e servi
 
 ## Observação importante
 O plano gratuito do Render é adequado para homologação/preview, não para uma produção comercial com SLA: o web service pode hibernar por inatividade e o Key Value gratuito é volátil. O PostgreSQL e os anexos oficiais permanecem no Supabase; o Key Value é usado apenas para rate limit e pode ser reconstruído.
+
+
+## Correção Render — driver PostgreSQL / psycopg3
+
+O Supabase entrega connection strings como `postgresql://...`. Sem um driver
+explícito, SQLAlchemy tenta carregar o dialeto `psycopg2`, enquanto o backend
+Atlas instala oficialmente `psycopg[binary]` 3.2.3.
+
+A configuração agora normaliza automaticamente:
+
+- `postgresql://...` → `postgresql+psycopg://...`
+- `postgres://...` → `postgresql+psycopg://...`
+- `postgresql+psycopg://...` → preservada
+
+O engine também desativa prepared statements do psycopg quando usa PostgreSQL,
+tornando o runtime compatível com o Transaction Pooler do Supabase.
+
+Não é necessário alterar manualmente a variável `ATLAS_DATABASE_URL` já
+cadastrada no Render apenas para acrescentar `+psycopg`.
