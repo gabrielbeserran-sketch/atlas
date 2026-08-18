@@ -43,3 +43,38 @@ def test_explicit_psycopg_url_is_preserved() -> None:
 def test_sqlite_development_url_is_preserved() -> None:
     settings = _base_settings("sqlite:///./atlas_dev.db")
     assert settings.atlas_database_url == "sqlite:///./atlas_dev.db"
+
+
+def test_supabase_pgbouncer_parameter_is_removed() -> None:
+    settings = _base_settings(
+        "postgresql://postgres.project:password@pooler.example:6543/postgres"
+        "?pgbouncer=true"
+    )
+    assert settings.atlas_database_url == (
+        "postgresql+psycopg://"
+        "postgres.project:password@pooler.example:6543/postgres"
+    )
+
+
+def test_legitimate_postgresql_query_parameters_are_preserved() -> None:
+    settings = _base_settings(
+        "postgresql://postgres.project:password@pooler.example:6543/postgres"
+        "?sslmode=require&application_name=atlas&pgbouncer=true"
+    )
+    assert settings.atlas_database_url.startswith(
+        "postgresql+psycopg://"
+        "postgres.project:password@pooler.example:6543/postgres?"
+    )
+    assert "pgbouncer=" not in settings.atlas_database_url.lower()
+    assert "sslmode=require" in settings.atlas_database_url
+    assert "application_name=atlas" in settings.atlas_database_url
+
+
+def test_pgbouncer_parameter_is_removed_case_insensitively() -> None:
+    settings = _base_settings(
+        "postgresql+psycopg://"
+        "postgres.project:password@pooler.example:6543/postgres"
+        "?PgBouncer=true&sslmode=require"
+    )
+    assert "pgbouncer" not in settings.atlas_database_url.lower()
+    assert "sslmode=require" in settings.atlas_database_url

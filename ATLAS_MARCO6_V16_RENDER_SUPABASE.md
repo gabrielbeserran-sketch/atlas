@@ -51,3 +51,18 @@ tornando o runtime compatível com o Transaction Pooler do Supabase.
 
 Não é necessário alterar manualmente a variável `ATLAS_DATABASE_URL` já
 cadastrada no Render apenas para acrescentar `+psycopg`.
+
+
+## Correção Render — parâmetro `pgbouncer` incompatível com psycopg3
+
+Depois da migração correta para `postgresql+psycopg://`, o runtime chegou à
+tentativa real de conexão com o Supabase e revelou que a connection string
+continha `pgbouncer=true`.
+
+Esse parâmetro pertence a outros clientes/ORMs e não é aceito pelo driver
+psycopg3. O Atlas agora remove automaticamente apenas parâmetros incompatíveis
+conhecidos (`pgbouncer`) antes de criar o engine SQLAlchemy, preservando
+parâmetros PostgreSQL legítimos como `sslmode` e `application_name`.
+
+Não é necessário editar manualmente a variável `ATLAS_DATABASE_URL` no Render
+somente para retirar `pgbouncer=true`.

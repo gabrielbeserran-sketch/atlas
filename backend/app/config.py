@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from ipaddress import ip_network
 from pathlib import Path
 from typing import Literal
@@ -79,17 +80,26 @@ class Settings(BaseSettings):
     @field_validator("atlas_database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, value: object) -> str:
-        """Normaliza URLs PostgreSQL para o driver psycopg v3.
+        """Normaliza a URL PostgreSQL oficial do Atlas para psycopg v3.
 
-        O Supabase fornece connection strings no formato ``postgresql://``.
-        Quando SQLAlchemy recebe esse esquema sem driver explícito, ele tenta
-        carregar ``psycopg2``. O Atlas usa ``psycopg[binary]`` v3, portanto a
-        URL oficial de runtime precisa ser ``postgresql+psycopg://``.
+        O Supabase pode fornecer connection strings em formatos voltados a
+        clientes/ORMs diferentes. O Atlas usa SQLAlchemy + ``psycopg[binary]``
+        v3 e, por isso:
 
-        URLs SQLite de desenvolvimento e URLs que já declaram um driver são
+        - ``postgres://`` é convertido para ``postgresql+psycopg://``;
+        - ``postgresql://`` é convertido para ``postgresql+psycopg://``;
+        - URLs já explícitas como ``postgresql+psycopg://`` são preservadas;
+        - parâmetros específicos de outros clientes, como ``pgbouncer``, são
+          removidos antes que sejam repassados ao psycopg;
+        - parâmetros PostgreSQL legítimos continuam presentes.
+
+        URLs não PostgreSQL (por exemplo SQLite em desenvolvimento/testes) são
         preservadas.
         """
         text = str(value or "").strip()
+
+        if not text:
+            return text
 
         if text.startswith("postgres://"):
             text = "postgresql://" + text[len("postgres://"):]
@@ -97,7 +107,30 @@ class Settings(BaseSettings):
         if text.startswith("postgresql://"):
             text = "postgresql+psycopg://" + text[len("postgresql://"):]
 
-        return text
+        if not text.startswith("postgresql+psycopg://"):
+            return text
+
+        parts = urlsplit(text)
+        filtered_query = [
+            (key, item_value)
+            for key, item_value in parse_qsl(
+                parts.query,
+                keep_blank_values=True,
+            )
+            if key.lower() not in {
+                "pgbouncer",
+            }
+        ]
+
+        return urlunsplit(
+            (
+                parts.scheme,
+                parts.netloc,
+                parts.path,
+                urlencode(filtered_query, doseq=True),
+                parts.fragment,
+            )
+        )
 
     @field_validator(
         "atlas_database_url",
