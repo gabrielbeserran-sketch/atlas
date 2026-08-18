@@ -228,6 +228,108 @@ def _reflect_existing_table(
     )
 
 
+def _existing_index_names(
+    table_name: str,
+    *,
+    schema: str | None = None,
+) -> set[str]:
+    if not _table_exists(table_name, schema=schema):
+        return set()
+
+    return {
+        item["name"]
+        for item in _inspector().get_indexes(table_name, schema=schema)
+        if item.get("name")
+    }
+
+
+def _existing_constraint_names(
+    table_name: str,
+    *,
+    schema: str | None = None,
+) -> set[str]:
+    if not _table_exists(table_name, schema=schema):
+        return set()
+
+    names: set[str] = set()
+
+    for item in _inspector().get_unique_constraints(
+        table_name,
+        schema=schema,
+    ):
+        if item.get("name"):
+            names.add(item["name"])
+
+    for item in _inspector().get_foreign_keys(
+        table_name,
+        schema=schema,
+    ):
+        if item.get("name"):
+            names.add(item["name"])
+
+    for item in _inspector().get_check_constraints(
+        table_name,
+        schema=schema,
+    ):
+        if item.get("name"):
+            names.add(item["name"])
+
+    pk = _inspector().get_pk_constraint(table_name, schema=schema)
+    if pk.get("name"):
+        names.add(pk["name"])
+
+    return names
+
+
+def _filter_existing_table_elements(
+    table_name: str,
+    elements: Sequence[Any],
+    *,
+    schema: str | None = None,
+) -> tuple[list[Any], list[str]]:
+    """Remove de uma definição elementos declarativos que já existem.
+
+    Em algumas migrations históricas, índices/constraints podem nascer junto
+    da definição SQLAlchemy da tabela, escapando de um `op.create_index`
+    explícito. Quando a tabela já existe, não precisamos reaplicar esses
+    objetos declarativos; apenas garantimos colunas e deixamos os guards
+    explícitos cuidarem das operações subsequentes.
+    """
+    existing_indexes = _existing_index_names(table_name, schema=schema)
+    existing_constraints = _existing_constraint_names(
+        table_name,
+        schema=schema,
+    )
+
+    filtered: list[Any] = []
+    skipped: list[str] = []
+
+    for element in elements:
+        if isinstance(element, sa.Index):
+            if element.name and element.name in existing_indexes:
+                skipped.append(f"index:{element.name}")
+                continue
+
+        if isinstance(
+            element,
+            (
+                sa.UniqueConstraint,
+                sa.ForeignKeyConstraint,
+                sa.CheckConstraint,
+                sa.PrimaryKeyConstraint,
+            ),
+        ):
+            if element.name and element.name in existing_constraints:
+                skipped.append(
+                    f"constraint:{element.name}"
+                )
+                continue
+
+        filtered.append(element)
+
+    return filtered, skipped
+
+
 def _column_has_server_value(column: sa.Column[Any]) -> bool:
     return (
         column.server_default is not None
@@ -546,6 +648,7 @@ def install_reconciliation_guards() -> Iterator[None]:
     original_create_foreign_key = op.create_foreign_key
     original_create_check_constraint = op.create_check_constraint
     original_batch_alter_table = op.batch_alter_table
+    original_execute = op.execute
 
     def safe_create_table(
         table_name: str,
@@ -555,12 +658,25 @@ def install_reconciliation_guards() -> Iterator[None]:
         schema = kwargs.get("schema")
 
         if _table_exists(table_name, schema=schema):
-            _sync_existing_table_columns(
+            filtered_elements, skipped = _filter_existing_table_elements(
                 table_name,
                 elements,
+                schema=schema,
+            )
+
+            _sync_existing_table_columns(
+                table_name,
+                filtered_elements,
                 add_column_fn=original_add_column,
                 schema=schema,
             )
+
+            for item in skipped:
+                print(
+                    "ATLAS ALEMBIC RECONCILE: objeto declarativo existente "
+                    f"preservado: {item} em {_qualified(table_name, schema)}"
+                )
+
             print(
                 "ATLAS ALEMBIC RECONCILE: tabela existente preservada: "
                 f"{_qualified(table_name, schema)}"
@@ -780,6 +896,53 @@ def install_reconciliation_guards() -> Iterator[None]:
             schema,
         )
 
+    def safe_execute(
+        sqltext: Any,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        raw = str(sqltext).strip()
+        normalized = " ".join(raw.split())
+        upper = normalized.upper()
+
+        # Cobre SQL cru do tipo:
+        # CREATE INDEX ix_name ON table (...);
+        # CREATE UNIQUE INDEX ix_name ON table (...);
+        # É uma rota histórica que pode escapar de op.create_index().
+        if upper.startswith("CREATE INDEX ") or upper.startswith(
+            "CREATE UNIQUE INDEX "
+        ):
+            tokens = normalized.replace(";", "").split()
+
+            if upper.startswith("CREATE UNIQUE INDEX "):
+                name_pos = 3
+            else:
+                name_pos = 2
+
+            if len(tokens) > name_pos + 2:
+                index_name = tokens[name_pos].strip('"')
+                try:
+                    on_pos = next(
+                        i for i, token in enumerate(tokens)
+                        if token.upper() == "ON"
+                    )
+                    table_name = tokens[on_pos + 1].strip('"')
+                except (StopIteration, IndexError):
+                    table_name = ""
+
+                if (
+                    table_name
+                    and index_name
+                    and _index_exists(table_name, index_name)
+                ):
+                    print(
+                        "ATLAS ALEMBIC RECONCILE: raw SQL indice existente "
+                        f"preservado: {index_name}"
+                    )
+                    return None
+
+        return original_execute(sqltext, *args, **kwargs)
+
     op.create_table = safe_create_table
     op.create_index = safe_create_index
     op.add_column = safe_add_column
@@ -788,6 +951,7 @@ def install_reconciliation_guards() -> Iterator[None]:
     op.create_foreign_key = safe_create_foreign_key
     op.create_check_constraint = safe_create_check_constraint
     op.batch_alter_table = safe_batch_alter_table
+    op.execute = safe_execute
 
     try:
         yield
@@ -800,3 +964,4 @@ def install_reconciliation_guards() -> Iterator[None]:
         op.create_foreign_key = original_create_foreign_key
         op.create_check_constraint = original_create_check_constraint
         op.batch_alter_table = original_batch_alter_table
+        op.execute = original_execute

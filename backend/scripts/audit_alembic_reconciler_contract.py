@@ -49,6 +49,8 @@ def main() -> int:
         "class _SafeBatchOperations",
         "original_batch_alter_table",
         "def safe_alter_column",
+        "def safe_execute",
+        "_filter_existing_table_elements",
     )
     missing = [item for item in required if item not in source]
 
