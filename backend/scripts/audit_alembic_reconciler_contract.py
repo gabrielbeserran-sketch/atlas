@@ -51,6 +51,9 @@ def main() -> int:
         "def safe_alter_column",
         "def safe_execute",
         "_filter_existing_table_elements",
+        "def _relation_owner",
+        "def _index_table_for_name",
+        "def _resolve_index_name",
     )
     missing = [item for item in required if item not in source]
 

@@ -14,7 +14,7 @@ python -m scripts.render_import_contract_check
 echo "ATLAS STARTUP: executando preflight de dependencias..."
 python -m scripts.render_preflight
 
-echo "ATLAS STARTUP: aplicando migrations Alembic com reconciliacao estrutural v4 idempotente..."
+echo "ATLAS STARTUP: aplicando migrations Alembic com reconciliacao estrutural v5 namespace-global..."
 python -m alembic upgrade head
 
 echo "ATLAS STARTUP: verificando head das migrations..."

@@ -228,6 +228,146 @@ def _reflect_existing_table(
     )
 
 
+def _relation_owner(
+    relation_name: str,
+    *,
+    schema: str | None = None,
+) -> tuple[str, str, str] | None:
+    """Retorna (schema, relation, kind) para um nome PostgreSQL já ocupado.
+
+    Índices vivem no mesmo namespace de relações que tabelas/sequences.
+    Portanto, consultar apenas os índices da tabela alvo não detecta colisões
+    globais de nome — exatamente o caso observado no Render.
+    """
+    target_schema = schema or "public"
+    row = _bind().execute(
+        sa.text(
+            """
+            SELECT n.nspname, c.relname, c.relkind
+            FROM pg_catalog.pg_class AS c
+            JOIN pg_catalog.pg_namespace AS n
+              ON n.oid = c.relnamespace
+            WHERE n.nspname = :schema
+              AND c.relname = :name
+            LIMIT 1
+            """
+        ),
+        {"schema": target_schema, "name": relation_name},
+    ).first()
+
+    if row is None:
+        return None
+
+    return str(row[0]), str(row[1]), str(row[2])
+
+
+def _index_table_for_name(
+    index_name: str,
+    *,
+    schema: str | None = None,
+) -> str | None:
+    target_schema = schema or "public"
+    row = _bind().execute(
+        sa.text(
+            """
+            SELECT tbl.relname
+            FROM pg_catalog.pg_class AS idx
+            JOIN pg_catalog.pg_namespace AS n
+              ON n.oid = idx.relnamespace
+            JOIN pg_catalog.pg_index AS pi
+              ON pi.indexrelid = idx.oid
+            JOIN pg_catalog.pg_class AS tbl
+              ON tbl.oid = pi.indrelid
+            WHERE n.nspname = :schema
+              AND idx.relname = :name
+            LIMIT 1
+            """
+        ),
+        {"schema": target_schema, "name": index_name},
+    ).scalar_one_or_none()
+
+    return str(row) if row is not None else None
+
+
+def _postgres_identifier(value: str) -> str:
+    """Limita identificadores à regra PostgreSQL de 63 bytes de forma estável."""
+    encoded = value.encode("utf-8")
+    if len(encoded) <= 63:
+        return value
+
+    import hashlib
+
+    digest = hashlib.sha1(encoded).hexdigest()[:10]
+    prefix_bytes = encoded[: 63 - 11]
+    while True:
+        try:
+            prefix = prefix_bytes.decode("utf-8")
+            break
+        except UnicodeDecodeError:
+            prefix_bytes = prefix_bytes[:-1]
+
+    return f"{prefix}_{digest}"
+
+
+def _collision_safe_index_name(
+    requested_name: str,
+    table_name: str,
+    columns: Sequence[str] | None,
+) -> str:
+    """Nome alternativo determinístico quando o nome pedido já pertence a outra tabela."""
+    column_suffix = "_".join(columns or ()) or "expr"
+    candidate = f"{requested_name}__{table_name}__{column_suffix}"
+    return _postgres_identifier(candidate)
+
+
+def _resolve_index_name(
+    requested_name: str,
+    table_name: str,
+    columns: Sequence[str] | None,
+    *,
+    schema: str | None = None,
+) -> tuple[str, bool]:
+    """Resolve colisão schema-global sem deixar a tabela alvo sem índice.
+
+    Retorna (nome_a_usar, já_existe_na_tabela_alvo).
+    """
+    owner_table = _index_table_for_name(requested_name, schema=schema)
+
+    if owner_table == table_name:
+        return requested_name, True
+
+    relation = _relation_owner(requested_name, schema=schema)
+    if relation is None:
+        return requested_name, False
+
+    # O nome está ocupado em outra relação/tabela. Criamos um índice equivalente
+    # na tabela correta com nome determinístico alternativo.
+    safe_name = _collision_safe_index_name(
+        requested_name,
+        table_name,
+        columns,
+    )
+
+    safe_owner = _index_table_for_name(safe_name, schema=schema)
+    if safe_owner == table_name:
+        return safe_name, True
+
+    if _relation_owner(safe_name, schema=schema) is not None:
+        raise UnsafeSchemaReconciliation(
+            "ATLAS ALEMBIC RECONCILE: colisao global de nomes PostgreSQL "
+            "tambem atingiu o nome alternativo do indice: "
+            f"requested={requested_name}, alternate={safe_name}, "
+            f"target_table={table_name}."
+        )
+
+    print(
+        "ATLAS ALEMBIC RECONCILE: colisao global de nome de indice detectada: "
+        f"requested={requested_name}, owner_table={owner_table or relation[1]}, "
+        f"target_table={table_name}, alternate={safe_name}"
+    )
+    return safe_name, False
+
+
 def _existing_index_names(
     table_name: str,
     *,
@@ -516,18 +656,8 @@ class _SafeBatchOperations:
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        if _index_exists(
-            self._table_name,
-            index_name,
-            schema=self._schema,
-        ):
-            print(
-                "ATLAS ALEMBIC RECONCILE: batch indice existente preservado: "
-                f"{index_name}"
-            )
-            return None
-
         names = _column_names_from_index_spec(columns)
+
         if names is not None:
             _assert_columns_exist(
                 self._table_name,
@@ -536,8 +666,22 @@ class _SafeBatchOperations:
                 operation=f"batch_create_index:{index_name}",
             )
 
-        return self._ops.create_index(
+        resolved_name, already_exists = _resolve_index_name(
             index_name,
+            self._table_name,
+            names,
+            schema=self._schema,
+        )
+
+        if already_exists:
+            print(
+                "ATLAS ALEMBIC RECONCILE: batch indice existente preservado: "
+                f"{resolved_name} em {self._table_name}"
+            )
+            return None
+
+        return self._ops.create_index(
+            resolved_name,
             columns,
             *args,
             **kwargs,
@@ -740,15 +884,8 @@ def install_reconciliation_guards() -> Iterator[None]:
         **kwargs: Any,
     ) -> Any:
         schema = kwargs.get("schema")
-
-        if _index_exists(table_name, index_name, schema=schema):
-            print(
-                "ATLAS ALEMBIC RECONCILE: indice existente preservado: "
-                f"{index_name}"
-            )
-            return None
-
         names = _column_names_from_index_spec(columns)
+
         if names is not None:
             _assert_columns_exist(
                 table_name,
@@ -757,8 +894,22 @@ def install_reconciliation_guards() -> Iterator[None]:
                 operation=f"create_index:{index_name}",
             )
 
-        return original_create_index(
+        resolved_name, already_exists = _resolve_index_name(
             index_name,
+            table_name,
+            names,
+            schema=schema,
+        )
+
+        if already_exists:
+            print(
+                "ATLAS ALEMBIC RECONCILE: indice existente preservado: "
+                f"{resolved_name} em {table_name}"
+            )
+            return None
+
+        return original_create_index(
+            resolved_name,
             table_name,
             columns,
             *args,
@@ -930,16 +1081,31 @@ def install_reconciliation_guards() -> Iterator[None]:
                 except (StopIteration, IndexError):
                     table_name = ""
 
-                if (
-                    table_name
-                    and index_name
-                    and _index_exists(table_name, index_name)
-                ):
-                    print(
-                        "ATLAS ALEMBIC RECONCILE: raw SQL indice existente "
-                        f"preservado: {index_name}"
+                if table_name and index_name:
+                    resolved_name, already_exists = _resolve_index_name(
+                        index_name,
+                        table_name,
+                        None,
                     )
-                    return None
+
+                    if already_exists:
+                        print(
+                            "ATLAS ALEMBIC RECONCILE: raw SQL indice existente "
+                            f"preservado: {resolved_name} em {table_name}"
+                        )
+                        return None
+
+                    if resolved_name != index_name:
+                        # Para SQL cru, reescrever nomes exige parser SQL real.
+                        # Falhamos de forma explícita em vez de executar SQL
+                        # ambíguo ou deixar a transação abortar.
+                        raise UnsafeSchemaReconciliation(
+                            "ATLAS ALEMBIC RECONCILE: CREATE INDEX via SQL cru "
+                            "teve colisao global de nome e requer migration "
+                            "explicita com nome alternativo: "
+                            f"requested={index_name}, alternate={resolved_name}, "
+                            f"table={table_name}"
+                        )
 
         return original_execute(sqltext, *args, **kwargs)
 
