@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from collections import defaultdict
 
 import sqlalchemy as sa
 
@@ -13,8 +12,27 @@ def _normalized_type(value: sa.types.TypeEngine) -> str:
     return value.__class__.__name__.lower()
 
 
+def _compatible_type(model_type: str, database_type: str) -> bool:
+    if model_type == database_type:
+        return True
+
+    compatible_groups = (
+        {"string", "varchar", "text"},
+        {"integer", "biginteger", "smallinteger"},
+        {"json", "jsonb"},
+        {"datetime", "timestamp", "datetimetz"},
+        {"boolean", "bool"},
+        {"float", "real", "double", "numeric", "decimal"},
+    )
+    return any(
+        {model_type, database_type} <= group
+        for group in compatible_groups
+    )
+
+
 def main() -> int:
     engine = build_engine(for_migrations=True)
+
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -23,9 +41,12 @@ def main() -> int:
         database_tables = set(inspector.get_table_names())
         model_tables = set(Base.metadata.tables.keys())
 
-        missing_tables = sorted(model_tables - database_tables)
-        for table_name in missing_tables:
+        for table_name in sorted(model_tables - database_tables):
             errors.append(f"tabela ausente: {table_name}")
+
+        for table_name in sorted(database_tables - model_tables):
+            if table_name != "alembic_version":
+                warnings.append(f"tabela extra no banco: {table_name}")
 
         for table_name in sorted(model_tables & database_tables):
             model_table = Base.metadata.tables[table_name]
@@ -47,30 +68,23 @@ def main() -> int:
                 )
 
             for column_name in sorted(
-                set(model_columns) & set(database_columns)
+                set(database_columns) - set(model_columns)
             ):
-                model_column = model_columns[column_name]
-                database_column = database_columns[column_name]
-
-                # Tipos podem variar em representação entre SQLAlchemy e
-                # PostgreSQL; diferenças são avisos para não bloquear produção
-                # por aliases equivalentes (VARCHAR/String, JSON/JSONB etc.).
-                model_type = _normalized_type(model_column.type)
-                database_type = _normalized_type(database_column["type"])
-
-                compatible = (
-                    model_type == database_type
-                    or {model_type, database_type}
-                    <= {"string", "varchar", "text"}
-                    or {model_type, database_type}
-                    <= {"integer", "biginteger", "smallinteger"}
-                    or {model_type, database_type}
-                    <= {"json", "jsonb"}
-                    or {model_type, database_type}
-                    <= {"datetime", "timestamp"}
+                warnings.append(
+                    f"coluna extra no banco: {table_name}.{column_name}"
                 )
 
-                if not compatible:
+            for column_name in sorted(
+                set(model_columns) & set(database_columns)
+            ):
+                model_type = _normalized_type(
+                    model_columns[column_name].type
+                )
+                database_type = _normalized_type(
+                    database_columns[column_name]["type"]
+                )
+
+                if not _compatible_type(model_type, database_type):
                     warnings.append(
                         "tipo divergente: "
                         f"{table_name}.{column_name} "
@@ -81,25 +95,23 @@ def main() -> int:
             print("ATLAS SCHEMA CONTRACT: FAIL", file=sys.stderr)
             for error in errors:
                 print(f" - {error}", file=sys.stderr)
+
             if warnings:
                 print("ATLAS SCHEMA CONTRACT: avisos:", file=sys.stderr)
-                for warning in warnings[:50]:
+                for warning in warnings[:100]:
                     print(f" - {warning}", file=sys.stderr)
+
             return 1
 
         print(
             "ATLAS SCHEMA CONTRACT: APROVADO "
             f"(model_tables={len(model_tables)}, "
-            f"database_tables={len(database_tables)})"
+            f"database_tables={len(database_tables)}, "
+            f"warnings={len(warnings)})"
         )
 
-        if warnings:
-            print(
-                "ATLAS SCHEMA CONTRACT: "
-                f"{len(warnings)} aviso(s) de tipo não bloqueante"
-            )
-            for warning in warnings[:20]:
-                print(f" - {warning}")
+        for warning in warnings[:50]:
+            print(f"ATLAS SCHEMA CONTRACT: WARN - {warning}")
 
         return 0
     finally:
