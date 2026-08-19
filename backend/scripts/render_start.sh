@@ -23,6 +23,9 @@ python -m scripts.render_post_migration_check
 echo "ATLAS STARTUP: auditando contrato final do schema..."
 python -m scripts.render_schema_contract_check
 
+echo "ATLAS STARTUP: verificando provisionamento administrativo one-shot..."
+python -m scripts.render_provision_admin_once
+
 echo "ATLAS STARTUP: dependencias, migrations e schema aprovados."
 echo "ATLAS STARTUP: iniciando API na porta ${PORT}..."
 

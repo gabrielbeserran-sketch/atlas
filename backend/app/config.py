@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     atlas_bootstrap_admin_password: str = "Atlas@123456"
     atlas_bootstrap_company_name: str = "Empresa Atlas"
 
+    # Provisionamento administrativo controlado para staging/production.
+    # É separado do bootstrap de desenvolvimento e deve ser habilitado
+    # somente por um deploy, depois desabilitado novamente.
+    atlas_provision_admin_once: bool = False
+    atlas_provision_admin_email: str = ""
+    atlas_provision_admin_password: str = ""
+    atlas_provision_company_name: str = ""
+
     atlas_backup_dir: str = "./backups"
     atlas_backup_retention_days: int = Field(default=30, ge=1, le=3650)
     atlas_attachment_dir: str = "./attachments"
@@ -232,6 +240,28 @@ class Settings(BaseSettings):
             raise ValueError(
                 "ATLAS_BOOTSTRAP_ENABLED deve ser false em staging/production"
             )
+
+        if self.atlas_provision_admin_once:
+            email = self.atlas_provision_admin_email.strip().lower()
+            password = self.atlas_provision_admin_password
+            company_name = self.atlas_provision_company_name.strip()
+
+            if "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+                raise ValueError(
+                    "ATLAS_PROVISION_ADMIN_EMAIL deve ser um e-mail válido"
+                )
+
+            if self._secret_is_weak(password, minimum=12):
+                raise ValueError(
+                    "ATLAS_PROVISION_ADMIN_PASSWORD deve ter ao menos "
+                    "12 caracteres e não pode usar valor padrão/inseguro"
+                )
+
+            if len(company_name) < 2:
+                raise ValueError(
+                    "ATLAS_PROVISION_COMPANY_NAME é obrigatório quando "
+                    "ATLAS_PROVISION_ADMIN_ONCE=true"
+                )
 
         if self.atlas_auto_create_schema:
             raise ValueError(

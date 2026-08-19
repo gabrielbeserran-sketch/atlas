@@ -12,6 +12,7 @@ REQUIRED_MODULES = (
     "scripts.render_preflight",
     "scripts.render_post_migration_check",
     "scripts.render_schema_contract_check",
+    "scripts.render_provision_admin_once",
 )
 
 
