@@ -49,6 +49,16 @@ class Settings(BaseSettings):
     atlas_provision_admin_password: str = ""
     atlas_provision_company_name: str = ""
 
+    # Diagnóstico controlado da autenticação de um administrador existente.
+    atlas_auth_diagnostic_enabled: bool = False
+    atlas_auth_diagnostic_email: str = ""
+    atlas_auth_diagnostic_password: str = ""
+
+    # Reset administrativo one-shot para uma conta já existente.
+    atlas_reset_admin_password_once: bool = False
+    atlas_reset_admin_email: str = ""
+    atlas_reset_admin_password: str = ""
+
     atlas_backup_dir: str = "./backups"
     atlas_backup_retention_days: int = Field(default=30, ge=1, le=3650)
     atlas_attachment_dir: str = "./attachments"
@@ -240,6 +250,32 @@ class Settings(BaseSettings):
             raise ValueError(
                 "ATLAS_BOOTSTRAP_ENABLED deve ser false em staging/production"
             )
+
+        if self.atlas_auth_diagnostic_enabled:
+            email = self.atlas_auth_diagnostic_email.strip().lower()
+            password = self.atlas_auth_diagnostic_password
+            if "@" not in email:
+                raise ValueError(
+                    "ATLAS_AUTH_DIAGNOSTIC_EMAIL deve ser um e-mail válido"
+                )
+            if not password:
+                raise ValueError(
+                    "ATLAS_AUTH_DIAGNOSTIC_PASSWORD é obrigatório quando "
+                    "ATLAS_AUTH_DIAGNOSTIC_ENABLED=true"
+                )
+
+        if self.atlas_reset_admin_password_once:
+            email = self.atlas_reset_admin_email.strip().lower()
+            password = self.atlas_reset_admin_password
+            if "@" not in email:
+                raise ValueError(
+                    "ATLAS_RESET_ADMIN_EMAIL deve ser um e-mail válido"
+                )
+            if self._secret_is_weak(password, minimum=12):
+                raise ValueError(
+                    "ATLAS_RESET_ADMIN_PASSWORD deve ter ao menos "
+                    "12 caracteres e não pode usar valor inseguro"
+                )
 
         if self.atlas_provision_admin_once:
             email = self.atlas_provision_admin_email.strip().lower()

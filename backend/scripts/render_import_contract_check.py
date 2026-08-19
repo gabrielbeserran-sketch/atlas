@@ -13,6 +13,8 @@ REQUIRED_MODULES = (
     "scripts.render_post_migration_check",
     "scripts.render_schema_contract_check",
     "scripts.render_provision_admin_once",
+    "scripts.render_auth_diagnostic",
+    "scripts.render_reset_admin_password_once",
 )
 
 
