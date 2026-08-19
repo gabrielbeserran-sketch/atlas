@@ -13,7 +13,7 @@ class AnimalEnterpriseTimelineService {
   ) async {
     final response = await _api.requestList(
       'GET',
-      '/animals/$animalId/timeline',
+      '/livestock/animals/$animalId/timeline',
     );
 
     return response

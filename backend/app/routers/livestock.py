@@ -76,6 +76,7 @@ from ..schemas import (
     PaddockCreateRequest,
     PaddockUpdateRequest,
     PaddockResponse,
+    AnimalTimelineResponse,
 )
 
 router = APIRouter(prefix="/livestock", tags=["livestock"])
@@ -375,6 +376,166 @@ def list_animals(
             )
         )
     return list(db.scalars(query.order_by(LivestockAnimal.tag)).all())
+
+
+
+@router.get(
+    "/animals/{animal_id}/timeline",
+    response_model=list[AnimalTimelineResponse],
+)
+def livestock_animal_timeline(
+    animal_id: str,
+    principal: Principal = Depends(require_permission("animals.read")),
+    db: Session = Depends(get_db),
+) -> list[AnimalTimelineResponse]:
+    """Timeline Enterprise do animal oficial do módulo Rebanho.
+
+    O Flutter cria e lê animais em ``livestock_animals``. A timeline antiga
+    consultava o domínio legado ``EntityState`` em ``/animals/{id}/timeline``,
+    por isso animais válidos do Rebanho retornavam 404.
+
+    Esta rota consolida os eventos que já pertencem ao domínio pecuário real:
+    cadastro, movimentações, pesagens, reprodução e sanidade.
+    """
+    animal = _animal(db, principal, animal_id)
+
+    records: list[AnimalTimelineResponse] = [
+        AnimalTimelineResponse(
+            id=f"animal_create_{animal.id}",
+            action="create",
+            category="Cadastro",
+            title="Animal cadastrado",
+            description=f'Animal "{animal.tag}" cadastrado no rebanho.',
+            before={},
+            after={
+                "tag": animal.tag,
+                "name": animal.name,
+                "farm_id": animal.farm_id,
+                "lot_id": animal.lot_id,
+                "category": animal.category,
+                "sex": animal.sex,
+                "breed": animal.breed,
+                "weight": animal.current_weight,
+                "body_condition_score": animal.body_condition_score,
+                "status": animal.status,
+            },
+            user_id="",
+            occurred_at=animal.created_at,
+        )
+    ]
+
+    movements = db.scalars(
+        select(AnimalMovement).where(
+            AnimalMovement.company_id == principal.company.id,
+            AnimalMovement.tenant_id == principal.company.tenant_id,
+            AnimalMovement.animal_id == animal.id,
+        )
+    ).all()
+    for movement in movements:
+        records.append(
+            AnimalTimelineResponse(
+                id=movement.id,
+                action="update",
+                category="Manejo",
+                title="Movimentação de animal",
+                description=movement.reason or movement.movement_type,
+                before={"lot_id": movement.from_lot_id},
+                after={
+                    "lot_id": movement.to_lot_id,
+                    "movement_type": movement.movement_type,
+                    "document_reference": movement.document_reference,
+                },
+                user_id=movement.created_by,
+                occurred_at=movement.occurred_at,
+            )
+        )
+
+    weights = db.scalars(
+        select(WeightRecord).where(
+            WeightRecord.company_id == principal.company.id,
+            WeightRecord.tenant_id == principal.company.tenant_id,
+            WeightRecord.animal_id == animal.id,
+        )
+    ).all()
+    for record in weights:
+        records.append(
+            AnimalTimelineResponse(
+                id=record.id,
+                action="update",
+                category="Pesagem",
+                title="Pesagem registrada",
+                description=record.notes or "Peso e escore corporal registrados.",
+                before={},
+                after={
+                    "weight": record.weight,
+                    "body_condition_score": record.body_condition_score,
+                    "source": record.source,
+                    "equipment": record.equipment,
+                },
+                user_id=record.created_by,
+                occurred_at=record.measured_at,
+            )
+        )
+
+    reproduction_events = db.scalars(
+        select(ReproductionEvent).where(
+            ReproductionEvent.company_id == principal.company.id,
+            ReproductionEvent.tenant_id == principal.company.tenant_id,
+            ReproductionEvent.animal_id == animal.id,
+        )
+    ).all()
+    for event in reproduction_events:
+        records.append(
+            AnimalTimelineResponse(
+                id=event.id,
+                action="update",
+                category="Reprodução",
+                title=event.event_type or "Evento reprodutivo",
+                description=event.notes or event.result,
+                before={},
+                after={
+                    "event_code": event.event_code,
+                    "result": event.result,
+                    "reproductive_status": event.reproductive_status,
+                    "protocol_name": event.protocol_name,
+                    "sire_reference": event.sire_reference,
+                },
+                user_id=event.created_by,
+                occurred_at=event.occurred_at,
+            )
+        )
+
+    health_events = db.scalars(
+        select(HealthEvent).where(
+            HealthEvent.company_id == principal.company.id,
+            HealthEvent.tenant_id == principal.company.tenant_id,
+            HealthEvent.animal_id == animal.id,
+        )
+    ).all()
+    for event in health_events:
+        records.append(
+            AnimalTimelineResponse(
+                id=event.id,
+                action="update",
+                category="Sanidade",
+                title=event.event_type or "Evento sanitário",
+                description=event.notes or event.diagnosis or event.product_name,
+                before={},
+                after={
+                    "product_name": event.product_name,
+                    "dosage": event.dosage,
+                    "route": event.route,
+                    "diagnosis": event.diagnosis,
+                    "severity": event.severity,
+                    "status": event.status,
+                },
+                user_id=event.created_by,
+                occurred_at=event.occurred_at,
+            )
+        )
+
+    records.sort(key=lambda item: item.occurred_at, reverse=True)
+    return records
 
 
 @router.get("/animals/{animal_id}", response_model=LivestockAnimalResponse)

@@ -75,14 +75,17 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
     required String label,
     required Future<List<T>> Function() loader,
     required List<String> warnings,
-    Duration timeout = const Duration(seconds: 8),
+    required List<T> fallback,
   }) async {
     try {
-      return await loader().timeout(timeout);
+      // O timeout de rede pertence ao AtlasHttpClient e varia por ambiente.
+      // Em produção, o cliente já usa receiveTimeout de 30 segundos.
+      // Não aplicamos um segundo timeout local mais curto no Rebanho.
+      return await loader();
     } catch (error) {
       warnings.add('$label indisponível');
       debugPrint('ATLAS Rebanho [$label]: $error');
-      return <T>[];
+      return List<T>.unmodifiable(fallback);
     }
   }
 
@@ -138,16 +141,25 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 
     final warnings = <String>[];
     try {
+      final previousGroups = List<HerdGroupData>.unmodifiable(
+        workspace.groups,
+      );
+      final previousAnimals = List<AnimalData>.unmodifiable(
+        workspace.records.map((record) => record.animal),
+      );
+
       final results = await Future.wait<dynamic>([
         _safeLoad<HerdGroupData>(
           label: 'Lotes',
           warnings: warnings,
           loader: () => herdService.listGroups(farm.id),
+          fallback: previousGroups,
         ),
         _safeLoad<AnimalData>(
           label: 'Animais',
           warnings: warnings,
           loader: () => animalService.listAnimals(farmId: farm.id, lotId: ''),
+          fallback: previousAnimals,
         ),
       ]);
 
@@ -709,16 +721,25 @@ class _Filters extends StatelessWidget {
             width: 210,
             child: DropdownButtonFormField<String>(
               initialValue: selectedLotId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Lote'),
               items: [
                 const DropdownMenuItem(
                   value: '',
-                  child: Text('Todos os lotes'),
+                  child: Text(
+                    'Todos os lotes',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 ...groups.map(
                   (group) => DropdownMenuItem(
                     value: group.id,
-                    child: Text(group.name),
+                    child: Text(
+                      group.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -729,6 +750,7 @@ class _Filters extends StatelessWidget {
             width: 170,
             child: DropdownButtonFormField<String>(
               initialValue: selectedStatus,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Situação'),
               items: const [
                 DropdownMenuItem(value: '', child: Text('Todas')),
@@ -744,6 +766,7 @@ class _Filters extends StatelessWidget {
             width: 160,
             child: DropdownButtonFormField<String>(
               initialValue: selectedSex,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Sexo'),
               items: const [
                 DropdownMenuItem(value: '', child: Text('Todos')),
