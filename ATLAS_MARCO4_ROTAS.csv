@@ -52,7 +52,7 @@ DELETE,/animal-media/{animal_id}/{media_id},backend/app/routers/animal_media.py,
 GET,/animals,backend/app/routers/animals.py,True
 GET,/animals/{animal_id}/genealogy,backend/app/routers/animals.py,True
 GET,/animals/{animal_id}/history,backend/app/routers/animals.py,True
-GET,/animals/{animal_id}/timeline,backend/app/routers/animals.py,True
+GET,/animals/{animal_id}/timeline,backend/app/routers/animals.py,False
 GET,/animals/{animal_id},backend/app/routers/animals.py,True
 POST,/animals,backend/app/routers/animals.py,True
 PATCH,/animals/{animal_id},backend/app/routers/animals.py,True
@@ -290,12 +290,15 @@ PATCH,/livestock/lots/{lot_id},backend/app/routers/livestock.py,True
 DELETE,/livestock/lots/{lot_id},backend/app/routers/livestock.py,True
 POST,/livestock/animals,backend/app/routers/livestock.py,True
 GET,/livestock/animals,backend/app/routers/livestock.py,True
+GET,/livestock/animals/{animal_id}/timeline,backend/app/routers/livestock.py,True
 GET,/livestock/animals/{animal_id},backend/app/routers/livestock.py,True
 PATCH,/livestock/animals/{animal_id},backend/app/routers/livestock.py,True
 DELETE,/livestock/animals/{animal_id},backend/app/routers/livestock.py,True
 POST,/livestock/animals/{animal_id}/movements,backend/app/routers/livestock.py,True
 GET,/livestock/animals/{animal_id}/movements,backend/app/routers/livestock.py,True
 POST,/livestock/animals/{animal_id}/weights,backend/app/routers/livestock.py,True
+PATCH,/livestock/animals/{animal_id}/weights/{weight_id},backend/app/routers/livestock.py,False
+DELETE,/livestock/animals/{animal_id}/weights/{weight_id},backend/app/routers/livestock.py,False
 GET,/livestock/animals/{animal_id}/weights,backend/app/routers/livestock.py,True
 POST,/livestock/animals/{animal_id}/reproduction,backend/app/routers/livestock.py,True
 PATCH,/livestock/animals/{animal_id}/reproduction/{event_id},backend/app/routers/livestock.py,True
@@ -327,7 +330,12 @@ GET,/livestock/nutrition/ingredients,backend/app/routers/livestock.py,True
 POST,/livestock/nutrition/plans,backend/app/routers/livestock.py,True
 GET,/livestock/nutrition/plans,backend/app/routers/livestock.py,True
 POST,/livestock/nutrition/lots/{lot_id}/consumption,backend/app/routers/livestock.py,True
+DELETE,/livestock/nutrition/events/{event_id},backend/app/routers/livestock.py,True
 GET,/livestock/nutrition/performance,backend/app/routers/livestock.py,True
+GET,/livestock/integrity/reconciliation,backend/app/routers/livestock.py,True
+POST,/livestock/intelligence/smart-agenda/reconcile,backend/app/routers/livestock.py,True
+GET,/livestock/intelligence/operational-alerts,backend/app/routers/livestock.py,True
+GET,/livestock/intelligence/operational-summary,backend/app/routers/livestock.py,True
 POST,/livestock/finance/v2,backend/app/routers/livestock.py,True
 PATCH,/livestock/finance/{entry_id}/settle,backend/app/routers/livestock.py,False
 GET,/livestock/finance/v2,backend/app/routers/livestock.py,True

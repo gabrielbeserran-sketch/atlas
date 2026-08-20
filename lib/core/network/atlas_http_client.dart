@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
@@ -75,6 +76,51 @@ class AtlasHttpClient {
   final http.Client _client;
   final AtlasEnterpriseRemoteAuthStore _authStore;
   static const Uuid _uuid = Uuid();
+  static final Random _random = Random.secure();
+
+  // Evita várias requisições 401 renovarem a mesma sessão ao mesmo tempo.
+  Future<bool>? _refreshInFlight;
+
+  bool _isIdempotentMethod(String method) {
+    return switch (method.toUpperCase()) {
+      'GET' || 'HEAD' || 'OPTIONS' => true,
+      _ => false,
+    };
+  }
+
+  bool _isTransientStatus(int statusCode) {
+    return statusCode == 408 ||
+        statusCode == 425 ||
+        statusCode == 429 ||
+        statusCode == 502 ||
+        statusCode == 503 ||
+        statusCode == 504;
+  }
+
+  Duration _retryDelay(int retriesRemaining, Map<String, String>? headers) {
+    final retryAfter = headers?['retry-after'];
+    if (retryAfter != null) {
+      final seconds = int.tryParse(retryAfter.trim());
+      if (seconds != null && seconds > 0) {
+        return Duration(seconds: seconds.clamp(1, 30));
+      }
+    }
+
+    // 700ms -> 1.4s -> 2.8s, com pequeno jitter.
+    final attempt = (3 - retriesRemaining).clamp(0, 3);
+    final baseMs = 700 * (1 << attempt);
+    final jitterMs = _random.nextInt(250);
+    return Duration(milliseconds: baseMs + jitterMs);
+  }
+
+  Future<void> _waitBeforeRetry(
+    int retriesRemaining, {
+    Map<String, String>? headers,
+  }) {
+    return Future<void>.delayed(
+      _retryDelay(retriesRemaining, headers),
+    );
+  }
 
   Future<AtlasHttpResponse> send(
     String method,
@@ -83,7 +129,7 @@ class AtlasHttpClient {
     Map<String, String>? queryParameters,
     bool authenticated = true,
     bool retryOnUnauthorized = true,
-    int transientRetries = 1,
+    int transientRetries = 2,
   }) async {
     final baseUrl = await _authStore.baseUrl();
     final normalizedPath = path.startsWith('/') ? path : '/$path';
@@ -127,7 +173,8 @@ class AtlasHttpClient {
         body,
       ).timeout(AtlasEnvironmentConfig.current.receiveTimeout);
     } on TimeoutException {
-      if (transientRetries > 0) {
+      if (transientRetries > 0 && _isIdempotentMethod(method)) {
+        await _waitBeforeRetry(transientRetries);
         return send(
           method,
           path,
@@ -145,12 +192,36 @@ class AtlasHttpClient {
         retryable: true,
       );
     } on SocketException {
+      if (transientRetries > 0 && _isIdempotentMethod(method)) {
+        await _waitBeforeRetry(transientRetries);
+        return send(
+          method,
+          path,
+          body: body,
+          queryParameters: queryParameters,
+          authenticated: authenticated,
+          retryOnUnauthorized: retryOnUnauthorized,
+          transientRetries: transientRetries - 1,
+        );
+      }
       throw const AtlasHttpException(
         'Sem conexão com o servidor Atlas.',
         code: 'network_unavailable',
         retryable: true,
       );
     } on http.ClientException {
+      if (transientRetries > 0 && _isIdempotentMethod(method)) {
+        await _waitBeforeRetry(transientRetries);
+        return send(
+          method,
+          path,
+          body: body,
+          queryParameters: queryParameters,
+          authenticated: authenticated,
+          retryOnUnauthorized: retryOnUnauthorized,
+          transientRetries: transientRetries - 1,
+        );
+      }
       throw const AtlasHttpException(
         'Falha de comunicação com o servidor Atlas.',
         code: 'client_error',
@@ -175,6 +246,24 @@ class AtlasHttpClient {
     }
 
     final decoded = _decodeBody(response.body);
+
+    if (_isTransientStatus(response.statusCode) &&
+        transientRetries > 0 &&
+        _isIdempotentMethod(method)) {
+      await _waitBeforeRetry(
+        transientRetries,
+        headers: response.headers,
+      );
+      return send(
+        method,
+        path,
+        body: body,
+        queryParameters: queryParameters,
+        authenticated: authenticated,
+        retryOnUnauthorized: retryOnUnauthorized,
+        transientRetries: transientRetries - 1,
+      );
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final baseMessage = decoded is Map
@@ -239,7 +328,21 @@ class AtlasHttpClient {
     return newSession;
   }
 
-  Future<bool> _refreshSession() async {
+  Future<bool> _refreshSession() {
+    final existing = _refreshInFlight;
+    if (existing != null) return existing;
+
+    final operation = _refreshSessionOnce();
+    _refreshInFlight = operation;
+
+    return operation.whenComplete(() {
+      if (identical(_refreshInFlight, operation)) {
+        _refreshInFlight = null;
+      }
+    });
+  }
+
+  Future<bool> _refreshSessionOnce() async {
     final session = await _authStore.loadSession();
 
     if (session == null || session.refreshToken.isEmpty) {
@@ -261,7 +364,6 @@ class AtlasHttpClient {
       );
 
       final refreshed = AtlasRemoteSession.fromMap(response.asMap());
-
       await _authStore.saveSession(refreshed);
       return refreshed.accessToken.isNotEmpty;
     } catch (_) {
@@ -388,13 +490,34 @@ class AtlasHttpClient {
     final uri = Uri.parse('$baseUrl$normalizedPath');
     final session = await _validSession();
 
-    final response = await _client.get(
-      uri,
-      headers: await _authenticatedHeaders(
-        session,
-        includeJsonContentType: false,
-      ),
-    ).timeout(AtlasEnvironmentConfig.current.receiveTimeout);
+    http.Response response;
+    try {
+      response = await _client.get(
+        uri,
+        headers: await _authenticatedHeaders(
+          session,
+          includeJsonContentType: false,
+        ),
+      ).timeout(AtlasEnvironmentConfig.current.receiveTimeout);
+    } on TimeoutException {
+      throw const AtlasHttpException(
+        'O servidor demorou para preparar o download.',
+        code: 'timeout',
+        retryable: true,
+      );
+    } on SocketException {
+      throw const AtlasHttpException(
+        'Sem conexão com o servidor Atlas.',
+        code: 'network_unavailable',
+        retryable: true,
+      );
+    } on http.ClientException {
+      throw const AtlasHttpException(
+        'Falha de comunicação durante o download.',
+        code: 'client_error',
+        retryable: true,
+      );
+    }
 
     if (response.statusCode == 401 && retryOnUnauthorized) {
       final refreshed = await _refreshSession();

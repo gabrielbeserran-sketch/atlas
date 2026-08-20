@@ -45,8 +45,11 @@ class AtlasEnvironmentConfig {
   static const production = AtlasEnvironmentConfig(
     environment: AtlasEnvironment.production,
     apiBaseUrl: '',
-    connectTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 30),
+    connectTimeout: Duration(seconds: 15),
+    // Render/Supabase podem ter cold start; o cliente aplica retries apenas
+    // a operações idempotentes, portanto este limite maior não causa
+    // duplicação de POST/PATCH/DELETE.
+    receiveTimeout: Duration(seconds: 60),
     enableNetworkLogs: false,
   );
 

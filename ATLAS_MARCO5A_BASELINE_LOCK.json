@@ -1,24 +1,26 @@
 {
   "schema_version": 2,
-  "baseline": "Marco 4E aprovado + correção v8e",
-  "purpose": "Referência distribuída. Na primeira execução local do Marco 5A, a árvore que ACABOU de passar o Full Quality Gate é promovida uma única vez.",
-  "promotion_rule": "Qualquer alteração em arquivo protegido exige justificativa explícita, Quality Gate completo aprovado e regeneração intencional deste lock.",
+  "baseline": "Atlas V18 estabilizado — baseline estática protegida",
+  "baseline_origin": "v18_stabilization_static_gate",
+  "promoted_at_utc": "2026-08-20T23:41:22.829104+00:00",
+  "purpose": "Impedir regressão silenciosa dos fluxos V1 homologados enquanto o Marco 5 evolui segurança/produção.",
+  "promotion_rule": "Qualquer alteração futura em arquivo protegido exige justificativa explícita, Quality Gate completo aprovado e promoção intencional.",
   "protected_files": {
     "lib/features/farm/data/services/farm_storage_service.dart": "db07d064d883604012172895da9aee5038c3b9a066a57aab3d11de7e009469b4",
     "lib/features/herd/data/services/herd_storage_service.dart": "d642fd269bf8d594d740ce753c1d3981b98d256868cd508925829f49588a9e96",
     "lib/features/animal/data/services/animal_storage_service.dart": "18cfc12100c34fb3c93fa016916bbf307ef3fc6b3f06b34f96202bd44b186554",
     "lib/features/animal/data/services/animal_enterprise_service.dart": "9e3809e13019793d72b9984e2c94e67f0f860a41adb136692aa241facab28fc0",
-    "lib/features/farm_agenda/data/services/farm_agenda_storage_service.dart": "0e34b1b6fa1f832b0b6291e273d521afbf0766cafa7dfde7040e91c580e4f8e7",
+    "lib/features/farm_agenda/data/services/farm_agenda_storage_service.dart": "9f67cf522e22c15f41f0f7809b5a280fef6e579a1bafb4f0111ddc433c5e1003",
     "lib/features/farm_finance/data/services/farm_finance_storage_service.dart": "09e31d954d7f1fbfabdbf9a3cc3bd7b75c77ee98e9c07658ea8b73e68ef629e7",
     "lib/features/farm_inventory/data/services/farm_inventory_storage_service.dart": "db59a76ca06fd17aa1cefc30663edce0ad1338cadf8742bf1198717df1b4b868",
     "lib/features/paddock/data/services/paddock_storage_service.dart": "04d2340a49164c5311ce0b57fbe81a6ea2b7b8b7e9bfb5ba0c8337c94cb1ca7b",
-    "lib/features/nutrition/data/services/nutrition_storage_service.dart": "79f841b39724f1ac6d7c2b64e2a96ad004cd750edaffc1e066650fdd6a7609a4",
+    "lib/features/nutrition/data/services/nutrition_storage_service.dart": "9e9c9549c507f7d507fb551f4fe112d56e8f664ca553a6b59d15b075eb793fdd",
     "backend/tests/test_core_livestock_validation.py": "7582e25052470b23f0bc5646a2346d8654c56bd054102ea9d1d19f62d6b21f96",
     "backend/tests/test_animal_genealogy.py": "bddd92ecbf2b794b723f84b2462205f05197367fed963ca85d6b3d362b5e33eb",
     "backend/tests/test_animal_timeline_history.py": "406e7945ea7cda530c78ec71a736172ffeeff13f72b245da3f13029fc958c817",
-    "backend/tests/test_farm_scope_regression.py": "c64740214a8d7f11bf860eaf6d59e28ddce1fafe64733cb1d49ac5212da9fbaa",
-    "backend/tests/test_marco2_management_crud.py": "de508747d59c21fe22b7b09386ccc2d56e230f8def0ebe5594cb6713f86c8f21",
+    "backend/tests/test_farm_scope_regression.py": "ffd7bf04623b33d86e49a0f072d4d653d25163771e3137ac496c803ea435fed8",
+    "backend/tests/test_marco2_management_crud.py": "7eec96adcdced7029979145ef13b785accd90cee95d12205ea713bea1a7ccce3",
     "backend/tests/test_marco3_agenda_integrations.py": "40745a94a6b24cfc063eedf34deb9795d7723fdee677136600bebbcbb83eba2b"
   },
-  "baseline_origin": "packaged_reference"
+  "previous_baseline_origin": "v18_stabilization_static_gate"
 }

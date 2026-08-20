@@ -1,7 +1,8 @@
 {
   "status": "OK",
-  "baseline": "Marco 4E aprovado + correção v8e",
+  "baseline": "Atlas V18 estabilizado — baseline estática protegida",
+  "baseline_origin": "v18_stabilization_static_gate",
   "protected_files_total": 15,
   "errors": [],
-  "rule": "Qualquer alteração em arquivo protegido exige justificativa explícita, Quality Gate completo aprovado e regeneração intencional deste lock."
+  "rule": "Qualquer alteração futura em arquivo protegido exige justificativa explícita, Quality Gate completo aprovado e promoção intencional."
 }

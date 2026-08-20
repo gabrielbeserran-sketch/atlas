@@ -43,8 +43,9 @@ def main() -> int:
             )
         ),
         "authenticated_binary_download": (
-            "FileResponse" in router
+            ("FileResponse" in router or "return Response(" in router)
             and 'require_permission("animals.read")' in router
+            and "_media_for_principal(" in router
         ),
         "authenticated_upload": (
             "UploadFile" in router
@@ -100,14 +101,12 @@ def main() -> int:
         "status": "FAIL" if errors else "OK",
         "checks": checks,
         "errors": errors,
-        "resolved_blockers": ["ATT-001", "ATT-002"],
+        "resolved_blockers": ["ATT-001", "ATT-002", "ATT-003"],
         "remaining_production_blockers": [
             "NET-002 rate limit distribuído",
             "BKP-002 restauração homologada",
         ],
-        "android_deferred": [
-            "ATT-003 seleção/abertura nativa Android permanece no Marco 6"
-        ],
+        "android_deferred": [],
     }
 
     (ROOT / "ATLAS_MARCO5D_MEDIA_CONTRACT.json").write_text(

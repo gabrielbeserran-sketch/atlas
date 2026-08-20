@@ -79,7 +79,7 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
   }) async {
     try {
       // O timeout de rede pertence ao AtlasHttpClient e varia por ambiente.
-      // Em produção, o cliente já usa receiveTimeout de 30 segundos.
+      // Em produção, o cliente já usa receiveTimeout de 60 segundos.
       // Não aplicamos um segundo timeout local mais curto no Rebanho.
       return await loader();
     } catch (error) {
@@ -556,39 +556,69 @@ class _Header extends StatelessWidget {
     required this.onRefresh,
     required this.onCreateLot,
   });
+
   final String farmName;
   final VoidCallback? onRefresh;
   final VoidCallback? onCreateLot;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Gestão do rebanho',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(farmName, style: const TextStyle(color: Colors.black54)),
-          ],
+  Widget build(BuildContext context) {
+    final title = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Gestão do rebanho',
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
-      ),
-      OutlinedButton.icon(
-        onPressed: onRefresh,
-        icon: const Icon(Icons.refresh),
-        label: const Text('Atualizar'),
-      ),
-      const SizedBox(width: 10),
-      FilledButton.icon(
-        onPressed: onCreateLot,
-        icon: const Icon(Icons.add_box_outlined),
-        label: const Text('Novo lote'),
-      ),
-    ],
-  );
+        const SizedBox(height: 4),
+        Text(farmName, style: const TextStyle(color: Colors.black54)),
+      ],
+    );
+
+    final refresh = OutlinedButton.icon(
+      onPressed: onRefresh,
+      icon: const Icon(Icons.refresh),
+      label: const Text('Atualizar'),
+    );
+
+    final create = FilledButton.icon(
+      onPressed: onCreateLot,
+      icon: const Icon(Icons.add_box_outlined),
+      label: const Text('Novo lote'),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              title,
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(child: refresh),
+                  const SizedBox(width: 8),
+                  Expanded(child: create),
+                ],
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: title),
+            refresh,
+            const SizedBox(width: 10),
+            create,
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _Indicators extends StatelessWidget {
@@ -702,86 +732,97 @@ class _Filters extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     child: Padding(
       padding: const EdgeInsets.all(16),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          SizedBox(
-            width: 360,
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(
-                labelText: 'Buscar por brinco, SISBOV, nome ou raça',
-                prefixIcon: Icon(Icons.search),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 720;
+          final fullWidth = constraints.maxWidth;
+
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SizedBox(
+                width: compact ? fullWidth : 360,
+                child: TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    labelText: 'Buscar animal',
+                    hintText: 'Brinco, SISBOV, nome ou raça',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                ),
               ),
-            ),
-          ),
-          SizedBox(
-            width: 210,
-            child: DropdownButtonFormField<String>(
-              initialValue: selectedLotId,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Lote'),
-              items: [
-                const DropdownMenuItem(
-                  value: '',
-                  child: Text(
-                    'Todos os lotes',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                ...groups.map(
-                  (group) => DropdownMenuItem(
-                    value: group.id,
-                    child: Text(
-                      group.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              SizedBox(
+                width: compact ? fullWidth : 210,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedLotId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Lote'),
+                  items: [
+                    const DropdownMenuItem(
+                      value: '',
+                      child: Text(
+                        'Todos os lotes',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
+                    ...groups.map(
+                      (group) => DropdownMenuItem(
+                        value: group.id,
+                        child: Text(
+                          group.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                  onChanged: onLotChanged,
                 ),
-              ],
-              onChanged: onLotChanged,
-            ),
-          ),
-          SizedBox(
-            width: 170,
-            child: DropdownButtonFormField<String>(
-              initialValue: selectedStatus,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Situação'),
-              items: const [
-                DropdownMenuItem(value: '', child: Text('Todas')),
-                DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
-                DropdownMenuItem(value: 'Vendido', child: Text('Vendido')),
-                DropdownMenuItem(value: 'Morto', child: Text('Morto')),
-                DropdownMenuItem(value: 'Inativo', child: Text('Inativo')),
-              ],
-              onChanged: onStatusChanged,
-            ),
-          ),
-          SizedBox(
-            width: 160,
-            child: DropdownButtonFormField<String>(
-              initialValue: selectedSex,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Sexo'),
-              items: const [
-                DropdownMenuItem(value: '', child: Text('Todos')),
-                DropdownMenuItem(value: 'Fêmea', child: Text('Fêmea')),
-                DropdownMenuItem(value: 'Macho', child: Text('Macho')),
-              ],
-              onChanged: onSexChanged,
-            ),
-          ),
-          TextButton.icon(
-            onPressed: onClear,
-            icon: const Icon(Icons.clear_all),
-            label: const Text('Limpar'),
-          ),
-        ],
+              ),
+              SizedBox(
+                width: compact ? fullWidth : 170,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedStatus,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Situação'),
+                  items: const [
+                    DropdownMenuItem(value: '', child: Text('Todas')),
+                    DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
+                    DropdownMenuItem(value: 'Vendido', child: Text('Vendido')),
+                    DropdownMenuItem(value: 'Morto', child: Text('Morto')),
+                    DropdownMenuItem(value: 'Inativo', child: Text('Inativo')),
+                  ],
+                  onChanged: onStatusChanged,
+                ),
+              ),
+              SizedBox(
+                width: compact ? fullWidth : 160,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedSex,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Sexo'),
+                  items: const [
+                    DropdownMenuItem(value: '', child: Text('Todos')),
+                    DropdownMenuItem(value: 'Fêmea', child: Text('Fêmea')),
+                    DropdownMenuItem(value: 'Macho', child: Text('Macho')),
+                  ],
+                  onChanged: onSexChanged,
+                ),
+              ),
+              SizedBox(
+                width: compact ? fullWidth : null,
+                child: TextButton.icon(
+                  onPressed: onClear,
+                  icon: const Icon(Icons.clear_all),
+                  label: const Text('Limpar filtros'),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     ),
   );
@@ -922,30 +963,53 @@ class _AnimalCard extends StatelessWidget {
         subtitle: Text(
           '${animal.tag} • ${animal.sex} • ${animal.breed} • ${record.group.name}',
         ),
-        trailing: Wrap(
-          spacing: 4,
-          children: [
-            if (animal.weight > 0)
-              Chip(label: Text('${animal.weight.toStringAsFixed(0)} kg')),
-            IconButton(
-              tooltip: 'Pesagens',
-              onPressed: onWeights,
-              icon: const Icon(Icons.monitor_weight_outlined),
+        trailing: PopupMenuButton<String>(
+          tooltip: 'Ações do animal',
+          icon: const Icon(Icons.more_vert),
+          onSelected: (value) {
+            switch (value) {
+              case 'weights':
+                onWeights();
+              case 'movements':
+                onMovements();
+              case 'edit':
+                onEdit();
+              case 'delete':
+                onDelete();
+            }
+          },
+          itemBuilder: (context) => const [
+            PopupMenuItem(
+              value: 'weights',
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.monitor_weight_outlined),
+                title: Text('Pesagens'),
+              ),
             ),
-            IconButton(
-              tooltip: 'Movimentações',
-              onPressed: onMovements,
-              icon: const Icon(Icons.swap_horiz),
+            PopupMenuItem(
+              value: 'movements',
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.swap_horiz),
+                title: Text('Movimentações'),
+              ),
             ),
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'edit') onEdit();
-                if (value == 'delete') onDelete();
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'edit', child: Text('Editar')),
-                PopupMenuItem(value: 'delete', child: Text('Excluir')),
-              ],
+            PopupMenuItem(
+              value: 'edit',
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.edit_outlined),
+                title: Text('Editar'),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.delete_outline),
+                title: Text('Excluir'),
+              ),
             ),
           ],
         ),

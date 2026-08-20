@@ -1,7 +1,7 @@
 {
-  "backend_route_count": 502,
-  "frontend_http_call_count": 218,
-  "screen_count": 249,
+  "backend_route_count": 510,
+  "frontend_http_call_count": 223,
+  "screen_count": 250,
   "duplicate_backend_routes": [],
   "frontend_calls_without_backend_route": [],
   "orphan_screens": [],
@@ -151,7 +151,7 @@
   "demo_seed_files": [
     "lib/features/digital_twin/presentation/screens/atlas_digital_twin_screen.dart"
   ],
-  "routes_without_obvious_consumer_count": 203,
+  "routes_without_obvious_consumer_count": 206,
   "routes_without_obvious_consumer": [
     "POST /advanced/farms/{farm_id}/geo-assets",
     "POST /advanced/farms/{farm_id}/geo/import",
@@ -170,6 +170,7 @@
     "GET /analytics/benchmarks",
     "PUT /animal-media/{animal_id}/{media_id}/content",
     "GET /animal-media/{animal_id}/{media_id}/content",
+    "GET /animals/{animal_id}/timeline",
     "POST /atlas-ai/sessions",
     "GET /atlas-ai/sessions",
     "GET /atlas-ai/sessions/{session_id}/messages",
@@ -288,6 +289,8 @@
     "POST /iot/automation-rules",
     "GET /iot/automation-rules",
     "GET /iot-platform/readiness",
+    "PATCH /livestock/animals/{animal_id}/weights/{weight_id}",
+    "DELETE /livestock/animals/{animal_id}/weights/{weight_id}",
     "POST /livestock/health/protocols/{protocol_id}/apply",
     "POST /livestock/inventory/products/{product_id}/movements",
     "GET /livestock/dashboard",

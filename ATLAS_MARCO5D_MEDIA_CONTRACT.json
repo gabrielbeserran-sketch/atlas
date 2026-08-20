@@ -18,13 +18,12 @@
   "errors": [],
   "resolved_blockers": [
     "ATT-001",
-    "ATT-002"
+    "ATT-002",
+    "ATT-003"
   ],
   "remaining_production_blockers": [
     "NET-002 rate limit distribuído",
     "BKP-002 restauração homologada"
   ],
-  "android_deferred": [
-    "ATT-003 seleção/abertura nativa Android permanece no Marco 6"
-  ]
+  "android_deferred": []
 }

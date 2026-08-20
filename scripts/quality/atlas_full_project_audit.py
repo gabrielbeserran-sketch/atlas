@@ -58,6 +58,24 @@ def main() -> int:
                 unsafe_scope.append(f"{path.relative_to(ROOT)}:{line_no}")
     result["unsafe_farm_scope_checks"] = unsafe_scope
 
+    livestock_router_text = (
+        BACKEND / "app" / "routers" / "livestock.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    livestock_farm_scope_errors: list[str] = []
+    for marker, message in (
+        ("def _farm_allowed(\n    db: Session", "escopo central não recebe sessão do banco"),
+        ("Farm.company_id == principal.company.id", "escopo central não valida empresa da fazenda"),
+        ("Farm.tenant_id == principal.company.tenant_id", "escopo central não valida tenant da fazenda"),
+        ('detail="Fazenda não encontrada."', "escopo central não rejeita farm_id externo/inexistente"),
+    ):
+        if marker not in livestock_router_text:
+            livestock_farm_scope_errors.append(message)
+    if "_farm_allowed(principal," in livestock_router_text:
+        livestock_farm_scope_errors.append(
+            "há chamada de _farm_allowed sem validação de empresa/tenant"
+        )
+    result["livestock_farm_scope_contract_errors"] = livestock_farm_scope_errors
+
     migrations: dict[str, str | None] = {}
     for path in (BACKEND / "alembic" / "versions").glob("*.py"):
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -222,8 +240,16 @@ def main() -> int:
     animal_central_errors: list[str] = []
     if "Future<List<T>> _safeLoad<T>" not in animal_detail:
         animal_central_errors.append("Central do Animal sem isolamento de fontes")
-    if ".timeout(timeout)" not in animal_detail:
-        animal_central_errors.append("Central do Animal sem timeout por fonte")
+    http_client = (
+        LIB / "core" / "network" / "atlas_http_client.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    official_network_timeout = (
+        ".timeout(AtlasEnvironmentConfig.current.receiveTimeout)" in http_client
+    )
+    if ".timeout(timeout)" not in animal_detail and not official_network_timeout:
+        animal_central_errors.append(
+            "Central do Animal sem timeout local ou timeout oficial de rede"
+        )
     if "finally {" not in animal_detail or "isLoading = false" not in animal_detail:
         animal_central_errors.append("Central do Animal não garante encerramento do loading")
     if "LinearProgressIndicator" not in animal_detail:
@@ -250,8 +276,12 @@ def main() -> int:
         livestock_core_errors.append("Rebanho pode omitir animais sem lote")
     if "remote.area" not in herd_overview:
         livestock_core_errors.append("Rebanho não preserva área oficial da fazenda")
-    if "Future<List<T>> _safeLoad<T>" not in herd_overview or ".timeout(timeout)" not in herd_overview:
-        livestock_core_errors.append("Rebanho sem isolamento/timeout das fontes")
+    if "Future<List<T>> _safeLoad<T>" not in herd_overview:
+        livestock_core_errors.append("Rebanho sem isolamento das fontes")
+    if ".timeout(timeout)" not in herd_overview and not official_network_timeout:
+        livestock_core_errors.append(
+            "Rebanho sem timeout local ou timeout oficial de rede"
+        )
     if "finally {" not in herd_overview:
         livestock_core_errors.append("Rebanho não garante encerramento do loading")
     result["livestock_core_contract_errors"] = livestock_core_errors
@@ -420,6 +450,7 @@ def main() -> int:
         or bool(result["missing_permission_catalog_entries"])
         or bool(result["duplicate_routes"])
         or bool(result["unsafe_farm_scope_checks"])
+        or bool(result["livestock_farm_scope_contract_errors"])
         or bool(result["farm_frontend_contract_errors"])
         or bool(result["operational_module_contract_errors"])
         or bool(result["animal_central_contract_errors"])

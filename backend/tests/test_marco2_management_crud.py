@@ -121,5 +121,25 @@ def test_marco2_paddock_inventory_nutrition_finance_crud(client):
 
     assert client.delete(f"/api/v1/livestock/finance/v2/{entry_id}", headers=headers).status_code == 204
     assert client.delete(f"/api/v1/livestock/nutrition/plans/{plan_id}", headers=headers).status_code == 204
+
+    # V7+: saldo de estoque não pode ser apagado silenciosamente.
+    # Zera o saldo por movimentação auditável antes de inativar o produto.
+    remaining = movement.json()["balance_after"]
+    if remaining > 0:
+        zeroing = client.post(
+            f"/api/v1/livestock/inventory/products/{product_id}/movements/v2",
+            headers=headers,
+            json={
+                "movement_type": "exit",
+                "quantity": remaining,
+                "unit_cost": 2.5,
+                "reason": "Limpeza do teste Marco 2",
+                "reference_type": "test_cleanup",
+                "reference_id": "marco2-cleanup",
+            },
+        )
+        assert zeroing.status_code == 201
+        assert zeroing.json()["balance_after"] == 0
+
     assert client.delete(f"/api/v1/livestock/inventory/products/{product_id}/v2", headers=headers).status_code == 204
     assert client.delete(f"/api/v1/livestock/paddocks/{paddock_id}", headers=headers).status_code == 204

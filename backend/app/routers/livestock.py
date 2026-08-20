@@ -17,6 +17,7 @@ from ..database import get_db
 from ..models import (
     AnimalMovement,
     FinancialEntry,
+    Farm,
     HealthEvent,
     HealthProtocol,
     HerdLot,
@@ -83,9 +84,24 @@ from ..schemas import (
 router = APIRouter(prefix="/livestock", tags=["livestock"])
 
 
-def _farm_allowed(principal: Principal, farm_id: str) -> None:
+def _farm_allowed(
+    db: Session,
+    principal: Principal,
+    farm_id: str,
+) -> None:
+    farm = db.scalar(
+        select(Farm).where(
+            Farm.id == farm_id,
+            Farm.company_id == principal.company.id,
+            Farm.tenant_id == principal.company.tenant_id,
+        )
+    )
+    if farm is None:
+        raise HTTPException(status_code=404, detail="Fazenda não encontrada.")
+
     if principal.membership.role in {"owner", "admin"}:
         return
+
     allowed = set(principal.membership.farm_ids or [])
     if allowed and farm_id not in allowed:
         raise HTTPException(status_code=403, detail="Fazenda não autorizada.")
@@ -100,7 +116,7 @@ def _animal(db: Session, principal: Principal, animal_id: str) -> LivestockAnima
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Animal não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
     return item
 
 
@@ -181,6 +197,174 @@ def _delete_source_tasks(
         db.delete(task)
 
 
+
+def _sync_weight_schedule_task(
+    *,
+    db: Session,
+    principal: Principal,
+    animal: LivestockAnimal,
+    interval_days: int = 30,
+) -> OperationalTask | None:
+    latest = db.scalar(
+        select(WeightRecord)
+        .where(
+            WeightRecord.company_id == principal.company.id,
+            WeightRecord.animal_id == animal.id,
+        )
+        .order_by(WeightRecord.measured_at.desc(), WeightRecord.id.desc())
+        .limit(1)
+    )
+    due_at = (
+        latest.measured_at + timedelta(days=max(1, interval_days))
+        if latest is not None
+        else datetime.now(timezone.utc)
+    )
+    return _sync_operational_task(
+        db=db,
+        principal=principal,
+        farm_id=animal.farm_id,
+        source_type="weight_schedule",
+        source_id=animal.id,
+        title=f"Nova pesagem — {animal.name or animal.tag or animal.id}",
+        description=(
+            "Atualizar peso, escore corporal e indicadores de desempenho "
+            "do animal."
+        ),
+        due_at=due_at,
+        priority="medium",
+    )
+
+
+def _sync_nutrition_plan_task(
+    *,
+    db: Session,
+    principal: Principal,
+    plan: NutritionPlan,
+) -> OperationalTask | None:
+    due_at = plan.end_date if plan.active else None
+    return _sync_operational_task(
+        db=db,
+        principal=principal,
+        farm_id=plan.farm_id,
+        source_type="nutrition_plan",
+        source_id=plan.id,
+        title=f"Revisar dieta — {plan.name}",
+        description=(
+            "Reavaliar consumo, GMD, custo da dieta e necessidade de "
+            "renovação do plano nutricional."
+        ),
+        due_at=due_at,
+        priority="medium",
+    )
+
+
+def _sync_existing_smart_agenda(
+    *,
+    db: Session,
+    principal: Principal,
+    farm_id: str,
+) -> dict[str, int]:
+    """Reconcilia Agenda Inteligente a partir dos dados oficiais.
+
+    É idempotente: cada fonte possui source_type/source_id estáveis e
+    _sync_operational_task cancela duplicidades históricas.
+    """
+    _farm_allowed(db, principal, farm_id)
+    counters = defaultdict(int)
+
+    animals = list(
+        db.scalars(
+            select(LivestockAnimal).where(
+                LivestockAnimal.company_id == principal.company.id,
+                LivestockAnimal.farm_id == farm_id,
+                LivestockAnimal.status.in_(["active", "Ativo"]),
+            )
+        ).all()
+    )
+    for animal in animals:
+        _sync_weight_schedule_task(db=db, principal=principal, animal=animal)
+        counters["weight_schedule"] += 1
+
+    plans = list(
+        db.scalars(
+            select(NutritionPlan).where(
+                NutritionPlan.company_id == principal.company.id,
+                NutritionPlan.farm_id == farm_id,
+                NutritionPlan.active.is_(True),
+            )
+        ).all()
+    )
+    for plan in plans:
+        _sync_nutrition_plan_task(db=db, principal=principal, plan=plan)
+        counters["nutrition_plan"] += 1
+
+    health_events = list(
+        db.scalars(
+            select(HealthEvent).where(
+                HealthEvent.company_id == principal.company.id,
+                HealthEvent.farm_id == farm_id,
+            )
+        ).all()
+    )
+    for event in health_events:
+        _sync_operational_task(
+            db=db,
+            principal=principal,
+            farm_id=event.farm_id,
+            source_type="health_event",
+            source_id=event.id,
+            title=f"Retorno sanitário — {event.event_type}",
+            description=(
+                "Retorno programado para "
+                f"{event.animal_id or event.lot_id or 'manejo sanitário'}."
+            ),
+            due_at=event.next_date,
+            priority="high" if event.is_quarantine else "medium",
+        )
+        if event.next_date is not None:
+            counters["health_event"] += 1
+
+    reproduction_events = list(
+        db.scalars(
+            select(ReproductionEvent).where(
+                ReproductionEvent.company_id == principal.company.id,
+                ReproductionEvent.farm_id == farm_id,
+            )
+        ).all()
+    )
+    for event in reproduction_events:
+        animal = db.scalar(
+            select(LivestockAnimal).where(
+                LivestockAnimal.id == event.animal_id,
+                LivestockAnimal.company_id == principal.company.id,
+            )
+        )
+        if animal is None:
+            continue
+        _sync_operational_task(
+            db=db,
+            principal=principal,
+            farm_id=farm_id,
+            source_type="reproduction_event",
+            source_id=event.id,
+            title=f"{event.event_type} — {animal.name or animal.tag or animal.id}",
+            description=(
+                f"Retorno reprodutivo de "
+                f"{animal.name or animal.tag or animal.id}."
+            ),
+            due_at=event.expected_date,
+            priority=(
+                "high"
+                if event.event_code == "pregnancy_diagnosis"
+                else "medium"
+            ),
+        )
+        if event.expected_date is not None:
+            counters["reproduction_event"] += 1
+
+    return dict(counters)
+
+
 def _refresh_animal_weight_state(
     *,
     db: Session,
@@ -210,7 +394,10 @@ def _refresh_animal_reproduction_state(
 ) -> None:
     latest = db.scalar(
         select(ReproductionEvent)
-        .where(ReproductionEvent.animal_id == animal.id)
+        .where(
+            ReproductionEvent.company_id == animal.company_id,
+            ReproductionEvent.animal_id == animal.id,
+        )
         .order_by(ReproductionEvent.occurred_at.desc())
         .limit(1)
     )
@@ -239,7 +426,7 @@ def _lot(db: Session, principal: Principal, lot_id: str) -> HerdLot:
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Lote não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
     return item
 
 
@@ -249,7 +436,7 @@ def create_lot(
     principal: Principal = Depends(require_permission("herd.write")),
     db: Session = Depends(get_db),
 ) -> HerdLot:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item = HerdLot(
         id=new_id("lot"),
         tenant_id=principal.company.tenant_id,
@@ -278,7 +465,7 @@ def list_lots(
     principal: Principal = Depends(require_permission("herd.read")),
     db: Session = Depends(get_db),
 ) -> list[HerdLot]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     query = select(HerdLot).where(
         HerdLot.company_id == principal.company.id,
         HerdLot.farm_id == farm_id,
@@ -338,7 +525,7 @@ def create_animal(
     principal: Principal = Depends(require_permission("animals.create")),
     db: Session = Depends(get_db),
 ) -> LivestockAnimal:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     if payload.lot_id:
         lot = _lot(db, principal, payload.lot_id)
         if lot.farm_id != payload.farm_id:
@@ -379,7 +566,7 @@ def list_animals(
     principal: Principal = Depends(require_permission("animals.read")),
     db: Session = Depends(get_db),
 ) -> list[LivestockAnimal]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     query = select(LivestockAnimal).where(
         LivestockAnimal.company_id == principal.company.id,
         LivestockAnimal.farm_id == farm_id,
@@ -736,6 +923,11 @@ def add_weight(
         animal.current_weight = item.weight
         animal.body_condition_score = item.body_condition_score
 
+    _sync_weight_schedule_task(
+        db=db,
+        principal=principal,
+        animal=animal,
+    )
     db.commit()
     db.refresh(item)
     return item
@@ -763,6 +955,11 @@ def update_weight(
         setattr(item, field, value)
     db.flush()
     _refresh_animal_weight_state(db=db, animal=animal)
+    _sync_weight_schedule_task(
+        db=db,
+        principal=principal,
+        animal=animal,
+    )
     db.commit()
     db.refresh(item)
     return item
@@ -793,6 +990,11 @@ def delete_weight(
     db.delete(item)
     db.flush()
     _refresh_animal_weight_state(db=db, animal=animal)
+    _sync_weight_schedule_task(
+        db=db,
+        principal=principal,
+        animal=animal,
+    )
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -994,7 +1196,7 @@ def reproduction_summary(
     principal: Principal = Depends(require_permission("reproduction.read")),
     db: Session = Depends(get_db),
 ) -> ReproductionSummaryResponse:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     animals = list(db.scalars(select(LivestockAnimal).where(LivestockAnimal.company_id == principal.company.id, LivestockAnimal.farm_id == farm_id, LivestockAnimal.sex.ilike("%f%"))).all())
     events = list(db.scalars(select(ReproductionEvent).where(ReproductionEvent.company_id == principal.company.id, ReproductionEvent.farm_id == farm_id)).all())
     serviced = {e.animal_id for e in events if e.event_code in {"ai", "iatf", "natural_service"}}
@@ -1005,7 +1207,7 @@ def reproduction_summary(
     abortions = sum(1 for e in events if e.event_code == "abortion")
     total = len(animals)
     now = datetime.now(timezone.utc)
-    upcoming = [{"event_id": e.id, "animal_id": e.animal_id, "type": e.event_type, "due_at": e.expected_date.isoformat()} for e in events if e.expected_date and e.expected_date >= now][:100]
+    upcoming = [{"event_id": e.id, "animal_id": e.animal_id, "type": e.event_type, "due_at": e.expected_date.isoformat()} for e in events if e.expected_date and _v10_utc(e.expected_date) >= now][:100]
     return ReproductionSummaryResponse(
         farm_id=farm_id, total_females=total, serviced_animals=len(serviced), diagnosed_animals=len(diagnosed),
         pregnant_animals=len(pregnant), calvings=calvings, abortions=abortions, services=services,
@@ -1023,7 +1225,7 @@ def add_health_event(
     principal: Principal = Depends(require_permission("health.write")),
     db: Session = Depends(get_db),
 ) -> HealthEvent:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     if not payload.animal_id and not payload.lot_id:
         raise HTTPException(status_code=422, detail="Informe animal_id ou lot_id.")
     if payload.animal_id:
@@ -1096,7 +1298,7 @@ def update_health_event(
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
     changes = payload.model_dump(exclude_unset=True)
     stock_fields_changed = bool({"inventory_product_id", "inventory_quantity"} & set(changes))
     cost_fields_changed = stock_fields_changed or "treatment_cost" in changes
@@ -1219,7 +1421,7 @@ def delete_health_event(
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
 
     consumption_movements = list(
         db.scalars(
@@ -1287,7 +1489,7 @@ def list_health_events(
     principal: Principal = Depends(require_permission("health.read")),
     db: Session = Depends(get_db),
 ) -> list[HealthEvent]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     query = select(HealthEvent).where(
         HealthEvent.company_id == principal.company.id,
         HealthEvent.farm_id == farm_id,
@@ -1301,14 +1503,14 @@ def list_health_events(
 
 @router.post("/health/protocols", response_model=HealthProtocolResponse, status_code=201)
 def create_health_protocol(payload: HealthProtocolCreateRequest, principal: Principal = Depends(require_permission("health.write")), db: Session = Depends(get_db)) -> HealthProtocol:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item = HealthProtocol(id=new_id("health_protocol"), tenant_id=principal.company.tenant_id, company_id=principal.company.id, created_by=principal.user.id, **payload.model_dump())
     db.add(item); db.commit(); db.refresh(item); return item
 
 
 @router.get("/health/protocols", response_model=list[HealthProtocolResponse])
 def list_health_protocols(farm_id: str, principal: Principal = Depends(require_permission("health.read")), db: Session = Depends(get_db)) -> list[HealthProtocol]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     return list(db.scalars(select(HealthProtocol).where(HealthProtocol.company_id == principal.company.id, HealthProtocol.farm_id == farm_id, HealthProtocol.active.is_(True))).all())
 
 
@@ -1316,7 +1518,7 @@ def list_health_protocols(farm_id: str, principal: Principal = Depends(require_p
 def apply_health_protocol(protocol_id: str, payload: HealthProtocolApplyRequest, principal: Principal = Depends(require_permission("health.write")), db: Session = Depends(get_db)) -> list[HealthEvent]:
     protocol = db.scalar(select(HealthProtocol).where(HealthProtocol.id == protocol_id, HealthProtocol.company_id == principal.company.id))
     if protocol is None: raise HTTPException(status_code=404, detail="Protocolo não encontrado.")
-    _farm_allowed(principal, protocol.farm_id)
+    _farm_allowed(db, principal, protocol.farm_id)
     animal_ids = list(payload.animal_ids)
     if payload.lot_id:
         lot = _lot(db, principal, payload.lot_id)
@@ -1341,7 +1543,7 @@ def create_product(
     principal: Principal = Depends(require_permission("inventory.write")),
     db: Session = Depends(get_db),
 ) -> InventoryProduct:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item = InventoryProduct(
         id=new_id("product"),
         tenant_id=principal.company.tenant_id,
@@ -1364,7 +1566,7 @@ def list_products(
     principal: Principal = Depends(require_permission("inventory.read")),
     db: Session = Depends(get_db),
 ) -> list[InventoryProduct]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     return list(
         db.scalars(
             select(InventoryProduct)
@@ -1393,7 +1595,7 @@ def move_inventory(
     )
     if product is None:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
-    _farm_allowed(principal, product.farm_id)
+    _farm_allowed(db, principal, product.farm_id)
     delta = payload.quantity if payload.movement_type in {"entry", "adjustment_in"} else -payload.quantity
     if product.quantity + delta < 0:
         raise HTTPException(status_code=422, detail="Estoque insuficiente.")
@@ -1425,7 +1627,7 @@ def create_financial_entry(
     principal: Principal = Depends(require_permission("finance.write")),
     db: Session = Depends(get_db),
 ) -> FinancialEntry:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item = FinancialEntry(
         id=new_id("finance"),
         tenant_id=principal.company.tenant_id,
@@ -1445,7 +1647,7 @@ def list_financial_entries(
     principal: Principal = Depends(require_permission("finance.read")),
     db: Session = Depends(get_db),
 ) -> list[FinancialEntry]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     return list(
         db.scalars(
             select(FinancialEntry)
@@ -1464,7 +1666,7 @@ def create_nutrition_event(
     principal: Principal = Depends(require_permission("nutrition.write")),
     db: Session = Depends(get_db),
 ) -> NutritionEvent:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     lot = _lot(db, principal, payload.lot_id)
     if lot.farm_id != payload.farm_id:
         raise HTTPException(status_code=422, detail="Lote pertence a outra fazenda.")
@@ -1543,7 +1745,7 @@ def list_nutrition_events(
     principal: Principal = Depends(require_permission("nutrition.read")),
     db: Session = Depends(get_db),
 ) -> list[NutritionEvent]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     query = select(NutritionEvent).where(
         NutritionEvent.company_id == principal.company.id,
         NutritionEvent.farm_id == farm_id,
@@ -1559,7 +1761,7 @@ def livestock_dashboard(
     principal: Principal = Depends(require_permission("herd.read")),
     db: Session = Depends(get_db),
 ) -> dict:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     company_id = principal.company.id
     return {
         "farm_id": farm_id,
@@ -1590,7 +1792,7 @@ def health_alerts(
     principal: Principal = Depends(require_permission("health.read")),
     db: Session = Depends(get_db),
 ) -> list[dict]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     now = datetime.now(timezone.utc)
     limit = now + timedelta(days=max(0, days))
     events = list(db.scalars(select(HealthEvent).where(
@@ -1600,10 +1802,10 @@ def health_alerts(
     alerts: list[dict] = []
     for event in events:
         base = {"event_id": event.id, "animal_id": event.animal_id, "lot_id": event.lot_id, "event_type": event.event_type}
-        if event.next_date and event.next_date <= limit and event.status not in {"cancelled", "completed_future"}:
-            alerts.append({**base, "alert_type": "scheduled_health_action", "due_at": event.next_date.isoformat(), "severity": "high" if event.next_date < now else "medium", "message": "Ação sanitária programada."})
+        if event.next_date and _v10_utc(event.next_date) <= limit and event.status not in {"cancelled", "completed_future"}:
+            alerts.append({**base, "alert_type": "scheduled_health_action", "due_at": event.next_date.isoformat(), "severity": "high" if _v10_utc(event.next_date) < now else "medium", "message": "Ação sanitária programada."})
         for kind, value in (("meat_withdrawal", event.withdrawal_meat_until), ("milk_withdrawal", event.withdrawal_milk_until)):
-            if value and value >= now:
+            if value and _v10_utc(value) >= now:
                 alerts.append({**base, "alert_type": kind, "due_at": value.isoformat(), "severity": "high", "message": "Animal dentro do período de carência."})
         if event.is_quarantine and event.status not in {"released", "completed"}:
             alerts.append({**base, "alert_type": "quarantine", "due_at": None, "severity": "critical", "message": "Animal ou lote em quarentena."})
@@ -1631,7 +1833,7 @@ def _inventory_product(
     product = db.scalar(query)
     if product is None:
         raise HTTPException(status_code=404, detail="Produto de estoque não encontrado.")
-    _farm_allowed(principal, product.farm_id)
+    _farm_allowed(db, principal, product.farm_id)
     return product
 
 
@@ -1685,7 +1887,7 @@ def _apply_stock_movement(*, db: Session, principal: Principal, product: Invento
 @router.post("/inventory/products/v2", response_model=InventoryProductResponse, status_code=201)
 def create_inventory_product_v2(payload: InventoryProductPhase2CreateRequest,
     principal: Principal = Depends(require_permission("inventory.write")), db: Session = Depends(get_db)) -> InventoryProduct:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item=InventoryProduct(id=new_id("product"), tenant_id=principal.company.tenant_id,
         company_id=principal.company.id, **payload.model_dump())
     db.add(item)
@@ -1715,7 +1917,7 @@ def list_inventory_movements(product_id: str,
 @router.get("/inventory/alerts", response_model=list[InventoryAlertResponse])
 def inventory_alerts(farm_id: str, expiry_days: int = 30,
     principal: Principal = Depends(require_permission("inventory.read")), db: Session = Depends(get_db)) -> list[dict]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     now=datetime.now(timezone.utc); limit=now+timedelta(days=max(0,expiry_days)); alerts=[]
     products=db.scalars(select(InventoryProduct).where(InventoryProduct.company_id==principal.company.id,
         InventoryProduct.farm_id==farm_id, InventoryProduct.active.is_(True))).all()
@@ -1724,15 +1926,15 @@ def inventory_alerts(farm_id: str, expiry_days: int = 30,
                   minimum_quantity=p.minimum_quantity, expiry_date=p.expiry_date)
         if p.quantity <= 0: alerts.append({**base,"alert_type":"out_of_stock","severity":"critical","message":"Produto sem estoque."})
         elif p.quantity <= p.minimum_quantity: alerts.append({**base,"alert_type":"low_stock","severity":"high","message":"Produto atingiu o estoque mínimo."})
-        if p.expiry_date and p.expiry_date < now: alerts.append({**base,"alert_type":"expired","severity":"critical","message":"Produto vencido."})
-        elif p.expiry_date and p.expiry_date <= limit: alerts.append({**base,"alert_type":"near_expiry","severity":"medium","message":"Produto próximo do vencimento."})
+        if p.expiry_date and _v10_utc(p.expiry_date) < now: alerts.append({**base,"alert_type":"expired","severity":"critical","message":"Produto vencido."})
+        elif p.expiry_date and _v10_utc(p.expiry_date) <= limit: alerts.append({**base,"alert_type":"near_expiry","severity":"medium","message":"Produto próximo do vencimento."})
     return alerts
 
 
 @router.post("/nutrition/ingredients", response_model=NutritionIngredientResponse, status_code=201)
 def create_nutrition_ingredient(payload: NutritionIngredientCreateRequest,
     principal: Principal = Depends(require_permission("nutrition.write")), db: Session = Depends(get_db)) -> NutritionIngredient:
-    _farm_allowed(principal,payload.farm_id)
+    _farm_allowed(db, principal,payload.farm_id)
     if payload.inventory_product_id:
         product=_inventory_product(db,principal,payload.inventory_product_id)
         if product.farm_id != payload.farm_id: raise HTTPException(status_code=422,detail="Produto pertence a outra fazenda.")
@@ -1748,7 +1950,7 @@ def create_nutrition_ingredient(payload: NutritionIngredientCreateRequest,
 @router.get("/nutrition/ingredients", response_model=list[NutritionIngredientResponse])
 def list_nutrition_ingredients(farm_id: str,
     principal: Principal = Depends(require_permission("nutrition.read")), db: Session = Depends(get_db)) -> list[NutritionIngredient]:
-    _farm_allowed(principal,farm_id)
+    _farm_allowed(db, principal,farm_id)
     return list(db.scalars(select(NutritionIngredient).where(NutritionIngredient.company_id==principal.company.id,
         NutritionIngredient.farm_id==farm_id,NutritionIngredient.active.is_(True)).order_by(NutritionIngredient.name)).all())
 
@@ -1756,20 +1958,29 @@ def list_nutrition_ingredients(farm_id: str,
 @router.post("/nutrition/plans", response_model=NutritionPlanResponse, status_code=201)
 def create_nutrition_plan(payload: NutritionPlanCreateRequest,
     principal: Principal = Depends(require_permission("nutrition.write")), db: Session = Depends(get_db)) -> NutritionPlan:
-    _farm_allowed(principal,payload.farm_id); lot=_lot(db,principal,payload.lot_id)
+    _farm_allowed(db, principal,payload.farm_id); lot=_lot(db,principal,payload.lot_id)
     if lot.farm_id != payload.farm_id: raise HTTPException(status_code=422,detail="Lote pertence a outra fazenda.")
     count=payload.animal_count or (db.scalar(select(func.count()).select_from(LivestockAnimal).where(
         LivestockAnimal.company_id==principal.company.id,LivestockAnimal.lot_id==lot.id,LivestockAnimal.status=="active")) or 0)
     data=payload.model_dump(exclude={"start_date","animal_count"})
     item=NutritionPlan(id=new_id("diet"),tenant_id=principal.company.tenant_id,company_id=principal.company.id,
         animal_count=count,start_date=payload.start_date or datetime.now(timezone.utc),created_by=principal.user.id,**data)
-    db.add(item); db.commit(); db.refresh(item); return item
+    db.add(item)
+    db.flush()
+    _sync_nutrition_plan_task(
+        db=db,
+        principal=principal,
+        plan=item,
+    )
+    db.commit()
+    db.refresh(item)
+    return item
 
 
 @router.get("/nutrition/plans", response_model=list[NutritionPlanResponse])
 def list_nutrition_plans(farm_id: str, lot_id: str | None=None,
     principal: Principal = Depends(require_permission("nutrition.read")), db: Session = Depends(get_db)) -> list[NutritionPlan]:
-    _farm_allowed(principal,farm_id)
+    _farm_allowed(db, principal,farm_id)
     q=select(NutritionPlan).where(NutritionPlan.company_id==principal.company.id,NutritionPlan.farm_id==farm_id,NutritionPlan.active.is_(True))
     if lot_id: q=q.where(NutritionPlan.lot_id==lot_id)
     return list(db.scalars(q.order_by(NutritionPlan.start_date.desc())).all())
@@ -1826,7 +2037,7 @@ def delete_nutrition_event(
     )
     if event is None:
         raise HTTPException(status_code=404, detail="Evento nutricional não encontrado.")
-    _farm_allowed(principal, event.farm_id)
+    _farm_allowed(db, principal, event.farm_id)
 
     consumptions = list(
         db.scalars(
@@ -1877,7 +2088,7 @@ def delete_nutrition_event(
 @router.get("/nutrition/performance")
 def nutrition_performance(farm_id: str, lot_id: str | None=None,
     principal: Principal = Depends(require_permission("nutrition.read")), db: Session = Depends(get_db)) -> dict:
-    _farm_allowed(principal,farm_id)
+    _farm_allowed(db, principal,farm_id)
     q=select(NutritionEvent).where(NutritionEvent.company_id==principal.company.id,NutritionEvent.farm_id==farm_id)
     if lot_id: q=q.where(NutritionEvent.lot_id==lot_id)
     rows=list(db.scalars(q).all()); total_qty=sum(x.total_quantity for x in rows); total_cost=sum(x.estimated_cost for x in rows)
@@ -1888,10 +2099,846 @@ def nutrition_performance(farm_id: str, lot_id: str | None=None,
         "average_daily_gain_kg":avg_gain,"cost_per_kg_gain": total_cost/(avg_gain*max(1,len(rows))) if avg_gain>0 else 0}
 
 
+@router.get("/integrity/reconciliation")
+def operational_integrity_reconciliation(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("livestock.read")),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Read-only cross-module reconciliation for one farm.
+
+    This endpoint never mutates production data. It detects orphaned automatic
+    finance entries, orphaned inventory movements/tasks, stale animal weight or
+    reproductive state, and duplicate source references.
+    """
+    _farm_allowed(db, principal, farm_id)
+    company_id = principal.company.id
+
+    animals = list(db.scalars(select(LivestockAnimal).where(
+        LivestockAnimal.company_id == company_id,
+        LivestockAnimal.farm_id == farm_id,
+    )).all())
+    health_events = list(db.scalars(select(HealthEvent).where(
+        HealthEvent.company_id == company_id,
+        HealthEvent.farm_id == farm_id,
+    )).all())
+    nutrition_events = list(db.scalars(select(NutritionEvent).where(
+        NutritionEvent.company_id == company_id,
+        NutritionEvent.farm_id == farm_id,
+    )).all())
+    finance = list(db.scalars(select(FinancialEntry).where(
+        FinancialEntry.company_id == company_id,
+        FinancialEntry.farm_id == farm_id,
+    )).all())
+    movements = list(db.scalars(select(InventoryMovement).where(
+        InventoryMovement.company_id == company_id,
+        InventoryMovement.farm_id == farm_id,
+    )).all())
+    tasks = list(db.scalars(select(OperationalTask).where(
+        OperationalTask.company_id == company_id,
+        OperationalTask.farm_id == farm_id,
+    )).all())
+
+    health_ids = {x.id for x in health_events}
+    nutrition_ids = {x.id for x in nutrition_events}
+    reproduction_ids = set(db.scalars(select(ReproductionEvent.id).where(
+        ReproductionEvent.company_id == company_id,
+        ReproductionEvent.farm_id == farm_id,
+    )).all())
+
+    issues: list[dict] = []
+    seen_finance_refs: set[tuple[str, str]] = set()
+    for entry in finance:
+        key = (entry.reference_type or "", entry.reference_id or "")
+        if all(key) and key in seen_finance_refs:
+            issues.append({"code":"duplicate_finance_reference","entity_id":entry.id,"reference_type":key[0],"reference_id":key[1]})
+        if all(key): seen_finance_refs.add(key)
+        if entry.reference_type == "health_event" and entry.reference_id not in health_ids:
+            issues.append({"code":"orphan_finance_health","entity_id":entry.id,"reference_id":entry.reference_id})
+        if entry.reference_type == "nutrition_event" and entry.reference_id not in nutrition_ids:
+            issues.append({"code":"orphan_finance_nutrition","entity_id":entry.id,"reference_id":entry.reference_id})
+
+    for movement in movements:
+        if movement.reference_type in {"health_event", "health_event_adjusted"}:
+            source_id = (movement.reference_id or "").split(":",1)[0]
+            if source_id and source_id not in health_ids:
+                issues.append({"code":"orphan_stock_health","entity_id":movement.id,"reference_id":movement.reference_id})
+        if movement.reference_type == "nutrition_event" and movement.reference_id not in nutrition_ids:
+            issues.append({"code":"orphan_stock_nutrition","entity_id":movement.id,"reference_id":movement.reference_id})
+
+    for task in tasks:
+        if task.source_type == "health_event" and task.source_id not in health_ids:
+            issues.append({"code":"orphan_task_health","entity_id":task.id,"source_id":task.source_id})
+        if task.source_type == "reproduction_event" and task.source_id not in reproduction_ids:
+            issues.append({"code":"orphan_task_reproduction","entity_id":task.id,"source_id":task.source_id})
+
+    for animal in animals:
+        latest_weight = db.scalar(select(WeightRecord).where(
+            WeightRecord.company_id == company_id,
+            WeightRecord.animal_id == animal.id,
+        ).order_by(WeightRecord.measured_at.desc(), WeightRecord.id.desc()).limit(1))
+        expected_weight = latest_weight.weight if latest_weight else 0
+        if abs((animal.current_weight or 0) - expected_weight) > 0.001:
+            issues.append({"code":"stale_animal_weight","entity_id":animal.id,"stored":animal.current_weight or 0,"expected":expected_weight})
+
+        latest_repro = db.scalar(select(ReproductionEvent).where(
+            ReproductionEvent.company_id == company_id,
+            ReproductionEvent.animal_id == animal.id,
+        ).order_by(ReproductionEvent.occurred_at.desc(), ReproductionEvent.id.desc()).limit(1))
+        expected_status = latest_repro.reproductive_status if latest_repro else ""
+        if (animal.reproductive_status or "") != (expected_status or ""):
+            issues.append({"code":"stale_reproductive_status","entity_id":animal.id,"stored":animal.reproductive_status or "","expected":expected_status or ""})
+
+    counts = defaultdict(int)
+    for issue in issues: counts[issue["code"]] += 1
+    return {
+        "farm_id": farm_id,
+        "status": "ok" if not issues else "attention",
+        "issue_count": len(issues),
+        "counts": dict(sorted(counts.items())),
+        "issues": issues,
+        "checked": {
+            "animals": len(animals), "health_events": len(health_events),
+            "nutrition_events": len(nutrition_events), "financial_entries": len(finance),
+            "inventory_movements": len(movements), "operational_tasks": len(tasks),
+        },
+    }
+
+
+
+
+@router.post("/intelligence/smart-agenda/reconcile")
+def smart_agenda_reconcile(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("automation.manage")),
+    db: Session = Depends(get_db),
+) -> dict:
+    """V14 — sincroniza a Agenda Inteligente com os módulos operacionais."""
+    counters = _sync_existing_smart_agenda(
+        db=db,
+        principal=principal,
+        farm_id=farm_id,
+    )
+    db.commit()
+
+    open_tasks = db.scalar(
+        select(func.count(OperationalTask.id)).where(
+            OperationalTask.company_id == principal.company.id,
+            OperationalTask.farm_id == farm_id,
+            OperationalTask.status.in_(["open", "in_progress"]),
+        )
+    ) or 0
+
+    return {
+        "farm_id": farm_id,
+        "status": "synchronized",
+        "sources": counters,
+        "open_tasks": int(open_tasks),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def _v10_utc(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+@router.get("/intelligence/operational-alerts")
+def operational_intelligence_alerts(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("livestock.read")),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Motor V10 de alertas operacionais, calculado em tempo real e read-only.
+
+    Os alertas são derivados dos dados oficiais de Rebanho, Sanidade,
+    Reprodução, Nutrição, Estoque, Financeiro, Agenda e da reconciliação V9.
+    Nenhum registro é criado, editado ou excluído por este endpoint.
+    """
+    _farm_allowed(db, principal, farm_id)
+    company_id = principal.company.id
+    now = datetime.now(timezone.utc)
+
+    animals = list(db.scalars(select(LivestockAnimal).where(
+        LivestockAnimal.company_id == company_id,
+        LivestockAnimal.farm_id == farm_id,
+    )).all())
+    products = list(db.scalars(select(InventoryProduct).where(
+        InventoryProduct.company_id == company_id,
+        InventoryProduct.farm_id == farm_id,
+    )).all())
+    health_events = list(db.scalars(select(HealthEvent).where(
+        HealthEvent.company_id == company_id,
+        HealthEvent.farm_id == farm_id,
+    )).all())
+    plans = list(db.scalars(select(NutritionPlan).where(
+        NutritionPlan.company_id == company_id,
+        NutritionPlan.farm_id == farm_id,
+    )).all())
+    finance = list(db.scalars(select(FinancialEntry).where(
+        FinancialEntry.company_id == company_id,
+        FinancialEntry.farm_id == farm_id,
+    )).all())
+    tasks = list(db.scalars(select(OperationalTask).where(
+        OperationalTask.company_id == company_id,
+        OperationalTask.farm_id == farm_id,
+    )).all())
+
+    alerts: list[dict] = []
+
+    severity_score = {
+        "critical": 100,
+        "high": 80,
+        "medium": 55,
+        "low": 30,
+    }
+
+    def add_alert(
+        *,
+        code: str,
+        area: str,
+        severity: str,
+        title: str,
+        description: str,
+        entity_type: str = "",
+        entity_id: str = "",
+        due_at: datetime | None = None,
+        action: str = "",
+        score_bonus: int = 0,
+    ) -> None:
+        normalized_due = _v10_utc(due_at)
+        score = min(
+            100,
+            severity_score.get(severity, 30) + max(0, score_bonus),
+        )
+        alerts.append({
+            "id": f"v10:{code}:{entity_id or len(alerts) + 1}",
+            "code": code,
+            "area": area,
+            "severity": severity,
+            "priority_score": score,
+            "title": title,
+            "description": description,
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "due_at": normalized_due.isoformat() if normalized_due else None,
+            "recommended_action": action,
+        })
+
+    # V9 integrity issues become high-priority operational alerts.
+    reconciliation = operational_integrity_reconciliation(
+        farm_id=farm_id,
+        principal=principal,
+        db=db,
+    )
+    for issue in reconciliation["issues"]:
+        add_alert(
+            code=f"integrity_{issue['code']}",
+            area="Integridade",
+            severity="high",
+            title="Inconsistência entre módulos",
+            description=(
+                f"O reconciliador V9 detectou {issue['code']} "
+                f"no registro {issue.get('entity_id', '')}."
+            ),
+            entity_type="integrity_issue",
+            entity_id=str(issue.get("entity_id", "")),
+            action=(
+                "Revisar o registro de origem antes de executar novas "
+                "operações dependentes."
+            ),
+            score_bonus=10,
+        )
+
+    # Inventory: minimum stock and expiry.
+    for product in products:
+        quantity = float(product.quantity or 0)
+        minimum = float(product.minimum_quantity or 0)
+        if quantity <= 0 and minimum > 0:
+            add_alert(
+                code="stockout",
+                area="Estoque",
+                severity="critical",
+                title=f"{product.name} sem estoque",
+                description=(
+                    f"Saldo atual {quantity:g} {product.unit}; "
+                    f"mínimo configurado {minimum:g} {product.unit}."
+                ),
+                entity_type="inventory_product",
+                entity_id=product.id,
+                action="Programar reposição imediata e revisar consumos pendentes.",
+            )
+        elif minimum > 0 and quantity < minimum:
+            add_alert(
+                code="stock_below_minimum",
+                area="Estoque",
+                severity="high",
+                title=f"{product.name} abaixo do estoque mínimo",
+                description=(
+                    f"Saldo {quantity:g} {product.unit}; "
+                    f"mínimo {minimum:g} {product.unit}."
+                ),
+                entity_type="inventory_product",
+                entity_id=product.id,
+                action="Planejar compra ou transferência de estoque.",
+            )
+
+        expiry = _v10_utc(product.expiry_date)
+        if expiry is not None:
+            days = (expiry - now).total_seconds() / 86400
+            if days < 0:
+                add_alert(
+                    code="stock_expired",
+                    area="Estoque",
+                    severity="critical",
+                    title=f"{product.name} vencido",
+                    description=f"Vencimento em {expiry.date().isoformat()}.",
+                    entity_type="inventory_product",
+                    entity_id=product.id,
+                    due_at=expiry,
+                    action="Bloquear uso, segregar lote e registrar destinação.",
+                )
+            elif days <= 30:
+                add_alert(
+                    code="stock_expiring",
+                    area="Estoque",
+                    severity="medium",
+                    title=f"{product.name} próximo do vencimento",
+                    description=f"Vence em aproximadamente {max(0, int(days))} dia(s).",
+                    entity_type="inventory_product",
+                    entity_id=product.id,
+                    due_at=expiry,
+                    action="Priorizar uso seguro ou replanejar estoque.",
+                    score_bonus=10 if days <= 7 else 0,
+                )
+
+    # Health: follow-up dates and active withdrawal periods.
+    for event in health_events:
+        next_date = _v10_utc(event.next_date)
+        if next_date is not None and event.status not in {"cancelled", "canceled"}:
+            days = (next_date - now).total_seconds() / 86400
+            if days < 0:
+                add_alert(
+                    code="health_followup_overdue",
+                    area="Sanidade",
+                    severity="high",
+                    title="Manejo sanitário atrasado",
+                    description=(
+                        f"{event.event_type} está vencido desde "
+                        f"{next_date.date().isoformat()}."
+                    ),
+                    entity_type="health_event",
+                    entity_id=event.id,
+                    due_at=next_date,
+                    action="Executar ou reprogramar o manejo e registrar evidência.",
+                    score_bonus=min(15, max(0, int(abs(days) / 7))),
+                )
+            elif days <= 7:
+                add_alert(
+                    code="health_followup_due",
+                    area="Sanidade",
+                    severity="medium",
+                    title="Manejo sanitário próximo",
+                    description=(
+                        f"{event.event_type} previsto para "
+                        f"{next_date.date().isoformat()}."
+                    ),
+                    entity_type="health_event",
+                    entity_id=event.id,
+                    due_at=next_date,
+                    action="Confirmar produto, responsável e disponibilidade na agenda.",
+                )
+
+        withdrawal = _v10_utc(event.withdrawal_until)
+        if withdrawal is not None and withdrawal > now:
+            add_alert(
+                code="withdrawal_active",
+                area="Sanidade",
+                severity="high",
+                title="Período de carência ativo",
+                description=(
+                    f"Carência ativa até {withdrawal.date().isoformat()} "
+                    f"para o evento {event.event_type}."
+                ),
+                entity_type="health_event",
+                entity_id=event.id,
+                due_at=withdrawal,
+                action="Impedir comercialização/abate até o término da carência.",
+            )
+
+    # Animals: body condition, stale weights, weight loss and calving.
+    for animal in animals:
+        if animal.status not in {"active", "Ativo"}:
+            continue
+
+        bcs = float(animal.body_condition_score or 0)
+        if bcs > 0 and bcs < 2.5:
+            add_alert(
+                code="low_body_condition",
+                area="Rebanho",
+                severity="high" if bcs < 2 else "medium",
+                title=f"ECC baixo — {animal.tag}",
+                description=f"Escore corporal atual {bcs:g}.",
+                entity_type="animal",
+                entity_id=animal.id,
+                action="Reavaliar dieta, sanidade e condição produtiva do animal.",
+                score_bonus=10 if bcs < 2 else 0,
+            )
+
+        latest_two = list(db.scalars(
+            select(WeightRecord).where(
+                WeightRecord.company_id == company_id,
+                WeightRecord.farm_id == farm_id,
+                WeightRecord.animal_id == animal.id,
+            ).order_by(
+                WeightRecord.measured_at.desc(),
+                WeightRecord.id.desc(),
+            ).limit(2)
+        ).all())
+
+        if not latest_two:
+            age_days = (
+                now - _v10_utc(animal.created_at)
+            ).total_seconds() / 86400
+            if age_days >= 30:
+                add_alert(
+                    code="animal_without_weight",
+                    area="Rebanho",
+                    severity="medium",
+                    title=f"Animal sem pesagem — {animal.tag}",
+                    description="Não há pesagem registrada para este animal ativo.",
+                    entity_type="animal",
+                    entity_id=animal.id,
+                    action="Programar pesagem e atualizar escore corporal.",
+                )
+        else:
+            latest_date = _v10_utc(latest_two[0].measured_at)
+            stale_days = (now - latest_date).total_seconds() / 86400
+            if stale_days > 60:
+                add_alert(
+                    code="weight_stale",
+                    area="Rebanho",
+                    severity="medium",
+                    title=f"Pesagem desatualizada — {animal.tag}",
+                    description=f"Última pesagem há {int(stale_days)} dia(s).",
+                    entity_type="animal",
+                    entity_id=animal.id,
+                    due_at=latest_date,
+                    action="Programar nova pesagem para atualizar desempenho.",
+                )
+
+            if len(latest_two) == 2:
+                current, previous = latest_two[0], latest_two[1]
+                days = (
+                    _v10_utc(current.measured_at)
+                    - _v10_utc(previous.measured_at)
+                ).total_seconds() / 86400
+                if days > 0:
+                    gmd = (float(current.weight) - float(previous.weight)) / days
+                    if gmd < 0:
+                        add_alert(
+                            code="negative_daily_gain",
+                            area="Nutrição",
+                            severity="high",
+                            title=f"Perda de peso — {animal.tag}",
+                            description=f"GMD recente {gmd:.3f} kg/dia.",
+                            entity_type="animal",
+                            entity_id=animal.id,
+                            action=(
+                                "Investigar consumo, disponibilidade de dieta, "
+                                "sanidade e competição no lote."
+                            ),
+                            score_bonus=10 if gmd < -0.2 else 0,
+                        )
+
+        calving = _v10_utc(animal.expected_calving_at)
+        if calving is not None and animal.reproductive_status in {
+            "pregnant", "prenhe", "gestante",
+        }:
+            days = (calving - now).total_seconds() / 86400
+            if days < -3:
+                add_alert(
+                    code="calving_overdue",
+                    area="Reprodução",
+                    severity="high",
+                    title=f"Parto previsto ultrapassado — {animal.tag}",
+                    description=f"Data prevista {calving.date().isoformat()}.",
+                    entity_type="animal",
+                    entity_id=animal.id,
+                    due_at=calving,
+                    action="Verificar matriz e atualizar desfecho reprodutivo.",
+                )
+            elif days <= 14:
+                add_alert(
+                    code="calving_due",
+                    area="Reprodução",
+                    severity="medium",
+                    title=f"Parto próximo — {animal.tag}",
+                    description=f"Previsão em aproximadamente {max(0, int(days))} dia(s).",
+                    entity_type="animal",
+                    entity_id=animal.id,
+                    due_at=calving,
+                    action="Preparar lote maternidade e acompanhamento da matriz.",
+                    score_bonus=10 if days <= 7 else 0,
+                )
+
+    # Nutrition plans: expiration and target performance.
+    for plan in plans:
+        end_date = _v10_utc(plan.end_date)
+        if end_date is not None:
+            days = (end_date - now).total_seconds() / 86400
+            if days < 0:
+                add_alert(
+                    code="nutrition_plan_expired",
+                    area="Nutrição",
+                    severity="high",
+                    title=f"Plano nutricional vencido — {plan.name}",
+                    description=f"Plano encerrou em {end_date.date().isoformat()}.",
+                    entity_type="nutrition_plan",
+                    entity_id=plan.id,
+                    due_at=end_date,
+                    action="Reformular ou renovar o plano do lote.",
+                )
+            elif days <= 14:
+                add_alert(
+                    code="nutrition_plan_ending",
+                    area="Nutrição",
+                    severity="medium",
+                    title=f"Plano nutricional próximo do fim — {plan.name}",
+                    description=f"Restam aproximadamente {max(0, int(days))} dia(s).",
+                    entity_type="nutrition_plan",
+                    entity_id=plan.id,
+                    due_at=end_date,
+                    action="Preparar avaliação de desempenho e próximo plano.",
+                )
+
+    # Finance: overdue obligations/receivables, without exposing broad ledger.
+    for entry in finance:
+        due = _v10_utc(entry.due_date)
+        if due is None or entry.status == "paid":
+            continue
+        if due < now:
+            area_label = "pagar" if entry.entry_type == "expense" else "receber"
+            add_alert(
+                code=f"finance_overdue_{entry.entry_type}",
+                area="Financeiro",
+                severity="high",
+                title=f"Conta a {area_label} vencida",
+                description=(
+                    f"{entry.description} — vencimento "
+                    f"{due.date().isoformat()}."
+                ),
+                entity_type="financial_entry",
+                entity_id=entry.id,
+                due_at=due,
+                action="Regularizar ou reprogramar o lançamento financeiro.",
+            )
+
+    # Agenda/tasks: due soon and overdue.
+    for task in tasks:
+        if task.status in {"completed", "cancelled", "canceled"}:
+            continue
+        due = _v10_utc(task.due_at)
+        if due is None:
+            continue
+        days = (due - now).total_seconds() / 86400
+        if days < 0:
+            add_alert(
+                code="task_overdue",
+                area="Agenda",
+                severity="high",
+                title=f"Tarefa atrasada — {task.title}",
+                description=f"Prazo expirou em {due.date().isoformat()}.",
+                entity_type="operational_task",
+                entity_id=task.id,
+                due_at=due,
+                action="Concluir, registrar evidência ou reprogramar a tarefa.",
+                score_bonus=min(15, max(0, int(abs(days) / 7))),
+            )
+        elif days <= 3:
+            add_alert(
+                code="task_due",
+                area="Agenda",
+                severity="medium",
+                title=f"Tarefa próxima — {task.title}",
+                description=f"Prazo em aproximadamente {max(0, int(days))} dia(s).",
+                entity_type="operational_task",
+                entity_id=task.id,
+                due_at=due,
+                action="Confirmar responsável e recursos para execução.",
+            )
+
+    alerts.sort(
+        key=lambda item: (
+            -int(item["priority_score"]),
+            item["due_at"] or "9999-12-31T00:00:00+00:00",
+            item["area"],
+            item["title"],
+        )
+    )
+
+    by_severity: dict[str, int] = defaultdict(int)
+    by_area: dict[str, int] = defaultdict(int)
+    for alert in alerts:
+        by_severity[alert["severity"]] += 1
+        by_area[alert["area"]] += 1
+
+    return {
+        "farm_id": farm_id,
+        "generated_at": now.isoformat(),
+        "status": (
+            "critical"
+            if by_severity["critical"]
+            else "attention"
+            if by_severity["high"]
+            else "watch"
+            if by_severity["medium"]
+            else "ok"
+        ),
+        "alert_count": len(alerts),
+        "critical_count": by_severity["critical"],
+        "high_count": by_severity["high"],
+        "medium_count": by_severity["medium"],
+        "low_count": by_severity["low"],
+        "by_area": dict(sorted(by_area.items())),
+        "alerts": alerts,
+    }
+
+
+@router.get("/intelligence/operational-summary")
+def operational_intelligence_summary(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("livestock.read")),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Resumo executivo V10 baseado no motor de alertas operacionais."""
+    _farm_allowed(db, principal, farm_id)
+    company_id = principal.company.id
+
+    alerts = operational_intelligence_alerts(
+        farm_id=farm_id,
+        principal=principal,
+        db=db,
+    )
+
+    animals = list(db.scalars(select(LivestockAnimal).where(
+        LivestockAnimal.company_id == company_id,
+        LivestockAnimal.farm_id == farm_id,
+    )).all())
+    active_animals = [
+        item for item in animals if item.status in {"active", "Ativo"}
+    ]
+
+    lots_count = db.scalar(select(func.count(HerdLot.id)).where(
+        HerdLot.company_id == company_id,
+        HerdLot.farm_id == farm_id,
+    )) or 0
+
+    income = db.scalar(select(func.coalesce(func.sum(FinancialEntry.amount), 0)).where(
+        FinancialEntry.company_id == company_id,
+        FinancialEntry.farm_id == farm_id,
+        FinancialEntry.entry_type == "income",
+    )) or 0
+    expense = db.scalar(select(func.coalesce(func.sum(FinancialEntry.amount), 0)).where(
+        FinancialEntry.company_id == company_id,
+        FinancialEntry.farm_id == farm_id,
+        FinancialEntry.entry_type == "expense",
+    )) or 0
+
+    score = 100
+    score -= min(40, alerts["critical_count"] * 20)
+    score -= min(30, alerts["high_count"] * 8)
+    score -= min(20, alerts["medium_count"] * 3)
+    score = max(0, score)
+
+    if score >= 90:
+        level = "excellent"
+    elif score >= 75:
+        level = "good"
+    elif score >= 55:
+        level = "attention"
+    else:
+        level = "critical"
+
+    top_actions = [
+        {
+            "priority": index + 1,
+            "area": alert["area"],
+            "severity": alert["severity"],
+            "title": alert["title"],
+            "recommended_action": alert["recommended_action"],
+            "entity_type": alert["entity_type"],
+            "entity_id": alert["entity_id"],
+            "due_at": alert["due_at"],
+        }
+        for index, alert in enumerate(alerts["alerts"][:5])
+    ]
+
+
+    # V15 — indicadores executivos realmente operacionais.
+    females = [
+        animal
+        for animal in active_animals
+        if (animal.sex or "").lower() in {"fêmea", "femea", "female"}
+    ]
+    pregnant = [
+        animal
+        for animal in females
+        if (animal.reproductive_status or "").lower()
+        in {"pregnant", "prenhe"}
+    ]
+    pregnancy_rate = (
+        len(pregnant) / len(females) * 100
+        if females
+        else 0.0
+    )
+
+    current_weights = [
+        float(animal.current_weight or 0)
+        for animal in active_animals
+        if float(animal.current_weight or 0) > 0
+    ]
+    average_weight = (
+        sum(current_weights) / len(current_weights)
+        if current_weights
+        else 0.0
+    )
+
+    gmd_values: list[float] = []
+    for animal in active_animals:
+        recent = list(
+            db.scalars(
+                select(WeightRecord)
+                .where(
+                    WeightRecord.company_id == company_id,
+                    WeightRecord.animal_id == animal.id,
+                )
+                .order_by(
+                    WeightRecord.measured_at.desc(),
+                    WeightRecord.id.desc(),
+                )
+                .limit(2)
+            ).all()
+        )
+        if len(recent) < 2:
+            continue
+        latest, previous = recent[0], recent[1]
+        days = (
+            _v10_utc(latest.measured_at)
+            - _v10_utc(previous.measured_at)
+        ).total_seconds() / 86400
+        if days > 0:
+            gmd_values.append(
+                (float(latest.weight) - float(previous.weight)) / days
+            )
+    average_gmd = (
+        sum(gmd_values) / len(gmd_values)
+        if gmd_values
+        else 0.0
+    )
+
+    products = list(
+        db.scalars(
+            select(InventoryProduct).where(
+                InventoryProduct.company_id == company_id,
+                InventoryProduct.farm_id == farm_id,
+                InventoryProduct.active.is_(True),
+            )
+        ).all()
+    )
+    critical_stock = sum(
+        1
+        for product in products
+        if float(product.quantity or 0)
+        <= float(product.minimum_quantity or 0)
+    )
+
+    now = datetime.now(timezone.utc)
+    open_tasks = list(
+        db.scalars(
+            select(OperationalTask).where(
+                OperationalTask.company_id == company_id,
+                OperationalTask.farm_id == farm_id,
+                OperationalTask.status.in_(["open", "in_progress"]),
+            )
+        ).all()
+    )
+    overdue_tasks = sum(
+        1
+        for task in open_tasks
+        if _v10_utc(task.due_at) is not None
+        and _v10_utc(task.due_at) < now
+    )
+
+    active_plans = list(
+        db.scalars(
+            select(NutritionPlan).where(
+                NutritionPlan.company_id == company_id,
+                NutritionPlan.farm_id == farm_id,
+                NutritionPlan.active.is_(True),
+            )
+        ).all()
+    )
+    nutrition_monthly_cost = sum(
+        float(plan.daily_amount_per_animal_kg or 0)
+        * max(0, int(plan.animal_count or 0))
+        * float(plan.cost_per_kg or 0)
+        * 30
+        for plan in active_plans
+    )
+
+    cost_per_active_animal = (
+        float(expense) / len(active_animals)
+        if active_animals
+        else 0.0
+    )
+
+    return {
+        "farm_id": farm_id,
+        "generated_at": alerts["generated_at"],
+        "operational_score": score,
+        "operational_level": level,
+        "herd": {
+            "animals": len(animals),
+            "active_animals": len(active_animals),
+            "lots": int(lots_count),
+        },
+        "finance": {
+            "income": float(income),
+            "expense": float(expense),
+            "balance": float(income) - float(expense),
+        },
+        "alerts": {
+            "total": alerts["alert_count"],
+            "critical": alerts["critical_count"],
+            "high": alerts["high_count"],
+            "medium": alerts["medium_count"],
+            "low": alerts["low_count"],
+            "by_area": alerts["by_area"],
+        },
+        "executive": {
+            "pregnancy_rate_percent": round(pregnancy_rate, 2),
+            "pregnant_females": len(pregnant),
+            "eligible_females": len(females),
+            "average_weight_kg": round(average_weight, 2),
+            "average_gmd_kg_day": round(average_gmd, 3),
+            "cost_per_active_animal": round(cost_per_active_animal, 2),
+            "critical_stock_items": critical_stock,
+            "open_tasks": len(open_tasks),
+            "overdue_tasks": overdue_tasks,
+            "nutrition_monthly_cost": round(nutrition_monthly_cost, 2),
+        },
+        "top_actions": top_actions,
+    }
+
+
 @router.post("/finance/v2", response_model=FinancialEntryPhase3Response, status_code=201)
 def create_financial_entry_v2(payload: FinancialEntryPhase3CreateRequest,
     principal: Principal = Depends(require_permission("finance.write")), db: Session = Depends(get_db)) -> FinancialEntry:
-    _farm_allowed(principal,payload.farm_id)
+    _farm_allowed(db, principal,payload.farm_id)
     if payload.animal_id:
         animal=_animal(db,principal,payload.animal_id)
         if animal.farm_id!=payload.farm_id: raise HTTPException(status_code=422,detail="Animal pertence a outra fazenda.")
@@ -1931,7 +2978,7 @@ def settle_financial_entry(entry_id: str,payload: FinancialSettlementRequest,
     principal: Principal = Depends(require_permission("finance.write")),db: Session=Depends(get_db)) -> FinancialEntry:
     item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
-    _farm_allowed(principal,item.farm_id); item.paid_at=payload.paid_at or datetime.now(timezone.utc); item.status="paid"
+    _farm_allowed(db, principal,item.farm_id); item.paid_at=payload.paid_at or datetime.now(timezone.utc); item.status="paid"
     if payload.payment_method: item.payment_method=payload.payment_method
     db.commit(); db.refresh(item); return item
 
@@ -1939,7 +2986,7 @@ def settle_financial_entry(entry_id: str,payload: FinancialSettlementRequest,
 @router.get("/finance/v2", response_model=list[FinancialEntryPhase3Response])
 def list_financial_entries_v2(farm_id: str,status: str|None=None,cost_center: str|None=None,lot_id: str|None=None,animal_id: str|None=None,
     principal: Principal=Depends(require_permission("finance.read")),db: Session=Depends(get_db)) -> list[FinancialEntry]:
-    _farm_allowed(principal,farm_id); q=select(FinancialEntry).where(FinancialEntry.company_id==principal.company.id,FinancialEntry.farm_id==farm_id)
+    _farm_allowed(db, principal,farm_id); q=select(FinancialEntry).where(FinancialEntry.company_id==principal.company.id,FinancialEntry.farm_id==farm_id)
     if status: q=q.where(FinancialEntry.status==status)
     if cost_center: q=q.where(FinancialEntry.cost_center==cost_center)
     if lot_id: q=q.where(FinancialEntry.lot_id==lot_id)
@@ -1950,7 +2997,7 @@ def list_financial_entries_v2(farm_id: str,status: str|None=None,cost_center: st
 @router.get("/finance/summary", response_model=FinancialSummaryResponse)
 def financial_summary(farm_id: str,
     principal: Principal=Depends(require_permission("finance.read")),db: Session=Depends(get_db)) -> dict:
-    _farm_allowed(principal,farm_id); now=datetime.now(timezone.utc)
+    _farm_allowed(db, principal,farm_id); now=datetime.now(timezone.utc)
     rows=list(db.scalars(select(FinancialEntry).where(FinancialEntry.company_id==principal.company.id,FinancialEntry.farm_id==farm_id)).all())
     income=sum(x.amount for x in rows if x.entry_type=="income"); expense=sum(x.amount for x in rows if x.entry_type=="expense")
     paid_income=sum(x.amount for x in rows if x.entry_type=="income" and x.status=="paid")
@@ -1980,7 +3027,7 @@ def financial_summary(farm_id: str,
 @router.get("/finance/cash-flow")
 def financial_cash_flow(farm_id: str,days: int=90,
     principal: Principal=Depends(require_permission("finance.read")),db: Session=Depends(get_db)) -> dict:
-    _farm_allowed(principal,farm_id); start=datetime.now(timezone.utc); end=start+timedelta(days=max(1,days))
+    _farm_allowed(db, principal,farm_id); start=datetime.now(timezone.utc); end=start+timedelta(days=max(1,days))
     rows=list(db.scalars(select(FinancialEntry).where(FinancialEntry.company_id==principal.company.id,
         FinancialEntry.farm_id==farm_id,FinancialEntry.due_date>=start,FinancialEntry.due_date<=end).order_by(FinancialEntry.due_date)).all())
     buckets=defaultdict(lambda:{"income":0.0,"expense":0.0})
@@ -1999,7 +3046,7 @@ def list_paddocks(
     principal: Principal = Depends(require_permission("herd.read")),
     db: Session = Depends(get_db),
 ) -> list[Paddock]:
-    _farm_allowed(principal, farm_id)
+    _farm_allowed(db, principal, farm_id)
     return list(db.scalars(
         select(Paddock).where(
             Paddock.company_id == principal.company.id,
@@ -2015,7 +3062,7 @@ def create_paddock(
     principal: Principal = Depends(require_permission("herd.write")),
     db: Session = Depends(get_db),
 ) -> Paddock:
-    _farm_allowed(principal, payload.farm_id)
+    _farm_allowed(db, principal, payload.farm_id)
     item = Paddock(
         id=new_id("paddock"),
         tenant_id=principal.company.tenant_id,
@@ -2045,7 +3092,7 @@ def update_paddock(
     ))
     if item is None:
         raise HTTPException(status_code=404, detail="Piquete não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(item, key, value)
     try:
@@ -2069,7 +3116,7 @@ def delete_paddock(
     ))
     if item is None:
         raise HTTPException(status_code=404, detail="Piquete não encontrado.")
-    _farm_allowed(principal, item.farm_id)
+    _farm_allowed(db, principal, item.farm_id)
     item.active = False
     db.commit()
     return Response(status_code=204)
@@ -2083,7 +3130,7 @@ def update_inventory_product_v2(
     db: Session = Depends(get_db),
 ) -> InventoryProduct:
     item=_inventory_product(db,principal,product_id)
-    _farm_allowed(principal,item.farm_id)
+    _farm_allowed(db, principal,item.farm_id)
     if payload.farm_id != item.farm_id:
         raise HTTPException(status_code=409, detail="A fazenda do produto não pode ser alterada.")
     if abs(payload.quantity - item.quantity) > 0.000001:
@@ -2114,15 +3161,24 @@ def update_nutrition_plan(
 ) -> NutritionPlan:
     item=db.scalar(select(NutritionPlan).where(NutritionPlan.id==plan_id,NutritionPlan.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Plano nutricional não encontrado.")
-    _farm_allowed(principal,item.farm_id)
+    _farm_allowed(db, principal,item.farm_id)
     if payload.farm_id != item.farm_id:
         raise HTTPException(status_code=409, detail="A fazenda do plano não pode ser alterada.")
     lot = _lot(db, principal, payload.lot_id)
     if lot.farm_id != item.farm_id:
         raise HTTPException(status_code=422, detail="Lote pertence a outra fazenda.")
     for key,value in payload.model_dump().items():
-        if value is not None: setattr(item,key,value)
-    db.commit(); db.refresh(item); return item
+        if value is not None:
+            setattr(item,key,value)
+    db.flush()
+    _sync_nutrition_plan_task(
+        db=db,
+        principal=principal,
+        plan=item,
+    )
+    db.commit()
+    db.refresh(item)
+    return item
 
 @router.delete("/nutrition/plans/{plan_id}", status_code=204)
 def delete_nutrition_plan(
@@ -2132,7 +3188,15 @@ def delete_nutrition_plan(
 ) -> Response:
     item=db.scalar(select(NutritionPlan).where(NutritionPlan.id==plan_id,NutritionPlan.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Plano nutricional não encontrado.")
-    _farm_allowed(principal,item.farm_id); item.active=False; db.commit(); return Response(status_code=204)
+    _farm_allowed(db, principal,item.farm_id)
+    item.active=False
+    _sync_nutrition_plan_task(
+        db=db,
+        principal=principal,
+        plan=item,
+    )
+    db.commit()
+    return Response(status_code=204)
 
 @router.patch("/finance/v2/{entry_id}", response_model=FinancialEntryPhase3Response)
 def update_financial_entry_v2(
@@ -2142,7 +3206,7 @@ def update_financial_entry_v2(
 ) -> FinancialEntry:
     item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
-    _farm_allowed(principal,item.farm_id)
+    _farm_allowed(db, principal,item.farm_id)
     if item.reference_type in {"health_event", "nutrition_event"}:
         raise HTTPException(
             status_code=409,
@@ -2170,7 +3234,7 @@ def delete_financial_entry_v2(
 ) -> Response:
     item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
-    _farm_allowed(principal,item.farm_id)
+    _farm_allowed(db, principal,item.farm_id)
     if item.reference_type in {"health_event", "nutrition_event"}:
         raise HTTPException(
             status_code=409,

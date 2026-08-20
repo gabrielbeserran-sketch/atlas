@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/executive_dashboard_screen.dart';
+import 'package:projeto_atlas/features/dashboard/presentation/screens/operational_alert_center_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/widgets/dashboard_action_summary_card.dart';
+import 'package:projeto_atlas/features/dashboard/data/services/atlas_operational_intelligence_service.dart';
+import 'package:projeto_atlas/features/dashboard/domain/models/atlas_operational_intelligence_data.dart';
+import 'package:projeto_atlas/features/dashboard/presentation/widgets/operational_intelligence_card.dart';
+import 'package:projeto_atlas/features/dashboard/presentation/widgets/executive_indicators_card.dart';
+import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
@@ -43,9 +49,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final ReportActionStorageService actionStorage = ReportActionStorageService();
 
+  final AtlasOperationalIntelligenceService operationalIntelligence =
+      AtlasOperationalIntelligenceService();
+
+  final AtlasEnterpriseRemoteAuthStore remoteAuth =
+      AtlasEnterpriseRemoteAuthStore.instance;
+
   List<FarmData> farms = [];
   List<DashboardAgendaContext> agendaContexts = [];
   List<ReportActionItemData> managementActions = [];
+  AtlasOperationalIntelligenceData? operationalData;
+  String? operationalFarmName;
+  String? operationalWarning;
 
   bool isLoading = true;
 
@@ -162,17 +177,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return activities.take(5).toList();
   }
 
+  Future<void> _loadOperationalIntelligence(List<FarmData> loadedFarms) async {
+    if (loadedFarms.isEmpty) {
+      operationalData = null;
+      operationalFarmName = null;
+      operationalWarning = null;
+      return;
+    }
+
+    final savedFarmId = await remoteAuth.loadActiveFarm();
+    FarmData? target;
+
+    if (savedFarmId != null && savedFarmId.isNotEmpty) {
+      for (final farm in loadedFarms) {
+        if (farm.id == savedFarmId) {
+          target = farm;
+          break;
+        }
+      }
+    }
+
+    target ??= loadedFarms.first;
+    final farmId = target.id ?? '';
+    if (farmId.isEmpty) return;
+
+    try {
+      operationalData = await operationalIntelligence.load(farmId);
+      operationalFarmName = target.name;
+      operationalWarning = null;
+    } catch (error) {
+      operationalWarning = 'Inteligência operacional indisponível: $error';
+    }
+  }
+
+  void openOperationalArea(String area) {
+    final normalized = area.trim().toLowerCase();
+    if (normalized.contains('sanidade')) {
+      openHealth();
+    } else if (normalized.contains('reprodução')) {
+      openReproduction();
+    } else if (normalized.contains('nutrição')) {
+      openNutrition();
+    } else if (normalized.contains('finance')) {
+      openFinance();
+    } else if (normalized.contains('estoque')) {
+      openInventory();
+    } else if (normalized.contains('agenda')) {
+      chooseFarmAgenda();
+    } else if (normalized.contains('rebanho') || normalized.contains('pesagem')) {
+      openHerd();
+    } else if (normalized.contains('integridade')) {
+      openTechnicalDashboard();
+    } else {
+      openIndicators();
+    }
+  }
+
+  Future<void> openOperationalAlertCenter() async {
+    final data = operationalData;
+    if (data == null || data.farmId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione uma fazenda e atualize a inteligência operacional.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => OperationalAlertCenterScreen(
+          farmId: data.farmId,
+          farmName: operationalFarmName ?? 'Fazenda ativa',
+          onOpenArea: openOperationalArea,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      await loadDashboard();
+    }
+  }
+
   Future<void> loadDashboard() async {
     if (mounted) setState(() => isLoading = true);
 
     try {
       final loadedFarms = await farmStorage.loadFarms();
       final loadedActions = await actionStorage.loadActions();
+      await _loadOperationalIntelligence(loadedFarms);
       final loadedContexts = <DashboardAgendaContext>[];
 
       for (final farm in loadedFarms) {
         try {
-          final tasks = await agendaStorage.loadTasks(farm.name);
+          final farmId = farm.id ?? '';
+          if (farmId.isNotEmpty) {
+            try {
+              await agendaStorage.reconcileSmartAgenda(farmId);
+            } catch (_) {
+              // A Agenda Inteligente não pode bloquear o Dashboard.
+            }
+          }
+          final tasks = await agendaStorage.loadTasks(
+            farm.name,
+            farmId: farmId,
+          );
           loadedContexts.addAll(
             tasks.map((task) => DashboardAgendaContext(farm: farm, task: task)),
           );
@@ -671,15 +780,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             alertCount: alertCount,
                           ),
                           const SizedBox(height: 24),
-                          ExecutiveDashboardAccessCard(
-                            actionCount: managementActions.length,
-                            actionAlertCount: actionAlertCount,
-                            onOpen: openExecutiveDashboard,
+                          OperationalIntelligenceCard(
+                            data: operationalData,
+                            farmName: operationalFarmName ?? 'Fazenda ativa',
+                            warning: operationalWarning,
+                            onRefresh: loadDashboard,
+                            onOpenArea: openOperationalArea,
+                            onOpenAlerts: openOperationalAlertCenter,
                           ),
-                          const SizedBox(height: 32),
-
-                          TechnicalDashboardAccessCard(
-                            onOpen: openTechnicalDashboard,
+                          const SizedBox(height: 16),
+                          ExecutiveIndicatorsCard(
+                            data: operationalData,
+                            farmName: operationalFarmName ?? 'Fazenda ativa',
+                          ),
+                          const SizedBox(height: 24),
+                          AdvancedAnalysisAccessCard(
+                            actionCount: managementActions.length,
+                            alertCount: actionAlertCount,
+                            onOpenExecutive: openExecutiveDashboard,
+                            onOpenTechnical: openTechnicalDashboard,
                           ),
                           const SizedBox(height: 24),
                           DashboardActionSummaryCard(
@@ -759,6 +878,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
+      ),
+    );
+  }
+}
+
+
+class AdvancedAnalysisAccessCard extends StatelessWidget {
+  const AdvancedAnalysisAccessCard({
+    required this.actionCount,
+    required this.alertCount,
+    required this.onOpenExecutive,
+    required this.onOpenTechnical,
+    super.key,
+  });
+
+  final int actionCount;
+  final int alertCount;
+  final VoidCallback onOpenExecutive;
+  final VoidCallback onOpenTechnical;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 680;
+
+            final intro = const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Análises e decisões',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Ferramentas avançadas ficam agrupadas aqui para manter '
+                  'o Dashboard focado no dia a dia.',
+                  style: TextStyle(color: Colors.black54),
+                ),
+              ],
+            );
+
+            final executive = OutlinedButton.icon(
+              onPressed: onOpenExecutive,
+              icon: const Icon(Icons.analytics_outlined),
+              label: Text('Executivo · $actionCount ações · $alertCount alertas'),
+            );
+
+            final technical = OutlinedButton.icon(
+              onPressed: onOpenTechnical,
+              icon: const Icon(Icons.query_stats_outlined),
+              label: const Text('Painel técnico'),
+            );
+
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  intro,
+                  const SizedBox(height: 14),
+                  executive,
+                  const SizedBox(height: 8),
+                  technical,
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: intro),
+                const SizedBox(width: 18),
+                executive,
+                const SizedBox(width: 8),
+                technical,
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -1005,7 +1208,7 @@ class WelcomeHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Olá, Gabriel!',
+                'Visão geral da operação',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 28,

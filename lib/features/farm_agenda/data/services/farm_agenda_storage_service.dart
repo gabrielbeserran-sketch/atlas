@@ -16,6 +16,17 @@ class FarmAgendaStorageService {
   String _createStorageKey(String farmName) =>
       'atlas_farm_agenda_${_normalize(farmName)}';
 
+  Future<void> reconcileSmartAgenda(String farmId) async {
+    final normalized = farmId.trim();
+    if (normalized.isEmpty) return;
+
+    await _http.send(
+      'POST',
+      '/livestock/intelligence/smart-agenda/reconcile',
+      queryParameters: <String, String>{'farm_id': normalized},
+    );
+  }
+
   Future<List<FarmAgendaData>> loadTasks(
     String farmName, {
     String farmId = '',
@@ -94,7 +105,7 @@ class FarmAgendaStorageService {
       final response = await _http.send(
         'GET',
         '/operations/tasks',
-        queryParameters: {'farm_id': farmId, 'status': status},
+        queryParameters: <String, String>{'farm_id': farmId, 'status': status},
       );
       all.addAll(response.asMapList().map(_fromApi));
     }
@@ -224,8 +235,7 @@ class FarmAgendaStorageService {
       priority: _priorityFromApi(map['priority']?.toString() ?? ''),
       status: _statusFromApi(map['status']?.toString() ?? ''),
       notes: parsedNotes,
-      sourceType:
-          map['source_type']?.toString() ?? fallback?.sourceType ?? '',
+      sourceType: map['source_type']?.toString() ?? fallback?.sourceType ?? '',
       sourceId: map['source_id']?.toString() ?? fallback?.sourceId ?? '',
     );
   }

@@ -20,6 +20,7 @@ class AtlasEnterpriseRemoteAuthStore {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
+  bool _secureStorageRecovered = false;
 
   Future<String> baseUrl() async {
     const definedUrl = String.fromEnvironment(
@@ -68,8 +69,21 @@ class AtlasEnterpriseRemoteAuthStore {
   }
 
   Future<AtlasRemoteSession?> loadSession() async {
-    final raw = await _secureStorage.read(key: _sessionKey);
+    String? raw;
+
+    try {
+      raw = await _secureStorage.read(key: _sessionKey);
+    } catch (_) {
+      // Windows/DPAPI pode deixar um arquivo criptografado ilegível após
+      // restauração de backup, troca de perfil ou corrupção local.
+      // Recuperamos apenas o segredo local; o backend continua sendo a fonte
+      // de verdade e o usuário volta para o login.
+      await _recoverSecureStorage();
+      return null;
+    }
+
     if (raw == null || raw.trim().isEmpty) return null;
+
     try {
       return AtlasRemoteSession.fromMap(
         Map<String, dynamic>.from(jsonDecode(raw) as Map),
@@ -80,17 +94,50 @@ class AtlasEnterpriseRemoteAuthStore {
     }
   }
 
-  Future<void> saveSession(AtlasRemoteSession session) {
-    return _secureStorage.write(
-      key: _sessionKey,
-      value: jsonEncode(session.toMap()),
-    );
+  Future<void> saveSession(AtlasRemoteSession session) async {
+    final value = jsonEncode(session.toMap());
+
+    try {
+      await _secureStorage.write(key: _sessionKey, value: value);
+    } catch (_) {
+      await _recoverSecureStorage();
+      await _secureStorage.write(key: _sessionKey, value: value);
+    }
   }
 
   Future<void> clearSession() async {
-    await _secureStorage.delete(key: _sessionKey);
+    try {
+      await _secureStorage.delete(key: _sessionKey);
+    } catch (_) {
+      await _recoverSecureStorage();
+    }
     await _preferences.remove(_activeFarmKey);
   }
+
+  Future<void> _recoverSecureStorage() async {
+    if (_secureStorageRecovered) {
+      try {
+        await _secureStorage.deleteAll();
+      } catch (_) {
+        // A sessão será tratada como ausente; nunca mantemos token em fallback
+        // inseguro como SharedPreferences.
+      }
+      await _preferences.remove(_activeFarmKey);
+      return;
+    }
+
+    _secureStorageRecovered = true;
+
+    try {
+      await _secureStorage.deleteAll();
+    } catch (_) {
+      // Em caso de corrupção nativa persistente, nenhuma credencial é copiada
+      // para armazenamento não seguro. O login deverá ser refeito.
+    }
+
+    await _preferences.remove(_activeFarmKey);
+  }
+
 
   Future<void> saveActiveFarm(String farmId) {
     return _preferences.setString(_activeFarmKey, farmId);

@@ -42,7 +42,7 @@ _FailureScreen,lib/core/session/atlas_session_gate.dart,3,,False,2,0
 AtlasSystemCenterScreen,lib/core/system_center/atlas_system_center_screen.dart,5,,False,1,0
 AtlasActionPlanScreen,lib/features/action_plan/presentation/screens/atlas_action_plan_screen.dart,7,,False,4,0
 AtlasBiDashboardScreen,lib/features/analytics/presentation/screens/atlas_bi_dashboard_screen.dart,4,,False,2,0
-AnimalDetailScreen,lib/features/animal/presentation/screens/animal_detail_screen.dart,6,,False,19,0
+AnimalDetailScreen,lib/features/animal/presentation/screens/animal_detail_screen.dart,6,,False,22,0
 AnimalFormScreen,lib/features/animal/presentation/screens/animal_form_screen.dart,8,,False,4,0
 AnimalListScreen,lib/features/animal/presentation/screens/animal_list_screen.dart,5,,False,5,0
 AnimalDocumentFormScreen,lib/features/animal_document/presentation/screens/animal_document_form_screen.dart,5,,False,6,0
@@ -150,10 +150,11 @@ AtlasCopilotImprovementScreen,lib/features/copilot/presentation/screens/atlas_co
 AtlasCopilotScreen,lib/features/copilot/presentation/screens/atlas_copilot_screen.dart,12,,False,8,0
 AtlasIntelligenceScreen,lib/features/dashboard/presentation/screens/atlas_intelligence_screen.dart,4,,False,10,0
 AtlasOperationsIntelligenceScreen,lib/features/dashboard/presentation/screens/atlas_operations_intelligence_screen.dart,3,,False,10,0
-DashboardScreen,lib/features/dashboard/presentation/screens/dashboard_screen.dart,8,,False,16,0
+DashboardScreen,lib/features/dashboard/presentation/screens/dashboard_screen.dart,8,,False,18,0
 DecisionScenarioSimulatorScreen,lib/features/dashboard/presentation/screens/decision_scenario_simulator_screen.dart,5,,False,6,0
 ExecutiveDashboardScreen,lib/features/dashboard/presentation/screens/executive_dashboard_screen.dart,5,,False,130,0
 ExecutiveDecisionCenterScreen,lib/features/dashboard/presentation/screens/executive_decision_center_screen.dart,3,,False,7,0
+OperationalAlertCenterScreen,lib/features/dashboard/presentation/screens/operational_alert_center_screen.dart,5,,False,4,0
 AtlasDataGovernanceScreen,lib/features/data_governance/presentation/screens/atlas_data_governance_screen.dart,5,,False,4,0
 AtlasDataIntelligenceScreen,lib/features/data_intelligence/presentation/screens/atlas_data_intelligence_screen.dart,5,,False,7,0
 AtlasDecisionEngineScreen,lib/features/decision_engine/presentation/screens/atlas_decision_engine_screen.dart,3,,False,2,0
@@ -198,7 +199,7 @@ AtlasFlutterQualityScreen,lib/features/flutter_quality/presentation/screens/atla
 AtlasGovernanceResilienceScreen,lib/features/governance_resilience/presentation/screens/atlas_governance_resilience_screen.dart,4,,False,1,0
 HerdGroupFormScreen,lib/features/herd/presentation/screens/herd_group_form_screen.dart,8,,False,1,0
 HerdListScreen,lib/features/herd/presentation/screens/herd_list_screen.dart,5,,False,5,0
-HerdOverviewScreen,lib/features/herd/presentation/screens/herd_overview_screen.dart,6,,False,15,0
+HerdOverviewScreen,lib/features/herd/presentation/screens/herd_overview_screen.dart,6,,False,13,0
 IndicatorsScreen,lib/features/indicators/presentation/screens/indicators_screen.dart,5,,False,1,0
 AtlasIntegrationEcosystemScreen,lib/features/integration_ecosystem/presentation/screens/atlas_integration_ecosystem_screen.dart,4,,False,1,0
 AtlasIntegrationCenterScreen,lib/features/integration_hub/presentation/screens/atlas_integration_center_screen.dart,5,,False,5,0

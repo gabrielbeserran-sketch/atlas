@@ -16,6 +16,7 @@ POST /analytics/benchmarks/{metric_key},platform_api,API de plataforma/IA/automa
 GET /analytics/benchmarks,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
 PUT /animal-media/{animal_id}/{media_id}/content,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
 GET /animal-media/{animal_id}/{media_id}/content,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+GET /animals/{animal_id}/timeline,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
 POST /atlas-ai/sessions,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
 GET /atlas-ai/sessions,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
 GET /atlas-ai/sessions/{session_id}/messages,platform_api,API de plataforma/IA/automação com consumo externo ou futuro permitido.
@@ -134,6 +135,8 @@ GET /iot/devices/{device_id}/commands,advanced_backend_api,Endpoint de domínio 
 POST /iot/automation-rules,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
 GET /iot/automation-rules,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
 GET /iot-platform/readiness,advanced_backend_api,Endpoint de domínio avançado sem consumidor Flutter obrigatório na V1.
+PATCH /livestock/animals/{animal_id}/weights/{weight_id},backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
+DELETE /livestock/animals/{animal_id}/weights/{weight_id},backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
 POST /livestock/health/protocols/{protocol_id}/apply,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
 POST /livestock/inventory/products/{product_id}/movements,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.
 GET /livestock/dashboard,backend_capability,Capacidade backend pecuária não exigida pela UI atual; preservada para API/automação.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import ast
 import hashlib
 import json
@@ -102,7 +103,71 @@ def check_direct_python_bootstrap(relative: str, errors: list[str]) -> None:
         )
 
 
+
+def promote_current_baseline() -> int:
+    previous: dict[str, object] = {}
+    if MANIFEST.is_file():
+        try:
+            previous = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            previous = {}
+
+    protected_previous = previous.get("protected_file_sha256", {})
+    protected_paths = (
+        list(protected_previous.keys())
+        if isinstance(protected_previous, dict)
+        else []
+    )
+    protected_hashes: dict[str, str] = {}
+    missing: list[str] = []
+    for relative in protected_paths:
+        path = ROOT / relative
+        if not path.is_file():
+            missing.append(relative)
+            continue
+        protected_hashes[relative] = sha256(path)
+
+    if missing:
+        print(json.dumps({"status": "FAIL", "missing": missing}, indent=2))
+        print("ATLAS BASELINE MANIFEST PROMOTION: FAIL")
+        return 1
+
+    data = {
+        "version": "v18-stabilized",
+        "critical_source_files": sorted(critical_source_files()),
+        "protected_file_sha256": protected_hashes,
+    }
+    MANIFEST.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
+            {
+                "status": "OK",
+                "version": data["version"],
+                "critical_source_files": len(data["critical_source_files"]),
+                "protected_files": len(protected_hashes),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    print("ATLAS BASELINE MANIFEST PROMOTION: OK")
+    return 0
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--promote-current-baseline",
+        action="store_true",
+        help="Promove explicitamente a árvore atual para o manifesto protegido.",
+    )
+    args = parser.parse_args()
+    if args.promote_current_baseline:
+        return promote_current_baseline()
+
     errors: list[str] = []
     warnings: list[str] = []
 

@@ -1086,26 +1086,30 @@ class AgendaViewSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<AgendaViewMode>(
-      segments: const [
-        ButtonSegment(
-          value: AgendaViewMode.list,
-          icon: Icon(Icons.view_list_outlined),
-          label: Text('Lista'),
-        ),
-        ButtonSegment(
-          value: AgendaViewMode.week,
-          icon: Icon(Icons.view_week_outlined),
-          label: Text('Semana'),
-        ),
-        ButtonSegment(
-          value: AgendaViewMode.month,
-          icon: Icon(Icons.calendar_month_outlined),
-          label: Text('Mês'),
-        ),
-      ],
-      selected: {mode},
-      onSelectionChanged: (values) => onChanged(values.first),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SegmentedButton<AgendaViewMode>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(
+            value: AgendaViewMode.list,
+            icon: Icon(Icons.view_list_outlined),
+            label: Text('Lista'),
+          ),
+          ButtonSegment(
+            value: AgendaViewMode.week,
+            icon: Icon(Icons.view_week_outlined),
+            label: Text('Semana'),
+          ),
+          ButtonSegment(
+            value: AgendaViewMode.month,
+            icon: Icon(Icons.calendar_month_outlined),
+            label: Text('Mês'),
+          ),
+        ],
+        selected: {mode},
+        onSelectionChanged: (values) => onChanged(values.first),
+      ),
     );
   }
 }

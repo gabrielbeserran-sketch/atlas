@@ -83,6 +83,7 @@ KNOWN_PERMISSIONS: set[str] = {
     "release.manage",
     "release.execute",
     "release.approve",
+    "livestock.read",
     "herd.read",
     "herd.write",
     "reproduction.read",
@@ -115,6 +116,7 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "farms.update",
         "sync.read",
         "sync.manage",
+        "sync.write",
         "audit.read",
         "backup.read",
         "system.read",
@@ -123,14 +125,10 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "animals.create",
         "animals.update",
         "animals.delete",
-
         "analytics.read",
         "analytics.manage",
         "operations.read",
-    "operations.manage",
-    "sync.write",
         "operations.manage",
-        "sync.write",
     },
     "consultant": {
         "farms.read",
@@ -193,8 +191,8 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
 
 # Permissões pecuárias consolidadas das Fases 4 e 5.
 _DOMAIN_READ = {
-    "herd.read", "reproduction.read", "health.read", "nutrition.read",
-    "inventory.read", "finance.read", "platform.read",
+    "livestock.read", "herd.read", "reproduction.read", "health.read",
+    "nutrition.read", "inventory.read", "finance.read", "platform.read",
 }
 _DOMAIN_WRITE = {
     "herd.write", "reproduction.write", "health.write", "nutrition.write",
@@ -296,6 +294,13 @@ def get_principal(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Tenant inválido para a empresa ativa.",
+        )
+
+    token_role = str(claims.get("role", ""))
+    if token_role and token_role != membership.role:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sessão desatualizada. Entre novamente.",
         )
 
     expires_at = session.expires_at

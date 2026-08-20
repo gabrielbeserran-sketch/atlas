@@ -15,7 +15,7 @@ def test_reconciler_blocks_unsafe_not_null_backfill() -> None:
     ).read_text(encoding="utf-8")
 
     assert "UnsafeSchemaReconciliation" in text
-    assert "coluna obrigatória ausente não pode" in text
+    assert "coluna obrigatoria ausente nao pode" in text
     assert "rows > 0" in text
     assert "column.nullable is False" in text
 
@@ -29,7 +29,7 @@ def test_existing_table_is_synchronized_before_preservation() -> None:
     ).read_text(encoding="utf-8")
 
     assert "_sync_existing_table_columns" in text
-    assert "_add_missing_column" in text
+    assert "_apply_missing_column" in text
     assert "tabela existente preservada" in text
 
 
@@ -43,7 +43,7 @@ def test_index_creation_requires_existing_columns() -> None:
 
     assert "_assert_columns_exist" in text
     assert "create_index:" in text
-    assert "operação bloqueada porque depende" in text
+    assert "operacao bloqueada porque depende" in text
 
 
 def test_foreign_key_creation_requires_both_sides() -> None:

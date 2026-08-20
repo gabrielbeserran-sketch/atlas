@@ -49,7 +49,7 @@ def current_hashes() -> tuple[dict[str, str], list[str]]:
     return hashes, errors
 
 
-def promote_local_baseline() -> int:
+def promote_local_baseline(*, baseline: str, origin: str) -> int:
     hashes, errors = current_hashes()
     if errors:
         print("ATLAS MARCO 5A BASELINE PROMOTION: FAIL")
@@ -66,8 +66,8 @@ def promote_local_baseline() -> int:
 
     data = {
         "schema_version": 2,
-        "baseline": "Marco 4E aprovado + correção v8e + baseline local homologada",
-        "baseline_origin": "local_full_quality_gate",
+        "baseline": baseline,
+        "baseline_origin": origin,
         "promoted_at_utc": datetime.now(timezone.utc).isoformat(),
         "purpose": (
             "Impedir regressão silenciosa dos fluxos V1 homologados enquanto "
@@ -157,9 +157,25 @@ def main() -> int:
             "acabou de passar o Full Quality Gate."
         ),
     )
+    parser.add_argument(
+        "--promote-v18-stabilized-baseline",
+        action="store_true",
+        help=(
+            "Promove a árvore V18 após os gates estáticos de estabilização; "
+            "a homologação runtime continua registrada separadamente."
+        ),
+    )
     args = parser.parse_args()
     if args.promote_local_approved_baseline:
-        return promote_local_baseline()
+        return promote_local_baseline(
+            baseline="Marco 4E aprovado + baseline local homologada",
+            origin="local_full_quality_gate",
+        )
+    if args.promote_v18_stabilized_baseline:
+        return promote_local_baseline(
+            baseline="Atlas V18 estabilizado — baseline estática protegida",
+            origin="v18_stabilization_static_gate",
+        )
     return verify()
 
 

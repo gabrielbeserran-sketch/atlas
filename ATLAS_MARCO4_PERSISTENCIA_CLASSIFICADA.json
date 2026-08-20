@@ -13,13 +13,13 @@
     "lib/features/animal_document/data/services/animal_document_storage_service.dart",
     "lib/features/animal_photo/data/services/animal_photo_storage_service.dart"
   ],
-  "routes_without_ui_consumer_total": 203,
+  "routes_without_ui_consumer_total": 206,
   "route_categories": {
-    "advanced_backend_api": 119,
+    "advanced_backend_api": 120,
     "platform_api": 33,
     "marco5_security": 3,
     "admin_or_business_api": 40,
-    "backend_capability": 8
+    "backend_capability": 10
   },
   "notes": [
     "Rota sem consumidor Flutter não é automaticamente órfã; o backend também atende automações, integrações, admin e API.",
