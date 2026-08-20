@@ -538,6 +538,15 @@ class WeightCreateRequest(BaseModel):
     notes: str = ""
 
 
+class WeightUpdateRequest(BaseModel):
+    weight: float | None = Field(default=None, gt=0)
+    body_condition_score: float | None = Field(default=None, ge=0, le=5)
+    source: str | None = None
+    equipment: str | None = None
+    measured_at: datetime | None = None
+    notes: str | None = None
+
+
 class WeightResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
@@ -679,6 +688,9 @@ class HealthEventUpdateRequest(BaseModel):
     is_quarantine: bool | None = None
     is_mortality: bool | None = None
     necropsy_result: str | None = None
+    inventory_product_id: str | None = None
+    inventory_quantity: float | None = Field(default=None, ge=0)
+    treatment_cost: float | None = Field(default=None, ge=0)
 
 
 class HealthEventResponse(BaseModel):

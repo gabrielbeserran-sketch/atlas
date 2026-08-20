@@ -128,6 +128,9 @@ class NutritionPlanData {
       0,
       (sum, i) => sum + i.dailyCostPerAnimal,
     );
+    // Ingredientes vindos de integrações antigas podem trazer a proporção,
+    // mas não o custo unitário. Nesse caso preservamos o custo oficial do plano.
+    if (totalCost <= 0) return costPerKg;
     return totalCost / totalKg;
   }
 
@@ -211,8 +214,13 @@ class NutritionPlanData {
   }
 
   NutritionPlanData copyWith({
+    int? animalCount,
+    double? averageBodyWeightKg,
+    double? observedDailyGainKg,
+    double? feedConversion,
     bool? inventoryDeducted,
     double? inventoryDeductionCost,
+    List<NutritionIngredientData>? ingredients,
   }) {
     return NutritionPlanData(
       id: id,
@@ -221,14 +229,14 @@ class NutritionPlanData {
       dietName: dietName,
       category: category,
       dailyAmountKg: dailyAmountKg,
-      animalCount: animalCount,
+      animalCount: animalCount ?? this.animalCount,
       costPerKg: costPerKg,
       startDate: startDate,
       notes: notes,
-      averageBodyWeightKg: averageBodyWeightKg,
+      averageBodyWeightKg: averageBodyWeightKg ?? this.averageBodyWeightKg,
       targetDailyGainKg: targetDailyGainKg,
-      observedDailyGainKg: observedDailyGainKg,
-      feedConversion: feedConversion,
+      observedDailyGainKg: observedDailyGainKg ?? this.observedDailyGainKg,
+      feedConversion: feedConversion ?? this.feedConversion,
       pastureType: pastureType,
       silageType: silageType,
       concentrateType: concentrateType,
@@ -242,7 +250,7 @@ class NutritionPlanData {
       inventoryDeducted: inventoryDeducted ?? this.inventoryDeducted,
       inventoryDeductionCost:
           inventoryDeductionCost ?? this.inventoryDeductionCost,
-      ingredients: ingredients,
+      ingredients: ingredients ?? this.ingredients,
     );
   }
 }

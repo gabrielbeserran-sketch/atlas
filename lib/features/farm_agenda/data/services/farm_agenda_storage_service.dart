@@ -112,6 +112,22 @@ class FarmAgendaStorageService {
       '/operations/tasks/${task.id}',
       body: {'status': 'cancelled'},
     );
+
+    final resolvedFarmId = await _resolveFarmId(farmName);
+    if (resolvedFarmId.isNotEmpty) {
+      final remote = await _fetchRemoteTasks(resolvedFarmId);
+      final cancelled = remote.any(
+        (item) => item.id == task.id && item.status == 'cancelled',
+      );
+      if (!cancelled) {
+        throw StateError(
+          'O cancelamento foi enviado, mas não foi confirmado pelo servidor.',
+        );
+      }
+      await _saveLocal(_createStorageKey(farmName), remote);
+      return;
+    }
+
     final local = await _loadLocal(_createStorageKey(farmName));
     local.removeWhere((item) => item.id == task.id);
     await _saveLocal(_createStorageKey(farmName), local);

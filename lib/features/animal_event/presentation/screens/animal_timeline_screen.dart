@@ -178,6 +178,20 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
       final enterpriseRecords =
           results[7] as List<AnimalEnterpriseTimelineData>;
 
+      // A Timeline Enterprise consolida os mesmos eventos oficiais que
+      // também são carregados pelos módulos especializados. Mantemos a versão
+      // especializada (mais rica para o usuário) e usamos Enterprise apenas
+      // para eventos que ainda não estejam representados localmente.
+      final canonicalSourceIds = <String>{
+        ...weights.map((item) => item.id),
+        ...healthRecords.map((item) => item.id),
+        ...reproductionRecords.map((item) => item.id),
+        ...movementRecords.map((item) => item.id),
+      };
+      final uniqueEnterpriseRecords = enterpriseRecords
+          .where((record) => !canonicalSourceIds.contains(record.id))
+          .toList(growable: false);
+
       final items = <TimelineItem>[
         ...events.map(TimelineItem.fromManualEvent),
         ...weights.map(TimelineItem.fromWeight),
@@ -189,7 +203,7 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
             .where((document) => document.hasExpiration)
             .map(TimelineItem.fromDocumentExpiration),
         ...photos.map(TimelineItem.fromPhoto),
-        ...enterpriseRecords.map(TimelineItem.fromEnterprise),
+        ...uniqueEnterpriseRecords.map(TimelineItem.fromEnterprise),
       ];
 
       items.sort((first, second) {

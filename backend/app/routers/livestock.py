@@ -59,6 +59,7 @@ from ..schemas import (
     ReproductionEventResponse,
     ReproductionSummaryResponse,
     WeightCreateRequest,
+    WeightUpdateRequest,
     WeightResponse,
     InventoryProductPhase2CreateRequest,
     InventoryMovementPhase2Request,
@@ -178,6 +179,28 @@ def _delete_source_tasks(
     ).all()
     for task in tasks:
         db.delete(task)
+
+
+def _refresh_animal_weight_state(
+    *,
+    db: Session,
+    animal: LivestockAnimal,
+) -> None:
+    latest = db.scalar(
+        select(WeightRecord)
+        .where(
+            WeightRecord.company_id == animal.company_id,
+            WeightRecord.animal_id == animal.id,
+        )
+        .order_by(WeightRecord.measured_at.desc(), WeightRecord.id.desc())
+        .limit(1)
+    )
+    if latest is None:
+        animal.current_weight = 0
+        animal.body_condition_score = 0
+        return
+    animal.current_weight = latest.weight
+    animal.body_condition_score = latest.body_condition_score
 
 
 def _refresh_animal_reproduction_state(
@@ -556,12 +579,33 @@ def update_animal(
 ) -> LivestockAnimal:
     item = _animal(db, principal, animal_id)
     changes = payload.model_dump(exclude_unset=True)
-    if "lot_id" in changes and changes["lot_id"]:
-        lot = _lot(db, principal, changes["lot_id"])
+    previous_lot_id = item.lot_id
+    requested_lot_id = changes.get("lot_id", previous_lot_id)
+    if requested_lot_id:
+        lot = _lot(db, principal, requested_lot_id)
         if lot.farm_id != item.farm_id:
             raise HTTPException(status_code=422, detail="Lote pertence a outra fazenda.")
+        if lot.status != "active":
+            raise HTTPException(status_code=422, detail="Lote de destino está inativo.")
     for field, value in changes.items():
         setattr(item, field, value.strip() if isinstance(value, str) else value)
+    if "lot_id" in changes and requested_lot_id != previous_lot_id:
+        db.add(
+            AnimalMovement(
+                id=new_id("movement"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=item.farm_id,
+                animal_id=item.id,
+                movement_type="lot_change",
+                from_lot_id=previous_lot_id,
+                to_lot_id=requested_lot_id,
+                occurred_at=datetime.now(timezone.utc),
+                reason="Alteração cadastral de lote",
+                document_reference=f"AUTO-PATCH-{item.id}",
+                created_by=principal.user.id,
+            )
+        )
     try:
         db.commit()
     except IntegrityError as exc:
@@ -695,6 +739,62 @@ def add_weight(
     db.commit()
     db.refresh(item)
     return item
+
+
+@router.patch("/animals/{animal_id}/weights/{weight_id}", response_model=WeightResponse)
+def update_weight(
+    animal_id: str,
+    weight_id: str,
+    payload: WeightUpdateRequest,
+    principal: Principal = Depends(require_permission("herd.write")),
+    db: Session = Depends(get_db),
+) -> WeightRecord:
+    animal = _animal(db, principal, animal_id)
+    item = db.scalar(
+        select(WeightRecord).where(
+            WeightRecord.id == weight_id,
+            WeightRecord.company_id == principal.company.id,
+            WeightRecord.animal_id == animal.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Pesagem não encontrada.")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(item, field, value)
+    db.flush()
+    _refresh_animal_weight_state(db=db, animal=animal)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.delete(
+    "/animals/{animal_id}/weights/{weight_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
+def delete_weight(
+    animal_id: str,
+    weight_id: str,
+    principal: Principal = Depends(require_permission("herd.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    animal = _animal(db, principal, animal_id)
+    item = db.scalar(
+        select(WeightRecord).where(
+            WeightRecord.id == weight_id,
+            WeightRecord.company_id == principal.company.id,
+            WeightRecord.animal_id == animal.id,
+        )
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="Pesagem não encontrada.")
+    db.delete(item)
+    db.flush()
+    _refresh_animal_weight_state(db=db, animal=animal)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/animals/{animal_id}/weights", response_model=list[WeightResponse])
@@ -997,8 +1097,98 @@ def update_health_event(
     if item is None:
         raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
     _farm_allowed(principal, item.farm_id)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    stock_fields_changed = bool({"inventory_product_id", "inventory_quantity"} & set(changes))
+    cost_fields_changed = stock_fields_changed or "treatment_cost" in changes
+
+    if stock_fields_changed:
+        consumed = list(
+            db.scalars(
+                select(InventoryMovement).where(
+                    InventoryMovement.company_id == principal.company.id,
+                    InventoryMovement.reference_type.in_({"health_event", "health_event_adjusted"}),
+                    InventoryMovement.reference_id.like(f"{item.id}%"),
+                    InventoryMovement.movement_type == "health_consumption",
+                )
+            ).all()
+        )
+        reversals = list(
+            db.scalars(
+                select(InventoryMovement).where(
+                    InventoryMovement.company_id == principal.company.id,
+                    InventoryMovement.reference_type == "health_event_reversal",
+                    InventoryMovement.reference_id.like(f"{item.id}%"),
+                )
+            ).all()
+        )
+        consumed_by_product: dict[str, float] = defaultdict(float)
+        reversed_by_product: dict[str, float] = defaultdict(float)
+        unit_cost_by_product: dict[str, float] = {}
+        for movement in consumed:
+            consumed_by_product[movement.product_id] += movement.quantity
+            unit_cost_by_product[movement.product_id] = movement.unit_cost
+        for movement in reversals:
+            reversed_by_product[movement.product_id] += movement.quantity
+        for product_id, consumed_qty in consumed_by_product.items():
+            outstanding_qty = max(
+                0.0,
+                consumed_qty - reversed_by_product.get(product_id, 0.0),
+            )
+            if outstanding_qty <= 0:
+                continue
+            original_product = _inventory_product(
+                db, principal, product_id, for_update=True
+            )
+            _apply_stock_movement(
+                db=db, principal=principal, product=original_product,
+                movement_type="return", quantity=outstanding_qty,
+                unit_cost=unit_cost_by_product.get(product_id, 0),
+                reason=f"Ajuste do evento sanitário {item.event_type}",
+                reference_type="health_event_reversal",
+                reference_id=f"{item.id}:patch:{product_id}:{len(consumed)}",
+                occurred_at=datetime.now(timezone.utc),
+            )
+
+    for field, value in changes.items():
         setattr(item, field, value)
+
+    if stock_fields_changed and item.inventory_product_id and item.inventory_quantity > 0:
+        product = _inventory_product(db, principal, item.inventory_product_id, for_update=True)
+        if product.farm_id != item.farm_id:
+            raise HTTPException(status_code=422, detail="Produto pertence a outra fazenda.")
+        _apply_stock_movement(
+            db=db, principal=principal, product=product,
+            movement_type="health_consumption", quantity=item.inventory_quantity,
+            unit_cost=product.average_cost, reason=f"Evento sanitário: {item.event_type}",
+            product_batch=item.product_batch, reference_type="health_event_adjusted",
+            reference_id=f"{item.id}:{datetime.now(timezone.utc).timestamp()}",
+            occurred_at=item.occurred_at,
+        )
+        if "treatment_cost" not in changes or item.treatment_cost <= 0:
+            item.treatment_cost = item.inventory_quantity * product.average_cost
+
+    if cost_fields_changed:
+        linked_finance = db.scalars(
+            select(FinancialEntry).where(
+                FinancialEntry.company_id == principal.company.id,
+                FinancialEntry.reference_type == "health_event",
+                FinancialEntry.reference_id == item.id,
+            )
+        ).all()
+        for entry in linked_finance:
+            db.delete(entry)
+        if item.treatment_cost > 0:
+            db.add(FinancialEntry(
+                id=new_id("finance"), tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id, farm_id=item.farm_id,
+                animal_id=item.animal_id, lot_id=item.lot_id, entry_type="expense",
+                category="health", cost_center="Sanidade",
+                description=f"Evento sanitário: {item.event_type}", amount=item.treatment_cost,
+                status="paid", competence_date=item.occurred_at, paid_at=item.occurred_at,
+                reference_type="health_event", reference_id=item.id,
+                created_by=principal.user.id,
+            ))
+
     _sync_operational_task(
         db=db, principal=principal, farm_id=item.farm_id,
         source_type="health_event", source_id=item.id,
@@ -1031,43 +1221,45 @@ def delete_health_event(
         raise HTTPException(status_code=404, detail="Evento sanitário não encontrado.")
     _farm_allowed(principal, item.farm_id)
 
-    original_movement = db.scalar(
-        select(InventoryMovement).where(
-            InventoryMovement.company_id == principal.company.id,
-            InventoryMovement.reference_type == "health_event",
-            InventoryMovement.reference_id == item.id,
-            InventoryMovement.movement_type == "health_consumption",
-        )
-    )
-    reversal = db.scalar(
-        select(InventoryMovement).where(
-            InventoryMovement.company_id == principal.company.id,
-            InventoryMovement.reference_type == "health_event_reversal",
-            InventoryMovement.reference_id == item.id,
-        )
-    )
-    if original_movement is not None and reversal is None:
-        product = _inventory_product(db, principal, original_movement.product_id)
-        product.quantity += original_movement.quantity
-        db.add(
-            InventoryMovement(
-                id=new_id("stock_move"),
-                tenant_id=principal.company.tenant_id,
-                company_id=principal.company.id,
-                farm_id=product.farm_id,
-                product_id=product.id,
-                movement_type="return",
-                quantity=original_movement.quantity,
-                unit_cost=original_movement.unit_cost,
-                balance_after=product.quantity,
-                reason=f"Estorno do evento sanitário {item.event_type}",
-                document_number=f"ESTORNO-{item.id}",
-                product_batch=original_movement.product_batch,
-                reference_type="health_event_reversal",
-                reference_id=item.id,
-                occurred_at=datetime.now(timezone.utc),
-                created_by=principal.user.id,
+    consumption_movements = list(
+        db.scalars(
+            select(InventoryMovement).where(
+                InventoryMovement.company_id == principal.company.id,
+                InventoryMovement.reference_id.like(f"{item.id}%"),
+                InventoryMovement.movement_type == "health_consumption",
             )
+        ).all()
+    )
+    reversal_movements = list(
+        db.scalars(
+            select(InventoryMovement).where(
+                InventoryMovement.company_id == principal.company.id,
+                InventoryMovement.reference_type == "health_event_reversal",
+                InventoryMovement.reference_id.like(f"{item.id}%"),
+            )
+        ).all()
+    )
+    consumed_by_product: dict[str, float] = defaultdict(float)
+    reversed_by_product: dict[str, float] = defaultdict(float)
+    last_cost: dict[str, float] = {}
+    for movement in consumption_movements:
+        consumed_by_product[movement.product_id] += movement.quantity
+        last_cost[movement.product_id] = movement.unit_cost
+    for movement in reversal_movements:
+        reversed_by_product[movement.product_id] += movement.quantity
+    for product_id, consumed_qty in consumed_by_product.items():
+        outstanding = max(0.0, consumed_qty - reversed_by_product.get(product_id, 0.0))
+        if outstanding <= 0:
+            continue
+        product = _inventory_product(db, principal, product_id, for_update=True)
+        _apply_stock_movement(
+            db=db, principal=principal, product=product,
+            movement_type="return", quantity=outstanding,
+            unit_cost=last_cost.get(product_id, 0),
+            reason=f"Estorno do evento sanitário {item.event_type}",
+            reference_type="health_event_reversal",
+            reference_id=f"{item.id}:delete:{product_id}",
+            occurred_at=datetime.now(timezone.utc),
         )
 
     linked_finance = db.scalars(
@@ -1620,6 +1812,68 @@ def register_nutrition_consumption(lot_id: str, payload: NutritionConsumptionReq
     db.commit(); db.refresh(event); return event
 
 
+@router.delete("/nutrition/events/{event_id}", status_code=204)
+def delete_nutrition_event(
+    event_id: str,
+    principal: Principal = Depends(require_permission("nutrition.write")),
+    db: Session = Depends(get_db),
+) -> Response:
+    event = db.scalar(
+        select(NutritionEvent).where(
+            NutritionEvent.id == event_id,
+            NutritionEvent.company_id == principal.company.id,
+        )
+    )
+    if event is None:
+        raise HTTPException(status_code=404, detail="Evento nutricional não encontrado.")
+    _farm_allowed(principal, event.farm_id)
+
+    consumptions = list(
+        db.scalars(
+            select(InventoryMovement).where(
+                InventoryMovement.company_id == principal.company.id,
+                InventoryMovement.reference_type == "nutrition_event",
+                InventoryMovement.reference_id == event.id,
+                InventoryMovement.movement_type == "nutrition_consumption",
+            )
+        ).all()
+    )
+    existing_returns = list(
+        db.scalars(
+            select(InventoryMovement).where(
+                InventoryMovement.company_id == principal.company.id,
+                InventoryMovement.reference_type == "nutrition_event_reversal",
+                InventoryMovement.reference_id == event.id,
+            )
+        ).all()
+    )
+    returned = sum(m.quantity for m in existing_returns)
+    consumed = sum(m.quantity for m in consumptions)
+    outstanding = max(0.0, consumed - returned)
+    if outstanding > 0 and consumptions:
+        product = _inventory_product(db, principal, consumptions[-1].product_id, for_update=True)
+        _apply_stock_movement(
+            db=db, principal=principal, product=product, movement_type="return",
+            quantity=outstanding, unit_cost=consumptions[-1].unit_cost,
+            reason=f"Estorno do consumo nutricional {event.diet_name}",
+            reference_type="nutrition_event_reversal", reference_id=event.id,
+            occurred_at=datetime.now(timezone.utc),
+        )
+
+    linked_finance = db.scalars(
+        select(FinancialEntry).where(
+            FinancialEntry.company_id == principal.company.id,
+            FinancialEntry.reference_type == "nutrition_event",
+            FinancialEntry.reference_id == event.id,
+        )
+    ).all()
+    for entry in linked_finance:
+        db.delete(entry)
+    db.delete(event)
+    db.commit()
+    return Response(status_code=204)
+
+
 @router.get("/nutrition/performance")
 def nutrition_performance(farm_id: str, lot_id: str | None=None,
     principal: Principal = Depends(require_permission("nutrition.read")), db: Session = Depends(get_db)) -> dict:
@@ -1829,7 +2083,14 @@ def update_inventory_product_v2(
     db: Session = Depends(get_db),
 ) -> InventoryProduct:
     item=_inventory_product(db,principal,product_id)
-    _farm_allowed(principal,payload.farm_id)
+    _farm_allowed(principal,item.farm_id)
+    if payload.farm_id != item.farm_id:
+        raise HTTPException(status_code=409, detail="A fazenda do produto não pode ser alterada.")
+    if abs(payload.quantity - item.quantity) > 0.000001:
+        raise HTTPException(
+            status_code=409,
+            detail="A quantidade deve ser alterada por uma movimentação de estoque.",
+        )
     for key,value in payload.model_dump().items():
         setattr(item,key,value)
     db.commit(); db.refresh(item); return item
@@ -1841,6 +2102,8 @@ def delete_inventory_product_v2(
     db: Session = Depends(get_db),
 ) -> Response:
     item=_inventory_product(db,principal,product_id)
+    if item.quantity > 0.000001:
+        raise HTTPException(status_code=409, detail="Zere o estoque antes de inativar o produto.")
     item.active=False; db.commit(); return Response(status_code=204)
 
 @router.patch("/nutrition/plans/{plan_id}", response_model=NutritionPlanResponse)
@@ -1852,6 +2115,11 @@ def update_nutrition_plan(
     item=db.scalar(select(NutritionPlan).where(NutritionPlan.id==plan_id,NutritionPlan.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Plano nutricional não encontrado.")
     _farm_allowed(principal,item.farm_id)
+    if payload.farm_id != item.farm_id:
+        raise HTTPException(status_code=409, detail="A fazenda do plano não pode ser alterada.")
+    lot = _lot(db, principal, payload.lot_id)
+    if lot.farm_id != item.farm_id:
+        raise HTTPException(status_code=422, detail="Lote pertence a outra fazenda.")
     for key,value in payload.model_dump().items():
         if value is not None: setattr(item,key,value)
     db.commit(); db.refresh(item); return item
@@ -1875,6 +2143,21 @@ def update_financial_entry_v2(
     item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
     _farm_allowed(principal,item.farm_id)
+    if item.reference_type in {"health_event", "nutrition_event"}:
+        raise HTTPException(
+            status_code=409,
+            detail="Lançamento integrado deve ser alterado no módulo de origem.",
+        )
+    if payload.farm_id != item.farm_id:
+        raise HTTPException(status_code=409, detail="A fazenda do lançamento não pode ser alterada.")
+    if payload.animal_id:
+        animal = _animal(db, principal, payload.animal_id)
+        if animal.farm_id != item.farm_id:
+            raise HTTPException(status_code=422, detail="Animal pertence a outra fazenda.")
+    if payload.lot_id:
+        lot = _lot(db, principal, payload.lot_id)
+        if lot.farm_id != item.farm_id:
+            raise HTTPException(status_code=422, detail="Lote pertence a outra fazenda.")
     for key,value in payload.model_dump().items():
         setattr(item,key,value)
     db.commit(); db.refresh(item); return item
@@ -1887,4 +2170,10 @@ def delete_financial_entry_v2(
 ) -> Response:
     item=db.scalar(select(FinancialEntry).where(FinancialEntry.id==entry_id,FinancialEntry.company_id==principal.company.id))
     if item is None: raise HTTPException(status_code=404,detail="Lançamento não encontrado.")
-    _farm_allowed(principal,item.farm_id); db.delete(item); db.commit(); return Response(status_code=204)
+    _farm_allowed(principal,item.farm_id)
+    if item.reference_type in {"health_event", "nutrition_event"}:
+        raise HTTPException(
+            status_code=409,
+            detail="Lançamento integrado deve ser excluído no módulo de origem.",
+        )
+    db.delete(item); db.commit(); return Response(status_code=204)

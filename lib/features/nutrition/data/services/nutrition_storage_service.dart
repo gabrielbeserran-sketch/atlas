@@ -142,10 +142,105 @@ class NutritionStorageService {
       '/livestock/nutrition/plans',
       queryParameters: {'farm_id': farmId},
     );
-    return response
-        .asMapList()
-        .map((map) => _fromApi(map, lotNames: lotNames, farmName: farmName))
-        .toList();
+    final plans = <NutritionPlanData>[];
+    for (final map in response.asMapList()) {
+      final lotId = map['lot_id']?.toString() ?? '';
+      var plan = _fromApi(map, lotNames: lotNames, farmName: farmName);
+      if (lotId.isNotEmpty) {
+        plan = await _enrichPerformance(
+          plan,
+          farmId: farmId,
+          lotId: lotId,
+        );
+      }
+      plans.add(plan);
+    }
+    return plans;
+  }
+
+  Future<NutritionPlanData> _enrichPerformance(
+    NutritionPlanData plan, {
+    required String farmId,
+    required String lotId,
+  }) async {
+    try {
+      final animalsResponse = await _http.send(
+        'GET',
+        '/livestock/animals',
+        queryParameters: {'farm_id': farmId, 'lot_id': lotId},
+      );
+      final animals = animalsResponse.asMapList();
+      if (animals.isEmpty) {
+        return plan.copyWith(
+          animalCount: 0,
+          averageBodyWeightKg: 0,
+          observedDailyGainKg: 0,
+          feedConversion: 0,
+        );
+      }
+
+      final currentWeights = animals
+          .map((item) => (item['current_weight'] as num?)?.toDouble() ?? 0)
+          .where((value) => value > 0)
+          .toList(growable: false);
+      final averageWeight = currentWeights.isEmpty
+          ? plan.averageBodyWeightKg
+          : currentWeights.reduce((a, b) => a + b) / currentWeights.length;
+
+      final gains = <double>[];
+      for (final animal in animals) {
+        final animalId = animal['id']?.toString() ?? '';
+        if (animalId.isEmpty) continue;
+        try {
+          final response = await _http.send(
+            'GET',
+            '/livestock/animals/$animalId/weights',
+          );
+          final weights = response.asMapList()
+            ..sort((a, b) {
+              final first = DateTime.tryParse(a['measured_at']?.toString() ?? '');
+              final second = DateTime.tryParse(b['measured_at']?.toString() ?? '');
+              if (first == null && second == null) return 0;
+              if (first == null) return -1;
+              if (second == null) return 1;
+              return first.compareTo(second);
+            });
+          if (weights.length < 2) continue;
+          final previous = weights[weights.length - 2];
+          final latest = weights.last;
+          final previousAt = DateTime.tryParse(
+            previous['measured_at']?.toString() ?? '',
+          );
+          final latestAt = DateTime.tryParse(
+            latest['measured_at']?.toString() ?? '',
+          );
+          final previousWeight =
+              (previous['weight'] as num?)?.toDouble() ?? 0;
+          final latestWeight = (latest['weight'] as num?)?.toDouble() ?? 0;
+          if (previousAt == null || latestAt == null) continue;
+          final days = latestAt.difference(previousAt).inMinutes / 1440;
+          if (days <= 0 || previousWeight <= 0 || latestWeight <= 0) continue;
+          gains.add((latestWeight - previousWeight) / days);
+        } catch (_) {
+          // Uma pesagem individual indisponível não derruba o módulo inteiro.
+        }
+      }
+
+      final observedGain = gains.isEmpty
+          ? 0.0
+          : gains.reduce((a, b) => a + b) / gains.length;
+      final dryMatterIntake = plan.dailyAmountKg * plan.dryMatterPercent / 100;
+      final conversion = observedGain > 0 ? dryMatterIntake / observedGain : 0.0;
+
+      return plan.copyWith(
+        animalCount: animals.length,
+        averageBodyWeightKg: averageWeight,
+        observedDailyGainKg: observedGain,
+        feedConversion: conversion,
+      );
+    } catch (_) {
+      return plan;
+    }
   }
 
   Future<List<NutritionPlanData>> _loadLocal(String key) async {
@@ -226,15 +321,21 @@ class NutritionStorageService {
   }) {
     final lotId = map['lot_id']?.toString() ?? '';
     final rawIngredients = map['ingredients_json'];
+    final dailyAmountKg =
+        (map['daily_amount_per_animal_kg'] as num?)?.toDouble() ??
+        fallback?.dailyAmountKg ??
+        0;
     final ingredients = rawIngredients is List
-        ? rawIngredients
-              .whereType<Map>()
-              .map(
-                (item) => NutritionIngredientData.fromMap(
-                  Map<String, dynamic>.from(item),
-                ),
-              )
-              .toList()
+        ? rawIngredients.whereType<Map>().map((item) {
+            final raw = Map<String, dynamic>.from(item);
+            // Compatibilidade com cargas/API que armazenaram participação em
+            // percentual em vez de inclusionKg.
+            if (!raw.containsKey('inclusionKg') && raw['percentage'] is num) {
+              raw['inclusionKg'] =
+                  dailyAmountKg * (raw['percentage'] as num).toDouble() / 100;
+            }
+            return NutritionIngredientData.fromMap(raw);
+          }).toList()
         : (fallback?.ingredients ?? const <NutritionIngredientData>[]);
     return NutritionPlanData(
       id: map['id']?.toString() ?? fallback?.id ?? '',
@@ -242,10 +343,7 @@ class NutritionStorageService {
       groupName: lotNames[lotId] ?? fallback?.groupName ?? lotId,
       dietName: map['name']?.toString() ?? fallback?.dietName ?? '',
       category: map['category']?.toString() ?? fallback?.category ?? 'Outro',
-      dailyAmountKg:
-          (map['daily_amount_per_animal_kg'] as num?)?.toDouble() ??
-          fallback?.dailyAmountKg ??
-          0,
+      dailyAmountKg: dailyAmountKg,
       animalCount:
           (map['animal_count'] as num?)?.toInt() ?? fallback?.animalCount ?? 0,
       costPerKg:

@@ -16,7 +16,7 @@ class HerdWorkspaceData {
 
   int get totalAnimals => records.length;
   int get activeAnimals => records
-      .where((record) => _normalize(record.animal.status) == 'ativo')
+      .where((record) => _isActiveStatus(record.animal.status))
       .length;
   int get females => records
       .where((record) => _normalize(record.animal.sex).startsWith('f'))
@@ -59,12 +59,25 @@ class HerdWorkspaceData {
           final matchesLot = lotId.isEmpty || record.group.id == lotId;
           final matchesStatus =
               normalizedStatus.isEmpty ||
-              _normalize(animal.status) == normalizedStatus;
+              _statusMatches(animal.status, normalizedStatus);
           final matchesSex =
               normalizedSex.isEmpty || _normalize(animal.sex) == normalizedSex;
           return matchesQuery && matchesLot && matchesStatus && matchesSex;
         })
         .toList(growable: false);
+  }
+
+  static bool _isActiveStatus(String value) {
+    final normalized = _normalize(value);
+    return normalized == 'ativo' || normalized == 'active';
+  }
+
+  static bool _statusMatches(String value, String selected) {
+    final normalizedValue = _normalize(value);
+    if (selected == 'ativo' || selected == 'active') {
+      return normalizedValue == 'ativo' || normalizedValue == 'active';
+    }
+    return normalizedValue == selected;
   }
 
   static String _normalize(String value) => value.trim().toLowerCase();
