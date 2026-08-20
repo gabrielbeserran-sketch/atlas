@@ -824,16 +824,25 @@ class NutritionEventCreateRequest(BaseModel):
 
 class NutritionEventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
     id: str
     farm_id: str
     lot_id: str
+    nutrition_plan_id: str | None = None
+    product_id: str | None = None
     diet_name: str
-    product_id: str | None
-    quantity_per_head: float
-    total_quantity: float
-    estimated_cost: float
+
+    # Contrato atual do domínio NutritionEvent.
+    amount_per_animal: float = 0
+    animal_count: int = 0
+    total_quantity: float = 0
+    planned_quantity: float = 0
+    estimated_cost: float = 0
+    observed_daily_gain_kg: float = 0
+    feed_conversion: float = 0
+
     occurred_at: datetime
-    notes: str
+    notes: str = ""
 
 
 class OperationalAlertResponse(BaseModel):

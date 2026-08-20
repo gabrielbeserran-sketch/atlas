@@ -167,14 +167,16 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     required String label,
     required Future<List<T>> Function() loader,
     required List<String> warnings,
-    Duration timeout = const Duration(seconds: 8),
+    required List<T> fallback,
   }) async {
     try {
-      return await loader().timeout(timeout);
+      // A Central não deve impor um timeout menor que o cliente HTTP oficial.
+      // O AtlasHttpClient controla o tempo de rede conforme o ambiente.
+      return await loader();
     } catch (error) {
       warnings.add('$label indisponível');
       debugPrint('ATLAS Animal Central [$label]: $error');
-      return <T>[];
+      return List<T>.unmodifiable(fallback);
     }
   }
 
@@ -193,6 +195,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<AnimalWeightData>(
           label: 'Pesagens',
           warnings: warnings,
+          fallback: weights,
           loader: () => weightStorage.loadWeights(
             farmName: farm.name,
             groupName: group.name,
@@ -202,6 +205,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<dynamic>(
           label: 'Sanidade',
           warnings: warnings,
+          fallback: const <dynamic>[],
           loader: () => healthStorage.loadRecords(
             farmName: farm.name,
             groupName: group.name,
@@ -212,6 +216,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<AnimalReproductionData>(
           label: 'Reprodução',
           warnings: warnings,
+          fallback: reproductionRecords,
           loader: () => reproductionStorage.loadRecords(
             farmName: farm.name,
             groupName: group.name,
@@ -221,6 +226,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<dynamic>(
           label: 'Movimentações',
           warnings: warnings,
+          fallback: const <dynamic>[],
           loader: () => movementStorage.loadRecords(
             farmName: farm.name,
             groupName: group.name,
@@ -230,6 +236,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<dynamic>(
           label: 'Documentos',
           warnings: warnings,
+          fallback: const <dynamic>[],
           loader: () => documentStorage.loadDocuments(
             farmName: farm.name,
             groupName: group.name,
@@ -239,6 +246,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<dynamic>(
           label: 'Eventos',
           warnings: warnings,
+          fallback: const <dynamic>[],
           loader: () => eventStorage.loadEvents(
             farmName: farm.name,
             groupName: group.name,
@@ -248,6 +256,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<AnimalPhotoData>(
           label: 'Fotos',
           warnings: warnings,
+          fallback: photos,
           loader: () => photoStorage.loadPhotos(
             farmName: farm.name,
             groupName: group.name,
@@ -257,7 +266,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         _safeLoad<dynamic>(
           label: 'Timeline Enterprise',
           warnings: warnings,
-          timeout: const Duration(seconds: 6),
+          fallback: const <dynamic>[],
           loader: () => enterpriseTimelineService.loadTimeline(animal.id),
         ),
       ]);
@@ -270,6 +279,11 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       final manualEvents = results[5] as List<dynamic>;
       final loadedPhotos = results[6] as List<AnimalPhotoData>;
       final loadedEnterpriseTimeline = results[7] as List<dynamic>;
+
+      debugPrint(
+        'ATLAS Animal Central [Timeline Enterprise]: '
+        '${loadedEnterpriseTimeline.length} evento(s) carregado(s)',
+      );
 
       loadedWeights.sort(
         (first, second) =>
@@ -5447,13 +5461,202 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
   ];
 
+  List<({AnimalHubSection value, String label, IconData icon})>
+  get _advancedItems => <({AnimalHubSection value, String label, IconData icon})>[
+    ...thirdRow,
+    ...fourthRow,
+    ...fifthRow,
+    ...sixthRow,
+    ...seventhRow,
+    ...eighthRow,
+    ...ninthRow,
+    ...tenthRow,
+    ...eleventhRow,
+    ...twelfthRow,
+    ...thirteenthRow,
+    ...fourteenthRow,
+    ...fifteenthRow,
+    ...sixteenthRow,
+    ...seventeenthRow,
+    ...eighteenthRow,
+    ...nineteenthRow,
+    ...twentiethRow,
+    ...twentyFirstRow,
+    ...twentySecondRow,
+    ...twentyThirdRow,
+    ...twentyFourthRow,
+    ...twentyFifthRow,
+    ...twentySixthRow,
+    ...twentySeventhRow,
+    ...twentyEighthRow,
+    ...twentyNinthRow,
+    ...thirtiethRow,
+    ...thirtyFirstRow,
+    ...thirtySecondRow,
+    ...thirtyThirdRow,
+    ...thirtyFourthRow,
+    ...thirtyFifthRow,
+    ...thirtySixthRow,
+    ...thirtySeventhRow,
+    ...thirtyEighthRow,
+    ...thirtyNinthRow,
+    ...fortiethRow,
+    ...fortyFirstRow,
+  ];
+
+  String _cleanLabel(String label) {
+    return label.replaceFirst(RegExp(r'\s+\d+$'), '');
+  }
+
+  ({AnimalHubSection value, String label, IconData icon})? _advancedSelection() {
+    for (final item in _advancedItems) {
+      if (item.value == selected) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _openAdvancedCatalog(BuildContext context) async {
+    final controller = TextEditingController();
+
+    final selectedModule = await showDialog<AnimalHubSection>(
+      context: context,
+      builder: (dialogContext) {
+        var query = '';
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final normalized = query.trim().toLowerCase();
+            final filtered = _advancedItems.where((item) {
+              final label = _cleanLabel(item.label).toLowerCase();
+              return normalized.isEmpty || label.contains(normalized);
+            }).toList(growable: false);
+
+            return Dialog(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 720,
+                  maxHeight: 720,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Mais recursos',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Recursos avançados ficam organizados aqui para não poluir a Central do animal.',
+                                  style: TextStyle(color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Fechar',
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      TextField(
+                        controller: controller,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search),
+                          labelText: 'Buscar recurso',
+                          hintText: 'Ex.: agenda, inteligência, SISBOV, relatórios',
+                        ),
+                        onChanged: (value) {
+                          setModalState(() => query = value);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: filtered.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'Nenhum recurso encontrado.',
+                                  style: TextStyle(color: Colors.black54),
+                                ),
+                              )
+                            : ListView.separated(
+                                itemCount: filtered.length,
+                                separatorBuilder: (_, __) =>
+                                    const Divider(height: 1),
+                                itemBuilder: (context, index) {
+                                  final item = filtered[index];
+                                  final isSelected = item.value == selected;
+
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      child: Icon(item.icon, size: 20),
+                                    ),
+                                    title: Text(_cleanLabel(item.label)),
+                                    trailing: isSelected
+                                        ? const Icon(
+                                            Icons.check_circle,
+                                            color: Color(0xFF1B5E20),
+                                          )
+                                        : const Icon(Icons.chevron_right),
+                                    onTap: () => Navigator.of(
+                                      dialogContext,
+                                    ).pop(item.value),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (selectedModule != null) {
+      onSelected(selectedModule);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final advancedSelection = _advancedSelection();
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(14),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4, 2, 4, 10),
+              child: Text(
+                'Acesso rápido',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
             NavigationModuleRow(
               items: firstRow,
               selected: selected,
@@ -5465,245 +5668,52 @@ class AnimalHubNavigation extends StatelessWidget {
               selected: selected,
               onSelected: onSelected,
             ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirdRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fourthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fifthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: sixthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: seventhRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: eighthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: ninthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: tenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: eleventhRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twelfthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fourteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fifteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: sixteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: seventeenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: eighteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: nineteenthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentiethRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyFirstRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentySecondRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyThirdRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyFourthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyFifthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentySixthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentySeventhRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyEighthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: twentyNinthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtiethRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyFirstRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtySecondRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyThirdRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyFourthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyFifthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtySixthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtySeventhRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyEighthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: thirtyNinthRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fortiethRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: fortyFirstRow,
-              selected: selected,
-              onSelected: onSelected,
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: advancedSelection == null
+                      ? const Text(
+                          'Recursos avançados ficam fora da tela principal.',
+                          style: TextStyle(color: Colors.black54),
+                        )
+                      : Row(
+                          children: [
+                            Icon(
+                              advancedSelection.icon,
+                              size: 20,
+                              color: const Color(0xFF1B5E20),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Aberto: ${_cleanLabel(advancedSelection.label)}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () => _openAdvancedCatalog(context),
+                  icon: const Icon(Icons.apps_outlined),
+                  label: const Text('Mais recursos'),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
 }
 
 class NavigationModuleRow extends StatelessWidget {
@@ -6712,58 +6722,100 @@ class AnimalInformationPanel extends StatelessWidget {
   final FarmData farm;
   final HerdGroupData group;
 
+  Widget _infoItem(String label, String value) {
+    return SizedBox(
+      width: 220,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final items = <({String label, String value})>[
+    final primaryItems = <({String label, String value})>[
       (label: 'Brinco', value: animal.tag),
-      (label: 'SISBOV', value: valueOrFallback(animal.sisbov)),
       (label: 'Categoria', value: animal.category),
       (label: 'Sexo', value: animal.sex),
       (label: 'Raça', value: animal.breed),
       (label: 'Nascimento', value: valueOrFallback(animal.birthDate)),
-      (label: 'Origem', value: valueOrFallback(animal.origin)),
+      (label: 'Situação', value: animal.status),
       (label: 'Fazenda', value: farm.name),
       (label: 'Lote', value: group.name),
-      (label: 'Situação', value: animal.status),
-      (label: 'Versão Enterprise', value: animal.version.toString()),
+    ];
+
+    final extraItems = <({String label, String value})>[
+      (label: 'SISBOV', value: valueOrFallback(animal.sisbov)),
+      (label: 'Origem', value: valueOrFallback(animal.origin)),
       (label: 'Observações', value: valueOrFallback(animal.notes)),
     ];
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(22),
-        child: Wrap(
-          spacing: 18,
-          runSpacing: 18,
-          children: items
-              .map((item) {
-                return SizedBox(
-                  width: 245,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.label,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.value,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Dados principais',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              children: primaryItems
+                  .map((item) => _infoItem(item.label, item.value))
+                  .toList(growable: false),
+            ),
+            const SizedBox(height: 8),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(top: 4, bottom: 4),
+              title: const Text(
+                'Mais informações',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: const Text(
+                'SISBOV, origem e observações',
+              ),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    spacing: 18,
+                    runSpacing: 18,
+                    children: extraItems
+                        .map((item) => _infoItem(item.label, item.value))
+                        .toList(growable: false),
                   ),
-                );
-              })
-              .toList(growable: false),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
 
 class EmptyHubState extends StatelessWidget {
   const EmptyHubState({

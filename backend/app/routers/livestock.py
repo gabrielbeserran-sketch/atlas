@@ -1281,9 +1281,21 @@ def create_nutrition_event(
         id=new_id("nutrition"),
         tenant_id=principal.company.tenant_id,
         company_id=principal.company.id,
-        created_by=principal.user.id,
+        farm_id=payload.farm_id,
+        lot_id=payload.lot_id,
+        nutrition_plan_id=None,
+        product_id=payload.product_id,
+        diet_name=payload.diet_name,
+        amount_per_animal=payload.quantity_per_head,
+        animal_count=0,
+        total_quantity=payload.total_quantity,
+        planned_quantity=payload.total_quantity,
+        estimated_cost=payload.estimated_cost,
+        observed_daily_gain_kg=0,
+        feed_conversion=0,
+        notes=payload.notes,
         occurred_at=payload.occurred_at or datetime.now(timezone.utc),
-        **payload.model_dump(exclude={"occurred_at"}),
+        created_by=principal.user.id,
     )
     db.add(item)
 
