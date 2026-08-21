@@ -163,7 +163,7 @@ class _AtlasOperationsEnterpriseScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -174,7 +174,7 @@ class _AtlasOperationsEnterpriseScreenState
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 31 — Gestão Operacional Inteligente',
+                            'Gestão Operacional Inteligente',
                           ),
                           subtitle: Text(
                             'A entrega organiza planos, atividades, equipes, máquinas e manutenção. '
@@ -189,7 +189,7 @@ class _AtlasOperationsEnterpriseScreenState
                         children: AtlasOperationsEnterpriseModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

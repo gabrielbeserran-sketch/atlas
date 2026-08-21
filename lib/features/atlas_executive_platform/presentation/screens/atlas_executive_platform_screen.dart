@@ -164,7 +164,7 @@ class _AtlasExecutivePlatformScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -175,7 +175,7 @@ class _AtlasExecutivePlatformScreenState
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 35 — Plataforma Executiva e Produto Comercial',
+                            'Plataforma Executiva e Produto Comercial',
                           ),
                           subtitle: Text(
                             'A entrega consolida indicadores, metas, alertas, relatórios e gestão da plataforma. '
@@ -190,7 +190,7 @@ class _AtlasExecutivePlatformScreenState
                         children: AtlasExecutivePlatformModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

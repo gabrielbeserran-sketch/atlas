@@ -2337,7 +2337,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         title: 'IA Reprodutiva',
         subtitle: 'Predição de cio, prenhez, parto e sucesso da IATF.',
         icon: Icons.favorite_outline,
-        button: 'Abrir Pacote 52',
+        button: 'Abrir recurso',
         screen: AtlasReproductiveAiScreen(
           animal: animal,
           farm: farm,
@@ -2348,7 +2348,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         title: 'IA Veterinária',
         subtitle: 'Triagem, avaliação de sinais, hipóteses e próximos exames.',
         icon: Icons.medical_services_outlined,
-        button: 'Abrir Pacote 51',
+        button: 'Abrir recurso',
         screen: AtlasVeterinaryAiScreen(
           animal: animal,
           farm: farm,
@@ -2360,7 +2360,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         subtitle:
             'Multiempresa, multiusuário, marketplace, API pública e Command Center.',
         icon: Icons.public_outlined,
-        button: 'Abrir Pacote 50',
+        button: 'Abrir recurso',
         screen: AtlasGlobalPlatformScreen(
           animal: animal,
           farm: farm,
@@ -2386,7 +2386,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasQualityReleaseScreen(
         animal: animal,
         farm: farm,
@@ -2406,7 +2406,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasIntelligenceReportsScreen(
         animal: animal,
         farm: farm,
@@ -2426,7 +2426,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasLivestockIntegrationScreen(
         animal: animal,
         farm: farm,
@@ -2446,7 +2446,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasAuthSyncScreen(
         animal: animal,
         farm: farm,
@@ -2466,7 +2466,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasBackendFoundationScreen(
         animal: animal,
         farm: farm,
@@ -2486,7 +2486,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasExecutivePlatformScreen(
         animal: animal,
         farm: farm,
@@ -2506,7 +2506,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasCloudSecurityScreen(
         animal: animal,
         farm: farm,
@@ -2526,7 +2526,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasGovernancePeopleScreen(
         animal: animal,
         farm: farm,
@@ -2546,7 +2546,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasSupplyLogisticsScreen(
         animal: animal,
         farm: farm,
@@ -2566,7 +2566,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasOperationsEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2586,7 +2586,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasClimateEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2606,7 +2606,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasSustainabilityEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2626,7 +2626,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasCommercialEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2646,7 +2646,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasFinanceEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2666,7 +2666,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasPrecisionLivestockScreen(
         animal: animal,
         farm: farm,
@@ -2686,7 +2686,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasReproductivePremiumScreen(
         animal: animal,
         farm: farm,
@@ -2706,7 +2706,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasGeospatialScreen(
         animal: animal,
         farm: farm,
@@ -2726,7 +2726,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasIotScreen(
         animal: animal,
         farm: farm,
@@ -2746,7 +2746,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasAdvancedAiScreen(
         animal: animal,
         farm: farm,
@@ -2766,7 +2766,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasSaasPlatformScreen(
         animal: animal,
         farm: farm,
@@ -2786,7 +2786,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasAutonomousEnterpriseScreen(
         animal: animal,
         farm: farm,
@@ -2806,7 +2806,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasPlatformResilienceScreen(
         animal: animal,
         farm: farm,
@@ -2826,7 +2826,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasExecutiveIntelligenceScreen(
         animal: animal,
         farm: farm,
@@ -2846,7 +2846,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasGovernanceOperationsScreen(
         animal: animal,
         farm: farm,
@@ -2866,7 +2866,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasEnterpriseOperationsScreen(
         animal: animal,
         farm: farm,
@@ -2886,7 +2886,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasCommercialOperationsScreen(
         animal: animal,
         farm: farm,
@@ -2906,7 +2906,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasRuralBusinessScreen(
         animal: animal,
         farm: farm,
@@ -2926,7 +2926,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasFinancialIntegrationsScreen(
         animal: animal,
         farm: farm,
@@ -2946,7 +2946,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasOfficialIntegrationsScreen(
         animal: animal,
         farm: farm,
@@ -2966,7 +2966,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasAutomationOperationsScreen(
         animal: animal,
         farm: farm,
@@ -2986,7 +2986,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasEnvironmentalAiScreen(
         animal: animal,
         farm: farm,
@@ -3006,7 +3006,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasPredictiveAiScreen(
         animal: animal,
         farm: farm,
@@ -3026,7 +3026,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasEcosystemScreen(
         animal: animal,
         farm: farm,
@@ -3046,7 +3046,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasSupplyChainScreen(
         animal: animal,
         farm: farm,
@@ -3066,7 +3066,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      button: 'Abrir ${module.packageLabel}',
+      button: 'Abrir ${module.title}',
       screen: AtlasLandIntelligenceScreen(
         animal: animal,
         farm: farm,
@@ -3207,6 +3207,48 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               'Indicadores zootécnicos e operacionais consolidados do animal.',
         ),
         const SizedBox(height: 16),
+        const Text(
+          'Ações rápidas',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.weightIntelligence),
+              icon: const Icon(Icons.monitor_weight_outlined),
+              label: const Text('Nova pesagem'),
+            ),
+            FilledButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.healthEnterprise),
+              icon: const Icon(Icons.medical_services_outlined),
+              label: const Text('Sanidade'),
+            ),
+            FilledButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.reproductionEnterprise),
+              icon: const Icon(Icons.favorite_outline),
+              label: const Text('Reprodução'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.management),
+              icon: const Icon(Icons.swap_horiz),
+              label: const Text('Manejo'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.photos),
+              icon: const Icon(Icons.photo_camera_outlined),
+              label: const Text('Foto'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => selectSection(AnimalHubSection.documents),
+              icon: const Icon(Icons.description_outlined),
+              label: const Text('Documento'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
         Wrap(
           spacing: 16,
           runSpacing: 16,
@@ -3250,7 +3292,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               icon: Icons.favorite_outline,
             ),
             AnimalMetricCard(
-              title: 'Linha do tempo',
+              title: 'Histórico',
               value: '$totalTimelineRecords eventos',
               subtitle: 'Histórico consolidado',
               icon: Icons.history_outlined,
@@ -3268,16 +3310,16 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionTitle(
-          title: 'Timeline inteligente Enterprise',
+          title: 'Histórico completo',
           subtitle:
               'Auditoria, pesagens, sanidade, reprodução, movimentações, fotos, documentos e vencimentos.',
         ),
         const SizedBox(height: 16),
         HubActionCard(
           icon: Icons.history_outlined,
-          title: 'Abrir timeline unificada',
+          title: 'Abrir histórico completo',
           subtitle: '$consolidatedTimelineCount eventos consolidados',
-          buttonLabel: 'Ver timeline',
+          buttonLabel: 'Ver histórico',
           onPressed: openTimeline,
         ),
         const SizedBox(height: 16),
@@ -3922,7 +3964,7 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
     (
       value: AnimalHubSection.timeline,
-      label: 'Timeline',
+      label: 'Histórico',
       icon: Icons.history_outlined,
     ),
     (
@@ -3956,17 +3998,17 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
     (
       value: AnimalHubSection.healthEnterprise,
-      label: 'Sanidade+',
+      label: 'Sanidade',
       icon: Icons.health_and_safety_outlined,
     ),
     (
       value: AnimalHubSection.reproductionEnterprise,
-      label: 'Reprodução+',
+      label: 'Reprodução',
       icon: Icons.favorite_outline,
     ),
     (
       value: AnimalHubSection.weightIntelligence,
-      label: 'Pesagens+',
+      label: 'Pesagens',
       icon: Icons.auto_graph_outlined,
     ),
     (
@@ -3976,7 +4018,7 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
     (
       value: AnimalHubSection.executivePanel,
-      label: 'Executivo',
+      label: 'Análises',
       icon: Icons.dashboard_customize_outlined,
     ),
   ];

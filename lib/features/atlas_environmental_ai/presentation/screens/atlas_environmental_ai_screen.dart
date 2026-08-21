@@ -183,7 +183,7 @@ class _AtlasEnvironmentalAiScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -311,7 +311,7 @@ class _ModuleSelector extends StatelessWidget {
                         foregroundColor: active ? Colors.white : null,
                       ),
                       icon: Icon(_moduleIcon(module)),
-                      label: Text(module.packageLabel),
+                      label: Text(module.title),
                     ),
                   ),
                 );

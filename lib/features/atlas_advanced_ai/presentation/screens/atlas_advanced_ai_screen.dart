@@ -169,7 +169,7 @@ class _AtlasAdvancedAiScreenState extends State<AtlasAdvancedAiScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -180,7 +180,7 @@ class _AtlasAdvancedAiScreenState extends State<AtlasAdvancedAiScreen> {
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 22 — Inteligência Artificial Avançada',
+                            'Inteligência Artificial Avançada',
                           ),
                           subtitle: Text(
                             'Os módulos organizam apoio à decisão e rastreabilidade. '
@@ -347,7 +347,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

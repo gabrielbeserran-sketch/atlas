@@ -49,17 +49,16 @@ extension AtlasSustainabilityEnterpriseModuleX
   };
 
   String get packageLabel => switch (this) {
-    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'Pacote 181',
-    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => 'Pacote 182',
-    AtlasSustainabilityEnterpriseModule.waterManagement => 'Pacote 183',
-    AtlasSustainabilityEnterpriseModule.energyEfficiency => 'Pacote 184',
-    AtlasSustainabilityEnterpriseModule.wasteManagement => 'Pacote 185',
-    AtlasSustainabilityEnterpriseModule.biodiversity => 'Pacote 186',
-    AtlasSustainabilityEnterpriseModule.environmentalCompliance => 'Pacote 187',
-    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
-      'Pacote 188',
-    AtlasSustainabilityEnterpriseModule.sustainableTraceability => 'Pacote 189',
-    AtlasSustainabilityEnterpriseModule.esgCenter => 'Pacote 190',
+    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'Carbono',
+    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => 'Emissões',
+    AtlasSustainabilityEnterpriseModule.waterManagement => 'Água',
+    AtlasSustainabilityEnterpriseModule.energyEfficiency => 'Energia',
+    AtlasSustainabilityEnterpriseModule.wasteManagement => 'Resíduos',
+    AtlasSustainabilityEnterpriseModule.biodiversity => 'Biodiversidade',
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance => 'Conformidade',
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications => 'Certificações',
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability => 'Rastreabilidade',
+    AtlasSustainabilityEnterpriseModule.esgCenter => 'Indicadores ESG',
   };
 
   List<String> get features => switch (this) {

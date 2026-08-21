@@ -169,7 +169,7 @@ class _AtlasGeospatialScreenState extends State<AtlasGeospatialScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -179,7 +179,7 @@ class _AtlasGeospatialScreenState extends State<AtlasGeospatialScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 24 — Geoprocessamento'),
+                          title: Text('Geoprocessamento'),
                           subtitle: Text(
                             'A entrega organiza dados territoriais, métricas e planejamento. '
                             'Mapas e análises reais exigem fontes geográficas, imagens e validação de campo.',
@@ -337,7 +337,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

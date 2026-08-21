@@ -156,7 +156,7 @@ class _AtlasReproductiveAiScreenState extends State<AtlasReproductiveAiScreen> {
                       EnterpriseModuleHeader(
                         title: 'Inteligência Reprodutiva',
                         subtitle:
-                            'Pacote 52 • Cio, prenhez, parto e probabilidade de sucesso da IATF.',
+                            'Cio, prenhez, parto e probabilidade de sucesso da IATF.',
                         icon: Icons.favorite_outline,
                       ),
                       const SizedBox(height: 14),

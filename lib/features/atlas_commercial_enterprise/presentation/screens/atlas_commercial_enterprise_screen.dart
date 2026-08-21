@@ -172,7 +172,7 @@ class _AtlasCommercialEnterpriseScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -182,7 +182,7 @@ class _AtlasCommercialEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 28 — Comercial Enterprise'),
+                          title: Text('Comercial Enterprise'),
                           subtitle: Text(
                             'A entrega organiza clientes, pipeline, contratos e receita. '
                             'Assinaturas, leilões e pagamentos reais exigem provedores e validação jurídica.',
@@ -355,7 +355,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

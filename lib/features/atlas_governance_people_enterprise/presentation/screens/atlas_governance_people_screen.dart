@@ -164,7 +164,7 @@ class _AtlasGovernancePeopleScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -175,7 +175,7 @@ class _AtlasGovernancePeopleScreenState
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 33 — Pessoas, Segurança e Governança',
+                            'Pessoas, Segurança e Governança',
                           ),
                           subtitle: Text(
                             'A entrega organiza pessoas, documentos, auditorias, riscos e acessos. '
@@ -190,7 +190,7 @@ class _AtlasGovernancePeopleScreenState
                         children: AtlasGovernancePeopleModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

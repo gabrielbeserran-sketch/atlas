@@ -163,7 +163,7 @@ class _AtlasQualityReleaseScreenState extends State<AtlasQualityReleaseScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -174,7 +174,7 @@ class _AtlasQualityReleaseScreenState extends State<AtlasQualityReleaseScreen> {
                         child: ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 40 — Qualidade, Publicação e Operação Comercial',
+                            'Qualidade, Publicação e Operação Comercial',
                           ),
                           subtitle: Text(
                             'A entrega organiza revisão, testes, homologação, piloto e lançamento. '
@@ -189,7 +189,7 @@ class _AtlasQualityReleaseScreenState extends State<AtlasQualityReleaseScreen> {
                         children: AtlasQualityReleaseModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

@@ -171,7 +171,7 @@ class _AtlasSaasPlatformScreenState extends State<AtlasSaasPlatformScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -181,7 +181,7 @@ class _AtlasSaasPlatformScreenState extends State<AtlasSaasPlatformScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 21 — Plataforma Comercial SaaS'),
+                          title: Text('Plataforma Comercial SaaS'),
                           subtitle: Text(
                             'A entrega organiza cadastros, planos, cobrança e portais. '
                             'Integrações financeiras reais exigem provedores homologados, backend e credenciais.',
@@ -345,7 +345,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

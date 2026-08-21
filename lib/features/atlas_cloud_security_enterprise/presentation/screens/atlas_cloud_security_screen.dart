@@ -163,7 +163,7 @@ class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -174,7 +174,7 @@ class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 34 — Integração, Nuvem e Segurança',
+                            'Integração, Nuvem e Segurança',
                           ),
                           subtitle: Text(
                             'Esta entrega organiza a camada de gestão e monitoramento. '
@@ -189,7 +189,7 @@ class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
                         children: AtlasCloudSecurityModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

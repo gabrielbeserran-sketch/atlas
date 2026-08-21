@@ -161,7 +161,7 @@ class _AtlasAuthSyncScreenState extends State<AtlasAuthSyncScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -172,7 +172,7 @@ class _AtlasAuthSyncScreenState extends State<AtlasAuthSyncScreen> {
                         child: ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 37 — Autenticação, Segurança e Sincronização',
+                            'Autenticação, Segurança e Sincronização',
                           ),
                           subtitle: Text(
                             'A entrega organiza a camada funcional de segurança e sincronização. '
@@ -187,7 +187,7 @@ class _AtlasAuthSyncScreenState extends State<AtlasAuthSyncScreen> {
                         children: AtlasAuthSyncModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

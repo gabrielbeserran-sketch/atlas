@@ -104,27 +104,27 @@ class _AtlasSprints1620DashboardScreenState
 
     final cards = <_DashboardCardData>[
       _DashboardCardData(
-        title: 'Sprint 16 — Comercial',
+        title: 'Comercial',
         icon: Icons.payments_outlined,
         data: data.billing,
       ),
       _DashboardCardData(
-        title: 'Sprint 17 — API Pública',
+        title: 'API Pública',
         icon: Icons.api_outlined,
         data: data.publicApi,
       ),
       _DashboardCardData(
-        title: 'Sprint 18 — Analytics',
+        title: 'Analytics',
         icon: Icons.analytics_outlined,
         data: data.analytics,
       ),
       _DashboardCardData(
-        title: 'Sprint 19 — Machine Learning',
+        title: 'Machine Learning',
         icon: Icons.model_training_outlined,
         data: data.machineLearning,
       ),
       _DashboardCardData(
-        title: 'Sprint 20 — Enterprise 1.0',
+        title: 'Enterprise 1.0',
         icon: Icons.verified_outlined,
         data: data.enterprise,
       ),

@@ -140,7 +140,7 @@ class _AtlasBackendFoundationScreenState
                 EnterpriseModuleHeader(
                   title: selectedModule.title,
                   subtitle:
-                      '${selectedModule.packageLabel} • ${widget.farm.name}',
+                      '${selectedModule.title} • ${widget.farm.name}',
                   icon: _moduleIcon(selectedModule),
                 ),
                 const SizedBox(height: 12),
@@ -149,7 +149,7 @@ class _AtlasBackendFoundationScreenState
                   child: ListTile(
                     leading: Icon(Icons.info_outline),
                     title: Text(
-                      'Fase 36 — Backend real e arquitetura multempresa',
+                      'Backend real e arquitetura multempresa',
                     ),
                     subtitle: Text(
                       'Esta fase cria a camada funcional de planejamento, acompanhamento e integração. '
@@ -164,7 +164,7 @@ class _AtlasBackendFoundationScreenState
                   children: AtlasBackendFoundationModule.values
                       .map(
                         (module) => ChoiceChip(
-                          label: Text(module.packageLabel),
+                          label: Text(module.title),
                           selected: selectedModule == module,
                           onSelected: (_) => setState(() {
                             selectedModule = module;

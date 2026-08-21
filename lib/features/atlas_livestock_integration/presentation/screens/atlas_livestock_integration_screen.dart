@@ -165,7 +165,7 @@ class _AtlasLivestockIntegrationScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -176,7 +176,7 @@ class _AtlasLivestockIntegrationScreenState
                         child: ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 38 — Integração dos Módulos Pecuários',
+                            'Integração dos Módulos Pecuários',
                           ),
                           subtitle: Text(
                             'Esta entrega organiza a migração e integração dos módulos. '
@@ -191,7 +191,7 @@ class _AtlasLivestockIntegrationScreenState
                         children: AtlasLivestockIntegrationModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

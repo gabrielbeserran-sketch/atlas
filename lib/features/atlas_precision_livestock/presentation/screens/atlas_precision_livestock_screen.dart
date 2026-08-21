@@ -173,7 +173,7 @@ class _AtlasPrecisionLivestockScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -183,7 +183,7 @@ class _AtlasPrecisionLivestockScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 26 — Pecuária de Precisão'),
+                          title: Text('Pecuária de Precisão'),
                           subtitle: Text(
                             'A entrega organiza previsões, riscos e eficiência. '
                             'Modelos reais exigem dados históricos, sensores, calibração e validação profissional.',
@@ -357,7 +357,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

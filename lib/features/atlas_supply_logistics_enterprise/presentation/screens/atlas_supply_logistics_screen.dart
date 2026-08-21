@@ -162,7 +162,7 @@ class _AtlasSupplyLogisticsScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -173,7 +173,7 @@ class _AtlasSupplyLogisticsScreenState
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 32 — Suprimentos e Logística Enterprise',
+                            'Suprimentos e Logística Enterprise',
                           ),
                           subtitle: Text(
                             'A entrega organiza compras, fornecedores, estoques, transporte e combustível. '
@@ -188,7 +188,7 @@ class _AtlasSupplyLogisticsScreenState
                         children: AtlasSupplyLogisticsModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

@@ -164,7 +164,7 @@ class _AtlasIntelligenceReportsScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -175,7 +175,7 @@ class _AtlasIntelligenceReportsScreenState
                         child: ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 39 — Inteligência, Relatórios e Experiência Profissional',
+                            'Inteligência, Relatórios e Experiência Profissional',
                           ),
                           subtitle: Text(
                             'A entrega organiza indicadores, recomendações, relatórios, exportações e navegação. '
@@ -190,7 +190,7 @@ class _AtlasIntelligenceReportsScreenState
                         children: AtlasIntelligenceReportsModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

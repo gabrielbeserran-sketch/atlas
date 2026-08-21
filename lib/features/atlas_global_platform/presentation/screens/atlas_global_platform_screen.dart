@@ -173,7 +173,7 @@ class _AtlasGlobalPlatformScreenState extends State<AtlasGlobalPlatformScreen> {
                       EnterpriseModuleHeader(
                         title: 'Plataforma Atlas Global',
                         subtitle:
-                            'Pacote 50 • Multiempresa, usuários, '
+                            'Multiempresa, usuários, '
                             'integrações, API e Command Center.',
                         icon: Icons.public_outlined,
                       ),
@@ -275,7 +275,7 @@ class _AtlasGlobalPlatformScreenState extends State<AtlasGlobalPlatformScreen> {
                             title: Text('Nenhum registro encontrado.'),
                             subtitle: Text(
                               'Cadastre o primeiro componente '
-                              'do Pacote 50.',
+                              'deste recurso.',
                             ),
                           ),
                         )

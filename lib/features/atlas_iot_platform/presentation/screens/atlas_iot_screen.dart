@@ -169,7 +169,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -179,7 +179,7 @@ class _AtlasIotScreenState extends State<AtlasIotScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 23 — Internet das Coisas'),
+                          title: Text('Internet das Coisas'),
                           subtitle: Text(
                             'A entrega organiza dispositivos e leituras. '
                             'Integrações reais dependem de hardware, protocolos, gateways, APIs e credenciais.',
@@ -329,7 +329,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

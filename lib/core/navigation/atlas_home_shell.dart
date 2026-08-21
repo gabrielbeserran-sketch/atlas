@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
@@ -356,60 +354,10 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     );
   }
 
-  FarmData? _activeFarmData() {
-    final remote = AtlasSessionScope.read(context).activeFarm;
-    if (remote == null) return null;
-    return FarmData(
-      id: remote.id,
-      name: remote.name,
-      city: remote.city,
-      state: remote.state,
-      animals: remote.animals,
-      area: remote.area.round(),
-    );
-  }
-
-  bool _isDirectOperationalRoute(String label) => const {
-    'Sanidade',
-    'Reprodução',
-    'Nutrição',
-    'Financeiro',
-    'Estoque',
-  }.contains(label);
-
-  Future<void> _openDirectOperationalRoute(String label) async {
-    final farm = _activeFarmData();
-    if (farm == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione uma fazenda para acessar este módulo.')),
-      );
-      return;
-    }
-
-    final Widget screen = switch (label) {
-      'Sanidade' => HealthOverviewScreen(farm: farm),
-      'Reprodução' => ReproductionOverviewScreen(farm: farm),
-      'Nutrição' => NutritionOverviewScreen(farm: farm),
-      'Financeiro' => FarmFinanceListScreen(farm: farm),
-      'Estoque' => FarmInventoryListScreen(farm: farm),
-      _ => throw ArgumentError('Módulo operacional desconhecido: $label'),
-    };
-
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
-    );
-  }
-
   void _handleRouteSelection(
     List<AtlasRouteDefinition> visibleRoutes,
     int index,
   ) {
-    final route = visibleRoutes[index];
-    if (_isDirectOperationalRoute(route.label)) {
-      unawaited(_openDirectOperationalRoute(route.label));
-      return;
-    }
     setState(() => selectedIndex = index);
   }
 
@@ -441,10 +389,27 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
               ),
             )
           : FarmAgendaListScreen(farm: farm);
+    } else if (selected.label == 'Sanidade') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : HealthOverviewScreen(farm: farm);
+    } else if (selected.label == 'Reprodução') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : ReproductionOverviewScreen(farm: farm);
+    } else if (selected.label == 'Nutrição') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : NutritionOverviewScreen(farm: farm);
+    } else if (selected.label == 'Financeiro') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : FarmFinanceListScreen(farm: farm);
+    } else if (selected.label == 'Estoque') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : FarmInventoryListScreen(farm: farm);
     } else {
-      // As rotas oficiais de Rebanho, Sanidade, Reprodução, Nutrição,
-      // Financeiro e Estoque já estão definidas em [routes]. Usar o builder
-      // canônico aqui evita uma segunda árvore de navegação concorrente.
       body = selected.builder(context);
     }
 
@@ -478,11 +443,6 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           ),
         ),
       );
-      return;
-    }
-    final route = visibleRoutes[index];
-    if (_isDirectOperationalRoute(route.label)) {
-      unawaited(_openDirectOperationalRoute(route.label));
       return;
     }
     setState(() => selectedIndex = index);
@@ -523,6 +483,24 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
 }
 
 
+class _AtlasSelectFarmMessage extends StatelessWidget {
+  const _AtlasSelectFarmMessage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32),
+        child: Text(
+          'Selecione uma fazenda para acessar este módulo.',
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+
+
 class _AtlasMaturityNotice extends StatelessWidget {
   const _AtlasMaturityNotice({required this.maturity, required this.child});
 
@@ -533,9 +511,9 @@ class _AtlasMaturityNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final message = switch (maturity) {
       AtlasRouteMaturity.advancedValidation =>
-        'Este módulo avançado está em validação e pode manter dados locais. Não é fonte oficial dos cadastros operacionais da V1.',
+        'Área avançada. Use os módulos operacionais para cadastros e registros do dia a dia.',
       AtlasRouteMaturity.internalTool =>
-        'Ferramenta interna de operação, qualidade ou publicação. Não representa um módulo produtivo da fazenda.',
+        'Área administrativa do Atlas. Disponível apenas para usuários autorizados.',
       AtlasRouteMaturity.v1Core => '',
     };
     return Column(
@@ -550,7 +528,7 @@ class _AtlasMaturityNotice extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${maturity.label}: $message',
+                    message,
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -582,6 +560,45 @@ class _AtlasSidebar extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final Future<void> Function() onLogout;
   final bool compact;
+
+  List<Widget> _routeTiles(
+    BuildContext context,
+    Iterable<MapEntry<int, AtlasRouteDefinition>> entries,
+  ) {
+    return entries.map((entry) {
+      final index = entry.key;
+      final route = entry.value;
+      final isSelected = index == selectedIndex;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: ListTile(
+          selected: isSelected,
+          selectedTileColor: const Color(0xFFEAF3E2),
+          selectedColor: AtlasBranding.forest,
+          textColor: const Color(0xFF263238),
+          iconColor: const Color(0xFF304B34),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          leading: SizedBox(
+            width: 24,
+            child: Center(
+              child: Icon(
+                isSelected ? route.selectedIcon : route.icon,
+                size: 20,
+              ),
+            ),
+          ),
+          title: Text(
+            route.label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          onTap: () => onSelected(index),
+        ),
+      );
+    }).toList(growable: false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -631,48 +648,60 @@ class _AtlasSidebar extends StatelessWidget {
               ),
             const Divider(height: 1),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                itemCount: routes.length,
-                itemBuilder: (context, index) {
-                  final route = routes[index];
-                  final selected = index == selectedIndex;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: ListTile(
-                      selected: selected,
-                      selectedTileColor: const Color(0xFFEAF3E2),
-                      selectedColor: AtlasBranding.forest,
-                      textColor: const Color(0xFF263238),
-                      iconColor: const Color(0xFF304B34),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                children: [
+                  ..._routeTiles(
+                    context,
+                    routes
+                        .asMap()
+                        .entries
+                        .where((entry) => entry.value.maturity.isProductionCore),
+                  ),
+                  if (routes.any(
+                    (route) =>
+                        route.maturity == AtlasRouteMaturity.advancedValidation,
+                  )) ...[
+                    const SizedBox(height: 6),
+                    ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                      childrenPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.apps_outlined, size: 20),
+                      title: const Text(
+                        'Mais recursos',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                       ),
-                      leading: SizedBox(
-                        width: 24,
-                        child: Center(
-                          child: Icon(
-                            selected ? route.selectedIcon : route.icon,
-                            size: 20,
-                          ),
+                      children: _routeTiles(
+                        context,
+                        routes.asMap().entries.where(
+                          (entry) =>
+                              entry.value.maturity ==
+                              AtlasRouteMaturity.advancedValidation,
                         ),
                       ),
-                      title: Text(
-                        route.label,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      ),
-                      onTap: () => onSelected(index),
                     ),
-                  );
-                },
+                  ],
+                  if (routes.any(
+                    (route) => route.maturity == AtlasRouteMaturity.internalTool,
+                  )) ...[
+                    ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                      childrenPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.admin_panel_settings_outlined, size: 20),
+                      title: const Text(
+                        'Administração',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                      children: _routeTiles(
+                        context,
+                        routes.asMap().entries.where(
+                          (entry) =>
+                              entry.value.maturity == AtlasRouteMaturity.internalTool,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             const Divider(height: 1),

@@ -163,7 +163,7 @@ class _AtlasClimateEnterpriseScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -174,7 +174,7 @@ class _AtlasClimateEnterpriseScreenState
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
                           title: Text(
-                            'Fase 30 — Inteligência Climática Enterprise',
+                            'Inteligência Climática Enterprise',
                           ),
                           subtitle: Text(
                             'Os registros organizam clima, forragem, pastagens e indicadores. '
@@ -189,7 +189,7 @@ class _AtlasClimateEnterpriseScreenState
                         children: AtlasClimateEnterpriseModule.values
                             .map(
                               (module) => ChoiceChip(
-                                label: Text(module.packageLabel),
+                                label: Text(module.title),
                                 selected: selectedModule == module,
                                 onSelected: (_) {
                                   setState(() {

@@ -172,7 +172,7 @@ class _AtlasReproductivePremiumScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -182,7 +182,7 @@ class _AtlasReproductivePremiumScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 25 — Reprodução Premium'),
+                          title: Text('Reprodução Premium'),
                           subtitle: Text(
                             'A entrega organiza protocolos, genética e indicadores. '
                             'Procedimentos reais exigem médico-veterinário, laboratório e responsável técnico.',
@@ -341,7 +341,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),

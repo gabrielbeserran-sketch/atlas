@@ -163,7 +163,7 @@ class _AtlasVeterinaryAiScreenState extends State<AtlasVeterinaryAiScreen> {
                       EnterpriseModuleHeader(
                         title: 'Inteligência Veterinária',
                         subtitle:
-                            'Pacote 51 • Triagem, sinais, hipóteses e próximos exames.',
+                            'Triagem, sinais, hipóteses e próximos exames.',
                         icon: Icons.medical_services_outlined,
                       ),
                       const SizedBox(height: 14),

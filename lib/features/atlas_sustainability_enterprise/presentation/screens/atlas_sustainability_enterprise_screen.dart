@@ -172,7 +172,7 @@ class _AtlasSustainabilityEnterpriseScreenState
                       EnterpriseModuleHeader(
                         title: selectedModule.title,
                         subtitle:
-                            '${selectedModule.packageLabel} • '
+                            '${selectedModule.title} • '
                             '${widget.farm.name} • '
                             '${widget.animal.displayName}',
                         icon: _moduleIcon(selectedModule),
@@ -182,10 +182,10 @@ class _AtlasSustainabilityEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Fase 29 — Sustentabilidade Enterprise'),
+                          title: Text('Sustentabilidade'),
                           subtitle: Text(
-                            'A entrega organiza indicadores, metas e evidências ESG. '
-                            'Inventários, licenças e certificações reais exigem metodologia e validação profissional.',
+                            'Indicadores, metas e evidências ambientais da propriedade. '
+                            'Inventários, licenças e certificações devem seguir metodologia e validação profissional.',
                           ),
                         ),
                       ),
@@ -358,7 +358,7 @@ class _ModuleSelector extends StatelessWidget {
                     foregroundColor: active ? Colors.white : null,
                   ),
                   icon: Icon(_moduleIcon(module)),
-                  label: Text(module.packageLabel),
+                  label: Text(module.title),
                 );
               })
               .toList(growable: false),
