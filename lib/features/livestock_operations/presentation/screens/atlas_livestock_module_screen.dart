@@ -163,19 +163,16 @@ class _AtlasLivestockModuleScreenState
             title: _title(widget.module),
             subtitle: '${farm.name} • dados oficiais do backend',
             icon: _icon(widget.module),
-            onRefresh: _loading ? null : _load,
-          ),
-          const SizedBox(height: 14),
-          _ActionBar(
             canWrite: canWrite,
             createLabel: _createLabel(widget.module),
             manageLabel: _manageLabel(widget.module),
-            onCreate: _loading
+            onCreate: _loading || !canWrite
                 ? null
                 : () => _openOperational(create: true),
             onManage: _loading
                 ? null
                 : () => _openOperational(create: false),
+            onRefresh: _loading ? null : _load,
           ),
           const SizedBox(height: 20),
           if (_loading && data == null)
@@ -241,90 +238,99 @@ class _Header extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.onRefresh,
-  });
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback? onRefresh;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(22),
-      child: Row(
-        children: [
-          CircleAvatar(radius: 28, child: Icon(icon, size: 30)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(subtitle),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onRefresh,
-            tooltip: 'Atualizar',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _ActionBar extends StatelessWidget {
-  const _ActionBar({
     required this.canWrite,
     required this.createLabel,
     required this.manageLabel,
     required this.onCreate,
     required this.onManage,
+    required this.onRefresh,
   });
 
+  final String title;
+  final String subtitle;
+  final IconData icon;
   final bool canWrite;
   final String createLabel;
   final String manageLabel;
   final VoidCallback? onCreate;
   final VoidCallback? onManage;
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 760;
+
+    final identity = Row(
+      children: [
+        CircleAvatar(radius: 28, child: Icon(icon, size: 30)),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(subtitle),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: onRefresh,
+          tooltip: 'Atualizar',
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    );
+
+    final actions = Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        Tooltip(
+          message: canWrite
+              ? createLabel
+              : 'Seu perfil possui somente acesso de leitura neste módulo.',
+          child: FilledButton.icon(
+            key: const ValueKey('atlas_module_create_button'),
+            onPressed: onCreate,
+            icon: Icon(canWrite ? Icons.add : Icons.lock_outline),
+            label: Text(createLabel),
+          ),
+        ),
+        OutlinedButton.icon(
+          key: const ValueKey('atlas_module_manage_button'),
+          onPressed: onManage,
+          icon: const Icon(Icons.open_in_new),
+          label: Text(manageLabel),
+        ),
+      ],
+    );
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 10,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            if (canWrite)
-              FilledButton.icon(
-                onPressed: onCreate,
-                icon: const Icon(Icons.add),
-                label: Text(createLabel),
+        padding: const EdgeInsets.all(22),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  identity,
+                  const SizedBox(height: 16),
+                  actions,
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: identity),
+                  const SizedBox(width: 18),
+                  Flexible(child: actions),
+                ],
               ),
-            OutlinedButton.icon(
-              onPressed: onManage,
-              icon: const Icon(Icons.open_in_new),
-              label: Text(manageLabel),
-            ),
-            if (!canWrite)
-              const Text(
-                'Seu perfil possui acesso de leitura neste módulo.',
-                style: TextStyle(color: Colors.black54),
-              ),
-          ],
-        ),
       ),
     );
   }
