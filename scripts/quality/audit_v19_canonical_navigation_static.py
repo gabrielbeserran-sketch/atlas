@@ -53,6 +53,21 @@ for module in ["health", "reproduction", "nutrition", "finance", "inventory"]:
         f"AtlasLivestockModule.{module}" in shell,
     )
 
+home_shell_legacy_screens = [
+    "HealthOverviewScreen",
+    "ReproductionOverviewScreen",
+    "NutritionOverviewScreen",
+    "FarmFinanceListScreen",
+    "FarmInventoryListScreen",
+]
+for screen in home_shell_legacy_screens:
+    check(f"HomeShell sem rota legada {screen}", screen not in shell)
+
+check(
+    "HomeShell usa builder canônico para módulos oficiais",
+    "body = selected.builder(context);" in shell,
+)
+
 failed = [name for name, ok in checks if not ok]
 for name, ok in checks:
     print(f"[{'OK' if ok else 'FAIL'}] {name}")

@@ -377,46 +377,19 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       body = DashboardScreen(onNavigateModule: _navigateToLabel);
     } else if (selected.label == 'Fazendas') {
       body = const FarmListScreen(embedded: true);
-    } else if ({
-      'Sanidade',
-      'Reprodução',
-      'Nutrição',
-      'Financeiro',
-      'Estoque',
-      'Agenda',
-    }.contains(selected.label)) {
-      if (farm == null) {
-        body = const Center(
-          child: Padding(
-            padding: EdgeInsets.all(32),
-            child: Text('Selecione uma fazenda para acessar este módulo.'),
-          ),
-        );
-      } else {
-        switch (selected.label) {
-          case 'Sanidade':
-            body = HealthOverviewScreen(farm: farm);
-            break;
-          case 'Reprodução':
-            body = ReproductionOverviewScreen(farm: farm);
-            break;
-          case 'Nutrição':
-            body = NutritionOverviewScreen(farm: farm);
-            break;
-          case 'Financeiro':
-            body = FarmFinanceListScreen(farm: farm);
-            break;
-          case 'Estoque':
-            body = FarmInventoryListScreen(farm: farm);
-            break;
-          case 'Agenda':
-            body = FarmAgendaListScreen(farm: farm);
-            break;
-          default:
-            body = selected.builder(context);
-        }
-      }
+    } else if (selected.label == 'Agenda') {
+      body = farm == null
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Text('Selecione uma fazenda para acessar este módulo.'),
+              ),
+            )
+          : FarmAgendaListScreen(farm: farm);
     } else {
+      // As rotas oficiais de Rebanho, Sanidade, Reprodução, Nutrição,
+      // Financeiro e Estoque já estão definidas em [routes]. Usar o builder
+      // canônico aqui evita uma segunda árvore de navegação concorrente.
       body = selected.builder(context);
     }
 
