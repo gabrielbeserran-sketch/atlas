@@ -167,13 +167,16 @@ class AtlasEnterpriseVersionService {
   }
 
   String _fnv1a64(String input) {
-    const int offset = 1469598103934665603;
-    const int prime = 1099511628211;
+    final offset = BigInt.parse('1469598103934665603');
+    final prime = BigInt.from(1099511628211);
+    final mask63 = (BigInt.one << 63) - BigInt.one;
     var hash = offset;
+
     for (final unit in utf8.encode(input)) {
-      hash ^= unit;
-      hash = (hash * prime) & 0x7fffffffffffffff;
+      hash ^= BigInt.from(unit);
+      hash = (hash * prime) & mask63;
     }
+
     return hash.toRadixString(16).padLeft(16, '0');
   }
 }
