@@ -11,9 +11,14 @@ import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class HealthOverviewScreen extends StatefulWidget {
-  const HealthOverviewScreen({this.farm, super.key});
+  const HealthOverviewScreen({
+    this.farm,
+    this.autoOpenCreate = false,
+    super.key,
+  });
 
   final FarmData? farm;
+  final bool autoOpenCreate;
 
   @override
   State<HealthOverviewScreen> createState() => _HealthOverviewScreenState();
@@ -83,7 +88,14 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadData();
+    if (widget.autoOpenCreate && mounted) {
+      await openNewEvent();
+    }
   }
 
   Future<void> loadData() async {

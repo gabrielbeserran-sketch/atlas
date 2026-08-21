@@ -6,9 +6,14 @@ import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
 
 class FarmFinanceListScreen extends StatefulWidget {
-  const FarmFinanceListScreen({required this.farm, super.key});
+  const FarmFinanceListScreen({
+    required this.farm,
+    this.autoOpenCreate = false,
+    super.key,
+  });
 
   final FarmData farm;
+  final bool autoOpenCreate;
 
   @override
   State<FarmFinanceListScreen> createState() {
@@ -30,7 +35,14 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   @override
   void initState() {
     super.initState();
-    loadRecords();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadRecords();
+    if (widget.autoOpenCreate && mounted) {
+      await openFinanceForm();
+    }
   }
 
   List<FarmFinanceData> get filteredRecords {

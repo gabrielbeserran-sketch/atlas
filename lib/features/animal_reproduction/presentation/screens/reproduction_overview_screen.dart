@@ -11,9 +11,14 @@ import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class ReproductionOverviewScreen extends StatefulWidget {
-  const ReproductionOverviewScreen({this.farm, super.key});
+  const ReproductionOverviewScreen({
+    this.farm,
+    this.autoOpenCreate = false,
+    super.key,
+  });
 
   final FarmData? farm;
+  final bool autoOpenCreate;
 
   @override
   State<ReproductionOverviewScreen> createState() =>
@@ -71,7 +76,14 @@ class _ReproductionOverviewScreenState
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadData();
+    if (widget.autoOpenCreate && mounted) {
+      await openNewEvent();
+    }
   }
 
   Future<void> loadData() async {

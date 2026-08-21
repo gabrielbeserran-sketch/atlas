@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
+import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
+import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
+import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 import 'package:projeto_atlas/features/livestock_operations/data/services/atlas_livestock_operations_service.dart';
 import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
+import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
 
 class AtlasLivestockModuleScreen extends StatefulWidget {
   const AtlasLivestockModuleScreen({required this.module, super.key});
@@ -63,6 +69,59 @@ class _AtlasLivestockModuleScreenState
     }
   }
 
+  FarmData? _activeFarmData() {
+    final remote = AtlasSessionScope.read(context).activeFarm;
+    if (remote == null) {
+      return null;
+    }
+    return FarmData(
+      id: remote.id,
+      name: remote.name,
+      city: remote.city,
+      state: remote.state,
+      animals: remote.animals,
+      area: remote.area.round(),
+    );
+  }
+
+  Future<void> _openOperational({required bool create}) async {
+    final farm = _activeFarmData();
+    if (farm == null) {
+      return;
+    }
+
+    final Widget target = switch (widget.module) {
+      AtlasLivestockModule.reproduction => ReproductionOverviewScreen(
+        farm: farm,
+        autoOpenCreate: create,
+      ),
+      AtlasLivestockModule.health => HealthOverviewScreen(
+        farm: farm,
+        autoOpenCreate: create,
+      ),
+      AtlasLivestockModule.nutrition => NutritionOverviewScreen(
+        farm: farm,
+        autoOpenCreate: create,
+      ),
+      AtlasLivestockModule.inventory => FarmInventoryListScreen(
+        farm: farm,
+        autoOpenCreate: create,
+      ),
+      AtlasLivestockModule.finance => FarmFinanceListScreen(
+        farm: farm,
+        autoOpenCreate: create,
+      ),
+    };
+
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => target));
+
+    if (mounted) {
+      await _load();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = AtlasSessionScope.of(context);
@@ -75,6 +134,7 @@ class _AtlasLivestockModuleScreenState
         ),
       );
     }
+
     final data = _snapshot;
     final filtered =
         data?.items.where((item) {
@@ -91,6 +151,7 @@ class _AtlasLivestockModuleScreenState
     final horizontalPadding = MediaQuery.sizeOf(context).width < 600
         ? 16.0
         : 24.0;
+    final canWrite = session.allows(_writePermission(widget.module));
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -103,6 +164,18 @@ class _AtlasLivestockModuleScreenState
             subtitle: '${farm.name} • dados oficiais do backend',
             icon: _icon(widget.module),
             onRefresh: _loading ? null : _load,
+          ),
+          const SizedBox(height: 14),
+          _ActionBar(
+            canWrite: canWrite,
+            createLabel: _createLabel(widget.module),
+            manageLabel: _manageLabel(widget.module),
+            onCreate: _loading
+                ? null
+                : () => _openOperational(create: true),
+            onManage: _loading
+                ? null
+                : () => _openOperational(create: false),
           ),
           const SizedBox(height: 20),
           if (_loading && data == null)
@@ -150,7 +223,12 @@ class _AtlasLivestockModuleScreenState
             if (filtered.isEmpty)
               const _EmptyCard()
             else
-              ...filtered.map((item) => _ItemCard(item: item)),
+              ...filtered.map(
+                (item) => _ItemCard(
+                  item: item,
+                  onTap: () => _openOperational(create: false),
+                ),
+              ),
           ],
         ],
       ),
@@ -204,6 +282,54 @@ class _Header extends StatelessWidget {
   );
 }
 
+class _ActionBar extends StatelessWidget {
+  const _ActionBar({
+    required this.canWrite,
+    required this.createLabel,
+    required this.manageLabel,
+    required this.onCreate,
+    required this.onManage,
+  });
+
+  final bool canWrite;
+  final String createLabel;
+  final String manageLabel;
+  final VoidCallback? onCreate;
+  final VoidCallback? onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (canWrite)
+              FilledButton.icon(
+                onPressed: onCreate,
+                icon: const Icon(Icons.add),
+                label: Text(createLabel),
+              ),
+            OutlinedButton.icon(
+              onPressed: onManage,
+              icon: const Icon(Icons.open_in_new),
+              label: Text(manageLabel),
+            ),
+            if (!canWrite)
+              const Text(
+                'Seu perfil possui acesso de leitura neste módulo.',
+                style: TextStyle(color: Colors.black54),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MetricCard extends StatelessWidget {
   const _MetricCard({required this.metric});
   final AtlasMetricData metric;
@@ -240,17 +366,26 @@ class _MetricCard extends StatelessWidget {
 }
 
 class _ItemCard extends StatelessWidget {
-  const _ItemCard({required this.item});
+  const _ItemCard({required this.item, required this.onTap});
   final AtlasModuleItemData item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.only(bottom: 10),
     child: ListTile(
+      onTap: onTap,
       leading: Icon(_statusIcon(item.status)),
       title: Text(item.title),
       subtitle: item.subtitle.isEmpty ? null : Text(item.subtitle),
-      trailing: item.status.isEmpty ? null : Chip(label: Text(item.status)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (item.status.isNotEmpty) Chip(label: Text(item.status)),
+          const SizedBox(width: 4),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
     ),
   );
 }
@@ -318,6 +453,51 @@ String _sectionTitle(AtlasLivestockModule module) {
       return 'Alertas e produtos';
     case AtlasLivestockModule.finance:
       return 'Lançamentos recentes';
+  }
+}
+
+String _writePermission(AtlasLivestockModule module) {
+  switch (module) {
+    case AtlasLivestockModule.reproduction:
+      return 'reproduction.write';
+    case AtlasLivestockModule.health:
+      return 'health.write';
+    case AtlasLivestockModule.nutrition:
+      return 'nutrition.write';
+    case AtlasLivestockModule.inventory:
+      return 'inventory.write';
+    case AtlasLivestockModule.finance:
+      return 'finance.write';
+  }
+}
+
+String _createLabel(AtlasLivestockModule module) {
+  switch (module) {
+    case AtlasLivestockModule.reproduction:
+      return 'Novo evento reprodutivo';
+    case AtlasLivestockModule.health:
+      return 'Novo evento sanitário';
+    case AtlasLivestockModule.nutrition:
+      return 'Nova dieta';
+    case AtlasLivestockModule.inventory:
+      return 'Novo produto';
+    case AtlasLivestockModule.finance:
+      return 'Novo lançamento';
+  }
+}
+
+String _manageLabel(AtlasLivestockModule module) {
+  switch (module) {
+    case AtlasLivestockModule.reproduction:
+      return 'Gerenciar reprodução';
+    case AtlasLivestockModule.health:
+      return 'Gerenciar sanidade';
+    case AtlasLivestockModule.nutrition:
+      return 'Gerenciar dietas';
+    case AtlasLivestockModule.inventory:
+      return 'Gerenciar estoque';
+    case AtlasLivestockModule.finance:
+      return 'Gerenciar financeiro';
   }
 }
 

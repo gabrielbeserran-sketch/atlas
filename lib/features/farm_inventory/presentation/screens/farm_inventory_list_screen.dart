@@ -22,9 +22,14 @@ class _InventoryMovementResult {
 }
 
 class FarmInventoryListScreen extends StatefulWidget {
-  const FarmInventoryListScreen({required this.farm, super.key});
+  const FarmInventoryListScreen({
+    required this.farm,
+    this.autoOpenCreate = false,
+    super.key,
+  });
 
   final FarmData farm;
+  final bool autoOpenCreate;
 
   @override
   State<FarmInventoryListScreen> createState() {
@@ -51,7 +56,14 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
   @override
   void initState() {
     super.initState();
-    loadItems();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadItems();
+    if (widget.autoOpenCreate && mounted) {
+      await openItemForm();
+    }
   }
 
   @override

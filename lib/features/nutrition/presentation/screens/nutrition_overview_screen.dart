@@ -7,9 +7,14 @@ import 'package:projeto_atlas/features/nutrition/domain/services/nutrition_inven
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class NutritionOverviewScreen extends StatefulWidget {
-  const NutritionOverviewScreen({this.farm, super.key});
+  const NutritionOverviewScreen({
+    this.farm,
+    this.autoOpenCreate = false,
+    super.key,
+  });
 
   final FarmData? farm;
+  final bool autoOpenCreate;
 
   @override
   State<NutritionOverviewScreen> createState() =>
@@ -66,7 +71,14 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadData();
+    if (widget.autoOpenCreate && mounted) {
+      await openForm();
+    }
   }
 
   @override
