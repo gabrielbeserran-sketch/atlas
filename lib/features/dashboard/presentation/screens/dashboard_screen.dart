@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
-import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/executive_dashboard_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/operational_alert_center_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/widgets/dashboard_action_summary_card.dart';
@@ -15,11 +13,10 @@ import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_scree
 import 'package:projeto_atlas/features/farm_agenda/data/services/farm_agenda_storage_service.dart';
 import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
-import 'package:projeto_atlas/features/farm_finance/presentation/screens/finance_overview_screen.dart';
-import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
 import 'package:projeto_atlas/features/indicators/presentation/screens/indicators_screen.dart';
-import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
+import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
+import 'package:projeto_atlas/features/livestock_operations/presentation/screens/atlas_livestock_module_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 import 'package:projeto_atlas/features/reports/data/services/report_action_storage_service.dart';
 import 'package:projeto_atlas/features/reports/domain/models/report_action_item_data.dart';
@@ -377,69 +374,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await loadDashboard();
   }
 
-  Future<void> openHealth() async {
-    if (_navigateThroughShell('Sanidade')) return;
+  Future<void> _openOfficialLivestockModule(AtlasLivestockModule module) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) {
-          return const HealthOverviewScreen();
-        },
+        builder: (_) => AtlasLivestockModuleScreen(module: module),
       ),
     );
-
     await loadDashboard();
+  }
+
+  Future<void> openHealth() async {
+    if (_navigateThroughShell('Sanidade')) return;
+    await _openOfficialLivestockModule(AtlasLivestockModule.health);
   }
 
   Future<void> openReproduction() async {
     if (_navigateThroughShell('Reprodução')) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return const ReproductionOverviewScreen();
-        },
-      ),
-    );
-
-    await loadDashboard();
+    await _openOfficialLivestockModule(AtlasLivestockModule.reproduction);
   }
 
   Future<void> openNutrition() async {
     if (_navigateThroughShell('Nutrição')) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return const NutritionOverviewScreen();
-        },
-      ),
-    );
-
-    await loadDashboard();
+    await _openOfficialLivestockModule(AtlasLivestockModule.nutrition);
   }
 
   Future<void> openFinance() async {
     if (_navigateThroughShell('Financeiro')) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return const FinanceOverviewScreen();
-        },
-      ),
-    );
-
-    await loadDashboard();
+    await _openOfficialLivestockModule(AtlasLivestockModule.finance);
   }
 
   Future<void> openInventory() async {
     if (_navigateThroughShell('Estoque')) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return const InventoryOverviewScreen();
-        },
-      ),
-    );
-
-    await loadDashboard();
+    await _openOfficialLivestockModule(AtlasLivestockModule.inventory);
   }
 
   Future<void> openReports() async {

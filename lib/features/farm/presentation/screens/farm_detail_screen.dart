@@ -10,10 +10,7 @@ import 'package:projeto_atlas/features/predictive/presentation/screens/atlas_pre
 import 'package:projeto_atlas/features/copilot/presentation/screens/atlas_copilot_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/services/atlas_farm_intelligence_service.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/atlas_farm_intelligence_screen.dart';
-import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
-import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
-import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
-import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
+import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/data/services/farm_agenda_storage_service.dart';
@@ -21,16 +18,16 @@ import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_dat
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
-import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
 import 'package:projeto_atlas/features/farm_inventory/data/services/farm_inventory_storage_service.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
-import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
-import 'package:projeto_atlas/features/herd/presentation/screens/herd_list_screen.dart';
+import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
 import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_service.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_list_screen.dart';
+import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
+import 'package:projeto_atlas/features/livestock_operations/presentation/screens/atlas_livestock_module_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class FarmDetailScreen extends StatefulWidget {
@@ -47,7 +44,7 @@ class FarmDetailScreen extends StatefulWidget {
 class _FarmDetailScreenState extends State<FarmDetailScreen> {
   final HerdStorageService herdStorage = HerdStorageService();
 
-  final AnimalStorageService animalStorage = AnimalStorageService();
+  final AnimalEnterpriseService animalService = AnimalEnterpriseService();
 
   final PaddockStorageService paddockStorage = PaddockStorageService();
 
@@ -315,7 +312,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
       final results = await Future.wait<dynamic>([
         _loadSafely<HerdGroupData>(
           label: 'lotes',
-          loader: () => herdStorage.loadGroups(farm.name),
+          loader: () => herdStorage.loadGroups(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<PaddockData>(
@@ -325,17 +322,17 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
         ),
         _loadSafely<FarmFinanceData>(
           label: 'financeiro',
-          loader: () => financeStorage.loadRecords(farm.name),
+          loader: () => financeStorage.loadRecords(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmInventoryData>(
           label: 'estoque',
-          loader: () => inventoryStorage.loadItems(farm.name),
+          loader: () => inventoryStorage.loadItems(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmAgendaData>(
           label: 'agenda',
-          loader: () => agendaStorage.loadTasks(farm.name),
+          loader: () => agendaStorage.loadTasks(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
       ]);
@@ -348,19 +345,15 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
 
       loadedAgendaTasks.sort(compareAgendaTasks);
 
-      final loadedAnimals = <AnimalData>[];
-      for (final group in loadedGroups) {
-        try {
-          final groupAnimals = await animalStorage.loadAnimals(
-            farmName: farm.name,
-            groupName: group.name,
-          );
-          loadedAnimals.addAll(groupAnimals);
-        } catch (_) {
-          if (!warnings.contains('animais')) {
-            warnings.add('animais');
-          }
-        }
+      List<AnimalData> loadedAnimals;
+      try {
+        final farmId = farm.id ?? '';
+        loadedAnimals = farmId.isEmpty
+            ? <AnimalData>[]
+            : await animalService.listAnimals(farmId: farmId, lotId: '');
+      } catch (_) {
+        warnings.add('animais');
+        loadedAnimals = <AnimalData>[];
       }
 
       AtlasFarmIntelligenceData? farmIntelligence;
@@ -447,37 +440,23 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
 
   Future<void> openHerd() async {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return HerdListScreen(farm: farm);
-        },
-      ),
+      MaterialPageRoute<void>(builder: (_) => const HerdOverviewScreen()),
     );
-
     await loadDashboard();
   }
 
-  Future<void> openFinance() async {
+  Future<void> openFinance() =>
+      _openOfficialLivestockModule(AtlasLivestockModule.finance);
+
+  Future<void> openInventory() =>
+      _openOfficialLivestockModule(AtlasLivestockModule.inventory);
+
+  Future<void> _openOfficialLivestockModule(AtlasLivestockModule module) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) {
-          return FarmFinanceListScreen(farm: farm);
-        },
+        builder: (_) => AtlasLivestockModuleScreen(module: module),
       ),
     );
-
-    await loadDashboard();
-  }
-
-  Future<void> openInventory() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return FarmInventoryListScreen(farm: farm);
-        },
-      ),
-    );
-
     await loadDashboard();
   }
 
@@ -493,41 +472,14 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
     await loadDashboard();
   }
 
-  Future<void> openReproduction() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return ReproductionOverviewScreen(farm: farm);
-        },
-      ),
-    );
+  Future<void> openReproduction() =>
+      _openOfficialLivestockModule(AtlasLivestockModule.reproduction);
 
-    await loadDashboard();
-  }
+  Future<void> openHealth() =>
+      _openOfficialLivestockModule(AtlasLivestockModule.health);
 
-  Future<void> openHealth() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return HealthOverviewScreen(farm: farm);
-        },
-      ),
-    );
-
-    await loadDashboard();
-  }
-
-  Future<void> openNutrition() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          return NutritionOverviewScreen(farm: farm);
-        },
-      ),
-    );
-
-    await loadDashboard();
-  }
+  Future<void> openNutrition() =>
+      _openOfficialLivestockModule(AtlasLivestockModule.nutrition);
 
   Future<void> openAtlasAi() async {
     final aiContext = aiContextData;

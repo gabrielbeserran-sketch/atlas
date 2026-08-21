@@ -8,11 +8,6 @@ import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/sc
 import 'package:projeto_atlas/features/field_operations/presentation/screens/atlas_field_operations_screen.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
-import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
-import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
-import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
-import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
-import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
 import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
