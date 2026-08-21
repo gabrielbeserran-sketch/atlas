@@ -14,23 +14,17 @@ farm = FARM_DETAIL.read_text(encoding="utf-8")
 dash = DASHBOARD.read_text(encoding="utf-8")
 shell = HOME_SHELL.read_text(encoding="utf-8")
 
-legacy_screens = [
-    "HerdListScreen",
-    "FarmFinanceListScreen",
-    "FarmInventoryListScreen",
-    "ReproductionOverviewScreen",
-    "HealthOverviewScreen",
-    "NutritionOverviewScreen",
-]
-for screen in legacy_screens:
-    check(f"FarmDetail sem rota legada {screen}", screen not in farm)
+# V19.5: a navegação operacional canônica é a central CRUD real, sem tela-resumo ponte.
+for screen in [
+    "HealthOverviewScreen(farm: farm)",
+    "ReproductionOverviewScreen(farm: farm)",
+    "NutritionOverviewScreen(farm: farm)",
+    "FarmFinanceListScreen(farm: farm)",
+    "FarmInventoryListScreen(farm: farm)",
+]:
+    check(f"FarmDetail abre central direta {screen}", screen in farm)
 
-for module in ["health", "reproduction", "nutrition", "finance", "inventory"]:
-    check(
-        f"FarmDetail usa módulo canônico {module}",
-        f"AtlasLivestockModule.{module}" in farm,
-    )
-
+check("FarmDetail não usa AtlasLivestockModuleScreen", "AtlasLivestockModuleScreen" not in farm)
 check("FarmDetail Rebanho canônico", "HerdOverviewScreen" in farm)
 check("FarmDetail animais via API Enterprise", "AnimalEnterpriseService" in farm and "animalService.listAnimals" in farm)
 check("FarmDetail lotes usa farmId explícito", "loadGroups(farm.name, farmId: farm.id ?? '')" in farm)
@@ -38,35 +32,28 @@ check("FarmDetail financeiro usa farmId explícito", "loadRecords(farm.name, far
 check("FarmDetail estoque usa farmId explícito", "loadItems(farm.name, farmId: farm.id ?? '')" in farm)
 check("FarmDetail agenda usa farmId explícito", "loadTasks(farm.name, farmId: farm.id ?? '')" in farm)
 
-for module in ["health", "reproduction", "nutrition", "finance", "inventory"]:
-    check(
-        f"Dashboard fallback canônico {module}",
-        f"AtlasLivestockModule.{module}" in dash,
-    )
+for screen in [
+    "const HealthOverviewScreen()",
+    "const ReproductionOverviewScreen()",
+    "const NutritionOverviewScreen()",
+    "const FinanceOverviewScreen()",
+    "const InventoryOverviewScreen()",
+]:
+    check(f"Dashboard fallback direto {screen}", screen in dash)
+check("Dashboard não usa AtlasLivestockModuleScreen", "AtlasLivestockModuleScreen" not in dash)
 
-for screen in ["HealthOverviewScreen", "ReproductionOverviewScreen", "NutritionOverviewScreen", "FinanceOverviewScreen", "InventoryOverviewScreen"]:
-    check(f"Dashboard sem fallback legado {screen}", screen not in dash)
-
-for module in ["health", "reproduction", "nutrition", "finance", "inventory"]:
-    check(
-        f"HomeShell módulo oficial {module}",
-        f"AtlasLivestockModule.{module}" in shell,
-    )
-
-home_shell_legacy_screens = [
-    "HealthOverviewScreen",
-    "ReproductionOverviewScreen",
-    "NutritionOverviewScreen",
-    "FarmFinanceListScreen",
-    "FarmInventoryListScreen",
-]
-for screen in home_shell_legacy_screens:
-    check(f"HomeShell sem rota legada {screen}", screen not in shell)
-
-check(
-    "HomeShell usa builder canônico para módulos oficiais",
-    "body = selected.builder(context);" in shell,
-)
+for label in ["Sanidade", "Reprodução", "Nutrição", "Financeiro", "Estoque"]:
+    check(f"HomeShell rota direta inclui {label}", f"'{label}'" in shell)
+for screen in [
+    "HealthOverviewScreen(farm: farm)",
+    "ReproductionOverviewScreen(farm: farm)",
+    "NutritionOverviewScreen(farm: farm)",
+    "FarmFinanceListScreen(farm: farm)",
+    "FarmInventoryListScreen(farm: farm)",
+]:
+    check(f"HomeShell abre central direta {screen}", screen in shell)
+check("HomeShell intercepta módulos operacionais", "_handleRouteSelection" in shell and "_isDirectOperationalRoute" in shell)
+check("HomeShell não usa AtlasLivestockModuleScreen", "AtlasLivestockModuleScreen" not in shell)
 
 failed = [name for name, ok in checks if not ok]
 for name, ok in checks:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_document/data/services/animal_document_storage_service.dart';
@@ -474,8 +476,45 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     await loadDashboard();
   }
 
-  void selectSection(AnimalHubSection section) {
-    setState(() => selectedSection = section);
+  Future<void> selectSection(AnimalHubSection section) async {
+    final Widget? directScreen = switch (section) {
+      AnimalHubSection.healthEnterprise => AnimalHealthEnterpriseScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
+      AnimalHubSection.reproductionEnterprise => AnimalReproductionEnterpriseScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
+      AnimalHubSection.weightIntelligence => AnimalWeightIntelligenceScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
+      AnimalHubSection.nutritionEnterprise => AnimalNutritionEnterpriseScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
+      AnimalHubSection.executivePanel => AnimalExecutivePanelScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
+      _ => null,
+    };
+
+    if (directScreen != null) {
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => directScreen));
+      await loadDashboard();
+      return;
+    }
+
+    if (mounted) setState(() => selectedSection = section);
   }
 
   @override
@@ -522,7 +561,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
                   const SizedBox(height: 18),
                   AnimalHubNavigation(
                     selected: selectedSection,
-                    onSelected: selectSection,
+                    onSelected: (section) {
+                      unawaited(selectSection(section));
+                    },
                   ),
                   const SizedBox(height: 22),
                   AnimatedSwitcher(

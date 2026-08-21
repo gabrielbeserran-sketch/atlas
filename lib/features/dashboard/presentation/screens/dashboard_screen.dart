@@ -15,8 +15,11 @@ import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_dat
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/indicators/presentation/screens/indicators_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
-import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
-import 'package:projeto_atlas/features/livestock_operations/presentation/screens/atlas_livestock_module_screen.dart';
+import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
+import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/finance_overview_screen.dart';
+import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 import 'package:projeto_atlas/features/reports/data/services/report_action_storage_service.dart';
 import 'package:projeto_atlas/features/reports/domain/models/report_action_item_data.dart';
@@ -374,38 +377,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await loadDashboard();
   }
 
-  Future<void> _openOfficialLivestockModule(AtlasLivestockModule module) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AtlasLivestockModuleScreen(module: module),
-      ),
-    );
+  Future<void> _openDirectScreen(Widget screen) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => screen));
     await loadDashboard();
   }
 
   Future<void> openHealth() async {
     if (_navigateThroughShell('Sanidade')) return;
-    await _openOfficialLivestockModule(AtlasLivestockModule.health);
+    await _openDirectScreen(const HealthOverviewScreen());
   }
 
   Future<void> openReproduction() async {
     if (_navigateThroughShell('Reprodução')) return;
-    await _openOfficialLivestockModule(AtlasLivestockModule.reproduction);
+    await _openDirectScreen(const ReproductionOverviewScreen());
   }
 
   Future<void> openNutrition() async {
     if (_navigateThroughShell('Nutrição')) return;
-    await _openOfficialLivestockModule(AtlasLivestockModule.nutrition);
+    await _openDirectScreen(const NutritionOverviewScreen());
   }
 
   Future<void> openFinance() async {
     if (_navigateThroughShell('Financeiro')) return;
-    await _openOfficialLivestockModule(AtlasLivestockModule.finance);
+    await _openDirectScreen(const FinanceOverviewScreen());
   }
 
   Future<void> openInventory() async {
     if (_navigateThroughShell('Estoque')) return;
-    await _openOfficialLivestockModule(AtlasLivestockModule.inventory);
+    await _openDirectScreen(const InventoryOverviewScreen());
   }
 
   Future<void> openReports() async {

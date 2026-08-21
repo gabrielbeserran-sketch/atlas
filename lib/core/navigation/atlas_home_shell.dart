@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
@@ -10,8 +12,13 @@ import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_scree
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
-import 'package:projeto_atlas/features/livestock_operations/domain/models/atlas_livestock_module_snapshot.dart';
-import 'package:projeto_atlas/features/livestock_operations/presentation/screens/atlas_livestock_module_screen.dart';
+import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
+import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_overview_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/finance_overview_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
+import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
+import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 import 'package:projeto_atlas/features/saas_admin/presentation/screens/atlas_saas_admin_screen.dart';
 import 'package:projeto_atlas/features/enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart';
@@ -63,44 +70,35 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       icon: Icons.medical_services_outlined,
       selectedIcon: Icons.medical_services,
       permission: 'health.read',
-      builder: (_) =>
-          const AtlasLivestockModuleScreen(module: AtlasLivestockModule.health),
+      builder: (_) => const HealthOverviewScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Reprodução',
       icon: Icons.favorite_outline,
       selectedIcon: Icons.favorite,
       permission: 'reproduction.read',
-      builder: (_) => const AtlasLivestockModuleScreen(
-        module: AtlasLivestockModule.reproduction,
-      ),
+      builder: (_) => const ReproductionOverviewScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Nutrição',
       icon: Icons.restaurant_outlined,
       selectedIcon: Icons.restaurant,
       permission: 'nutrition.read',
-      builder: (_) => const AtlasLivestockModuleScreen(
-        module: AtlasLivestockModule.nutrition,
-      ),
+      builder: (_) => const NutritionOverviewScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Financeiro',
       icon: Icons.account_balance_wallet_outlined,
       selectedIcon: Icons.account_balance_wallet,
       permission: 'finance.read',
-      builder: (_) => const AtlasLivestockModuleScreen(
-        module: AtlasLivestockModule.finance,
-      ),
+      builder: (_) => const FinanceOverviewScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Estoque',
       icon: Icons.inventory_2_outlined,
       selectedIcon: Icons.inventory_2,
       permission: 'inventory.read',
-      builder: (_) => const AtlasLivestockModuleScreen(
-        module: AtlasLivestockModule.inventory,
-      ),
+      builder: (_) => const InventoryOverviewScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Agenda',
@@ -274,7 +272,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   selectedIndex: selectedIndex,
                   userName: userName,
                   farmName: controller.activeFarm?.name,
-                  onSelected: (index) => setState(() => selectedIndex = index),
+                  onSelected: (index) => _handleRouteSelection(visibleRoutes, index),
                   onLogout: controller.logout,
                 ),
                 Expanded(
@@ -344,7 +342,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
               compact: true,
               onSelected: (index) {
                 Navigator.pop(context);
-                setState(() => selectedIndex = index);
+                _handleRouteSelection(visibleRoutes, index);
               },
               onLogout: () async {
                 Navigator.pop(context);
@@ -356,6 +354,63 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
         );
       },
     );
+  }
+
+  FarmData? _activeFarmData() {
+    final remote = AtlasSessionScope.read(context).activeFarm;
+    if (remote == null) return null;
+    return FarmData(
+      id: remote.id,
+      name: remote.name,
+      city: remote.city,
+      state: remote.state,
+      animals: remote.animals,
+      area: remote.area.round(),
+    );
+  }
+
+  bool _isDirectOperationalRoute(String label) => const {
+    'Sanidade',
+    'Reprodução',
+    'Nutrição',
+    'Financeiro',
+    'Estoque',
+  }.contains(label);
+
+  Future<void> _openDirectOperationalRoute(String label) async {
+    final farm = _activeFarmData();
+    if (farm == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecione uma fazenda para acessar este módulo.')),
+      );
+      return;
+    }
+
+    final Widget screen = switch (label) {
+      'Sanidade' => HealthOverviewScreen(farm: farm),
+      'Reprodução' => ReproductionOverviewScreen(farm: farm),
+      'Nutrição' => NutritionOverviewScreen(farm: farm),
+      'Financeiro' => FarmFinanceListScreen(farm: farm),
+      'Estoque' => FarmInventoryListScreen(farm: farm),
+      _ => throw ArgumentError('Módulo operacional desconhecido: $label'),
+    };
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => screen),
+    );
+  }
+
+  void _handleRouteSelection(
+    List<AtlasRouteDefinition> visibleRoutes,
+    int index,
+  ) {
+    final route = visibleRoutes[index];
+    if (_isDirectOperationalRoute(route.label)) {
+      unawaited(_openDirectOperationalRoute(route.label));
+      return;
+    }
+    setState(() => selectedIndex = index);
   }
 
   Widget _selectedBody(AtlasRouteDefinition selected, String? farmId) {
@@ -423,6 +478,11 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           ),
         ),
       );
+      return;
+    }
+    final route = visibleRoutes[index];
+    if (_isDirectOperationalRoute(route.label)) {
+      unawaited(_openDirectOperationalRoute(route.label));
       return;
     }
     setState(() => selectedIndex = index);
