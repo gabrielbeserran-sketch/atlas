@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$BaseUrl = "https://atlas-api-29y2.onrender.com/api/v1",
     [string]$FarmName = "Fazenda Atlas Producao"
 )
@@ -430,7 +430,9 @@ function Ensure-HealthEvent {
         [string]$Route,
         [datetime]$OccurredAt,
         [datetime]$NextDate,
-        [string]$Notes
+        [string]$Notes,
+        [string]$ProductId,
+        [double]$InventoryQuantity
     )
 
     $events = As-Array (
@@ -469,8 +471,8 @@ function Ensure-HealthEvent {
         is_quarantine          = $false
         is_mortality           = $false
         necropsy_result        = ""
-        inventory_product_id   = $null
-        inventory_quantity     = 0
+        inventory_product_id   = $ProductId
+        inventory_quantity     = $InventoryQuantity
         treatment_cost         = 0
     }
 
@@ -578,7 +580,8 @@ function Ensure-NutritionIngredient {
         [double]$Protein,
         [double]$Ndf,
         [double]$Tdn,
-        [double]$Cost
+        [double]$Cost,
+        [string]$ProductId
     )
 
     $items = As-Array (
@@ -598,7 +601,7 @@ function Ensure-NutritionIngredient {
 
     $created = Invoke-Atlas POST "/livestock/nutrition/ingredients" @{
         farm_id               = $script:FarmId
-        inventory_product_id  = $null
+        inventory_product_id  = $ProductId
         name                  = $Name
         category              = "concentrate"
         unit                  = "kg"
@@ -662,7 +665,7 @@ function Ensure-NutritionPlan {
                 percentage = 30
             }
         )
-        stock_integration_enabled  = $false
+        stock_integration_enabled  = $true
         inventory_deducted         = $false
         inventory_deduction_cost   = 0
         notes                      = "ATLAS-DEMO-2026"
@@ -676,6 +679,7 @@ function Ensure-NutritionConsumption {
     param(
         [string]$LotId,
         [string]$PlanId,
+        [string]$ProductId,
         [string]$Marker
     )
 
@@ -690,47 +694,28 @@ function Ensure-NutritionConsumption {
         Select-Object -First 1
 
     if ($existing) {
-        Write-Ok "Consumo nutricional já existe"
+        Write-Ok "Consumo nutricional integrado já existe"
         return $existing
     }
 
-    # O endpoint de consumo também cria lançamento financeiro automático
-    # quando nutrition_plan_id é informado e o plano tem custo > 0.
-    # Em algumas bases reconciliadas antigas essa integração pode provocar
-    # erro 500 mesmo com o plano nutricional válido. Para a carga de
-    # conferência, registramos o consumo de forma independente do plano:
-    # o plano continua criado e visível no módulo, enquanto o evento de
-    # consumo é persistido sem acionar a integração financeira automática.
-    try {
-        $created = Invoke-Atlas POST (
-            "/livestock/nutrition/lots/$LotId/consumption"
-        ) @{
-            nutrition_plan_id       = $null
-            product_id              = $null
-            diet_name               = "Dieta Demo Matrizes"
-            amount_per_animal       = 8.5
-            animal_count            = 3
-            total_quantity          = 25.5
-            planned_quantity        = 25.5
-            observed_daily_gain_kg  = 0.45
-            notes                   = $Marker
-            occurred_at             = (Get-Date).AddDays(-1).ToUniversalTime().ToString("o")
-        }
+    $created = Invoke-Atlas POST (
+        "/livestock/nutrition/lots/$LotId/consumption"
+    ) @{
+        nutrition_plan_id       = $PlanId
+        product_id              = $ProductId
+        diet_name               = "Dieta Homologação V18 Matrizes"
+        amount_per_animal       = 8.5
+        animal_count            = 3
+        total_quantity          = 25.5
+        planned_quantity        = 25.5
+        observed_daily_gain_kg  = 0.45
+        notes                   = $Marker
+        occurred_at             = (Get-Date).AddDays(-1).ToUniversalTime().ToString("o")
+    }
 
-        Write-Ok "Consumo nutricional registrado"
-        return $created
-    }
-    catch {
-        # A carga geral não deve parar por uma integração secundária.
-        Write-Info (
-            "Consumo nutricional não pôde ser registrado agora. " +
-            "O plano nutricional já foi criado e a carga continuará."
-        )
-        Write-Info $_.Exception.Message
-        return $null
-    }
+    Write-Ok "Consumo nutricional integrado registrado"
+    return $created
 }
-
 
 function Ensure-Finance {
     param(
@@ -869,10 +854,10 @@ function Ensure-CalendarEvent {
 }
 
 Write-Host ""
-Write-Host "ATLAS - CARGA AUTOMATICA DE DADOS PARA CONFERENCIA" `
+Write-Host "ATLAS - CARGA INTEGRADA DE HOMOLOGACAO V18" `
     -ForegroundColor Green
 Write-Host "Base: $BaseUrl"
-Write-Host "O script é idempotente: pode ser executado novamente sem duplicar os itens principais."
+Write-Host "O script é idempotente e valida vínculos cruzados reais antes da conferência visual."
 Write-Host ""
 
 $email = Read-Host "E-mail do administrador Atlas"
@@ -1044,28 +1029,6 @@ Ensure-Reproduction `
     (Get-Date).AddDays(-15) `
     "ATLAS-DEMO-REPRO-DG-001" | Out-Null
 
-Write-Step "SANIDADE"
-
-Ensure-HealthEvent `
-    $aurora.id `
-    "Vacinação" `
-    "Vacina Clostridial Demo" `
-    "5 mL" `
-    "Subcutânea" `
-    (Get-Date).AddDays(-20) `
-    (Get-Date).AddDays(160) `
-    "ATLAS-DEMO-HEALTH-VACCINE-001" | Out-Null
-
-Ensure-HealthEvent `
-    $bela.id `
-    "Vermifugação" `
-    "Ivermectina Demo" `
-    "1 mL / 50 kg" `
-    "Subcutânea" `
-    (Get-Date).AddDays(-12) `
-    (Get-Date).AddDays(78) `
-    "ATLAS-DEMO-HEALTH-DEWORM-001" | Out-Null
-
 Write-Step "ESTOQUE"
 
 $mineral = Ensure-InventoryProduct `
@@ -1095,69 +1058,82 @@ $ivermectina = Ensure-InventoryProduct `
     42.00 `
     "Fornecedor Vet Demo"
 
+$concentrado = Ensure-InventoryProduct `
+    "DEMO-CON-001" `
+    "Concentrado Homologação V18" `
+    "Nutrição" `
+    "kg" `
+    100 `
+    1.95 `
+    "Fornecedor Nutri Demo"
+
 Ensure-StockEntry $mineral.id 120 3.20 "stock-mineral-001" | Out-Null
 Ensure-StockEntry $vacina.id 12 28.50 "stock-vacina-001" | Out-Null
 Ensure-StockEntry $ivermectina.id 8 42.00 "stock-ivermectina-001" | Out-Null
+Ensure-StockEntry $concentrado.id 500 1.95 "stock-concentrado-v18-001" | Out-Null
+
+Write-Step "SANIDADE INTEGRADA -> ESTOQUE -> FINANCEIRO -> AGENDA"
+
+$healthVaccine = Ensure-HealthEvent `
+    $aurora.id `
+    "Vacinação" `
+    "Vacina Clostridial Demo" `
+    "5 mL" `
+    "Subcutânea" `
+    (Get-Date).AddDays(-2) `
+    (Get-Date).AddDays(160) `
+    "ATLAS-HOMO-V18-HEALTH-VACCINE-001" `
+    $vacina.id `
+    1
+
+$healthDeworm = Ensure-HealthEvent `
+    $bela.id `
+    "Vermifugação" `
+    "Ivermectina Demo" `
+    "1 mL / 50 kg" `
+    "Subcutânea" `
+    (Get-Date).AddDays(-1) `
+    (Get-Date).AddDays(78) `
+    "ATLAS-HOMO-V18-HEALTH-DEWORM-001" `
+    $ivermectina.id `
+    1
 
 Write-Step "NUTRICAO"
 
 $ingredient = Ensure-NutritionIngredient `
-    "Concentrado Demo Atlas" `
+    "Concentrado Homologação V18" `
     88 `
     18 `
     24 `
     76 `
-    1.95
+    1.95 `
+    $concentrado.id
 
 $plan = Ensure-NutritionPlan `
     $lotMatrizes.id `
-    "Plano Demo Matrizes"
+    "Plano Homologação V18 Matrizes"
 
-Ensure-NutritionConsumption `
+$nutritionEvent = Ensure-NutritionConsumption `
     $lotMatrizes.id `
     $plan.id `
-    "ATLAS-DEMO-NUTRITION-CONSUMPTION-001" | Out-Null
+    $concentrado.id `
+    "ATLAS-HOMO-V18-NUTRITION-CONSUMPTION-001"
 
-Write-Step "FINANCEIRO"
+Write-Step "FINANCEIRO MANUAL + LANCAMENTOS AUTOMATICOS"
 
-try {
-    Ensure-Finance `
-        "expense" `
-        "Nutrição" `
-        "Compra de suplemento mineral - demonstração" `
-        384.00 `
-        "finance-nutrition-001" `
-        $lotMatrizes.id | Out-Null
-}
-catch {
-    Write-Info "Lançamento financeiro de Nutrição não criado: $($_.Exception.Message)"
-}
+Ensure-Finance `
+    "expense" `
+    "Manutenção" `
+    "Manutenção de equipamento - homologação V18" `
+    275.00 `
+    "finance-maintenance-v18-001" | Out-Null
 
-try {
-    Ensure-Finance `
-        "expense" `
-        "Sanidade" `
-        "Programa sanitário - demonstração" `
-        342.00 `
-        "finance-health-001" `
-        "" `
-        $aurora.id | Out-Null
-}
-catch {
-    Write-Info "Lançamento financeiro de Sanidade não criado: $($_.Exception.Message)"
-}
-
-try {
-    Ensure-Finance `
-        "income" `
-        "Venda" `
-        "Receita pecuária demonstrativa" `
-        6850.00 `
-        "finance-income-001" | Out-Null
-}
-catch {
-    Write-Info "Receita demonstrativa não criada: $($_.Exception.Message)"
-}
+Ensure-Finance `
+    "income" `
+    "Venda" `
+    "Receita pecuária - homologação V18" `
+    6850.00 `
+    "finance-income-v18-001" | Out-Null
 
 Write-Step "AGENDA E TAREFAS"
 
@@ -1197,53 +1173,98 @@ Ensure-CalendarEvent `
     (Get-Date).Date.AddDays(4).AddHours(14) `
     (Get-Date).Date.AddDays(4).AddHours(15) | Out-Null
 
-Write-Step "AUDITORIA FINAL"
+Write-Step "AUDITORIA FINAL INTEGRADA V18"
 
-$lotsFinal = @()
-$animalsFinal = @()
-$healthFinal = @()
-$nutritionFinal = @()
-$financeFinal = @()
-$inventoryFinal = @()
-$tasksFinal = @()
+$script:AuditFailures = 0
+function Assert-Atlas {
+    param([bool]$Condition, [string]$Message)
+    if ($Condition) {
+        Write-Ok $Message
+    }
+    else {
+        $script:AuditFailures++
+        Write-Host "[FALHA] $Message" -ForegroundColor Red
+    }
+}
 
-try { $lotsFinal = As-Array (Invoke-Atlas GET "/livestock/lots?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Lotes indisponível" }
-try { $animalsFinal = As-Array (Invoke-Atlas GET "/livestock/animals?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Animais indisponível" }
-try { $healthFinal = As-Array (Invoke-Atlas GET "/livestock/health?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Sanidade indisponível" }
-try { $nutritionFinal = As-Array (Invoke-Atlas GET "/livestock/nutrition?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Nutrição indisponível" }
-try { $financeFinal = As-Array (Invoke-Atlas GET "/livestock/finance/v2?farm_id=$script:FarmId") } catch { Write-Info "Auditoria Financeira indisponível" }
-try { $inventoryFinal = As-Array (Invoke-Atlas GET "/livestock/inventory/products?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Estoque indisponível" }
-try { $tasksFinal = As-Array (Invoke-Atlas GET "/operations/tasks?farm_id=$script:FarmId") } catch { Write-Info "Auditoria de Tarefas indisponível" }
+$lotsFinal = As-Array (Invoke-Atlas GET "/livestock/lots?farm_id=$script:FarmId")
+$animalsFinal = As-Array (Invoke-Atlas GET "/livestock/animals?farm_id=$script:FarmId")
+$healthFinal = As-Array (Invoke-Atlas GET "/livestock/health?farm_id=$script:FarmId")
+$nutritionFinal = As-Array (Invoke-Atlas GET "/livestock/nutrition?farm_id=$script:FarmId")
+$financeFinal = As-Array (Invoke-Atlas GET "/livestock/finance/v2?farm_id=$script:FarmId")
+$inventoryFinal = As-Array (Invoke-Atlas GET "/livestock/inventory/products?farm_id=$script:FarmId")
+$tasksFinal = As-Array (Invoke-Atlas GET "/operations/tasks?farm_id=$script:FarmId")
+$reproSummary = Invoke-Atlas GET "/livestock/reproduction/summary?farm_id=$script:FarmId"
+$reconciliation = Invoke-Atlas GET "/livestock/integrity/reconciliation?farm_id=$script:FarmId"
+$operationalAlerts = Invoke-Atlas GET "/livestock/intelligence/operational-alerts?farm_id=$script:FarmId"
+$operationalSummary = Invoke-Atlas GET "/livestock/intelligence/operational-summary?farm_id=$script:FarmId"
+
+$vacinaMovements = As-Array (Invoke-Atlas GET "/livestock/inventory/products/$($vacina.id)/movements")
+$ivermectinaMovements = As-Array (Invoke-Atlas GET "/livestock/inventory/products/$($ivermectina.id)/movements")
+$concentradoMovements = As-Array (Invoke-Atlas GET "/livestock/inventory/products/$($concentrado.id)/movements")
+
+$healthVaccineStock = $vacinaMovements | Where-Object { $_.reference_type -eq "health_event" -and $_.reference_id -eq $healthVaccine.id } | Select-Object -First 1
+$healthDewormStock = $ivermectinaMovements | Where-Object { $_.reference_type -eq "health_event" -and $_.reference_id -eq $healthDeworm.id } | Select-Object -First 1
+$nutritionStock = $concentradoMovements | Where-Object { $_.reference_type -eq "nutrition_event" -and $_.reference_id -eq $nutritionEvent.id } | Select-Object -First 1
+
+$healthVaccineFinance = $financeFinal | Where-Object { $_.reference_type -eq "health_event" -and $_.reference_id -eq $healthVaccine.id } | Select-Object -First 1
+$healthDewormFinance = $financeFinal | Where-Object { $_.reference_type -eq "health_event" -and $_.reference_id -eq $healthDeworm.id } | Select-Object -First 1
+$nutritionFinance = $financeFinal | Where-Object { $_.reference_type -eq "nutrition_event" -and $_.reference_id -eq $nutritionEvent.id } | Select-Object -First 1
+
+$healthVaccineTask = $tasksFinal | Where-Object { $_.source_type -eq "health_event" -and $_.source_id -eq $healthVaccine.id } | Select-Object -First 1
+$healthDewormTask = $tasksFinal | Where-Object { $_.source_type -eq "health_event" -and $_.source_id -eq $healthDeworm.id } | Select-Object -First 1
+
+Assert-Atlas ($lotsFinal.Count -ge 2) "Lotes disponíveis"
+Assert-Atlas ($animalsFinal.Count -ge 3) "Animais disponíveis"
+Assert-Atlas ($null -ne $healthVaccineStock) "Sanidade Vacinação -> Estoque"
+Assert-Atlas ($null -ne $healthDewormStock) "Sanidade Vermifugação -> Estoque"
+Assert-Atlas ($null -ne $healthVaccineFinance) "Sanidade Vacinação -> Financeiro"
+Assert-Atlas ($null -ne $healthDewormFinance) "Sanidade Vermifugação -> Financeiro"
+Assert-Atlas ($null -ne $healthVaccineTask) "Sanidade Vacinação -> Agenda operacional"
+Assert-Atlas ($null -ne $healthDewormTask) "Sanidade Vermifugação -> Agenda operacional"
+Assert-Atlas ($null -ne $nutritionStock) "Nutrição -> Estoque"
+Assert-Atlas ($null -ne $nutritionFinance) "Nutrição -> Financeiro"
+Assert-Atlas ($reproSummary.farm_id -eq $script:FarmId) "Reprodução -> indicadores"
+Assert-Atlas ($reconciliation.farm_id -eq $script:FarmId) "Reconciliação entre módulos"
+Assert-Atlas ($operationalSummary.farm_id -eq $script:FarmId) "Inteligência operacional"
+Assert-Atlas ($null -ne $operationalAlerts) "Alertas operacionais"
 
 Write-Host ""
 Write-Host "==============================================" -ForegroundColor Green
-Write-Host "ATLAS - CARGA DE DEMONSTRACAO CONCLUIDA" -ForegroundColor Green
+Write-Host "ATLAS - HOMOLOGACAO V18 POPULADA" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Fazenda:      $($farm.name)"
-Write-Host "Lotes:        $($lotsFinal.Count)"
-Write-Host "Animais:      $($animalsFinal.Count)"
-Write-Host "Sanidade:     $($healthFinal.Count)"
-Write-Host "Nutrição:     $($nutritionFinal.Count)"
-Write-Host "Financeiro:   $($financeFinal.Count)"
-Write-Host "Estoque:      $($inventoryFinal.Count)"
-Write-Host "Tarefas:      $($tasksFinal.Count)"
+Write-Host "Fazenda:        $($farm.name)"
+Write-Host "Lotes:          $($lotsFinal.Count)"
+Write-Host "Animais:        $($animalsFinal.Count)"
+Write-Host "Sanidade:       $($healthFinal.Count)"
+Write-Host "Nutrição:       $($nutritionFinal.Count)"
+Write-Host "Financeiro:     $($financeFinal.Count)"
+Write-Host "Estoque:        $($inventoryFinal.Count)"
+Write-Host "Tarefas:        $($tasksFinal.Count)"
+Write-Host "Score Atlas:    $($operationalSummary.score)"
+Write-Host "Alertas:        $($operationalAlerts.Count)"
+Write-Host "Falhas auditoria: $script:AuditFailures"
 Write-Host ""
-Write-Host "Abra o aplicativo e faça apenas a conferência visual." `
-    -ForegroundColor Cyan
+
+if ($script:AuditFailures -gt 0) {
+    Write-Host "A carga foi executada, mas existem vínculos integrados com falha." -ForegroundColor Red
+    Write-Host "Não considere a homologação aprovada antes de corrigirmos essas falhas." -ForegroundColor Red
+    exit 2
+}
+
+Write-Host "CARGA E INTEGRACOES APROVADAS. Abra o Atlas e faça a conferência geral." -ForegroundColor Cyan
 Write-Host ""
-Write-Host "PRINTS QUE QUERO PARA A CONFERENCIA:" `
-    -ForegroundColor Yellow
-Write-Host "1. Dashboard"
-Write-Host "2. Rebanho - visão geral"
-Write-Host "3. Central do animal DEMO-101 (Resumo)"
-Write-Host "4. Central do animal DEMO-101 (Timeline)"
-Write-Host "5. Sanidade"
-Write-Host "6. Reprodução"
+Write-Host "Conferir:"
+Write-Host "1. Dashboard e Score operacional"
+Write-Host "2. Fazendas/Piquetes"
+Write-Host "3. Rebanho e Central do animal DEMO-101"
+Write-Host "4. Pesagens e Timeline"
+Write-Host "5. Reprodução"
+Write-Host "6. Sanidade"
 Write-Host "7. Nutrição"
-Write-Host "8. Financeiro"
-Write-Host "9. Estoque"
-Write-Host "10. Agenda/calendário"
-Write-Host ""
-Write-Host "Não cadastre dados manualmente antes dessa conferência." `
-    -ForegroundColor Green
+Write-Host "8. Estoque"
+Write-Host "9. Financeiro"
+Write-Host "10. Agenda Lista/Semana/Mês"
+Write-Host "11. Alertas"
+Write-Host "12. Análises e decisões"
