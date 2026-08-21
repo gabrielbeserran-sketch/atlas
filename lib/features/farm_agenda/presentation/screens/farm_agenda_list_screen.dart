@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/data/services/farm_agenda_storage_service.dart';
 import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_data.dart';
@@ -7,9 +8,14 @@ import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_age
 enum AgendaViewMode { list, week, month }
 
 class FarmAgendaListScreen extends StatefulWidget {
-  const FarmAgendaListScreen({required this.farm, super.key});
+  const FarmAgendaListScreen({
+    required this.farm,
+    this.embedded = false,
+    super.key,
+  });
 
   final FarmData farm;
+  final bool embedded;
 
   @override
   State<FarmAgendaListScreen> createState() {
@@ -25,6 +31,7 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
   List<FarmAgendaData> tasks = [];
 
   bool isLoading = true;
+  String? loadError;
 
   String selectedFilter = 'Todas';
   String searchText = '';
@@ -106,21 +113,30 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
   }
 
   Future<void> loadTasks() async {
-    final savedTasks = await storage.loadTasks(
-      widget.farm.name,
-      farmId: widget.farm.id ?? '',
-    );
-
-    savedTasks.sort(compareTasks);
-
-    if (!mounted) {
-      return;
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        loadError = null;
+      });
     }
-
-    setState(() {
-      tasks = savedTasks;
-      isLoading = false;
-    });
+    try {
+      final savedTasks = await storage.loadTasks(
+        widget.farm.name,
+        farmId: widget.farm.id ?? '',
+      );
+      savedTasks.sort(compareTasks);
+      if (!mounted) return;
+      setState(() {
+        tasks = savedTasks;
+        isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        loadError = error.toString();
+      });
+    }
   }
 
   Future<void> saveTasks() async {
@@ -336,7 +352,7 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
     final filteredTasks = visibleTasks;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.embedded ? null : AppBar(
         title: const Text('Agenda'),
         actions: [
           IconButton(
@@ -359,7 +375,12 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
             constraints: const BoxConstraints(maxWidth: 1120),
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
+                : loadError != null && tasks.isEmpty
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadTasks,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadTasks,
                     child: ListView(
                       padding: const EdgeInsets.all(24),

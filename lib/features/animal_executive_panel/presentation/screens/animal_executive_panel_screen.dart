@@ -193,27 +193,55 @@ class _AnimalExecutivePanelScreenState
                           child: LayoutBuilder(
                             builder: (context, constraints) {
                               final scoreWidget = SizedBox(
-                                width: 130,
-                                height: 130,
-                                child: Stack(
-                                  alignment: Alignment.center,
+                                width: 132,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    CircularProgressIndicator(
-                                      value: score / 100,
-                                      strokeWidth: 13,
-                                    ),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '$score',
-                                          style: const TextStyle(
-                                            fontSize: 34,
-                                            fontWeight: FontWeight.bold,
+                                    SizedBox(
+                                      width: 96,
+                                      height: 96,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          SizedBox.expand(
+                                            child: CircularProgressIndicator(
+                                              value: score / 100,
+                                              strokeWidth: 10,
+                                              backgroundColor: const Color(
+                                                0xFFDDEBD5,
+                                              ),
+                                            ),
                                           ),
+                                          Text(
+                                            '$score',
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              height: 1,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEAF3E2),
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        level,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF1B5E20),
                                         ),
-                                        Text(level),
-                                      ],
+                                      ),
                                     ),
                                   ],
                                 ),

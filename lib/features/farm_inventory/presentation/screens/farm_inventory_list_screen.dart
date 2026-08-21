@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
@@ -26,11 +27,13 @@ class FarmInventoryListScreen extends StatefulWidget {
   const FarmInventoryListScreen({
     required this.farm,
     this.autoOpenCreate = false,
+    this.embedded = false,
     super.key,
   });
 
   final FarmData farm;
   final bool autoOpenCreate;
+  final bool embedded;
 
   @override
   State<FarmInventoryListScreen> createState() {
@@ -48,6 +51,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
   List<FarmInventoryData> items = [];
 
   bool isLoading = true;
+  String? loadError;
 
   String selectedFilter = 'Todos';
   String searchText = '';
@@ -135,7 +139,10 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
 
   Future<void> loadItems() async {
     if (mounted) {
-      setState(() => isLoading = true);
+      setState(() {
+        isLoading = true;
+        loadError = null;
+      });
     }
     try {
       final savedItems = await storage
@@ -150,11 +157,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       });
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Não foi possível carregar o Estoque: $error'),
-          ),
-        );
+        setState(() => loadError = error.toString());
       }
     } finally {
       if (mounted) {
@@ -655,7 +658,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
     final filteredItems = visibleItems;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.embedded ? null : AppBar(
         title: const Text('Estoque'),
         actions: [
           IconButton(
@@ -678,7 +681,12 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
             constraints: const BoxConstraints(maxWidth: 1120),
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
+                : loadError != null && items.isEmpty
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadItems,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadItems,
                     child: ListView(
                       padding: const EdgeInsets.all(24),

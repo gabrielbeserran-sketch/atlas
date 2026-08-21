@@ -8,11 +8,11 @@ animal = (ROOT / "lib/features/animal/presentation/screens/animal_detail_screen.
 
 checks = {
     "operational_routes_stay_in_shell": "_openDirectOperationalRoute" not in shell,
-    "health_workspace": "HealthOverviewScreen(farm: farm)" in shell,
-    "reproduction_workspace": "ReproductionOverviewScreen(farm: farm)" in shell,
-    "nutrition_workspace": "NutritionOverviewScreen(farm: farm)" in shell,
-    "finance_workspace": "FarmFinanceListScreen(farm: farm)" in shell,
-    "inventory_workspace": "FarmInventoryListScreen(farm: farm)" in shell,
+    "health_workspace": "HealthOverviewScreen(farm: farm, embedded: true)" in shell,
+    "reproduction_workspace": "ReproductionOverviewScreen(farm: farm, embedded: true)" in shell,
+    "nutrition_workspace": "NutritionOverviewScreen(farm: farm, embedded: true)" in shell,
+    "finance_workspace": "FarmFinanceListScreen(farm: farm, embedded: true)" in shell,
+    "inventory_workspace": "FarmInventoryListScreen(farm: farm, embedded: true)" in shell,
     "advanced_group": "'Mais recursos'" in shell,
     "admin_group": "'Administração'" in shell,
     "animal_quick_actions": "'Ações rápidas'" in animal,

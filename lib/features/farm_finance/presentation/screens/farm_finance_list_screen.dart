@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
@@ -9,11 +10,13 @@ class FarmFinanceListScreen extends StatefulWidget {
   const FarmFinanceListScreen({
     required this.farm,
     this.autoOpenCreate = false,
+    this.embedded = false,
     super.key,
   });
 
   final FarmData farm;
   final bool autoOpenCreate;
+  final bool embedded;
 
   @override
   State<FarmFinanceListScreen> createState() {
@@ -29,6 +32,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   List<FarmFinanceData> records = [];
 
   bool isLoading = true;
+  String? loadError;
 
   String selectedFilter = 'Todos';
 
@@ -99,7 +103,10 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
 
   Future<void> loadRecords() async {
     if (mounted) {
-      setState(() => isLoading = true);
+      setState(() {
+        isLoading = true;
+        loadError = null;
+      });
     }
     try {
       final savedRecords = await storage
@@ -114,11 +121,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       });
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Não foi possível carregar o Financeiro: $error'),
-          ),
-        );
+        setState(() => loadError = error.toString());
       }
     } finally {
       if (mounted) {
@@ -341,7 +344,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final visibleRecords = filteredRecords;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.embedded ? null : AppBar(
         title: const Text('Financeiro'),
         actions: [
           IconButton(
@@ -364,7 +367,12 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
             constraints: const BoxConstraints(maxWidth: 1100),
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
+                : loadError != null && records.isEmpty
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadRecords,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadRecords,
                     child: ListView(
                       padding: const EdgeInsets.all(24),

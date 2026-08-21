@@ -24,11 +24,11 @@ for name, text in [('HomeShell', shell), ('FarmDetail', farm), ('Dashboard', das
 for label in ['Sanidade', 'Reprodução', 'Nutrição', 'Financeiro', 'Estoque']:
     check(f'Menu direto reconhece {label}', f"'{label}'" in shell)
 for target in [
-    'HealthOverviewScreen(farm: farm)',
-    'ReproductionOverviewScreen(farm: farm)',
-    'NutritionOverviewScreen(farm: farm)',
-    'FarmFinanceListScreen(farm: farm)',
-    'FarmInventoryListScreen(farm: farm)',
+    'HealthOverviewScreen(farm: farm, embedded: true)',
+    'ReproductionOverviewScreen(farm: farm, embedded: true)',
+    'NutritionOverviewScreen(farm: farm, embedded: true)',
+    'FarmFinanceListScreen(farm: farm, embedded: true)',
+    'FarmInventoryListScreen(farm: farm, embedded: true)',
 ]:
     check(f'Menu abre {target}', target in shell)
 check('Sidebar desktop usa handler direto', 'onSelected: (index) => _handleRouteSelection(visibleRoutes, index)' in shell)

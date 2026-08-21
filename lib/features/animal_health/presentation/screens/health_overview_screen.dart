@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
@@ -14,11 +15,13 @@ class HealthOverviewScreen extends StatefulWidget {
   const HealthOverviewScreen({
     this.farm,
     this.autoOpenCreate = false,
+    this.embedded = false,
     super.key,
   });
 
   final FarmData? farm;
   final bool autoOpenCreate;
+  final bool embedded;
 
   @override
   State<HealthOverviewScreen> createState() => _HealthOverviewScreenState();
@@ -32,6 +35,7 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
 
   List<HealthAnimalContext> animals = [];
   bool isLoading = true;
+  String? loadError;
   String search = '';
 
   int get totalAnimals => animals.length;
@@ -102,59 +106,54 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
     if (mounted) {
       setState(() {
         isLoading = true;
+        loadError = null;
       });
     }
+    try {
+      final farms = widget.farm == null
+          ? await farmStorage.loadFarms()
+          : <FarmData>[widget.farm!];
+      final loadedAnimals = <HealthAnimalContext>[];
 
-    final farms = widget.farm == null
-        ? await farmStorage.loadFarms()
-        : <FarmData>[widget.farm!];
-    final loadedAnimals = <HealthAnimalContext>[];
-
-    for (final farm in farms) {
-      final groups = await herdStorage.loadGroups(farm.name);
-
-      for (final group in groups) {
-        final groupAnimals = await animalStorage.loadAnimals(
-          farmName: farm.name,
-          groupName: group.name,
-        );
-
-        for (final animal in groupAnimals) {
-          final records = await healthStorage.loadRecords(
+      for (final farm in farms) {
+        final groups = await herdStorage.loadGroups(farm.name);
+        for (final group in groups) {
+          final groupAnimals = await animalStorage.loadAnimals(
             farmName: farm.name,
             groupName: group.name,
-            animalId: animal.id,
           );
-
-          loadedAnimals.add(
-            HealthAnimalContext(
-              farm: farm,
-              group: group,
-              animal: animal,
-              records: records,
-            ),
-          );
+          for (final animal in groupAnimals) {
+            final records = await healthStorage.loadRecords(
+              farmName: farm.name,
+              groupName: group.name,
+              animalId: animal.id,
+            );
+            loadedAnimals.add(
+              HealthAnimalContext(
+                farm: farm,
+                group: group,
+                animal: animal,
+                records: records,
+              ),
+            );
+          }
         }
       }
+
+      loadedAnimals.sort((first, second) {
+        final farmComparison = first.farm.name.compareTo(second.farm.name);
+        if (farmComparison != 0) return farmComparison;
+        return first.animal.displayName.compareTo(second.animal.displayName);
+      });
+
+      if (!mounted) return;
+      setState(() => animals = loadedAnimals);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => loadError = error.toString());
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
-
-    loadedAnimals.sort((first, second) {
-      final farmComparison = first.farm.name.compareTo(second.farm.name);
-      if (farmComparison != 0) {
-        return farmComparison;
-      }
-
-      return first.animal.displayName.compareTo(second.animal.displayName);
-    });
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      animals = loadedAnimals;
-      isLoading = false;
-    });
   }
 
   Future<void> openAnimal(HealthAnimalContext contextData) async {
@@ -232,7 +231,7 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Novo evento sanitário'),
       ),
-      appBar: AppBar(
+      appBar: widget.embedded ? null : AppBar(
         title: Text(
           widget.farm == null ? 'Sanidade' : 'Sanidade — ${widget.farm!.name}',
         ),
@@ -247,7 +246,12 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
+            : loadError != null && animals.isEmpty
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadData,
+                  )
+                : RefreshIndicator(
                 onRefresh: loadData,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),

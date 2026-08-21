@@ -388,27 +388,27 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                 child: Text('Selecione uma fazenda para acessar este módulo.'),
               ),
             )
-          : FarmAgendaListScreen(farm: farm);
+          : FarmAgendaListScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Sanidade') {
       body = farm == null
           ? const _AtlasSelectFarmMessage()
-          : HealthOverviewScreen(farm: farm);
+          : HealthOverviewScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Reprodução') {
       body = farm == null
           ? const _AtlasSelectFarmMessage()
-          : ReproductionOverviewScreen(farm: farm);
+          : ReproductionOverviewScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Nutrição') {
       body = farm == null
           ? const _AtlasSelectFarmMessage()
-          : NutritionOverviewScreen(farm: farm);
+          : NutritionOverviewScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Financeiro') {
       body = farm == null
           ? const _AtlasSelectFarmMessage()
-          : FarmFinanceListScreen(farm: farm);
+          : FarmFinanceListScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Estoque') {
       body = farm == null
           ? const _AtlasSelectFarmMessage()
-          : FarmInventoryListScreen(farm: farm);
+          : FarmInventoryListScreen(farm: farm, embedded: true);
     } else {
       body = selected.builder(context);
     }
