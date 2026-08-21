@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
@@ -74,18 +75,18 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
 
   List<FarmInventoryData> get visibleItems {
     return items.where((item) {
-      final normalizedSearch = searchText.trim().toLowerCase();
+      final normalizedSearch = AtlasUiText.clean(searchText).toLowerCase();
 
       final matchesSearch =
           normalizedSearch.isEmpty ||
-          item.name.toLowerCase().contains(normalizedSearch) ||
-          item.category.toLowerCase().contains(normalizedSearch) ||
-          item.supplier.toLowerCase().contains(normalizedSearch) ||
-          item.internalCode.toLowerCase().contains(normalizedSearch) ||
-          item.barcode.toLowerCase().contains(normalizedSearch) ||
-          item.brand.toLowerCase().contains(normalizedSearch) ||
-          item.manufacturer.toLowerCase().contains(normalizedSearch) ||
-          item.batch.toLowerCase().contains(normalizedSearch);
+          AtlasUiText.clean(item.name).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.category).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.supplier).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.internalCode).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.barcode).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.brand).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.manufacturer).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.batch).toLowerCase().contains(normalizedSearch);
 
       if (!matchesSearch) {
         return false;
@@ -288,7 +289,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      item.name,
+                      AtlasUiText.clean(item.name),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 18),
@@ -587,7 +588,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Excluir produto'),
-          content: Text('Deseja excluir ${item.name} do estoque?'),
+          content: Text('Deseja excluir ${AtlasUiText.clean(item.name)} do estoque?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -1110,7 +1111,7 @@ class InventoryItemCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.name,
+                      AtlasUiText.clean(item.name),
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -1118,7 +1119,7 @@ class InventoryItemCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      item.category,
+                      AtlasUiText.category(item.category),
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.w600,

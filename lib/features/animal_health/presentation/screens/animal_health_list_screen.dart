@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
 import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
@@ -577,7 +578,7 @@ class HealthRecordCard extends StatelessWidget {
                         children: [
                           if (record.severity != 'Não informada')
                             Chip(label: Text('Gravidade: ${record.severity}')),
-                          Chip(label: Text('Status: ${record.status}')),
+                          Chip(label: Text('Status: ${AtlasUiText.status(record.status)}')),
                           if (record.isQuarantine)
                             const Chip(label: Text('Quarentena')),
                           if (record.isMortality)

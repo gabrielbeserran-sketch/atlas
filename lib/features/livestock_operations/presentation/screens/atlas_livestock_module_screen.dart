@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart';
@@ -411,7 +412,7 @@ class _ItemCard extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (item.status.isNotEmpty) Chip(label: Text(item.status)),
+          if (item.status.isNotEmpty) Chip(label: Text(AtlasUiText.status(item.status))),
           const SizedBox(width: 4),
           const Icon(Icons.chevron_right),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
 import 'package:projeto_atlas/features/atlas_climate_enterprise/data/services/atlas_climate_enterprise_storage_service.dart';
@@ -333,7 +334,7 @@ class _AtlasClimateEnterpriseScreenState
                               title: Text(record.title),
                               subtitle: Text(
                                 '${record.feature}\n'
-                                '${record.date} • ${record.status} • '
+                                '${record.date} • ${AtlasUiText.status(record.status)} • '
                                 '${record.progressPercent}%\n'
                                 '${record.metricName}: '
                                 '${record.currentValue.toStringAsFixed(2)} → '

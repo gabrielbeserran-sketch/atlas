@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
 import 'package:projeto_atlas/features/atlas_quality_release/data/services/atlas_quality_release_storage_service.dart';
@@ -326,7 +327,7 @@ class _AtlasQualityReleaseScreenState extends State<AtlasQualityReleaseScreen> {
                               title: Text(record.title),
                               subtitle: Text(
                                 '${record.feature}\n'
-                                '${record.date} • ${record.status} • '
+                                '${record.date} • ${AtlasUiText.status(record.status)} • '
                                 '${record.priority} • '
                                 '${record.progressPercent}%\n'
                                 '${record.scope.isEmpty ? 'Sem escopo informado' : record.scope}',

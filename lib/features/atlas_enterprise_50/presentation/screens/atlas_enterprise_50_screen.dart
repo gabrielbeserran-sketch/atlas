@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
 import 'package:projeto_atlas/features/atlas_enterprise_50/data/services/atlas_enterprise_storage_service.dart';
@@ -855,7 +856,7 @@ class _RecordCard extends StatelessWidget {
         ),
         title: Text(record.title),
         subtitle: Text(
-          '${record.date} • ${record.status} • Qtd. ${record.quantity.toStringAsFixed(2)} • Valor R\$ ${record.totalValue.toStringAsFixed(2)}${record.notes.isEmpty ? '' : '\n${record.notes}'}',
+          '${record.date} • ${AtlasUiText.status(record.status)} • Qtd. ${record.quantity.toStringAsFixed(2)} • Valor R\$ ${record.totalValue.toStringAsFixed(2)}${record.notes.isEmpty ? '' : '\n${record.notes}'}',
         ),
         isThreeLine: record.notes.isNotEmpty,
         trailing: PopupMenuButton<String>(

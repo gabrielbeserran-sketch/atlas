@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_document/data/services/animal_document_storage_service.dart';
 import 'package:projeto_atlas/features/animal_document/presentation/screens/animal_document_list_screen.dart';
@@ -3499,7 +3500,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         const SectionTitle(
           title: 'Genealogia inteligente',
           subtitle:
-              'Pais, avós, irmãos, filhos e descendentes localizados pela API Enterprise.',
+              'Pais, avós, irmãos, filhos e descendentes cadastrados no Atlas.',
         ),
         const SizedBox(height: 16),
         AnimalGenealogyInlinePanel(
@@ -5976,7 +5977,7 @@ class AnimalHubHeader extends StatelessWidget {
                 isActive ? Icons.check_circle_outline : Icons.info_outline,
                 size: 18,
               ),
-              label: Text(animal.status),
+              label: Text(AtlasUiText.status(animal.status)),
             );
 
             if (compact) {
@@ -6335,7 +6336,7 @@ class _AnimalGenealogyInlinePanelState
               const Icon(Icons.cloud_off_outlined, size: 46, color: Colors.red),
               const SizedBox(height: 12),
               const Text(
-                'Não foi possível carregar a genealogia Enterprise.',
+                'Não foi possível carregar a genealogia.',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
@@ -6381,7 +6382,7 @@ class _AnimalGenealogyInlinePanelState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Árvore genealógica Enterprise',
+                        'Árvore genealógica',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import 'package:projeto_atlas/core/network/atlas_environment.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/models/atlas_enterprise_remote_session.dart';
 
@@ -245,7 +246,7 @@ class AtlasHttpClient {
       }
     }
 
-    final decoded = _decodeBody(response.body);
+    final decoded = _decodeBodyBytes(response.bodyBytes);
 
     if (_isTransientStatus(response.statusCode) &&
         transientRetries > 0 &&
@@ -393,15 +394,24 @@ class AtlasHttpClient {
     };
   }
 
-  dynamic _decodeBody(String rawBody) {
-    final text = rawBody.trim();
+  dynamic _decodeBodyBytes(List<int> rawBytes) {
+    if (rawBytes.isEmpty) return <String, dynamic>{};
+
+    String text;
+    try {
+      // A API Atlas usa JSON UTF-8. Ler os bytes explicitamente evita que o
+      // cliente aplique um charset inadequado quando o header não o informa.
+      text = utf8.decode(rawBytes, allowMalformed: false).trim();
+    } catch (_) {
+      text = latin1.decode(rawBytes, allowInvalid: true).trim();
+    }
 
     if (text.isEmpty) return <String, dynamic>{};
 
     try {
-      return jsonDecode(text);
+      return AtlasTextNormalizer.normalize(jsonDecode(text));
     } catch (_) {
-      return text;
+      return AtlasTextNormalizer.repair(text);
     }
   }
 
@@ -463,7 +473,7 @@ class AtlasHttpClient {
       }
     }
 
-    final decoded = _decodeBody(response.body);
+    final decoded = _decodeBodyBytes(response.bodyBytes);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw AtlasHttpException(
         decoded is Map
@@ -527,7 +537,7 @@ class AtlasHttpClient {
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      final decoded = _decodeBody(response.body);
+      final decoded = _decodeBodyBytes(response.bodyBytes);
       throw AtlasHttpException(
         decoded is Map
             ? decoded['detail']?.toString() ?? 'Falha no download.'

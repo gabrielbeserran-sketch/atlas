@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/reports/presentation/widgets/report_chart_widgets.dart';
 import 'package:projeto_atlas/features/reports/presentation/widgets/report_period_comparison_card.dart';
 import 'package:projeto_atlas/features/reports/presentation/widgets/report_management_insights_card.dart';
@@ -204,8 +205,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           continue;
         }
 
+        final category = AtlasUiText.category(record.category);
         totals.update(
-          record.category,
+          category,
           (value) => value + record.amount,
           ifAbsent: () => record.amount,
         );

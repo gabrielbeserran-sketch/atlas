@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
 import 'package:projeto_atlas/features/atlas_livestock_integration/data/services/atlas_livestock_integration_storage_service.dart';
@@ -321,7 +322,7 @@ class _AtlasLivestockIntegrationScreenState
                               title: Text(record.title),
                               subtitle: Text(
                                 '${record.feature}\n'
-                                '${record.date} • ${record.status} • '
+                                '${record.date} • ${AtlasUiText.status(record.status)} • '
                                 '${record.priority} • '
                                 '${record.progressPercent}%\n'
                                 '${record.sourceModule.isEmpty ? 'Sem origem vinculada' : record.sourceModule}',

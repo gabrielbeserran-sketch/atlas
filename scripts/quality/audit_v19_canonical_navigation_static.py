@@ -52,7 +52,7 @@ for screen in [
     "FarmInventoryListScreen(farm: farm)",
 ]:
     check(f"HomeShell abre central direta {screen}", screen in shell)
-check("HomeShell intercepta módulos operacionais", "_handleRouteSelection" in shell and "_isDirectOperationalRoute" in shell)
+check("HomeShell mantém módulos operacionais no workspace", "_handleRouteSelection" in shell and "setState(() => selectedIndex = index)" in shell)
 check("HomeShell não usa AtlasLivestockModuleScreen", "AtlasLivestockModuleScreen" not in shell)
 
 failed = [name for name, ok in checks if not ok]

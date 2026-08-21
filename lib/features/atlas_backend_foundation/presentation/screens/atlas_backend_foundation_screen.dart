@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
@@ -272,7 +273,7 @@ class _AtlasBackendFoundationScreenState
                         leading: Icon(_moduleIcon(record.module)),
                         title: Text(record.title),
                         subtitle: Text(
-                          '${record.feature}\n${record.date} • ${record.status} • ${record.progressPercent}%',
+                          '${record.feature}\n${record.date} • ${AtlasUiText.status(record.status)} • ${record.progressPercent}%',
                         ),
                         isThreeLine: true,
                         trailing: PopupMenuButton<String>(

@@ -32,7 +32,7 @@ for target in [
 ]:
     check(f'Menu abre {target}', target in shell)
 check('Sidebar desktop usa handler direto', 'onSelected: (index) => _handleRouteSelection(visibleRoutes, index)' in shell)
-check('Dashboard via shell usa handler direto', '_isDirectOperationalRoute(route.label)' in shell and '_navigateToLabel' in shell)
+check('Dashboard via shell preserva destino canônico', '_navigateToLabel' in shell and 'setState(() => selectedIndex = index)' in shell)
 
 # Fazenda: atalhos dos cinco domínios vão direto para a central real.
 for target in [

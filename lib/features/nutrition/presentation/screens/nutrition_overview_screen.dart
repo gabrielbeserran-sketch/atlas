@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/nutrition/data/services/nutrition_storage_service.dart';
@@ -55,15 +56,15 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
   }
 
   List<NutritionPlanData> get visiblePlans {
-    final query = search.trim().toLowerCase();
+    final query = AtlasUiText.clean(search).toLowerCase();
     return plans.where((plan) {
       final farmOk = farmFilter == 'Todas' || plan.farmName == farmFilter;
-      final text =
-          '${plan.dietName} ${plan.groupName} ${plan.farmName} '
-                  '${plan.category} ${plan.pastureType} ${plan.silageType} '
-                  '${plan.concentrateType} ${plan.mineralSupplement} '
-                  '${plan.ingredients.map((e) => e.name).join(' ')}'
-              .toLowerCase();
+      final text = AtlasUiText.clean(
+        '${plan.dietName} ${plan.groupName} ${plan.farmName} '
+        '${plan.category} ${plan.pastureType} ${plan.silageType} '
+        '${plan.concentrateType} ${plan.mineralSupplement} '
+        '${plan.ingredients.map((e) => e.name).join(' ')}',
+      ).toLowerCase();
       return farmOk && (query.isEmpty || text.contains(query));
     }).toList();
   }
@@ -226,7 +227,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Excluir dieta'),
-        content: Text('Deseja excluir “${plan.dietName}”?'),
+        content: Text('Deseja excluir “${AtlasUiText.clean(plan.dietName)}”?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -464,7 +465,7 @@ class _PlanCard extends StatelessWidget {
     final ingredients = plan.ingredients.isEmpty
         ? 'Sem formulação por ingredientes'
         : plan.ingredients
-              .map((e) => '${e.name} ${number(e.inclusionKg)} kg')
+              .map((e) => '${AtlasUiText.clean(e.name)} ${number(e.inclusionKg)} kg')
               .join(' • ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -486,14 +487,14 @@ class _PlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          plan.dietName,
+                          AtlasUiText.clean(plan.dietName),
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          '${plan.farmName} • ${plan.groupName} • ${plan.category}',
+                          '${AtlasUiText.clean(plan.farmName)} • ${AtlasUiText.clean(plan.groupName)} • ${AtlasUiText.category(plan.category)}',
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ],

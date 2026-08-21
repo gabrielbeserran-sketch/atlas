@@ -79,6 +79,8 @@ from ..schemas import (
     PaddockUpdateRequest,
     PaddockResponse,
     AnimalTimelineResponse,
+    AnimalGenealogyNodeResponse,
+    AnimalGenealogyResponse,
 )
 
 router = APIRouter(prefix="/livestock", tags=["livestock"])
@@ -586,6 +588,300 @@ def list_animals(
             )
         )
     return list(db.scalars(query.order_by(LivestockAnimal.tag)).all())
+
+
+
+def _livestock_genealogy_node(
+    animal: LivestockAnimal | None,
+    *,
+    relation: str,
+    fallback_tag: str = "",
+) -> AnimalGenealogyNodeResponse | None:
+    if animal is None:
+        tag = fallback_tag.strip()
+        if not tag:
+            return None
+        return AnimalGenealogyNodeResponse(
+            id="",
+            farm_id="",
+            group_name="",
+            tag=tag,
+            name="",
+            sex="",
+            breed="",
+            category="",
+            birth_date="",
+            status="Não localizado",
+            relation=relation,
+            registered=False,
+        )
+
+    return AnimalGenealogyNodeResponse(
+        id=animal.id,
+        farm_id=animal.farm_id,
+        group_name="",
+        tag=animal.tag,
+        name=animal.name,
+        sex=animal.sex,
+        breed=animal.breed,
+        category=animal.category,
+        birth_date=animal.birth_date,
+        status=animal.status,
+        relation=relation,
+        registered=True,
+    )
+
+
+def _livestock_parent_reference(
+    animal: LivestockAnimal,
+    *,
+    id_field: str,
+    metadata_field: str,
+) -> tuple[str, str]:
+    parent_id = str(getattr(animal, id_field) or "").strip()
+    metadata = dict(animal.metadata_json or {})
+    parent_tag = str(metadata.get(metadata_field, "")).strip()
+    return parent_id, parent_tag
+
+
+@router.get(
+    "/animals/{animal_id}/genealogy",
+    response_model=AnimalGenealogyResponse,
+)
+def livestock_animal_genealogy(
+    animal_id: str,
+    principal: Principal = Depends(require_permission("animals.read")),
+    db: Session = Depends(get_db),
+) -> AnimalGenealogyResponse:
+    """Genealogia do animal canônico do Rebanho.
+
+    A Central do Animal trabalha com ``livestock_animals``. A rota histórica
+    ``/animals/{id}/genealogy`` consulta ``EntityState`` e por isso devolvia
+    404 para animais válidos criados pelo módulo Rebanho. Esta rota usa a
+    mesma autoridade do restante da Central do Animal e aceita tanto os
+    vínculos ``mother_id``/``father_id`` quanto os tags legados guardados em
+    ``metadata_json``.
+    """
+    animal = _animal(db, principal, animal_id)
+
+    query = select(LivestockAnimal).where(
+        LivestockAnimal.company_id == principal.company.id,
+        LivestockAnimal.tenant_id == principal.company.tenant_id,
+        LivestockAnimal.status != "Excluído",
+    )
+    entities = list(db.scalars(query).all())
+
+    allowed_farms = set(principal.membership.farm_ids or [])
+    if allowed_farms and principal.membership.role not in {"owner", "admin"}:
+        entities = [item for item in entities if item.farm_id in allowed_farms]
+
+    by_id = {item.id: item for item in entities}
+    by_tag = {
+        item.tag.strip().casefold(): item
+        for item in entities
+        if item.tag.strip()
+    }
+
+    father_id, father_tag = _livestock_parent_reference(
+        animal,
+        id_field="father_id",
+        metadata_field="father_tag",
+    )
+    mother_id, mother_tag = _livestock_parent_reference(
+        animal,
+        id_field="mother_id",
+        metadata_field="mother_tag",
+    )
+
+    def resolve(parent_id: str, parent_tag: str) -> LivestockAnimal | None:
+        if parent_id and parent_id in by_id:
+            return by_id[parent_id]
+        if parent_tag:
+            return by_tag.get(parent_tag.casefold())
+        return None
+
+    father = resolve(father_id, father_tag)
+    mother = resolve(mother_id, mother_tag)
+
+    def parent_of(
+        parent: LivestockAnimal | None,
+        *,
+        id_field: str,
+        metadata_field: str,
+    ) -> tuple[LivestockAnimal | None, str]:
+        if parent is None:
+            return None, ""
+        parent_id, parent_tag = _livestock_parent_reference(
+            parent,
+            id_field=id_field,
+            metadata_field=metadata_field,
+        )
+        return resolve(parent_id, parent_tag), parent_tag
+
+    paternal_grandfather, paternal_grandfather_tag = parent_of(
+        father,
+        id_field="father_id",
+        metadata_field="father_tag",
+    )
+    paternal_grandmother, paternal_grandmother_tag = parent_of(
+        father,
+        id_field="mother_id",
+        metadata_field="mother_tag",
+    )
+    maternal_grandfather, maternal_grandfather_tag = parent_of(
+        mother,
+        id_field="father_id",
+        metadata_field="father_tag",
+    )
+    maternal_grandmother, maternal_grandmother_tag = parent_of(
+        mother,
+        id_field="mother_id",
+        metadata_field="mother_tag",
+    )
+
+    def parent_matches(
+        candidate: LivestockAnimal,
+        *,
+        parent: LivestockAnimal,
+    ) -> bool:
+        if candidate.father_id == parent.id or candidate.mother_id == parent.id:
+            return True
+        metadata = dict(candidate.metadata_json or {})
+        father_candidate = str(metadata.get("father_tag", "")).strip().casefold()
+        mother_candidate = str(metadata.get("mother_tag", "")).strip().casefold()
+        parent_tag_key = parent.tag.strip().casefold()
+        return bool(
+            parent_tag_key
+            and (father_candidate == parent_tag_key or mother_candidate == parent_tag_key)
+        )
+
+    children = [
+        candidate
+        for candidate in entities
+        if candidate.id != animal.id and parent_matches(candidate, parent=animal)
+    ]
+
+    def parent_key(parent_id: str, parent_tag: str) -> str:
+        resolved = resolve(parent_id, parent_tag)
+        if resolved is not None:
+            return f"id:{resolved.id}"
+        if parent_id:
+            return f"id:{parent_id}"
+        if parent_tag:
+            return f"tag:{parent_tag.casefold()}"
+        return ""
+
+    def candidate_parent_keys(candidate: LivestockAnimal) -> tuple[str, str]:
+        metadata = dict(candidate.metadata_json or {})
+        candidate_father_id = str(candidate.father_id or "").strip()
+        candidate_mother_id = str(candidate.mother_id or "").strip()
+        candidate_father_tag = str(metadata.get("father_tag", "")).strip()
+        candidate_mother_tag = str(metadata.get("mother_tag", "")).strip()
+        return (
+            parent_key(candidate_father_id, candidate_father_tag),
+            parent_key(candidate_mother_id, candidate_mother_tag),
+        )
+
+    focal_father_key = parent_key(father_id, father_tag)
+    focal_mother_key = parent_key(mother_id, mother_tag)
+    siblings: list[LivestockAnimal] = []
+    half_siblings: list[LivestockAnimal] = []
+    for candidate in entities:
+        if candidate.id == animal.id:
+            continue
+        candidate_father, candidate_mother = candidate_parent_keys(candidate)
+        same_father = bool(focal_father_key and candidate_father == focal_father_key)
+        same_mother = bool(focal_mother_key and candidate_mother == focal_mother_key)
+        if same_father and same_mother:
+            siblings.append(candidate)
+        elif same_father or same_mother:
+            half_siblings.append(candidate)
+
+    descendants: list[tuple[LivestockAnimal, int]] = []
+    visited = {animal.id}
+    queue: list[tuple[LivestockAnimal, int]] = [(item, 1) for item in children]
+    while queue:
+        descendant, generation = queue.pop(0)
+        if descendant.id in visited:
+            continue
+        visited.add(descendant.id)
+        descendants.append((descendant, generation))
+        if generation >= 5:
+            continue
+        for candidate in entities:
+            if candidate.id in visited:
+                continue
+            if parent_matches(candidate, parent=descendant):
+                queue.append((candidate, generation + 1))
+
+    unresolved_tags = sorted(
+        {
+            tag
+            for tag in [
+                father_tag,
+                mother_tag,
+                paternal_grandfather_tag,
+                paternal_grandmother_tag,
+                maternal_grandfather_tag,
+                maternal_grandmother_tag,
+            ]
+            if tag and tag.casefold() not in by_tag
+        },
+        key=str.casefold,
+    )
+
+    def descendant_relation(generation: int) -> str:
+        return {
+            1: "Filho(a)",
+            2: "Neto(a)",
+            3: "Bisneto(a)",
+        }.get(generation, f"Descendente — geração {generation}")
+
+    return AnimalGenealogyResponse(
+        animal=_livestock_genealogy_node(animal, relation="Animal selecionado"),
+        father=_livestock_genealogy_node(father, relation="Pai", fallback_tag=father_tag),
+        mother=_livestock_genealogy_node(mother, relation="Mãe", fallback_tag=mother_tag),
+        paternal_grandfather=_livestock_genealogy_node(
+            paternal_grandfather,
+            relation="Avô paterno",
+            fallback_tag=paternal_grandfather_tag,
+        ),
+        paternal_grandmother=_livestock_genealogy_node(
+            paternal_grandmother,
+            relation="Avó paterna",
+            fallback_tag=paternal_grandmother_tag,
+        ),
+        maternal_grandfather=_livestock_genealogy_node(
+            maternal_grandfather,
+            relation="Avô materno",
+            fallback_tag=maternal_grandfather_tag,
+        ),
+        maternal_grandmother=_livestock_genealogy_node(
+            maternal_grandmother,
+            relation="Avó materna",
+            fallback_tag=maternal_grandmother_tag,
+        ),
+        siblings=[
+            _livestock_genealogy_node(item, relation="Irmão(ã)")
+            for item in sorted(siblings, key=lambda value: value.tag.casefold())
+        ],
+        half_siblings=[
+            _livestock_genealogy_node(item, relation="Meio-irmão(ã)")
+            for item in sorted(half_siblings, key=lambda value: value.tag.casefold())
+        ],
+        children=[
+            _livestock_genealogy_node(item, relation="Filho(a)")
+            for item in sorted(children, key=lambda value: value.tag.casefold())
+        ],
+        descendants=[
+            _livestock_genealogy_node(
+                item,
+                relation=descendant_relation(generation),
+            )
+            for item, generation in descendants
+        ],
+        unresolved_tags=unresolved_tags,
+    )
 
 
 

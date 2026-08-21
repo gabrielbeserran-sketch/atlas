@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_enterprise_suite/presentation/widgets/enterprise_module_widgets.dart';
 import 'package:projeto_atlas/features/atlas_cloud_security_enterprise/data/services/atlas_cloud_security_storage_service.dart';
@@ -325,7 +326,7 @@ class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
                               title: Text(record.title),
                               subtitle: Text(
                                 '${record.feature}\n'
-                                '${record.date} • ${record.status} • '
+                                '${record.date} • ${AtlasUiText.status(record.status)} • '
                                 '${record.priority} • '
                                 '${record.progressPercent}%\n'
                                 '${record.resourceName.isEmpty ? 'Sem recurso vinculado' : record.resourceName}',
