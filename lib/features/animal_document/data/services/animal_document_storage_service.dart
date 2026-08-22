@@ -97,7 +97,10 @@ class AnimalDocumentStorageService {
     required String animalId,
     required List<AnimalDocumentData> documents,
   }) async {
-    final existing = await _remote.list(animalId: animalId, kind: 'document');
+    final existing = await _remote.list(
+      animalId: animalId,
+      kind: 'document',
+    );
     final existingIds = {
       for (final item in existing) item['id']?.toString() ?? '',
     }..remove('');
@@ -107,10 +110,8 @@ class AnimalDocumentStorageService {
     for (final document in documents) {
       final localReference = document.reference.trim();
       final isLocalFile =
-          localReference.isNotEmpty &&
-          FileSystemEntity.isFileSync(localReference);
-      final isExternalUrl =
-          Uri.tryParse(localReference)?.hasScheme == true &&
+          localReference.isNotEmpty && FileSystemEntity.isFileSync(localReference);
+      final isExternalUrl = Uri.tryParse(localReference)?.hasScheme == true &&
           (localReference.startsWith('http://') ||
               localReference.startsWith('https://'));
 

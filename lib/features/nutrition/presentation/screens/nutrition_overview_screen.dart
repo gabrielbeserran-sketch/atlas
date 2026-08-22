@@ -231,8 +231,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
     final confirmed = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir dieta',
-      message:
-          'Deseja excluir “${AtlasUiText.clean(plan.dietName)}”? Essa ação não pode ser desfeita.',
+      message: 'Deseja excluir “${AtlasUiText.clean(plan.dietName)}”? Essa ação não pode ser desfeita.',
     );
     if (!confirmed || !mounted) {
       return;
@@ -259,30 +258,28 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: Text(
-                widget.farm == null
-                    ? 'Central de Nutrição'
-                    : 'Nutrição — ${widget.farm!.name}',
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: isLoading ? null : loadData,
-                  icon: const Icon(Icons.refresh_outlined),
-                ),
-              ],
-            ),
+      appBar: widget.embedded ? null : AppBar(
+        title: Text(
+          widget.farm == null
+              ? 'Central de Nutrição'
+              : 'Nutrição — ${widget.farm!.name}',
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar',
+            onPressed: isLoading ? null : loadData,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : loadError != null && plans.isEmpty
-          ? AtlasLoadErrorState(
-              message: 'Verifique sua conexão e tente novamente.',
-              onRetry: loadData,
-            )
-          : RefreshIndicator(
+              ? AtlasLoadErrorState(
+                  message: 'Verifique sua conexão e tente novamente.',
+                  onRetry: loadData,
+                )
+              : RefreshIndicator(
               onRefresh: loadData,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
@@ -410,8 +407,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
                       message: search.trim().isNotEmpty || farmFilter != 'Todas'
                           ? 'Os filtros atuais não encontraram dietas. Limpe os filtros para voltar à lista completa.'
                           : 'Cadastre a primeira dieta para iniciar o controle nutricional da fazenda.',
-                      actionLabel:
-                          search.trim().isNotEmpty || farmFilter != 'Todas'
+                      actionLabel: search.trim().isNotEmpty || farmFilter != 'Todas'
                           ? 'Limpar filtros'
                           : 'Nova dieta',
                       onAction: () {
@@ -462,10 +458,7 @@ class _PlanCard extends StatelessWidget {
     final ingredients = plan.ingredients.isEmpty
         ? 'Sem formulação por ingredientes'
         : plan.ingredients
-              .map(
-                (e) =>
-                    '${AtlasUiText.clean(e.name)} ${number(e.inclusionKg)} kg',
-              )
+              .map((e) => '${AtlasUiText.clean(e.name)} ${number(e.inclusionKg)} kg')
               .join(' • ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

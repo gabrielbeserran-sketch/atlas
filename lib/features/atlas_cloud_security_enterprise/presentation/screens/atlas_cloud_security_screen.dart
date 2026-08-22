@@ -174,7 +174,9 @@ class _AtlasCloudSecurityScreenState extends State<AtlasCloudSecurityScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Integração, Nuvem e Segurança'),
+                          title: Text(
+                            'Integração, Nuvem e Segurança',
+                          ),
                           subtitle: Text(
                             'Esta entrega organiza a camada de gestão e monitoramento. '
                             'Autenticação, nuvem, criptografia, backup e sincronização reais exigem backend seguro e provedores configurados.',

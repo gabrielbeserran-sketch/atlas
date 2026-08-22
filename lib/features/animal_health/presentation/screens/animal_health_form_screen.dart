@@ -593,9 +593,7 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
                     AtlasFormActions(
                       onSave: saveRecord,
                       isSaving: isSaving,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar registro',
+                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar registro',
                     ),
                   ],
                 ),

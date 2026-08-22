@@ -1,4 +1,9 @@
-enum FarmHandlingSelectionMode { wholeLot, earringRange, manualSelection, rfid }
+enum FarmHandlingSelectionMode {
+  wholeLot,
+  earringRange,
+  manualSelection,
+  rfid,
+}
 
 enum FarmHandlingAction {
   saleOrExit,

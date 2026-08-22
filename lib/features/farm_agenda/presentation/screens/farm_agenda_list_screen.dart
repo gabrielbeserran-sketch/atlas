@@ -334,18 +334,16 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
     final filteredTasks = visibleTasks;
 
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Agenda'),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: isLoading ? null : loadTasks,
-                  icon: const Icon(Icons.refresh_outlined),
-                ),
-              ],
-            ),
+      appBar: widget.embedded ? null : AppBar(
+        title: const Text('Agenda'),
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar',
+            onPressed: isLoading ? null : loadTasks,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -353,11 +351,11 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && tasks.isEmpty
-                ? AtlasLoadErrorState(
-                    message: 'Verifique sua conexão e tente novamente.',
-                    onRetry: loadTasks,
-                  )
-                : RefreshIndicator(
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadTasks,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadTasks,
                     child: ListView(
                       padding: const EdgeInsets.all(24),

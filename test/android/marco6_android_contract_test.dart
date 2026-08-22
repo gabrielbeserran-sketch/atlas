@@ -16,10 +16,7 @@ void main() {
   test('release exige assinatura própria', () {
     final gradle = read('android/app/build.gradle.kts');
     expect(gradle, contains('releaseRequested'));
-    expect(
-      gradle,
-      contains('signingConfig = signingConfigs.getByName("release")'),
-    );
+    expect(gradle, contains('signingConfig = signingConfigs.getByName("release")'));
   });
 
   test('produção exige endpoint HTTPS imutável', () {
@@ -34,14 +31,8 @@ void main() {
 
   test('Android evita permissão ampla de mídia', () {
     final manifest = read('android/app/src/main/AndroidManifest.xml');
-    expect(
-      manifest,
-      isNot(contains('android.permission.READ_EXTERNAL_STORAGE')),
-    );
-    expect(
-      manifest,
-      isNot(contains('android.permission.WRITE_EXTERNAL_STORAGE')),
-    );
+    expect(manifest, isNot(contains('android.permission.READ_EXTERNAL_STORAGE')));
+    expect(manifest, isNot(contains('android.permission.WRITE_EXTERNAL_STORAGE')));
     expect(manifest, isNot(contains('android.permission.READ_MEDIA_IMAGES')));
   });
 

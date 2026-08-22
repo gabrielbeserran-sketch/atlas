@@ -330,9 +330,7 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                     AtlasFormActions(
                       onSave: _save,
                       isSaving: _saving,
-                      saveLabel: _isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar produto',
+                      saveLabel: _isEditing ? 'Salvar alterações' : 'Salvar produto',
                     ),
                   ],
                 ),

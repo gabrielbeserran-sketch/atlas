@@ -160,9 +160,11 @@ class AnimalReproductionStorageService {
     }
   }
 
-  Future<void> _saveLocal(String key, List<AnimalReproductionData> records) =>
-      _preferences.setString(
-        key,
-        jsonEncode(records.map((record) => record.toMap()).toList()),
-      );
+  Future<void> _saveLocal(
+    String key,
+    List<AnimalReproductionData> records,
+  ) => _preferences.setString(
+    key,
+    jsonEncode(records.map((record) => record.toMap()).toList()),
+  );
 }

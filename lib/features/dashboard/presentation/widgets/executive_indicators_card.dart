@@ -132,7 +132,10 @@ class _MetricTile extends StatelessWidget {
               children: [
                 Text(
                   item.label,
-                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -145,7 +148,10 @@ class _MetricTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   item.detail,
-                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.black54,
+                  ),
                 ),
               ],
             ),

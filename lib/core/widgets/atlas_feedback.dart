@@ -20,17 +20,25 @@ class AtlasFeedback {
   }
 
   static void showSuccess(BuildContext context, String message) => _show(
-    context,
-    message,
-    Icons.check_circle_outline,
-    semanticLabel: 'Sucesso',
-  );
+        context,
+        message,
+        Icons.check_circle_outline,
+        semanticLabel: 'Sucesso',
+      );
 
-  static void showWarning(BuildContext context, String message) =>
-      _show(context, message, Icons.info_outline, semanticLabel: 'Atenção');
+  static void showWarning(BuildContext context, String message) => _show(
+        context,
+        message,
+        Icons.info_outline,
+        semanticLabel: 'Atenção',
+      );
 
-  static void showError(BuildContext context, String message) =>
-      _show(context, message, Icons.error_outline, semanticLabel: 'Erro');
+  static void showError(BuildContext context, String message) => _show(
+        context,
+        message,
+        Icons.error_outline,
+        semanticLabel: 'Erro',
+      );
 
   static void _show(
     BuildContext context,

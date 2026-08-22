@@ -57,7 +57,10 @@ class AtlasOperationalActionBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               primary,
-              if (secondary != null) ...[const SizedBox(height: 8), secondary],
+              if (secondary != null) ...[
+                const SizedBox(height: 8),
+                secondary,
+              ],
               const SizedBox(height: 8),
               refresh,
             ],
@@ -68,7 +71,11 @@ class AtlasOperationalActionBar extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           alignment: WrapAlignment.end,
-          children: [refresh, if (secondary != null) secondary, primary],
+          children: [
+            refresh,
+            if (secondary != null) secondary,
+            primary,
+          ],
         );
       },
     );

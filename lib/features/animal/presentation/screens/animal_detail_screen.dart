@@ -507,12 +507,11 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         farm: farm,
         group: group,
       ),
-      AnimalHubSection.reproductionEnterprise =>
-        AnimalReproductionEnterpriseScreen(
-          animal: animal,
-          farm: farm,
-          group: group,
-        ),
+      AnimalHubSection.reproductionEnterprise => AnimalReproductionEnterpriseScreen(
+        animal: animal,
+        farm: farm,
+        group: group,
+      ),
       AnimalHubSection.weightIntelligence => AnimalWeightIntelligenceScreen(
         animal: animal,
         farm: farm,
@@ -3532,9 +3531,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
           )
         else
-          ...weights
-              .take(8)
-              .map(
+          ...weights.take(8).map(
                 (record) => Card(
                   child: ListTile(
                     leading: const CircleAvatar(
@@ -3603,7 +3600,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
             AnimalMetricCard(
               title: 'Custo sanitário',
-              value: 'R\$ ${cost.toStringAsFixed(2).replaceAll('.', ',')}',
+              value:
+                  'R\$ ${cost.toStringAsFixed(2).replaceAll('.', ',')}',
               subtitle: 'Tratamentos registrados',
               icon: Icons.payments_outlined,
             ),
@@ -3640,9 +3638,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
           )
         else
-          ...healthRecords
-              .take(8)
-              .map(
+          ...healthRecords.take(8).map(
                 (record) => Card(
                   child: ListTile(
                     leading: const CircleAvatar(
@@ -3759,9 +3755,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
           )
         else
-          ...reproductionRecords
-              .take(8)
-              .map(
+          ...reproductionRecords.take(8).map(
                 (record) => Card(
                   child: ListTile(
                     leading: const CircleAvatar(
@@ -4476,24 +4470,12 @@ class _AnimalCurrentSituation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <({String label, String value, IconData icon})>[
-      (
-        label: 'Situação',
-        value: status.isEmpty ? 'Não informada' : status,
-        icon: Icons.check_circle_outline,
-      ),
-      (
-        label: 'Lote',
-        value: lot.isEmpty ? 'Sem lote' : lot,
-        icon: Icons.groups_outlined,
-      ),
+      (label: 'Situação', value: status.isEmpty ? 'Não informada' : status, icon: Icons.check_circle_outline),
+      (label: 'Lote', value: lot.isEmpty ? 'Sem lote' : lot, icon: Icons.groups_outlined),
       (label: 'Idade', value: age, icon: Icons.cake_outlined),
       (label: 'Peso atual', value: weight, icon: Icons.monitor_weight_outlined),
       (label: 'Reprodução', value: reproduction, icon: Icons.favorite_outline),
-      (
-        label: 'Histórico',
-        value: '$historyCount registros',
-        icon: Icons.history_outlined,
-      ),
+      (label: 'Histórico', value: '$historyCount registros', icon: Icons.history_outlined),
     ];
 
     return Card(
@@ -4510,8 +4492,8 @@ class _AnimalCurrentSituation extends StatelessWidget {
             final columns = constraints.maxWidth >= 900
                 ? 3
                 : constraints.maxWidth >= 520
-                ? 2
-                : 1;
+                    ? 2
+                    : 1;
             const gap = 12.0;
             final width =
                 (constraints.maxWidth - (columns - 1) * gap) / columns;
@@ -4583,6 +4565,7 @@ class _AnimalSituationItem extends StatelessWidget {
   }
 }
 
+
 class AnimalHubNavigation extends StatelessWidget {
   const AnimalHubNavigation({
     required this.selected,
@@ -4647,12 +4630,18 @@ class AnimalHubNavigation extends StatelessWidget {
                 children: [
                   Text(
                     'Central do animal',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   SizedBox(height: 3),
                   Text(
                     'Informações e ações que pertencem a este animal.',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black54,
+                    ),
                   ),
                 ],
               ),
@@ -4696,7 +4685,8 @@ class NavigationModuleRow extends StatelessWidget {
         if (columns < 1) columns = 1;
 
         const gap = 8.0;
-        final width = (constraints.maxWidth - (columns - 1) * gap) / columns;
+        final width =
+            (constraints.maxWidth - (columns - 1) * gap) / columns;
 
         return Wrap(
           spacing: gap,
@@ -5712,10 +5702,16 @@ class AnimalInformationPanel extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 12, color: Colors.black54),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -5748,7 +5744,10 @@ class AnimalInformationPanel extends StatelessWidget {
           children: [
             const Text(
               'Dados principais',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -5766,7 +5765,9 @@ class AnimalInformationPanel extends StatelessWidget {
                 'Mais informações',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              subtitle: const Text('SISBOV, origem e observações'),
+              subtitle: const Text(
+                'SISBOV, origem e observações',
+              ),
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
@@ -5786,6 +5787,7 @@ class AnimalInformationPanel extends StatelessWidget {
     );
   }
 }
+
 
 class EmptyHubState extends StatelessWidget {
   const EmptyHubState({

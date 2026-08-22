@@ -47,6 +47,9 @@ if ($LASTEXITCODE -ne 0) { throw "Gate arquitetural do Pacote 2 falhou." }
 & $Python.Source tools\atlas_post_v21_package2_dart_hygiene_gate.py
 if ($LASTEXITCODE -ne 0) { throw "Gate Dart do Pacote 2 falhou." }
 
+& $Python.Source tools\atlas_post_v21_package2_deploy_check_gate.py
+if ($LASTEXITCODE -ne 0) { throw "Gate preventivo do check pós-deploy falhou." }
+
 & $Python.Source tools\atlas_powershell_parameter_forwarding_gate.py
 if ($LASTEXITCODE -ne 0) { throw "Gate de encaminhamento PowerShell falhou." }
 

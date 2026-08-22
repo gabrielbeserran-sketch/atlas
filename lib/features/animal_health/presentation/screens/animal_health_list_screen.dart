@@ -245,8 +245,7 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir registro sanitário',
-      message:
-          'Deseja excluir ${healthRecord.product}? Essa ação não pode ser desfeita.',
+      message: 'Deseja excluir ${healthRecord.product}? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {
@@ -556,11 +555,7 @@ class HealthRecordCard extends StatelessWidget {
                         children: [
                           if (record.severity != 'Não informada')
                             Chip(label: Text('Gravidade: ${record.severity}')),
-                          Chip(
-                            label: Text(
-                              'Status: ${AtlasUiText.status(record.status)}',
-                            ),
-                          ),
+                          Chip(label: Text('Status: ${AtlasUiText.status(record.status)}')),
                           if (record.isQuarantine)
                             const Chip(label: Text('Quarentena')),
                           if (record.isMortality)

@@ -170,8 +170,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   selectedIndex: selectedIndex,
                   userName: userName,
                   farmName: controller.activeFarm?.name,
-                  onSelected: (index) =>
-                      _handleRouteSelection(visibleRoutes, index),
+                  onSelected: (index) => _handleRouteSelection(visibleRoutes, index),
                   onLogout: controller.logout,
                 ),
                 Expanded(
@@ -275,9 +274,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
 
     if (farmScopedModules.contains(target.label) &&
         controller.activeFarm == null) {
-      final farmsIndex = visibleRoutes.indexWhere(
-        (route) => route.label == 'Fazendas',
-      );
+      final farmsIndex =
+          visibleRoutes.indexWhere((route) => route.label == 'Fazendas');
       if (farmsIndex >= 0) {
         setState(() => selectedIndex = farmsIndex);
         ScaffoldMessenger.of(context)
@@ -352,7 +350,10 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     }
 
     if (!selected.maturity.isProductionCore) {
-      body = _AtlasMaturityNotice(maturity: selected.maturity, child: body);
+      body = _AtlasMaturityNotice(
+        maturity: selected.maturity,
+        child: body,
+      );
     }
 
     return KeyedSubtree(
@@ -417,6 +418,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
   }
 }
 
+
 class _AtlasSelectFarmMessage extends StatelessWidget {
   const _AtlasSelectFarmMessage();
 
@@ -439,9 +441,9 @@ class _AtlasSelectFarmMessage extends StatelessWidget {
               Text(
                 'Escolha uma fazenda para continuar',
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -455,6 +457,7 @@ class _AtlasSelectFarmMessage extends StatelessWidget {
     );
   }
 }
+
 
 class _AtlasMaturityNotice extends StatelessWidget {
   const _AtlasMaturityNotice({required this.maturity, required this.child});
@@ -484,10 +487,7 @@ class _AtlasMaturityNotice extends StatelessWidget {
                 Expanded(
                   child: Text(
                     message,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -523,43 +523,39 @@ class _AtlasSidebar extends StatelessWidget {
     BuildContext context,
     Iterable<MapEntry<int, AtlasRouteDefinition>> entries,
   ) {
-    return entries
-        .map((entry) {
-          final index = entry.key;
-          final route = entry.value;
-          final isSelected = index == selectedIndex;
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: ListTile(
-              selected: isSelected,
-              selectedTileColor: const Color(0xFFEAF3E2),
-              selectedColor: AtlasBranding.forest,
-              textColor: const Color(0xFF263238),
-              iconColor: const Color(0xFF304B34),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+    return entries.map((entry) {
+      final index = entry.key;
+      final route = entry.value;
+      final isSelected = index == selectedIndex;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: ListTile(
+          selected: isSelected,
+          selectedTileColor: const Color(0xFFEAF3E2),
+          selectedColor: AtlasBranding.forest,
+          textColor: const Color(0xFF263238),
+          iconColor: const Color(0xFF304B34),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          leading: SizedBox(
+            width: 24,
+            child: Center(
+              child: Icon(
+                isSelected ? route.selectedIcon : route.icon,
+                size: 20,
               ),
-              leading: SizedBox(
-                width: 24,
-                child: Center(
-                  child: Icon(
-                    isSelected ? route.selectedIcon : route.icon,
-                    size: 20,
-                  ),
-                ),
-              ),
-              title: Text(
-                route.label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                ),
-              ),
-              onTap: () => onSelected(index),
             ),
-          );
-        })
-        .toList(growable: false);
+          ),
+          title: Text(
+            route.label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          onTap: () => onSelected(index),
+        ),
+      );
+    }).toList(growable: false);
   }
 
   @override
@@ -611,16 +607,14 @@ class _AtlasSidebar extends StatelessWidget {
             const Divider(height: 1),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 children: [
                   ..._routeTiles(
                     context,
-                    routes.asMap().entries.where(
-                      (entry) => entry.value.maturity.isProductionCore,
-                    ),
+                    routes
+                        .asMap()
+                        .entries
+                        .where((entry) => entry.value.maturity.isProductionCore),
                   ),
                   if (routes.any(
                     (route) =>
@@ -633,10 +627,7 @@ class _AtlasSidebar extends StatelessWidget {
                       leading: const Icon(Icons.apps_outlined, size: 20),
                       title: const Text(
                         'Mais recursos',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                       children: _routeTiles(
                         context,
@@ -649,29 +640,21 @@ class _AtlasSidebar extends StatelessWidget {
                     ),
                   ],
                   if (routes.any(
-                    (route) =>
-                        route.maturity == AtlasRouteMaturity.internalTool,
+                    (route) => route.maturity == AtlasRouteMaturity.internalTool,
                   )) ...[
                     ExpansionTile(
                       tilePadding: const EdgeInsets.symmetric(horizontal: 12),
                       childrenPadding: EdgeInsets.zero,
-                      leading: const Icon(
-                        Icons.admin_panel_settings_outlined,
-                        size: 20,
-                      ),
+                      leading: const Icon(Icons.admin_panel_settings_outlined, size: 20),
                       title: const Text(
                         'Administração',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                       children: _routeTiles(
                         context,
                         routes.asMap().entries.where(
                           (entry) =>
-                              entry.value.maturity ==
-                              AtlasRouteMaturity.internalTool,
+                              entry.value.maturity == AtlasRouteMaturity.internalTool,
                         ),
                       ),
                     ),

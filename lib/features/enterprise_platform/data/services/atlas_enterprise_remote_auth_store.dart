@@ -51,7 +51,9 @@ class AtlasEnterpriseRemoteAuthStore {
 
   Future<void> saveBaseUrl(String value) {
     if (AtlasEnvironmentConfig.isProduction) {
-      throw UnsupportedError('A URL da API é imutável em build de produção.');
+      throw UnsupportedError(
+        'A URL da API é imutável em build de produção.',
+      );
     }
     final normalized = AtlasEnvironmentConfig.normalizeApiBaseUrl(value);
     return _preferences.setString(_baseUrlKey, normalized);
@@ -59,7 +61,9 @@ class AtlasEnterpriseRemoteAuthStore {
 
   Future<void> resetBaseUrl() {
     if (AtlasEnvironmentConfig.isProduction) {
-      throw UnsupportedError('A URL da API é imutável em build de produção.');
+      throw UnsupportedError(
+        'A URL da API é imutável em build de produção.',
+      );
     }
     return _preferences.remove(_baseUrlKey);
   }
@@ -133,6 +137,7 @@ class AtlasEnterpriseRemoteAuthStore {
 
     await _preferences.remove(_activeFarmKey);
   }
+
 
   Future<void> saveActiveFarm(String farmId) {
     return _preferences.setString(_activeFarmKey, farmId);

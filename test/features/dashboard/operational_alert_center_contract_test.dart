@@ -18,9 +18,7 @@ void main() {
   test('resolver abre módulo de origem sem resolução artificial', () {
     expect(center.contains('widget.onOpenArea(alert.area)'), isTrue);
     expect(
-      center.contains(
-        'desaparece automaticamente quando a causa real é corrigida',
-      ),
+      center.contains('desaparece automaticamente quando a causa real é corrigida'),
       isTrue,
     );
   });

@@ -186,9 +186,7 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
                     AtlasFormActions(
                       onSave: saveGroup,
                       isSaving: isSaving,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar lote',
+                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar lote',
                     ),
                   ],
                 ),

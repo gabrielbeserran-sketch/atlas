@@ -173,7 +173,9 @@ class _AtlasSupplyLogisticsScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text('Suprimentos e Logística Enterprise'),
+                          title: Text(
+                            'Suprimentos e Logística Enterprise',
+                          ),
                           subtitle: Text(
                             'A entrega organiza compras, fornecedores, estoques, transporte e combustível. '
                             'Integrações fiscais e financeiras reais exigem backend e validação profissional.',

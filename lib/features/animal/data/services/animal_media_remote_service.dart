@@ -26,7 +26,10 @@ class AnimalMediaRemoteService {
     required Map<String, dynamic> metadata,
     String filePath = '',
   }) async {
-    final fields = {'kind': kind, 'metadata_json': jsonEncode(metadata)};
+    final fields = {
+      'kind': kind,
+      'metadata_json': jsonEncode(metadata),
+    };
 
     if (filePath.trim().isNotEmpty && FileSystemEntity.isFileSync(filePath)) {
       return _api.uploadFile(
@@ -89,7 +92,10 @@ class AnimalMediaRemoteService {
     required String animalId,
     required String mediaId,
   }) async {
-    await _api.request('DELETE', '/animal-media/$animalId/$mediaId');
+    await _api.request(
+      'DELETE',
+      '/animal-media/$animalId/$mediaId',
+    );
   }
 
   Future<String> cacheContent({
@@ -127,17 +133,8 @@ class AnimalMediaRemoteService {
   String _safeSuffix(String filename) {
     final normalized = filename.toLowerCase();
     for (final suffix in const [
-      '.jpeg',
-      '.jpg',
-      '.png',
-      '.webp',
-      '.pdf',
-      '.docx',
-      '.doc',
-      '.xlsx',
-      '.xls',
-      '.csv',
-      '.txt',
+      '.jpeg', '.jpg', '.png', '.webp', '.pdf', '.docx',
+      '.doc', '.xlsx', '.xls', '.csv', '.txt',
     ]) {
       if (normalized.endsWith(suffix)) return suffix;
     }

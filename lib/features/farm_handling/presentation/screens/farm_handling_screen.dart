@@ -56,8 +56,7 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
   final TextEditingController healthProductController = TextEditingController();
   final TextEditingController healthDosageController = TextEditingController();
   final TextEditingController healthRouteController = TextEditingController();
-  final TextEditingController healthNextDateController =
-      TextEditingController();
+  final TextEditingController healthNextDateController = TextEditingController();
   final TextEditingController healthCostController = TextEditingController();
 
   final TextEditingController reproductionTypeController =
@@ -215,14 +214,11 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
     final normalizedTag = tag.trim().toLowerCase();
     final normalizedStart = start.trim().toLowerCase();
     final normalizedEnd = end.trim().toLowerCase();
-    final min = normalizedStart.compareTo(normalizedEnd) <= 0
-        ? normalizedStart
-        : normalizedEnd;
-    final max = normalizedStart.compareTo(normalizedEnd) > 0
-        ? normalizedStart
-        : normalizedEnd;
-    return normalizedTag.compareTo(min) >= 0 &&
-        normalizedTag.compareTo(max) <= 0;
+    final min =
+        normalizedStart.compareTo(normalizedEnd) <= 0 ? normalizedStart : normalizedEnd;
+    final max =
+        normalizedStart.compareTo(normalizedEnd) > 0 ? normalizedStart : normalizedEnd;
+    return normalizedTag.compareTo(min) >= 0 && normalizedTag.compareTo(max) <= 0;
   }
 
   int? _numberFromTag(String value) {
@@ -230,11 +226,10 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
     return match == null ? null : int.tryParse(match.group(0)!);
   }
 
-  List<AnimalData> get selectedAnimals =>
-      animals
-          .where((animal) => selectedAnimalIds.contains(animal.id))
-          .toList(growable: false)
-        ..sort((first, second) => first.tag.compareTo(second.tag));
+  List<AnimalData> get selectedAnimals => animals
+      .where((animal) => selectedAnimalIds.contains(animal.id))
+      .toList(growable: false)
+    ..sort((first, second) => first.tag.compareTo(second.tag));
 
   List<AnimalData> get visibleAnimals {
     final query = searchController.text.trim().toLowerCase();
@@ -315,6 +310,7 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
     _HandlingAction.categoryChange => 'category_change',
   };
 
+
   Map<String, dynamic> _buildPayload() {
     final payload = <String, dynamic>{
       'farm_id': farmId,
@@ -369,12 +365,11 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
             reproductionTypeController.text,
           ),
           'reproduction_result': reproductionResultController.text.trim(),
-          'reproduction_protocol_name': reproductionProtocolController.text
-              .trim(),
+          'reproduction_protocol_name':
+              reproductionProtocolController.text.trim(),
           'reproduction_sire_reference': reproductionSireController.text.trim(),
-          'reproduction_expected_date': _isoDate(
-            reproductionExpectedDateController.text,
-          ),
+          'reproduction_expected_date':
+              _isoDate(reproductionExpectedDateController.text),
         });
     }
     return payload;
@@ -519,64 +514,32 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
     final content = loading
         ? const Center(child: CircularProgressIndicator())
         : error.isNotEmpty
-        ? _ErrorState(message: error, onRetry: loadData)
-        : RefreshIndicator(
-            onRefresh: loadData,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-              children: [
-                _Header(
-                  farmName: widget.farm.name,
-                  selectedCount: selectedAnimalIds.length,
-                ),
-                const SizedBox(height: 18),
-                _SectionCard(
-                  title: '1. O que será feito?',
-                  subtitle:
-                      'Escolha uma ação. O Atlas aplica o registro aos animais selecionados numa única operação.',
-                  child: DropdownButtonFormField<_HandlingAction>(
-                    initialValue: action,
-                    decoration: const InputDecoration(
-                      labelText: 'Tipo de manejo',
-                      border: OutlineInputBorder(),
+            ? _ErrorState(message: error, onRetry: loadData)
+            : RefreshIndicator(
+                onRefresh: loadData,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+                  children: [
+                    _Header(
+                      farmName: widget.farm.name,
+                      selectedCount: selectedAnimalIds.length,
                     ),
-                    items: _HandlingAction.values
-                        .map(
-                          (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(_labelForAction(value)),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: saving
-                        ? null
-                        : (value) {
-                            if (value == null) return;
-                            setState(() {
-                              action = value;
-                              _prepareWeightControllers();
-                            });
-                          },
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _SectionCard(
-                  title: '2. Quais animais?',
-                  subtitle:
-                      'Use lote inteiro, intervalo de brincos ou seleção manual.',
-                  child: Column(
-                    children: [
-                      DropdownButtonFormField<_SelectionMode>(
-                        initialValue: selectionMode,
+                    const SizedBox(height: 18),
+                    _SectionCard(
+                      title: '1. O que será feito?',
+                      subtitle:
+                          'Escolha uma ação. O Atlas aplica o registro aos animais selecionados numa única operação.',
+                      child: DropdownButtonFormField<_HandlingAction>(
+                        initialValue: action,
                         decoration: const InputDecoration(
-                          labelText: 'Forma de seleção',
+                          labelText: 'Tipo de manejo',
                           border: OutlineInputBorder(),
                         ),
-                        items: _SelectionMode.values
+                        items: _HandlingAction.values
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(_labelForSelection(value)),
+                                child: Text(_labelForAction(value)),
                               ),
                             )
                             .toList(growable: false),
@@ -585,54 +548,86 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
                             : (value) {
                                 if (value == null) return;
                                 setState(() {
-                                  selectionMode = value;
-                                  selectedAnimalIds = <String>{};
-                                  _recalculateSelection();
+                                  action = value;
+                                  _prepareWeightControllers();
                                 });
                               },
                       ),
-                      const SizedBox(height: 14),
-                      _buildSelectionControls(),
-                      const SizedBox(height: 14),
-                      _SelectionSummary(
-                        selected: selectedAnimals,
-                        lotName: _lotName,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _SectionCard(
-                  title: '3. Detalhes do manejo',
-                  subtitle:
-                      'Preencha apenas os dados necessários para a ação escolhida.',
-                  child: _buildActionFields(),
-                ),
-                const SizedBox(height: 18),
-                FilledButton.icon(
-                  onPressed: saving ? null : executeHandling,
-                  icon: saving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionCard(
+                      title: '2. Quais animais?',
+                      subtitle:
+                          'Use lote inteiro, intervalo de brincos ou seleção manual.',
+                      child: Column(
+                        children: [
+                          DropdownButtonFormField<_SelectionMode>(
+                            initialValue: selectionMode,
+                            decoration: const InputDecoration(
+                              labelText: 'Forma de seleção',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _SelectionMode.values
+                                .map(
+                                  (value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(_labelForSelection(value)),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: saving
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      selectionMode = value;
+                                      selectedAnimalIds = <String>{};
+                                      _recalculateSelection();
+                                    });
+                                  },
                           ),
-                        )
-                      : const Icon(Icons.playlist_add_check_circle_outlined),
-                  label: Text(
-                    saving
-                        ? 'Registrando manejo...'
-                        : 'Revisar e realizar manejo',
-                  ),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(54),
-                  ),
+                          const SizedBox(height: 14),
+                          _buildSelectionControls(),
+                          const SizedBox(height: 14),
+                          _SelectionSummary(
+                            selected: selectedAnimals,
+                            lotName: _lotName,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _SectionCard(
+                      title: '3. Detalhes do manejo',
+                      subtitle:
+                          'Preencha apenas os dados necessários para a ação escolhida.',
+                      child: _buildActionFields(),
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: saving ? null : executeHandling,
+                      icon: saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.playlist_add_check_circle_outlined),
+                      label: Text(
+                        saving
+                            ? 'Registrando manejo...'
+                            : 'Revisar e realizar manejo',
+                      ),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(54),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
+              );
 
     if (widget.embedded) return content;
     return Scaffold(
@@ -652,7 +647,10 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
           ),
           items: lots
               .map(
-                (lot) => DropdownMenuItem(value: lot.id, child: Text(lot.name)),
+                (lot) => DropdownMenuItem(
+                  value: lot.id,
+                  child: Text(lot.name),
+                ),
               )
               .toList(growable: false),
           onChanged: (value) {
@@ -763,267 +761,268 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
 
     final specific = switch (action) {
       _HandlingAction.saleOrExit => <Widget>[
-        TextField(
-          controller: saleCounterpartyController,
-          decoration: const InputDecoration(
-            labelText: 'Comprador / frigorífico',
-            border: OutlineInputBorder(),
+          TextField(
+            controller: saleCounterpartyController,
+            decoration: const InputDecoration(
+              labelText: 'Comprador / frigorífico',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: saleDocumentController,
-                decoration: const InputDecoration(
-                  labelText: 'Documento / referência',
-                  border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: saleDocumentController,
+                  decoration: const InputDecoration(
+                    labelText: 'Documento / referência',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: saleAmountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Valor total da venda',
-                  prefixText: 'R\$ ',
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: saleAmountController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Valor total da venda',
+                    prefixText: 'R\$ ',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
       _HandlingAction.lotMovement => <Widget>[
-        DropdownButtonFormField<String>(
-          initialValue: destinationLotId.isEmpty ? null : destinationLotId,
-          decoration: const InputDecoration(
-            labelText: 'Lote de destino',
-            border: OutlineInputBorder(),
+          DropdownButtonFormField<String>(
+            initialValue: destinationLotId.isEmpty ? null : destinationLotId,
+            decoration: const InputDecoration(
+              labelText: 'Lote de destino',
+              border: OutlineInputBorder(),
+            ),
+            items: lots
+                .map(
+                  (lot) => DropdownMenuItem(
+                    value: lot.id,
+                    child: Text(lot.name),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) =>
+                setState(() => destinationLotId = value ?? ''),
           ),
-          items: lots
-              .map(
-                (lot) => DropdownMenuItem(value: lot.id, child: Text(lot.name)),
-              )
-              .toList(growable: false),
-          onChanged: (value) => setState(() => destinationLotId = value ?? ''),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: reasonController,
-          decoration: const InputDecoration(
-            labelText: 'Motivo da movimentação',
-            border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          TextField(
+            controller: reasonController,
+            decoration: const InputDecoration(
+              labelText: 'Motivo da movimentação',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-      ],
+        ],
       _HandlingAction.categoryChange => <Widget>[
-        TextField(
-          controller: categoryController,
-          decoration: const InputDecoration(
-            labelText: 'Nova categoria',
-            border: OutlineInputBorder(),
+          TextField(
+            controller: categoryController,
+            decoration: const InputDecoration(
+              labelText: 'Nova categoria',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: reasonController,
-          decoration: const InputDecoration(
-            labelText: 'Motivo',
-            border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          TextField(
+            controller: reasonController,
+            decoration: const InputDecoration(
+              labelText: 'Motivo',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-      ],
+        ],
       _HandlingAction.health => <Widget>[
-        TextField(
-          controller: healthTypeController,
-          decoration: const InputDecoration(
-            labelText: 'Tipo de evento sanitário',
-            hintText: 'Ex.: Vacinação, Vermifugação, Tratamento',
-            border: OutlineInputBorder(),
+          TextField(
+            controller: healthTypeController,
+            decoration: const InputDecoration(
+              labelText: 'Tipo de evento sanitário',
+              hintText: 'Ex.: Vacinação, Vermifugação, Tratamento',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: healthProductController,
-                decoration: const InputDecoration(
-                  labelText: 'Produto',
-                  border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: healthProductController,
+                  decoration: const InputDecoration(
+                    labelText: 'Produto',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: healthDosageController,
-                decoration: const InputDecoration(
-                  labelText: 'Dose',
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: healthDosageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Dose',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: healthRouteController,
-                decoration: const InputDecoration(
-                  labelText: 'Via',
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: healthRouteController,
+                  decoration: const InputDecoration(
+                    labelText: 'Via',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: healthNextDateController,
-                readOnly: true,
-                onTap: () => _pickDate(healthNextDateController),
-                decoration: const InputDecoration(
-                  labelText: 'Próximo manejo',
-                  suffixIcon: Icon(Icons.calendar_month_outlined),
-                  border: OutlineInputBorder(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: healthNextDateController,
+                  readOnly: true,
+                  onTap: () => _pickDate(healthNextDateController),
+                  decoration: const InputDecoration(
+                    labelText: 'Próximo manejo',
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: healthCostController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Custo por animal',
-                  prefixText: 'R\$ ',
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: healthCostController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Custo por animal',
+                    prefixText: 'R\$ ',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
       _HandlingAction.reproduction => <Widget>[
-        TextField(
-          controller: reproductionTypeController,
-          decoration: const InputDecoration(
-            labelText: 'Tipo de evento reprodutivo',
-            hintText: 'Ex.: IATF, IA, Diagnóstico de gestação',
-            border: OutlineInputBorder(),
+          TextField(
+            controller: reproductionTypeController,
+            decoration: const InputDecoration(
+              labelText: 'Tipo de evento reprodutivo',
+              hintText: 'Ex.: IATF, IA, Diagnóstico de gestação',
+              border: OutlineInputBorder(),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: reproductionProtocolController,
-                decoration: const InputDecoration(
-                  labelText: 'Protocolo',
-                  border: OutlineInputBorder(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: reproductionProtocolController,
+                  decoration: const InputDecoration(
+                    labelText: 'Protocolo',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: reproductionSireController,
-                decoration: const InputDecoration(
-                  labelText: 'Touro / sêmen',
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: reproductionSireController,
+                  decoration: const InputDecoration(
+                    labelText: 'Touro / sêmen',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: reproductionResultController,
-                decoration: const InputDecoration(
-                  labelText: 'Resultado',
-                  border: OutlineInputBorder(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: reproductionResultController,
+                  decoration: const InputDecoration(
+                    labelText: 'Resultado',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: reproductionExpectedDateController,
-                readOnly: true,
-                onTap: () => _pickDate(reproductionExpectedDateController),
-                decoration: const InputDecoration(
-                  labelText: 'Próxima data / previsão',
-                  suffixIcon: Icon(Icons.calendar_month_outlined),
-                  border: OutlineInputBorder(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: reproductionExpectedDateController,
+                  readOnly: true,
+                  onTap: () =>
+                      _pickDate(reproductionExpectedDateController),
+                  decoration: const InputDecoration(
+                    labelText: 'Próxima data / previsão',
+                    suffixIcon: Icon(Icons.calendar_month_outlined),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
       _HandlingAction.weighing => <Widget>[
-        const Text(
-          'Informe o peso de cada animal. A integração automática com '
-          'balança/RFID será adicionada na etapa de automação de campo.',
-        ),
-        const SizedBox(height: 12),
-        ...selectedAnimals.map(
-          (animal) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '${animal.displayName}\nBrinco ${animal.tag}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: weightControllers[animal.id],
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Peso kg',
-                      border: OutlineInputBorder(),
+          const Text(
+            'Informe o peso de cada animal. A integração automática com '
+            'balança/RFID será adicionada na etapa de automação de campo.',
+          ),
+          const SizedBox(height: 12),
+          ...selectedAnimals.map(
+            (animal) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '${animal.displayName}\nBrinco ${animal.tag}',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: bcsControllers[animal.id],
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'ECC',
-                      border: OutlineInputBorder(),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: weightControllers[animal.id],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Peso kg',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: bcsControllers[animal.id],
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'ECC',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
     };
 
     return Column(
@@ -1149,7 +1148,10 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _SelectionSummary extends StatelessWidget {
-  const _SelectionSummary({required this.selected, required this.lotName});
+  const _SelectionSummary({
+    required this.selected,
+    required this.lotName,
+  });
 
   final List<AnimalData> selected;
   final String Function(String id) lotName;
@@ -1181,7 +1183,9 @@ class _SelectionSummary extends StatelessWidget {
               .map(
                 (animal) => Chip(
                   avatar: const Icon(Icons.pets_outlined, size: 16),
-                  label: Text('${animal.tag} • ${lotName(animal.lotId)}'),
+                  label: Text(
+                    '${animal.tag} • ${lotName(animal.lotId)}',
+                  ),
                 ),
               )
               .toList(growable: false),

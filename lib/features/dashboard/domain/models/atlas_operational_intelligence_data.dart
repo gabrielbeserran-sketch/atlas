@@ -184,12 +184,12 @@ class AtlasOperationalIntelligenceData {
       openTasks: _asInt(executive['open_tasks']),
       overdueTasks: _asInt(executive['overdue_tasks']),
       nutritionMonthlyCost: _asDouble(executive['nutrition_monthly_cost']),
-      topActions: _list(
-        summary['top_actions'],
-      ).map(AtlasOperationalActionData.fromMap).toList(growable: false),
-      alerts: _list(
-        alertsResponse['alerts'],
-      ).map(AtlasOperationalAlertData.fromMap).toList(growable: false),
+      topActions: _list(summary['top_actions'])
+          .map(AtlasOperationalActionData.fromMap)
+          .toList(growable: false),
+      alerts: _list(alertsResponse['alerts'])
+          .map(AtlasOperationalAlertData.fromMap)
+          .toList(growable: false),
     );
   }
 }

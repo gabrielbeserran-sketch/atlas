@@ -19,12 +19,10 @@ void main() {
     });
 
     test('normaliza objetos JSON aninhados', () {
-      final normalized =
-          AtlasTextNormalizer.normalize({
-                'name': 'Concentrado HomologaÃ§Ã£o V18',
-                'items': ['NutriÃ§Ã£o', 'Sanidade'],
-              })
-              as Map;
+      final normalized = AtlasTextNormalizer.normalize({
+        'name': 'Concentrado HomologaÃ§Ã£o V18',
+        'items': ['NutriÃ§Ã£o', 'Sanidade'],
+      }) as Map;
 
       expect(normalized['name'], 'Concentrado Homologação V18');
       expect(normalized['items'], ['Nutrição', 'Sanidade']);

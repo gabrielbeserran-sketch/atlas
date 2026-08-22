@@ -445,9 +445,7 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                     AtlasFormActions(
                       onSave: saveRecord,
                       isSaving: isSaving,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar lançamento',
+                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar lançamento',
                     ),
                   ],
                 ),

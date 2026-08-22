@@ -77,8 +77,7 @@ class AnimalStorageService {
     final savedData = await _preferences.getString(storageKey);
     if (savedData == null || savedData.isEmpty) return <AnimalData>[];
     try {
-      final decodedData =
-          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
+      final decodedData = AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>
@@ -317,6 +316,7 @@ class AnimalStorageService {
     );
   }
 }
+
 
 class _AnimalRemoteContext {
   const _AnimalRemoteContext({required this.farmId, required this.lotId});

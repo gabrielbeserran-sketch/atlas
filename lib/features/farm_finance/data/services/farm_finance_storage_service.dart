@@ -179,8 +179,7 @@ class FarmFinanceStorageService {
       return [];
     }
     try {
-      final decodedData =
-          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
+      final decodedData = AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>

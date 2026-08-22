@@ -55,7 +55,8 @@ class AtlasTextNormalizer {
     }
     if (value is Map) {
       return <dynamic, dynamic>{
-        for (final entry in value.entries) entry.key: normalize(entry.value),
+        for (final entry in value.entries)
+          entry.key: normalize(entry.value),
       };
     }
     return value;

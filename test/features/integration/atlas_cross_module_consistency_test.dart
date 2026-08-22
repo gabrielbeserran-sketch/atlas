@@ -8,10 +8,7 @@ void main() {
       'lib/features/herd/domain/models/herd_workspace_data.dart',
     ).readAsStringSync();
 
-    expect(
-      source.contains("normalized == 'ativo' || normalized == 'active'"),
-      isTrue,
-    );
+    expect(source.contains("normalized == 'ativo' || normalized == 'active'"), isTrue);
   });
 
   test('Nutrição enriquece desempenho a partir de animais e pesagens', () {

@@ -13,14 +13,8 @@ void main() {
 
     expect(dashboard.contains('OperationalIntelligenceCard('), isTrue);
     expect(dashboard.contains('_loadOperationalIntelligence'), isTrue);
-    expect(
-      service.contains('/livestock/intelligence/operational-summary'),
-      isTrue,
-    );
-    expect(
-      service.contains('/livestock/intelligence/operational-alerts'),
-      isTrue,
-    );
+    expect(service.contains('/livestock/intelligence/operational-summary'), isTrue);
+    expect(service.contains('/livestock/intelligence/operational-alerts'), isTrue);
   });
 
   test('Ações recomendadas possuem navegação por área', () {

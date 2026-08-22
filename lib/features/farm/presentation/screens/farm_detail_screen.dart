@@ -315,8 +315,7 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
       final results = await Future.wait<dynamic>([
         _loadSafely<HerdGroupData>(
           label: 'lotes',
-          loader: () =>
-              herdStorage.loadGroups(farm.name, farmId: farm.id ?? ''),
+          loader: () => herdStorage.loadGroups(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<PaddockData>(
@@ -326,20 +325,17 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
         ),
         _loadSafely<FarmFinanceData>(
           label: 'financeiro',
-          loader: () =>
-              financeStorage.loadRecords(farm.name, farmId: farm.id ?? ''),
+          loader: () => financeStorage.loadRecords(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmInventoryData>(
           label: 'estoque',
-          loader: () =>
-              inventoryStorage.loadItems(farm.name, farmId: farm.id ?? ''),
+          loader: () => inventoryStorage.loadItems(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmAgendaData>(
           label: 'agenda',
-          loader: () =>
-              agendaStorage.loadTasks(farm.name, farmId: farm.id ?? ''),
+          loader: () => agendaStorage.loadTasks(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
       ]);
@@ -446,17 +442,19 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
   }
 
   Future<void> openHerd() async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const HerdOverviewScreen()));
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const HerdOverviewScreen()),
+    );
     await loadDashboard();
   }
 
-  Future<void> openFinance() =>
-      _openOperationalScreen(FarmFinanceListScreen(farm: farm));
+  Future<void> openFinance() => _openOperationalScreen(
+    FarmFinanceListScreen(farm: farm),
+  );
 
-  Future<void> openInventory() =>
-      _openOperationalScreen(FarmInventoryListScreen(farm: farm));
+  Future<void> openInventory() => _openOperationalScreen(
+    FarmInventoryListScreen(farm: farm),
+  );
 
   Future<void> _openOperationalScreen(Widget screen) async {
     await Navigator.of(
@@ -477,14 +475,17 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
     await loadDashboard();
   }
 
-  Future<void> openReproduction() =>
-      _openOperationalScreen(ReproductionOverviewScreen(farm: farm));
+  Future<void> openReproduction() => _openOperationalScreen(
+    ReproductionOverviewScreen(farm: farm),
+  );
 
-  Future<void> openHealth() =>
-      _openOperationalScreen(HealthOverviewScreen(farm: farm));
+  Future<void> openHealth() => _openOperationalScreen(
+    HealthOverviewScreen(farm: farm),
+  );
 
-  Future<void> openNutrition() =>
-      _openOperationalScreen(NutritionOverviewScreen(farm: farm));
+  Future<void> openNutrition() => _openOperationalScreen(
+    NutritionOverviewScreen(farm: farm),
+  );
 
   Future<void> openAtlasAi() async {
     final aiContext = aiContextData;

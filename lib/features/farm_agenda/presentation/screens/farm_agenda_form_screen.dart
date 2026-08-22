@@ -472,9 +472,7 @@ class _FarmAgendaFormScreenState extends State<FarmAgendaFormScreen> {
                     AtlasFormActions(
                       onSave: saveTask,
                       isSaving: isSaving,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar compromisso',
+                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar compromisso',
                     ),
                   ],
                 ),

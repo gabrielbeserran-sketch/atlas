@@ -277,8 +277,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir lançamento',
-      message:
-          'Deseja excluir ${record.description} no valor de ${formatCurrency(record.amount)}? Essa ação não pode ser desfeita.',
+      message: 'Deseja excluir ${record.description} no valor de ${formatCurrency(record.amount)}? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {
@@ -325,18 +324,16 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final visibleRecords = filteredRecords;
 
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Financeiro'),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: isLoading ? null : loadRecords,
-                  icon: const Icon(Icons.refresh_outlined),
-                ),
-              ],
-            ),
+      appBar: widget.embedded ? null : AppBar(
+        title: const Text('Financeiro'),
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar',
+            onPressed: isLoading ? null : loadRecords,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -344,11 +341,11 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && records.isEmpty
-                ? AtlasLoadErrorState(
-                    message: 'Verifique sua conexão e tente novamente.',
-                    onRetry: loadRecords,
-                  )
-                : RefreshIndicator(
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadRecords,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadRecords,
                     child: ListView(
                       padding: const EdgeInsets.all(24),
@@ -492,8 +489,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                           EmptyFinanceMessage(
                             hasFilter: selectedFilter != 'Todos',
                             onCreate: openFinanceForm,
-                            onClear: () =>
-                                setState(() => selectedFilter = 'Todos'),
+                            onClear: () => setState(() => selectedFilter = 'Todos'),
                           )
                         else
                           ...visibleRecords.map(
@@ -759,10 +755,10 @@ class FinanceRecordCard extends StatelessWidget {
                         record.animalIdentification.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        [record.lotName, record.animalIdentification]
-                            .where((e) => e.isNotEmpty)
-                            .map(AtlasUiText.clean)
-                            .join(' • '),
+                        [
+                          record.lotName,
+                          record.animalIdentification,
+                        ].where((e) => e.isNotEmpty).map(AtlasUiText.clean).join(' • '),
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],

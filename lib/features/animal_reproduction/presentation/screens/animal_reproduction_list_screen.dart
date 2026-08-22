@@ -258,8 +258,7 @@ class _AnimalReproductionListScreenState
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir registro reprodutivo',
-      message:
-          'Deseja excluir ${reproductionRecord.type} de ${reproductionRecord.date}? Essa ação não pode ser desfeita.',
+      message: 'Deseja excluir ${reproductionRecord.type} de ${reproductionRecord.date}? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {

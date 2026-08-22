@@ -264,7 +264,9 @@ class _AnimalDocumentListScreenState extends State<AnimalDocumentListScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Não foi possível abrir o documento: $error')),
+        SnackBar(
+          content: Text('Não foi possível abrir o documento: $error'),
+        ),
       );
     }
   }

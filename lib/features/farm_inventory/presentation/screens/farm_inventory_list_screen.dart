@@ -86,30 +86,14 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
 
       final matchesSearch =
           normalizedSearch.isEmpty ||
-          AtlasUiText.clean(
-            item.name,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.category,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.supplier,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.internalCode,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.barcode,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.brand,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.manufacturer,
-          ).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(
-            item.batch,
-          ).toLowerCase().contains(normalizedSearch);
+          AtlasUiText.clean(item.name).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.category).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.supplier).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.internalCode).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.barcode).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.brand).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.manufacturer).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(item.batch).toLowerCase().contains(normalizedSearch);
 
       if (!matchesSearch) {
         return false;
@@ -608,8 +592,7 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir produto',
-      message:
-          'Deseja excluir ${AtlasUiText.clean(item.name)} do estoque? Essa ação não pode ser desfeita.',
+      message: 'Deseja excluir ${AtlasUiText.clean(item.name)} do estoque? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {
@@ -657,18 +640,16 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
     final filteredItems = visibleItems;
 
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Estoque'),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: isLoading ? null : loadItems,
-                  icon: const Icon(Icons.refresh_outlined),
-                ),
-              ],
-            ),
+      appBar: widget.embedded ? null : AppBar(
+        title: const Text('Estoque'),
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar',
+            onPressed: isLoading ? null : loadItems,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -676,11 +657,11 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && items.isEmpty
-                ? AtlasLoadErrorState(
-                    message: 'Verifique sua conexão e tente novamente.',
-                    onRetry: loadItems,
-                  )
-                : RefreshIndicator(
+                    ? AtlasLoadErrorState(
+                        message: 'Verifique sua conexão e tente novamente.',
+                        onRetry: loadItems,
+                      )
+                    : RefreshIndicator(
                     onRefresh: loadItems,
                     child: ListView(
                       padding: const EdgeInsets.all(24),

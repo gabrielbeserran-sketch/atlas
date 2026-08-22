@@ -122,7 +122,9 @@ class AtlasEnvironmentConfig {
         host == '127.0.0.1' ||
         host == '::1' ||
         host.endsWith('.local')) {
-      throw const FormatException('Produção não pode usar endereço local.');
+      throw const FormatException(
+        'Produção não pode usar endereço local.',
+      );
     }
 
     if (host == 'example.com' ||

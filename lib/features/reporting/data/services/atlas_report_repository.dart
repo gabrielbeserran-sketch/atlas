@@ -32,4 +32,5 @@ class AtlasReportRepository {
       reports.map((AtlasReport item) => item.toJson()).toList(),
     );
   }
+
 }

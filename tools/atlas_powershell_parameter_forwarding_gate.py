@@ -74,6 +74,16 @@ for rel, required in critical.items():
         if fragment not in text:
             errors.append(f"{rel}: proteção obrigatória ausente: {fragment}")
 
+deploy_checker = (
+    ROOT / "scripts/quality/check_post_v21_package2_deployed.ps1"
+).read_text(encoding="utf-8-sig", errors="ignore")
+
+if "openapi.json" in deploy_checker.lower():
+    errors.append(
+        "Check pós-deploy do Pacote 2 não pode depender de /openapi.json; "
+        "a documentação é desabilitada em produção."
+    )
+
 wrapper = (
     ROOT / "scripts/quality/run_post_v21_package1_homologation.ps1"
 ).read_text(encoding="utf-8-sig", errors="ignore")

@@ -233,9 +233,8 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                     const SizedBox(height: 28),
                     AtlasFormActions(
                       onSave: saveWeight,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar pesagem',
+                      saveLabel:
+                          isEditing ? 'Salvar alterações' : 'Salvar pesagem',
                       isSaving: isSaving,
                     ),
                   ],

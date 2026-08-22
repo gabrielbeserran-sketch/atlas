@@ -249,8 +249,7 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                             : selectedDestinationLotId,
                         decoration: const InputDecoration(
                           labelText: 'Lote de destino',
-                          helperText:
-                              'Escolha para qual lote o animal será movido.',
+                          helperText: 'Escolha para qual lote o animal será movido.',
                           prefixIcon: Icon(Icons.groups_2_outlined),
                         ),
                         items: destinationGroups

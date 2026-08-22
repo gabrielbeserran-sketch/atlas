@@ -95,47 +95,47 @@ void main() {
     expect(herd.contains('AnimalDetailScreen('), isTrue);
   });
 
-  test(
-    '07 Central do Animal mantém arquitetura enxuta e ações operacionais',
-    () {
-      for (final label in [
-        "'Resumo'",
-        "'Histórico'",
-        "'Desempenho'",
-        "'Sanidade'",
-        "'Reprodução'",
-        "'Genealogia'",
-        "'Arquivos'",
-        "'Nova pesagem'",
-        "'Novo evento sanitário'",
-        "'Novo evento reprodutivo'",
-        "'Movimentações'",
-      ]) {
-        expect(animal.contains(label), isTrue, reason: label);
-      }
+  test('07 Central do Animal mantém arquitetura enxuta e ações operacionais', () {
+    for (final label in [
+      "'Resumo'",
+      "'Histórico'",
+      "'Desempenho'",
+      "'Sanidade'",
+      "'Reprodução'",
+      "'Genealogia'",
+      "'Arquivos'",
+      "'Nova pesagem'",
+      "'Novo evento sanitário'",
+      "'Novo evento reprodutivo'",
+      "'Movimentações'",
+    ]) {
+      expect(animal.contains(label), isTrue, reason: label);
+    }
 
-      final navigationStart = animal.indexOf(
-        'class AnimalHubNavigation extends StatelessWidget',
-      );
-      final navigationEnd = animal.indexOf(
-        'class NavigationModuleRow',
-        navigationStart,
-      );
-      final navigation = animal.substring(navigationStart, navigationEnd);
+    final navigationStart = animal.indexOf(
+      'class AnimalHubNavigation extends StatelessWidget',
+    );
+    final navigationEnd = animal.indexOf(
+      'class NavigationModuleRow',
+      navigationStart,
+    );
+    final navigation = animal.substring(navigationStart, navigationEnd);
 
-      expect(navigation.contains("'Agenda'"), isFalse);
-      expect(navigation.contains("'Pendências'"), isFalse);
-      expect(navigation.contains("'Mais recursos'"), isFalse);
-      expect(navigation.contains("'Manejo'"), isFalse);
-    },
-  );
+    expect(navigation.contains("'Agenda'"), isFalse);
+    expect(navigation.contains("'Pendências'"), isFalse);
+    expect(navigation.contains("'Mais recursos'"), isFalse);
+    expect(navigation.contains("'Manejo'"), isFalse);
+  });
 
   test('08 genealogia usa o domínio canônico livestock', () {
     expect(
       genealogy.contains("'/livestock/animals/\$animalId/genealogy'"),
       isTrue,
     );
-    expect(genealogy.contains("'/animals/\$animalId/genealogy'"), isFalse);
+    expect(
+      genealogy.contains("'/animals/\$animalId/genealogy'"),
+      isFalse,
+    );
   });
 
   test('09 pesagem mantém formulário canônico e salvamento', () {

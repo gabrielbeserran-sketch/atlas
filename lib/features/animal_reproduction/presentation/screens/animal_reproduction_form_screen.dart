@@ -435,9 +435,7 @@ class _AnimalReproductionFormScreenState
                     AtlasFormActions(
                       onSave: saveRecord,
                       isSaving: isSaving,
-                      saveLabel: isEditing
-                          ? 'Salvar alterações'
-                          : 'Salvar registro',
+                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar registro',
                     ),
                   ],
                 ),

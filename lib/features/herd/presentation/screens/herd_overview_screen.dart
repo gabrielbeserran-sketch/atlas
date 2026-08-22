@@ -143,7 +143,9 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 
     final warnings = <String>[];
     try {
-      final previousGroups = List<HerdGroupData>.unmodifiable(workspace.groups);
+      final previousGroups = List<HerdGroupData>.unmodifiable(
+        workspace.groups,
+      );
       final previousAnimals = List<AnimalData>.unmodifiable(
         workspace.records.map((record) => record.animal),
       );
@@ -1068,7 +1070,9 @@ class _EmptyAnimals extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AtlasEmptyState(
     icon: Icons.pets_outlined,
-    title: hasAnimals ? 'Nenhum animal encontrado' : 'Nenhum animal cadastrado',
+    title: hasAnimals
+        ? 'Nenhum animal encontrado'
+        : 'Nenhum animal cadastrado',
     message: hasAnimals
         ? 'Os filtros atuais não encontraram animais. Limpe os filtros para ver todo o rebanho.'
         : 'Cadastre o primeiro animal para iniciar o histórico, as pesagens e os manejos.',

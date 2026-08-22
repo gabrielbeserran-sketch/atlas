@@ -229,31 +229,29 @@ class _ReproductionOverviewScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: Text(
-                widget.farm == null
-                    ? 'Reprodução'
-                    : 'Reprodução — ${widget.farm!.name}',
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Atualizar dados',
-                  onPressed: isLoading ? null : loadData,
-                  icon: const Icon(Icons.refresh_outlined),
-                ),
-              ],
-            ),
+      appBar: widget.embedded ? null : AppBar(
+        title: Text(
+          widget.farm == null
+              ? 'Reprodução'
+              : 'Reprodução — ${widget.farm!.name}',
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar dados',
+            onPressed: isLoading ? null : loadData,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : loadError != null && animals.isEmpty
-            ? AtlasLoadErrorState(
-                message: 'Verifique sua conexão e tente novamente.',
-                onRetry: loadData,
-              )
-            : RefreshIndicator(
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadData,
+                  )
+                : RefreshIndicator(
                 onRefresh: loadData,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),

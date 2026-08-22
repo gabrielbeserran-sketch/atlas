@@ -174,7 +174,9 @@ class _AtlasLivestockModuleScreenState
             onCreate: _loading || !canWrite
                 ? null
                 : () => _openOperational(create: true),
-            onManage: _loading ? null : () => _openOperational(create: false),
+            onManage: _loading
+                ? null
+                : () => _openOperational(create: false),
           ),
           const SizedBox(height: 20),
           if (_loading && data == null)
@@ -410,8 +412,7 @@ class _ItemCard extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (item.status.isNotEmpty)
-            Chip(label: Text(AtlasUiText.status(item.status))),
+          if (item.status.isNotEmpty) Chip(label: Text(AtlasUiText.status(item.status))),
           const SizedBox(width: 4),
           const Icon(Icons.chevron_right),
         ],
