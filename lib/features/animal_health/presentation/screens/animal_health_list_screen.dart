@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
@@ -241,37 +242,14 @@ class _AnimalHealthListScreenState extends State<AnimalHealthListScreen> {
   }
 
   Future<void> deleteHealthRecord(AnimalHealthData healthRecord) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Excluir registro'),
-          content: Text(
-            'Tem certeza de que deseja excluir o registro '
-            '${healthRecord.product}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-              ),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir registro sanitário',
+      message:
+          'Deseja excluir ${healthRecord.product}? Essa ação não pode ser desfeita.',
     );
 
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
 
@@ -578,7 +556,11 @@ class HealthRecordCard extends StatelessWidget {
                         children: [
                           if (record.severity != 'Não informada')
                             Chip(label: Text('Gravidade: ${record.severity}')),
-                          Chip(label: Text('Status: ${AtlasUiText.status(record.status)}')),
+                          Chip(
+                            label: Text(
+                              'Status: ${AtlasUiText.status(record.status)}',
+                            ),
+                          ),
                           if (record.isQuarantine)
                             const Chip(label: Text('Quarentena')),
                           if (record.isMortality)

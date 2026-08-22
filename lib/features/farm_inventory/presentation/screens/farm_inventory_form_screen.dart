@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 
 class FarmInventoryFormScreen extends StatefulWidget {
@@ -143,7 +145,7 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
   }
 
   void _save() {
-    if (_saving || !_formKey.currentState!.validate()) return;
+    if (_saving || !AtlasFeedback.validateForm(context, _formKey)) return;
     final minimum = _parseNumber(_minimum.text) ?? 0;
     final maximum = _parseNumber(_maximum.text) ?? 0;
     if (maximum > 0 && maximum < minimum) {
@@ -325,16 +327,12 @@ class _FarmInventoryFormScreenState extends State<FarmInventoryFormScreen> {
                       maxLines: 4,
                     ),
                     const SizedBox(height: 28),
-                    FilledButton.icon(
-                      onPressed: _saving ? null : _save,
-                      icon: const Icon(Icons.save_outlined),
-                      label: Text(
-                        _isEditing ? 'Salvar alterações' : 'Cadastrar produto',
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF1B5E20),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
+                    AtlasFormActions(
+                      onSave: _save,
+                      isSaving: _saving,
+                      saveLabel: _isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar produto',
                     ),
                   ],
                 ),

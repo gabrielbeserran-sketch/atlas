@@ -118,9 +118,7 @@ class AtlasHttpClient {
     int retriesRemaining, {
     Map<String, String>? headers,
   }) {
-    return Future<void>.delayed(
-      _retryDelay(retriesRemaining, headers),
-    );
+    return Future<void>.delayed(_retryDelay(retriesRemaining, headers));
   }
 
   Future<AtlasHttpResponse> send(
@@ -251,10 +249,7 @@ class AtlasHttpClient {
     if (_isTransientStatus(response.statusCode) &&
         transientRetries > 0 &&
         _isIdempotentMethod(method)) {
-      await _waitBeforeRetry(
-        transientRetries,
-        headers: response.headers,
-      );
+      await _waitBeforeRetry(transientRetries, headers: response.headers);
       return send(
         method,
         path,
@@ -379,7 +374,9 @@ class AtlasHttpClient {
     Map<String, String> headers,
     Map<String, dynamic>? body,
   ) {
-    final encodedBody = body == null ? null : jsonEncode(body);
+    final encodedBody = body == null
+        ? null
+        : jsonEncode(AtlasTextNormalizer.normalize(body));
 
     return switch (method.toUpperCase()) {
       'GET' => _client.get(uri, headers: headers),
@@ -415,7 +412,6 @@ class AtlasHttpClient {
     }
   }
 
-
   Future<AtlasHttpResponse> uploadFile(
     String method,
     String path, {
@@ -434,9 +430,7 @@ class AtlasHttpClient {
       await _authenticatedHeaders(session, includeJsonContentType: false),
     );
     request.fields.addAll(fields);
-    request.files.add(
-      await http.MultipartFile.fromPath(fileField, filePath),
-    );
+    request.files.add(await http.MultipartFile.fromPath(fileField, filePath));
 
     http.StreamedResponse streamed;
     try {
@@ -502,13 +496,15 @@ class AtlasHttpClient {
 
     http.Response response;
     try {
-      response = await _client.get(
-        uri,
-        headers: await _authenticatedHeaders(
-          session,
-          includeJsonContentType: false,
-        ),
-      ).timeout(AtlasEnvironmentConfig.current.receiveTimeout);
+      response = await _client
+          .get(
+            uri,
+            headers: await _authenticatedHeaders(
+              session,
+              includeJsonContentType: false,
+            ),
+          )
+          .timeout(AtlasEnvironmentConfig.current.receiveTimeout);
     } on TimeoutException {
       throw const AtlasHttpException(
         'O servidor demorou para preparar o download.',

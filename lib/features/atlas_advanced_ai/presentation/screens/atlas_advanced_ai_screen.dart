@@ -180,9 +180,7 @@ class _AtlasAdvancedAiScreenState extends State<AtlasAdvancedAiScreen> {
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Inteligência Artificial Avançada',
-                          ),
+                          title: Text('Inteligência Artificial Avançada'),
                           subtitle: Text(
                             'Os módulos organizam apoio à decisão e rastreabilidade. '
                             'Não substituem avaliação veterinária, nutricional, genética, financeira ou estratégica.',

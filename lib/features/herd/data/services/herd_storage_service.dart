@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_enterprise_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
@@ -74,7 +75,8 @@ class HerdStorageService {
     }
 
     try {
-      final decodedData = jsonDecode(savedData) as List<dynamic>;
+      final decodedData =
+          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>

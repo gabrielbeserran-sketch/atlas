@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
-import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
 import 'package:projeto_atlas/core/offline/presentation/atlas_offline_center_screen.dart';
+import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart';
 import 'package:projeto_atlas/features/field_operations/presentation/screens/atlas_field_operations_screen.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/farm_handling/presentation/screens/farm_handling_screen.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
 import 'package:projeto_atlas/features/animal_health/presentation/screens/health_overview_screen.dart';
@@ -18,18 +19,6 @@ import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_fi
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
-import 'package:projeto_atlas/features/saas_admin/presentation/screens/atlas_saas_admin_screen.dart';
-import 'package:projeto_atlas/features/enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart';
-import 'package:projeto_atlas/features/precision_hub/presentation/screens/atlas_precision_hub_screen.dart';
-import 'package:projeto_atlas/features/data_intelligence/presentation/screens/atlas_data_intelligence_screen.dart';
-import 'package:projeto_atlas/features/security_center/presentation/screens/atlas_security_center_screen.dart';
-import 'package:projeto_atlas/features/flutter_quality/presentation/screens/atlas_flutter_quality_screen.dart';
-import 'package:projeto_atlas/features/operational_readiness/presentation/screens/atlas_operational_readiness_screen.dart';
-import 'package:projeto_atlas/features/release_management/presentation/screens/atlas_release_center_screen.dart';
-import 'package:projeto_atlas/features/commercial_readiness/presentation/screens/atlas_commercial_readiness_screen.dart';
-import 'package:projeto_atlas/features/pilot_program/presentation/screens/atlas_pilot_program_screen.dart';
-import 'package:projeto_atlas/features/publication_center/presentation/screens/atlas_publication_center_screen.dart';
-import 'package:projeto_atlas/features/atlas_scale/presentation/screens/atlas_scale_center_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
 class AtlasHomeShell extends StatefulWidget {
@@ -62,6 +51,13 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       selectedIcon: AtlasLivestockIcons.cow,
       permission: 'animals.read',
       builder: (_) => const HerdOverviewScreen(),
+    ),
+    AtlasRouteDefinition(
+      label: 'Realizar manejo',
+      icon: Icons.playlist_add_check_outlined,
+      selectedIcon: Icons.playlist_add_check,
+      permission: 'herd.write',
+      builder: (_) => const SizedBox.shrink(),
     ),
     AtlasRouteDefinition(
       label: 'Sanidade',
@@ -128,102 +124,6 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       builder: (_) => const AtlasIntelligenceCenterScreen(),
     ),
     AtlasRouteDefinition(
-      label: 'Precision Hub',
-      icon: Icons.sensors_outlined,
-      selectedIcon: Icons.sensors,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.advancedValidation,
-      builder: (_) => const AtlasPrecisionHubScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Enterprise',
-      icon: Icons.business_center_outlined,
-      selectedIcon: Icons.business_center,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.advancedValidation,
-      builder: (_) => const AtlasEnterpriseOperationsScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'SaaS',
-      icon: Icons.cloud_outlined,
-      selectedIcon: Icons.cloud,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.advancedValidation,
-      builder: (_) => const AtlasSaasAdminScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Dados',
-      icon: Icons.insights_outlined,
-      selectedIcon: Icons.insights,
-      permission: 'analytics.read',
-      maturity: AtlasRouteMaturity.advancedValidation,
-      builder: (_) => const AtlasDataIntelligenceScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Segurança',
-      icon: Icons.security_outlined,
-      selectedIcon: Icons.security,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasSecurityCenterScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Qualidade',
-      icon: Icons.fact_check_outlined,
-      selectedIcon: Icons.fact_check,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasFlutterQualityScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Prontidão',
-      icon: Icons.monitor_heart_outlined,
-      selectedIcon: Icons.monitor_heart,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasOperationalReadinessScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Releases',
-      icon: Icons.rocket_launch_outlined,
-      selectedIcon: Icons.rocket_launch,
-      permission: 'platform.manage',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasReleaseCenterScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Comercial',
-      icon: Icons.storefront_outlined,
-      selectedIcon: Icons.storefront,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasCommercialReadinessScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Piloto',
-      icon: Icons.science_outlined,
-      selectedIcon: Icons.science,
-      permission: 'platform.read',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasPilotProgramScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Publicação',
-      icon: Icons.publish_outlined,
-      selectedIcon: Icons.publish,
-      permission: 'platform.manage',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasPublicationCenterScreen(),
-    ),
-    AtlasRouteDefinition(
-      label: 'Escala',
-      icon: Icons.account_tree_outlined,
-      selectedIcon: Icons.account_tree,
-      permission: 'platform.manage',
-      maturity: AtlasRouteMaturity.internalTool,
-      builder: (_) => const AtlasScaleCenterScreen(),
-    ),
-    AtlasRouteDefinition(
       label: 'Relatórios',
       icon: Icons.bar_chart_outlined,
       selectedIcon: Icons.bar_chart,
@@ -270,7 +170,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   selectedIndex: selectedIndex,
                   userName: userName,
                   farmName: controller.activeFarm?.name,
-                  onSelected: (index) => _handleRouteSelection(visibleRoutes, index),
+                  onSelected: (index) =>
+                      _handleRouteSelection(visibleRoutes, index),
                   onLogout: controller.logout,
                 ),
                 Expanded(
@@ -358,6 +259,40 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     List<AtlasRouteDefinition> visibleRoutes,
     int index,
   ) {
+    if (index < 0 || index >= visibleRoutes.length) return;
+    final target = visibleRoutes[index];
+    final controller = AtlasSessionScope.read(context);
+    const farmScopedModules = <String>{
+      'Rebanho',
+      'Realizar manejo',
+      'Sanidade',
+      'Reprodução',
+      'Nutrição',
+      'Financeiro',
+      'Estoque',
+      'Agenda',
+    };
+
+    if (farmScopedModules.contains(target.label) &&
+        controller.activeFarm == null) {
+      final farmsIndex = visibleRoutes.indexWhere(
+        (route) => route.label == 'Fazendas',
+      );
+      if (farmsIndex >= 0) {
+        setState(() => selectedIndex = farmsIndex);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Escolha uma fazenda. Depois você poderá acessar o módulo.',
+              ),
+            ),
+          );
+        return;
+      }
+    }
+
     setState(() => selectedIndex = index);
   }
 
@@ -378,16 +313,19 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     Widget body;
     if (selected.label == 'Dashboard') {
       body = DashboardScreen(onNavigateModule: _navigateToLabel);
+    } else if (selected.label == 'Rebanho') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : const HerdOverviewScreen();
     } else if (selected.label == 'Fazendas') {
       body = const FarmListScreen(embedded: true);
+    } else if (selected.label == 'Realizar manejo') {
+      body = farm == null
+          ? const _AtlasSelectFarmMessage()
+          : FarmHandlingScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Agenda') {
       body = farm == null
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('Selecione uma fazenda para acessar este módulo.'),
-              ),
-            )
+          ? const _AtlasSelectFarmMessage()
           : FarmAgendaListScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Sanidade') {
       body = farm == null
@@ -414,10 +352,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     }
 
     if (!selected.maturity.isProductionCore) {
-      body = _AtlasMaturityNotice(
-        maturity: selected.maturity,
-        child: body,
-      );
+      body = _AtlasMaturityNotice(maturity: selected.maturity, child: body);
     }
 
     return KeyedSubtree(
@@ -445,7 +380,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       );
       return;
     }
-    setState(() => selectedIndex = index);
+    _handleRouteSelection(visibleRoutes, index);
   }
 
   Future<void> _selectFarm(BuildContext context) async {
@@ -482,24 +417,44 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
   }
 }
 
-
 class _AtlasSelectFarmMessage extends StatelessWidget {
   const _AtlasSelectFarmMessage();
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text(
-          'Selecione uma fazenda para acessar este módulo.',
-          textAlign: TextAlign.center,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 460),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.home_work_outlined,
+                size: 48,
+                semanticLabel: 'Fazenda',
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Escolha uma fazenda para continuar',
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Os animais, registros e indicadores sempre pertencem à fazenda ativa.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
 
 class _AtlasMaturityNotice extends StatelessWidget {
   const _AtlasMaturityNotice({required this.maturity, required this.child});
@@ -529,7 +484,10 @@ class _AtlasMaturityNotice extends StatelessWidget {
                 Expanded(
                   child: Text(
                     message,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -565,39 +523,43 @@ class _AtlasSidebar extends StatelessWidget {
     BuildContext context,
     Iterable<MapEntry<int, AtlasRouteDefinition>> entries,
   ) {
-    return entries.map((entry) {
-      final index = entry.key;
-      final route = entry.value;
-      final isSelected = index == selectedIndex;
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: ListTile(
-          selected: isSelected,
-          selectedTileColor: const Color(0xFFEAF3E2),
-          selectedColor: AtlasBranding.forest,
-          textColor: const Color(0xFF263238),
-          iconColor: const Color(0xFF304B34),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          leading: SizedBox(
-            width: 24,
-            child: Center(
-              child: Icon(
-                isSelected ? route.selectedIcon : route.icon,
-                size: 20,
+    return entries
+        .map((entry) {
+          final index = entry.key;
+          final route = entry.value;
+          final isSelected = index == selectedIndex;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: ListTile(
+              selected: isSelected,
+              selectedTileColor: const Color(0xFFEAF3E2),
+              selectedColor: AtlasBranding.forest,
+              textColor: const Color(0xFF263238),
+              iconColor: const Color(0xFF304B34),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
+              leading: SizedBox(
+                width: 24,
+                child: Center(
+                  child: Icon(
+                    isSelected ? route.selectedIcon : route.icon,
+                    size: 20,
+                  ),
+                ),
+              ),
+              title: Text(
+                route.label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+              onTap: () => onSelected(index),
             ),
-          ),
-          title: Text(
-            route.label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-          onTap: () => onSelected(index),
-        ),
-      );
-    }).toList(growable: false);
+          );
+        })
+        .toList(growable: false);
   }
 
   @override
@@ -649,14 +611,16 @@ class _AtlasSidebar extends StatelessWidget {
             const Divider(height: 1),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 children: [
                   ..._routeTiles(
                     context,
-                    routes
-                        .asMap()
-                        .entries
-                        .where((entry) => entry.value.maturity.isProductionCore),
+                    routes.asMap().entries.where(
+                      (entry) => entry.value.maturity.isProductionCore,
+                    ),
                   ),
                   if (routes.any(
                     (route) =>
@@ -669,7 +633,10 @@ class _AtlasSidebar extends StatelessWidget {
                       leading: const Icon(Icons.apps_outlined, size: 20),
                       title: const Text(
                         'Mais recursos',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       children: _routeTiles(
                         context,
@@ -682,21 +649,29 @@ class _AtlasSidebar extends StatelessWidget {
                     ),
                   ],
                   if (routes.any(
-                    (route) => route.maturity == AtlasRouteMaturity.internalTool,
+                    (route) =>
+                        route.maturity == AtlasRouteMaturity.internalTool,
                   )) ...[
                     ExpansionTile(
                       tilePadding: const EdgeInsets.symmetric(horizontal: 12),
                       childrenPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.admin_panel_settings_outlined, size: 20),
+                      leading: const Icon(
+                        Icons.admin_panel_settings_outlined,
+                        size: 20,
+                      ),
                       title: const Text(
                         'Administração',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       children: _routeTiles(
                         context,
                         routes.asMap().entries.where(
                           (entry) =>
-                              entry.value.maturity == AtlasRouteMaturity.internalTool,
+                              entry.value.maturity ==
+                              AtlasRouteMaturity.internalTool,
                         ),
                       ),
                     ),

@@ -1,9 +1,45 @@
 ﻿param(
     [string]$BaseUrl = "https://atlas-api-29y2.onrender.com/api/v1",
-    [string]$FarmName = "Fazenda Atlas Producao"
+    [string]$FarmName = "Fazenda Atlas Producao",
+    [int]$MaxAttempts = 5,
+    [int]$RequestTimeoutSec = 180
 )
 
 $ErrorActionPreference = "Stop"
+
+function Assert-AtlasBaseUrl {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        throw "BaseUrl vazia. Informe uma URL HTTP/HTTPS absoluta."
+    }
+
+    if ($Value.Trim().StartsWith("-")) {
+        throw "BaseUrl inválida: '$Value'. Um nome de parâmetro foi recebido como valor. Verifique o encaminhamento de parâmetros do script chamador."
+    }
+
+    try {
+        $Uri = [System.Uri]$Value
+    } catch {
+        throw "BaseUrl inválida: '$Value'. Não foi possível interpretar a URL."
+    }
+
+    if (-not $Uri.IsAbsoluteUri) {
+        throw "BaseUrl inválida: '$Value'. A URL precisa ser absoluta."
+    }
+
+    if ($Uri.Scheme -notin @("http", "https")) {
+        throw "BaseUrl inválida: '$Value'. Use http ou https."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Uri.Host)) {
+        throw "BaseUrl inválida: '$Value'. Host ausente."
+    }
+
+    return $Value.Trim().TrimEnd("/")
+}
+
+$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl
 $ProgressPreference = "SilentlyContinue"
 
 $pass = 0
@@ -25,26 +61,113 @@ function Result($Status, $Name, $Detail) {
     }
 }
 
+function Get-HttpStatusCode($Exception) {
+    try {
+        if ($null -ne $Exception.Response -and $null -ne $Exception.Response.StatusCode) {
+            return [int]$Exception.Response.StatusCode
+        }
+    }
+    catch {}
+    return $null
+}
+
+function Test-TransientFailure($Exception) {
+    $status = Get-HttpStatusCode $Exception
+
+    if ($null -eq $status) {
+        # Timeout, DNS/transporte, conexão fechada ou cold start.
+        return $true
+    }
+
+    return $status -in @(408, 425, 429, 500, 502, 503, 504)
+}
+
+function Invoke-AtlasRequest {
+    param(
+        [Parameter(Mandatory=$true)][string]$Uri,
+        [string]$Method = "GET",
+        [hashtable]$Headers = @{},
+        [string]$ContentType = "",
+        [byte[]]$Body = $null,
+        [int]$Attempts = $MaxAttempts,
+        [int]$TimeoutSec = $RequestTimeoutSec,
+        [string]$Operation = "requisição"
+    )
+
+    $delays = @(0, 5, 10, 20, 30, 45)
+
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        if ($attempt -gt 1) {
+            $delayIndex = [Math]::Min($attempt - 1, $delays.Count - 1)
+            $delay = $delays[$delayIndex]
+            Write-Host "      ${Operation}: nova tentativa $attempt/$Attempts em ${delay}s..." -ForegroundColor DarkYellow
+            Start-Sleep -Seconds $delay
+        }
+
+        try {
+            $params = @{
+                Uri        = $Uri
+                Method     = $Method
+                Headers    = $Headers
+                TimeoutSec = $TimeoutSec
+            }
+
+            if ($ContentType) {
+                $params.ContentType = $ContentType
+            }
+            if ($null -ne $Body) {
+                $params.Body = $Body
+            }
+
+            return Invoke-RestMethod @params
+        }
+        catch {
+            $isTransient = Test-TransientFailure $_.Exception
+            $status = Get-HttpStatusCode $_.Exception
+            $detail = if ($null -ne $status) {
+                "HTTP $status - $($_.Exception.Message)"
+            } else {
+                $_.Exception.Message
+            }
+
+            if (-not $isTransient -or $attempt -eq $Attempts) {
+                throw "$Operation falhou após $attempt tentativa(s): $detail"
+            }
+
+            Write-Host "      ${Operation}: falha transitória/cold start: $detail" -ForegroundColor DarkYellow
+        }
+    }
+
+    throw "$Operation falhou sem resposta."
+}
+
 function Get-Json($Path, $Headers) {
-    return Invoke-RestMethod `
+    return Invoke-AtlasRequest `
         -Uri "$BaseUrl$Path" `
         -Method GET `
         -Headers $Headers `
-        -TimeoutSec 120
+        -Attempts 3 `
+        -TimeoutSec $RequestTimeoutSec `
+        -Operation "GET $Path"
 }
 
 Write-Host "`nATLAS V16/V17 - GATE DE PRODUCAO`n" -ForegroundColor Cyan
+Write-Host "Render gratuito pode estar em cold start; o gate usa warm-up e retries automáticos." -ForegroundColor DarkGray
 
+# Warm-up / readiness: um timeout inicial não é reprovação.
 try {
-    $health = Invoke-RestMethod `
+    $health = Invoke-AtlasRequest `
         -Uri "$BaseUrl/health/ready" `
         -Method GET `
-        -TimeoutSec 120
+        -Attempts $MaxAttempts `
+        -TimeoutSec $RequestTimeoutSec `
+        -Operation "Health /health/ready"
+
     if ($health.status -eq "ready") {
         Result PASS "Health" "ready"
     }
     else {
-        Result FAIL "Health" "status inesperado"
+        Result FAIL "Health" "status inesperado: $($health.status)"
         exit 2
     }
 }
@@ -63,12 +186,14 @@ $loginJson = @{
 } | ConvertTo-Json -Compress
 
 try {
-    $login = Invoke-RestMethod `
+    $login = Invoke-AtlasRequest `
         -Uri "$BaseUrl/auth/login" `
         -Method POST `
         -ContentType "application/json; charset=utf-8" `
         -Body ([Text.Encoding]::UTF8.GetBytes($loginJson)) `
-        -TimeoutSec 120
+        -Attempts 3 `
+        -TimeoutSec $RequestTimeoutSec `
+        -Operation "Login"
 
     if (-not $login.access_token) {
         throw "access_token ausente"
@@ -101,8 +226,7 @@ catch {
     Result FAIL "Fazendas" $_.Exception.Message
 }
 
-$farm = $farms | Where-Object { $_.name -eq $FarmName } |
-    Select-Object -First 1
+$farm = $farms | Where-Object { $_.name -eq $FarmName } | Select-Object -First 1
 if (-not $farm) {
     $farm = $farms | Select-Object -First 1
 }

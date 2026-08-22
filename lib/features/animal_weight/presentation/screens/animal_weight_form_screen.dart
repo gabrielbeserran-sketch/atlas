@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 
 class AnimalWeightFormScreen extends StatefulWidget {
@@ -230,20 +231,12 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveWeight,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar pesagem',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveWeight,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar pesagem',
+                      isSaving: isSaving,
                     ),
                   ],
                 ),

@@ -37,10 +37,7 @@ class AnimalPhotoStorageService {
     required String animalId,
   }) async {
     try {
-      final remoteItems = await _remote.list(
-        animalId: animalId,
-        kind: 'photo',
-      );
+      final remoteItems = await _remote.list(animalId: animalId, kind: 'photo');
 
       final photos = <AnimalPhotoData>[];
       for (final item in remoteItems) {
@@ -182,9 +179,8 @@ class AnimalPhotoStorageService {
       final decoded = jsonDecode(saved) as List<dynamic>;
       return decoded
           .map(
-            (item) => AnimalPhotoData.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
+            (item) =>
+                AnimalPhotoData.fromMap(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } catch (_) {

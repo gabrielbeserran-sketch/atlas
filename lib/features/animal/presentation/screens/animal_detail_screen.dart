@@ -12,6 +12,7 @@ import 'package:projeto_atlas/features/animal_genealogy/data/services/animal_gen
 import 'package:projeto_atlas/features/animal_genealogy/domain/models/animal_genealogy_data.dart';
 import 'package:projeto_atlas/features/animal_genealogy/presentation/screens/animal_genealogy_screen.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
+import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
 import 'package:projeto_atlas/features/animal_health/presentation/screens/animal_health_list_screen.dart';
 import 'package:projeto_atlas/features/animal_movement/data/services/animal_movement_storage_service.dart';
 import 'package:projeto_atlas/features/animal_movement/presentation/screens/animal_movement_list_screen.dart';
@@ -141,6 +142,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   final AnimalPhotoStorageService photoStorage = AnimalPhotoStorageService();
 
   List<AnimalWeightData> weights = <AnimalWeightData>[];
+  List<AnimalHealthData> healthRecords = <AnimalHealthData>[];
   List<AnimalReproductionData> reproductionRecords = <AnimalReproductionData>[];
 
   int healthRecordCount = 0;
@@ -205,10 +207,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             animalId: animal.id,
           ),
         ),
-        _safeLoad<dynamic>(
+        _safeLoad<AnimalHealthData>(
           label: 'Sanidade',
           warnings: warnings,
-          fallback: const <dynamic>[],
+          fallback: healthRecords,
           loader: () => healthStorage.loadRecords(
             farmName: farm.name,
             groupName: group.name,
@@ -275,7 +277,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       ]);
 
       final loadedWeights = results[0] as List<AnimalWeightData>;
-      final healthRecords = results[1] as List<dynamic>;
+      final loadedHealthRecords = results[1] as List<AnimalHealthData>;
       final loadedReproduction = results[2] as List<AnimalReproductionData>;
       final movements = results[3] as List<dynamic>;
       final documents = results[4] as List<dynamic>;
@@ -293,6 +295,11 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             parseDate(second.date).compareTo(parseDate(first.date)),
       );
 
+      loadedHealthRecords.sort(
+        (first, second) =>
+            parseDate(second.date).compareTo(parseDate(first.date)),
+      );
+
       loadedReproduction.sort(
         (first, second) =>
             parseDate(second.date).compareTo(parseDate(first.date)),
@@ -304,8 +311,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
 
       setState(() {
         weights = loadedWeights;
+        healthRecords = loadedHealthRecords;
         reproductionRecords = loadedReproduction;
-        healthRecordCount = healthRecords.length;
+        healthRecordCount = loadedHealthRecords.length;
         movementCount = movements.length;
         documentCount = documents.length;
         manualEventCount = manualEvents.length;
@@ -317,7 +325,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         consolidatedTimelineCount =
             manualEvents.length +
             loadedWeights.length +
-            healthRecords.length +
+            loadedHealthRecords.length +
             loadedReproduction.length +
             movements.length +
             documents.length +
@@ -430,6 +438,21 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     await loadDashboard();
   }
 
+  Future<void> openNewWeight() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => AnimalWeightListScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+
+    await loadDashboard();
+  }
+
   Future<void> openHealth() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -484,11 +507,12 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         farm: farm,
         group: group,
       ),
-      AnimalHubSection.reproductionEnterprise => AnimalReproductionEnterpriseScreen(
-        animal: animal,
-        farm: farm,
-        group: group,
-      ),
+      AnimalHubSection.reproductionEnterprise =>
+        AnimalReproductionEnterpriseScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+        ),
       AnimalHubSection.weightIntelligence => AnimalWeightIntelligenceScreen(
         animal: animal,
         farm: farm,
@@ -525,9 +549,12 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         title: const Text('Central do animal'),
         actions: [
           IconButton(
-            tooltip: 'Atualizar central',
+            tooltip: 'Atualizar dados do animal',
             onPressed: isLoading ? null : loadDashboard,
-            icon: const Icon(Icons.refresh_outlined),
+            icon: const Icon(
+              Icons.refresh_outlined,
+              semanticLabel: 'Atualizar dados do animal',
+            ),
           ),
         ],
       ),
@@ -588,15 +615,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     return switch (selectedSection) {
       AnimalHubSection.summary => buildSummarySection(),
       AnimalHubSection.timeline => buildTimelineSection(),
-      AnimalHubSection.zootechnical => buildZootechnicalSection(),
-      AnimalHubSection.management => buildManagementSection(),
+      AnimalHubSection.zootechnical => buildPerformanceSection(),
+      AnimalHubSection.management => buildSummarySection(),
       AnimalHubSection.genealogy => buildGenealogySection(),
-      AnimalHubSection.photos => buildPhotosSection(),
-      AnimalHubSection.documents => buildDocumentsSection(),
-      AnimalHubSection.healthEnterprise => buildHealthEnterpriseSection(),
-      AnimalHubSection.reproductionEnterprise =>
-        buildReproductionEnterpriseSection(),
-      AnimalHubSection.weightIntelligence => buildWeightIntelligenceSection(),
+      AnimalHubSection.photos => buildFilesSection(),
+      AnimalHubSection.documents => buildFilesSection(),
+      AnimalHubSection.healthEnterprise => buildHealthSection(),
+      AnimalHubSection.reproductionEnterprise => buildReproductionSection(),
+      AnimalHubSection.weightIntelligence => buildPerformanceSection(),
       AnimalHubSection.nutritionEnterprise => buildNutritionEnterpriseSection(),
       AnimalHubSection.executivePanel => buildExecutivePanelSection(),
       AnimalHubSection.validationCenter => buildOperationsSection(
@@ -3198,19 +3224,61 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
     ],
   );
 
+  Future<void> openNewHealthEvent() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AnimalHealthListScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+    await loadDashboard();
+  }
+
+  Future<void> openNewReproductionEvent() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AnimalReproductionListScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+    await loadDashboard();
+  }
+
   Widget buildSummarySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionTitle(
-          title: 'Resumo inteligente',
+          title: 'Resumo do animal',
           subtitle:
-              'Indicadores zootécnicos e operacionais consolidados do animal.',
+              'Veja a situação atual e registre rapidamente o trabalho feito com este animal.',
         ),
         const SizedBox(height: 16),
+        _AnimalCurrentSituation(
+          status: AtlasUiText.status(animal.status),
+          lot: group.name,
+          age: ageText,
+          weight: '${formatWeight(currentWeight)} kg',
+          reproduction: AtlasUiText.clean(reproductionStatus),
+          historyCount: totalTimelineRecords,
+        ),
+        const SizedBox(height: 20),
         const Text(
-          'Ações rápidas',
+          'O que você quer fazer?',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'As ações mais usadas ficam aqui para evitar procurar em outros menus.',
+          style: TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -3218,34 +3286,29 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           runSpacing: 10,
           children: [
             FilledButton.icon(
-              onPressed: () => selectSection(AnimalHubSection.weightIntelligence),
+              onPressed: openNewWeight,
               icon: const Icon(Icons.monitor_weight_outlined),
               label: const Text('Nova pesagem'),
             ),
             FilledButton.icon(
-              onPressed: () => selectSection(AnimalHubSection.healthEnterprise),
+              onPressed: openNewHealthEvent,
               icon: const Icon(Icons.medical_services_outlined),
-              label: const Text('Sanidade'),
+              label: const Text('Novo evento sanitário'),
             ),
             FilledButton.icon(
-              onPressed: () => selectSection(AnimalHubSection.reproductionEnterprise),
+              onPressed: openNewReproductionEvent,
               icon: const Icon(Icons.favorite_outline),
-              label: const Text('Reprodução'),
+              label: const Text('Novo evento reprodutivo'),
             ),
             OutlinedButton.icon(
-              onPressed: () => selectSection(AnimalHubSection.management),
+              onPressed: openMovements,
               icon: const Icon(Icons.swap_horiz),
-              label: const Text('Manejo'),
-            ),
-            OutlinedButton.icon(
-              onPressed: () => selectSection(AnimalHubSection.photos),
-              icon: const Icon(Icons.photo_camera_outlined),
-              label: const Text('Foto'),
+              label: const Text('Movimentações'),
             ),
             OutlinedButton.icon(
               onPressed: () => selectSection(AnimalHubSection.documents),
-              icon: const Icon(Icons.description_outlined),
-              label: const Text('Documento'),
+              icon: const Icon(Icons.folder_copy_outlined),
+              label: const Text('Arquivos'),
             ),
           ],
         ),
@@ -3360,6 +3423,453 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  Widget buildPerformanceSection() {
+    final latestWeight = weights.isEmpty ? null : weights.first;
+    final oldestWeight = weights.isEmpty ? null : weights.last;
+    final totalVariation = latestWeight == null || oldestWeight == null
+        ? null
+        : latestWeight.weight - oldestWeight.weight;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle(
+          title: 'Desempenho',
+          subtitle:
+              'Peso, ganho, condição corporal e evolução individual em uma única área.',
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: [
+            AnimalMetricCard(
+              title: 'Peso atual',
+              value: '${formatWeight(currentWeight)} kg',
+              subtitle: latestWeight == null
+                  ? 'Peso informado no cadastro'
+                  : 'Última pesagem: ${latestWeight.date}',
+              icon: Icons.monitor_weight_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Ganho médio diário',
+              value: gmdText,
+              subtitle: weights.length >= 2
+                  ? 'Calculado pelas duas últimas pesagens'
+                  : 'Cadastre ao menos duas pesagens',
+              icon: Icons.trending_up_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Escore corporal',
+              value: animal.bodyConditionScore <= 0
+                  ? 'Não informado'
+                  : animal.bodyConditionScore
+                        .toStringAsFixed(1)
+                        .replaceAll('.', ','),
+              subtitle: 'Condição corporal atual',
+              icon: Icons.analytics_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Variação no histórico',
+              value: totalVariation == null
+                  ? 'Dados insuficientes'
+                  : '${totalVariation.toStringAsFixed(1).replaceAll('.', ',')} kg',
+              subtitle: '${weights.length} pesagens registradas',
+              icon: Icons.compare_arrows_outlined,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(
+              onPressed: openNewWeight,
+              icon: const Icon(Icons.add),
+              label: const Text('Nova pesagem'),
+            ),
+            OutlinedButton.icon(
+              onPressed: openWeights,
+              icon: const Icon(Icons.history_outlined),
+              label: const Text('Ver todas as pesagens'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => AnimalZootechnicalDashboardScreen(
+                      animal: animal,
+                      farm: farm,
+                      group: group,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.query_stats_outlined),
+              label: const Text('Análise zootécnica'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SectionTitle(
+          title: 'Pesagens recentes',
+          subtitle: 'Últimos registros usados para acompanhar a evolução.',
+        ),
+        const SizedBox(height: 10),
+        if (weights.isEmpty)
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.monitor_weight_outlined),
+              title: Text('Nenhuma pesagem registrada'),
+              subtitle: Text(
+                'Registre a primeira pesagem para iniciar a curva de desempenho.',
+              ),
+            ),
+          )
+        else
+          ...weights
+              .take(8)
+              .map(
+                (record) => Card(
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.monitor_weight_outlined),
+                    ),
+                    title: Text('${formatWeight(record.weight)} kg'),
+                    subtitle: Text(
+                      record.notes.trim().isEmpty
+                          ? record.date
+                          : '${record.date} • ${record.notes}',
+                    ),
+                    trailing: record.bodyConditionScore > 0
+                        ? Text(
+                            'ECC ${record.bodyConditionScore.toStringAsFixed(1).replaceAll('.', ',')}',
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget buildHealthSection() {
+    final scheduled = healthRecords
+        .where((record) => record.hasScheduledReturn)
+        .length;
+    final quarantine = healthRecords
+        .where((record) => record.isQuarantine)
+        .length;
+    final cost = healthRecords.fold<double>(
+      0,
+      (total, record) => total + record.treatmentCost,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle(
+          title: 'Sanidade',
+          subtitle:
+              'Situação sanitária, retornos, custos e histórico deste animal.',
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: [
+            AnimalMetricCard(
+              title: 'Registros',
+              value: '${healthRecords.length}',
+              subtitle: 'Histórico sanitário',
+              icon: Icons.fact_check_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Retornos',
+              value: '$scheduled',
+              subtitle: 'Manejos com próxima data',
+              icon: Icons.event_available_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Quarentena',
+              value: '$quarantine',
+              subtitle: quarantine > 0 ? 'Requer atenção' : 'Sem ocorrência',
+              icon: Icons.health_and_safety_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Custo sanitário',
+              value: 'R\$ ${cost.toStringAsFixed(2).replaceAll('.', ',')}',
+              subtitle: 'Tratamentos registrados',
+              icon: Icons.payments_outlined,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(
+              onPressed: openNewHealthEvent,
+              icon: const Icon(Icons.add),
+              label: const Text('Novo evento sanitário'),
+            ),
+            OutlinedButton.icon(
+              onPressed: openHealth,
+              icon: const Icon(Icons.history_outlined),
+              label: const Text('Ver histórico sanitário'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SectionTitle(
+          title: 'Eventos recentes',
+          subtitle: 'Últimos registros sanitários do animal.',
+        ),
+        const SizedBox(height: 10),
+        if (healthRecords.isEmpty)
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.medical_services_outlined),
+              title: Text('Nenhum evento sanitário registrado'),
+            ),
+          )
+        else
+          ...healthRecords
+              .take(8)
+              .map(
+                (record) => Card(
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.medical_services_outlined),
+                    ),
+                    title: Text(
+                      record.product.trim().isEmpty
+                          ? record.type
+                          : record.product,
+                    ),
+                    subtitle: Text(
+                      [
+                        record.date,
+                        record.type,
+                        if (record.nextDate.trim().isNotEmpty)
+                          'Retorno: ${record.nextDate}',
+                      ].join(' • '),
+                    ),
+                    trailing: record.isQuarantine
+                        ? const Icon(Icons.warning_amber_outlined)
+                        : null,
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget buildReproductionSection() {
+    final services = reproductionRecords
+        .where((record) => record.isInsemination)
+        .length;
+    final diagnoses = reproductionRecords
+        .where(
+          (record) =>
+              record.eventCode == 'pregnancy_diagnosis' ||
+              record.type == 'Diagnóstico de gestação',
+        )
+        .length;
+    final positive = reproductionRecords
+        .where((record) => record.isPositivePregnancyDiagnosis)
+        .length;
+    final conception = diagnoses == 0 ? null : positive * 100 / diagnoses;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle(
+          title: 'Reprodução',
+          subtitle:
+              'Situação reprodutiva, serviços, diagnósticos e histórico deste animal.',
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: [
+            AnimalMetricCard(
+              title: 'Situação atual',
+              value: reproductionStatus,
+              subtitle: 'Último estado reprodutivo',
+              icon: Icons.favorite_outline,
+            ),
+            AnimalMetricCard(
+              title: 'Serviços',
+              value: '$services',
+              subtitle: 'IA e IATF registradas',
+              icon: Icons.science_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Diagnósticos',
+              value: '$diagnoses',
+              subtitle: 'Avaliações de gestação',
+              icon: Icons.biotech_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Concepção observada',
+              value: conception == null
+                  ? 'Dados insuficientes'
+                  : '${conception.toStringAsFixed(1).replaceAll('.', ',')}%',
+              subtitle: 'Diagnósticos positivos / diagnósticos',
+              icon: Icons.analytics_outlined,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(
+              onPressed: openNewReproductionEvent,
+              icon: const Icon(Icons.add),
+              label: const Text('Novo evento reprodutivo'),
+            ),
+            OutlinedButton.icon(
+              onPressed: openReproduction,
+              icon: const Icon(Icons.history_outlined),
+              label: const Text('Ver histórico reprodutivo'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SectionTitle(
+          title: 'Eventos recentes',
+          subtitle: 'Últimos registros reprodutivos do animal.',
+        ),
+        const SizedBox(height: 10),
+        if (reproductionRecords.isEmpty)
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.favorite_outline),
+              title: Text('Nenhum evento reprodutivo registrado'),
+            ),
+          )
+        else
+          ...reproductionRecords
+              .take(8)
+              .map(
+                (record) => Card(
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.favorite_outline),
+                    ),
+                    title: Text(record.type),
+                    subtitle: Text(
+                      [
+                        record.date,
+                        if (record.result.trim().isNotEmpty) record.result,
+                        if (record.bullOrSemen.trim().isNotEmpty)
+                          record.bullOrSemen,
+                      ].join(' • '),
+                    ),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget buildFilesSection() {
+    AnimalPhotoData? primary;
+    for (final photo in photos) {
+      if (photo.isPrimary) {
+        primary = photo;
+        break;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle(
+          title: 'Arquivos',
+          subtitle:
+              'Fotos e documentos deste animal reunidos em uma única área.',
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: [
+            AnimalMetricCard(
+              title: 'Fotos',
+              value: '${photos.length}',
+              subtitle: primary == null
+                  ? 'Sem foto principal'
+                  : 'Foto principal: ${primary.date}',
+              icon: Icons.photo_library_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Documentos',
+              value: '$documentCount',
+              subtitle: documentExpirationCount > 0
+                  ? '$documentExpirationCount com validade'
+                  : 'Dossiê individual',
+              icon: Icons.folder_copy_outlined,
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            FilledButton.icon(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => AnimalPhotoGalleryScreen(
+                      animal: animal,
+                      farm: farm,
+                      group: group,
+                    ),
+                  ),
+                );
+                await loadDashboard();
+              },
+              icon: const Icon(Icons.photo_library_outlined),
+              label: const Text('Abrir fotos'),
+            ),
+            OutlinedButton.icon(
+              onPressed: openDocuments,
+              icon: const Icon(Icons.description_outlined),
+              label: const Text('Abrir documentos'),
+            ),
+          ],
+        ),
+        if (primary != null) ...[
+          const SizedBox(height: 22),
+          const SectionTitle(
+            title: 'Foto principal',
+            subtitle:
+                'Imagem de referência usada na identificação visual do animal.',
+          ),
+          const SizedBox(height: 10),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(child: Icon(Icons.star_outline)),
+              title: Text(
+                primary.title.isEmpty ? 'Foto principal' : primary.title,
+              ),
+              subtitle: Text('${primary.date}\n${primary.reference}'),
+              isThreeLine: true,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -3946,6 +4456,133 @@ enum AnimalHubSection {
   atlasVersionOne300,
 }
 
+class _AnimalCurrentSituation extends StatelessWidget {
+  const _AnimalCurrentSituation({
+    required this.status,
+    required this.lot,
+    required this.age,
+    required this.weight,
+    required this.reproduction,
+    required this.historyCount,
+  });
+
+  final String status;
+  final String lot;
+  final String age;
+  final String weight;
+  final String reproduction;
+  final int historyCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <({String label, String value, IconData icon})>[
+      (
+        label: 'Situação',
+        value: status.isEmpty ? 'Não informada' : status,
+        icon: Icons.check_circle_outline,
+      ),
+      (
+        label: 'Lote',
+        value: lot.isEmpty ? 'Sem lote' : lot,
+        icon: Icons.groups_outlined,
+      ),
+      (label: 'Idade', value: age, icon: Icons.cake_outlined),
+      (label: 'Peso atual', value: weight, icon: Icons.monitor_weight_outlined),
+      (label: 'Reprodução', value: reproduction, icon: Icons.favorite_outline),
+      (
+        label: 'Histórico',
+        value: '$historyCount registros',
+        icon: Icons.history_outlined,
+      ),
+    ];
+
+    return Card(
+      elevation: 0,
+      color: const Color(0xFFF4F8F2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFD7E4D2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 900
+                ? 3
+                : constraints.maxWidth >= 520
+                ? 2
+                : 1;
+            const gap = 12.0;
+            final width =
+                (constraints.maxWidth - (columns - 1) * gap) / columns;
+
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: width,
+                    child: _AnimalSituationItem(
+                      label: item.label,
+                      value: item.value,
+                      icon: item.icon,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimalSituationItem extends StatelessWidget {
+  const _AnimalSituationItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: const Color(0xFFE1EDD9),
+          foregroundColor: const Color(0xFF1B5E20),
+          child: Icon(icon, size: 19),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class AnimalHubNavigation extends StatelessWidget {
   const AnimalHubNavigation({
     required this.selected,
@@ -3957,7 +4594,7 @@ class AnimalHubNavigation extends StatelessWidget {
   final ValueChanged<AnimalHubSection> onSelected;
 
   static const List<({AnimalHubSection value, String label, IconData icon})>
-  firstRow = [
+  items = [
     (
       value: AnimalHubSection.summary,
       label: 'Resumo',
@@ -3970,32 +4607,8 @@ class AnimalHubNavigation extends StatelessWidget {
     ),
     (
       value: AnimalHubSection.zootechnical,
-      label: 'Zootecnia',
-      icon: Icons.analytics_outlined,
-    ),
-    (
-      value: AnimalHubSection.management,
-      label: 'Manejo',
-      icon: Icons.assignment_outlined,
-    ),
-    (
-      value: AnimalHubSection.genealogy,
-      label: 'Genealogia',
-      icon: Icons.account_tree_outlined,
-    ),
-    (
-      value: AnimalHubSection.photos,
-      label: 'Fotos',
-      icon: Icons.photo_library_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  secondRow = [
-    (
-      value: AnimalHubSection.documents,
-      label: 'Documentos',
-      icon: Icons.folder_outlined,
+      label: 'Desempenho',
+      icon: Icons.auto_graph_outlined,
     ),
     (
       value: AnimalHubSection.healthEnterprise,
@@ -4008,1723 +4621,19 @@ class AnimalHubNavigation extends StatelessWidget {
       icon: Icons.favorite_outline,
     ),
     (
-      value: AnimalHubSection.weightIntelligence,
-      label: 'Pesagens',
-      icon: Icons.auto_graph_outlined,
-    ),
-    (
-      value: AnimalHubSection.nutritionEnterprise,
-      label: 'Nutrição',
-      icon: Icons.restaurant_outlined,
-    ),
-    (
-      value: AnimalHubSection.executivePanel,
-      label: 'Análises',
-      icon: Icons.dashboard_customize_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirdRow = [
-    (
-      value: AnimalHubSection.validationCenter,
-      label: 'Validação',
-      icon: Icons.fact_check_outlined,
-    ),
-    (
-      value: AnimalHubSection.smartAgenda,
-      label: 'Agenda',
-      icon: Icons.calendar_month_outlined,
-    ),
-    (
-      value: AnimalHubSection.pendingCenter,
-      label: 'Pendências',
-      icon: Icons.notification_important_outlined,
-    ),
-    (
-      value: AnimalHubSection.integrationCenter,
-      label: 'Integração',
-      icon: Icons.sync_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmDashboard,
-      label: 'Fazenda',
-      icon: Icons.agriculture_outlined,
-    ),
-    (
-      value: AnimalHubSection.companyDashboard,
-      label: 'Empresa',
-      icon: Icons.domain_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fourthRow = [
-    (
-      value: AnimalHubSection.intelligence360,
-      label: 'Inteligência 360',
-      icon: Icons.psychology_outlined,
-    ),
-    (
-      value: AnimalHubSection.operations360,
-      label: 'Operações 360',
-      icon: Icons.assignment_turned_in_outlined,
-    ),
-    (
-      value: AnimalHubSection.reports360,
-      label: 'Relatórios 360',
-      icon: Icons.picture_as_pdf_outlined,
-    ),
-    (
-      value: AnimalHubSection.governance360,
-      label: 'Governança 360',
-      icon: Icons.gavel_outlined,
-    ),
-    (
-      value: AnimalHubSection.platform360,
-      label: 'Plataforma 360',
-      icon: Icons.cloud_sync_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmExecutive360,
-      label: 'Fazenda 360',
-      icon: Icons.domain_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fifthRow = [
-    (
-      value: AnimalHubSection.enterprise50,
-      label: 'Atlas Enterprise 50',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.genetics41,
-      label: 'Genética 41',
-      icon: Icons.biotech_outlined,
-    ),
-    (
-      value: AnimalHubSection.pasture42,
-      label: 'Pastagens 42',
-      icon: Icons.grass_outlined,
-    ),
-    (
-      value: AnimalHubSection.agriculture43,
-      label: 'Agricultura 43',
-      icon: Icons.agriculture_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  sixthRow = [
-    (
-      value: AnimalHubSection.purchases44,
-      label: 'Compras 44',
-      icon: Icons.shopping_cart_outlined,
-    ),
-    (
-      value: AnimalHubSection.commercialization45,
-      label: 'Comercialização 45',
-      icon: Icons.attach_money,
-    ),
-    (
-      value: AnimalHubSection.logistics46,
-      label: 'Logística 46',
-      icon: Icons.local_shipping_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  seventhRow = [
-    (
-      value: AnimalHubSection.sustainability47,
-      label: 'Sustentabilidade 47',
-      icon: Icons.eco_outlined,
-    ),
-    (
-      value: AnimalHubSection.iot48,
-      label: 'IoT 48',
-      icon: Icons.sensors_outlined,
-    ),
-    (
-      value: AnimalHubSection.consultancy49,
-      label: 'Consultoria 49',
-      icon: Icons.support_agent_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  eighthRow = [
-    (
-      value: AnimalHubSection.globalPlatform50,
-      label: 'Atlas Global 50',
-      icon: Icons.public_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  ninthRow = [
-    (
-      value: AnimalHubSection.veterinaryAi51,
-      label: 'IA Veterinária 51',
-      icon: Icons.medical_services_outlined,
-    ),
-    (
-      value: AnimalHubSection.reproductiveAi52,
-      label: 'IA Reprodutiva 52',
-      icon: Icons.favorite_outline,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  tenthRow = [
-    (
-      value: AnimalHubSection.nutritionalAi53,
-      label: 'IA Nutricional 53',
-      icon: Icons.restaurant_outlined,
-    ),
-    (
-      value: AnimalHubSection.economicAi54,
-      label: 'IA Econômica 54',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    (
-      value: AnimalHubSection.commercialAi55,
-      label: 'IA Comercial 55',
-      icon: Icons.sell_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  eleventhRow = [
-    (
-      value: AnimalHubSection.climateAi56,
-      label: 'IA Climática 56',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.pastureAi57,
-      label: 'IA Pastagens 57',
-      icon: Icons.grass_outlined,
-    ),
-    (
-      value: AnimalHubSection.satellite58,
-      label: 'Satélite 58',
-      icon: Icons.satellite_alt_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twelfthRow = [
-    (
-      value: AnimalHubSection.drone59,
-      label: 'Drone 59',
-      icon: Icons.flight_takeoff_outlined,
-    ),
-    (
-      value: AnimalHubSection.iotEnterprise60,
-      label: 'IoT Enterprise 60',
-      icon: Icons.sensors_outlined,
-    ),
-    (
-      value: AnimalHubSection.managementAutomation61,
-      label: 'Automação 61',
-      icon: Icons.precision_manufacturing_outlined,
-    ),
-    (
-      value: AnimalHubSection.workflow62,
-      label: 'Workflow 62',
-      icon: Icons.account_tree_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirteenthRow = [
-    (
-      value: AnimalHubSection.sisbov63,
-      label: 'SISBOV 63',
-      icon: Icons.qr_code_2_outlined,
-    ),
-    (
-      value: AnimalHubSection.gta64,
-      label: 'GTA 64',
-      icon: Icons.local_shipping_outlined,
-    ),
-    (
-      value: AnimalHubSection.mapa65,
-      label: 'MAPA 65',
-      icon: Icons.account_balance_outlined,
-    ),
-    (
-      value: AnimalHubSection.esocialRural66,
-      label: 'eSocial 66',
-      icon: Icons.badge_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fourteenthRow = [
-    (
-      value: AnimalHubSection.receitaFederal67,
-      label: 'Receita 67',
-      icon: Icons.receipt_long_outlined,
-    ),
-    (
-      value: AnimalHubSection.bancoBrasil68,
-      label: 'Banco Brasil 68',
-      icon: Icons.account_balance_outlined,
-    ),
-    (
-      value: AnimalHubSection.pix69,
-      label: 'Pix 69',
-      icon: Icons.qr_code_scanner_outlined,
-    ),
-    (
-      value: AnimalHubSection.nfe70,
-      label: 'NF-e 70',
-      icon: Icons.description_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fifteenthRow = [
-    (
-      value: AnimalHubSection.ruralCredit71,
-      label: 'Crédito 71',
-      icon: Icons.request_quote_outlined,
-    ),
-    (
-      value: AnimalHubSection.ruralInsurance72,
-      label: 'Seguro 72',
-      icon: Icons.shield_outlined,
-    ),
-    (
-      value: AnimalHubSection.digitalContracts73,
-      label: 'Contratos 73',
-      icon: Icons.draw_outlined,
-    ),
-    (
-      value: AnimalHubSection.livestockMarketplace74,
-      label: 'Marketplace 74',
-      icon: Icons.storefront_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  sixteenthRow = [
-    (
-      value: AnimalHubSection.digitalAuction75,
-      label: 'Leilão 75',
-      icon: Icons.gavel_outlined,
-    ),
-    (
-      value: AnimalHubSection.livestockLogistics76,
-      label: 'Logística 76',
-      icon: Icons.local_shipping_outlined,
-    ),
-    (
-      value: AnimalHubSection.originCertification77,
-      label: 'Origem 77',
-      icon: Icons.verified_outlined,
-    ),
-    (
-      value: AnimalHubSection.ruralCrm78,
-      label: 'CRM 78',
-      icon: Icons.handshake_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  seventeenthRow = [
-    (
-      value: AnimalHubSection.procurement79,
-      label: 'Compras 79',
-      icon: Icons.shopping_cart_checkout_outlined,
-    ),
-    (
-      value: AnimalHubSection.supplierPortal80,
-      label: 'Fornecedor 80',
-      icon: Icons.factory_outlined,
-    ),
-    (
-      value: AnimalHubSection.inventoryIntelligence81,
-      label: 'Estoque IA 81',
-      icon: Icons.inventory_2_outlined,
-    ),
-    (
-      value: AnimalHubSection.maintenance82,
-      label: 'Manutenção 82',
-      icon: Icons.build_circle_outlined,
-    ),
-    (
-      value: AnimalHubSection.fieldService83,
-      label: 'Campo 83',
-      icon: Icons.engineering_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  eighteenthRow = [
-    (
-      value: AnimalHubSection.qualityManagement84,
-      label: 'Qualidade 84',
-      icon: Icons.workspace_premium_outlined,
-    ),
-    (
-      value: AnimalHubSection.compliance85,
-      label: 'Compliance 85',
-      icon: Icons.policy_outlined,
-    ),
-    (
-      value: AnimalHubSection.projectPortfolio86,
-      label: 'Projetos 86',
+      value: AnimalHubSection.genealogy,
+      label: 'Genealogia',
       icon: Icons.account_tree_outlined,
     ),
     (
-      value: AnimalHubSection.workforceManagement87,
-      label: 'Equipes 87',
-      icon: Icons.groups_outlined,
-    ),
-    (
-      value: AnimalHubSection.trainingAcademy88,
-      label: 'Academia 88',
-      icon: Icons.school_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  nineteenthRow = [
-    (
-      value: AnimalHubSection.enterpriseCrm89,
-      label: 'CRM Ent. 89',
-      icon: Icons.people_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.financialCenter90,
-      label: 'Financeiro 90',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    (
-      value: AnimalHubSection.businessIntelligence91,
-      label: 'BI 91',
-      icon: Icons.insights_outlined,
-    ),
-    (
-      value: AnimalHubSection.strategicCenter92,
-      label: 'Estratégia 92',
-      icon: Icons.track_changes_outlined,
-    ),
-    (
-      value: AnimalHubSection.commandCenter93,
-      label: 'Comando 93',
-      icon: Icons.dashboard_customize_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentiethRow = [
-    (
-      value: AnimalHubSection.dataGovernance94,
-      label: 'Dados 94',
-      icon: Icons.dataset_outlined,
-    ),
-    (
-      value: AnimalHubSection.integrationHub95,
-      label: 'Integrações 95',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.cybersecurity96,
-      label: 'Segurança 96',
-      icon: Icons.security_outlined,
-    ),
-    (
-      value: AnimalHubSection.observability97,
-      label: 'Observabilidade 97',
-      icon: Icons.monitor_heart_outlined,
-    ),
-    (
-      value: AnimalHubSection.digitalTwin98,
-      label: 'Gêmeo Digital 98',
-      icon: Icons.view_in_ar_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyFirstRow = [
-    (
-      value: AnimalHubSection.aiOrchestrator99,
-      label: 'Orquestrador 99',
-      icon: Icons.auto_awesome_motion_outlined,
-    ),
-    (
-      value: AnimalHubSection.enterpriseReleaseCenter100,
-      label: 'Finalização 100',
-      icon: Icons.rocket_launch_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentySecondRow = [
-    (
-      value: AnimalHubSection.accessControl101,
-      label: 'Acessos 101',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-    (
-      value: AnimalHubSection.multiCompany102,
-      label: 'Empresas 102',
-      icon: Icons.apartment_outlined,
-    ),
-    (
-      value: AnimalHubSection.multiFarm103,
-      label: 'Fazendas 103',
-      icon: Icons.agriculture_outlined,
-    ),
-    (
-      value: AnimalHubSection.subscriptions104,
-      label: 'Planos 104',
-      icon: Icons.workspace_premium_outlined,
-    ),
-    (
-      value: AnimalHubSection.billing105,
-      label: 'Billing 105',
-      icon: Icons.receipt_long_outlined,
-    ),
-    (
-      value: AnimalHubSection.pixPayments106,
-      label: 'Pix 106',
-      icon: Icons.qr_code_scanner_outlined,
-    ),
-    (
-      value: AnimalHubSection.cardPayments107,
-      label: 'Cartões 107',
-      icon: Icons.credit_card_outlined,
-    ),
-    (
-      value: AnimalHubSection.licensing108,
-      label: 'Licenças 108',
-      icon: Icons.key_outlined,
-    ),
-    (
-      value: AnimalHubSection.consultantMarketplace109,
-      label: 'Consultores 109',
-      icon: Icons.storefront_outlined,
-    ),
-    (
-      value: AnimalHubSection.producerPortal110,
-      label: 'Produtor 110',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyThirdRow = [
-    (
-      value: AnimalHubSection.conversationalAssistant111,
-      label: 'Assistente 111',
-      icon: Icons.smart_toy_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmContextChat112,
-      label: 'Chat Fazenda 112',
-      icon: Icons.forum_outlined,
-    ),
-    (
-      value: AnimalHubSection.healthDecisionSupport113,
-      label: 'IA Sanidade 113',
-      icon: Icons.health_and_safety_outlined,
-    ),
-    (
-      value: AnimalHubSection.reproductiveIntelligence114,
-      label: 'IA Reprodução 114',
-      icon: Icons.favorite_outline,
-    ),
-    (
-      value: AnimalHubSection.nutritionalIntelligence115,
-      label: 'IA Nutrição 115',
-      icon: Icons.restaurant_outlined,
-    ),
-    (
-      value: AnimalHubSection.geneticIntelligence116,
-      label: 'IA Genética 116',
-      icon: Icons.schema_outlined,
-    ),
-    (
-      value: AnimalHubSection.financialIntelligence117,
-      label: 'IA Financeira 117',
-      icon: Icons.savings_outlined,
-    ),
-    (
-      value: AnimalHubSection.strategicIntelligence118,
-      label: 'IA Estratégia 118',
-      icon: Icons.track_changes_outlined,
-    ),
-    (
-      value: AnimalHubSection.climateIntelligence119,
-      label: 'IA Clima 119',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.explainableAi120,
-      label: 'IA Explicável 120',
-      icon: Icons.lightbulb_outline,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyFourthRow = [
-    (
-      value: AnimalHubSection.smartScales121,
-      label: 'Balanças 121',
-      icon: Icons.monitor_weight_outlined,
-    ),
-    (
-      value: AnimalHubSection.rfidTags122,
-      label: 'RFID 122',
-      icon: Icons.nfc_outlined,
-    ),
-    (
-      value: AnimalHubSection.smartCollars123,
-      label: 'Colares 123',
-      icon: Icons.sensors_outlined,
-    ),
-    (
-      value: AnimalHubSection.environmentalSensors124,
-      label: 'Ambiente 124',
-      icon: Icons.device_thermostat_outlined,
-    ),
-    (
-      value: AnimalHubSection.waterSensors125,
-      label: 'Água 125',
-      icon: Icons.water_drop_outlined,
-    ),
-    (
-      value: AnimalHubSection.energySensors126,
-      label: 'Energia 126',
-      icon: Icons.bolt_outlined,
-    ),
-    (
-      value: AnimalHubSection.weatherStations127,
-      label: 'Estação 127',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.drones128,
-      label: 'Drones 128',
-      icon: Icons.flight_outlined,
-    ),
-    (
-      value: AnimalHubSection.satellites129,
-      label: 'Satélites 129',
-      icon: Icons.satellite_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.iotCommandCenter130,
-      label: 'Central IoT 130',
-      icon: Icons.hub_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyFifthRow = [
-    (
-      value: AnimalHubSection.gisMaps131,
-      label: 'GIS 131',
-      icon: Icons.map_outlined,
-    ),
-    (
-      value: AnimalHubSection.smartPaddocks132,
-      label: 'Piquetes 132',
-      icon: Icons.grid_on_outlined,
-    ),
-    (
-      value: AnimalHubSection.automaticRotation133,
-      label: 'Rotação 133',
-      icon: Icons.sync_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.pasturePlanning134,
-      label: 'Pastagens 134',
-      icon: Icons.grass_outlined,
-    ),
-    (
-      value: AnimalHubSection.ndvi135,
-      label: 'NDVI 135',
-      icon: Icons.eco_outlined,
-    ),
-    (
-      value: AnimalHubSection.biomass136,
-      label: 'Biomassa 136',
-      icon: Icons.stacked_line_chart_outlined,
-    ),
-    (
-      value: AnimalHubSection.soil137,
-      label: 'Solo 137',
-      icon: Icons.landscape_outlined,
-    ),
-    (
-      value: AnimalHubSection.slope138,
-      label: 'Declive 138',
-      icon: Icons.terrain_outlined,
-    ),
-    (
-      value: AnimalHubSection.irrigation139,
-      label: 'Irrigação 139',
-      icon: Icons.water_outlined,
-    ),
-    (
-      value: AnimalHubSection.territorialPlanning140,
-      label: 'Território 140',
-      icon: Icons.account_tree_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentySixthRow = [
-    (
-      value: AnimalHubSection.advancedIatf141,
-      label: 'IATF 141',
-      icon: Icons.event_repeat_outlined,
-    ),
-    (
-      value: AnimalHubSection.individualFertility142,
-      label: 'Fertilidade 142',
-      icon: Icons.favorite_border_outlined,
-    ),
-    (
-      value: AnimalHubSection.embryos143,
-      label: 'Embriões 143',
-      icon: Icons.science_outlined,
-    ),
-    (
-      value: AnimalHubSection.ivf144,
-      label: 'FIV 144',
-      icon: Icons.biotech_outlined,
-    ),
-    (
-      value: AnimalHubSection.embryoTransfer145,
-      label: 'TE 145',
-      icon: Icons.swap_horiz_outlined,
-    ),
-    (
-      value: AnimalHubSection.geneticCatalog146,
-      label: 'Catálogo 146',
-      icon: Icons.menu_book_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentMating147,
-      label: 'Acasalamento 147',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.geneticPrediction148,
-      label: 'Predição 148',
-      icon: Icons.auto_graph_outlined,
-    ),
-    (
-      value: AnimalHubSection.continuousBreeding149,
-      label: 'Melhoramento 149',
-      icon: Icons.trending_up_outlined,
-    ),
-    (
-      value: AnimalHubSection.reproductiveCenter150,
-      label: 'Central Repro 150',
-      icon: Icons.dashboard_customize_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentySeventhRow = [
-    (
-      value: AnimalHubSection.weightPrediction151,
-      label: 'Peso Previsto 151',
-      icon: Icons.monitor_weight_outlined,
-    ),
-    (
-      value: AnimalHubSection.dailyGainPrediction152,
-      label: 'GMD Previsto 152',
-      icon: Icons.trending_up_outlined,
-    ),
-    (
-      value: AnimalHubSection.estimatedIntake153,
-      label: 'Consumo 153',
-      icon: Icons.restaurant_outlined,
-    ),
-    (
-      value: AnimalHubSection.feedEfficiency154,
-      label: 'Eficiência 154',
-      icon: Icons.speed_outlined,
-    ),
-    (
-      value: AnimalHubSection.feedConversion155,
-      label: 'Conversão 155',
-      icon: Icons.compare_arrows_outlined,
-    ),
-    (
-      value: AnimalHubSection.animalWelfare156,
-      label: 'Bem-estar 156',
-      icon: AtlasLivestockIcons.cow,
-    ),
-    (
-      value: AnimalHubSection.earlyDiseaseDetection157,
-      label: 'Doenças 157',
-      icon: Icons.health_and_safety_outlined,
-    ),
-    (
-      value: AnimalHubSection.heatStress158,
-      label: 'Estresse 158',
-      icon: Icons.device_thermostat_outlined,
-    ),
-    (
-      value: AnimalHubSection.mortalityRisk159,
-      label: 'Mortalidade 159',
-      icon: Icons.warning_amber_outlined,
-    ),
-    (
-      value: AnimalHubSection.generalEfficiencyIndex160,
-      label: 'Índice Geral 160',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyEighthRow = [
-    (
-      value: AnimalHubSection.projectedCashFlow161,
-      label: 'Fluxo Projetado 161',
-      icon: Icons.trending_up_outlined,
-    ),
-    (
-      value: AnimalHubSection.consolidatedCashFlow162,
-      label: 'Fluxo Consolidado 162',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    (
-      value: AnimalHubSection.annualBudget163,
-      label: 'Orçamento 163',
-      icon: Icons.event_note_outlined,
-    ),
-    (
-      value: AnimalHubSection.actualVsPlanned164,
-      label: 'Real x Plan 164',
-      icon: Icons.compare_arrows_outlined,
-    ),
-    (
-      value: AnimalHubSection.economicSimulations165,
-      label: 'Simulações 165',
-      icon: Icons.analytics_outlined,
-    ),
-    (
-      value: AnimalHubSection.bankingIndicators166,
-      label: 'Bancários 166',
-      icon: Icons.account_balance_outlined,
-    ),
-    (
-      value: AnimalHubSection.roi167,
-      label: 'ROI 167',
-      icon: Icons.percent_outlined,
-    ),
-    (
-      value: AnimalHubSection.ebitda168,
-      label: 'EBITDA 168',
-      icon: Icons.bar_chart_outlined,
-    ),
-    (
-      value: AnimalHubSection.assetValuation169,
-      label: 'Patrimônio 169',
-      icon: Icons.home_work_outlined,
-    ),
-    (
-      value: AnimalHubSection.enterpriseFinanceCenter170,
-      label: 'Finance Center 170',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  twentyNinthRow = [
-    (
-      value: AnimalHubSection.premiumCrm171,
-      label: 'CRM 171',
-      icon: Icons.contacts_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentPipeline172,
-      label: 'Pipeline 172',
-      icon: Icons.filter_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.digitalContracts173,
-      label: 'Contratos 173',
-      icon: Icons.description_outlined,
-    ),
-    (
-      value: AnimalHubSection.electronicSignature174,
-      label: 'Assinatura 174',
-      icon: Icons.draw_outlined,
-    ),
-    (
-      value: AnimalHubSection.customerManagement175,
-      label: 'Clientes 175',
-      icon: Icons.groups_outlined,
-    ),
-    (
-      value: AnimalHubSection.afterSales176,
-      label: 'Pós-venda 176',
-      icon: Icons.support_agent_outlined,
-    ),
-    (
-      value: AnimalHubSection.commercialIndicators177,
-      label: 'Indicadores 177',
-      icon: Icons.insights_outlined,
-    ),
-    (
-      value: AnimalHubSection.servicesMarketplace178,
-      label: 'Serviços 178',
-      icon: Icons.storefront_outlined,
-    ),
-    (
-      value: AnimalHubSection.auctions179,
-      label: 'Leilões 179',
-      icon: Icons.gavel_outlined,
-    ),
-    (
-      value: AnimalHubSection.commercialCenter180,
-      label: 'Central Comercial 180',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtiethRow = [
-    (
-      value: AnimalHubSection.carbonFootprint181,
-      label: 'Carbono 181',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.greenhouseGasInventory182,
-      label: 'GEE 182',
-      icon: Icons.co2_outlined,
-    ),
-    (
-      value: AnimalHubSection.waterManagement183,
-      label: 'Água ESG 183',
-      icon: Icons.water_drop_outlined,
-    ),
-    (
-      value: AnimalHubSection.energyEfficiency184,
-      label: 'Energia ESG 184',
-      icon: Icons.bolt_outlined,
-    ),
-    (
-      value: AnimalHubSection.wasteManagement185,
-      label: 'Resíduos 185',
-      icon: Icons.recycling_outlined,
-    ),
-    (
-      value: AnimalHubSection.biodiversity186,
-      label: 'Biodiversidade 186',
-      icon: Icons.eco_outlined,
-    ),
-    (
-      value: AnimalHubSection.environmentalCompliance187,
-      label: 'Ambiental 187',
-      icon: Icons.rule_outlined,
-    ),
-    (
-      value: AnimalHubSection.sustainabilityCertifications188,
-      label: 'Certificações 188',
-      icon: Icons.workspace_premium_outlined,
-    ),
-    (
-      value: AnimalHubSection.sustainableTraceability189,
-      label: 'Rastreabilidade 189',
-      icon: Icons.route_outlined,
-    ),
-    (
-      value: AnimalHubSection.esgCenter190,
-      label: 'Central ESG 190',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyFirstRow = [
-    (
-      value: AnimalHubSection.climateIntelligence191,
-      label: 'Clima 191',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.advancedMeteorology192,
-      label: 'Meteorologia 192',
-      icon: Icons.thunderstorm_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentForagePlanning193,
-      label: 'Forragem 193',
-      icon: Icons.grass_outlined,
-    ),
-    (
-      value: AnimalHubSection.aiPastureManagement194,
-      label: 'Pastagem IA 194',
-      icon: Icons.eco_outlined,
-    ),
-    (
-      value: AnimalHubSection.climateEnvironmentalIndicators195,
-      label: 'Indicadores Clima 195',
-      icon: Icons.analytics_outlined,
-    ),
-    (
-      value: AnimalHubSection.climateRiskManagement196,
-      label: 'Riscos Clima 196',
-      icon: Icons.shield_outlined,
-    ),
-    (
-      value: AnimalHubSection.predictiveClimateSimulations197,
-      label: 'Simulações Clima 197',
-      icon: Icons.auto_graph_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentClimateAlerts198,
-      label: 'Alertas Clima 198',
-      icon: Icons.notifications_active_outlined,
-    ),
-    (
-      value: AnimalHubSection.agroclimateDecisionCenter199,
-      label: 'Decisão Agro 199',
-      icon: Icons.track_changes_outlined,
-    ),
-    (
-      value: AnimalHubSection.climateIntelligenceCenter200,
-      label: 'Climate Center 200',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtySecondRow = [
-    (
-      value: AnimalHubSection.farmOperationalPlanning201,
-      label: 'Planejamento 201',
-      icon: Icons.event_note_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentActivityAgenda202,
-      label: 'Agenda 202',
-      icon: Icons.calendar_month_outlined,
-    ),
-    (
-      value: AnimalHubSection.workOrders203,
-      label: 'Ordens 203',
-      icon: Icons.assignment_outlined,
-    ),
-    (
-      value: AnimalHubSection.teamManagement204,
-      label: 'Equipes 204',
-      icon: Icons.groups_outlined,
-    ),
-    (
-      value: AnimalHubSection.workdayControl205,
-      label: 'Jornada 205',
-      icon: Icons.punch_clock_outlined,
-    ),
-    (
-      value: AnimalHubSection.machineryManagement206,
-      label: 'Máquinas 206',
-      icon: Icons.agriculture_outlined,
-    ),
-    (
-      value: AnimalHubSection.preventiveMaintenance207,
-      label: 'Preventiva 207',
-      icon: Icons.build_circle_outlined,
-    ),
-    (
-      value: AnimalHubSection.correctiveMaintenance208,
-      label: 'Corretiva 208',
-      icon: Icons.handyman_outlined,
-    ),
-    (
-      value: AnimalHubSection.operationalIndicators209,
-      label: 'Indicadores Op. 209',
-      icon: Icons.insights_outlined,
-    ),
-    (
-      value: AnimalHubSection.operationsCenter210,
-      label: 'Central Operações 210',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyThirdRow = [
-    (
-      value: AnimalHubSection.intelligentPurchasing211,
-      label: 'Compras 211',
-      icon: Icons.shopping_cart_checkout_outlined,
-    ),
-    (
-      value: AnimalHubSection.supplierManagement212,
-      label: 'Fornecedores 212',
-      icon: Icons.handshake_outlined,
-    ),
-    (
-      value: AnimalHubSection.automatedQuotation213,
-      label: 'Cotação 213',
-      icon: Icons.compare_arrows_outlined,
-    ),
-    (
-      value: AnimalHubSection.purchaseApproval214,
-      label: 'Aprovação 214',
-      icon: Icons.approval_outlined,
-    ),
-    (
-      value: AnimalHubSection.multiWarehouseStock215,
-      label: 'Multidepósito 215',
-      icon: Icons.warehouse_outlined,
-    ),
-    (
-      value: AnimalHubSection.batchesAndExpiry216,
-      label: 'Lotes 216',
-      icon: Icons.qr_code_2_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentInventory217,
-      label: 'Inventário 217',
-      icon: Icons.inventory_2_outlined,
-    ),
-    (
-      value: AnimalHubSection.transportLogistics218,
-      label: 'Transporte 218',
-      icon: Icons.local_shipping_outlined,
-    ),
-    (
-      value: AnimalHubSection.fuelManagement219,
-      label: 'Combustível 219',
-      icon: Icons.local_gas_station_outlined,
-    ),
-    (
-      value: AnimalHubSection.supplyLogisticsCenter220,
-      label: 'Central Suprimentos 220',
-      icon: Icons.dashboard_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyFourthRow = [
-    (
-      value: AnimalHubSection.peopleManagement221,
-      label: 'Pessoas 221',
-      icon: Icons.badge_outlined,
-    ),
-    (
-      value: AnimalHubSection.trainingAndQualification222,
-      label: 'Treinamentos 222',
-      icon: Icons.school_outlined,
-    ),
-    (
-      value: AnimalHubSection.occupationalHealthAndSafety223,
-      label: 'SST 223',
-      icon: Icons.health_and_safety_outlined,
-    ),
-    (
-      value: AnimalHubSection.personalProtectiveEquipment224,
-      label: 'EPI 224',
-      icon: Icons.shield_outlined,
-    ),
-    (
-      value: AnimalHubSection.documentManagement225,
-      label: 'Documentos 225',
+      value: AnimalHubSection.documents,
+      label: 'Arquivos',
       icon: Icons.folder_copy_outlined,
     ),
-    (
-      value: AnimalHubSection.complianceControl226,
-      label: 'Conformidade 226',
-      icon: Icons.rule_outlined,
-    ),
-    (
-      value: AnimalHubSection.internalAudits227,
-      label: 'Auditorias 227',
-      icon: Icons.fact_check_outlined,
-    ),
-    (
-      value: AnimalHubSection.corporateRiskManagement228,
-      label: 'Riscos Corp. 228',
-      icon: Icons.warning_amber_outlined,
-    ),
-    (
-      value: AnimalHubSection.permissionMatrix229,
-      label: 'Permissões 229',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-    (
-      value: AnimalHubSection.governanceCenter230,
-      label: 'Central Governança 230',
-      icon: Icons.dashboard_outlined,
-    ),
   ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyFifthRow = [
-    (
-      value: AnimalHubSection.professionalAuthentication231,
-      label: 'Autenticação 231',
-      icon: Icons.login_outlined,
-    ),
-    (
-      value: AnimalHubSection.usersAndCompanies232,
-      label: 'Usuários 232',
-      icon: Icons.business_outlined,
-    ),
-    (
-      value: AnimalHubSection.cloudDatabase233,
-      label: 'Nuvem 233',
-      icon: Icons.cloud_outlined,
-    ),
-    (
-      value: AnimalHubSection.offlineSynchronization234,
-      label: 'Offline 234',
-      icon: Icons.sync_outlined,
-    ),
-    (
-      value: AnimalHubSection.conflictResolution235,
-      label: 'Conflitos 235',
-      icon: Icons.merge_type_outlined,
-    ),
-    (
-      value: AnimalHubSection.automatedBackup236,
-      label: 'Backup 236',
-      icon: Icons.backup_outlined,
-    ),
-    (
-      value: AnimalHubSection.dataEncryption237,
-      label: 'Criptografia 237',
-      icon: Icons.lock_outlined,
-    ),
-    (
-      value: AnimalHubSection.userAuditLogs238,
-      label: 'Logs 238',
-      icon: Icons.manage_search_outlined,
-    ),
-    (
-      value: AnimalHubSection.integrationCenter239,
-      label: 'Integrações 239',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.securityCenter240,
-      label: 'Segurança 240',
-      icon: Icons.security_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtySixthRow = [
-    (
-      value: AnimalHubSection.globalExecutiveDashboard241,
-      label: 'Dashboard Global 241',
-      icon: Icons.dashboard_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmBenchmarking242,
-      label: 'Comparar Fazendas 242',
-      icon: Icons.compare_arrows_outlined,
-    ),
-    (
-      value: AnimalHubSection.corporateGoals243,
-      label: 'Metas 243',
-      icon: Icons.flag_outlined,
-    ),
-    (
-      value: AnimalHubSection.unifiedAlerts244,
-      label: 'Alertas 244',
-      icon: Icons.notifications_active_outlined,
-    ),
-    (
-      value: AnimalHubSection.intelligentTasks245,
-      label: 'Tarefas 245',
-      icon: Icons.task_alt_outlined,
-    ),
-    (
-      value: AnimalHubSection.professionalReports246,
-      label: 'Relatórios 246',
-      icon: Icons.description_outlined,
-    ),
-    (
-      value: AnimalHubSection.exportAndSharing247,
-      label: 'Exportação 247',
-      icon: Icons.ios_share_outlined,
-    ),
-    (
-      value: AnimalHubSection.plansAndSubscriptions248,
-      label: 'Assinaturas 248',
-      icon: Icons.workspace_premium_outlined,
-    ),
-    (
-      value: AnimalHubSection.platformAdminPanel249,
-      label: 'Admin Plataforma 249',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-    (
-      value: AnimalHubSection.enterpriseCommandCenter250,
-      label: 'Command Center 250',
-      icon: Icons.hub_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtySeventhRow = [
-    (
-      value: AnimalHubSection.backendFoundation251,
-      label: 'Backend 251',
-      icon: Icons.dns_outlined,
-    ),
-    (
-      value: AnimalHubSection.environmentConfiguration252,
-      label: 'Ambientes 252',
-      icon: Icons.settings_suggest_outlined,
-    ),
-    (
-      value: AnimalHubSection.postgresqlDatabase253,
-      label: 'PostgreSQL 253',
-      icon: Icons.storage_outlined,
-    ),
-    (
-      value: AnimalHubSection.versionedMigrations254,
-      label: 'Migrações 254',
-      icon: Icons.schema_outlined,
-    ),
-    (
-      value: AnimalHubSection.multiCompanyArchitecture255,
-      label: 'Multempresa 255',
-      icon: Icons.account_tree_outlined,
-    ),
-    (
-      value: AnimalHubSection.usersCompaniesApi256,
-      label: 'API Usuários 256',
-      icon: Icons.business_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmsGroupsApi257,
-      label: 'API Fazendas 257',
-      icon: Icons.agriculture_outlined,
-    ),
-    (
-      value: AnimalHubSection.animalsApi258,
-      label: 'API Animais 258',
-      icon: AtlasLivestockIcons.cow,
-    ),
-    (
-      value: AnimalHubSection.livestockEventsApi259,
-      label: 'API Eventos 259',
-      icon: Icons.event_note_outlined,
-    ),
-    (
-      value: AnimalHubSection.backendAdministrationCenter260,
-      label: 'Admin Backend 260',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyEighthRow = [
-    (
-      value: AnimalHubSection.secureUserRegistration261,
-      label: 'Cadastro Seguro 261',
-      icon: Icons.person_add_alt_1_outlined,
-    ),
-    (
-      value: AnimalHubSection.secureTokenLogin262,
-      label: 'Tokens 262',
-      icon: Icons.key_outlined,
-    ),
-    (
-      value: AnimalHubSection.passwordRecovery263,
-      label: 'Recuperação 263',
-      icon: Icons.lock_reset_outlined,
-    ),
-    (
-      value: AnimalHubSection.multiFactorAuthentication264,
-      label: 'MFA 264',
-      icon: Icons.phonelink_lock_outlined,
-    ),
-    (
-      value: AnimalHubSection.roleBasedAccessControl265,
-      label: 'RBAC 265',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-    (
-      value: AnimalHubSection.sensitiveDataProtection266,
-      label: 'Proteção 266',
-      icon: Icons.enhanced_encryption_outlined,
-    ),
-    (
-      value: AnimalHubSection.immutableAuditLogs267,
-      label: 'Logs Imutáveis 267',
-      icon: Icons.manage_search_outlined,
-    ),
-    (
-      value: AnimalHubSection.structuredOfflineDatabase268,
-      label: 'Banco Offline 268',
-      icon: Icons.storage_outlined,
-    ),
-    (
-      value: AnimalHubSection.synchronizationEngine269,
-      label: 'Sincronização 269',
-      icon: Icons.sync_outlined,
-    ),
-    (
-      value: AnimalHubSection.realConflictResolution270,
-      label: 'Conflitos Reais 270',
-      icon: Icons.merge_type_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  thirtyNinthRow = [
-    (
-      value: AnimalHubSection.herdMigration271,
-      label: 'Rebanho Real 271',
-      icon: AtlasLivestockIcons.cow,
-    ),
-    (
-      value: AnimalHubSection.reproductionMigration272,
-      label: 'Reprodução Real 272',
-      icon: Icons.favorite_outline,
-    ),
-    (
-      value: AnimalHubSection.healthMigration273,
-      label: 'Sanidade Real 273',
-      icon: Icons.vaccines_outlined,
-    ),
-    (
-      value: AnimalHubSection.nutritionMigration274,
-      label: 'Nutrição Real 274',
-      icon: Icons.restaurant_outlined,
-    ),
-    (
-      value: AnimalHubSection.financeMigration275,
-      label: 'Financeiro Real 275',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    (
-      value: AnimalHubSection.stockMigration276,
-      label: 'Estoque Real 276',
-      icon: Icons.inventory_2_outlined,
-    ),
-    (
-      value: AnimalHubSection.eventIntegration277,
-      label: 'Eventos Integrados 277',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.unifiedTimeline278,
-      label: 'Linha do Tempo 278',
-      icon: Icons.timeline_outlined,
-    ),
-    (
-      value: AnimalHubSection.integratedAlerts279,
-      label: 'Alertas Integrados 279',
-      icon: Icons.notifications_active_outlined,
-    ),
-    (
-      value: AnimalHubSection.integratedTasks280,
-      label: 'Tarefas Integradas 280',
-      icon: Icons.task_alt_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fortiethRow = [
-    (
-      value: AnimalHubSection.consolidatedIndicatorEngine281,
-      label: 'Indicadores Reais 281',
-      icon: Icons.calculate_outlined,
-    ),
-    (
-      value: AnimalHubSection.realDataExecutiveDashboard282,
-      label: 'Dashboard Real 282',
-      icon: Icons.dashboard_outlined,
-    ),
-    (
-      value: AnimalHubSection.realFarmBenchmarking283,
-      label: 'Benchmark Real 283',
-      icon: Icons.compare_arrows_outlined,
-    ),
-    (
-      value: AnimalHubSection.traceableRecommendationEngine284,
-      label: 'Recomendações 284',
-      icon: Icons.psychology_outlined,
-    ),
-    (
-      value: AnimalHubSection.validatedPredictiveDiagnostics285,
-      label: 'Preditivos 285',
-      icon: Icons.auto_graph_outlined,
-    ),
-    (
-      value: AnimalHubSection.technicalPdfReports286,
-      label: 'PDF Técnico 286',
-      icon: Icons.picture_as_pdf_outlined,
-    ),
-    (
-      value: AnimalHubSection.financialExecutiveReports287,
-      label: 'Relatórios Exec. 287',
-      icon: Icons.request_quote_outlined,
-    ),
-    (
-      value: AnimalHubSection.spreadsheetCsvExport288,
-      label: 'Planilhas 288',
-      icon: Icons.table_view_outlined,
-    ),
-    (
-      value: AnimalHubSection.secureSharing289,
-      label: 'Compartilhar 289',
-      icon: Icons.share_outlined,
-    ),
-    (
-      value: AnimalHubSection.professionalNavigationExperience290,
-      label: 'Nova Navegação 290',
-      icon: Icons.menu_open_outlined,
-    ),
-  ];
-
-  static const List<({AnimalHubSection value, String label, IconData icon})>
-  fortyFirstRow = [
-    (
-      value: AnimalHubSection.architecturalReview291,
-      label: 'Arquitetura 291',
-      icon: Icons.architecture_outlined,
-    ),
-    (
-      value: AnimalHubSection.comprehensiveUnitTests292,
-      label: 'Testes Unitários 292',
-      icon: Icons.science_outlined,
-    ),
-    (
-      value: AnimalHubSection.integrationTests293,
-      label: 'Testes Integração 293',
-      icon: Icons.hub_outlined,
-    ),
-    (
-      value: AnimalHubSection.interfaceTests294,
-      label: 'Testes UI 294',
-      icon: Icons.devices_outlined,
-    ),
-    (
-      value: AnimalHubSection.securityTests295,
-      label: 'Segurança 295',
-      icon: Icons.security_outlined,
-    ),
-    (
-      value: AnimalHubSection.performanceTests296,
-      label: 'Desempenho 296',
-      icon: Icons.speed_outlined,
-    ),
-    (
-      value: AnimalHubSection.monitoringAndFailureHandling297,
-      label: 'Monitoramento 297',
-      icon: Icons.monitor_heart_outlined,
-    ),
-    (
-      value: AnimalHubSection.stagingPublication298,
-      label: 'Homologação 298',
-      icon: Icons.cloud_upload_outlined,
-    ),
-    (
-      value: AnimalHubSection.farmPilotProgram299,
-      label: 'Piloto Fazenda 299',
-      icon: Icons.agriculture_outlined,
-    ),
-    (
-      value: AnimalHubSection.atlasVersionOne300,
-      label: 'Atlas 1.0 300',
-      icon: Icons.rocket_launch_outlined,
-    ),
-  ];
-
-  List<({AnimalHubSection value, String label, IconData icon})>
-  get _advancedItems => <({AnimalHubSection value, String label, IconData icon})>[
-    ...thirdRow,
-    ...fourthRow,
-    ...fifthRow,
-    ...sixthRow,
-    ...seventhRow,
-    ...eighthRow,
-    ...ninthRow,
-    ...tenthRow,
-    ...eleventhRow,
-    ...twelfthRow,
-    ...thirteenthRow,
-    ...fourteenthRow,
-    ...fifteenthRow,
-    ...sixteenthRow,
-    ...seventeenthRow,
-    ...eighteenthRow,
-    ...nineteenthRow,
-    ...twentiethRow,
-    ...twentyFirstRow,
-    ...twentySecondRow,
-    ...twentyThirdRow,
-    ...twentyFourthRow,
-    ...twentyFifthRow,
-    ...twentySixthRow,
-    ...twentySeventhRow,
-    ...twentyEighthRow,
-    ...twentyNinthRow,
-    ...thirtiethRow,
-    ...thirtyFirstRow,
-    ...thirtySecondRow,
-    ...thirtyThirdRow,
-    ...thirtyFourthRow,
-    ...thirtyFifthRow,
-    ...thirtySixthRow,
-    ...thirtySeventhRow,
-    ...thirtyEighthRow,
-    ...thirtyNinthRow,
-    ...fortiethRow,
-    ...fortyFirstRow,
-  ];
-
-  String _cleanLabel(String label) {
-    return label.replaceFirst(RegExp(r'\s+\d+$'), '');
-  }
-
-  ({AnimalHubSection value, String label, IconData icon})? _advancedSelection() {
-    for (final item in _advancedItems) {
-      if (item.value == selected) {
-        return item;
-      }
-    }
-    return null;
-  }
-
-  Future<void> _openAdvancedCatalog(BuildContext context) async {
-    final controller = TextEditingController();
-
-    final selectedModule = await showDialog<AnimalHubSection>(
-      context: context,
-      builder: (dialogContext) {
-        var query = '';
-
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final normalized = query.trim().toLowerCase();
-            final filtered = _advancedItems.where((item) {
-              final label = _cleanLabel(item.label).toLowerCase();
-              return normalized.isEmpty || label.contains(normalized);
-            }).toList(growable: false);
-
-            return Dialog(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 720,
-                  maxHeight: 720,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Mais recursos',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Recursos avançados ficam organizados aqui para não poluir a Central do animal.',
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Fechar',
-                            onPressed: () => Navigator.of(dialogContext).pop(),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      TextField(
-                        controller: controller,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.search),
-                          labelText: 'Buscar recurso',
-                          hintText: 'Ex.: agenda, inteligência, SISBOV, relatórios',
-                        ),
-                        onChanged: (value) {
-                          setModalState(() => query = value);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: filtered.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'Nenhum recurso encontrado.',
-                                  style: TextStyle(color: Colors.black54),
-                                ),
-                              )
-                            : ListView.separated(
-                                itemCount: filtered.length,
-                                separatorBuilder: (_, __) =>
-                                    const Divider(height: 1),
-                                itemBuilder: (context, index) {
-                                  final item = filtered[index];
-                                  final isSelected = item.value == selected;
-
-                                  return ListTile(
-                                    leading: CircleAvatar(
-                                      child: Icon(item.icon, size: 20),
-                                    ),
-                                    title: Text(_cleanLabel(item.label)),
-                                    trailing: isSelected
-                                        ? const Icon(
-                                            Icons.check_circle,
-                                            color: Color(0xFF1B5E20),
-                                          )
-                                        : const Icon(Icons.chevron_right),
-                                    onTap: () => Navigator.of(
-                                      dialogContext,
-                                    ).pop(item.value),
-                                  );
-                                },
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    controller.dispose();
-
-    if (selectedModule != null) {
-      onSelected(selectedModule);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final advancedSelection = _advancedSelection();
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -5733,71 +4642,31 @@ class AnimalHubNavigation extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(4, 2, 4, 10),
-              child: Text(
-                'Acesso rápido',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Central do animal',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'Informações e ações que pertencem a este animal.',
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
               ),
             ),
             NavigationModuleRow(
-              items: firstRow,
+              items: items,
               selected: selected,
               onSelected: onSelected,
-            ),
-            const SizedBox(height: 8),
-            NavigationModuleRow(
-              items: secondRow,
-              selected: selected,
-              onSelected: onSelected,
-            ),
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: advancedSelection == null
-                      ? const Text(
-                          'Recursos avançados ficam fora da tela principal.',
-                          style: TextStyle(color: Colors.black54),
-                        )
-                      : Row(
-                          children: [
-                            Icon(
-                              advancedSelection.icon,
-                              size: 20,
-                              color: const Color(0xFF1B5E20),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Aberto: ${_cleanLabel(advancedSelection.label)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () => _openAdvancedCatalog(context),
-                  icon: const Icon(Icons.apps_outlined),
-                  label: const Text('Mais recursos'),
-                ),
-              ],
             ),
           ],
         ),
       ),
     );
   }
-
 }
 
 class NavigationModuleRow extends StatelessWidget {
@@ -5814,69 +4683,98 @@ class NavigationModuleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: items
-          .map((item) {
-            final isSelected = item.value == selected;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var columns = items.length;
+        if (constraints.maxWidth < 420) {
+          columns = 1;
+        } else if (constraints.maxWidth < 720) {
+          columns = items.length >= 2 ? 2 : items.length;
+        } else if (constraints.maxWidth < 980) {
+          columns = items.length >= 3 ? 3 : items.length;
+        }
+        if (columns < 1) columns = 1;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: item == items.last ? 0 : 8),
-                child: Material(
-                  color: isSelected ? const Color(0xFF1B5E20) : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => onSelected(item.value),
-                    child: Container(
-                      height: 46,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF1B5E20)
-                              : const Color(0xFFB9C8B6),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            item.icon,
-                            size: 18,
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF1B5E20),
-                          ),
-                          const SizedBox(width: 7),
-                          Flexible(
-                            child: Text(
-                              item.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : const Color(0xFF263238),
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+        const gap = 8.0;
+        final width = (constraints.maxWidth - (columns - 1) * gap) / columns;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: width,
+                child: _AnimalNavigationButton(
+                  item: item,
+                  selected: item.value == selected,
+                  onTap: () => onSelected(item.value),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _AnimalNavigationButton extends StatelessWidget {
+  const _AnimalNavigationButton({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ({AnimalHubSection value, String label, IconData icon}) item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? const Color(0xFF1B5E20) : Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 50),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected
+                  ? const Color(0xFF1B5E20)
+                  : const Color(0xFFB9C8B6),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                item.icon,
+                size: 19,
+                color: selected ? Colors.white : const Color(0xFF1B5E20),
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  item.label,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: selected ? Colors.white : const Color(0xFF263238),
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
               ),
-            );
-          })
-          .toList(growable: false),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -5899,7 +4797,7 @@ class AnimalHubHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = animal.status == 'Ativo';
+    final isActive = AtlasUiText.status(animal.status) == 'Ativo';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -6814,16 +5712,10 @@ class AnimalInformationPanel extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -6837,7 +5729,7 @@ class AnimalInformationPanel extends StatelessWidget {
       (label: 'Sexo', value: animal.sex),
       (label: 'Raça', value: animal.breed),
       (label: 'Nascimento', value: valueOrFallback(animal.birthDate)),
-      (label: 'Situação', value: animal.status),
+      (label: 'Situação', value: AtlasUiText.status(animal.status)),
       (label: 'Fazenda', value: farm.name),
       (label: 'Lote', value: group.name),
     ];
@@ -6856,10 +5748,7 @@ class AnimalInformationPanel extends StatelessWidget {
           children: [
             const Text(
               'Dados principais',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -6877,9 +5766,7 @@ class AnimalInformationPanel extends StatelessWidget {
                 'Mais informações',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              subtitle: const Text(
-                'SISBOV, origem e observações',
-              ),
+              subtitle: const Text('SISBOV, origem e observações'),
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
@@ -6899,7 +5786,6 @@ class AnimalInformationPanel extends StatelessWidget {
     );
   }
 }
-
 
 class EmptyHubState extends StatelessWidget {
   const EmptyHubState({

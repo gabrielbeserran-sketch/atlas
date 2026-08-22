@@ -36,6 +36,8 @@ from ..models import (
 from ..schemas import (
     AnimalMovementRequest,
     AnimalMovementResponse,
+    FarmHandlingBatchRequest,
+    FarmHandlingBatchResponse,
     FinancialEntryCreateRequest,
     FinancialEntryResponse,
     HealthEventCreateRequest,
@@ -1181,6 +1183,359 @@ def movement_history(
             .where(AnimalMovement.animal_id == animal_id)
             .order_by(AnimalMovement.occurred_at.desc())
         ).all()
+    )
+
+
+
+def _require_handling_permission(principal: Principal, permission: str) -> None:
+    if permission not in principal.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Permissão necessária: {permission}.",
+        )
+
+
+def _handling_animals(
+    db: Session,
+    principal: Principal,
+    *,
+    farm_id: str,
+    animal_ids: list[str],
+) -> list[LivestockAnimal]:
+    _farm_allowed(db, principal, farm_id)
+    unique_ids = list(
+        dict.fromkeys(value.strip() for value in animal_ids if value.strip())
+    )
+    if not unique_ids:
+        raise HTTPException(status_code=422, detail="Selecione ao menos um animal.")
+    animals = list(
+        db.scalars(
+            select(LivestockAnimal).where(
+                LivestockAnimal.company_id == principal.company.id,
+                LivestockAnimal.farm_id == farm_id,
+                LivestockAnimal.id.in_(unique_ids),
+            )
+        ).all()
+    )
+    found = {item.id for item in animals}
+    missing = [animal_id for animal_id in unique_ids if animal_id not in found]
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"{len(missing)} animal(is) não pertencem à fazenda ativa.",
+        )
+    return animals
+
+
+@router.post(
+    "/handling/batch",
+    response_model=FarmHandlingBatchResponse,
+    status_code=201,
+)
+def execute_farm_handling_batch(
+    payload: FarmHandlingBatchRequest,
+    principal: Principal = Depends(get_principal),
+    db: Session = Depends(get_db),
+) -> FarmHandlingBatchResponse:
+    action = payload.action.strip().lower()
+    supported = {
+        "sale_or_exit",
+        "lot_movement",
+        "weighing",
+        "health",
+        "reproduction",
+        "category_change",
+    }
+    if action not in supported:
+        raise HTTPException(status_code=422, detail="Tipo de manejo não suportado.")
+
+    required_permission = {
+        "sale_or_exit": "herd.write",
+        "lot_movement": "herd.write",
+        "weighing": "herd.write",
+        "health": "health.write",
+        "reproduction": "reproduction.write",
+        "category_change": "herd.write",
+    }[action]
+    _require_handling_permission(principal, required_permission)
+
+    animals = _handling_animals(
+        db,
+        principal,
+        farm_id=payload.farm_id,
+        animal_ids=payload.animal_ids,
+    )
+    occurred_at = payload.occurred_at or datetime.now(timezone.utc)
+    handling_id = new_id("handling")
+    created_ids: list[str] = []
+    finance_entry_id: str | None = None
+
+    if action in {"sale_or_exit", "lot_movement"}:
+        target_lot: HerdLot | None = None
+        if action == "lot_movement":
+            if not payload.to_lot_id:
+                raise HTTPException(status_code=422, detail="Selecione o lote de destino.")
+            target_lot = _lot(db, principal, payload.to_lot_id)
+            if target_lot.farm_id != payload.farm_id:
+                raise HTTPException(status_code=422, detail="Lote de destino pertence a outra fazenda.")
+            if target_lot.status != "active":
+                raise HTTPException(status_code=422, detail="Lote de destino está inativo.")
+
+        for animal in animals:
+            movement = AnimalMovement(
+                id=new_id("movement"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=payload.farm_id,
+                animal_id=animal.id,
+                movement_type="sale" if action == "sale_or_exit" else "lot_change",
+                from_lot_id=animal.lot_id,
+                to_lot_id=target_lot.id if target_lot else None,
+                occurred_at=occurred_at,
+                reason=payload.reason or payload.notes,
+                document_reference=payload.document_reference or payload.sale_document,
+                created_by=principal.user.id,
+            )
+            db.add(movement)
+            created_ids.append(movement.id)
+            if action == "sale_or_exit":
+                animal.lot_id = None
+                animal.status = "sale"
+                metadata = dict(animal.metadata_json or {})
+                metadata["sale"] = {
+                    "handling_id": handling_id,
+                    "occurred_at": occurred_at.isoformat(),
+                    "counterparty": payload.sale_counterparty,
+                    "document": payload.sale_document,
+                    "total_batch_amount": payload.sale_total_amount,
+                    "estimated_amount_per_animal": (
+                        payload.sale_total_amount / len(animals)
+                        if animals and payload.sale_total_amount > 0
+                        else 0
+                    ),
+                }
+                animal.metadata_json = metadata
+            else:
+                animal.lot_id = target_lot.id
+                animal.status = "active"
+
+        if action == "sale_or_exit" and payload.sale_total_amount > 0:
+            finance_entry_id = new_id("finance")
+            db.add(
+                FinancialEntry(
+                    id=finance_entry_id,
+                    tenant_id=principal.company.tenant_id,
+                    company_id=principal.company.id,
+                    farm_id=payload.farm_id,
+                    entry_type="income",
+                    category="livestock_sale",
+                    cost_center="Rebanho",
+                    description=f"Venda de {len(animals)} animal(is)",
+                    amount=payload.sale_total_amount,
+                    status="pending",
+                    competence_date=occurred_at,
+                    due_date=occurred_at,
+                    counterparty=payload.sale_counterparty,
+                    document_number=payload.sale_document,
+                    reference_type="farm_handling",
+                    reference_id=handling_id,
+                    notes=payload.notes,
+                    created_by=principal.user.id,
+                )
+            )
+
+    elif action == "category_change":
+        category = payload.category.strip()
+        if not category:
+            raise HTTPException(status_code=422, detail="Informe a nova categoria.")
+        for animal in animals:
+            previous = animal.category
+            animal.category = category
+            movement = AnimalMovement(
+                id=new_id("movement"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=payload.farm_id,
+                animal_id=animal.id,
+                movement_type="category_change",
+                from_lot_id=animal.lot_id,
+                to_lot_id=animal.lot_id,
+                occurred_at=occurred_at,
+                reason=payload.reason or f"Categoria: {previous} → {category}",
+                document_reference=payload.document_reference,
+                created_by=principal.user.id,
+            )
+            db.add(movement)
+            created_ids.append(movement.id)
+
+    elif action == "weighing":
+        by_animal = {entry.animal_id: entry for entry in payload.weights}
+        if any(animal.id not in by_animal for animal in animals):
+            raise HTTPException(
+                status_code=422,
+                detail="Informe o peso de todos os animais selecionados.",
+            )
+        for animal in animals:
+            entry = by_animal[animal.id]
+            item = WeightRecord(
+                id=new_id("weight"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=payload.farm_id,
+                animal_id=animal.id,
+                weight=entry.weight,
+                body_condition_score=entry.body_condition_score,
+                source="farm_handling",
+                equipment="",
+                measured_at=occurred_at,
+                notes=payload.notes,
+                created_by=principal.user.id,
+            )
+            db.add(item)
+            created_ids.append(item.id)
+            animal.current_weight = entry.weight
+            animal.body_condition_score = entry.body_condition_score
+            _sync_weight_schedule_task(db=db, principal=principal, animal=animal)
+
+    elif action == "health":
+        event_type = payload.health_event_type.strip()
+        if not event_type:
+            raise HTTPException(status_code=422, detail="Informe o tipo de evento sanitário.")
+        for animal in animals:
+            item = HealthEvent(
+                id=new_id("health"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=payload.farm_id,
+                animal_id=animal.id,
+                lot_id=animal.lot_id,
+                event_type=event_type,
+                product_name=payload.health_product_name,
+                dosage=payload.health_dosage,
+                route=payload.health_route,
+                occurred_at=occurred_at,
+                responsible=payload.responsible,
+                notes=payload.notes,
+                next_date=payload.health_next_date,
+                status="completed",
+                treatment_cost=payload.health_treatment_cost_per_animal,
+                created_by=principal.user.id,
+            )
+            db.add(item)
+            created_ids.append(item.id)
+            if payload.health_treatment_cost_per_animal > 0:
+                db.add(
+                    FinancialEntry(
+                        id=new_id("finance"),
+                        tenant_id=principal.company.tenant_id,
+                        company_id=principal.company.id,
+                        farm_id=payload.farm_id,
+                        animal_id=animal.id,
+                        lot_id=animal.lot_id,
+                        entry_type="expense",
+                        category="health",
+                        cost_center="Sanidade",
+                        description=f"Evento sanitário: {event_type}",
+                        amount=payload.health_treatment_cost_per_animal,
+                        status="paid",
+                        competence_date=occurred_at,
+                        paid_at=occurred_at,
+                        reference_type="health_event",
+                        reference_id=item.id,
+                        notes=payload.notes,
+                        created_by=principal.user.id,
+                    )
+                )
+            _sync_operational_task(
+                db=db,
+                principal=principal,
+                farm_id=payload.farm_id,
+                source_type="health_event",
+                source_id=item.id,
+                title=f"Retorno sanitário — {event_type}",
+                description=f"Retorno programado para {animal.name or animal.tag or animal.id}.",
+                due_at=payload.health_next_date,
+                priority="medium",
+            )
+
+    elif action == "reproduction":
+        event_type = payload.reproduction_event_type.strip()
+        if not event_type:
+            raise HTTPException(status_code=422, detail="Informe o tipo de evento reprodutivo.")
+        probe = ReproductionEventCreateRequest(
+            event_type=event_type,
+            event_code=payload.reproduction_event_code,
+            protocol_name=payload.reproduction_protocol_name,
+            sire_reference=payload.reproduction_sire_reference,
+            result=payload.reproduction_result,
+            responsible=payload.responsible,
+            occurred_at=occurred_at,
+            expected_date=payload.reproduction_expected_date,
+            notes=payload.notes,
+        )
+        status_value = _derive_reproductive_status(probe)
+        event_code = payload.reproduction_event_code or REPRODUCTION_CODES.get(
+            event_type,
+            "observation",
+        )
+        for animal in animals:
+            item = ReproductionEvent(
+                id=new_id("reproduction"),
+                tenant_id=principal.company.tenant_id,
+                company_id=principal.company.id,
+                farm_id=payload.farm_id,
+                animal_id=animal.id,
+                event_type=event_type,
+                event_code=event_code,
+                protocol_name=payload.reproduction_protocol_name,
+                sire_reference=payload.reproduction_sire_reference,
+                result=payload.reproduction_result,
+                reproductive_status=status_value,
+                responsible=payload.responsible,
+                occurred_at=occurred_at,
+                expected_date=payload.reproduction_expected_date,
+                notes=payload.notes,
+                created_by=principal.user.id,
+            )
+            db.add(item)
+            created_ids.append(item.id)
+            animal.last_reproduction_event_at = occurred_at
+            if status_value:
+                animal.reproductive_status = status_value
+            if event_code == "pregnancy_diagnosis" and status_value == "pregnant":
+                animal.expected_calving_at = payload.reproduction_expected_date
+            elif event_code in {"calving", "abortion", "reproductive_cull"}:
+                animal.expected_calving_at = None
+            _sync_operational_task(
+                db=db,
+                principal=principal,
+                farm_id=payload.farm_id,
+                source_type="reproduction_event",
+                source_id=item.id,
+                title=f"{event_type} — {animal.name or animal.tag or animal.id}",
+                description=f"Retorno reprodutivo de {animal.name or animal.tag or animal.id}.",
+                due_at=payload.reproduction_expected_date,
+                priority="medium",
+            )
+
+    db.commit()
+    summaries = {
+        "sale_or_exit": f"{len(animals)} animal(is) baixados por venda/saída.",
+        "lot_movement": f"{len(animals)} animal(is) movimentados de lote.",
+        "weighing": f"{len(animals)} pesagem(ns) registrada(s).",
+        "health": f"{len(animals)} evento(s) sanitário(s) registrado(s).",
+        "reproduction": f"{len(animals)} evento(s) reprodutivo(s) registrado(s).",
+        "category_change": f"{len(animals)} animal(is) tiveram a categoria atualizada.",
+    }
+    return FarmHandlingBatchResponse(
+        handling_id=handling_id,
+        farm_id=payload.farm_id,
+        action=action,
+        affected_count=len(animals),
+        animal_ids=[animal.id for animal in animals],
+        created_ids=created_ids,
+        finance_entry_id=finance_entry_id,
+        summary=summaries[action],
     )
 
 

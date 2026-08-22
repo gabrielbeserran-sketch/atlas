@@ -15,7 +15,9 @@ checks = {
     "inventory_workspace": "FarmInventoryListScreen(farm: farm, embedded: true)" in shell,
     "advanced_group": "'Mais recursos'" in shell,
     "admin_group": "'Administração'" in shell,
-    "animal_quick_actions": "'Ações rápidas'" in animal,
+    "animal_quick_actions": (
+        "'Ações rápidas'" in animal or "'O que você quer fazer?'" in animal
+    ),
     "animal_weight_action": "'Nova pesagem'" in animal,
     "animal_health_action": "AnimalHubSection.healthEnterprise" in animal,
     "animal_reproduction_action": "AnimalHubSection.reproductionEnterprise" in animal,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -147,11 +148,7 @@ class NutritionStorageService {
       final lotId = map['lot_id']?.toString() ?? '';
       var plan = _fromApi(map, lotNames: lotNames, farmName: farmName);
       if (lotId.isNotEmpty) {
-        plan = await _enrichPerformance(
-          plan,
-          farmId: farmId,
-          lotId: lotId,
-        );
+        plan = await _enrichPerformance(plan, farmId: farmId, lotId: lotId);
       }
       plans.add(plan);
     }
@@ -198,8 +195,12 @@ class NutritionStorageService {
           );
           final weights = response.asMapList()
             ..sort((a, b) {
-              final first = DateTime.tryParse(a['measured_at']?.toString() ?? '');
-              final second = DateTime.tryParse(b['measured_at']?.toString() ?? '');
+              final first = DateTime.tryParse(
+                a['measured_at']?.toString() ?? '',
+              );
+              final second = DateTime.tryParse(
+                b['measured_at']?.toString() ?? '',
+              );
               if (first == null && second == null) return 0;
               if (first == null) return -1;
               if (second == null) return 1;
@@ -214,8 +215,7 @@ class NutritionStorageService {
           final latestAt = DateTime.tryParse(
             latest['measured_at']?.toString() ?? '',
           );
-          final previousWeight =
-              (previous['weight'] as num?)?.toDouble() ?? 0;
+          final previousWeight = (previous['weight'] as num?)?.toDouble() ?? 0;
           final latestWeight = (latest['weight'] as num?)?.toDouble() ?? 0;
           if (previousAt == null || latestAt == null) continue;
           final days = latestAt.difference(previousAt).inMinutes / 1440;
@@ -230,7 +230,9 @@ class NutritionStorageService {
           ? 0.0
           : gains.reduce((a, b) => a + b) / gains.length;
       final dryMatterIntake = plan.dailyAmountKg * plan.dryMatterPercent / 100;
-      final conversion = observedGain > 0 ? dryMatterIntake / observedGain : 0.0;
+      final conversion = observedGain > 0
+          ? dryMatterIntake / observedGain
+          : 0.0;
 
       return plan.copyWith(
         animalCount: animals.length,
@@ -249,7 +251,8 @@ class NutritionStorageService {
       return [];
     }
     try {
-      final decoded = jsonDecode(savedData) as List<dynamic>;
+      final decoded =
+          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decoded
           .map(
             (item) => NutritionPlanData.fromMap(

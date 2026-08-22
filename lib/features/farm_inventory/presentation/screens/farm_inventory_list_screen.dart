@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -83,14 +86,30 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
 
       final matchesSearch =
           normalizedSearch.isEmpty ||
-          AtlasUiText.clean(item.name).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.category).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.supplier).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.internalCode).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.barcode).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.brand).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.manufacturer).toLowerCase().contains(normalizedSearch) ||
-          AtlasUiText.clean(item.batch).toLowerCase().contains(normalizedSearch);
+          AtlasUiText.clean(
+            item.name,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.category,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.supplier,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.internalCode,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.barcode,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.brand,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.manufacturer,
+          ).toLowerCase().contains(normalizedSearch) ||
+          AtlasUiText.clean(
+            item.batch,
+          ).toLowerCase().contains(normalizedSearch);
 
       if (!matchesSearch) {
         return false;
@@ -586,34 +605,14 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
   }
 
   Future<void> deleteItem(FarmInventoryData item) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Excluir produto'),
-          content: Text('Deseja excluir ${AtlasUiText.clean(item.name)} do estoque?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-              ),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir produto',
+      message:
+          'Deseja excluir ${AtlasUiText.clean(item.name)} do estoque? Essa ação não pode ser desfeita.',
     );
 
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
 
@@ -658,23 +657,18 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
     final filteredItems = visibleItems;
 
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(
-        title: const Text('Estoque'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar',
-            onPressed: isLoading ? null : loadItems,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading ? null : openItemForm,
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo produto'),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Estoque'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: isLoading ? null : loadItems,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -682,11 +676,11 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && items.isEmpty
-                    ? AtlasLoadErrorState(
-                        message: 'Verifique sua conexão e tente novamente.',
-                        onRetry: loadItems,
-                      )
-                    : RefreshIndicator(
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadItems,
+                  )
+                : RefreshIndicator(
                     onRefresh: loadItems,
                     child: ListView(
                       padding: const EdgeInsets.all(24),
@@ -695,6 +689,13 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
                           farm: widget.farm,
                           productCount: items.length,
                           totalValue: totalInventoryValue,
+                        ),
+                        const SizedBox(height: 12),
+                        AtlasOperationalActionBar(
+                          primaryLabel: 'Novo produto',
+                          onPrimary: openItemForm,
+                          onRefresh: loadItems,
+                          busy: isLoading,
                         ),
                         const SizedBox(height: 24),
                         Wrap(
@@ -825,6 +826,14 @@ class _FarmInventoryListScreenState extends State<FarmInventoryListScreen> {
                             hasFilter:
                                 selectedFilter != 'Todos' ||
                                 searchText.trim().isNotEmpty,
+                            onCreate: openItemForm,
+                            onClear: () {
+                              searchController.clear();
+                              setState(() {
+                                searchText = '';
+                                selectedFilter = 'Todos';
+                              });
+                            },
                           )
                         else
                           ...filteredItems.map(
@@ -1347,41 +1356,29 @@ class InventoryStatusBadge extends StatelessWidget {
 }
 
 class EmptyInventoryMessage extends StatelessWidget {
-  const EmptyInventoryMessage({required this.hasFilter, super.key});
+  const EmptyInventoryMessage({
+    required this.hasFilter,
+    required this.onCreate,
+    required this.onClear,
+    super.key,
+  });
 
   final bool hasFilter;
+  final VoidCallback onCreate;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(36),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.inventory_2_outlined,
-              size: 60,
-              color: Color(0xFF1B5E20),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              hasFilter
-                  ? 'Nenhum produto encontrado.'
-                  : 'Nenhum produto no estoque.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              hasFilter
-                  ? 'Altere a pesquisa ou o filtro selecionado.'
-                  : 'Cadastre o primeiro medicamento, insumo ou material.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ],
-        ),
-      ),
+    return AtlasEmptyState(
+      icon: Icons.inventory_2_outlined,
+      title: hasFilter
+          ? 'Nenhum produto encontrado'
+          : 'Nenhum produto cadastrado',
+      message: hasFilter
+          ? 'Os filtros atuais não encontraram produtos. Limpe os filtros para ver todo o estoque.'
+          : 'Cadastre o primeiro medicamento, insumo ou material da fazenda.',
+      actionLabel: hasFilter ? 'Limpar filtros' : 'Novo produto',
+      onAction: hasFilter ? onClear : onCreate,
     );
   }
 }

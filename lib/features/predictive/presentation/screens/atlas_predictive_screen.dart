@@ -293,7 +293,10 @@ class _AtlasPredictiveScreenState extends State<AtlasPredictiveScreen> {
                   Expanded(
                     child: Text(
                       'Avançado em validação: cenários personalizados ainda são salvos somente neste dispositivo e não alteram os cadastros oficiais da fazenda.',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -302,69 +305,73 @@ class _AtlasPredictiveScreenState extends State<AtlasPredictiveScreen> {
           ),
           Expanded(
             child: isLoadingScenarios
-          ? const _PredictiveLoadingView()
-          : requests.isEmpty
-          ? const _EmptyPredictiveView()
-          : SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1240),
-                  child: ListView(
-                    padding: const EdgeInsets.all(22),
-                    children: [
-                      _PredictiveHero(ranking: ranking),
-                      const SizedBox(height: 24),
-                      const _SectionTitle(
-                        title: 'Cenários recomendados',
-                        subtitle:
-                            'Selecione um cenário para analisar as projeções.',
+                ? const _PredictiveLoadingView()
+                : requests.isEmpty
+                ? const _EmptyPredictiveView()
+                : SafeArea(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1240),
+                        child: ListView(
+                          padding: const EdgeInsets.all(22),
+                          children: [
+                            _PredictiveHero(ranking: ranking),
+                            const SizedBox(height: 24),
+                            const _SectionTitle(
+                              title: 'Cenários recomendados',
+                              subtitle:
+                                  'Selecione um cenário para analisar as projeções.',
+                            ),
+                            const SizedBox(height: 14),
+                            _ScenarioSelector(
+                              results: ranking.results,
+                              selected: selected,
+                              onSelected: _selectScenario,
+                              isCustom: _isCustomScenario,
+                              onRemoveCustom: _removeCustomScenario,
+                              onCreateCustom: _openCustomScenarioDialog,
+                            ),
+                            if (selected != null) ...[
+                              const SizedBox(height: 28),
+                              _ScenarioSummaryCard(result: selected),
+                              const SizedBox(height: 28),
+                              const _SectionTitle(
+                                title: 'Projeções',
+                                subtitle:
+                                    'Comparação entre cenário conservador, provável e otimista.',
+                              ),
+                              const SizedBox(height: 14),
+                              _ProjectionGrid(
+                                projections: selected.projections,
+                              ),
+                              const SizedBox(height: 28),
+                              const _SectionTitle(
+                                title: 'Impacto financeiro',
+                                subtitle:
+                                    'Estimativa de retorno e investimento do cenário.',
+                              ),
+                              const SizedBox(height: 14),
+                              _FinancialImpactCard(
+                                impact: selected.financialImpact,
+                              ),
+                              const SizedBox(height: 28),
+                              const _SectionTitle(
+                                title: 'Plano de execução',
+                                subtitle:
+                                    'Etapas recomendadas para colocar o cenário em prática.',
+                              ),
+                              const SizedBox(height: 14),
+                              _PredictiveActionList(
+                                actions: selected.actions,
+                                onOpenArea: _openArea,
+                              ),
+                              const SizedBox(height: 34),
+                            ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 14),
-                      _ScenarioSelector(
-                        results: ranking.results,
-                        selected: selected,
-                        onSelected: _selectScenario,
-                        isCustom: _isCustomScenario,
-                        onRemoveCustom: _removeCustomScenario,
-                        onCreateCustom: _openCustomScenarioDialog,
-                      ),
-                      if (selected != null) ...[
-                        const SizedBox(height: 28),
-                        _ScenarioSummaryCard(result: selected),
-                        const SizedBox(height: 28),
-                        const _SectionTitle(
-                          title: 'Projeções',
-                          subtitle:
-                              'Comparação entre cenário conservador, provável e otimista.',
-                        ),
-                        const SizedBox(height: 14),
-                        _ProjectionGrid(projections: selected.projections),
-                        const SizedBox(height: 28),
-                        const _SectionTitle(
-                          title: 'Impacto financeiro',
-                          subtitle:
-                              'Estimativa de retorno e investimento do cenário.',
-                        ),
-                        const SizedBox(height: 14),
-                        _FinancialImpactCard(impact: selected.financialImpact),
-                        const SizedBox(height: 28),
-                        const _SectionTitle(
-                          title: 'Plano de execução',
-                          subtitle:
-                              'Etapas recomendadas para colocar o cenário em prática.',
-                        ),
-                        const SizedBox(height: 14),
-                        _PredictiveActionList(
-                          actions: selected.actions,
-                          onOpenArea: _openArea,
-                        ),
-                        const SizedBox(height: 34),
-                      ],
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
           ),
         ],
       ),

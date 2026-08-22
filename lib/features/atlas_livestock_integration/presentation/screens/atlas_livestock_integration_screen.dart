@@ -176,9 +176,7 @@ class _AtlasLivestockIntegrationScreenState
                         color: Color(0xFFFFF8E1),
                         child: ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Integração dos Módulos Pecuários',
-                          ),
+                          title: Text('Integração dos Módulos Pecuários'),
                           subtitle: Text(
                             'Esta entrega organiza a migração e integração dos módulos. '
                             'Integração efetiva com API e banco real exige backend, endpoints e sincronização configurados.',

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 
@@ -122,7 +124,7 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
       double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
 
   void saveRecord() {
-    if (isSaving || !formKey.currentState!.validate()) return;
+    if (isSaving || !AtlasFeedback.validateForm(context, formKey)) return;
     setState(() => isSaving = true);
     Navigator.pop<AnimalHealthData>(
       context,
@@ -588,15 +590,12 @@ class _AnimalHealthFormScreenState extends State<AnimalHealthFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveRecord,
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar registro',
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveRecord,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar registro',
                     ),
                   ],
                 ),

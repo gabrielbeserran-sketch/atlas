@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/core/events/atlas_event.dart';
 import 'package:projeto_atlas/core/events/atlas_event_bus.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
@@ -76,7 +77,8 @@ class AnimalStorageService {
     final savedData = await _preferences.getString(storageKey);
     if (savedData == null || savedData.isEmpty) return <AnimalData>[];
     try {
-      final decodedData = jsonDecode(savedData) as List<dynamic>;
+      final decodedData =
+          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>
@@ -315,7 +317,6 @@ class AnimalStorageService {
     );
   }
 }
-
 
 class _AnimalRemoteContext {
   const _AnimalRemoteContext({required this.farmId, required this.lotId});

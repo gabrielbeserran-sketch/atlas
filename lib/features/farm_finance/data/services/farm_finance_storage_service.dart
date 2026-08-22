@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -178,7 +179,8 @@ class FarmFinanceStorageService {
       return [];
     }
     try {
-      final decodedData = jsonDecode(savedData) as List<dynamic>;
+      final decodedData =
+          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>

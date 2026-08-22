@@ -140,8 +140,7 @@ class _AtlasBackendFoundationScreenState
               children: [
                 EnterpriseModuleHeader(
                   title: selectedModule.title,
-                  subtitle:
-                      '${selectedModule.title} • ${widget.farm.name}',
+                  subtitle: '${selectedModule.title} • ${widget.farm.name}',
                   icon: _moduleIcon(selectedModule),
                 ),
                 const SizedBox(height: 12),
@@ -149,9 +148,7 @@ class _AtlasBackendFoundationScreenState
                   color: Color(0xFFFFF8E1),
                   child: ListTile(
                     leading: Icon(Icons.info_outline),
-                    title: Text(
-                      'Backend real e arquitetura multempresa',
-                    ),
+                    title: Text('Backend real e arquitetura multempresa'),
                     subtitle: Text(
                       'Esta fase cria a camada funcional de planejamento, acompanhamento e integração. '
                       'A implantação real do servidor exige PostgreSQL, backend, credenciais e infraestrutura configurados.',

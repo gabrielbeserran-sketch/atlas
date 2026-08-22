@@ -1,0 +1,83 @@
+{
+  "package": "Pós-V21 Pacote 2",
+  "purpose": "Realizar manejo coletivo + simplificação inicial do menu",
+  "database_migration_required": false,
+  "backend_route": "POST /api/v1/livestock/handling/batch",
+  "files": [
+    {
+      "path": "backend/app/schemas/legacy.py",
+      "sha256": "4b914f668efff006b230c5d13e662f2d3624be620e7c1017dadf50b20093b74c",
+      "size": 61636
+    },
+    {
+      "path": "backend/app/routers/livestock.py",
+      "sha256": "b93ae639ef34d363b12e3ee2fda1208ed669e8be9a8daa88d09a86fb149b2f1e",
+      "size": 157029
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "996193e4d100fe3d0224df2c5f41f66f07c68ea7b67c7fd99b2549fbcc816b93",
+      "size": 26370
+    },
+    {
+      "path": "lib/features/farm_handling/domain/models/farm_handling_draft.dart",
+      "sha256": "4c05bdbbcefe3896bc2be03752888c07ec2a414b6acbc46694b5febf13e55ab6",
+      "size": 1765
+    },
+    {
+      "path": "lib/features/farm_handling/domain/models/farm_handling_batch_result.dart",
+      "sha256": "11b8c009c96c3dbeaac569a48600293d5e0787213fd9d398b6e13683bc3673ea",
+      "size": 756
+    },
+    {
+      "path": "lib/features/farm_handling/data/services/farm_handling_enterprise_service.dart",
+      "sha256": "a5da30f69860f76b824e53f40cd4ddcdfa45dccb119fe01aff58d8017b8666a9",
+      "size": 689
+    },
+    {
+      "path": "lib/features/farm_handling/presentation/screens/farm_handling_screen.dart",
+      "sha256": "40c7f652fd3d44c15e8ac882326fcb6531642622ddb5fbe74b52cf8250b28b72",
+      "size": 43073
+    },
+    {
+      "path": "test/features/farm_handling/farm_handling_package2_contract_test.dart",
+      "sha256": "a123bae75338b4a0a1085e44af7a72af5a36574cb41d9ea07b79991a4936a13e",
+      "size": 2350
+    },
+    {
+      "path": "tools/atlas_post_v21_package2_gate.py",
+      "sha256": "4a99b252a71fed257f778fc8cad0b23eb25b4dd87e2866ee644288d393d07b9b",
+      "size": 5995
+    },
+    {
+      "path": "tools/atlas_v20_10_integrated_ux_gate.py",
+      "sha256": "db1b51166565f3af709ef5dee23d4731953b24bf9ad3d2c9ecfcfe1d95454404",
+      "size": 3245
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "a5c262303a5119eaaf52b4e8ad57d39e499cf5a07dc209226d650b3b5f6841c8",
+      "size": 3380
+    },
+    {
+      "path": "scripts/quality/atlas_full_project_audit.py",
+      "sha256": "e75901a88520a43c62bed5328060538f83f41704354ee333aa9c0bb63f63313a",
+      "size": 26405
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package2_homologation.ps1",
+      "sha256": "43ff5693655c11228168c979c3178702719336dc01ed17bc6d1b3db1a194dbd8",
+      "size": 2363
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package2_deployed.ps1",
+      "sha256": "4b032f9db8ac61eb36e8dd16e2061f9533db773f048706af1c78a477d6a372aa",
+      "size": 1422
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_2_MANEJO_MENU_20260822.md",
+      "sha256": "623cffdf14c516f697bc5d30b041dfd4d71156fa27ed01cd09f947a90c4140eb",
+      "size": 2245
+    }
+  ]
+}

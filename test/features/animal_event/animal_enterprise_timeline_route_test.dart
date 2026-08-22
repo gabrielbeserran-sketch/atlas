@@ -9,13 +9,7 @@ void main() {
       'animal_enterprise_timeline_service.dart',
     ).readAsStringSync();
 
-    expect(
-      source.contains('/livestock/animals/\$animalId/timeline'),
-      isTrue,
-    );
-    expect(
-      source.contains("'/animals/\$animalId/timeline'"),
-      isFalse,
-    );
+    expect(source.contains('/livestock/animals/\$animalId/timeline'), isTrue);
+    expect(source.contains("'/animals/\$animalId/timeline'"), isFalse);
   });
 }

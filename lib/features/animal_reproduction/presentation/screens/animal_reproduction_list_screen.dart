@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
@@ -254,38 +255,14 @@ class _AnimalReproductionListScreenState
   Future<void> deleteReproductionRecord(
     AnimalReproductionData reproductionRecord,
   ) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Excluir registro'),
-          content: Text(
-            'Tem certeza de que deseja excluir o registro '
-            '${reproductionRecord.type} de '
-            '${reproductionRecord.date}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-              ),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir registro reprodutivo',
+      message:
+          'Deseja excluir ${reproductionRecord.type} de ${reproductionRecord.date}? Essa ação não pode ser desfeita.',
     );
 
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
 

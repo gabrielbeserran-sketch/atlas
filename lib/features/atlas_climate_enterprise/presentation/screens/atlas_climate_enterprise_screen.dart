@@ -174,9 +174,7 @@ class _AtlasClimateEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Inteligência Climática Enterprise',
-                          ),
+                          title: Text('Inteligência Climática Enterprise'),
                           subtitle: Text(
                             'Os registros organizam clima, forragem, pastagens e indicadores. '
                             'Previsões reais exigem APIs, estações, modelos calibrados e validação de campo.',

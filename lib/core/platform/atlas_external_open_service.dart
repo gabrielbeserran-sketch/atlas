@@ -18,10 +18,7 @@ class AtlasExternalOpenService {
 
     final uri = Uri.tryParse(value);
     if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-      final opened = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!opened) {
         throw const AtlasExternalOpenException(
           'Nenhum aplicativo conseguiu abrir o link.',
@@ -32,9 +29,7 @@ class AtlasExternalOpenService {
 
     final file = File(value);
     if (!await file.exists()) {
-      throw AtlasExternalOpenException(
-        'Arquivo não localizado: $value',
-      );
+      throw AtlasExternalOpenException('Arquivo não localizado: $value');
     }
 
     if (Platform.isAndroid) {
@@ -51,11 +46,12 @@ class AtlasExternalOpenService {
     }
 
     if (Platform.isWindows) {
-      final result = await Process.run(
-        'cmd',
-        <String>['/c', 'start', '', file.path],
-        runInShell: true,
-      );
+      final result = await Process.run('cmd', <String>[
+        '/c',
+        'start',
+        '',
+        file.path,
+      ], runInShell: true);
       if (result.exitCode != 0) {
         throw AtlasExternalOpenException(
           'Windows não conseguiu abrir o arquivo: ${result.stderr}',

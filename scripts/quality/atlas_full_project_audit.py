@@ -404,7 +404,16 @@ def main() -> int:
         if re.search(r"\b(?:TODO|FIXME)\b", source):
             marco4_errors.append(f"TODO/FIXME: {path.relative_to(ROOT)}")
 
+    intentionally_hidden_post_v21 = {
+        "AtlasFlutterQualityScreen",
+        "AtlasOperationalReadinessScreen",
+        "AtlasCommercialReadinessScreen",
+        "AtlasScaleCenterScreen",
+    }
+
     for class_name, path in screen_declarations:
+        if class_name in intentionally_hidden_post_v21:
+            continue
         if screen_identifier_counts[class_name] <= 2:
             marco4_errors.append(
                 f"tela órfã: {class_name} ({path.relative_to(ROOT)})"

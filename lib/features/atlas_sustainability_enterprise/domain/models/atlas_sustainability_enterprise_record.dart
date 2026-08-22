@@ -55,9 +55,12 @@ extension AtlasSustainabilityEnterpriseModuleX
     AtlasSustainabilityEnterpriseModule.energyEfficiency => 'Energia',
     AtlasSustainabilityEnterpriseModule.wasteManagement => 'Resíduos',
     AtlasSustainabilityEnterpriseModule.biodiversity => 'Biodiversidade',
-    AtlasSustainabilityEnterpriseModule.environmentalCompliance => 'Conformidade',
-    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications => 'Certificações',
-    AtlasSustainabilityEnterpriseModule.sustainableTraceability => 'Rastreabilidade',
+    AtlasSustainabilityEnterpriseModule.environmentalCompliance =>
+      'Conformidade',
+    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications =>
+      'Certificações',
+    AtlasSustainabilityEnterpriseModule.sustainableTraceability =>
+      'Rastreabilidade',
     AtlasSustainabilityEnterpriseModule.esgCenter => 'Indicadores ESG',
   };
 

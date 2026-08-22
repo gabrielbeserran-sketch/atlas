@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
@@ -26,7 +29,6 @@ class NutritionOverviewScreen extends StatefulWidget {
 }
 
 class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
-  static const forestGreen = Color(0xFF1B5E20);
   final farmStorage = FarmStorageService();
   final storage = NutritionStorageService();
   final inventoryIntegration = NutritionInventoryService();
@@ -226,25 +228,13 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
   }
 
   Future<void> deletePlan(NutritionPlanData plan) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Excluir dieta'),
-        content: Text('Deseja excluir “${AtlasUiText.clean(plan.dietName)}”?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+    final confirmed = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir dieta',
+      message:
+          'Deseja excluir “${AtlasUiText.clean(plan.dietName)}”? Essa ação não pode ser desfeita.',
     );
-    if (confirmed != true || !mounted) {
+    if (!confirmed || !mounted) {
       return;
     }
     final farmId = widget.farm?.id ?? '';
@@ -269,35 +259,30 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: widget.embedded ? null : AppBar(
-        title: Text(
-          widget.farm == null
-              ? 'Central de Nutrição'
-              : 'Nutrição — ${widget.farm!.name}',
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar',
-            onPressed: isLoading ? null : loadData,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => openForm(),
-        backgroundColor: forestGreen,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nova dieta'),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: Text(
+                widget.farm == null
+                    ? 'Central de Nutrição'
+                    : 'Nutrição — ${widget.farm!.name}',
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: isLoading ? null : loadData,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : loadError != null && plans.isEmpty
-              ? AtlasLoadErrorState(
-                  message: 'Verifique sua conexão e tente novamente.',
-                  onRetry: loadData,
-                )
-              : RefreshIndicator(
+          ? AtlasLoadErrorState(
+              message: 'Verifique sua conexão e tente novamente.',
+              onRetry: loadData,
+            )
+          : RefreshIndicator(
               onRefresh: loadData,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
@@ -310,6 +295,13 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
                   const Text(
                     'Formule dietas, acompanhe composição bromatológica, consumo, desempenho e custos.',
                     style: TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 12),
+                  AtlasOperationalActionBar(
+                    primaryLabel: 'Nova dieta',
+                    onPrimary: () => openForm(),
+                    onRefresh: loadData,
+                    busy: isLoading,
                   ),
                   const SizedBox(height: 20),
                   LayoutBuilder(
@@ -410,32 +402,29 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
                   ),
                   const SizedBox(height: 16),
                   if (visiblePlans.isEmpty)
-                    const Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.grass_outlined,
-                              size: 54,
-                              color: forestGreen,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              'Nenhuma dieta encontrada',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Cadastre a primeira dieta para iniciar o controle nutricional.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
+                    AtlasEmptyState(
+                      icon: Icons.grass_outlined,
+                      title: search.trim().isNotEmpty || farmFilter != 'Todas'
+                          ? 'Nenhuma dieta encontrada'
+                          : 'Nenhuma dieta cadastrada',
+                      message: search.trim().isNotEmpty || farmFilter != 'Todas'
+                          ? 'Os filtros atuais não encontraram dietas. Limpe os filtros para voltar à lista completa.'
+                          : 'Cadastre a primeira dieta para iniciar o controle nutricional da fazenda.',
+                      actionLabel:
+                          search.trim().isNotEmpty || farmFilter != 'Todas'
+                          ? 'Limpar filtros'
+                          : 'Nova dieta',
+                      onAction: () {
+                        if (search.trim().isNotEmpty || farmFilter != 'Todas') {
+                          searchController.clear();
+                          setState(() {
+                            search = '';
+                            farmFilter = 'Todas';
+                          });
+                        } else {
+                          openForm();
+                        }
+                      },
                     )
                   else
                     ...visiblePlans.map(
@@ -473,7 +462,10 @@ class _PlanCard extends StatelessWidget {
     final ingredients = plan.ingredients.isEmpty
         ? 'Sem formulação por ingredientes'
         : plan.ingredients
-              .map((e) => '${AtlasUiText.clean(e.name)} ${number(e.inclusionKg)} kg')
+              .map(
+                (e) =>
+                    '${AtlasUiText.clean(e.name)} ${number(e.inclusionKg)} kg',
+              )
               .join(' • ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

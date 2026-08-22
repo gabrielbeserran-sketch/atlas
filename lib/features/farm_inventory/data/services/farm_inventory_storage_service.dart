@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -152,7 +153,7 @@ class FarmInventoryStorageService {
       return [];
     }
     try {
-      return (jsonDecode(raw) as List<dynamic>)
+      return (AtlasTextNormalizer.normalize(jsonDecode(raw)) as List<dynamic>)
           .map(
             (item) => FarmInventoryData.fromMap(
               Map<String, dynamic>.from(item as Map),

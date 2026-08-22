@@ -84,9 +84,7 @@ class _AnimalPhotoFormScreenState extends State<AnimalPhotoFormScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Não foi possível selecionar a foto: $error'),
-        ),
+        SnackBar(content: Text('Não foi possível selecionar a foto: $error')),
       );
     } finally {
       if (mounted) setState(() => isSelectingImage = false);

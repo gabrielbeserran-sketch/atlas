@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/farm_agenda/domain/models/farm_agenda_data.dart';
 
 class FarmAgendaFormScreen extends StatefulWidget {
@@ -110,7 +112,7 @@ class _FarmAgendaFormScreenState extends State<FarmAgendaFormScreen> {
       return;
     }
 
-    if (!formKey.currentState!.validate()) {
+    if (!AtlasFeedback.validateForm(context, formKey)) {
       return;
     }
 
@@ -467,22 +469,12 @@ class _FarmAgendaFormScreenState extends State<FarmAgendaFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveTask,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing
-                              ? 'Salvar alterações'
-                              : 'Salvar compromisso',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveTask,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar compromisso',
                     ),
                   ],
                 ),

@@ -13,10 +13,25 @@ class AtlasTextNormalizer {
     r'(Ã.|Â.|â€|â€™|â€œ|â€|â€“|â€”|ðŸ|�)',
   );
 
+  static const Map<String, String> _commonReplacements = {
+    'â€“': '–',
+    'â€”': '—',
+    'â€™': '’',
+    'â€œ': '“',
+    'â€': '”',
+    'Â·': '·',
+    'Âº': 'º',
+    'Âª': 'ª',
+    'Â ': ' ',
+  };
+
   static String repair(String value) {
     if (value.isEmpty || !_mojibakeMarkers.hasMatch(value)) return value;
 
     var current = value;
+    for (final entry in _commonReplacements.entries) {
+      current = current.replaceAll(entry.key, entry.value);
+    }
     for (var attempt = 0; attempt < 2; attempt++) {
       if (!_mojibakeMarkers.hasMatch(current)) break;
       try {
@@ -40,8 +55,7 @@ class AtlasTextNormalizer {
     }
     if (value is Map) {
       return <dynamic, dynamic>{
-        for (final entry in value.entries)
-          entry.key: normalize(entry.value),
+        for (final entry in value.entries) entry.key: normalize(entry.value),
       };
     }
     return value;

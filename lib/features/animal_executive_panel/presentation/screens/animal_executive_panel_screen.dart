@@ -231,7 +231,9 @@ class _AnimalExecutivePanelScreenState
                                       ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEAF3E2),
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       child: Text(
                                         level,

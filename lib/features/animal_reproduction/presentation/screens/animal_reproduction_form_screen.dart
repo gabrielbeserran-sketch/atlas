@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -129,7 +131,7 @@ class _AnimalReproductionFormScreenState
   }
 
   void saveRecord() {
-    if (isSaving || !formKey.currentState!.validate()) return;
+    if (isSaving || !AtlasFeedback.validateForm(context, formKey)) return;
     setState(() => isSaving = true);
     Navigator.pop<AnimalReproductionData>(
       context,
@@ -430,19 +432,12 @@ class _AnimalReproductionFormScreenState
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveRecord,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar registro',
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveRecord,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar registro',
                     ),
                   ],
                 ),

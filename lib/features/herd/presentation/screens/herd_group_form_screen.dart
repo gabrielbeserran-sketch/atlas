@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -63,7 +65,7 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
   }
 
   void saveGroup() {
-    if (isSaving || !formKey.currentState!.validate()) {
+    if (isSaving || !AtlasFeedback.validateForm(context, formKey)) {
       return;
     }
     setState(() => isSaving = true);
@@ -181,15 +183,12 @@ class _HerdGroupFormScreenState extends State<HerdGroupFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveGroup,
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar lote',
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveGroup,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar lote',
                     ),
                   ],
                 ),

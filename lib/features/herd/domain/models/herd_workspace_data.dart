@@ -15,9 +15,8 @@ class HerdWorkspaceData {
   final List<HerdAnimalRecord> records;
 
   int get totalAnimals => records.length;
-  int get activeAnimals => records
-      .where((record) => _isActiveStatus(record.animal.status))
-      .length;
+  int get activeAnimals =>
+      records.where((record) => _isActiveStatus(record.animal.status)).length;
   int get females => records
       .where((record) => _normalize(record.animal.sex).startsWith('f'))
       .length;

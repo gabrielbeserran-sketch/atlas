@@ -175,9 +175,7 @@ class _AtlasGovernancePeopleScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Pessoas, Segurança e Governança',
-                          ),
+                          title: Text('Pessoas, Segurança e Governança'),
                           subtitle: Text(
                             'A entrega organiza pessoas, documentos, auditorias, riscos e acessos. '
                             'Registros legais e trabalhistas reais exigem validação profissional.',

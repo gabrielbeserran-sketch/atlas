@@ -8,7 +8,10 @@ class AnimalGenealogyEnterpriseService {
   final AtlasEnterpriseApiClient _api;
 
   Future<AnimalGenealogyData> loadGenealogy(String animalId) async {
-    final response = await _api.request('GET', '/livestock/animals/$animalId/genealogy');
+    final response = await _api.request(
+      'GET',
+      '/livestock/animals/$animalId/genealogy',
+    );
 
     return AnimalGenealogyData.fromMap(response);
   }

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
@@ -141,9 +143,7 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 
     final warnings = <String>[];
     try {
-      final previousGroups = List<HerdGroupData>.unmodifiable(
-        workspace.groups,
-      );
+      final previousGroups = List<HerdGroupData>.unmodifiable(workspace.groups);
       final previousAnimals = List<AnimalData>.unmodifiable(
         workspace.records.map((record) => record.animal),
       );
@@ -436,13 +436,6 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      floatingActionButton: farm == null
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: createAnimal,
-              icon: const Icon(Icons.add),
-              label: const Text('Novo animal'),
-            ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadWorkspace,
@@ -458,8 +451,15 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                     children: [
                       _Header(
                         farmName: farm?.name ?? 'Nenhuma fazenda selecionada',
-                        onRefresh: isLoading ? null : loadWorkspace,
-                        onCreateLot: farm == null ? null : createLot,
+                      ),
+                      const SizedBox(height: 12),
+                      AtlasOperationalActionBar(
+                        primaryLabel: 'Novo animal',
+                        onPrimary: farm == null ? null : createAnimal,
+                        secondaryLabel: 'Novo lote',
+                        onSecondary: farm == null ? null : createLot,
+                        onRefresh: loadWorkspace,
+                        busy: isLoading,
                       ),
                       const SizedBox(height: 20),
                       if (isLoading)
@@ -512,6 +512,7 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                           onEdit: editLot,
                           onFilter: (group) =>
                               setState(() => selectedLotId = group.id),
+                          onCreate: createLot,
                         ),
                         const SizedBox(height: 24),
                         Text(
@@ -521,7 +522,18 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                         ),
                         const SizedBox(height: 12),
                         if (filtered.isEmpty)
-                          const _EmptyAnimals()
+                          _EmptyAnimals(
+                            hasAnimals: workspace.records.isNotEmpty,
+                            onCreate: createAnimal,
+                            onClear: () {
+                              searchController.clear();
+                              setState(() {
+                                selectedLotId = '';
+                                selectedStatus = '';
+                                selectedSex = '';
+                              });
+                            },
+                          )
                         else
                           ...filtered.map(
                             (record) => Padding(
@@ -551,19 +563,13 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({
-    required this.farmName,
-    required this.onRefresh,
-    required this.onCreateLot,
-  });
+  const _Header({required this.farmName});
 
   final String farmName;
-  final VoidCallback? onRefresh;
-  final VoidCallback? onCreateLot;
 
   @override
   Widget build(BuildContext context) {
-    final title = Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
@@ -573,50 +579,6 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 4),
         Text(farmName, style: const TextStyle(color: Colors.black54)),
       ],
-    );
-
-    final refresh = OutlinedButton.icon(
-      onPressed: onRefresh,
-      icon: const Icon(Icons.refresh),
-      label: const Text('Atualizar'),
-    );
-
-    final create = FilledButton.icon(
-      onPressed: onCreateLot,
-      icon: const Icon(Icons.add_box_outlined),
-      label: const Text('Novo lote'),
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 620;
-
-        if (compact) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              title,
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(child: refresh),
-                  const SizedBox(width: 8),
-                  Expanded(child: create),
-                ],
-              ),
-            ],
-          );
-        }
-
-        return Row(
-          children: [
-            Expanded(child: title),
-            refresh,
-            const SizedBox(width: 10),
-            create,
-          ],
-        );
-      },
     );
   }
 }
@@ -834,15 +796,17 @@ class _LotsSection extends StatelessWidget {
     required this.records,
     required this.onEdit,
     required this.onFilter,
+    required this.onCreate,
   });
   final List<HerdGroupData> groups;
   final List<HerdAnimalRecord> records;
   final ValueChanged<HerdGroupData> onEdit;
   final ValueChanged<HerdGroupData> onFilter;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
-    if (groups.isEmpty) return const _EmptyLots();
+    if (groups.isEmpty) return _EmptyLots(onCreate: onCreate);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1075,35 +1039,40 @@ class _ErrorState extends StatelessWidget {
 }
 
 class _EmptyLots extends StatelessWidget {
-  const _EmptyLots();
+  const _EmptyLots({required this.onCreate});
+
+  final VoidCallback onCreate;
+
   @override
-  Widget build(BuildContext context) => const Card(
-    child: Padding(
-      padding: EdgeInsets.all(28),
-      child: Row(
-        children: [
-          Icon(Icons.groups_outlined, size: 42),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Nenhum lote cadastrado. Use “Novo lote” para iniciar a organização do rebanho.',
-            ),
-          ),
-        ],
-      ),
-    ),
+  Widget build(BuildContext context) => AtlasEmptyState(
+    icon: Icons.groups_outlined,
+    title: 'Nenhum lote cadastrado',
+    message:
+        'Crie o primeiro lote para organizar os animais da fazenda por grupo e manejo.',
+    actionLabel: 'Novo lote',
+    onAction: onCreate,
   );
 }
 
 class _EmptyAnimals extends StatelessWidget {
-  const _EmptyAnimals();
+  const _EmptyAnimals({
+    required this.hasAnimals,
+    required this.onCreate,
+    required this.onClear,
+  });
+
+  final bool hasAnimals;
+  final VoidCallback onCreate;
+  final VoidCallback onClear;
+
   @override
-  Widget build(BuildContext context) => const Card(
-    child: Padding(
-      padding: EdgeInsets.all(32),
-      child: Center(
-        child: Text('Nenhum animal encontrado para os filtros selecionados.'),
-      ),
-    ),
+  Widget build(BuildContext context) => AtlasEmptyState(
+    icon: Icons.pets_outlined,
+    title: hasAnimals ? 'Nenhum animal encontrado' : 'Nenhum animal cadastrado',
+    message: hasAnimals
+        ? 'Os filtros atuais não encontraram animais. Limpe os filtros para ver todo o rebanho.'
+        : 'Cadastre o primeiro animal para iniciar o histórico, as pesagens e os manejos.',
+    actionLabel: hasAnimals ? 'Limpar filtros' : 'Novo animal',
+    onAction: hasAnimals ? onClear : onCreate,
   );
 }

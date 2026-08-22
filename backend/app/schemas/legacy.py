@@ -529,6 +529,52 @@ class AnimalMovementResponse(BaseModel):
     created_by: str
 
 
+class FarmHandlingWeightEntry(BaseModel):
+    animal_id: str
+    weight: float = Field(gt=0)
+    body_condition_score: float = Field(default=0, ge=0, le=5)
+
+
+class FarmHandlingBatchRequest(BaseModel):
+    farm_id: str
+    action: str
+    animal_ids: list[str] = Field(min_length=1)
+    occurred_at: datetime | None = None
+    responsible: str = ""
+    notes: str = ""
+    to_lot_id: str | None = None
+    reason: str = ""
+    document_reference: str = ""
+    sale_total_amount: float = Field(default=0, ge=0)
+    sale_counterparty: str = ""
+    sale_document: str = ""
+    category: str = ""
+    health_event_type: str = ""
+    health_product_name: str = ""
+    health_dosage: str = ""
+    health_route: str = ""
+    health_next_date: datetime | None = None
+    health_treatment_cost_per_animal: float = Field(default=0, ge=0)
+    reproduction_event_type: str = ""
+    reproduction_event_code: str = "observation"
+    reproduction_result: str = ""
+    reproduction_protocol_name: str = ""
+    reproduction_sire_reference: str = ""
+    reproduction_expected_date: datetime | None = None
+    weights: list[FarmHandlingWeightEntry] = Field(default_factory=list)
+
+
+class FarmHandlingBatchResponse(BaseModel):
+    handling_id: str
+    farm_id: str
+    action: str
+    affected_count: int
+    animal_ids: list[str]
+    created_ids: list[str] = Field(default_factory=list)
+    finance_entry_id: str | None = None
+    summary: str
+
+
 class WeightCreateRequest(BaseModel):
     weight: float = Field(gt=0)
     body_condition_score: float = Field(default=0, ge=0, le=5)

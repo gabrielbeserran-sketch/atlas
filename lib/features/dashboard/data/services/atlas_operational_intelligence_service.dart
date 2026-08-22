@@ -3,7 +3,7 @@ import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas
 
 class AtlasOperationalIntelligenceService {
   AtlasOperationalIntelligenceService({AtlasEnterpriseApiClient? api})
-      : _api = api ?? AtlasEnterpriseApiClient.instance;
+    : _api = api ?? AtlasEnterpriseApiClient.instance;
 
   final AtlasEnterpriseApiClient _api;
 

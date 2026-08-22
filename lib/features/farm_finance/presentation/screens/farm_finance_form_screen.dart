@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 
 class FarmFinanceFormScreen extends StatefulWidget {
@@ -138,7 +140,7 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
   }
 
   void saveRecord() {
-    if (isSaving || !formKey.currentState!.validate()) return;
+    if (isSaving || !AtlasFeedback.validateForm(context, formKey)) return;
     final amount = parseCurrencyValue(amountController.text);
     if (amount == null) return;
     setState(() => isSaving = true);
@@ -440,15 +442,12 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveRecord,
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar lançamento',
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveRecord,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar lançamento',
                     ),
                   ],
                 ),

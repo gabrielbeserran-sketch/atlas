@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -147,7 +148,7 @@ class AnimalReproductionStorageService {
     final raw = await _preferences.getString(key);
     if (raw == null || raw.isEmpty) return <AnimalReproductionData>[];
     try {
-      return (jsonDecode(raw) as List<dynamic>)
+      return (AtlasTextNormalizer.normalize(jsonDecode(raw)) as List<dynamic>)
           .map(
             (item) => AnimalReproductionData.fromMap(
               Map<String, dynamic>.from(item as Map),
@@ -159,11 +160,9 @@ class AnimalReproductionStorageService {
     }
   }
 
-  Future<void> _saveLocal(
-    String key,
-    List<AnimalReproductionData> records,
-  ) => _preferences.setString(
-    key,
-    jsonEncode(records.map((record) => record.toMap()).toList()),
-  );
+  Future<void> _saveLocal(String key, List<AnimalReproductionData> records) =>
+      _preferences.setString(
+        key,
+        jsonEncode(records.map((record) => record.toMap()).toList()),
+      );
 }

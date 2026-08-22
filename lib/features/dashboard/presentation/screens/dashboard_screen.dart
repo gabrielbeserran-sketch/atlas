@@ -224,7 +224,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       openInventory();
     } else if (normalized.contains('agenda')) {
       chooseFarmAgenda();
-    } else if (normalized.contains('rebanho') || normalized.contains('pesagem')) {
+    } else if (normalized.contains('rebanho') ||
+        normalized.contains('pesagem')) {
       openHerd();
     } else if (normalized.contains('integridade')) {
       openTechnicalDashboard();
@@ -238,7 +239,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (data == null || data.farmId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecione uma fazenda e atualize a inteligência operacional.'),
+          content: Text(
+            'Selecione uma fazenda e atualize a inteligência operacional.',
+          ),
         ),
       );
       return;
@@ -850,7 +853,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-
 class AdvancedAnalysisAccessCard extends StatelessWidget {
   const AdvancedAnalysisAccessCard({
     required this.actionCount,
@@ -879,10 +881,7 @@ class AdvancedAnalysisAccessCard extends StatelessWidget {
               children: [
                 Text(
                   'Análises e decisões',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -896,7 +895,9 @@ class AdvancedAnalysisAccessCard extends StatelessWidget {
             final executive = OutlinedButton.icon(
               onPressed: onOpenExecutive,
               icon: const Icon(Icons.analytics_outlined),
-              label: Text('Executivo · $actionCount ações · $alertCount alertas'),
+              label: Text(
+                'Executivo · $actionCount ações · $alertCount alertas',
+              ),
             );
 
             final technical = OutlinedButton.icon(

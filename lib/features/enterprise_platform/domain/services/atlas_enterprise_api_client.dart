@@ -223,7 +223,6 @@ class AtlasEnterpriseApiClient {
     }
   }
 
-
   Future<Map<String, dynamic>> uploadFile(
     String method,
     String path, {

@@ -13,12 +13,14 @@ class AnimalWeightListScreen extends StatefulWidget {
     required this.animal,
     required this.farm,
     required this.group,
+    this.autoOpenCreate = false,
     super.key,
   });
 
   final AnimalData animal;
   final FarmData farm;
   final HerdGroupData group;
+  final bool autoOpenCreate;
 
   @override
   State<AnimalWeightListScreen> createState() => _AnimalWeightListScreenState();
@@ -38,7 +40,14 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   @override
   void initState() {
     super.initState();
-    loadWeights();
+    _loadInitial();
+  }
+
+  Future<void> _loadInitial() async {
+    await loadWeights();
+    if (widget.autoOpenCreate && mounted) {
+      await openWeightForm();
+    }
   }
 
   double get currentWeight {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
@@ -28,6 +30,7 @@ class HealthOverviewScreen extends StatefulWidget {
 }
 
 class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
+  final searchController = TextEditingController();
   final FarmStorageService farmStorage = FarmStorageService();
   final HerdStorageService herdStorage = HerdStorageService();
   final AnimalStorageService animalStorage = AnimalStorageService();
@@ -93,6 +96,12 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
   void initState() {
     super.initState();
     _loadInitial();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadInitial() async {
@@ -224,34 +233,31 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading ? null : openNewEvent,
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo evento sanitário'),
-      ),
-      appBar: widget.embedded ? null : AppBar(
-        title: Text(
-          widget.farm == null ? 'Sanidade' : 'Sanidade — ${widget.farm!.name}',
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar dados',
-            onPressed: isLoading ? null : loadData,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: Text(
+                widget.farm == null
+                    ? 'Sanidade'
+                    : 'Sanidade — ${widget.farm!.name}',
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar dados',
+                  onPressed: isLoading ? null : loadData,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : loadError != null && animals.isEmpty
-                ? AtlasLoadErrorState(
-                    message: 'Verifique sua conexão e tente novamente.',
-                    onRetry: loadData,
-                  )
-                : RefreshIndicator(
+            ? AtlasLoadErrorState(
+                message: 'Verifique sua conexão e tente novamente.',
+                onRetry: loadData,
+              )
+            : RefreshIndicator(
                 onRefresh: loadData,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -264,6 +270,13 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const _HealthHeader(),
+                            const SizedBox(height: 12),
+                            AtlasOperationalActionBar(
+                              primaryLabel: 'Novo evento sanitário',
+                              onPrimary: openNewEvent,
+                              onRefresh: loadData,
+                              busy: isLoading,
+                            ),
                             const SizedBox(height: 24),
                             Wrap(
                               spacing: 16,
@@ -316,6 +329,7 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
                             ),
                             const SizedBox(height: 28),
                             TextField(
+                              controller: searchController,
                               onChanged: (value) {
                                 setState(() {
                                   search = value;
@@ -348,9 +362,14 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
                             ),
                             const SizedBox(height: 18),
                             if (animals.isEmpty)
-                              const _EmptyHealth()
+                              _EmptyHealth()
                             else if (filteredAnimals.isEmpty)
-                              const _NoSearchResults()
+                              _NoSearchResults(
+                                onClear: () {
+                                  searchController.clear();
+                                  setState(() => search = '');
+                                },
+                              )
                             else
                               ...filteredAnimals.map(
                                 (contextData) => Padding(
@@ -600,47 +619,29 @@ class _EmptyHealth extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(30),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(AtlasLivestockIcons.cow, size: 48, color: Colors.black38),
-              SizedBox(height: 12),
-              Text(
-                'Nenhum animal cadastrado',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Cadastre fazendas, lotes e animais para iniciar o acompanhamento sanitário.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return const AtlasEmptyState(
+      icon: Icons.medical_services_outlined,
+      title: 'Nenhum animal disponível',
+      message:
+          'Cadastre o animal no Rebanho para iniciar vacinas, tratamentos, exames e ocorrências clínicas.',
     );
   }
 }
 
 class _NoSearchResults extends StatelessWidget {
-  const _NoSearchResults();
+  const _NoSearchResults({required this.onClear});
+
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(28),
-        child: Center(
-          child: Text(
-            'Nenhum animal encontrado para esta busca.',
-            style: TextStyle(color: Colors.black54),
-          ),
-        ),
-      ),
+    return AtlasEmptyState(
+      icon: Icons.search_off_outlined,
+      title: 'Nenhum animal encontrado',
+      message:
+          'A busca atual não encontrou animais. Limpe a busca para voltar à lista completa.',
+      actionLabel: 'Limpar busca',
+      onAction: onClear,
     );
   }
 }

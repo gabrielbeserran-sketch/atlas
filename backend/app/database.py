@@ -4,13 +4,14 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
-from sqlalchemy import create_engine, inspect, literal, text
+from sqlalchemy import JSON, String, Text, create_engine, event, inspect, literal, text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from sqlalchemy.pool import NullPool
 from sqlalchemy.sql.schema import Column, MetaData
 
 from .config import get_settings
+from .text_normalization import normalize_text_payload, repair_mojibake_text
 
 settings = get_settings()
 
@@ -65,6 +66,41 @@ SessionLocal = sessionmaker(
 
 class Base(DeclarativeBase):
     pass
+
+
+@event.listens_for(Session, "before_flush")
+def _normalize_text_before_flush(
+    session: Session,
+    flush_context: object,
+    instances: object,
+) -> None:
+    """Impede que mojibake volte a ser persistido no banco.
+
+    A regra atua na borda de persistência e preserva códigos internos: apenas
+    strings com marcadores inequívocos de codificação quebrada são reparadas.
+    Estruturas JSON também são normalizadas recursivamente.
+    """
+    for item in set(session.new).union(session.dirty):
+        mapper = getattr(item, "__mapper__", None)
+        if mapper is None:
+            continue
+        for attribute in mapper.column_attrs:
+            columns = getattr(attribute, "columns", ())
+            if not columns:
+                continue
+            column_type = columns[0].type
+            key = attribute.key
+            value = getattr(item, key, None)
+            if value is None:
+                continue
+            if isinstance(column_type, (String, Text)) and isinstance(value, str):
+                repaired = repair_mojibake_text(value)
+                if repaired != value:
+                    setattr(item, key, repaired)
+            elif isinstance(column_type, JSON):
+                normalized = normalize_text_payload(value)
+                if normalized != value:
+                    setattr(item, key, normalized)
 
 
 def get_db() -> Generator[Session, None, None]:

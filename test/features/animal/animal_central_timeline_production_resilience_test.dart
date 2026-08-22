@@ -20,16 +20,9 @@ void main() {
   });
 
   test('Timeline Enterprise usa cliente oficial sem timeout local', () {
+    expect(source.contains("label: 'Timeline Enterprise'"), isTrue);
     expect(
-      source.contains(
-        "label: 'Timeline Enterprise'",
-      ),
-      isTrue,
-    );
-    expect(
-      source.contains(
-        'ATLAS Animal Central [Timeline Enterprise]',
-      ),
+      source.contains('ATLAS Animal Central [Timeline Enterprise]'),
       isTrue,
     );
   });

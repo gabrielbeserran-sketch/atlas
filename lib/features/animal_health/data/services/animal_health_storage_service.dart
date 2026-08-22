@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -169,7 +170,7 @@ class AnimalHealthStorageService {
     final raw = await _preferences.getString(key);
     if (raw == null || raw.isEmpty) return <AnimalHealthData>[];
     try {
-      return (jsonDecode(raw) as List<dynamic>)
+      return (AtlasTextNormalizer.normalize(jsonDecode(raw)) as List<dynamic>)
           .map(
             (item) => AnimalHealthData.fromMap(
               Map<String, dynamic>.from(item as Map),

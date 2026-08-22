@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
@@ -270,37 +274,14 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   }
 
   Future<void> deleteRecord(FarmFinanceData record) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Excluir lançamento'),
-          content: Text(
-            'Deseja excluir ${record.description} '
-            'no valor de ${formatCurrency(record.amount)}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-              ),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir lançamento',
+      message:
+          'Deseja excluir ${record.description} no valor de ${formatCurrency(record.amount)}? Essa ação não pode ser desfeita.',
     );
 
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
 
@@ -344,23 +325,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final visibleRecords = filteredRecords;
 
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(
-        title: const Text('Financeiro'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar',
-            onPressed: isLoading ? null : loadRecords,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading ? null : openFinanceForm,
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo lançamento'),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Financeiro'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: isLoading ? null : loadRecords,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -368,16 +344,23 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && records.isEmpty
-                    ? AtlasLoadErrorState(
-                        message: 'Verifique sua conexão e tente novamente.',
-                        onRetry: loadRecords,
-                      )
-                    : RefreshIndicator(
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadRecords,
+                  )
+                : RefreshIndicator(
                     onRefresh: loadRecords,
                     child: ListView(
                       padding: const EdgeInsets.all(24),
                       children: [
                         FinanceHeader(farm: widget.farm, balance: balance),
+                        const SizedBox(height: 12),
+                        AtlasOperationalActionBar(
+                          primaryLabel: 'Novo lançamento',
+                          onPrimary: openFinanceForm,
+                          onRefresh: loadRecords,
+                          busy: isLoading,
+                        ),
                         const SizedBox(height: 24),
                         Wrap(
                           spacing: 16,
@@ -508,6 +491,9 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                         if (visibleRecords.isEmpty)
                           EmptyFinanceMessage(
                             hasFilter: selectedFilter != 'Todos',
+                            onCreate: openFinanceForm,
+                            onClear: () =>
+                                setState(() => selectedFilter = 'Todos'),
                           )
                         else
                           ...visibleRecords.map(
@@ -733,7 +719,7 @@ class FinanceRecordCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      record.description,
+                      AtlasUiText.clean(record.description),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -741,7 +727,7 @@ class FinanceRecordCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      record.category,
+                      AtlasUiText.category(record.category),
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.w600,
@@ -765,7 +751,7 @@ class FinanceRecordCard extends StatelessWidget {
                     if (record.counterparty.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Text(
-                        record.counterparty,
+                        AtlasUiText.clean(record.counterparty),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -773,16 +759,19 @@ class FinanceRecordCard extends StatelessWidget {
                         record.animalIdentification.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        [
-                          record.lotName,
-                          record.animalIdentification,
-                        ].where((e) => e.isNotEmpty).join(' • '),
+                        [record.lotName, record.animalIdentification]
+                            .where((e) => e.isNotEmpty)
+                            .map(AtlasUiText.clean)
+                            .join(' • '),
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                     if (record.notes.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      Text(record.notes, style: const TextStyle(height: 1.4)),
+                      Text(
+                        AtlasUiText.clean(record.notes),
+                        style: const TextStyle(height: 1.4),
+                      ),
                     ],
                   ],
                 ),
@@ -861,41 +850,29 @@ class FinanceInformation extends StatelessWidget {
 }
 
 class EmptyFinanceMessage extends StatelessWidget {
-  const EmptyFinanceMessage({required this.hasFilter, super.key});
+  const EmptyFinanceMessage({
+    required this.hasFilter,
+    required this.onCreate,
+    required this.onClear,
+    super.key,
+  });
 
   final bool hasFilter;
+  final VoidCallback onCreate;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(36),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 60,
-              color: Color(0xFF1B5E20),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              hasFilter
-                  ? 'Nenhum lançamento neste filtro.'
-                  : 'Nenhum lançamento financeiro.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              hasFilter
-                  ? 'Selecione outro filtro.'
-                  : 'Registre a primeira receita ou despesa da fazenda.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ],
-        ),
-      ),
+    return AtlasEmptyState(
+      icon: Icons.account_balance_wallet_outlined,
+      title: hasFilter
+          ? 'Nenhum lançamento neste filtro'
+          : 'Nenhum lançamento financeiro',
+      message: hasFilter
+          ? 'O filtro atual não encontrou lançamentos. Limpe o filtro para ver todos.'
+          : 'Registre a primeira receita ou despesa da fazenda.',
+      actionLabel: hasFilter ? 'Limpar filtro' : 'Novo lançamento',
+      onAction: hasFilter ? onClear : onCreate,
     );
   }
 }

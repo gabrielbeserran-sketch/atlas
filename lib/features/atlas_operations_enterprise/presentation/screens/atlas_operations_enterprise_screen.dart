@@ -174,9 +174,7 @@ class _AtlasOperationsEnterpriseScreenState
                         color: const Color(0xFFFFF8E1),
                         child: const ListTile(
                           leading: Icon(Icons.info_outline),
-                          title: Text(
-                            'Gestão Operacional Inteligente',
-                          ),
+                          title: Text('Gestão Operacional Inteligente'),
                           subtitle: Text(
                             'A entrega organiza planos, atividades, equipes, máquinas e manutenção. '
                             'Registros trabalhistas e técnicos reais exigem validação dos responsáveis.',

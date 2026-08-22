@@ -34,6 +34,7 @@ checks = {
     ),
     "herd_header_responsive": (
         "final compact = constraints.maxWidth < 620;" in herd
+        or "AtlasOperationalActionBar(" in herd
     ),
     "herd_filters_responsive": (
         "hintText: 'Brinco, SISBOV, nome ou raça'" in herd

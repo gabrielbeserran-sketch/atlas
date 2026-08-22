@@ -29,9 +29,6 @@ void main() {
     ).readAsStringSync();
 
     expect(source.contains('Produção exige API HTTPS.'), isTrue);
-    expect(
-      source.contains('receiveTimeout: Duration(seconds: 60)'),
-      isTrue,
-    );
+    expect(source.contains('receiveTimeout: Duration(seconds: 60)'), isTrue);
   });
 }

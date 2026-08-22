@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal_movement/domain/models/animal_movement_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 
@@ -248,6 +249,8 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                             : selectedDestinationLotId,
                         decoration: const InputDecoration(
                           labelText: 'Lote de destino',
+                          helperText:
+                              'Escolha para qual lote o animal será movido.',
                           prefixIcon: Icon(Icons.groups_2_outlined),
                         ),
                         items: destinationGroups
@@ -301,12 +304,10 @@ class _AnimalMovementFormScreenState extends State<AnimalMovementFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: isSaving ? null : saveRecord,
-                      icon: const Icon(Icons.save_outlined),
-                      label: Text(
-                        isSaving ? 'Salvando...' : 'Salvar movimentação',
-                      ),
+                    AtlasFormActions(
+                      onSave: saveRecord,
+                      saveLabel: 'Salvar movimentação',
+                      isSaving: isSaving,
                     ),
                   ],
                 ),

@@ -36,11 +36,15 @@ class OperationalIntelligenceCard extends StatelessWidget {
                   children: [
                     const Text(
                       'Inteligência operacional',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      warning ?? 'Selecione uma fazenda para calcular o score operacional.',
+                      warning ??
+                          'Selecione uma fazenda para calcular o score operacional.',
                       style: const TextStyle(color: Colors.black54),
                     ),
                   ],
@@ -87,7 +91,9 @@ class OperationalIntelligenceCard extends StatelessWidget {
                         value: value.operationalScore.clamp(0, 100) / 100,
                         strokeWidth: 9,
                         backgroundColor: Colors.white24,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
                       ),
                       Center(
                         child: Text(
@@ -160,7 +166,10 @@ class OperationalIntelligenceCard extends StatelessWidget {
                     const Expanded(
                       child: Text(
                         'Prioridades recomendadas',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     TextButton.icon(
@@ -171,7 +180,10 @@ class OperationalIntelligenceCard extends StatelessWidget {
                     if (warning != null)
                       Tooltip(
                         message: warning!,
-                        child: const Icon(Icons.info_outline, color: Colors.orange),
+                        child: const Icon(
+                          Icons.info_outline,
+                          color: Colors.orange,
+                        ),
                       ),
                   ],
                 ),
@@ -212,7 +224,11 @@ class OperationalIntelligenceCard extends StatelessWidget {
 }
 
 class _HeaderMetric extends StatelessWidget {
-  const _HeaderMetric({required this.label, required this.value, required this.icon});
+  const _HeaderMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
   final String label;
   final String value;
   final IconData icon;
@@ -233,8 +249,18 @@ class _HeaderMetric extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w900)),
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white70, fontSize: 11),
+              ),
             ],
           ),
         ],
@@ -260,7 +286,9 @@ class _ActionTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: _severityColor(action.severity).withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _severityColor(action.severity).withValues(alpha: 0.23)),
+            border: Border.all(
+              color: _severityColor(action.severity).withValues(alpha: 0.23),
+            ),
           ),
           child: Row(
             children: [
@@ -274,16 +302,28 @@ class _ActionTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${action.area} · ${action.title}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                    Text(
+                      '${action.area} · ${action.title}',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
                     if (action.recommendedAction.isNotEmpty) ...[
                       const SizedBox(height: 3),
-                      Text(action.recommendedAction, style: const TextStyle(color: Colors.black54)),
+                      Text(
+                        action.recommendedAction,
+                        style: const TextStyle(color: Colors.black54),
+                      ),
                     ],
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text('${action.priorityScore}', style: TextStyle(color: _severityColor(action.severity), fontWeight: FontWeight.w900)),
+              Text(
+                '${action.priorityScore}',
+                style: TextStyle(
+                  color: _severityColor(action.severity),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               const SizedBox(width: 6),
               const Icon(Icons.chevron_right),
             ],
@@ -317,7 +357,11 @@ class _AllGoodState extends StatelessWidget {
         children: [
           Icon(Icons.check_circle_outline, color: Color(0xFF1B5E20)),
           SizedBox(width: 10),
-          Expanded(child: Text('Nenhuma ação prioritária foi identificada neste momento.')),
+          Expanded(
+            child: Text(
+              'Nenhuma ação prioritária foi identificada neste momento.',
+            ),
+          ),
         ],
       ),
     );

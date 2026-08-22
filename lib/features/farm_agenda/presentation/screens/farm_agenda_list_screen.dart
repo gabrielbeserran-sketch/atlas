@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_agenda/data/services/farm_agenda_storage_service.dart';
@@ -296,34 +299,13 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
   }
 
   Future<void> deleteTask(FarmAgendaData task) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Excluir compromisso'),
-          content: Text('Deseja excluir ${task.title}?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-              ),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Excluir compromisso',
+      message: 'Deseja excluir ${task.title}? Essa ação não pode ser desfeita.',
     );
 
-    if (shouldDelete != true) {
+    if (!shouldDelete) {
       return;
     }
 
@@ -352,23 +334,18 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
     final filteredTasks = visibleTasks;
 
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(
-        title: const Text('Agenda'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar',
-            onPressed: isLoading ? null : loadTasks,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading ? null : openTaskForm,
-        backgroundColor: const Color(0xFF1B5E20),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Novo compromisso'),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Agenda'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: isLoading ? null : loadTasks,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -376,11 +353,11 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && tasks.isEmpty
-                    ? AtlasLoadErrorState(
-                        message: 'Verifique sua conexão e tente novamente.',
-                        onRetry: loadTasks,
-                      )
-                    : RefreshIndicator(
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadTasks,
+                  )
+                : RefreshIndicator(
                     onRefresh: loadTasks,
                     child: ListView(
                       padding: const EdgeInsets.all(24),
@@ -389,6 +366,13 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
                           farm: widget.farm,
                           pendingCount: pendingCount,
                           todayCount: todayCount,
+                        ),
+                        const SizedBox(height: 12),
+                        AtlasOperationalActionBar(
+                          primaryLabel: 'Novo compromisso',
+                          onPrimary: openTaskForm,
+                          onRefresh: loadTasks,
+                          busy: isLoading,
                         ),
                         const SizedBox(height: 24),
                         Wrap(
@@ -594,6 +578,14 @@ class _FarmAgendaListScreenState extends State<FarmAgendaListScreen> {
                               hasFilter:
                                   selectedFilter != 'Todas' ||
                                   searchText.trim().isNotEmpty,
+                              onCreate: openTaskForm,
+                              onClear: () {
+                                searchController.clear();
+                                setState(() {
+                                  searchText = '';
+                                  selectedFilter = 'Todas';
+                                });
+                              },
                             )
                           else
                             ...filteredTasks.map(
@@ -1057,41 +1049,29 @@ class AgendaBadge extends StatelessWidget {
 }
 
 class EmptyAgendaMessage extends StatelessWidget {
-  const EmptyAgendaMessage({required this.hasFilter, super.key});
+  const EmptyAgendaMessage({
+    required this.hasFilter,
+    required this.onCreate,
+    required this.onClear,
+    super.key,
+  });
 
   final bool hasFilter;
+  final VoidCallback onCreate;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(36),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.calendar_month_outlined,
-              size: 60,
-              color: Color(0xFF1B5E20),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              hasFilter
-                  ? 'Nenhum compromisso encontrado.'
-                  : 'A agenda está vazia.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              hasFilter
-                  ? 'Altere a pesquisa ou o filtro selecionado.'
-                  : 'Cadastre o primeiro manejo, visita ou tarefa.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ],
-        ),
-      ),
+    return AtlasEmptyState(
+      icon: Icons.calendar_month_outlined,
+      title: hasFilter
+          ? 'Nenhum compromisso encontrado'
+          : 'A agenda está vazia',
+      message: hasFilter
+          ? 'Os filtros atuais não encontraram compromissos. Limpe os filtros para ver toda a agenda.'
+          : 'Cadastre o primeiro manejo, visita ou tarefa da fazenda.',
+      actionLabel: hasFilter ? 'Limpar filtros' : 'Novo compromisso',
+      onAction: hasFilter ? onClear : onCreate,
     );
   }
 }

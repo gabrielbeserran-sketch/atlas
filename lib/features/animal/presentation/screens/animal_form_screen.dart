@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -199,7 +201,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   }
 
   void saveAnimal() {
-    if (isSaving || !formKey.currentState!.validate()) return;
+    if (isSaving || !AtlasFeedback.validateForm(context, formKey)) return;
     setState(() => isSaving = true);
 
     final animal = AnimalData(
@@ -592,19 +594,12 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: isSaving ? null : saveAnimal,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B5E20),
-                          foregroundColor: Colors.white,
-                        ),
-                        icon: const Icon(Icons.save_outlined),
-                        label: Text(
-                          isEditing ? 'Salvar alterações' : 'Salvar animal',
-                        ),
-                      ),
+                    AtlasFormActions(
+                      onSave: saveAnimal,
+                      isSaving: isSaving,
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar animal',
                     ),
                   ],
                 ),
