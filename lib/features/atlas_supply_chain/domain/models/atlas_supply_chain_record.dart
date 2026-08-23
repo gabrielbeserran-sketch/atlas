@@ -13,11 +13,7 @@ extension AtlasSupplyChainModuleX on AtlasSupplyChainModule {
     AtlasSupplyChainModule.logistics => 'Logística Enterprise',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasSupplyChainModule.purchases => 'Pacote 44',
-    AtlasSupplyChainModule.commercialization => 'Pacote 45',
-    AtlasSupplyChainModule.logistics => 'Pacote 46',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasSupplyChainModule.purchases => const [

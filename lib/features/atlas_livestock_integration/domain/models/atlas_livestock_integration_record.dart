@@ -49,18 +49,7 @@ extension AtlasLivestockIntegrationModuleX on AtlasLivestockIntegrationModule {
       'Central de Tarefas Integrada',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasLivestockIntegrationModule.herdMigration => 'Pacote 271',
-    AtlasLivestockIntegrationModule.reproductionMigration => 'Pacote 272',
-    AtlasLivestockIntegrationModule.healthMigration => 'Pacote 273',
-    AtlasLivestockIntegrationModule.nutritionMigration => 'Pacote 274',
-    AtlasLivestockIntegrationModule.financeMigration => 'Pacote 275',
-    AtlasLivestockIntegrationModule.stockMigration => 'Pacote 276',
-    AtlasLivestockIntegrationModule.eventIntegration => 'Pacote 277',
-    AtlasLivestockIntegrationModule.unifiedTimeline => 'Pacote 278',
-    AtlasLivestockIntegrationModule.integratedAlerts => 'Pacote 279',
-    AtlasLivestockIntegrationModule.integratedTasks => 'Pacote 280',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasLivestockIntegrationModule.herdMigration => const [

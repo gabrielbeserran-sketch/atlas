@@ -13,11 +13,7 @@ extension AtlasPredictiveAiModuleX on AtlasPredictiveAiModule {
     AtlasPredictiveAiModule.commercialization => 'IA de Comercialização',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasPredictiveAiModule.nutrition => 'Pacote 53',
-    AtlasPredictiveAiModule.economics => 'Pacote 54',
-    AtlasPredictiveAiModule.commercialization => 'Pacote 55',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasPredictiveAiModule.nutrition => const [

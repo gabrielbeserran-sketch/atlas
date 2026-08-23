@@ -1,0 +1,81 @@
+{
+  "package": "Pós-V21 Pacote 7F — Inteligência Contextual",
+  "mode": "read-only",
+  "official_sources": [
+    "Agenda",
+    "Rebanho",
+    "Reprodução",
+    "Nutrição",
+    "Financeiro",
+    "Estoque"
+  ],
+  "contextual_writes": 0,
+  "direct_http": 0,
+  "direct_local_database": 0,
+  "matrices_max_detailed": 40,
+  "reproduction_batch_size": 5,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_command.dart",
+      "sha256": "818ae8bb9257c763d7e035d3f569444a918a72b39cf5000fe29a56509c01a41d",
+      "size": 1412
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_contextual_insight.dart",
+      "sha256": "ac4f7971132d518e5f86307472ed936d2591d9a9a7317d597519a7b8494acfa9",
+      "size": 346
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "f1a21c0974fe59090c3925493d93d400fc87e188c2d0f79972793e2815a2e936",
+      "size": 9025
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_contextual_intelligence_service.dart",
+      "sha256": "ded794cafab2b2d57659223d24f15886514ecb821ab616d82901f3cf75d97dc3",
+      "size": 14585
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "d42e89d49f23616ac0646b36955bacacbd31c4663cd080a7afac914f40e687b5",
+      "size": 30771
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "8d430d1e343d9d5a316ef9074ec37036b2a2a9f2ed1003e10e158a6b8f3c313d",
+      "size": 16671
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7f_contextual_intelligence_contract_test.dart",
+      "sha256": "ec633e0943895d0f83d1f6a5a278066f5f2b8f613afa76f9ed1b32133dbe9d84",
+      "size": 3820
+    },
+    {
+      "path": "tools/atlas_post_v21_package7f_contextual_intelligence_gate.py",
+      "sha256": "2f090489eaab9bdd2f737786d8ff505e4629fcf89cb61540919b08cd8cc38567",
+      "size": 5734
+    },
+    {
+      "path": "tools/atlas_dart_private_helper_orphan_gate.py",
+      "sha256": "724610842b4823960aeea3f7487f6f80e051267ae741de76403d07b70ac6fb3e",
+      "size": 2304
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "b70fc822e1e12018a42f6835bf9b35f068dbffefd5ee82e7c08c59cd90828ad0",
+      "size": 6848
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7f_contextual_intelligence_homologation.ps1",
+      "sha256": "d34e764617092a44105e12ff20088b559fa40a2c33113d79accadbec5cd4c4a9",
+      "size": 1070
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7F_INTELIGENCIA_CONTEXTUAL_20260823.md",
+      "sha256": "97c8b700ed3e8144d31c2a172b1c89e6517ffe9d8d9fa2cf36d349343a38688f",
+      "size": 3939
+    }
+  ]
+}

@@ -1135,7 +1135,11 @@ class AgendaCalendarNavigator extends StatelessWidget {
         : '${_monthName(anchor.month)} ${anchor.year}';
     return Row(
       children: [
-        IconButton(onPressed: onPrevious, icon: const Icon(Icons.chevron_left)),
+        IconButton(
+          tooltip: 'Período anterior',
+          onPressed: onPrevious,
+          icon: const Icon(Icons.chevron_left),
+        ),
         Expanded(
           child: Text(
             label,
@@ -1144,7 +1148,11 @@ class AgendaCalendarNavigator extends StatelessWidget {
           ),
         ),
         OutlinedButton(onPressed: onToday, child: const Text('Hoje')),
-        IconButton(onPressed: onNext, icon: const Icon(Icons.chevron_right)),
+        IconButton(
+          tooltip: 'Próximo período',
+          onPressed: onNext,
+          icon: const Icon(Icons.chevron_right),
+        ),
       ],
     );
   }

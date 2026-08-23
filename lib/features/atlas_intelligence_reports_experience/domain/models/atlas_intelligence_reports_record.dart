@@ -56,21 +56,7 @@ extension AtlasIntelligenceReportsModuleX on AtlasIntelligenceReportsModule {
       'Nova Experiência de Navegação',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasIntelligenceReportsModule.consolidatedIndicatorEngine => 'Pacote 281',
-    AtlasIntelligenceReportsModule.realDataExecutiveDashboard => 'Pacote 282',
-    AtlasIntelligenceReportsModule.realFarmBenchmarking => 'Pacote 283',
-    AtlasIntelligenceReportsModule.traceableRecommendationEngine =>
-      'Pacote 284',
-    AtlasIntelligenceReportsModule.validatedPredictiveDiagnostics =>
-      'Pacote 285',
-    AtlasIntelligenceReportsModule.technicalPdfReports => 'Pacote 286',
-    AtlasIntelligenceReportsModule.financialExecutiveReports => 'Pacote 287',
-    AtlasIntelligenceReportsModule.spreadsheetCsvExport => 'Pacote 288',
-    AtlasIntelligenceReportsModule.secureSharing => 'Pacote 289',
-    AtlasIntelligenceReportsModule.professionalNavigationExperience =>
-      'Pacote 290',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasIntelligenceReportsModule.consolidatedIndicatorEngine => const [

@@ -1,0 +1,73 @@
+{
+  "package": "Pós-V21 Pacote 7E — Rotina Diária Inteligente",
+  "routine_source": "FarmAgendaStorageService / FarmAgendaData",
+  "priority_source": "atraso + prioridade cadastrada + horário",
+  "technical_agenda_only_completion_allowed": false,
+  "technical_to_agenda_reconciliation": true,
+  "partial_failure_protected": true,
+  "direct_voice_business_writes": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_command.dart",
+      "sha256": "7164f856b70b925ca8a9a2045d234441b6525c73246d3e94fbc026c48302328a",
+      "size": 1336
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_daily_routine.dart",
+      "sha256": "931c36fb3c09396c522204721f75016c2fad7962de3edb89dc214fc5d1a50089",
+      "size": 811
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "42f4461626e86e3620c81b6109d6844d6adc5aac757257bbcc3be627a74fb583",
+      "size": 7651
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_daily_routine_service.dart",
+      "sha256": "e862fd2eb92583775c0ec300c07faa661f34adf2d1cacdcd44f542b6e0c8c9b9",
+      "size": 6307
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "241f9be8e68ba51e1649a8711d16af0a9c55adb266c447d5d69baefb3e9f03d7",
+      "size": 29522
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "8b50e0b1d4a3813f46a5713bf687a9938c39d8bbd30cd54aed14b4fe67704e4c",
+      "size": 16524
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7e_daily_routine_contract_test.dart",
+      "sha256": "a147c257db83abd9e01a98ef03b253808bea10e38e5b361d1de0cea198b3d70f",
+      "size": 5723
+    },
+    {
+      "path": "tools/atlas_post_v21_package7c_rural_language_gate.py",
+      "sha256": "70325016a52e8ee90984729579509f9c6a594411bccb38b106436ec9fc4f4ad1",
+      "size": 4649
+    },
+    {
+      "path": "tools/atlas_post_v21_package7e_daily_routine_gate.py",
+      "sha256": "7c5b9f25fc227ce44e73ed4b95c015cbc150aae8ad655573565b3768c37ba672",
+      "size": 6582
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "1fac73a690113d0c15b76a1cc5df9808f3d687f3e45cebf0cf09dcf0d43f49c8",
+      "size": 6704
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7e_daily_routine_homologation.ps1",
+      "sha256": "0b367a75896acb09df9e50592f270bce39cca75ea3af1f86bbf5ec57b68c275f",
+      "size": 1042
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7E_ROTINA_DIARIA_INTELIGENTE_20260823.md",
+      "sha256": "f66de99be0bcce3ef2b62cbcdc4d30281dc248da26bed6d680cda2166a45aecb",
+      "size": 3700
+    }
+  ]
+}

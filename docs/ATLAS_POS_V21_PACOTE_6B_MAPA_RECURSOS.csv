@@ -1,0 +1,158 @@
+﻿feature,dono,destino,telas,decisao
+action_plan,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+analytics,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+animal,Animal,núcleo_canônico,3,Mantido como superfície oficial.
+animal_document,Animal,núcleo_canônico,2,Mantido como superfície oficial.
+animal_event,Animal,núcleo_canônico,2,Mantido como superfície oficial.
+animal_executive_panel,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_genealogy,Animal,núcleo_canônico,1,Mantido como superfície oficial.
+animal_health,Sanidade,núcleo_canônico,3,Mantido como superfície oficial.
+animal_health_enterprise,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_intelligence_360,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_movement,Animal,núcleo_canônico,2,Mantido como superfície oficial.
+animal_nutrition_enterprise,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_operations_center,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_photo,Animal,núcleo_canônico,2,Mantido como superfície oficial.
+animal_reproduction,Reprodução,núcleo_canônico,3,Mantido como superfície oficial.
+animal_reproduction_enterprise,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_weight,Animal,núcleo_canônico,2,Mantido como superfície oficial.
+animal_weight_intelligence,Animal,absorver_no_animal,1,Recurso individual; não vira módulo da fazenda.
+animal_zootechnical,Animal,núcleo_canônico,1,Mantido como superfície oficial.
+atlas_advanced,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_advanced_ai,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_ai,Interno,avaliar_antes_de_expor,2,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_ai_2,Interno,avaliar_antes_de_expor,2,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_ai_enterprise,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_auth_sync_enterprise,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_automation_operations,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+atlas_autonomous_enterprise,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+atlas_backend_foundation,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_bi,Gestão,consolidar_em_análises,5,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_bi_analytics,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_business,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_climate_enterprise,Campo,absorver_no_módulo,1,"Território, clima e campo pertencem à Central de Campo."
+atlas_cloud_security_enterprise,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_commercial_enterprise,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_commercial_operations,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_copilot,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_enterprise_50,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_enterprise_operations,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_environmental_ai,Campo,absorver_no_módulo,1,"Território, clima e campo pertencem à Central de Campo."
+atlas_executive_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_executive_platform,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_finance_enterprise,Financeiro,absorver_no_módulo,1,Decisão de capital e finanças pertence ao Financeiro.
+atlas_financial_integrations,Financeiro,absorver_no_módulo,1,Decisão de capital e finanças pertence ao Financeiro.
+atlas_geospatial_platform,Campo,absorver_no_módulo,1,"Território, clima e campo pertencem à Central de Campo."
+atlas_global_platform,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_governance_operations,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_governance_people_enterprise,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_intelligence_center,Gestão,núcleo_canônico,1,Mantido como superfície oficial.
+atlas_intelligence_reports_experience,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_iot_platform,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+atlas_land_intelligence,Campo,absorver_no_módulo,1,"Território, clima e campo pertencem à Central de Campo."
+atlas_livestock_integration,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+atlas_official_integrations,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+atlas_operations_enterprise,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_os,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_platform_resilience,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_precision_livestock,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_predictive_ai_suite,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_quality_release,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_reproductive_ai,Reprodução,absorver_no_módulo,1,Capacidade avançada pertence à Reprodução.
+atlas_reproductive_premium,Reprodução,absorver_no_módulo,1,Capacidade avançada pertence à Reprodução.
+atlas_rural_business,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+atlas_saas_platform,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+atlas_scale,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_sprints_11_15,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_sprints_16_20,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_sprints_21_25,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+atlas_supply_chain,Estoque,absorver_no_módulo,1,Suprimentos e logística pertencem ao Estoque.
+atlas_supply_logistics_enterprise,Estoque,absorver_no_módulo,1,Suprimentos e logística pertencem ao Estoque.
+atlas_sustainability_ecosystem,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_sustainability_enterprise,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+atlas_veterinary_ai,Sanidade,absorver_no_módulo,1,Capacidade clínica/sanitária pertence à Sanidade.
+authentication,Interno,avaliar_antes_de_expor,4,Sem dono operacional comprovado; permanece fora da navegação comum.
+automation_strategy,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+autonomous_consultant,Consultoria,absorver_no_módulo,1,Capacidade de atendimento/consultoria.
+benefits_realization,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+command_center,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+commercial_platform,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+commercial_readiness,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+consultancy_client,Consultoria,núcleo_canônico,1,Mantido como superfície oficial.
+consultancy_workflow,Consultoria,absorver_no_módulo,1,Capacidade de atendimento/consultoria.
+continuous_improvement,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+copilot,Interno,ocultar_do_produtor,5,"Ferramenta de plataforma, engenharia ou administração."
+dashboard,Gestão,núcleo_canônico,7,Mantido como superfície oficial.
+data_governance,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+data_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+decision_engine,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+decision_engine_v2,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+decision_intelligence_lab,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+decision_tracking,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+diagnostics,Gestão,consolidar_em_análises,2,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+digital_twin,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+enterprise_operations,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+enterprise_platform,Gestão,avaliar_e_consolidar,5,Gestão empresarial; não deve gerar item isolado no menu.
+executive_ai_advisor,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+executive_alerts,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+executive_brain,Gestão,consolidar_em_análises,3,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+executive_goals,Gestão,consolidar_em_análises,2,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+executive_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+executive_kpis,Gestão,consolidar_em_análises,2,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+farm,Fazenda,núcleo_canônico,4,Mantido como superfície oficial.
+farm_agenda,Operação,núcleo_canônico,2,Mantido como superfície oficial.
+farm_audit,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+farm_finance,Financeiro,núcleo_canônico,3,Mantido como superfície oficial.
+farm_handling,Operação,núcleo_canônico,1,Mantido como superfície oficial.
+farm_inventory,Estoque,núcleo_canônico,3,Mantido como superfície oficial.
+farm_operations,Operação,núcleo_canônico,1,Mantido como superfície oficial.
+field_operations,Campo,núcleo_canônico,2,Mantido como superfície oficial.
+flutter_quality,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+governance_resilience,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+herd,Rebanho,núcleo_canônico,3,Mantido como superfície oficial.
+indicators,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+integration_ecosystem,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+integration_hub,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+investment_capital_allocation,Financeiro,absorver_no_módulo,1,Decisão de capital e finanças pertence ao Financeiro.
+iot_enterprise,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+knowledge_learning,Consultoria,absorver_no_módulo,1,Capacidade de atendimento/consultoria.
+livestock_operations,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+mission_control,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+ml_platform,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+nutrition,Nutrição,núcleo_canônico,1,Mantido como superfície oficial.
+offline_field,Operação,núcleo_canônico,1,Mantido como superfície oficial.
+operational_readiness,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+optimization_engine,Gestão,consolidar_em_análises,2,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+paddock,Campo,núcleo_canônico,2,Mantido como superfície oficial.
+performance_center,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+performance_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+pilot_program,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+platform_v1,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+portfolio_management,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+precision_hub,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+predictive,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+predictive_ai,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+predictive_analytics,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+publication_center,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+quality_center,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+realtime,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+recommendation_intelligence,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+release_engineering,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+release_management,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+reports,Gestão,núcleo_canônico,2,Mantido como superfície oficial.
+saas_admin,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+scenario_simulator,Gestão,consolidar_em_análises,2,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+security_center,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+security_privacy_continuity,Interno,ocultar_do_produtor,1,"Ferramenta de plataforma, engenharia ou administração."
+strategic_alignment,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+strategic_capacity,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+strategic_execution_engine,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+strategic_scenario_planning,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+strategy_center,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+strategy_execution,Gestão,consolidar_em_análises,1,Leitura e decisão; deve aparecer pela Central de Análises/Relatórios.
+sync_platform,Automação,futuro_integrado,1,Integração/automação depende de contrato operacional ou hardware real.
+technical_dashboard,Interno,avaliar_antes_de_expor,1,Sem dono operacional comprovado; permanece fora da navegação comum.
+unified_workflow,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+value_governance,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.
+workflow_engine,Gestão,avaliar_e_consolidar,1,Gestão empresarial; não deve gerar item isolado no menu.

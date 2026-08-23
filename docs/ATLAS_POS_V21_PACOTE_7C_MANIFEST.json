@@ -1,0 +1,71 @@
+{
+  "package": "Pós-V21 Pacote 7C — Linguagem rural/contextual + correção 7B",
+  "reported_analyzer_issues_fixed": 2,
+  "deprecated_direct_localeId_allowed": false,
+  "redundant_dart_ui_allowed": false,
+  "new_business_write_permissions": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/main.dart",
+      "sha256": "cdebd40231677fc44487474cb9ad0d1fb3cd66e58f5f22ee3631e19dfdf0b024",
+      "size": 1213
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_voice_service.dart",
+      "sha256": "d16807b7f76ca1b34c571050e1fdaf4fe422f88ff8adf832dc64ff5ba13a9e17",
+      "size": 4171
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_command.dart",
+      "sha256": "e488358ec6ded2a246c3e36331d0825f95b9104bd8874f1641952433d1a9c1f0",
+      "size": 875
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "42214547d371a1a3adb922f6346104c7046390448f2d9e5148eb11ff0430b471",
+      "size": 7003
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "03d7151b5259c4b4e05d5cf458c302c59900d3993e61d1823549ded4ad6c2a2b",
+      "size": 9948
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "9838654bfae7872e16eda2bbf9a245836136684ffcaa75bbe82311ea3162efa6",
+      "size": 14129
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7c_rural_language_contract_test.dart",
+      "sha256": "4f5321d641bf1a2e8a19df6a8b1f5f4756f1f15549d9ee6c892dead1ef5ce794",
+      "size": 1973
+    },
+    {
+      "path": "tools/atlas_dart_deprecation_regression_gate.py",
+      "sha256": "ffc69d091b8c5631e934a58727fd6499360e926e1bc520141180def55fc2e2dc",
+      "size": 1455
+    },
+    {
+      "path": "tools/atlas_post_v21_package7c_rural_language_gate.py",
+      "sha256": "127be62f0e98ddde881fad5c00e31a9a98e38a039c899d2b027e2ba8ee110ff4",
+      "size": 4107
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "62cbb87ba91e8d2b5c50588c0b296ebb028f22d571be8b064bbaf427f2071af9",
+      "size": 6434
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7c_rural_language_homologation.ps1",
+      "sha256": "867cc1ea959a1f057ca6dcd53737af427dad43b9f20bc4a3564ee269530e373b",
+      "size": 1188
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7C_LINGUAGEM_RURAL_E_CORRECAO_7B_20260823.md",
+      "sha256": "ee637bac6387bdf4be61e75c9c19e1d8e992068a198152801355d8a091755734",
+      "size": 2023
+    }
+  ]
+}

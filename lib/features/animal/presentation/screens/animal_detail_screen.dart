@@ -158,6 +158,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   List<String> loadWarnings = <String>[];
   AnimalHubSection selectedSection = AnimalHubSection.summary;
 
+  static const String _enterpriseTimelineLoadLabel =
+      'Timeline Enterprise';
+
   AnimalData get animal => widget.animal;
   FarmData get farm => widget.farm;
   HerdGroupData get group => widget.group;
@@ -269,7 +272,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           ),
         ),
         _safeLoad<dynamic>(
-          label: 'Timeline Enterprise',
+          label: _enterpriseTimelineLoadLabel,
           warnings: warnings,
           fallback: const <dynamic>[],
           loader: () => enterpriseTimelineService.loadTimeline(animal.id),
@@ -286,7 +289,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       final loadedEnterpriseTimeline = results[7] as List<dynamic>;
 
       debugPrint(
-        'ATLAS Animal Central [Timeline Enterprise]: '
+        'ATLAS Animal Central [$_enterpriseTimelineLoadLabel]: '
         '${loadedEnterpriseTimeline.length} evento(s) carregado(s)',
       );
 
@@ -502,16 +505,6 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
 
   Future<void> selectSection(AnimalHubSection section) async {
     final Widget? directScreen = switch (section) {
-      AnimalHubSection.healthEnterprise => AnimalHealthEnterpriseScreen(
-        animal: animal,
-        farm: farm,
-        group: group,
-      ),
-      AnimalHubSection.reproductionEnterprise => AnimalReproductionEnterpriseScreen(
-        animal: animal,
-        farm: farm,
-        group: group,
-      ),
       AnimalHubSection.weightIntelligence => AnimalWeightIntelligenceScreen(
         animal: animal,
         farm: farm,
@@ -3415,9 +3408,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               icon: Icons.folder_copy_outlined,
             ),
             AnimalMetricCard(
-              title: 'Auditoria Enterprise',
+              title: 'Alterações do sistema',
               value: enterpriseTimelineCount.toString(),
-              subtitle: 'Alterações registradas pela API',
+              subtitle: 'Registros técnicos feitos pelo sistema',
               icon: Icons.verified_user_outlined,
             ),
           ],
@@ -4002,9 +3995,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionTitle(
-          title: 'Genealogia inteligente',
+          title: 'Genealogia',
           subtitle:
-              'Pais, avós, irmãos, filhos e descendentes cadastrados no Atlas.',
+              'Pais, avós, irmãos, filhos e descendentes cadastrados para este animal.',
         ),
         const SizedBox(height: 16),
         AnimalGenealogyInlinePanel(
@@ -4637,7 +4630,7 @@ class AnimalHubNavigation extends StatelessWidget {
                   ),
                   SizedBox(height: 3),
                   Text(
-                    'Informações e ações que pertencem a este animal.',
+                    'Escolha uma área. O conteúdo abre aqui, sem outra tela intermediária.',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.black54,

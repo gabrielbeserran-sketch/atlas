@@ -19,16 +19,49 @@ void main() {
     expect(source.contains('List<T>.unmodifiable(fallback)'), isTrue);
   });
 
-  test('Timeline Enterprise usa cliente oficial sem timeout local', () {
+  test('Timeline Enterprise usa serviço oficial sem timeout local', () {
     expect(
       source.contains(
-        "label: 'Timeline Enterprise'",
+        'static const String _enterpriseTimelineLoadLabel =',
+      ),
+      isTrue,
+    );
+    expect(source.contains("'Timeline Enterprise';"), isTrue);
+    expect(
+      source.contains(
+        'enterpriseTimelineService.loadTimeline(animal.id)',
       ),
       isTrue,
     );
     expect(
+      source.contains('label: _enterpriseTimelineLoadLabel'),
+      isTrue,
+    );
+    expect(
       source.contains(
-        'ATLAS Animal Central [Timeline Enterprise]',
+        'enterpriseTimelineService.loadTimeline(animal.id).timeout(',
+      ),
+      isFalse,
+    );
+  });
+
+  test('contrato da Timeline não depende de texto de log ou interface', () {
+    expect(
+      source.contains(
+        'static const String _enterpriseTimelineLoadLabel =',
+      ),
+      isTrue,
+    );
+    expect(
+      source.contains('label: _enterpriseTimelineLoadLabel'),
+      isTrue,
+    );
+
+    // O contrato não deve exigir uma frase específica de debugPrint.
+    // Logs podem mudar sem alterar o comportamento de rede.
+    expect(
+      source.contains(
+        'enterpriseTimelineService.loadTimeline(animal.id)',
       ),
       isTrue,
     );

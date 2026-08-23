@@ -38,18 +38,7 @@ extension AtlasGeospatialModuleX on AtlasGeospatialModule {
     AtlasGeospatialModule.territorialPlanning => 'Planejamento Territorial',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasGeospatialModule.gisMaps => 'Pacote 131',
-    AtlasGeospatialModule.smartPaddocks => 'Pacote 132',
-    AtlasGeospatialModule.automaticRotation => 'Pacote 133',
-    AtlasGeospatialModule.pasturePlanning => 'Pacote 134',
-    AtlasGeospatialModule.ndvi => 'Pacote 135',
-    AtlasGeospatialModule.biomass => 'Pacote 136',
-    AtlasGeospatialModule.soil => 'Pacote 137',
-    AtlasGeospatialModule.slope => 'Pacote 138',
-    AtlasGeospatialModule.irrigation => 'Pacote 139',
-    AtlasGeospatialModule.territorialPlanning => 'Pacote 140',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasGeospatialModule.gisMaps => const [

@@ -15,12 +15,7 @@ extension AtlasFinancialIntegrationModuleX on AtlasFinancialIntegrationModule {
     AtlasFinancialIntegrationModule.nfe => 'NF-e Rural',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasFinancialIntegrationModule.receitaFederal => 'Pacote 67',
-    AtlasFinancialIntegrationModule.bancoBrasil => 'Pacote 68',
-    AtlasFinancialIntegrationModule.pix => 'Pacote 69',
-    AtlasFinancialIntegrationModule.nfe => 'Pacote 70',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasFinancialIntegrationModule.receitaFederal => const [

@@ -1,0 +1,80 @@
+{
+  "package": "Pós-V21 Pacote 7A — Dr. Beserra",
+  "mode": "text-first",
+  "main_routes": 16,
+  "conversational_writes": [
+    "concluir tarefa da Agenda após confirmação"
+  ],
+  "direct_health_writes": 0,
+  "direct_reproduction_writes": 0,
+  "direct_handling_writes": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_command.dart",
+      "sha256": "e450e328c2b2723312747b1171d9aac712e081adcd5a7b8b6a17e5c7e2be7151",
+      "size": 743
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "4ea9c97409ee51e4168e203a064f0321b6b203554145897ee991d0b4c8700231",
+      "size": 3342
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "dd9436859407c511d4e65821d9d17f93f2ee833b63feb55c86e908a08af010e3",
+      "size": 7777
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "628f3c3d8d209007989d0cabf58efd88d2ad19d8102225ad8401c38a35e68e3a",
+      "size": 11320
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "c1767490f5ec819a1dea900540d7df667a33ccae4b584085830092252faf2a55",
+      "size": 28113
+    },
+    {
+      "path": "lib/core/navigation/atlas_product_surface_policy.dart",
+      "sha256": "02f2d10f7ad7bea801f38368e65b6b306710f1af2e09dfe1ce0946f023a65dae",
+      "size": 6332
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7a_dr_beserra_contract_test.dart",
+      "sha256": "3171853366670f6099c5dfe23cb44019efebe541d0b948963eabde21f55aa20b",
+      "size": 2378
+    },
+    {
+      "path": "tools/atlas_post_v21_package7a_dr_beserra_safe_commands_gate.py",
+      "sha256": "0cc2347013c41a9e4968e167211d42e0f36c3ecab16f209af4047ca047b06cdb",
+      "size": 5905
+    },
+    {
+      "path": "tools/atlas_post_v21_package6d_d_global_ux_gate.py",
+      "sha256": "118bb009bcd2a41c44c554bc88ccc59545a6a95ed8cddeffa6afaa5c378084ff",
+      "size": 10263
+    },
+    {
+      "path": "tools/atlas_post_v21_package6a_navigation_gate.py",
+      "sha256": "123d323f5cbe1b20e00181f0474fdd6b4b0a93d135d8eee4847af1fa0784926e",
+      "size": 6412
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "42dd79b205e82579165e2aad63e15b72aa2776be7c695fd62998b60ddd705b4d",
+      "size": 6162
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7a_dr_beserra_homologation.ps1",
+      "sha256": "b4d24123bd42ff316619903742dbe86426db6486a8ea5271fa2bcbcc30d67407",
+      "size": 1060
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7A_DR_BESERRA_20260823.md",
+      "sha256": "613ed51e00d5cf10d07c3e90da448e1b8a87032488c705bfd22a9269a5207828",
+      "size": 2705
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "package": "Pós-V21 Pacote 6A — Navegação e Arquitetura de Informação",
+  "date": "2026-08-23",
+  "base": "Pós-V21 Pacote 5 homologado localmente",
+  "backend_changed_in_6a": false,
+  "database_migration_added_in_6a": false,
+  "inherited_pending_migration": "20260822_0042",
+  "main_navigation_groups": [
+    "Hoje",
+    "Animais",
+    "Fazenda",
+    "Gestão",
+    "Apoio"
+  ],
+  "animal_center_visible_sections": [
+    "Resumo",
+    "Histórico",
+    "Desempenho",
+    "Sanidade",
+    "Reprodução",
+    "Genealogia",
+    "Arquivos"
+  ],
+  "animal_legacy_section_identifiers_audited": 285,
+  "numbered_build_labels_remaining_in_lib": 0,
+  "files": [
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_6A_ARQUITETURA_INFORMACAO_20260823.md",
+      "sha256": "99545a7f23d1fec5c164111049ab89c94fad89eadedec43523ff404aa8313839",
+      "size": 5744
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "03b5c6446ca676a51f4a4da1fb1f47156d3d9f484b876962695b92c7314eba85",
+      "size": 26525
+    },
+    {
+      "path": "lib/core/navigation/atlas_route_definition.dart",
+      "sha256": "6c07127a6a3883d07355415de2c32b7d036b86c1cf67370c4d5669cc6514c2f2",
+      "size": 2017
+    },
+    {
+      "path": "lib/features/animal/presentation/screens/animal_detail_screen.dart",
+      "sha256": "2e17ade757e08a6d40fe68614a163b25d86a97fd9c969b6514eef261a9aba4e8",
+      "size": 213140
+    },
+    {
+      "path": "lib/features/atlas_advanced_ai/domain/models/atlas_advanced_ai_record.dart",
+      "sha256": "b1c1f9126ae37a0e57186f6b353adbe983f6b4cec79ed274d9f124ee2c1ff87a",
+      "size": 8919
+    },
+    {
+      "path": "lib/features/atlas_auth_sync_enterprise/domain/models/atlas_auth_sync_record.dart",
+      "sha256": "eda4e20e8c46773c6d2f5708f4ddc8a59b477b90615d56bba031153e8674407f",
+      "size": 8321
+    },
+    {
+      "path": "lib/features/atlas_automation_operations/domain/models/atlas_automation_record.dart",
+      "sha256": "e4c0225724ea9ef3d37613ea19d48be0e42853be032bfe3fc5990f0408c0b270",
+      "size": 5068
+    },
+    {
+      "path": "lib/features/atlas_autonomous_enterprise/domain/models/atlas_autonomous_enterprise_record.dart",
+      "sha256": "1f8b6ef853b461cd04d6256ae614096f3a9da8681bc44b07259f4740e6e21aff",
+      "size": 5628
+    },
+    {
+      "path": "lib/features/atlas_backend_foundation/domain/models/atlas_backend_foundation_record.dart",
+      "sha256": "eac09b0c677cbc84fc09bffc9c610e4c3057a3042bc9c7d727fc83a96ef5cd11",
+      "size": 7987
+    },
+    {
+      "path": "lib/features/atlas_climate_enterprise/domain/models/atlas_climate_enterprise_record.dart",
+      "sha256": "da00e88ac519e431cf558cf618587c419199493502caeb8bc1fd850183cf78f2",
+      "size": 9353
+    },
+    {
+      "path": "lib/features/atlas_cloud_security_enterprise/domain/models/atlas_cloud_security_record.dart",
+      "sha256": "d59082221591bd4c9f3590ec129c583411a31030f2d9ec60ecbc8cd2830838d6",
+      "size": 8493
+    },
+    {
+      "path": "lib/features/atlas_commercial_enterprise/domain/models/atlas_commercial_enterprise_record.dart",
+      "sha256": "3ebe7692d77c2b85e0814d12c950358c738b40b8cb6a2fb4a18291a0593f5117",
+      "size": 8689
+    },
+    {
+      "path": "lib/features/atlas_commercial_operations/domain/models/atlas_commercial_operation_record.dart",
+      "sha256": "1959ac01a3f12c1d6ceeb0a4f6dbcded30d76011bfe84bde2e51713c8dc142dc",
+      "size": 6248
+    },
+    {
+      "path": "lib/features/atlas_enterprise_operations/domain/models/atlas_enterprise_operation_record.dart",
+      "sha256": "6b97bc0c0c37baeb29d04fe4660c4029376cd5df11f5d4d224169d3c8d0f83f4",
+      "size": 6633
+    },
+    {
+      "path": "lib/features/atlas_environmental_ai/domain/models/atlas_environmental_ai_record.dart",
+      "sha256": "3da5a9353a154adc792d157b5fda530497d70c6993d16007206661887b9eb0b2",
+      "size": 5211
+    },
+    {
+      "path": "lib/features/atlas_executive_intelligence/domain/models/atlas_executive_intelligence_record.dart",
+      "sha256": "1a9b09219fc1a5845e89207e4cbc65e7991462e113bf2eaa86c71e7c07ec276d",
+      "size": 6796
+    },
+    {
+      "path": "lib/features/atlas_executive_platform/domain/models/atlas_executive_platform_record.dart",
+      "sha256": "d7d6e42732a16874d284ace90a17bdc2470cab4ec5af0f0d23127d0a7acbc558",
+      "size": 8933
+    },
+    {
+      "path": "lib/features/atlas_finance_enterprise/domain/models/atlas_finance_enterprise_record.dart",
+      "sha256": "38690faaaa33b48552c1d38b0288215dc57257ea76c5a7beeccdf1574642a961",
+      "size": 8836
+    },
+    {
+      "path": "lib/features/atlas_financial_integrations/domain/models/atlas_financial_integration_record.dart",
+      "sha256": "5e400e6ab165ae884325c8ff3899c21500e6861201c485765c69b8c187bb02da",
+      "size": 6063
+    },
+    {
+      "path": "lib/features/atlas_geospatial_platform/domain/models/atlas_geospatial_record.dart",
+      "sha256": "64da7fa0f365b5fa202e396147d2f68a49336c9cc7013735edeecb72797a40dd",
+      "size": 7751
+    },
+    {
+      "path": "lib/features/atlas_governance_operations/domain/models/atlas_governance_operation_record.dart",
+      "sha256": "f5fb87124258c7ea71c16c9e23db3c0bf924537222b871f632caec940e107d65",
+      "size": 6611
+    },
+    {
+      "path": "lib/features/atlas_governance_people_enterprise/domain/models/atlas_governance_people_record.dart",
+      "sha256": "41b4e725a232ec8442a4689cd383ad4884398ae1649e06c631f07aa09ddecb36",
+      "size": 9060
+    },
+    {
+      "path": "lib/features/atlas_intelligence_reports_experience/domain/models/atlas_intelligence_reports_record.dart",
+      "sha256": "3c697e8c8798c02468fa8d2e46651d448b265ca2f5dd51b5e5fb8368d108ace7",
+      "size": 8829
+    },
+    {
+      "path": "lib/features/atlas_iot_platform/domain/models/atlas_iot_record.dart",
+      "sha256": "584ff8dd88ee80f72cff265b9bda9280160e170220b491a08cce925376e658c2",
+      "size": 7033
+    },
+    {
+      "path": "lib/features/atlas_land_intelligence/domain/models/atlas_land_record.dart",
+      "sha256": "a0958a4b5c7ad80094bcfaef61c68f134da86684e012bfb5ed1a2db6c88a8671",
+      "size": 4659
+    },
+    {
+      "path": "lib/features/atlas_livestock_integration/domain/models/atlas_livestock_integration_record.dart",
+      "sha256": "4119771c561766d12ddf2545f2f04a8314d6d6235667ddcf0f36c525aefa1e0b",
+      "size": 8292
+    },
+    {
+      "path": "lib/features/atlas_official_integrations/domain/models/atlas_official_integration_record.dart",
+      "sha256": "48daab2f1d9b46f2b47bbba0c7157858da6b65d47d678798d533b57fc21e6c7e",
+      "size": 5671
+    },
+    {
+      "path": "lib/features/atlas_operations_enterprise/domain/models/atlas_operations_enterprise_record.dart",
+      "sha256": "888316ea607c4adb3deec38d55d65e0b3b94191b6d97cb7507029e66632ea587",
+      "size": 9041
+    },
+    {
+      "path": "lib/features/atlas_platform_resilience/domain/models/atlas_platform_resilience_record.dart",
+      "sha256": "6424dd3cfe81289e8d729a24edd0543fe6365980e837a812ed865dea6b65e564",
+      "size": 6643
+    },
+    {
+      "path": "lib/features/atlas_precision_livestock/domain/models/atlas_precision_livestock_record.dart",
+      "sha256": "cd48fe04a8f808acf3e0b36723f652711660e99ee2be1f2dfb490f5974eac1d8",
+      "size": 8912
+    },
+    {
+      "path": "lib/features/atlas_predictive_ai_suite/domain/models/atlas_predictive_ai_record.dart",
+      "sha256": "a96acaa5a6d866ddae628af5d137e9f55e19c7bb9ffd04e7dfabf9898b6334d4",
+      "size": 4847
+    },
+    {
+      "path": "lib/features/atlas_quality_release/domain/models/atlas_quality_release_record.dart",
+      "sha256": "1ed927ceba81addf759a7660e9948b3c9849bd3ca81633af2b61e3927ddbb5cf",
+      "size": 8103
+    },
+    {
+      "path": "lib/features/atlas_reproductive_premium/domain/models/atlas_reproductive_premium_record.dart",
+      "sha256": "67dc8ad9b572bb8e3e4e68c79a825ca4a640573814a842cf1b167e146f09f375",
+      "size": 8501
+    },
+    {
+      "path": "lib/features/atlas_rural_business/domain/models/atlas_rural_business_record.dart",
+      "sha256": "d9ef50a3b4eb4f541453ae2073e077525282d6054ac806df50039cd0f67fc2c8",
+      "size": 6042
+    },
+    {
+      "path": "lib/features/atlas_saas_platform/domain/models/atlas_saas_platform_record.dart",
+      "sha256": "ca0f80b58a74f1f6fd0bc66f2c6b97ea5cbfd9ed572b845271f1e7d8e69482c5",
+      "size": 7899
+    },
+    {
+      "path": "lib/features/atlas_supply_chain/domain/models/atlas_supply_chain_record.dart",
+      "sha256": "581592915671d12ec86264f5e7859178feb2ef0348367af970af4041482fd9ff",
+      "size": 4423
+    },
+    {
+      "path": "lib/features/atlas_supply_logistics_enterprise/domain/models/atlas_supply_logistics_record.dart",
+      "sha256": "db666e633e40d0b09830f2e0c3c306eaf82fe3b929350ecfb534552f2d92563e",
+      "size": 9184
+    },
+    {
+      "path": "lib/features/atlas_sustainability_ecosystem/domain/models/atlas_ecosystem_record.dart",
+      "sha256": "d3c56f7e1542b39f3241396b75c5a51545533e6b6b1060bc65716642968c84ca",
+      "size": 4392
+    },
+    {
+      "path": "lib/features/atlas_sustainability_enterprise/domain/models/atlas_sustainability_enterprise_record.dart",
+      "sha256": "68c11b5f5c9fe5dd560dedb88c9d52c97fdf7e54b99b8f78730c181220c9a473",
+      "size": 9383
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package6a_navigation_homologation.ps1",
+      "sha256": "19145a5dac259b265be4156b19ded2cf75f22f8c93e14217f518a94fbd48448f",
+      "size": 2214
+    },
+    {
+      "path": "test/core/navigation/post_v21_package6a_navigation_contract_test.dart",
+      "sha256": "ecd05bc20d074f09522d7c9243aee1018858917b8104971dcbda66c12ced1a8b",
+      "size": 3182
+    },
+    {
+      "path": "tools/atlas_post_v21_package6a_navigation_gate.py",
+      "sha256": "253791b8ee6aa9f4d7e7c86359c350dc275558ead84295bae3aa78fcf75b32a1",
+      "size": 6384
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "4e62bd9fd8863ad3ef0f948e87c224474f23e0c771e528c4918a262ae2b9af54",
+      "size": 5108
+    }
+  ]
+}

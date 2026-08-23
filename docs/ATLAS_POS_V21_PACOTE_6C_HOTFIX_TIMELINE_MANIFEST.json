@@ -1,0 +1,50 @@
+{
+  "package": "Pós-V21 Pacote 6C Hotfix Timeline",
+  "root_cause": "teste acoplado a literal técnico em vez do comportamento de rede",
+  "backend_changed": false,
+  "database_migration_required": false,
+  "preventive_gate": "atlas_post_v21_package6c_timeline_contract_gate.py",
+  "static_gate_result": "14/14",
+  "files": [
+    {
+      "path": "lib/features/animal/presentation/screens/animal_detail_screen.dart",
+      "sha256": "b53835ba603dbbf0ddd8a024db9ca7bffcdcfc5e00bc5f053bedda37a7677d74",
+      "size": 213238
+    },
+    {
+      "path": "test/features/animal/animal_central_timeline_production_resilience_test.dart",
+      "sha256": "a56454ed0bd7965f549017e3591d5910fe85e1030ccba228f7e74ec7ac96040c",
+      "size": 1829
+    },
+    {
+      "path": "tools/atlas_post_v21_package6c_timeline_contract_gate.py",
+      "sha256": "6245c637e7c1df4f78a7da8847a3683ad3dda76e029419b9c9bbc0bdc467a581",
+      "size": 2333
+    },
+    {
+      "path": "tools/atlas_post_v21_package6b_information_architecture_gate.py",
+      "sha256": "8d67a0acb298ab0279cc7b2515b12932f00ab87151faf35f16687237635db013",
+      "size": 2775
+    },
+    {
+      "path": "tools/atlas_post_v21_package3_complete_gate.py",
+      "sha256": "374644dd1ba6c078312d18ce1a0b32386482501b6d8bbd94a1e1359b62788abd",
+      "size": 6112
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "db15b9ce04a105a6a0e61af6aab799259291065f0d12f3a79f9d51f86c3a14c1",
+      "size": 5364
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package6c_timeline_hotfix_homologation.ps1",
+      "sha256": "7555ad3894a3ce4a18231820bb439b70059d8a2d058276d17c7a80a413975e40",
+      "size": 1876
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_6C_HOTFIX_TIMELINE_20260823.md",
+      "sha256": "29cd373bbbc34b85f57a08852a6044bf3b392ed941e46d2383bb15c58cd353ad",
+      "size": 1790
+    }
+  ]
+}

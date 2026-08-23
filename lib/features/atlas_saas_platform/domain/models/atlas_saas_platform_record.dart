@@ -39,18 +39,7 @@ extension AtlasSaasPlatformModuleX on AtlasSaasPlatformModule {
     AtlasSaasPlatformModule.producerPortal => 'Portal do Produtor',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasSaasPlatformModule.accessControl => 'Pacote 101',
-    AtlasSaasPlatformModule.multiCompany => 'Pacote 102',
-    AtlasSaasPlatformModule.multiFarm => 'Pacote 103',
-    AtlasSaasPlatformModule.subscriptions => 'Pacote 104',
-    AtlasSaasPlatformModule.billing => 'Pacote 105',
-    AtlasSaasPlatformModule.pixPayments => 'Pacote 106',
-    AtlasSaasPlatformModule.cardPayments => 'Pacote 107',
-    AtlasSaasPlatformModule.licensing => 'Pacote 108',
-    AtlasSaasPlatformModule.consultantMarketplace => 'Pacote 109',
-    AtlasSaasPlatformModule.producerPortal => 'Pacote 110',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasSaasPlatformModule.accessControl => const [

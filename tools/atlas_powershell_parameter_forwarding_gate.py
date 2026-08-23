@@ -62,6 +62,104 @@ critical = {
         "function Assert-AtlasBaseUrl",
         "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
     ),
+    "scripts/quality/run_post_v21_package3_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package2Parameters = @{",
+        "@Package2Parameters",
+    ),
+    "scripts/quality/run_post_v21_package3_complete_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package3Parameters = @{",
+        "@Package3Parameters",
+    ),
+    "scripts/quality/run_post_v21_package4_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package3CompleteParameters = @{",
+        "@Package3CompleteParameters",
+    ),
+    "scripts/quality/run_post_v21_package5_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package4Parameters = @{",
+        "@Package4Parameters",
+    ),
+    "scripts/quality/check_post_v21_package5_deployed.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+    ),
+    "scripts/quality/run_post_v21_package6a_navigation_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package5Parameters = @{",
+        "@Package5Parameters",
+    ),
+    "scripts/quality/run_post_v21_package6c_timeline_hotfix_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$Package6BParameters = @{",
+        "@Package6BParameters",
+    ),
+
+    "scripts/quality/run_post_v21_package6c_capability_homologation.ps1": (
+        "function Assert-AtlasBaseUrl",
+        "$BaseUrl = Assert-AtlasBaseUrl -Value $BaseUrl",
+        "$PreviousParameters = @{",
+        "@PreviousParameters",
+    ),
+
+    "scripts/quality/run_post_v21_package6d_b_management_centers_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package6d_c_field_analysis_reports_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package6d_d_global_ux_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7a_dr_beserra_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7b_dr_beserra_voice_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7c_rural_language_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7d_safe_operations_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7e_daily_routine_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package7f_contextual_intelligence_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package8a_security_camera_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
 }
 
 for rel, required in critical.items():

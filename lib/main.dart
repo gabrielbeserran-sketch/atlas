@@ -1,6 +1,6 @@
-import 'dart:ui';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text_windows/speech_to_text_windows.dart';
 
 import 'app.dart';
 import 'core/errors/atlas_error_reporter.dart';
@@ -8,6 +8,10 @@ import 'core/widgets/atlas_error_state.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (defaultTargetPlatform == TargetPlatform.windows) {
+    SpeechToTextWindows.registerWith();
+  }
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);

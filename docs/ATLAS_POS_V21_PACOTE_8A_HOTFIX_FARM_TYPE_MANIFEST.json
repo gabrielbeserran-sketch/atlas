@@ -1,0 +1,43 @@
+{
+  "package": "Pós-V21 Pacote 8A — Hotfix Farm Type",
+  "root_cause": "AtlasRemoteFarm passed to widget requiring FarmData",
+  "fix": "primitive farmId boundary",
+  "new_prevention_gate": "tools/atlas_flutter_farm_model_boundary_gate.py",
+  "files": [
+    {
+      "path": "lib/features/security_camera/presentation/widgets/atlas_security_camera_card.dart",
+      "sha256": "4a954a96cebf7275f05fc7713fcfe1e5d889c0a429857e85cff8c28eee1391ad",
+      "size": 16411
+    },
+    {
+      "path": "lib/features/precision_hub/presentation/screens/atlas_precision_hub_screen.dart",
+      "sha256": "f7dc4b2965840dddb350a3105208c05694c8361f1a42b6beccdf2cc79002b5d8",
+      "size": 7348
+    },
+    {
+      "path": "test/features/security_camera/post_v21_package8a_security_camera_contract_test.dart",
+      "sha256": "2a91d92ff27be207bf370e7ccff6a8dfe3221b6eff39ac32668712b533afb45d",
+      "size": 3590
+    },
+    {
+      "path": "tools/atlas_post_v21_package8a_security_camera_gate.py",
+      "sha256": "4ae8ed792cb58aa57174945e8268931c41fcc545cd0af00e24c3ab2e4bf13fb4",
+      "size": 8321
+    },
+    {
+      "path": "tools/atlas_flutter_farm_model_boundary_gate.py",
+      "sha256": "a934675da37ae3f57fa300cab1072107c09c6b233575c81f206b5285c627ff74",
+      "size": 2399
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8a_security_camera_homologation.ps1",
+      "sha256": "0be4504edd135f6a830c890ed5ebf4e5a5fa9a3bdd83967d6f58344866df9285",
+      "size": 1989
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8A_HOTFIX_FARM_TYPE_20260823.md",
+      "sha256": "8b99a78c2c8c0736cb355dcbda841c9fefe94c19ebf3c77dfe2a324296513f8b",
+      "size": 1511
+    }
+  ]
+}

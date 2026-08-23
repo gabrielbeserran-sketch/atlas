@@ -85,7 +85,12 @@ void main() {
 
   test('05 rebanho depende explicitamente da fazenda ativa', () {
     expect(shell.contains("selected.label == 'Rebanho'"), isTrue);
-    expect(shell.contains('const _AtlasSelectFarmMessage()'), isTrue);
+    expect(
+      shell.contains(
+        '_AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))',
+      ),
+      isTrue,
+    );
     expect(shell.contains('farmScopedModules'), isTrue);
   });
 

@@ -48,18 +48,7 @@ extension AtlasBackendFoundationModuleX on AtlasBackendFoundationModule {
       'Central de Administração do Backend',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasBackendFoundationModule.backendFoundation => 'Pacote 251',
-    AtlasBackendFoundationModule.environmentConfiguration => 'Pacote 252',
-    AtlasBackendFoundationModule.postgresqlDatabase => 'Pacote 253',
-    AtlasBackendFoundationModule.versionedMigrations => 'Pacote 254',
-    AtlasBackendFoundationModule.multiCompanyArchitecture => 'Pacote 255',
-    AtlasBackendFoundationModule.usersCompaniesApi => 'Pacote 256',
-    AtlasBackendFoundationModule.farmsGroupsApi => 'Pacote 257',
-    AtlasBackendFoundationModule.animalsApi => 'Pacote 258',
-    AtlasBackendFoundationModule.livestockEventsApi => 'Pacote 259',
-    AtlasBackendFoundationModule.backendAdministrationCenter => 'Pacote 260',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasBackendFoundationModule.backendFoundation => const [

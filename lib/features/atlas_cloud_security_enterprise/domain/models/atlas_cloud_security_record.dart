@@ -42,18 +42,7 @@ extension AtlasCloudSecurityModuleX on AtlasCloudSecurityModule {
     AtlasCloudSecurityModule.securityCenter => 'Central de Segurança Atlas',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasCloudSecurityModule.professionalAuthentication => 'Pacote 231',
-    AtlasCloudSecurityModule.usersAndCompanies => 'Pacote 232',
-    AtlasCloudSecurityModule.cloudDatabase => 'Pacote 233',
-    AtlasCloudSecurityModule.offlineSynchronization => 'Pacote 234',
-    AtlasCloudSecurityModule.conflictResolution => 'Pacote 235',
-    AtlasCloudSecurityModule.automatedBackup => 'Pacote 236',
-    AtlasCloudSecurityModule.dataEncryption => 'Pacote 237',
-    AtlasCloudSecurityModule.userAuditLogs => 'Pacote 238',
-    AtlasCloudSecurityModule.integrationCenter => 'Pacote 239',
-    AtlasCloudSecurityModule.securityCenter => 'Pacote 240',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasCloudSecurityModule.professionalAuthentication => const [

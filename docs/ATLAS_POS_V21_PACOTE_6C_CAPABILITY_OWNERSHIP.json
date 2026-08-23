@@ -1,0 +1,1035 @@
+{
+  "summary": {
+    "components_total": 98,
+    "feature_roots_total": 69,
+    "owners": {
+      "Rebanho": {
+        "components": 0,
+        "feature_roots": 0
+      },
+      "Reprodução": {
+        "components": 4,
+        "feature_roots": 3
+      },
+      "Sanidade": {
+        "components": 2,
+        "feature_roots": 1
+      },
+      "Nutrição": {
+        "components": 3,
+        "feature_roots": 2
+      },
+      "Estoque": {
+        "components": 5,
+        "feature_roots": 5
+      },
+      "Financeiro": {
+        "components": 6,
+        "feature_roots": 4
+      },
+      "Campo": {
+        "components": 28,
+        "feature_roots": 11
+      },
+      "Análises": {
+        "components": 28,
+        "feature_roots": 28
+      },
+      "Relatórios": {
+        "components": 3,
+        "feature_roots": 3
+      },
+      "Consultoria": {
+        "components": 2,
+        "feature_roots": 2
+      },
+      "Interno": {
+        "components": 17,
+        "feature_roots": 16
+      }
+    },
+    "rule": "Recursos especializados não viram itens do menu. Cada recurso é absorvido pelo módulo dono do dado; infraestrutura e ferramentas sem contrato produtivo permanecem internas."
+  },
+  "items": [
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_action_outcome_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_executive_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_results_intelligence_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_agriculture_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_agriculture_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_asset_maintenance_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_asset_maintenance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_climate_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_climate_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_command_center_action_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart | lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_service.dart | lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_sync_service.dart | lib/core/operational_intelligence/action_plan/atlas_team_management_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_command_center_action_update_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_commercial_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_commercial_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_economic_intelligence_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_economic_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_economic_scenario_service.dart | lib/core/operational_intelligence/action_plan/atlas_executive_360_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_esg_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_esg_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_execution_audit_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_command_center_action_service.dart | lib/core/operational_intelligence/action_plan/atlas_execution_audit_screen.dart | lib/core/operational_intelligence/action_plan/atlas_execution_meeting_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_execution_cycle_report_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_results_intelligence_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_execution_meeting_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_execution_meeting_screen.dart | lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_sync_service.dart | lib/core/operational_intelligence/action_plan/atlas_meeting_decision_monitoring_controller.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_execution_weekly_review_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_execution_weekly_review_controller.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_financial_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_economic_intelligence_service.dart | lib/core/operational_intelligence/action_plan/atlas_financial_management_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_goal_action_link_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_strategy_performance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_health_intelligence_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_health_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_health_strategy_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Sanidade"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_health_strategy_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_health_strategy_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Sanidade"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_inventory_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_inventory_management_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Estoque"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_link_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_service.dart | lib/core/operational_intelligence/action_plan/atlas_meeting_decision_action_sync_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_nutrition_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_nutrition_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_nutrition_strategy_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Nutrição"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_nutrition_strategy_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_nutrition_strategy_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Nutrição"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_operational_goal_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_executive_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_strategy_performance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_pasture_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_pasture_management_screen.dart | lib/core/operational_intelligence/action_plan/atlas_pasture_strategy_screen.dart | lib/core/operational_intelligence/action_plan/atlas_pasture_strategy_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_pasture_strategy_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_pasture_strategy_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_people_management_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_people_management_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_reproductive_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_reproductive_intelligence_screen.dart | lib/core/operational_intelligence/action_plan/atlas_reproductive_strategy_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Reprodução"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_reproductive_strategy_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_reproductive_strategy_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Reprodução"
+    },
+    {
+      "file": "lib/core/operational_intelligence/action_plan/atlas_team_member_service.dart",
+      "feature_root": "core/operational_intelligence",
+      "previous_category": "advanced_local_planning",
+      "v1_disposition": "advanced_validation",
+      "reason": "Planejamento/inteligência derivada: pode existir na V1 como apoio, mas não é cadastro oficial e permanece em validação.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_people_management_service.dart | lib/core/operational_intelligence/action_plan/atlas_team_management_screen.dart | lib/core/operational_intelligence/action_plan/atlas_team_member_selector.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/core/orchestrator/atlas_orchestrator_repository.dart",
+      "feature_root": "core/orchestrator",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/core/release_candidate/atlas_release_candidate_repository.dart",
+      "feature_root": "core/release_candidate",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/core/release_candidate/atlas_release_candidate_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/core/system_center/atlas_system_center_repository.dart",
+      "feature_root": "core/system_center",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/core/system_center/atlas_system_center_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/action_plan/data/services/atlas_action_plan_storage_service.dart",
+      "feature_root": "action_plan",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/action_plan/presentation/screens/atlas_action_plan_screen.dart | lib/features/continuous_improvement/presentation/screens/atlas_continuous_improvement_screen.dart | lib/features/knowledge_learning/presentation/screens/atlas_knowledge_learning_screen.dart | lib/features/performance_center/presentation/screens/atlas_performance_center_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/animal_nutrition_enterprise/data/services/animal_nutrition_storage_service.dart",
+      "feature_root": "animal_nutrition_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/animal_executive_panel/presentation/screens/animal_executive_panel_screen.dart | lib/features/animal_intelligence_360/presentation/screens/animal_intelligence_360_screen.dart | lib/features/animal_nutrition_enterprise/presentation/screens/animal_nutrition_enterprise_screen.dart | lib/features/animal_operations_center/presentation/screens/animal_operations_center_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Nutrição"
+    },
+    {
+      "file": "lib/features/atlas_advanced_ai/data/services/atlas_advanced_ai_storage_service.dart",
+      "feature_root": "atlas_advanced_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_advanced_ai/presentation/screens/atlas_advanced_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_ai/data/services/atlas_ai_conversation_storage_service.dart",
+      "feature_root": "atlas_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_ai/domain/services/atlas_ai_memory_service.dart | lib/features/atlas_ai/presentation/screens/atlas_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_ai/data/services/atlas_ai_tracked_action_storage_service.dart",
+      "feature_root": "atlas_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_ai/data/services/atlas_ai_operation_actions_loader_service.dart | lib/features/atlas_ai/presentation/screens/atlas_ai_screen.dart | lib/features/executive_alerts/data/services/atlas_executive_alert_loader_service.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_auth_sync_enterprise/data/services/atlas_auth_sync_storage_service.dart",
+      "feature_root": "atlas_auth_sync_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_auth_sync_enterprise/presentation/screens/atlas_auth_sync_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_auth_sync_enterprise/domain/services/atlas_auth_sync_analytics_service.dart",
+      "feature_root": "atlas_auth_sync_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_auth_sync_enterprise/presentation/screens/atlas_auth_sync_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_automation_operations/data/services/atlas_automation_storage_service.dart",
+      "feature_root": "atlas_automation_operations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_automation_operations/presentation/screens/atlas_automation_operations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_autonomous_enterprise/data/services/atlas_autonomous_enterprise_storage_service.dart",
+      "feature_root": "atlas_autonomous_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_autonomous_enterprise/presentation/screens/atlas_autonomous_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_climate_enterprise/data/services/atlas_climate_enterprise_storage_service.dart",
+      "feature_root": "atlas_climate_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_climate_enterprise/presentation/screens/atlas_climate_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_cloud_security_enterprise/data/services/atlas_cloud_security_storage_service.dart",
+      "feature_root": "atlas_cloud_security_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_cloud_security_enterprise/presentation/screens/atlas_cloud_security_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_commercial_enterprise/data/services/atlas_commercial_enterprise_storage_service.dart",
+      "feature_root": "atlas_commercial_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_commercial_enterprise/presentation/screens/atlas_commercial_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_commercial_operations/data/services/atlas_commercial_operation_storage_service.dart",
+      "feature_root": "atlas_commercial_operations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_commercial_operations/presentation/screens/atlas_commercial_operations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_enterprise_50/data/services/atlas_enterprise_storage_service.dart",
+      "feature_root": "atlas_enterprise_50",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_enterprise_50/presentation/screens/atlas_enterprise_50_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_enterprise_operations/data/services/atlas_enterprise_operation_storage_service.dart",
+      "feature_root": "atlas_enterprise_operations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_enterprise_operations/presentation/screens/atlas_enterprise_operations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_environmental_ai/data/services/atlas_environmental_ai_storage_service.dart",
+      "feature_root": "atlas_environmental_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_environmental_ai/presentation/screens/atlas_environmental_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_executive_intelligence/data/services/atlas_executive_intelligence_storage_service.dart",
+      "feature_root": "atlas_executive_intelligence",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_executive_intelligence/presentation/screens/atlas_executive_intelligence_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_executive_platform/data/services/atlas_executive_platform_storage_service.dart",
+      "feature_root": "atlas_executive_platform",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_executive_platform/presentation/screens/atlas_executive_platform_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_finance_enterprise/data/services/atlas_finance_enterprise_storage_service.dart",
+      "feature_root": "atlas_finance_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_finance_enterprise/presentation/screens/atlas_finance_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/features/atlas_financial_integrations/data/services/atlas_financial_integration_storage_service.dart",
+      "feature_root": "atlas_financial_integrations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_financial_integrations/presentation/screens/atlas_financial_integrations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/features/atlas_geospatial_platform/data/services/atlas_geospatial_storage_service.dart",
+      "feature_root": "atlas_geospatial_platform",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_geospatial_platform/presentation/screens/atlas_geospatial_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_global_platform/data/services/atlas_global_platform_storage_service.dart",
+      "feature_root": "atlas_global_platform",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_global_platform/presentation/screens/atlas_global_platform_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_governance_operations/data/services/atlas_governance_operation_storage_service.dart",
+      "feature_root": "atlas_governance_operations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_governance_operations/presentation/screens/atlas_governance_operations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_governance_people_enterprise/data/services/atlas_governance_people_storage_service.dart",
+      "feature_root": "atlas_governance_people_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_governance_people_enterprise/presentation/screens/atlas_governance_people_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_intelligence_reports_experience/data/services/atlas_intelligence_reports_storage_service.dart",
+      "feature_root": "atlas_intelligence_reports_experience",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_intelligence_reports_experience/presentation/screens/atlas_intelligence_reports_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Relatórios"
+    },
+    {
+      "file": "lib/features/atlas_iot_platform/data/services/atlas_iot_storage_service.dart",
+      "feature_root": "atlas_iot_platform",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_iot_platform/presentation/screens/atlas_iot_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_land_intelligence/data/services/atlas_land_storage_service.dart",
+      "feature_root": "atlas_land_intelligence",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_land_intelligence/presentation/screens/atlas_land_intelligence_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_livestock_integration/data/services/atlas_livestock_integration_storage_service.dart",
+      "feature_root": "atlas_livestock_integration",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_livestock_integration/presentation/screens/atlas_livestock_integration_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Estoque"
+    },
+    {
+      "file": "lib/features/atlas_official_integrations/data/services/atlas_official_integration_storage_service.dart",
+      "feature_root": "atlas_official_integrations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_official_integrations/presentation/screens/atlas_official_integrations_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_operations_enterprise/data/services/atlas_operations_enterprise_storage_service.dart",
+      "feature_root": "atlas_operations_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_operations_enterprise/presentation/screens/atlas_operations_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/atlas_platform_resilience/data/services/atlas_platform_resilience_storage_service.dart",
+      "feature_root": "atlas_platform_resilience",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_platform_resilience/presentation/screens/atlas_platform_resilience_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_precision_livestock/data/services/atlas_precision_livestock_storage_service.dart",
+      "feature_root": "atlas_precision_livestock",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_precision_livestock/presentation/screens/atlas_precision_livestock_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Estoque"
+    },
+    {
+      "file": "lib/features/atlas_predictive_ai_suite/data/services/atlas_predictive_ai_storage_service.dart",
+      "feature_root": "atlas_predictive_ai_suite",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_predictive_ai_suite/presentation/screens/atlas_predictive_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_quality_release/data/services/atlas_quality_release_storage_service.dart",
+      "feature_root": "atlas_quality_release",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_quality_release/presentation/screens/atlas_quality_release_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_reproductive_ai/data/services/atlas_reproductive_prediction_storage_service.dart",
+      "feature_root": "atlas_reproductive_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_reproductive_ai/presentation/screens/atlas_reproductive_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Reprodução"
+    },
+    {
+      "file": "lib/features/atlas_reproductive_premium/data/services/atlas_reproductive_premium_storage_service.dart",
+      "feature_root": "atlas_reproductive_premium",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_reproductive_premium/presentation/screens/atlas_reproductive_premium_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Reprodução"
+    },
+    {
+      "file": "lib/features/atlas_rural_business/data/services/atlas_rural_business_storage_service.dart",
+      "feature_root": "atlas_rural_business",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/atlas_rural_business/presentation/screens/atlas_rural_business_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_saas_platform/data/services/atlas_saas_platform_storage_service.dart",
+      "feature_root": "atlas_saas_platform",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/atlas_saas_platform/presentation/screens/atlas_saas_platform_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/atlas_supply_chain/data/services/atlas_supply_chain_storage_service.dart",
+      "feature_root": "atlas_supply_chain",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_supply_chain/presentation/screens/atlas_supply_chain_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Estoque"
+    },
+    {
+      "file": "lib/features/atlas_supply_logistics_enterprise/data/services/atlas_supply_logistics_storage_service.dart",
+      "feature_root": "atlas_supply_logistics_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_supply_logistics_enterprise/presentation/screens/atlas_supply_logistics_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Estoque"
+    },
+    {
+      "file": "lib/features/atlas_sustainability_ecosystem/data/services/atlas_ecosystem_storage_service.dart",
+      "feature_root": "atlas_sustainability_ecosystem",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_sustainability_ecosystem/presentation/screens/atlas_ecosystem_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_sustainability_enterprise/data/services/atlas_sustainability_enterprise_storage_service.dart",
+      "feature_root": "atlas_sustainability_enterprise",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_sustainability_enterprise/presentation/screens/atlas_sustainability_enterprise_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/atlas_veterinary_ai/data/services/atlas_veterinary_case_storage_service.dart",
+      "feature_root": "atlas_veterinary_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/atlas_veterinary_ai/presentation/screens/atlas_veterinary_ai_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/benefits_realization/data/services/atlas_benefits_realization_repository.dart",
+      "feature_root": "benefits_realization",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/benefits_realization/presentation/screens/atlas_benefits_realization_screen.dart | lib/features/portfolio_management/presentation/screens/atlas_portfolio_management_screen.dart | lib/features/value_governance/presentation/screens/atlas_value_governance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/command_center/data/services/atlas_command_repository.dart",
+      "feature_root": "command_center",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/command_center/presentation/screens/atlas_command_center_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/consultancy_hub/data/services/atlas_consultancy_repository.dart",
+      "feature_root": "consultancy_hub",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Consultoria"
+    },
+    {
+      "file": "lib/features/consultancy_workflow/data/services/atlas_consultancy_workflow_repository.dart",
+      "feature_root": "consultancy_workflow",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/consultancy_workflow/presentation/screens/atlas_consultancy_workflow_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Consultoria"
+    },
+    {
+      "file": "lib/features/data_governance/data/services/atlas_data_governance_repository.dart",
+      "feature_root": "data_governance",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/data_governance/presentation/screens/atlas_data_governance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/digital_twin/domain/services/atlas_digital_twin_service.dart",
+      "feature_root": "digital_twin",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/core/operational_intelligence/action_plan/atlas_executive_360_service.dart | lib/core/reactivity/atlas_reactive_runtime.dart | lib/features/autonomous_consultant/presentation/screens/atlas_autonomous_consultant_screen.dart | lib/features/digital_twin/presentation/screens/atlas_digital_twin_screen.dart | lib/features/farm_audit/presentation/screens/atlas_farm_audit_screen.dart | lib/features/optimization_engine/presentation/screens/atlas_optimization_screen.dart | lib/features/scenario_simulator/presentation/screens/atlas_scenario_simulator_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/executive_goals/data/services/atlas_executive_goal_storage_service.dart",
+      "feature_root": "executive_goals",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/dashboard/presentation/screens/executive_dashboard_screen.dart | lib/features/executive_goals/presentation/screens/atlas_executive_goals_screen.dart | lib/features/executive_kpis/presentation/screens/atlas_executive_kpis_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/farm_operations/data/services/atlas_operations_repository.dart",
+      "feature_root": "farm_operations",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Campo"
+    },
+    {
+      "file": "lib/features/integration_hub/data/services/atlas_integration_repository.dart",
+      "feature_root": "integration_hub",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/investment_capital_allocation/data/services/atlas_investment_repository.dart",
+      "feature_root": "investment_capital_allocation",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Financeiro"
+    },
+    {
+      "file": "lib/features/knowledge_learning/data/services/atlas_knowledge_repository.dart",
+      "feature_root": "knowledge_learning",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/decision_intelligence_lab/presentation/screens/atlas_decision_intelligence_lab_screen.dart | lib/features/knowledge_learning/presentation/screens/atlas_knowledge_learning_screen.dart | lib/features/recommendation_intelligence/presentation/screens/atlas_recommendation_intelligence_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/observability/data/services/atlas_observability_repository.dart",
+      "feature_root": "observability",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/observability/presentation/screens/atlas_observability_dashboard.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/performance_intelligence/data/services/atlas_performance_repository.dart",
+      "feature_root": "performance_intelligence",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/predictive/data/services/atlas_predictive_scenario_storage_service.dart",
+      "feature_root": "predictive",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/predictive/presentation/screens/atlas_predictive_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/predictive_ai/data/services/atlas_prediction_repository.dart",
+      "feature_root": "predictive_ai",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/quality_center/data/services/atlas_quality_repository.dart",
+      "feature_root": "quality_center",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    },
+    {
+      "file": "lib/features/reporting/data/services/atlas_report_repository.dart",
+      "feature_root": "reporting",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Relatórios"
+    },
+    {
+      "file": "lib/features/reports/data/services/report_action_storage_service.dart",
+      "feature_root": "reports",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "lib/features/dashboard/presentation/screens/dashboard_screen.dart | lib/features/dashboard/presentation/screens/executive_dashboard_screen.dart | lib/features/dashboard/presentation/widgets/dashboard_action_summary_card.dart | lib/features/reports/presentation/screens/report_action_list_screen.dart | lib/features/reports/presentation/screens/reports_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Relatórios"
+    },
+    {
+      "file": "lib/features/scenario_simulator/domain/services/atlas_simulation_service.dart",
+      "feature_root": "scenario_simulator",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/scenario_simulator/presentation/screens/atlas_scenario_simulator_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/strategic_execution_engine/data/services/atlas_execution_repository.dart",
+      "feature_root": "strategic_execution_engine",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada ainda local; mantida fora da autoridade dos módulos operacionais V1.",
+      "direct_external_importers": "",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/strategic_scenario_planning/data/services/atlas_strategic_scenario_repository.dart",
+      "feature_root": "strategic_scenario_planning",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/strategic_scenario_planning/presentation/screens/atlas_strategic_scenario_planning_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/strategy_execution/data/services/atlas_strategy_execution_repository.dart",
+      "feature_root": "strategy_execution",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/features/benefits_realization/presentation/screens/atlas_benefits_realization_screen.dart | lib/features/portfolio_management/presentation/screens/atlas_portfolio_management_screen.dart | lib/features/strategic_alignment/presentation/screens/atlas_strategic_alignment_screen.dart | lib/features/strategic_capacity/presentation/screens/atlas_strategic_capacity_screen.dart | lib/features/strategy_execution/presentation/screens/atlas_strategy_execution_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/unified_workflow/domain/services/atlas_unified_workflow_engine.dart",
+      "feature_root": "unified_workflow",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "advanced_validation",
+      "reason": "Feature avançada preservada para evolução; dados locais não podem ser apresentados como autoridade operacional V1.",
+      "direct_external_importers": "lib/app.dart | lib/features/unified_workflow/presentation/screens/atlas_unified_workflow_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Análises"
+    },
+    {
+      "file": "lib/features/value_governance/data/services/atlas_value_governance_repository.dart",
+      "feature_root": "value_governance",
+      "previous_category": "advanced_local_feature",
+      "v1_disposition": "internal_tool",
+      "reason": "Ferramenta de plataforma, governança, qualidade, release ou operação interna; não é módulo produtivo da fazenda.",
+      "direct_external_importers": "lib/features/portfolio_management/presentation/screens/atlas_portfolio_management_screen.dart | lib/features/value_governance/presentation/screens/atlas_value_governance_screen.dart",
+      "official_v1_root": "False",
+      "owner_6c": "Interno"
+    }
+  ]
+}

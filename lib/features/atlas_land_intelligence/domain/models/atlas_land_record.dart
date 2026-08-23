@@ -13,11 +13,7 @@ extension AtlasLandModuleX on AtlasLandModule {
     AtlasLandModule.agriculture => 'Agricultura Integrada',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasLandModule.genetics => 'Pacote 41',
-    AtlasLandModule.pasture => 'Pacote 42',
-    AtlasLandModule.agriculture => 'Pacote 43',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasLandModule.genetics => const [

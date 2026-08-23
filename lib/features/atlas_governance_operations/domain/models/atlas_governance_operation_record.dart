@@ -24,13 +24,7 @@ extension AtlasGovernanceOperationModuleX on AtlasGovernanceOperationModule {
     AtlasGovernanceOperationModule.trainingAcademy => 'Academia Atlas',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasGovernanceOperationModule.qualityManagement => 'Pacote 84',
-    AtlasGovernanceOperationModule.compliance => 'Pacote 85',
-    AtlasGovernanceOperationModule.projectPortfolio => 'Pacote 86',
-    AtlasGovernanceOperationModule.workforceManagement => 'Pacote 87',
-    AtlasGovernanceOperationModule.trainingAcademy => 'Pacote 88',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasGovernanceOperationModule.qualityManagement => const [

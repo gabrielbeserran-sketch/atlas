@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 import os
+import re
 from ipaddress import ip_network
 from pathlib import Path
 from typing import Literal
@@ -85,6 +86,23 @@ class Settings(BaseSettings):
     atlas_rate_limit_per_minute: int = Field(default=120, ge=10, le=10000)
     atlas_redis_url: str = ""
     atlas_docs_enabled: bool = True
+
+    # Boletins mensais e WhatsApp Business Cloud API.
+    # O envio permanece desabilitado até existir uma conta oficial configurada.
+    atlas_bulletin_scheduler_enabled: bool = True
+    atlas_bulletin_poll_seconds: int = Field(default=300, ge=60, le=3600)
+    atlas_bulletin_cron_secret: str = ""
+    atlas_whatsapp_enabled: bool = False
+    atlas_whatsapp_access_token: str = ""
+    atlas_whatsapp_phone_number_id: str = ""
+    atlas_whatsapp_graph_version: str = ""
+    atlas_whatsapp_template_language: str = "pt_BR"
+    atlas_whatsapp_template_zootechnical: str = ""
+    atlas_whatsapp_template_operations: str = ""
+    atlas_whatsapp_template_financial: str = ""
+    atlas_whatsapp_template_security_alert: str = ""
+    atlas_whatsapp_webhook_verify_token: str = ""
+    atlas_whatsapp_app_secret: str = ""
 
     # Forwarded headers are untrusted by default. They are only honored when
     # the direct peer belongs to one of the explicitly configured proxy CIDRs.
@@ -217,6 +235,53 @@ class Settings(BaseSettings):
         if not value.strip():
             raise ValueError("valor obrigatório vazio")
         return value.strip()
+
+    @model_validator(mode="after")
+    def validate_whatsapp_provider(self) -> "Settings":
+        if not self.atlas_whatsapp_enabled:
+            return self
+
+        missing = [
+            name
+            for name, value in (
+                ("ATLAS_WHATSAPP_ACCESS_TOKEN", self.atlas_whatsapp_access_token),
+                ("ATLAS_WHATSAPP_PHONE_NUMBER_ID", self.atlas_whatsapp_phone_number_id),
+                ("ATLAS_WHATSAPP_GRAPH_VERSION", self.atlas_whatsapp_graph_version),
+                (
+                    "ATLAS_WHATSAPP_TEMPLATE_ZOOTECHNICAL",
+                    self.atlas_whatsapp_template_zootechnical,
+                ),
+                (
+                    "ATLAS_WHATSAPP_TEMPLATE_OPERATIONS",
+                    self.atlas_whatsapp_template_operations,
+                ),
+                (
+                    "ATLAS_WHATSAPP_TEMPLATE_FINANCIAL",
+                    self.atlas_whatsapp_template_financial,
+                ),
+                (
+                    "ATLAS_WHATSAPP_WEBHOOK_VERIFY_TOKEN",
+                    self.atlas_whatsapp_webhook_verify_token,
+                ),
+                (
+                    "ATLAS_WHATSAPP_APP_SECRET",
+                    self.atlas_whatsapp_app_secret,
+                ),
+            )
+            if not value.strip()
+        ]
+        if missing:
+            raise ValueError(
+                "WhatsApp automático ativado sem configuração completa: "
+                + ", ".join(missing)
+            )
+
+        version = self.atlas_whatsapp_graph_version.strip()
+        if not re.fullmatch(r"v\d+\.\d+", version):
+            raise ValueError(
+                "ATLAS_WHATSAPP_GRAPH_VERSION deve usar o formato vNN.N."
+            )
+        return self
 
     @field_validator(
         "atlas_cors_origins",

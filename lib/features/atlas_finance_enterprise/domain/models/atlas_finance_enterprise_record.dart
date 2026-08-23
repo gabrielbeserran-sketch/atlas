@@ -44,18 +44,7 @@ extension AtlasFinanceEnterpriseModuleX on AtlasFinanceEnterpriseModule {
       'Enterprise Finance Center',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasFinanceEnterpriseModule.projectedCashFlow => 'Pacote 161',
-    AtlasFinanceEnterpriseModule.consolidatedCashFlow => 'Pacote 162',
-    AtlasFinanceEnterpriseModule.annualBudget => 'Pacote 163',
-    AtlasFinanceEnterpriseModule.actualVsPlanned => 'Pacote 164',
-    AtlasFinanceEnterpriseModule.economicSimulations => 'Pacote 165',
-    AtlasFinanceEnterpriseModule.bankingIndicators => 'Pacote 166',
-    AtlasFinanceEnterpriseModule.roi => 'Pacote 167',
-    AtlasFinanceEnterpriseModule.ebitda => 'Pacote 168',
-    AtlasFinanceEnterpriseModule.assetValuation => 'Pacote 169',
-    AtlasFinanceEnterpriseModule.enterpriseFinanceCenter => 'Pacote 170',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasFinanceEnterpriseModule.projectedCashFlow => const [

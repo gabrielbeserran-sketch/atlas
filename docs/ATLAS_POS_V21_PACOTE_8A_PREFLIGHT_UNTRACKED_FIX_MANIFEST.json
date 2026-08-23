@@ -1,0 +1,35 @@
+{
+  "package": "Pós-V21 Pacote 8A — Preflight Untracked Fix",
+  "root_cause": "git grep required tracked migration before git add",
+  "pre_staging_untracked_allowed": true,
+  "staged_check_required_before_commit": true,
+  "pager_disabled": true,
+  "safecrlf_warning_suppressed_in_diff_checks": true,
+  "files": [
+    {
+      "path": "scripts/quality/run_post_v21_package8a_release_preflight.ps1",
+      "sha256": "67c44f57b3612e2dbc31c701b11009a3f8589bf2cceef43781dba33873eb0e71",
+      "size": 3392
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package8a_staged_release.ps1",
+      "sha256": "62ca0379a494c0e22068db30888591dfdb3545a81f9abc2476b2c7aaacfa1393",
+      "size": 1922
+    },
+    {
+      "path": "scripts/quality/prepare_git_for_render.ps1",
+      "sha256": "27adf61da892a01459020dba2e4e33f80b7f8ed010427e4947af58abfadbabfe",
+      "size": 1606
+    },
+    {
+      "path": "tools/atlas_post_v21_package8a_release_preflight_gate.py",
+      "sha256": "3618e49fc5dc3cb3e70d0c36630c0c015c2b5d2f2bf3efc4ab882c67bf7094e3",
+      "size": 3572
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8A_PREFLIGHT_UNTRACKED_FIX_20260823.md",
+      "sha256": "aa4e05723b76aaedc906c2a7ef3980e04f00cdb87375d76b77ce4186137dd168",
+      "size": 1538
+    }
+  ]
+}

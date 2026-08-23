@@ -48,18 +48,7 @@ extension AtlasSustainabilityEnterpriseModuleX
     AtlasSustainabilityEnterpriseModule.esgCenter => 'Central ESG',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasSustainabilityEnterpriseModule.carbonFootprint => 'Carbono',
-    AtlasSustainabilityEnterpriseModule.greenhouseGasInventory => 'Emissões',
-    AtlasSustainabilityEnterpriseModule.waterManagement => 'Água',
-    AtlasSustainabilityEnterpriseModule.energyEfficiency => 'Energia',
-    AtlasSustainabilityEnterpriseModule.wasteManagement => 'Resíduos',
-    AtlasSustainabilityEnterpriseModule.biodiversity => 'Biodiversidade',
-    AtlasSustainabilityEnterpriseModule.environmentalCompliance => 'Conformidade',
-    AtlasSustainabilityEnterpriseModule.sustainabilityCertifications => 'Certificações',
-    AtlasSustainabilityEnterpriseModule.sustainableTraceability => 'Rastreabilidade',
-    AtlasSustainabilityEnterpriseModule.esgCenter => 'Indicadores ESG',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasSustainabilityEnterpriseModule.carbonFootprint => const [

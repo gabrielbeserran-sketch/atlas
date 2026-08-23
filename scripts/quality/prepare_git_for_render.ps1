@@ -20,17 +20,35 @@ if ($LASTEXITCODE -ne 0) {
     throw "Auditoria de segredos falhou."
 }
 
-Write-Host ""
-Write-Host "Branch:" -ForegroundColor Yellow
-git branch --show-current
+$OldGitPager = $env:GIT_PAGER
+$OldPager = $env:PAGER
+$OldLess = $env:LESS
 
-Write-Host ""
-Write-Host "Origin:" -ForegroundColor Yellow
-git remote get-url origin
+try {
+    $env:GIT_PAGER = "cat"
+    $env:PAGER = "cat"
+    $env:LESS = "FRX"
 
-Write-Host ""
-Write-Host "Quantidade de alterações:" -ForegroundColor Yellow
-git status --short | Measure-Object -Line
+    Write-Host ""
+    Write-Host "Branch:" -ForegroundColor Yellow
+    & git -c core.pager=cat branch --show-current
+
+    Write-Host ""
+    Write-Host "Origin:" -ForegroundColor Yellow
+    & git -c core.pager=cat remote get-url origin
+
+    Write-Host ""
+    Write-Host "Quantidade de alterações:" -ForegroundColor Yellow
+    $ChangeCount = @(
+        & git -c core.pager=cat status --short --untracked-files=all
+    ).Count
+    Write-Host $ChangeCount
+}
+finally {
+    $env:GIT_PAGER = $OldGitPager
+    $env:PAGER = $OldPager
+    $env:LESS = $OldLess
+}
 
 Write-Host ""
 Write-Host "ATLAS GIT PREPARE: APROVADO" -ForegroundColor Green

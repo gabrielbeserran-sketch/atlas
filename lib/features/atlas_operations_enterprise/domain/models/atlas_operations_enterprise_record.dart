@@ -50,18 +50,7 @@ extension AtlasOperationsEnterpriseModuleX on AtlasOperationsEnterpriseModule {
       'Central de Operações Atlas',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasOperationsEnterpriseModule.farmOperationalPlanning => 'Pacote 201',
-    AtlasOperationsEnterpriseModule.intelligentActivityAgenda => 'Pacote 202',
-    AtlasOperationsEnterpriseModule.workOrders => 'Pacote 203',
-    AtlasOperationsEnterpriseModule.teamManagement => 'Pacote 204',
-    AtlasOperationsEnterpriseModule.workdayControl => 'Pacote 205',
-    AtlasOperationsEnterpriseModule.machineryManagement => 'Pacote 206',
-    AtlasOperationsEnterpriseModule.preventiveMaintenance => 'Pacote 207',
-    AtlasOperationsEnterpriseModule.correctiveMaintenance => 'Pacote 208',
-    AtlasOperationsEnterpriseModule.operationalIndicators => 'Pacote 209',
-    AtlasOperationsEnterpriseModule.operationsCenter => 'Pacote 210',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasOperationsEnterpriseModule.farmOperationalPlanning => const [

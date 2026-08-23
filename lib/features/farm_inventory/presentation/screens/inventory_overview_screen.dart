@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_inventory/data/services/farm_inventory_storage_service.dart';
@@ -6,7 +10,14 @@ import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_invento
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/farm_inventory_list_screen.dart';
 
 class InventoryOverviewScreen extends StatefulWidget {
-  const InventoryOverviewScreen({super.key});
+  const InventoryOverviewScreen({
+    this.farm,
+    this.embedded = false,
+    super.key,
+  });
+
+  final FarmData? farm;
+  final bool embedded;
 
   @override
   State<InventoryOverviewScreen> createState() =>
@@ -39,6 +50,84 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
 
   double get totalValue =>
       farmContexts.fold(0, (total, context) => total + context.totalValue);
+
+  int get outOfStockCount => farmContexts.fold(
+    0,
+    (total, context) =>
+        total + context.items.where((item) => item.isOutOfStock).length,
+  );
+
+  AtlasModuleAttentionLevel get moduleLevel {
+    if (expiredCount > 0 || outOfStockCount > 0) {
+      return AtlasModuleAttentionLevel.critical;
+    }
+    if (lowStockCount > 0 || nearExpirationCount > 0) {
+      return AtlasModuleAttentionLevel.attention;
+    }
+    return AtlasModuleAttentionLevel.normal;
+  }
+
+  String get moduleStatusTitle {
+    if (moduleLevel == AtlasModuleAttentionLevel.critical) {
+      return 'Estoque exige ação';
+    }
+    if (moduleLevel == AtlasModuleAttentionLevel.attention) {
+      return 'Estoque requer reposição ou revisão';
+    }
+    return 'Estoque sob controle';
+  }
+
+  List<AtlasModuleDecisionItem> get decisionItems {
+    final items = <AtlasModuleDecisionItem>[];
+    if (outOfStockCount > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$outOfStockCount produto(s) sem estoque',
+          description:
+              'Revise reposição antes que faltem insumos para os manejos.',
+          icon: Icons.remove_shopping_cart_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (expiredCount > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$expiredCount produto(s) vencido(s)',
+          description:
+              'Separe os itens vencidos e revise descarte e reposição.',
+          icon: Icons.event_busy_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (lowStockCount > outOfStockCount) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${lowStockCount - outOfStockCount} item(ns) abaixo do mínimo',
+          description:
+              'Considere o estoque mínimo e a velocidade de consumo.',
+          icon: Icons.warning_amber_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (nearExpirationCount > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$nearExpirationCount produto(s) próximos do vencimento',
+          description:
+              'Priorize uso adequado ou remanejamento antes da perda.',
+          icon: Icons.schedule_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    return items;
+  }
+
+  InventoryFarmContext? get activeContext =>
+      farmContexts.isEmpty ? null : farmContexts.first;
 
   List<InventoryFarmContext> get filteredContexts {
     final query = search.trim().toLowerCase();
@@ -89,11 +178,16 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
       });
     }
 
-    final farms = await farmStorage.loadFarms();
+    final farms = widget.farm == null
+        ? await farmStorage.loadFarms()
+        : <FarmData>[widget.farm!];
     final contexts = <InventoryFarmContext>[];
 
     for (final farm in farms) {
-      final items = await inventoryStorage.loadItems(farm.name);
+      final items = await inventoryStorage.loadItems(
+        farm.name,
+        farmId: farm.id ?? '',
+      );
       contexts.add(InventoryFarmContext(farm: farm, items: items));
     }
 
@@ -129,16 +223,18 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
-        title: const Text('Estoque'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar dados',
-            onPressed: isLoading ? null : loadData,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Estoque'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar dados',
+                  onPressed: isLoading ? null : loadData,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -155,6 +251,36 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const _InventoryHeader(),
+                            const SizedBox(height: 12),
+                            AtlasOperationalActionBar(
+                              primaryLabel: 'Gerenciar estoque',
+                              primaryIcon: Icons.inventory_2_outlined,
+                              onPrimary: activeContext == null
+                                  ? null
+                                  : () => openFarmInventory(activeContext!),
+                              onRefresh: loadData,
+                              busy: isLoading,
+                            ),
+                            const SizedBox(height: 16),
+                            AtlasModuleDecisionPanel(
+                              statusTitle: moduleStatusTitle,
+                              statusDescription:
+                                  '$totalProducts produtos • '
+                                  '${_formatCurrency(totalValue)} em estoque',
+                              items: decisionItems,
+                              level: moduleLevel,
+                            ),
+                            const SizedBox(height: 16),
+                            AtlasModuleWorkspaceGuide(
+                              moduleLabel: 'Estoque',
+                              workflows:
+                                  AtlasProductSurfacePolicy.moduleWorkflows['Estoque'] ??
+                                      const <String>[],
+                              specializedFamilies:
+                                  AtlasProductSurfacePolicy
+                                          .specializedCapabilityCountByOwner['Estoque'] ??
+                                      0,
+                            ),
                             const SizedBox(height: 24),
                             Wrap(
                               spacing: 16,
@@ -195,7 +321,7 @@ class _InventoryOverviewScreenState extends State<InventoryOverviewScreen> {
                                       : const Color(0xFF1B5E20),
                                 ),
                                 _IndicatorCard(
-                                  title: 'Valor total',
+                                  title: 'Valor em estoque',
                                   value: _formatCurrency(totalValue),
                                   subtitle: 'Patrimônio armazenado',
                                   icon: Icons.account_balance_wallet_outlined,

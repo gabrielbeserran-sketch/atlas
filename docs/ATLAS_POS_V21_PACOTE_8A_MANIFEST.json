@@ -1,0 +1,122 @@
+{
+  "package": "Pós-V21 Pacote 8A — Câmera da Entrada → WhatsApp",
+  "baseline": "7F homologado",
+  "existing_bulletins_reused": [
+    "zootechnical",
+    "operations",
+    "financial"
+  ],
+  "iot_owner": "AtlasIotDevice / atlas_iot_devices_v2",
+  "event_types": [
+    "person",
+    "vehicle"
+  ],
+  "image_types": [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ],
+  "idempotent": true,
+  "cooldown_protection": true,
+  "whatsapp_media_template": true,
+  "fake_delivery_allowed": false,
+  "backend_changed": true,
+  "database_migration": "20260823_0043",
+  "files": [
+    {
+      "path": "backend/app/config.py",
+      "sha256": "400cc6c16b78b86bdc82d82c372b5cb5c05204c55fcc7f0321381564ba65910f",
+      "size": 22114
+    },
+    {
+      "path": "backend/.env.example",
+      "sha256": "8524ad4e79eb09752440b25527a544f79463fab14bd9cbd28b6bf536763cf5ec",
+      "size": 1572
+    },
+    {
+      "path": "backend/app/models/legacy.py",
+      "sha256": "8580826316279dd0d7eae1235b0c3f56bdbbdec4c9086ff4f755500d2c896ac6",
+      "size": 134173
+    },
+    {
+      "path": "backend/alembic/versions/20260823_0043_security_camera_alerts.py",
+      "sha256": "7c630f42faa7743be714cfa042e7f584512cc6c578dc5a87e2749086a2bc6b31",
+      "size": 2731
+    },
+    {
+      "path": "backend/app/services/whatsapp_provider.py",
+      "sha256": "e18abbe5092332a4fa927bfdff7e184cfeee56c62e126f5d5693c0679c2c51e9",
+      "size": 11879
+    },
+    {
+      "path": "backend/app/services/whatsapp_webhook.py",
+      "sha256": "db2b72c41a240e09e80c71e5ff9ad15d661625e7d752bb4173b65918969214ee",
+      "size": 4387
+    },
+    {
+      "path": "backend/app/services/security_camera_alerts.py",
+      "sha256": "5d616e421dac50b2193d82c1cdd7814b99b0110a7b1bccd0b82f6ffb294a13ad",
+      "size": 11502
+    },
+    {
+      "path": "backend/app/routers/security_camera.py",
+      "sha256": "249286f865e464a2c9aecd79075c2ab30eaa531bcb8712492c239679c7ff4eaa",
+      "size": 10737
+    },
+    {
+      "path": "backend/app/main.py",
+      "sha256": "c326a88dba44fc5354391e01cd8188183b910ac67f6b8599e09bb50c904a9725",
+      "size": 5594
+    },
+    {
+      "path": "lib/features/security_camera/domain/models/atlas_security_camera_data.dart",
+      "sha256": "d11aec0753400dc21ed7519680a12143d81e4acc67bd3cea3b27a267e2e52e82",
+      "size": 2919
+    },
+    {
+      "path": "lib/features/security_camera/data/services/atlas_security_camera_service.dart",
+      "sha256": "e5a56f34bb61f028138720704c5428af9eb1fb4cdae1d1b275b2fdb8dc40f85f",
+      "size": 2728
+    },
+    {
+      "path": "lib/features/security_camera/presentation/widgets/atlas_security_camera_card.dart",
+      "sha256": "ae2f707c9407dbb63aefdb2a6357a789888ab170d3e0d6d6dc9092b572c94eaa",
+      "size": 16492
+    },
+    {
+      "path": "lib/features/precision_hub/presentation/screens/atlas_precision_hub_screen.dart",
+      "sha256": "5ddd6a27a653089eed3fa0cde30ad0be52163eb9c31e4055fe3f7e6b487c7044",
+      "size": 7343
+    },
+    {
+      "path": "test/features/security_camera/post_v21_package8a_security_camera_contract_test.dart",
+      "sha256": "493dd61d4ab61c34090495866680f11953d8d53e25a4b352c8745db5e3e9da59",
+      "size": 2866
+    },
+    {
+      "path": "tools/atlas_post_v21_package8a_security_camera_gate.py",
+      "sha256": "6895583579d90c8172b5af50693aa0907a502e9684dd1b6016709c0aacb138e0",
+      "size": 7985
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "ae1f368e1eb0b828f4e6f027f8e67e424f80f69bd5f11a610cc41e0a95c7a909",
+      "size": 6984
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8a_security_camera_homologation.ps1",
+      "sha256": "32dc7da9d23c55baad2c4dcef32e075f47b4a40be2a4e37271329a9c397078f7",
+      "size": 1837
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package8a_security_camera_deployed.ps1",
+      "sha256": "f5541d4eae0165b2172a5e5e9b0d0d513652ae0f20827535ce8ebc7e60948db9",
+      "size": 2927
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8A_CAMERA_ENTRADA_WHATSAPP_20260823.md",
+      "sha256": "1e53de56caeeb46b5a635d578fe0929715b5658786355d8c4597cd15a08dda2e",
+      "size": 4967
+    }
+  ]
+}

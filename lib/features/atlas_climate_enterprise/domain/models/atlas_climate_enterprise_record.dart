@@ -54,18 +54,7 @@ extension AtlasClimateEnterpriseModuleX on AtlasClimateEnterpriseModule {
       'Atlas Climate Intelligence Center',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasClimateEnterpriseModule.climateIntelligence => 'Pacote 191',
-    AtlasClimateEnterpriseModule.advancedMeteorology => 'Pacote 192',
-    AtlasClimateEnterpriseModule.intelligentForagePlanning => 'Pacote 193',
-    AtlasClimateEnterpriseModule.aiPastureManagement => 'Pacote 194',
-    AtlasClimateEnterpriseModule.climateEnvironmentalIndicators => 'Pacote 195',
-    AtlasClimateEnterpriseModule.climateRiskManagement => 'Pacote 196',
-    AtlasClimateEnterpriseModule.predictiveClimateSimulations => 'Pacote 197',
-    AtlasClimateEnterpriseModule.intelligentClimateAlerts => 'Pacote 198',
-    AtlasClimateEnterpriseModule.agroclimateDecisionCenter => 'Pacote 199',
-    AtlasClimateEnterpriseModule.climateIntelligenceCenter => 'Pacote 200',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasClimateEnterpriseModule.climateIntelligence => const [

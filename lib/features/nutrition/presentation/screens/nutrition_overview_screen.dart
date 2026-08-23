@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
 import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -59,6 +62,97 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
           (sum, item) => sum + item.observedDailyGainKg,
         ) /
         valid.length;
+  }
+
+  int get belowTargetPlans => plans.where((plan) {
+    return plan.targetDailyGainKg > 0 &&
+        plan.observedDailyGainKg > 0 &&
+        plan.observedDailyGainKg < plan.targetDailyGainKg;
+  }).length;
+
+  int get pendingInventoryIntegrations => plans.where((plan) {
+    return plan.stockIntegrationEnabled &&
+        !plan.inventoryDeducted &&
+        plan.ingredients.isNotEmpty;
+  }).length;
+
+  int get plansWithoutDetailedComposition =>
+      plans.where((plan) => plan.ingredients.isEmpty).length;
+
+  int get plansWithoutObservedPerformance =>
+      plans.where((plan) => plan.observedDailyGainKg <= 0).length;
+
+  AtlasModuleAttentionLevel get _moduleLevel {
+    if (pendingInventoryIntegrations > 0) {
+      return AtlasModuleAttentionLevel.critical;
+    }
+    if (belowTargetPlans > 0 ||
+        plansWithoutObservedPerformance > 0 ||
+        plansWithoutDetailedComposition > 0) {
+      return AtlasModuleAttentionLevel.attention;
+    }
+    return AtlasModuleAttentionLevel.normal;
+  }
+
+  List<AtlasModuleDecisionItem> get _decisionItems {
+    final items = <AtlasModuleDecisionItem>[];
+    if (pendingInventoryIntegrations > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title:
+              '$pendingInventoryIntegrations dieta(s) com baixa de estoque pendente',
+          description:
+              'Revise a integração para evitar diferença entre consumo e estoque.',
+          icon: Icons.inventory_2_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (belowTargetPlans > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$belowTargetPlans dieta(s) abaixo da meta de GMD',
+          description:
+              'Compare consumo, composição e desempenho observado.',
+          icon: Icons.trending_down_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (plansWithoutObservedPerformance > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title:
+              '$plansWithoutObservedPerformance dieta(s) sem GMD observado',
+          description:
+              'Sem pesagens recentes o efeito da dieta não pode ser avaliado.',
+          icon: Icons.monitor_weight_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (plansWithoutDetailedComposition > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title:
+              '$plansWithoutDetailedComposition dieta(s) sem composição detalhada',
+          description:
+              'Complete ingredientes para melhorar custo e análise bromatológica.',
+          icon: Icons.science_outlined,
+        ),
+      );
+    }
+    return items;
+  }
+
+  String get _moduleStatusTitle {
+    if (_moduleLevel == AtlasModuleAttentionLevel.critical) {
+      return 'Nutrição exige ação';
+    }
+    if (_moduleLevel == AtlasModuleAttentionLevel.attention) {
+      return 'Nutrição requer acompanhamento';
+    }
+    return 'Nutrição acompanhada';
   }
 
   List<NutritionPlanData> get visiblePlans {
@@ -285,7 +379,7 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                 children: [
                   const Text(
-                    'Nutrição profissional',
+                    'Central de Nutrição',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
@@ -299,6 +393,27 @@ class _NutritionOverviewScreenState extends State<NutritionOverviewScreen> {
                     onPrimary: () => openForm(),
                     onRefresh: loadData,
                     busy: isLoading,
+                  ),
+                  const SizedBox(height: 16),
+                  AtlasModuleDecisionPanel(
+                    statusTitle: _moduleStatusTitle,
+                    statusDescription:
+                        '${plans.length} dietas • '
+                        '$coveredAnimals animais • '
+                        '${number(averageGmd, decimals: 2)} kg/dia de GMD médio',
+                    items: _decisionItems,
+                    level: _moduleLevel,
+                  ),
+                  const SizedBox(height: 16),
+                  AtlasModuleWorkspaceGuide(
+                    moduleLabel: 'Nutrição',
+                    workflows:
+                        AtlasProductSurfacePolicy.moduleWorkflows['Nutrição'] ??
+                            const <String>[],
+                    specializedFamilies:
+                        AtlasProductSurfacePolicy
+                                .specializedCapabilityCountByOwner['Nutrição'] ??
+                            0,
                   ),
                   const SizedBox(height: 20),
                   LayoutBuilder(
@@ -992,6 +1107,7 @@ class _NutritionPlanDialogState extends State<NutritionPlanDialog> {
                         '${entry.value.type} • ${entry.value.inclusionKg.toStringAsFixed(2).replaceAll('.', ',')} kg • R\$ ${entry.value.costPerKg.toStringAsFixed(2).replaceAll('.', ',')}/kg',
                       ),
                       trailing: IconButton(
+                        tooltip: 'Remover ingrediente',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () =>
                             setState(() => ingredients.removeAt(entry.key)),

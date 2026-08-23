@@ -1,0 +1,74 @@
+{
+  "package": "Pós-V21 Pacote 6D-D",
+  "scope": "Auditoria global de UX e navegação",
+  "production_routes": 15,
+  "dart_files_audited": 989,
+  "screens_audited": 215,
+  "main_module_pushes": 0,
+  "production_iconbuttons_without_tooltip": 0,
+  "production_mojibake": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "23156f0f4d40c8e267a754a00dc61679101a92eb092372f24f7fab6cbaa80a90",
+      "size": 27442
+    },
+    {
+      "path": "lib/core/navigation/atlas_product_surface_policy.dart",
+      "sha256": "72d9ab49370bf5e9d0a25dcd6e4a92d943ae1d5e8e2a5c5f34d7283f9abbacb9",
+      "size": 6313
+    },
+    {
+      "path": "lib/core/widgets/atlas_module_workspace_guide.dart",
+      "sha256": "f4c9eeb384c6b20f73addcdd70caa2a14d6ac4c829a4eeeecf69966d842f57f0",
+      "size": 1886
+    },
+    {
+      "path": "lib/features/reports/presentation/screens/reports_screen.dart",
+      "sha256": "e485a01021ab24b96cf3e89beef57a8b71e03b7dc376ce523aad88552bdb0d13",
+      "size": 82240
+    },
+    {
+      "path": "lib/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart",
+      "sha256": "463d4cb758c66fcde4b7e0bbd435480106a2774b17d7e5ec4eae02e7ce7eaa1c",
+      "size": 47851
+    },
+    {
+      "path": "lib/features/nutrition/presentation/screens/nutrition_overview_screen.dart",
+      "sha256": "e60178cbb0fbc5c25454e975bedf9d39af51ce5dd006c0b60928802c81eadaac",
+      "size": 47400
+    },
+    {
+      "path": "test/features/information_architecture/post_v21_package6d_c_field_analysis_reports_contract_test.dart",
+      "sha256": "26c0e8ad907cea9574991b37ae98ecb6cba02575619654e4c0387d5c0e60d959",
+      "size": 2192
+    },
+    {
+      "path": "test/features/information_architecture/post_v21_package6d_d_global_ux_contract_test.dart",
+      "sha256": "08bbffdab1eaa6515c7956a174e74d2741b31f5e4fab90853294d4466d0731be",
+      "size": 1679
+    },
+    {
+      "path": "tools/atlas_post_v21_package6d_d_global_ux_gate.py",
+      "sha256": "9da4cfe0915609eb1655aacac63b034d718c966decab3da487e955424211128f",
+      "size": 9736
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "81745e7eab47f40c3cf841a26b41bcea907d3769c6244d46cf7e77d6cc5da082",
+      "size": 6031
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package6d_d_global_ux_homologation.ps1",
+      "sha256": "b7c38cebd6bd948106377b76ee3de8f26414b31218a36186ac5e6e0cb3b2c06f",
+      "size": 1223
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_6D_D_AUDITORIA_GLOBAL_UX_20260823.md",
+      "sha256": "c0d1833a3647f6c96e220640fab9501c03c388b3744e931d078e89838026590a",
+      "size": 3845
+    }
+  ]
+}

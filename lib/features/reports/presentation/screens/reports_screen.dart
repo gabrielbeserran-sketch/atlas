@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_role_card.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
 import 'package:projeto_atlas/features/reports/presentation/widgets/report_chart_widgets.dart';
 import 'package:projeto_atlas/features/reports/presentation/widgets/report_period_comparison_card.dart';
@@ -22,7 +25,14 @@ import 'package:projeto_atlas/features/farm_inventory/data/services/farm_invento
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 
 class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+  const ReportsScreen({
+    super.key,
+    this.embedded = false,
+  });
+
+  /// When embedded in AtlasHomeShell, the shell already owns the page title,
+  /// navigation and farm context. Reports keeps its own actions in the body.
+  final bool embedded;
 
   @override
   State<ReportsScreen> createState() {
@@ -862,6 +872,86 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
+  Widget buildEmbeddedActions() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            OutlinedButton.icon(
+              onPressed: openSavedActions,
+              icon: const Icon(Icons.assignment_turned_in_outlined),
+              label: const Text('Ações salvas'),
+            ),
+            PopupMenuButton<ReportExportType>(
+              tooltip: 'Exportar relatório',
+              enabled: !isLoading && !isExporting,
+              onSelected: (type) {
+                switch (type) {
+                  case ReportExportType.pdf:
+                    exportPdfReport();
+                    break;
+                  case ReportExportType.excel:
+                    exportExcelReport();
+                    break;
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem<ReportExportType>(
+                  value: ReportExportType.pdf,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.picture_as_pdf_outlined),
+                    title: Text('PDF'),
+                    subtitle: Text('Visualizar, imprimir ou salvar'),
+                  ),
+                ),
+                PopupMenuItem<ReportExportType>(
+                  value: ReportExportType.excel,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.table_chart_outlined),
+                    title: Text('Excel'),
+                    subtitle: Text('Gerar planilha com várias abas'),
+                  ),
+                ),
+              ],
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.download_outlined),
+                    SizedBox(width: 8),
+                    Text('Exportar'),
+                  ],
+                ),
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: showReportInformation,
+              icon: const Icon(Icons.info_outline),
+              label: const Text('Entender relatório'),
+            ),
+            FilledButton.icon(
+              onPressed: isLoading ? null : loadReports,
+              icon: const Icon(Icons.refresh_outlined),
+              label: const Text('Atualizar'),
+            ),
+            if (isExporting)
+              const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = expenseCategories;
@@ -875,7 +965,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
+      appBar: widget.embedded
+          ? null
+          : AppBar(
         title: const Text(
           'Relatórios',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -965,11 +1057,35 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(24),
                       children: [
+                        if (widget.embedded) ...[
+                          buildEmbeddedActions(),
+                          const SizedBox(height: 16),
+                        ],
                         ReportsHeader(
                           farmCount: visibleFarmReports.length,
                           balance: totalBalance,
                           alertCount: totalAlerts,
                           periodLabel: selectedPeriodLabel,
+                        ),
+                        const SizedBox(height: 16),
+                        AtlasModuleWorkspaceGuide(
+                          moduleLabel: 'Relatórios',
+                          workflows:
+                              AtlasProductSurfacePolicy.moduleWorkflows['Relatórios'] ??
+                                  const <String>[],
+                          specializedFamilies:
+                              AtlasProductSurfacePolicy
+                                      .specializedCapabilityCountByOwner['Relatórios'] ??
+                                  0,
+                        ),
+                        const SizedBox(height: 16),
+                        AtlasModuleRoleCard(
+                          title: 'Relatórios consolida e documenta',
+                          responsibility:
+                              AtlasProductSurfacePolicy.moduleResponsibility['Relatórios']!,
+                          doesNotReplace:
+                              AtlasProductSurfacePolicy.moduleDoesNotReplace['Relatórios']!,
+                          icon: Icons.description_outlined,
                         ),
                         const SizedBox(height: 24),
                         ReportsFilterCard(

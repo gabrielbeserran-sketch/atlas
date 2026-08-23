@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -73,9 +74,12 @@ from .routers import (
     security_compliance,
     release_growth,
     animal_media,
+    bulletins,
+    security_camera,
 )
 from .services.observability import observability_middleware
 from .services.security_middleware import security_middleware
+from .services.bulletin_scheduler import bulletin_scheduler_loop
 
 settings = get_settings()
 
@@ -89,8 +93,21 @@ async def lifespan(app: FastAPI):
     if settings.atlas_bootstrap_enabled and settings.atlas_env in {"development", "test"}:
         with SessionLocal() as db:
             bootstrap(db)
-    yield
-    engine.dispose()
+
+    bulletin_task = None
+    if settings.atlas_bulletin_scheduler_enabled:
+        bulletin_task = asyncio.create_task(bulletin_scheduler_loop())
+
+    try:
+        yield
+    finally:
+        if bulletin_task is not None:
+            bulletin_task.cancel()
+            try:
+                await bulletin_task
+            except asyncio.CancelledError:
+                pass
+        engine.dispose()
 
 
 app = FastAPI(
@@ -170,6 +187,8 @@ for router in (
     security_compliance.router,
     release_growth.router,
     animal_media.router,
+    bulletins.router,
+    security_camera.router,
 ):
     app.include_router(router, prefix=API_PREFIX)
 

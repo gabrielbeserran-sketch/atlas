@@ -23,13 +23,7 @@ extension AtlasPlatformResilienceModuleX on AtlasPlatformResilienceModule {
     AtlasPlatformResilienceModule.digitalTwin => 'Gêmeo Digital da Fazenda',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasPlatformResilienceModule.dataGovernance => 'Pacote 94',
-    AtlasPlatformResilienceModule.integrationHub => 'Pacote 95',
-    AtlasPlatformResilienceModule.cybersecurity => 'Pacote 96',
-    AtlasPlatformResilienceModule.observability => 'Pacote 97',
-    AtlasPlatformResilienceModule.digitalTwin => 'Pacote 98',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasPlatformResilienceModule.dataGovernance => const [

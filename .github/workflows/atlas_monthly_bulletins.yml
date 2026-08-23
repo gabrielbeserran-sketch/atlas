@@ -1,0 +1,42 @@
+name: Atlas Monthly Bulletins
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  process-due-bulletins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake Atlas and process due bulletins
+        env:
+          ATLAS_API_BASE_URL: ${{ vars.ATLAS_API_BASE_URL }}
+          ATLAS_BULLETIN_CRON_SECRET: ${{ secrets.ATLAS_BULLETIN_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ATLAS_API_BASE_URL:-}" ]; then
+            echo "Repository variable ATLAS_API_BASE_URL is not configured."
+            exit 1
+          fi
+          if [ -z "${ATLAS_BULLETIN_CRON_SECRET:-}" ]; then
+            echo "Repository secret ATLAS_BULLETIN_CRON_SECRET is not configured."
+            exit 1
+          fi
+
+          BASE="${ATLAS_API_BASE_URL%/}"
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --retry 5 \
+            --retry-delay 10 \
+            --max-time 180 \
+            -X POST \
+            -H "X-Atlas-Bulletin-Cron: ${ATLAS_BULLETIN_CRON_SECRET}" \
+            "${BASE}/bulletins/process-due"

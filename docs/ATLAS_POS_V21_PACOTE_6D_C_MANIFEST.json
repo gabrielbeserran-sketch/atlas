@@ -1,0 +1,68 @@
+{
+  "package": "Pós-V21 Pacote 6D-C",
+  "scope": [
+    "Campo",
+    "Análises",
+    "Relatórios"
+  ],
+  "rule": {
+    "Campo": "execução",
+    "Análises": "interpretação",
+    "Relatórios": "consolidação/exportação"
+  },
+  "backend_changed": false,
+  "database_migration_required": false,
+  "static_gate": "42/42",
+  "files": [
+    {
+      "path": "lib/core/navigation/atlas_product_surface_policy.dart",
+      "sha256": "9e4b512579ac1bf1d3d7f3b0235a16c256ead1c3fbafe8488bbc7df0ce2f0709",
+      "size": 6316
+    },
+    {
+      "path": "lib/core/widgets/atlas_module_role_card.dart",
+      "sha256": "a5917a3f8b9fc784eaea46578beaa0ac12f01509b370726702bb11387eb49862",
+      "size": 1518
+    },
+    {
+      "path": "lib/features/field_operations/presentation/screens/farm_field_center_screen.dart",
+      "sha256": "131d13cd1815931d5a3efdad3256a3d4c34df547349b9aafcb3a09998133ce7a",
+      "size": 17519
+    },
+    {
+      "path": "lib/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart",
+      "sha256": "31d1f19ac00379491c317e9cf4bf680cc5edb621dd6e39ed81f924ec913a6e20",
+      "size": 23264
+    },
+    {
+      "path": "lib/features/reports/presentation/screens/reports_screen.dart",
+      "sha256": "30db46475a08939f517f905c3befadfc2b1ae4d494c70437706ad16b92df3b0a",
+      "size": 78898
+    },
+    {
+      "path": "test/features/information_architecture/post_v21_package6d_c_field_analysis_reports_contract_test.dart",
+      "sha256": "b3ba7d0ac010701b5491f2cd231c8122362813b2e82c62251e8ba85948f441bd",
+      "size": 2463
+    },
+    {
+      "path": "tools/atlas_post_v21_package6d_c_field_analysis_reports_gate.py",
+      "sha256": "bac8f1c69e2be199b6a16a16a9cb21bb0bc027fc4e9fd7eab3c71e814faf8e37",
+      "size": 4658
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "b9652681487a209b717396e66afe6897b88846633b031da2dcf025715ab19ca1",
+      "size": 5899
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package6d_c_field_analysis_reports_homologation.ps1",
+      "sha256": "d827ffe7378685c354b4c0ca0a6f69d58281b81487559f4627fa4a458387a524",
+      "size": 1024
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_6D_C_CAMPO_ANALISES_RELATORIOS_20260823.md",
+      "sha256": "d475b36a9b0b85c9d2ad02ed523e5f2fc23d5b3081311854b3576e13cb792f3b",
+      "size": 1320
+    }
+  ]
+}

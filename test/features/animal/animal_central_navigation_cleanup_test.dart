@@ -84,7 +84,8 @@ void main() {
 
   test('Arquivos reúne fotos e documentos numa única área', () {
     expect(source.contains('Widget buildFilesSection()'), isTrue);
-    expect(source.contains("'Abrir fotos'"), isTrue);
-    expect(source.contains("'Abrir documentos'"), isTrue);
+    expect(source.contains('AnimalPhotoGalleryScreen('), isTrue);
+    expect(source.contains('Future<void> openDocuments()'), isTrue);
+    expect(source.contains('AnimalDocumentListScreen('), isTrue);
   });
 }

@@ -13,10 +13,7 @@ extension AtlasAutonomousEnterpriseModuleX on AtlasAutonomousEnterpriseModule {
       'Centro de Finalização Enterprise',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasAutonomousEnterpriseModule.aiOrchestrator => 'Pacote 99',
-    AtlasAutonomousEnterpriseModule.enterpriseReleaseCenter => 'Pacote 100',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasAutonomousEnterpriseModule.aiOrchestrator => const [

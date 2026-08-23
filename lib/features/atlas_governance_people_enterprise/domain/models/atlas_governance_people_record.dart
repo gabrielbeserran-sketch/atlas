@@ -47,18 +47,7 @@ extension AtlasGovernancePeopleModuleX on AtlasGovernancePeopleModule {
       'Central de Governança Atlas',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasGovernancePeopleModule.peopleManagement => 'Pacote 221',
-    AtlasGovernancePeopleModule.trainingAndQualification => 'Pacote 222',
-    AtlasGovernancePeopleModule.occupationalHealthAndSafety => 'Pacote 223',
-    AtlasGovernancePeopleModule.personalProtectiveEquipment => 'Pacote 224',
-    AtlasGovernancePeopleModule.documentManagement => 'Pacote 225',
-    AtlasGovernancePeopleModule.complianceControl => 'Pacote 226',
-    AtlasGovernancePeopleModule.internalAudits => 'Pacote 227',
-    AtlasGovernancePeopleModule.corporateRiskManagement => 'Pacote 228',
-    AtlasGovernancePeopleModule.permissionMatrix => 'Pacote 229',
-    AtlasGovernancePeopleModule.governanceCenter => 'Pacote 230',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasGovernancePeopleModule.peopleManagement => const [

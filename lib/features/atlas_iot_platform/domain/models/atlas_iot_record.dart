@@ -38,18 +38,7 @@ extension AtlasIotModuleX on AtlasIotModule {
     AtlasIotModule.iotCommandCenter => 'Central IoT',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasIotModule.smartScales => 'Pacote 121',
-    AtlasIotModule.rfidTags => 'Pacote 122',
-    AtlasIotModule.smartCollars => 'Pacote 123',
-    AtlasIotModule.environmentalSensors => 'Pacote 124',
-    AtlasIotModule.waterSensors => 'Pacote 125',
-    AtlasIotModule.energySensors => 'Pacote 126',
-    AtlasIotModule.weatherStations => 'Pacote 127',
-    AtlasIotModule.drones => 'Pacote 128',
-    AtlasIotModule.satellites => 'Pacote 129',
-    AtlasIotModule.iotCommandCenter => 'Pacote 130',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasIotModule.smartScales => const [

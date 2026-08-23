@@ -1,0 +1,30 @@
+{
+  "package": "Pós-V21 Pacote 7E — Hotfix helpers órfãos",
+  "reported_analyzer_issue_fixed": "_taskDateKey unused_element",
+  "additional_predicted_issue_fixed": "_dateKey would become orphan after removing _taskDateKey",
+  "preventive_gate": "tools/atlas_dart_private_helper_orphan_gate.py",
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "011e56139b950063f3b922d2c783c034621a0a16eb6d94b04bfb73acb2747e4d",
+      "size": 29005
+    },
+    {
+      "path": "tools/atlas_dart_private_helper_orphan_gate.py",
+      "sha256": "66ec5b2883c0caa9cfed212c1334fc671dc981ec24b1defac3fd6680b50d92ba",
+      "size": 2204
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7e_daily_routine_homologation.ps1",
+      "sha256": "51141d2436aa1b05567c7269b4e6958437666e0cea84348812285b0b334cb048",
+      "size": 1186
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7E_HOTFIX_HELPERS_ORFAOS_20260823.md",
+      "sha256": "2b2b4ef428bdf7b45da4fc4fa7d92d41e1c0e4767f8a1d395fc07bc35fde4788",
+      "size": 1963
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
 import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
@@ -41,6 +44,82 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
   String selectedStatus = '';
   String selectedSex = '';
   String loadedFarmId = '';
+
+  int get animalsWithoutWeight =>
+      workspace.records.where((record) => record.animal.weight <= 0).length;
+
+  int get inactiveAnimals =>
+      workspace.totalAnimals - workspace.activeAnimals;
+
+  AtlasModuleAttentionLevel get moduleLevel {
+    if (workspace.totalAnimals > 0 && workspace.groups.isEmpty) {
+      return AtlasModuleAttentionLevel.critical;
+    }
+    if (animalsWithoutWeight > 0 || loadWarnings.isNotEmpty) {
+      return AtlasModuleAttentionLevel.attention;
+    }
+    return AtlasModuleAttentionLevel.normal;
+  }
+
+  String get moduleStatusTitle {
+    if (moduleLevel == AtlasModuleAttentionLevel.critical) {
+      return 'Rebanho exige organização';
+    }
+    if (moduleLevel == AtlasModuleAttentionLevel.attention) {
+      return 'Rebanho requer revisão';
+    }
+    return 'Rebanho organizado';
+  }
+
+  String get moduleStatusDescription {
+    final weightText = workspace.averageWeight == 0
+        ? 'sem peso médio'
+        : '${workspace.averageWeight.toStringAsFixed(0)} kg de peso médio';
+    return '${workspace.totalAnimals} animais • '
+        '${workspace.groups.length} lotes • $weightText';
+  }
+
+  List<AtlasModuleDecisionItem> get decisionItems {
+    final items = <AtlasModuleDecisionItem>[];
+
+    if (animalsWithoutWeight > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$animalsWithoutWeight animal(is) sem peso atual',
+          description:
+              'Registrar uma pesagem melhora acompanhamento e comparação.',
+          icon: Icons.monitor_weight_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+
+    if (inactiveAnimals > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$inactiveAnimals animal(is) fora da situação ativa',
+          description:
+              'Revise vendas, baixas, transferências ou outros motivos.',
+          icon: Icons.inventory_2_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+
+    if (loadWarnings.isNotEmpty) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: 'Alguns dados não foram atualizados',
+          description:
+              'O conteúdo já carregado foi preservado. Tente atualizar novamente.',
+          icon: Icons.cloud_off_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+
+    return items;
+  }
 
   @override
   void initState() {
@@ -484,6 +563,24 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                           ),
                           const SizedBox(height: 16),
                         ],
+                        AtlasModuleDecisionPanel(
+                          statusTitle: moduleStatusTitle,
+                          statusDescription: moduleStatusDescription,
+                          items: decisionItems,
+                          level: moduleLevel,
+                        ),
+                        const SizedBox(height: 16),
+                        AtlasModuleWorkspaceGuide(
+                          moduleLabel: 'Rebanho',
+                          workflows:
+                              AtlasProductSurfacePolicy.moduleWorkflows['Rebanho'] ??
+                                  const <String>[],
+                          specializedFamilies:
+                              AtlasProductSurfacePolicy
+                                      .specializedCapabilityCountByOwner['Rebanho'] ??
+                                  0,
+                        ),
+                        const SizedBox(height: 20),
                         _Indicators(workspace: workspace),
                         const SizedBox(height: 20),
                         _Filters(

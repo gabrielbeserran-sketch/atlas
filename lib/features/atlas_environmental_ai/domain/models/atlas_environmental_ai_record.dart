@@ -13,11 +13,7 @@ extension AtlasEnvironmentalAiModuleX on AtlasEnvironmentalAiModule {
     AtlasEnvironmentalAiModule.satellite => 'Monitoramento por Satélite',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasEnvironmentalAiModule.climate => 'Pacote 56',
-    AtlasEnvironmentalAiModule.pasture => 'Pacote 57',
-    AtlasEnvironmentalAiModule.satellite => 'Pacote 58',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasEnvironmentalAiModule.climate => const [

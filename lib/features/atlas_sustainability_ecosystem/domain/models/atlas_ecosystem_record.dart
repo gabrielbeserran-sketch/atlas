@@ -13,11 +13,7 @@ extension AtlasEcosystemModuleX on AtlasEcosystemModule {
     AtlasEcosystemModule.consultancy => 'Ecossistema de Consultoria',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasEcosystemModule.sustainability => 'Pacote 47',
-    AtlasEcosystemModule.iot => 'Pacote 48',
-    AtlasEcosystemModule.consultancy => 'Pacote 49',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasEcosystemModule.sustainability => const [

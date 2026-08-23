@@ -1,0 +1,49 @@
+{
+  "package": "Pós-V21 Pacote 7C — Hotfix prioridade de intenções",
+  "regression_fixed": "vermifugar o gado -> Rebanho",
+  "new_business_write_permissions": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "2e90092785b6023d5f63646a08cbf075260d9bfeb7e7295cee4c7415284b760c",
+      "size": 6783
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7a_dr_beserra_contract_test.dart",
+      "sha256": "50438248fc478dc6291c551fe442689fd66a58fda0f0999acf6d9a3df83c91ba",
+      "size": 2373
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7c_rural_language_contract_test.dart",
+      "sha256": "20048767896fd16b69f56b6eb824ecf0747f383f930b493ec3072d7a2b1968e0",
+      "size": 3307
+    },
+    {
+      "path": "tools/atlas_post_v21_package7a_dr_beserra_safe_commands_gate.py",
+      "sha256": "bb35e709146fb71942f193f187562674f03427893786ce77066d2c14ac61d87b",
+      "size": 5900
+    },
+    {
+      "path": "tools/atlas_post_v21_package7c_rural_language_gate.py",
+      "sha256": "3e5268692aef8c4da725947a74864840417a910a35343644fd3000cf5f1645e8",
+      "size": 4085
+    },
+    {
+      "path": "tools/atlas_post_v21_package7c_intent_collision_gate.py",
+      "sha256": "839e293c74b647149ee421c91724e22bda82ef08bd3ada63b9fe84cb423f8d76",
+      "size": 2179
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7c_rural_language_homologation.ps1",
+      "sha256": "3f16c2fdaee0bedbbcf87d9bfe2243a5f63401f30e6ca3ca7d2105653a9301ee",
+      "size": 1339
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7C_HOTFIX_PRIORIDADE_INTENCOES_20260823.md",
+      "sha256": "4a72679075459d9250f736fc2c65483f512bc3a5bf62cf23c507ae7e11adffcb",
+      "size": 1657
+    }
+  ]
+}

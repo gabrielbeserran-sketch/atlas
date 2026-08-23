@@ -44,18 +44,7 @@ extension AtlasPrecisionLivestockModuleX on AtlasPrecisionLivestockModule {
       'Índice Geral de Eficiência',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasPrecisionLivestockModule.weightPrediction => 'Pacote 151',
-    AtlasPrecisionLivestockModule.dailyGainPrediction => 'Pacote 152',
-    AtlasPrecisionLivestockModule.estimatedIntake => 'Pacote 153',
-    AtlasPrecisionLivestockModule.feedEfficiency => 'Pacote 154',
-    AtlasPrecisionLivestockModule.feedConversion => 'Pacote 155',
-    AtlasPrecisionLivestockModule.animalWelfare => 'Pacote 156',
-    AtlasPrecisionLivestockModule.earlyDiseaseDetection => 'Pacote 157',
-    AtlasPrecisionLivestockModule.heatStress => 'Pacote 158',
-    AtlasPrecisionLivestockModule.mortalityRisk => 'Pacote 159',
-    AtlasPrecisionLivestockModule.generalEfficiencyIndex => 'Pacote 160',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasPrecisionLivestockModule.weightPrediction => const [

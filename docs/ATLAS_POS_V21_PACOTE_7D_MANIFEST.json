@@ -1,0 +1,100 @@
+{
+  "package": "Pós-V21 Pacote 7D — Operações seguras",
+  "operations": {
+    "health": "individual, após confirmação",
+    "reproduction": "individual, após confirmação",
+    "handling": "movimentação coletiva por intervalo, após confirmação"
+  },
+  "destructive_conversational_operations": 0,
+  "direct_http_writes": 0,
+  "direct_database_writes": 0,
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_command.dart",
+      "sha256": "eaf4be94190a18b204a1dd6e136f5aa7d9402ced0f68878f8b863c4a5533a9f1",
+      "size": 1182
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/models/dr_beserra_operation_draft.dart",
+      "sha256": "28802fae1ed0c20e1766e1f2f7b80dbaadc692637f65f787e3d2fc0a39929050",
+      "size": 2031
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_language_service.dart",
+      "sha256": "5773b607fba204931815c641df36f73f95eac943d4ec46f6e7f6eb4217689dd3",
+      "size": 6798
+    },
+    {
+      "path": "lib/features/dr_beserra/domain/services/dr_beserra_operation_parser.dart",
+      "sha256": "adab2b10894223bbcf93fb84539c411a4fdd90eff888df04e584e4de18711d11",
+      "size": 5214
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_command_gateway.dart",
+      "sha256": "3fc8162f14cb28ca302b0d985869e89143d19c1127a7f0be2baafbb8158563f5",
+      "size": 22139
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "467a63efc289724d39730d45def29358a13d9d1274f8a5ced82f7195ba79e7bb",
+      "size": 15981
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7a_dr_beserra_contract_test.dart",
+      "sha256": "642aee4f685f63921bd353be133cfcef5d78d68da047ecf0db1c6ead2e24d831",
+      "size": 2139
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7b_dr_beserra_voice_contract_test.dart",
+      "sha256": "336d30d5da25653067ececcdbfebc047b94c62da04ada8eb09c8fdf1d37676b9",
+      "size": 2148
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7c_rural_language_contract_test.dart",
+      "sha256": "3a50d91ca3e0c1b00b3b17a9fcc5b405609390eb3f88b66dc1bcfe9a825723ce",
+      "size": 3435
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7d_safe_operations_contract_test.dart",
+      "sha256": "2ab9115640437d33f2ea726b979d07659997d2ffea46ced78cd39805d420b808",
+      "size": 4317
+    },
+    {
+      "path": "tools/atlas_post_v21_package7a_dr_beserra_safe_commands_gate.py",
+      "sha256": "90bf6c3e12ea5fe7aa6d92ab52263326080d5ff3be5049226e0da43130b546af",
+      "size": 5881
+    },
+    {
+      "path": "tools/atlas_post_v21_package7b_dr_beserra_voice_gate.py",
+      "sha256": "706d30ad753f7ae11104859184157f4c1daa5f3037e0e73dd5b0520952be8ae1",
+      "size": 5860
+    },
+    {
+      "path": "tools/atlas_post_v21_package7c_rural_language_gate.py",
+      "sha256": "556f46bdd9fb9ed3d4f914445ca1387a91d4fdfa3b8f2836de1d750614c6ca14",
+      "size": 4308
+    },
+    {
+      "path": "tools/atlas_post_v21_package7d_safe_operations_gate.py",
+      "sha256": "37dedbc62f94d6218c4cced6ef81ea433d6369d474b06b6aa1991d2b07c5364b",
+      "size": 7763
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "44e34b54468077af8a0a1b9b958e989f19be5a0c68339a02545555b8f2b33ed7",
+      "size": 6570
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7d_safe_operations_homologation.ps1",
+      "sha256": "1643db9d6194f11b9cad647b3bc1f5f6824fa3ce7c16091296ccf95a951dde88",
+      "size": 1052
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7D_OPERACOES_SEGURAS_20260823.md",
+      "sha256": "1dd23dd924fa5e8b32a9f908aa51bd3cdefa22c08e8c455861e458e41e9a1c83",
+      "size": 3690
+    }
+  ]
+}

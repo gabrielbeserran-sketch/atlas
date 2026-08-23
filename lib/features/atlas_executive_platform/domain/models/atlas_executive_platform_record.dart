@@ -50,18 +50,7 @@ extension AtlasExecutivePlatformModuleX on AtlasExecutivePlatformModule {
       'Atlas Enterprise Command Center',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasExecutivePlatformModule.globalExecutiveDashboard => 'Pacote 241',
-    AtlasExecutivePlatformModule.farmBenchmarking => 'Pacote 242',
-    AtlasExecutivePlatformModule.corporateGoals => 'Pacote 243',
-    AtlasExecutivePlatformModule.unifiedAlerts => 'Pacote 244',
-    AtlasExecutivePlatformModule.intelligentTasks => 'Pacote 245',
-    AtlasExecutivePlatformModule.professionalReports => 'Pacote 246',
-    AtlasExecutivePlatformModule.exportAndSharing => 'Pacote 247',
-    AtlasExecutivePlatformModule.plansAndSubscriptions => 'Pacote 248',
-    AtlasExecutivePlatformModule.platformAdminPanel => 'Pacote 249',
-    AtlasExecutivePlatformModule.enterpriseCommandCenter => 'Pacote 250',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasExecutivePlatformModule.globalExecutiveDashboard => const [

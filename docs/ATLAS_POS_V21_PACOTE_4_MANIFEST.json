@@ -1,0 +1,61 @@
+{
+  "package": "Pós-V21 Pacote 4",
+  "scope": "Consultoria + veterinário responsável + WhatsApp",
+  "backend_changed": false,
+  "database_migration_required": false,
+  "new_external_dependency": false,
+  "uses_existing_dependency": "url_launcher",
+  "legacy_consultancy_hub_reused": false,
+  "files": [
+    {
+      "path": "lib/features/consultancy_client/domain/models/atlas_consultancy_contact_profile.dart",
+      "sha256": "cc50c36ac43657ec990ba68c7c56d04e32e1e3eeb967f4be287caa821a6c41e8",
+      "size": 541
+    },
+    {
+      "path": "lib/features/consultancy_client/data/services/atlas_consultancy_contact_service.dart",
+      "sha256": "9afd8cbad57725fbc34abcbd7136f1ebc52ee3afa04df7019fee670544de937a",
+      "size": 889
+    },
+    {
+      "path": "lib/features/consultancy_client/data/services/atlas_consultancy_whatsapp_service.dart",
+      "sha256": "2b7120fe61f537826cea547638a7256916f307e77c0dd25a634c83ec29a70fb6",
+      "size": 1547
+    },
+    {
+      "path": "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+      "sha256": "862323d148725423aac42eaf8150df79b72d01624c01a6f4206dd324f51fd3b1",
+      "size": 20956
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "b9646e2ec0f42c4fcaf1e761a5579d02a6352d81138647eb2b1ed90febd795c9",
+      "size": 27065
+    },
+    {
+      "path": "test/features/consultancy_client/post_v21_package4_consultancy_contract_test.dart",
+      "sha256": "fb40f8a63a8a5b7a3d4a0e2cf956eb6f199b1621689451f09f40d6fee1e1c055",
+      "size": 2089
+    },
+    {
+      "path": "tools/atlas_post_v21_package4_gate.py",
+      "sha256": "efc2b7520b1dd9c505079d110ca5b2d89f9c92d3388f5033ba5f82bfc1687df1",
+      "size": 5077
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "5dbf9931ffeef7d57f10079b0564a305eed6989edf9b7d05e792440b1bee48e1",
+      "size": 4457
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package4_homologation.ps1",
+      "sha256": "0e34ad97f61eccf25c0affd5f19e66a4b97f66dc3973f61db535d55cb35cb75c",
+      "size": 2089
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_4_CONSULTORIA_WHATSAPP_20260822.md",
+      "sha256": "374ea06ea7bd8920f317c6f0e2cfe1b9e3e0bef58dc92b49be3aa1ea08fe2342",
+      "size": 1800
+    }
+  ]
+}

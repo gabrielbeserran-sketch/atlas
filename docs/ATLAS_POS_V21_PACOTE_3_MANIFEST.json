@@ -1,0 +1,58 @@
+{
+  "package": "Pós-V21 Pacote 3",
+  "scope": [
+    "Sanidade",
+    "Reprodução",
+    "Nutrição"
+  ],
+  "backend_changed": false,
+  "database_migration_required": false,
+  "previous_backend_contract": "POST /api/v1/livestock/handling/batch",
+  "files": [
+    {
+      "path": "lib/core/widgets/atlas_module_decision_panel.dart",
+      "sha256": "5a24df8e3775c6112a1e2beccae5a609705f354e9525ff32a7175fabf7072873",
+      "size": 4665
+    },
+    {
+      "path": "lib/features/animal_health/presentation/screens/health_overview_screen.dart",
+      "sha256": "f46f4c11a330e040e23b003835d2b5a12c2d0520516c7c49037756fe8f7a672b",
+      "size": 27372
+    },
+    {
+      "path": "lib/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart",
+      "sha256": "af7f978507ddea71b135fb5bd177501ddf5ab056ed4fbda21e5b24dd8f2b919d",
+      "size": 27105
+    },
+    {
+      "path": "lib/features/nutrition/presentation/screens/nutrition_overview_screen.dart",
+      "sha256": "56ab53b60bd29714f6a3da5425b5d12a8c2a7a2bfc203a198f1bc78aed280855",
+      "size": 46658
+    },
+    {
+      "path": "test/features/module_centers/post_v21_package3_module_centers_contract_test.dart",
+      "sha256": "61c17bb2976b6a14af2cea30868460179e22550be707afba35bd5a94f5e53e7b",
+      "size": 1907
+    },
+    {
+      "path": "tools/atlas_post_v21_package3_gate.py",
+      "sha256": "6c7702905661dda84f8e14947f73a416b03b39f8249e97734c82eb9189567cd0",
+      "size": 3934
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "71d6ed5d120c8cbab51e0d79b2cf6b17a1f56d4fce206432d6ff408b3a4b24e1",
+      "size": 3960
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package3_homologation.ps1",
+      "sha256": "b42fc76225501e28537e9c98512164942c434084b5260fa8a97440d9988dbaef",
+      "size": 2062
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_3_CENTRAIS_GERAIS_20260822.md",
+      "sha256": "f9a43b83ec11722863561b3e7cf3f0f1db5fde856ef8a0ceeb4c585df44bcd7e",
+      "size": 1633
+    }
+  ]
+}

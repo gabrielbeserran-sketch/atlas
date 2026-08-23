@@ -15,12 +15,7 @@ extension AtlasAutomationModuleX on AtlasAutomationModule {
     AtlasAutomationModule.workflow => 'Workflow Operacional',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasAutomationModule.drone => 'Pacote 59',
-    AtlasAutomationModule.iot => 'Pacote 60',
-    AtlasAutomationModule.managementAutomation => 'Pacote 61',
-    AtlasAutomationModule.workflow => 'Pacote 62',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasAutomationModule.drone => const [

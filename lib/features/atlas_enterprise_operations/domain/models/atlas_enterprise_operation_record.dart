@@ -25,13 +25,7 @@ extension AtlasEnterpriseOperationModuleX on AtlasEnterpriseOperationModule {
     AtlasEnterpriseOperationModule.fieldService => 'Serviços de Campo',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasEnterpriseOperationModule.procurement => 'Pacote 79',
-    AtlasEnterpriseOperationModule.supplierPortal => 'Pacote 80',
-    AtlasEnterpriseOperationModule.inventoryIntelligence => 'Pacote 81',
-    AtlasEnterpriseOperationModule.maintenance => 'Pacote 82',
-    AtlasEnterpriseOperationModule.fieldService => 'Pacote 83',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasEnterpriseOperationModule.procurement => const [

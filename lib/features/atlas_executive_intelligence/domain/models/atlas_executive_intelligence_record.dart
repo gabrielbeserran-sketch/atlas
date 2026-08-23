@@ -28,13 +28,7 @@ extension AtlasExecutiveIntelligenceModuleX
       'Enterprise Command Center',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasExecutiveIntelligenceModule.enterpriseCrm => 'Pacote 89',
-    AtlasExecutiveIntelligenceModule.financialCenter => 'Pacote 90',
-    AtlasExecutiveIntelligenceModule.businessIntelligence => 'Pacote 91',
-    AtlasExecutiveIntelligenceModule.strategicCenter => 'Pacote 92',
-    AtlasExecutiveIntelligenceModule.commandCenter => 'Pacote 93',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasExecutiveIntelligenceModule.enterpriseCrm => const [

@@ -43,18 +43,7 @@ extension AtlasReproductivePremiumModuleX on AtlasReproductivePremiumModule {
     AtlasReproductivePremiumModule.reproductiveCenter => 'Central Reprodutiva',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasReproductivePremiumModule.advancedIatf => 'Pacote 141',
-    AtlasReproductivePremiumModule.individualFertility => 'Pacote 142',
-    AtlasReproductivePremiumModule.embryos => 'Pacote 143',
-    AtlasReproductivePremiumModule.ivf => 'Pacote 144',
-    AtlasReproductivePremiumModule.embryoTransfer => 'Pacote 145',
-    AtlasReproductivePremiumModule.geneticCatalog => 'Pacote 146',
-    AtlasReproductivePremiumModule.intelligentMating => 'Pacote 147',
-    AtlasReproductivePremiumModule.geneticPrediction => 'Pacote 148',
-    AtlasReproductivePremiumModule.continuousBreeding => 'Pacote 149',
-    AtlasReproductivePremiumModule.reproductiveCenter => 'Pacote 150',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasReproductivePremiumModule.advancedIatf => const [

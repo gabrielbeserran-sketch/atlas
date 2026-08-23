@@ -1,0 +1,135 @@
+{
+  "package": "Pós-V21 Pacote 5",
+  "bulletins": [
+    "zootechnical",
+    "operations",
+    "financial"
+  ],
+  "backend_changed": true,
+  "database_migration_required": true,
+  "migration": "20260822_0042",
+  "whatsapp_external_provider_required": true,
+  "automatic_send_safe_default": false,
+  "provider_status_without_credentials": "disabled",
+  "delivery_states": [
+    "queued",
+    "processing",
+    "blocked_provider",
+    "failed",
+    "provider_accepted",
+    "delivered",
+    "read"
+  ],
+  "files": [
+    {
+      "path": "backend/app/config.py",
+      "sha256": "c7b0de44362eaee43f0c365e5d6bf02599b0778ffaf4c9f1ef7a623c29f160ae",
+      "size": 22061
+    },
+    {
+      "path": "backend/.env.example",
+      "sha256": "026318b356d26d3aaf63a7ccb9a0eea483348294d8e300528225b55f015da6fc",
+      "size": 1532
+    },
+    {
+      "path": "backend/.env.production.example",
+      "sha256": "c6b31c42e40b5e049fc56a70fae2efa7943a133c2eac13031840d0027a14089e",
+      "size": 2305
+    },
+    {
+      "path": "backend/app/models/legacy.py",
+      "sha256": "22dbba3829cb048328045ae8fce8c5df1c5cfd0bd434e41633a7006f4218e583",
+      "size": 131862
+    },
+    {
+      "path": "backend/alembic/versions/20260822_0042_monthly_bulletins.py",
+      "sha256": "57f70d5f75e3b014a546cb531f804b1e48f73b558550b1fd2d47be0ea055c581",
+      "size": 4872
+    },
+    {
+      "path": "backend/app/services/whatsapp_provider.py",
+      "sha256": "8b44b884e6ec36ca79815dcddaac303585aa832161b87f4816efa1baaab185ce",
+      "size": 5155
+    },
+    {
+      "path": "backend/app/services/whatsapp_webhook.py",
+      "sha256": "ad027ad3070240fb0c7799b5d6556b6ede3bd7ddd594eeffa87fb6f6fbe8cc51",
+      "size": 3537
+    },
+    {
+      "path": "backend/app/services/monthly_bulletins.py",
+      "sha256": "ad96291b948aa2f1e0a5a31354aadf08d17740cbce373b5c8c9977bcb12d4d9c",
+      "size": 27679
+    },
+    {
+      "path": "backend/app/services/bulletin_scheduler.py",
+      "sha256": "5d194b752946c944b79512b0330789e1f260de33af8c55f109042df459771c73",
+      "size": 1050
+    },
+    {
+      "path": "backend/app/routers/bulletins.py",
+      "sha256": "341b1ed39ae736b60d625c6fc35e204432b0b86a23a787c454d1d406c264e12e",
+      "size": 12946
+    },
+    {
+      "path": "backend/app/main.py",
+      "sha256": "50432c9daa873573a28bdb4bae62ff67c3d54ef53749a9fa8c66651ee3387845",
+      "size": 5545
+    },
+    {
+      "path": "lib/features/consultancy_client/domain/models/atlas_monthly_bulletin_data.dart",
+      "sha256": "81f04da45618cf57d74578a5cab6cd5ff3e742f0ce7d55a3f4faded0ff491b95",
+      "size": 3068
+    },
+    {
+      "path": "lib/features/consultancy_client/data/services/atlas_monthly_bulletin_service.dart",
+      "sha256": "6d8f413ae89b15199b4a2aa475359d25f13b7c5fbbaa53bd97ccb6677973af5d",
+      "size": 2093
+    },
+    {
+      "path": "lib/features/consultancy_client/presentation/widgets/atlas_monthly_bulletins_card.dart",
+      "sha256": "10ffca3578c28a0c3f1e46613203ee7f933b22bb905f535efdf9d585e39d3e70",
+      "size": 14662
+    },
+    {
+      "path": "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+      "sha256": "d2b1735ca865a82de0a95832e464df49654b3bef9aae1a273e7ff410446e61c2",
+      "size": 21177
+    },
+    {
+      "path": ".github/workflows/atlas_monthly_bulletins.yml",
+      "sha256": "547795514bc1c638099451e9053ea98ef008de3c528044d4e17fd09e5d554e28",
+      "size": 1153
+    },
+    {
+      "path": "test/features/consultancy_client/post_v21_package5_bulletins_contract_test.dart",
+      "sha256": "5721b90fd37ae8b45d72d1043bcfeac23b730d761f1538a6c663d5ece44cb542",
+      "size": 1778
+    },
+    {
+      "path": "tools/atlas_post_v21_package5_gate.py",
+      "sha256": "53a849a16befa062776457ec7b01757487cd2d58de730c5fc8c69d4515f00838",
+      "size": 8499
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "fca09cf41b6b7ca95683839a34a98892e6d820df379cde03b026367da3585f7e",
+      "size": 4860
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package5_homologation.ps1",
+      "sha256": "cd51ce76beb9e1dd9659948fd75d27367a33ba109cbb842b1c7fbc9a473d67e7",
+      "size": 2328
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package5_deployed.ps1",
+      "sha256": "9fc604fcd5209b9fee1f7258f4fdf3e9338fbab5ad9a0c51f1c35ebc79d8eb5f",
+      "size": 2740
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_5_BOLETINS_WHATSAPP_20260822.md",
+      "sha256": "58d5a32856ee43bbf1c7128da76240bc664392082d8ac3efbfe802a82b19884a",
+      "size": 4879
+    }
+  ]
+}

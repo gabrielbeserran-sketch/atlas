@@ -2550,3 +2550,162 @@ LivestockWeight = WeightRecord
 LivestockHealthEvent = HealthEvent
 LivestockNutritionEvent = NutritionEvent
 LivestockReproductionEvent = ReproductionEvent
+
+
+class BulletinSchedule(Base):
+    __tablename__ = "bulletin_schedules"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "farm_id",
+            "bulletin_type",
+            name="uq_bulletin_schedule_company_farm_type",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80), primary_key=True, default=lambda: new_id("bulletin_schedule")
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(String(80), index=True)
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    bulletin_type: Mapped[str] = mapped_column(String(40), index=True)
+    recipient_whatsapp: Mapped[str] = mapped_column(String(30), default="")
+    whatsapp_opt_in_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    day_of_month: Mapped[int] = mapped_column(Integer, default=1)
+    hour: Mapped[int] = mapped_column(Integer, default=8)
+    minute: Mapped[int] = mapped_column(Integer, default=0)
+    timezone_name: Mapped[str] = mapped_column(
+        String(80), default="America/Sao_Paulo"
+    )
+    last_run_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    next_run_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class BulletinDispatch(Base):
+    __tablename__ = "bulletin_dispatches"
+    __table_args__ = (
+        UniqueConstraint(
+            "idempotency_key",
+            name="uq_bulletin_dispatch_idempotency",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80), primary_key=True, default=lambda: new_id("bulletin_dispatch")
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(String(80), index=True)
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    schedule_id: Mapped[str | None] = mapped_column(
+        ForeignKey("bulletin_schedules.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    bulletin_type: Mapped[str] = mapped_column(String(40), index=True)
+    recipient_whatsapp: Mapped[str] = mapped_column(String(30))
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    content: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(40), default="queued", index=True)
+    provider: Mapped[str] = mapped_column(String(40), default="meta_cloud")
+    provider_message_id: Mapped[str] = mapped_column(String(180), default="")
+    idempotency_key: Mapped[str] = mapped_column(String(180), unique=True, index=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    scheduled_for: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    last_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    error_message: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+
+
+class SecurityCameraEvent(Base):
+    __tablename__ = "security_camera_events"
+    __table_args__ = (
+        UniqueConstraint(
+            "device_id",
+            "event_external_id",
+            name="uq_security_camera_event_device_external",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80),
+        primary_key=True,
+        default=lambda: new_id("security_camera_event"),
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(String(80), index=True)
+    farm_id: Mapped[str] = mapped_column(String(80), index=True)
+    device_id: Mapped[str] = mapped_column(
+        ForeignKey("atlas_iot_devices_v2.id", ondelete="CASCADE"),
+        index=True,
+    )
+    event_external_id: Mapped[str] = mapped_column(String(180))
+    event_type: Mapped[str] = mapped_column(String(30), index=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    captured_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        index=True,
+    )
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        index=True,
+    )
+    storage_key: Mapped[str] = mapped_column(String(900), default="")
+    sha256: Mapped[str] = mapped_column(String(64), default="")
+    file_size: Mapped[int] = mapped_column(Integer, default=0)
+    recipient_whatsapp: Mapped[str] = mapped_column(String(30), default="")
+    alert_status: Mapped[str] = mapped_column(
+        String(40),
+        default="pending",
+        index=True,
+    )
+    provider_message_id: Mapped[str] = mapped_column(
+        String(180),
+        default="",
+        index=True,
+    )
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    error_message: Mapped[str] = mapped_column(Text, default="")
+    metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        index=True,
+    )

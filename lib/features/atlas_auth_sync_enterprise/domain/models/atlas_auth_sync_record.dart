@@ -42,18 +42,7 @@ extension AtlasAuthSyncModuleX on AtlasAuthSyncModule {
     AtlasAuthSyncModule.realConflictResolution => 'Resolução Real de Conflitos',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasAuthSyncModule.secureUserRegistration => 'Pacote 261',
-    AtlasAuthSyncModule.secureTokenLogin => 'Pacote 262',
-    AtlasAuthSyncModule.passwordRecovery => 'Pacote 263',
-    AtlasAuthSyncModule.multiFactorAuthentication => 'Pacote 264',
-    AtlasAuthSyncModule.roleBasedAccessControl => 'Pacote 265',
-    AtlasAuthSyncModule.sensitiveDataProtection => 'Pacote 266',
-    AtlasAuthSyncModule.immutableAuditLogs => 'Pacote 267',
-    AtlasAuthSyncModule.structuredOfflineDatabase => 'Pacote 268',
-    AtlasAuthSyncModule.synchronizationEngine => 'Pacote 269',
-    AtlasAuthSyncModule.realConflictResolution => 'Pacote 270',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasAuthSyncModule.secureUserRegistration => const [

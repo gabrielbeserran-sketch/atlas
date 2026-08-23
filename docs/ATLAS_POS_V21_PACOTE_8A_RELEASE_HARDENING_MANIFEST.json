@@ -1,0 +1,28 @@
+{
+  "package": "Pós-V21 Pacote 8A — Release Hardening",
+  "migration": "20260823_0043",
+  "migration_execution": "automatic via backend/scripts/render_start.sh",
+  "manual_supabase_alembic_required": false,
+  "files": [
+    {
+      "path": "tools/atlas_post_v21_package8a_release_preflight_gate.py",
+      "sha256": "ec4718f2e44f80f0fa6efe9dab006e84738aa4786ef1fa32b732cd0c7ffda5a1",
+      "size": 2207
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8a_release_preflight.ps1",
+      "sha256": "45e9222a3ce6c3f1b530e2a4205ab19f00c769b714f2889290942bd905dc1708",
+      "size": 1821
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8a_security_camera_homologation.ps1",
+      "sha256": "f292b29109bc496b07c05d6a630048f879dc94ef228dee53a49ad0cd3f9f0b02",
+      "size": 2142
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8A_RELEASE_HARDENING_20260823.md",
+      "sha256": "44e48b8261dc41716c68fc06d16c47c7b8136e3419a9bf9d76e92e158a8ea65b",
+      "size": 1744
+    }
+  ]
+}

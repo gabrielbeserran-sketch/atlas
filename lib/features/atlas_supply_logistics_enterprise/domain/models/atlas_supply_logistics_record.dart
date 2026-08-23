@@ -41,18 +41,7 @@ extension AtlasSupplyLogisticsModuleX on AtlasSupplyLogisticsModule {
       'Central de Suprimentos e Logística',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasSupplyLogisticsModule.intelligentPurchasing => 'Pacote 211',
-    AtlasSupplyLogisticsModule.supplierManagement => 'Pacote 212',
-    AtlasSupplyLogisticsModule.automatedQuotation => 'Pacote 213',
-    AtlasSupplyLogisticsModule.purchaseApproval => 'Pacote 214',
-    AtlasSupplyLogisticsModule.multiWarehouseStock => 'Pacote 215',
-    AtlasSupplyLogisticsModule.batchesAndExpiry => 'Pacote 216',
-    AtlasSupplyLogisticsModule.intelligentInventory => 'Pacote 217',
-    AtlasSupplyLogisticsModule.transportLogistics => 'Pacote 218',
-    AtlasSupplyLogisticsModule.fuelManagement => 'Pacote 219',
-    AtlasSupplyLogisticsModule.supplyLogisticsCenter => 'Pacote 220',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasSupplyLogisticsModule.intelligentPurchasing => const [

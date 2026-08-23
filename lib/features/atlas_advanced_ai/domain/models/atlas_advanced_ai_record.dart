@@ -39,18 +39,7 @@ extension AtlasAdvancedAiModuleX on AtlasAdvancedAiModule {
     AtlasAdvancedAiModule.explainableAi => 'IA Explicável',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasAdvancedAiModule.conversationalAssistant => 'Pacote 111',
-    AtlasAdvancedAiModule.farmContextChat => 'Pacote 112',
-    AtlasAdvancedAiModule.healthDecisionSupport => 'Pacote 113',
-    AtlasAdvancedAiModule.reproductiveIntelligence => 'Pacote 114',
-    AtlasAdvancedAiModule.nutritionalIntelligence => 'Pacote 115',
-    AtlasAdvancedAiModule.geneticIntelligence => 'Pacote 116',
-    AtlasAdvancedAiModule.financialIntelligence => 'Pacote 117',
-    AtlasAdvancedAiModule.strategicIntelligence => 'Pacote 118',
-    AtlasAdvancedAiModule.climateIntelligence => 'Pacote 119',
-    AtlasAdvancedAiModule.explainableAi => 'Pacote 120',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasAdvancedAiModule.conversationalAssistant => const [

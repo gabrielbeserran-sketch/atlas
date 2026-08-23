@@ -22,12 +22,7 @@ extension AtlasCommercialOperationModuleX on AtlasCommercialOperationModule {
     AtlasCommercialOperationModule.ruralCrm => 'CRM Pecuário',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasCommercialOperationModule.digitalAuction => 'Pacote 75',
-    AtlasCommercialOperationModule.livestockLogistics => 'Pacote 76',
-    AtlasCommercialOperationModule.originCertification => 'Pacote 77',
-    AtlasCommercialOperationModule.ruralCrm => 'Pacote 78',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasCommercialOperationModule.digitalAuction => const [

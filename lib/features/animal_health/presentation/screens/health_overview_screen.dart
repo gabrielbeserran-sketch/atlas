@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/data/services/animal_health_storage_service.dart';
@@ -9,6 +12,7 @@ import 'package:projeto_atlas/features/animal_health/domain/models/animal_health
 import 'package:projeto_atlas/features/animal_health/presentation/screens/animal_health_list_screen.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/farm_handling/presentation/screens/farm_handling_screen.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
@@ -74,6 +78,124 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
     (total, context) =>
         total + context.records.where((record) => record.isMortality).length,
   );
+
+  DateTime? _parseDisplayDate(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    final direct = DateTime.tryParse(trimmed);
+    if (direct != null) return direct;
+    final parts = trimmed.split('/');
+    if (parts.length != 3) return null;
+    final day = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+    if (day == null || month == null || year == null) return null;
+    return DateTime(year, month, day);
+  }
+
+  DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  int get overdueReturns => animals.fold(
+    0,
+    (total, context) =>
+        total +
+        context.records.where((record) {
+          final date = _parseDisplayDate(record.nextDate);
+          return date != null && date.isBefore(_today);
+        }).length,
+  );
+
+  int get activeWithdrawalAnimals => animals.where((context) {
+    return context.records.any((record) {
+      final dates = [
+        record.withdrawalEndDate,
+        record.withdrawalMeatEndDate,
+        record.withdrawalMilkEndDate,
+      ].map(_parseDisplayDate).whereType<DateTime>();
+      return dates.any((date) => !date.isBefore(_today));
+    });
+  }).length;
+
+  AtlasModuleAttentionLevel get _moduleLevel {
+    if (quarantineAnimals > 0 || overdueReturns > 0) {
+      return AtlasModuleAttentionLevel.critical;
+    }
+    if (clinicalOccurrences > 0 ||
+        activeWithdrawalAnimals > 0 ||
+        scheduledReturns > 0) {
+      return AtlasModuleAttentionLevel.attention;
+    }
+    return AtlasModuleAttentionLevel.normal;
+  }
+
+  List<AtlasModuleDecisionItem> get _decisionItems {
+    final items = <AtlasModuleDecisionItem>[];
+    if (quarantineAnimals > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$quarantineAnimals animal(is) em quarentena',
+          description: 'Revise isolamento, evolução clínica e liberação.',
+          icon: Icons.health_and_safety_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (overdueReturns > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$overdueReturns retorno(s) sanitário(s) vencido(s)',
+          description: 'Há aplicações ou revisões com data anterior a hoje.',
+          icon: Icons.event_busy_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (activeWithdrawalAnimals > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$activeWithdrawalAnimals animal(is) em período de carência',
+          description:
+              'Considere a carência antes de movimentação, leite ou abate.',
+          icon: Icons.timer_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (scheduledReturns > overdueReturns) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${scheduledReturns - overdueReturns} retorno(s) programado(s)',
+          description: 'Existem próximos manejos sanitários a acompanhar.',
+          icon: Icons.event_repeat_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (animalsWithRecords < totalAnimals && totalAnimals > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${totalAnimals - animalsWithRecords} animal(is) sem histórico',
+          description:
+              'Esses animais ainda não possuem registro sanitário no Atlas.',
+          icon: Icons.fact_check_outlined,
+        ),
+      );
+    }
+    return items;
+  }
+
+  String get _moduleStatusTitle {
+    if (_moduleLevel == AtlasModuleAttentionLevel.critical) {
+      return 'Sanidade exige ação';
+    }
+    if (_moduleLevel == AtlasModuleAttentionLevel.attention) {
+      return 'Sanidade requer acompanhamento';
+    }
+    return 'Sanidade sem prioridade crítica';
+  }
 
   List<HealthAnimalContext> get filteredAnimals {
     final normalizedSearch = search.trim().toLowerCase();
@@ -270,8 +392,42 @@ class _HealthOverviewScreenState extends State<HealthOverviewScreen> {
                             AtlasOperationalActionBar(
                               primaryLabel: 'Novo evento sanitário',
                               onPrimary: openNewEvent,
+                              secondaryLabel:
+                                  widget.farm == null ? null : 'Manejo coletivo',
+                              secondaryIcon:
+                                  Icons.playlist_add_check_outlined,
+                              onSecondary: widget.farm == null
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => FarmHandlingScreen(
+                                            farm: widget.farm!,
+                                          ),
+                                        ),
+                                      );
+                                    },
                               onRefresh: loadData,
                               busy: isLoading,
+                            ),
+                            const SizedBox(height: 16),
+                            AtlasModuleDecisionPanel(
+                              statusTitle: _moduleStatusTitle,
+                              statusDescription:
+                                  '$totalRecords registros • '
+                                  '$scheduledReturns retornos • '
+                                  '$clinicalOccurrences ocorrências clínicas',
+                              items: _decisionItems,
+                              level: _moduleLevel,
+                            ),
+                            AtlasModuleWorkspaceGuide(
+                              moduleLabel: 'Sanidade',
+                              workflows:
+                                  AtlasProductSurfacePolicy.moduleWorkflows['Sanidade'] ??
+                                      const <String>[],
+                              specializedFamilies: AtlasProductSurfacePolicy
+                                      .specializedCapabilityCountByOwner['Sanidade'] ??
+                                  0,
                             ),
                             const SizedBox(height: 24),
                             Wrap(

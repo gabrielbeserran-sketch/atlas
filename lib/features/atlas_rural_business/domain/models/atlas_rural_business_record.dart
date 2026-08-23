@@ -20,12 +20,7 @@ extension AtlasRuralBusinessModuleX on AtlasRuralBusinessModule {
     AtlasRuralBusinessModule.livestockMarketplace => 'Marketplace Pecuário',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasRuralBusinessModule.ruralCredit => 'Pacote 71',
-    AtlasRuralBusinessModule.ruralInsurance => 'Pacote 72',
-    AtlasRuralBusinessModule.digitalContracts => 'Pacote 73',
-    AtlasRuralBusinessModule.livestockMarketplace => 'Pacote 74',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasRuralBusinessModule.ruralCredit => const [

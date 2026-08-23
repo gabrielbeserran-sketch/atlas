@@ -1,0 +1,113 @@
+{
+  "package": "Pós-V21 Pacote 3 Completo",
+  "centers": [
+    "Sanidade",
+    "Reprodução",
+    "Nutrição",
+    "Campo/Pastagens",
+    "Estoque/Suprimentos",
+    "Financeiro",
+    "Inteligência/Relatórios",
+    "Operações/Equipe"
+  ],
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "lib/core/widgets/atlas_module_decision_panel.dart",
+      "sha256": "5a24df8e3775c6112a1e2beccae5a609705f354e9525ff32a7175fabf7072873",
+      "size": 4665
+    },
+    {
+      "path": "lib/features/animal_health/presentation/screens/health_overview_screen.dart",
+      "sha256": "f46f4c11a330e040e23b003835d2b5a12c2d0520516c7c49037756fe8f7a672b",
+      "size": 27372
+    },
+    {
+      "path": "lib/features/animal_reproduction/presentation/screens/reproduction_overview_screen.dart",
+      "sha256": "af7f978507ddea71b135fb5bd177501ddf5ab056ed4fbda21e5b24dd8f2b919d",
+      "size": 27105
+    },
+    {
+      "path": "lib/features/nutrition/presentation/screens/nutrition_overview_screen.dart",
+      "sha256": "56ab53b60bd29714f6a3da5425b5d12a8c2a7a2bfc203a198f1bc78aed280855",
+      "size": 46658
+    },
+    {
+      "path": "lib/features/field_operations/presentation/screens/farm_field_center_screen.dart",
+      "sha256": "0deb5bd2604e5ce208b73bd1a6b9f555583f01f6427e53d1916e72eb33c6e8f8",
+      "size": 16355
+    },
+    {
+      "path": "lib/features/farm_inventory/presentation/screens/inventory_overview_screen.dart",
+      "sha256": "35c13bd0cc4c8ce62b5a442e4dc0de5808f9da2ed9e1257da81ebe35e5e88f0a",
+      "size": 24788
+    },
+    {
+      "path": "lib/features/farm_finance/presentation/screens/finance_overview_screen.dart",
+      "sha256": "28834232e0ab52fbd0bd9afa1fb2ba16fe1c6b7d44c5fe08f7cf68f4083c8a9b",
+      "size": 23471
+    },
+    {
+      "path": "lib/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart",
+      "sha256": "558bf1fcdbdb40f60ed5a14ed8c0bd3bded5df526d020f67b8f911201f94b015",
+      "size": 13219
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "9362feecd180c61e82aa86f64c4f653df41b293c4e9f7d78329eb41d3a7c23ff",
+      "size": 26457
+    },
+    {
+      "path": "test/features/module_centers/post_v21_package3_module_centers_contract_test.dart",
+      "sha256": "61c17bb2976b6a14af2cea30868460179e22550be707afba35bd5a94f5e53e7b",
+      "size": 1907
+    },
+    {
+      "path": "test/features/module_centers/post_v21_package3_complete_centers_contract_test.dart",
+      "sha256": "f50ab3afe831cee4b07c7e6260313eb78e0cdb9550e5a36c26242190461324aa",
+      "size": 2381
+    },
+    {
+      "path": "tools/atlas_post_v21_package3_gate.py",
+      "sha256": "6c7702905661dda84f8e14947f73a416b03b39f8249e97734c82eb9189567cd0",
+      "size": 3934
+    },
+    {
+      "path": "tools/atlas_post_v21_package3_complete_gate.py",
+      "sha256": "5c9acdf4806309d8bfe33011ee32eb4c830b30ac69981d966e37dc75004cfb65",
+      "size": 5333
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "800964fdf22cb4b77375b89d477f76f07bf19d1354094f7d38ab3908216dcad5",
+      "size": 4205
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package3_homologation.ps1",
+      "sha256": "b42fc76225501e28537e9c98512164942c434084b5260fa8a97440d9988dbaef",
+      "size": 2062
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package3_complete_homologation.ps1",
+      "sha256": "a08d099bbffa81cc422ef3b3324787f455ca1c74fecb32ed31d2a27d88d60bde",
+      "size": 2100
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_3_CENTRAIS_GERAIS_20260822.md",
+      "sha256": "f9a43b83ec11722863561b3e7cf3f0f1db5fde856ef8a0ceeb4c585df44bcd7e",
+      "size": 1633
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_3_COMPLETO_CENTRAIS_20260822.md",
+      "sha256": "e6fa98e9f820be2645116698c77776d5e964307fff0031e426742b506be66bd1",
+      "size": 1968
+    }
+  ],
+  "correction": {
+    "date": "2026-08-22",
+    "root_cause": "getter openOperations colidia com método openOperations()",
+    "fix": "getter renomeado para openOperationsCount",
+    "prevention": "gate genérico bloqueia colisões getter/método nas centrais alteradas"
+  }
+}

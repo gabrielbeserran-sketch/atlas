@@ -15,12 +15,7 @@ extension AtlasOfficialIntegrationModuleX on AtlasOfficialIntegrationModule {
     AtlasOfficialIntegrationModule.esocialRural => 'eSocial Rural',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasOfficialIntegrationModule.sisbov => 'Pacote 63',
-    AtlasOfficialIntegrationModule.gta => 'Pacote 64',
-    AtlasOfficialIntegrationModule.mapa => 'Pacote 65',
-    AtlasOfficialIntegrationModule.esocialRural => 'Pacote 66',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasOfficialIntegrationModule.sisbov => const [

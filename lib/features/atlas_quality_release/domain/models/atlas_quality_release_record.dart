@@ -44,18 +44,7 @@ extension AtlasQualityReleaseModuleX on AtlasQualityReleaseModule {
     AtlasQualityReleaseModule.atlasVersionOne => 'Atlas Versão 1.0',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasQualityReleaseModule.architecturalReview => 'Pacote 291',
-    AtlasQualityReleaseModule.comprehensiveUnitTests => 'Pacote 292',
-    AtlasQualityReleaseModule.integrationTests => 'Pacote 293',
-    AtlasQualityReleaseModule.interfaceTests => 'Pacote 294',
-    AtlasQualityReleaseModule.securityTests => 'Pacote 295',
-    AtlasQualityReleaseModule.performanceTests => 'Pacote 296',
-    AtlasQualityReleaseModule.monitoringAndFailureHandling => 'Pacote 297',
-    AtlasQualityReleaseModule.stagingPublication => 'Pacote 298',
-    AtlasQualityReleaseModule.farmPilotProgram => 'Pacote 299',
-    AtlasQualityReleaseModule.atlasVersionOne => 'Pacote 300',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasQualityReleaseModule.architecturalReview => const [

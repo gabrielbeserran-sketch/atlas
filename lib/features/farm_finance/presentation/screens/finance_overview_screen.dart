@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
+import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
+import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
+import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
@@ -6,7 +11,14 @@ import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_d
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
 
 class FinanceOverviewScreen extends StatefulWidget {
-  const FinanceOverviewScreen({super.key});
+  const FinanceOverviewScreen({
+    this.farm,
+    this.embedded = false,
+    super.key,
+  });
+
+  final FarmData? farm;
+  final bool embedded;
 
   @override
   State<FinanceOverviewScreen> createState() => _FinanceOverviewScreenState();
@@ -30,6 +42,106 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
 
   int get totalRecords =>
       farmContexts.fold(0, (total, context) => total + context.records.length);
+
+  int get pendingRecords => farmContexts.fold(
+    0,
+    (total, context) =>
+        total + context.records.where((record) => record.isPending).length,
+  );
+
+  int get overdueRecords => farmContexts.fold(
+    0,
+    (total, context) =>
+        total + context.records.where((record) => record.isOverdue).length,
+  );
+
+  double get pendingIncome => farmContexts.fold(
+    0,
+    (total, context) =>
+        total +
+        context.records
+            .where((record) => record.isIncome && record.isPending)
+            .fold<double>(0, (subtotal, record) => subtotal + record.amount),
+  );
+
+  double get pendingExpenses => farmContexts.fold(
+    0,
+    (total, context) =>
+        total +
+        context.records
+            .where((record) => record.isExpense && record.isPending)
+            .fold<double>(0, (subtotal, record) => subtotal + record.amount),
+  );
+
+  AtlasModuleAttentionLevel get moduleLevel {
+    if (overdueRecords > 0) {
+      return AtlasModuleAttentionLevel.critical;
+    }
+    if (pendingRecords > 0) {
+      return AtlasModuleAttentionLevel.attention;
+    }
+    return AtlasModuleAttentionLevel.normal;
+  }
+
+  String get moduleStatusTitle {
+    if (overdueRecords > 0) {
+      return 'Há compromissos financeiros vencidos';
+    }
+    if (pendingRecords > 0) {
+      return 'Fluxo financeiro requer acompanhamento';
+    }
+    return 'Fluxo financeiro acompanhado';
+  }
+
+  List<AtlasModuleDecisionItem> get decisionItems {
+    final items = <AtlasModuleDecisionItem>[];
+    if (overdueRecords > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$overdueRecords lançamento(s) vencido(s)',
+          description:
+              'Priorize os compromissos vencidos antes de avaliar o saldo isoladamente.',
+          icon: Icons.event_busy_outlined,
+          level: AtlasModuleAttentionLevel.critical,
+        ),
+      );
+    }
+    if (pendingExpenses > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${formatCurrency(pendingExpenses)} a pagar',
+          description:
+              'Compare obrigações futuras com o caixa previsto do ciclo produtivo.',
+          icon: Icons.payments_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (pendingIncome > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${formatCurrency(pendingIncome)} a receber',
+          description:
+              'Receitas previstas ainda não devem ser tratadas como caixa realizado.',
+          icon: Icons.request_quote_outlined,
+        ),
+      );
+    }
+    if (balance < 0 && overdueRecords == 0) {
+      items.add(
+        const AtlasModuleDecisionItem(
+          title: 'Resultado acumulado negativo',
+          description:
+              'Na pecuária, avalie o resultado dentro do ciclo de produção e do planejamento do investimento; saldo negativo isolado não significa falha operacional.',
+          icon: Icons.timeline_outlined,
+        ),
+      );
+    }
+    return items;
+  }
+
+  FinanceFarmContext? get activeContext =>
+      farmContexts.isEmpty ? null : farmContexts.first;
 
   List<FinanceFarmContext> get filteredContexts {
     final query = search.trim().toLowerCase();
@@ -64,11 +176,16 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
       });
     }
 
-    final farms = await farmStorage.loadFarms();
+    final farms = widget.farm == null
+        ? await farmStorage.loadFarms()
+        : <FarmData>[widget.farm!];
     final contexts = <FinanceFarmContext>[];
 
     for (final farm in farms) {
-      final records = await financeStorage.loadRecords(farm.name);
+      final records = await financeStorage.loadRecords(
+        farm.name,
+        farmId: farm.id ?? '',
+      );
       contexts.add(FinanceFarmContext(farm: farm, records: records));
     }
 
@@ -88,6 +205,14 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
     });
   }
 
+  Future<void> openFinancialSimulation() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AtlasIntelligenceCenterScreen(initialTab: 3),
+      ),
+    );
+  }
+
   Future<void> openFarmFinance(FinanceFarmContext contextData) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -104,16 +229,18 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
-        title: const Text('Financeiro'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar dados',
-            onPressed: isLoading ? null : loadData,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Financeiro'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar dados',
+                  onPressed: isLoading ? null : loadData,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -130,6 +257,44 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const _FinanceHeader(),
+                            const SizedBox(height: 12),
+                            AtlasOperationalActionBar(
+                              primaryLabel: 'Gerenciar lançamentos',
+                              primaryIcon: Icons.receipt_long_outlined,
+                              onPrimary: activeContext == null
+                                  ? null
+                                  : () => openFarmFinance(activeContext!),
+                              secondaryLabel: 'Simular decisão',
+                              secondaryIcon: Icons.calculate_outlined,
+                              onSecondary: widget.farm == null
+                                  ? null
+                                  : openFinancialSimulation,
+                              onRefresh: loadData,
+                              busy: isLoading,
+                            ),
+                            const SizedBox(height: 16),
+                            AtlasModuleDecisionPanel(
+                              statusTitle: moduleStatusTitle,
+                              statusDescription:
+                                  '${formatCurrency(totalIncome)} em receitas • '
+                                  '${formatCurrency(totalExpenses)} em despesas • '
+                                  '$pendingRecords pendente(s)',
+                              items: decisionItems,
+                              level: moduleLevel,
+                            ),
+                            const SizedBox(height: 16),
+                            AtlasModuleWorkspaceGuide(
+                              moduleLabel: 'Financeiro',
+                              workflows:
+                                  AtlasProductSurfacePolicy.moduleWorkflows['Financeiro'] ??
+                                      const <String>[],
+                              specializedFamilies:
+                                  AtlasProductSurfacePolicy
+                                          .specializedCapabilityCountByOwner['Financeiro'] ??
+                                      0,
+                            ),
+                            const SizedBox(height: 16),
+                            const _FinancialCycleGuidance(),
                             const SizedBox(height: 24),
                             Wrap(
                               spacing: 16,
@@ -153,12 +318,10 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
                                   title: 'Saldo geral',
                                   value: formatCurrency(balance),
                                   subtitle: balance >= 0
-                                      ? 'Resultado consolidado positivo'
-                                      : 'Resultado consolidado negativo',
-                                  icon: balance >= 0
-                                      ? Icons.account_balance_wallet_outlined
-                                      : Icons.warning_amber_outlined,
-                                  positive: balance >= 0,
+                                      ? 'Resultado acumulado do período'
+                                      : 'Avaliar dentro do ciclo produtivo',
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  positive: true,
                                 ),
                                 _IndicatorCard(
                                   title: 'Lançamentos',
@@ -267,6 +430,50 @@ class FinanceFarmContext {
       int.tryParse(parts[2]) ?? 1900,
       int.tryParse(parts[1]) ?? 1,
       int.tryParse(parts[0]) ?? 1,
+    );
+  }
+}
+
+
+class _FinancialCycleGuidance extends StatelessWidget {
+  const _FinancialCycleGuidance();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CircleAvatar(
+              child: Icon(Icons.timeline_outlined),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Leia o financeiro dentro do ciclo da pecuária',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Compra de animais, formação de estoque e retenção podem '
+                    'deixar o caixa negativo antes da receita. Priorize '
+                    'vencimentos, caixa previsto e planejamento do ciclo em '
+                    'vez de tratar um saldo negativo isolado como prejuízo.',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

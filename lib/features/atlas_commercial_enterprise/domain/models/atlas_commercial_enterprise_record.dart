@@ -46,18 +46,7 @@ extension AtlasCommercialEnterpriseModuleX on AtlasCommercialEnterpriseModule {
     AtlasCommercialEnterpriseModule.commercialCenter => 'Central Comercial',
   };
 
-  String get packageLabel => switch (this) {
-    AtlasCommercialEnterpriseModule.premiumCrm => 'Pacote 171',
-    AtlasCommercialEnterpriseModule.intelligentPipeline => 'Pacote 172',
-    AtlasCommercialEnterpriseModule.digitalContracts => 'Pacote 173',
-    AtlasCommercialEnterpriseModule.electronicSignature => 'Pacote 174',
-    AtlasCommercialEnterpriseModule.customerManagement => 'Pacote 175',
-    AtlasCommercialEnterpriseModule.afterSales => 'Pacote 176',
-    AtlasCommercialEnterpriseModule.commercialIndicators => 'Pacote 177',
-    AtlasCommercialEnterpriseModule.servicesMarketplace => 'Pacote 178',
-    AtlasCommercialEnterpriseModule.auctions => 'Pacote 179',
-    AtlasCommercialEnterpriseModule.commercialCenter => 'Pacote 180',
-  };
+  String get packageLabel => title;
 
   List<String> get features => switch (this) {
     AtlasCommercialEnterpriseModule.premiumCrm => const [

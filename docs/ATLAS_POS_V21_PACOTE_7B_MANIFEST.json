@@ -1,0 +1,92 @@
+{
+  "package": "Pós-V21 Pacote 7B — Dr. Beserra Voz",
+  "voice_pipeline": "microfone -> transcrição -> sendText -> gateway 7A",
+  "new_business_write_permissions": 0,
+  "speech_to_text": "^7.4.0",
+  "speech_to_text_windows": "^1.0.1",
+  "platforms": [
+    "Android",
+    "iOS",
+    "macOS",
+    "Windows"
+  ],
+  "backend_changed": false,
+  "database_migration_required": false,
+  "files": [
+    {
+      "path": "pubspec.yaml",
+      "sha256": "f9a52d85da14130617117fbcfe12607e9ac89752c011a443aa557c8fc328fed3",
+      "size": 944
+    },
+    {
+      "path": "lib/main.dart",
+      "sha256": "110417714c62bff53948919468ee0af31bda08b79a99d511de3d11be7411ed01",
+      "size": 1232
+    },
+    {
+      "path": "lib/features/dr_beserra/data/services/dr_beserra_voice_service.dart",
+      "sha256": "2547c4794957aafc5bfb204b202c0eb49fe11e72900f922a51fcb404ad2737a6",
+      "size": 4017
+    },
+    {
+      "path": "lib/features/dr_beserra/presentation/screens/dr_beserra_screen.dart",
+      "sha256": "13e96e119b3217351df18e7a2c875eaec2462d6f06d1632f89a92dabaf987ef6",
+      "size": 14070
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "sha256": "e915a723d9837bb1f1af0178b01ebbf9d39345bf9d3a657a93b5669c54fc6e30",
+      "size": 2702
+    },
+    {
+      "path": "ios/Runner/Info.plist",
+      "sha256": "8f7016b660ed43297879e0d9cf6116b00ab186387c3a1766cc9a7646d8e45be8",
+      "size": 1954
+    },
+    {
+      "path": "macos/Runner/Info.plist",
+      "sha256": "6aec32efc931b9ba69142714bba150f5e6a8f8d569c169e4f4654b92091f34b1",
+      "size": 1361
+    },
+    {
+      "path": "macos/Runner/DebugProfile.entitlements",
+      "sha256": "46bfab51c049663429876e6c129411f1e64de2f86bc9fd25ca31540e058c78b1",
+      "size": 407
+    },
+    {
+      "path": "macos/Runner/Release.entitlements",
+      "sha256": "76f4f8d72e8355a2f2037893e2b4e3dfeb0a116a406b1bb6f0fd62dd15a433a8",
+      "size": 299
+    },
+    {
+      "path": "test/features/dr_beserra/post_v21_package7b_dr_beserra_voice_contract_test.dart",
+      "sha256": "82ce59a83e0af642cde414687ab60816fbd63db4fbeb23c1788d325ffeeb65e9",
+      "size": 2068
+    },
+    {
+      "path": "tools/atlas_post_v21_package7b_dr_beserra_voice_gate.py",
+      "sha256": "f91c61e7fc78ccf626b694fda33a4a90c1a08d577e9a68db4c914857f536919f",
+      "size": 6176
+    },
+    {
+      "path": "tools/atlas_post_v21_package6d_d_global_ux_gate.py",
+      "sha256": "118bb009bcd2a41c44c554bc88ccc59545a6a95ed8cddeffa6afaa5c378084ff",
+      "size": 10263
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "ba01680886bfbdbc31db2eafd3999dbbe773a50b89ccb0287b37801fc4f611e0",
+      "size": 6299
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package7b_dr_beserra_voice_homologation.ps1",
+      "sha256": "8a4190d8ecacebc3ab77be4249c839bbe1f8b830bd28870e05410eed8a6b8e76",
+      "size": 1059
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_7B_DR_BESERRA_VOZ_20260823.md",
+      "sha256": "dbbfd4765c73e25042a1546240898767d1dc4e0e7919c43f9b5703a63e7dc52b",
+      "size": 1939
+    }
+  ]
+}

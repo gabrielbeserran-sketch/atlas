@@ -3,6 +3,7 @@ import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/platform_hubs/data/services/atlas_platform_hub_service.dart';
 import 'package:projeto_atlas/features/platform_hubs/domain/models/atlas_hub_snapshot.dart';
 import 'package:projeto_atlas/features/platform_hubs/presentation/widgets/atlas_metric_card.dart';
+import 'package:projeto_atlas/features/security_camera/presentation/widgets/atlas_security_camera_card.dart';
 
 class AtlasPrecisionHubScreen extends StatefulWidget {
   const AtlasPrecisionHubScreen({super.key});
@@ -92,6 +93,11 @@ class _AtlasPrecisionHubScreenState extends State<AtlasPrecisionHubScreen> {
                         AtlasMetricCard(label: entry.key, value: entry.value),
                   )
                   .toList(growable: false),
+            ),
+            const SizedBox(height: 20),
+            AtlasSecurityCameraCard(
+              farmId: farm.id,
+              canManage: canManage,
             ),
             const SizedBox(height: 20),
             Text(
