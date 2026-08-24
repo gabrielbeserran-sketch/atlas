@@ -2,13 +2,13 @@
   "python_syntax_errors": [],
   "dart_missing_internal_imports": [],
   "missing_permission_catalog_entries": [],
-  "backend_route_count": 532,
+  "backend_route_count": 534,
   "duplicate_routes": [],
   "unsafe_farm_scope_checks": [],
   "livestock_farm_scope_contract_errors": [],
-  "alembic_revision_count": 44,
+  "alembic_revision_count": 45,
   "alembic_heads": [
-    "20260823_0044"
+    "20260824_0045"
   ],
   "alembic_orphans": [],
   "deprecated_http_422_constants": 14,

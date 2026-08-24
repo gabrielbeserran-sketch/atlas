@@ -2753,3 +2753,43 @@ class ConsultancyContact(Base):
         default=utcnow,
         onupdate=utcnow,
     )
+
+
+class FarmHandlingOperation(Base):
+    __tablename__ = "farm_handling_operations"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "farm_id",
+            "idempotency_key",
+            name="uq_farm_handling_company_farm_idempotency",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        index=True,
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"),
+        index=True,
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(180))
+    action: Mapped[str] = mapped_column(String(60), index=True)
+    status: Mapped[str] = mapped_column(String(30), default="completed", index=True)
+    affected_count: Mapped[int] = mapped_column(Integer, default=0)
+    animal_ids_json: Mapped[list] = mapped_column(JSON, default=list)
+    created_ids_json: Mapped[list] = mapped_column(JSON, default=list)
+    finance_entry_id: Mapped[str] = mapped_column(String(80), default="")
+    summary: Mapped[str] = mapped_column(Text, default="")
+    responsible: Mapped[str] = mapped_column(String(180), default="")
+    notes: Mapped[str] = mapped_column(Text, default="")
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    created_by: Mapped[str] = mapped_column(String(80), default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        index=True,
+    )

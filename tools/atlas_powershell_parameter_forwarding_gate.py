@@ -175,6 +175,11 @@ critical = {
         "@Previous",
     ),
 
+    "scripts/quality/run_post_v21_package9b_safe_batch_handling_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
 }
 
 for rel, required in critical.items():

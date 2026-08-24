@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, or_, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.services.concurrency import advisory_transaction_lock
@@ -18,6 +18,7 @@ from ..models import (
     AnimalMovement,
     FinancialEntry,
     Farm,
+    FarmHandlingOperation,
     HealthEvent,
     HealthProtocol,
     HerdLot,
@@ -38,6 +39,7 @@ from ..schemas import (
     AnimalMovementResponse,
     FarmHandlingBatchRequest,
     FarmHandlingBatchResponse,
+    FarmHandlingOperationHistoryResponse,
     FinancialEntryCreateRequest,
     FinancialEntryResponse,
     HealthEventCreateRequest,
@@ -1224,7 +1226,103 @@ def _handling_animals(
             status_code=422,
             detail=f"{len(missing)} animal(is) não pertencem à fazenda ativa.",
         )
+
+    inactive = [
+        item
+        for item in animals
+        if item.status.strip().lower() not in {"active", "ativo"}
+    ]
+    if inactive:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"{len(inactive)} animal(is) já estão inativos/baixados. "
+                "Atualize a seleção antes de confirmar o manejo."
+            ),
+        )
     return animals
+
+
+def _handling_response_from_operation(
+    operation: FarmHandlingOperation,
+    *,
+    repeated: bool,
+) -> FarmHandlingBatchResponse:
+    return FarmHandlingBatchResponse(
+        handling_id=operation.id,
+        repeated=repeated,
+        farm_id=operation.farm_id,
+        action=operation.action,
+        affected_count=operation.affected_count,
+        animal_ids=list(operation.animal_ids_json or []),
+        created_ids=list(operation.created_ids_json or []),
+        finance_entry_id=operation.finance_entry_id or None,
+        summary=operation.summary,
+    )
+
+
+@router.get("/handling/deployment-readiness")
+def farm_handling_deployment_readiness(
+    db: Session = Depends(get_db),
+) -> dict:
+    try:
+        db.scalar(select(func.count(FarmHandlingOperation.id)))
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Schema do manejo coletivo ainda não está disponível.",
+        ) from exc
+
+    return {
+        "status": "ready",
+        "schema_ready": True,
+        "idempotency": True,
+        "history": True,
+        "active_animal_guard": True,
+    }
+
+
+@router.get(
+    "/handling/history",
+    response_model=list[FarmHandlingOperationHistoryResponse],
+)
+def farm_handling_history(
+    farm_id: str,
+    limit: int = Query(default=30, ge=1, le=100),
+    principal: Principal = Depends(get_principal),
+    db: Session = Depends(get_db),
+) -> list[FarmHandlingOperationHistoryResponse]:
+    _require_handling_permission(principal, "herd.read")
+    _farm_allowed(db, principal, farm_id)
+
+    items = list(
+        db.scalars(
+            select(FarmHandlingOperation)
+            .where(
+                FarmHandlingOperation.company_id == principal.company.id,
+                FarmHandlingOperation.farm_id == farm_id,
+            )
+            .order_by(
+                FarmHandlingOperation.occurred_at.desc(),
+                FarmHandlingOperation.created_at.desc(),
+            )
+            .limit(limit)
+        ).all()
+    )
+    return [
+        FarmHandlingOperationHistoryResponse(
+            id=item.id,
+            farm_id=item.farm_id,
+            action=item.action,
+            status=item.status,
+            affected_count=item.affected_count,
+            summary=item.summary,
+            responsible=item.responsible,
+            occurred_at=item.occurred_at,
+            finance_entry_id=item.finance_entry_id or "",
+        )
+        for item in items
+    ]
 
 
 @router.post(
@@ -1248,6 +1346,34 @@ def execute_farm_handling_batch(
     }
     if action not in supported:
         raise HTTPException(status_code=422, detail="Tipo de manejo não suportado.")
+
+    idempotency_key = payload.idempotency_key.strip()
+    advisory_transaction_lock(
+        db,
+        (
+            f"farm-handling:{principal.company.id}:"
+            f"{payload.farm_id}:{idempotency_key}"
+        ),
+    )
+    existing_operation = db.scalar(
+        select(FarmHandlingOperation).where(
+            FarmHandlingOperation.company_id == principal.company.id,
+            FarmHandlingOperation.farm_id == payload.farm_id,
+            FarmHandlingOperation.idempotency_key == idempotency_key,
+        )
+    )
+    if existing_operation is not None:
+        if existing_operation.action != action:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "A chave desta operação já foi usada em outro tipo de manejo."
+                ),
+            )
+        return _handling_response_from_operation(
+            existing_operation,
+            repeated=True,
+        )
 
     required_permission = {
         "sale_or_exit": "herd.write",
@@ -1518,7 +1644,6 @@ def execute_farm_handling_batch(
                 priority="medium",
             )
 
-    db.commit()
     summaries = {
         "sale_or_exit": f"{len(animals)} animal(is) baixados por venda/saída.",
         "lot_movement": f"{len(animals)} animal(is) movimentados de lote.",
@@ -1527,16 +1652,29 @@ def execute_farm_handling_batch(
         "reproduction": f"{len(animals)} evento(s) reprodutivo(s) registrado(s).",
         "category_change": f"{len(animals)} animal(is) tiveram a categoria atualizada.",
     }
-    return FarmHandlingBatchResponse(
-        handling_id=handling_id,
+
+    operation = FarmHandlingOperation(
+        id=handling_id,
+        tenant_id=principal.company.tenant_id,
+        company_id=principal.company.id,
         farm_id=payload.farm_id,
+        idempotency_key=idempotency_key,
         action=action,
+        status="completed",
         affected_count=len(animals),
-        animal_ids=[animal.id for animal in animals],
-        created_ids=created_ids,
-        finance_entry_id=finance_entry_id,
+        animal_ids_json=[animal.id for animal in animals],
+        created_ids_json=created_ids,
+        finance_entry_id=finance_entry_id or "",
         summary=summaries[action],
+        responsible=payload.responsible,
+        notes=payload.notes,
+        occurred_at=occurred_at,
+        created_by=principal.user.id,
     )
+    db.add(operation)
+    db.commit()
+    db.refresh(operation)
+    return _handling_response_from_operation(operation, repeated=False)
 
 
 @router.post("/animals/{animal_id}/weights", response_model=WeightResponse, status_code=201)

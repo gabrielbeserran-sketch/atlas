@@ -7,6 +7,23 @@ class FarmHandlingEnterpriseService {
 
   final AtlasEnterpriseApiClient _api;
 
+  Future<List<FarmHandlingHistoryItem>> listHistory(
+    String farmId, {
+    int limit = 12,
+  }) async {
+    final response = await _api.requestList(
+      'GET',
+      '/livestock/handling/history',
+      queryParameters: {
+        'farm_id': farmId,
+        'limit': '$limit',
+      },
+    );
+    return response
+        .map(FarmHandlingHistoryItem.fromMap)
+        .toList(growable: false);
+  }
+
   Future<FarmHandlingBatchResult> execute({
     required Map<String, dynamic> payload,
   }) async {

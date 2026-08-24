@@ -538,6 +538,7 @@ class FarmHandlingWeightEntry(BaseModel):
 class FarmHandlingBatchRequest(BaseModel):
     farm_id: str
     action: str
+    idempotency_key: str = Field(min_length=8, max_length=180)
     animal_ids: list[str] = Field(min_length=1)
     occurred_at: datetime | None = None
     responsible: str = ""
@@ -566,6 +567,7 @@ class FarmHandlingBatchRequest(BaseModel):
 
 class FarmHandlingBatchResponse(BaseModel):
     handling_id: str
+    repeated: bool = False
     farm_id: str
     action: str
     affected_count: int
@@ -573,6 +575,18 @@ class FarmHandlingBatchResponse(BaseModel):
     created_ids: list[str] = Field(default_factory=list)
     finance_entry_id: str | None = None
     summary: str
+
+
+class FarmHandlingOperationHistoryResponse(BaseModel):
+    id: str
+    farm_id: str
+    action: str
+    status: str
+    affected_count: int
+    summary: str
+    responsible: str
+    occurred_at: datetime
+    finance_entry_id: str = ""
 
 
 class WeightCreateRequest(BaseModel):

@@ -1,0 +1,98 @@
+{
+  "package": "Pós-V21 Pacote 9B — Manejo Coletivo Seguro e Auditável",
+  "baseline": "9A homologado e publicado",
+  "backend_changed": true,
+  "database_migration": "20260824_0045",
+  "idempotency": true,
+  "active_animal_guard": true,
+  "handling_history": true,
+  "existing_batch_selection_preserved": true,
+  "windows_production_launcher": true,
+  "files": [
+    {
+      "path": "backend/app/models/legacy.py",
+      "sha256": "982f563988be63cb399bf5aae092f7d707679dbde4a981ca4ec1d5386c1ad576",
+      "size": 137243
+    },
+    {
+      "path": "backend/app/schemas/legacy.py",
+      "sha256": "69ddf9569db528c1c335a1597b6f318094b5b6118a5735a2a43bdfffed3d916b",
+      "size": 61963
+    },
+    {
+      "path": "backend/app/routers/livestock.py",
+      "sha256": "55f0b41fe8c164ea96f889bce7b29a129bb6672dd54f7a225dca1fdd9f0a036c",
+      "size": 161382
+    },
+    {
+      "path": "backend/alembic/versions/20260824_0045_farm_handling_operations.py",
+      "sha256": "750ae66a83c71bc6d008e7cf329051759bb643a309491fb073945ff6d3c4555c",
+      "size": 2386
+    },
+    {
+      "path": "lib/features/farm_handling/domain/models/farm_handling_batch_result.dart",
+      "sha256": "849ef4f8d81d3e7217ec8425f99247e0447954fc13c26afa9f0176d2a4ee7a4d",
+      "size": 1951
+    },
+    {
+      "path": "lib/features/farm_handling/data/services/farm_handling_enterprise_service.dart",
+      "sha256": "4b03560d37276a49df6c7f723f6f9b452b2439e44dcad93b2632b726b330643c",
+      "size": 1091
+    },
+    {
+      "path": "lib/features/farm_handling/presentation/screens/farm_handling_screen.dart",
+      "sha256": "c4c4ab03c6fa12822f76acb9d4bb8a0b047c7f0af521e52937d115cbc228c192",
+      "size": 48142
+    },
+    {
+      "path": "test/features/farm_handling/post_v21_package9b_safe_batch_handling_contract_test.dart",
+      "sha256": "6cdce47034cfbb6506ac48d60c168a8e85521929354a1a81a6e0a1f185be275b",
+      "size": 2600
+    },
+    {
+      "path": "tools/atlas_post_v21_package9b_safe_batch_handling_gate.py",
+      "sha256": "d590205ebf8467ef5c7e897f00d00df2ee497a9f04d1ebc57b5f616aea8f1ed0",
+      "size": 4307
+    },
+    {
+      "path": "tools/atlas_post_v21_package9b_release_gate.py",
+      "sha256": "ef0f71287824cbb33893decdd9d3bbe2ecc6a582a7730a103e9e3f5be8ea779d",
+      "size": 1724
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "19707edf4c405f8bbb5a0cdd425200389c4155857d0f4c68d29d029a58437814",
+      "size": 7530
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package9b_safe_batch_handling_homologation.ps1",
+      "sha256": "6101df8fa0cda3d116d833d32ec88846d1677755a183f363f5195775cfd8ab56",
+      "size": 1672
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package9b_release_preflight.ps1",
+      "sha256": "88425f25ae4a2b78dc8d5f7058b124183f2e7f5056c2295df8ab6ae7b13dbe99",
+      "size": 2071
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package9b_staged_release.ps1",
+      "sha256": "feb1c833fff3e6ddd48f0a72f62ab25f61ed49d8458d6308a6ccde95e0431460",
+      "size": 1547
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package9b_safe_batch_handling_deployed.ps1",
+      "sha256": "b7e144f105b7a681b3b15842efd360eeff9c32b039a0773d8e152757e5965d08",
+      "size": 2548
+    },
+    {
+      "path": "scripts/run_atlas_windows_production.ps1",
+      "sha256": "4c30ef56d586d412c6d5e7c2d3ea16cb710ebd0f5880015eb7689b8bbc1c2671",
+      "size": 753
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_9B_MANEJO_COLETIVO_SEGURO_20260824.md",
+      "sha256": "4d6b1a5e761a0a8d87aa595d78c4672a06f328a4e295dfd23185dc772b9d5699",
+      "size": 3073
+    }
+  ]
+}

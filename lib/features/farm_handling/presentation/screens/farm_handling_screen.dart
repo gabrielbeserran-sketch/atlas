@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
@@ -75,7 +77,11 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
 
   List<AnimalData> animals = const [];
   List<HerdGroupData> lots = const [];
+  List<FarmHandlingHistoryItem> history = const [];
   Set<String> selectedAnimalIds = <String>{};
+
+  String pendingOperationKey = '';
+  String pendingOperationSignature = '';
 
   _HandlingAction action = _HandlingAction.lotMovement;
   _SelectionMode selectionMode = _SelectionMode.wholeLot;
@@ -149,10 +155,19 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
           .toList(growable: false);
       final loadedLots = results[1] as List<HerdGroupData>;
 
+      List<FarmHandlingHistoryItem> loadedHistory = const [];
+      try {
+        loadedHistory = await handlingService.listHistory(farmId);
+      } catch (_) {
+        // O manejo continua operacional mesmo se o histórico estiver
+        // temporariamente indisponível durante uma atualização do backend.
+      }
+
       if (!mounted) return;
       setState(() {
         animals = loadedAnimals;
         lots = loadedLots;
+        history = loadedHistory;
         loading = false;
         if (selectedLotId.isEmpty && lots.isNotEmpty) {
           selectedLotId = lots.first.id;
@@ -311,10 +326,68 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
   };
 
 
+  String _operationSignature() {
+    final payload = <String, dynamic>{
+      'farm_id': farmId,
+      'action': _actionCode,
+      'animal_ids': selectedAnimals.map((animal) => animal.id).toList()..sort(),
+      'responsible': responsibleController.text.trim(),
+      'notes': notesController.text.trim(),
+      'reason': reasonController.text.trim(),
+      'to_lot_id': destinationLotId,
+      'sale_total_amount': saleAmountController.text.trim(),
+      'sale_counterparty': saleCounterpartyController.text.trim(),
+      'sale_document': saleDocumentController.text.trim(),
+      'category': categoryController.text.trim(),
+      'health_event_type': healthTypeController.text.trim(),
+      'health_product_name': healthProductController.text.trim(),
+      'health_dosage': healthDosageController.text.trim(),
+      'health_route': healthRouteController.text.trim(),
+      'health_next_date': healthNextDateController.text.trim(),
+      'health_cost': healthCostController.text.trim(),
+      'reproduction_event_type': reproductionTypeController.text.trim(),
+      'reproduction_result': reproductionResultController.text.trim(),
+      'reproduction_protocol': reproductionProtocolController.text.trim(),
+      'reproduction_sire': reproductionSireController.text.trim(),
+      'reproduction_expected_date':
+          reproductionExpectedDateController.text.trim(),
+      if (action == _HandlingAction.weighing)
+        'weights': selectedAnimals
+            .map(
+              (animal) => <String, String>{
+                'animal_id': animal.id,
+                'weight': weightControllers[animal.id]?.text.trim() ?? '',
+                'bcs': bcsControllers[animal.id]?.text.trim() ?? '',
+              },
+            )
+            .toList(),
+    };
+    return jsonEncode(payload);
+  }
+
+  void _ensureOperationKey() {
+    final signature = _operationSignature();
+    if (pendingOperationKey.isNotEmpty &&
+        pendingOperationSignature == signature) {
+      return;
+    }
+
+    pendingOperationSignature = signature;
+    pendingOperationKey =
+        'handling-${DateTime.now().microsecondsSinceEpoch}-'
+        '${selectedAnimalIds.length}';
+  }
+
+  void _clearOperationKey() {
+    pendingOperationKey = '';
+    pendingOperationSignature = '';
+  }
+
   Map<String, dynamic> _buildPayload() {
     final payload = <String, dynamic>{
       'farm_id': farmId,
       'action': _actionCode,
+      'idempotency_key': pendingOperationKey,
       'animal_ids': selectedAnimals.map((animal) => animal.id).toList(),
       'responsible': responsibleController.text.trim(),
       'notes': notesController.text.trim(),
@@ -453,11 +526,15 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
     );
     if (confirmed != true || !mounted) return;
 
+    _ensureOperationKey();
     setState(() => saving = true);
     try {
       final result = await handlingService.execute(payload: _buildPayload());
       if (!mounted) return;
-      setState(() => saving = false);
+      setState(() {
+        saving = false;
+        _clearOperationKey();
+      });
       await _showResult(result);
       await loadData();
     } catch (exception) {
@@ -476,7 +553,9 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
         content: Text(
           '${result.summary}\n\n'
           'Animais afetados: ${result.affectedCount}'
-          '${result.financeEntryId.isEmpty ? '' : '\nFinanceiro atualizado.'}',
+          '${result.financeEntryId.isEmpty ? '' : '\nFinanceiro atualizado.'}'
+          '${result.repeated ? '\n\nEsta operação já havia sido confirmada '
+              'pelo servidor. Nenhum registro foi duplicado.' : ''}',
         ),
         actions: [
           FilledButton(
@@ -524,6 +603,8 @@ class _FarmHandlingScreenState extends State<FarmHandlingScreen> {
                       farmName: widget.farm.name,
                       selectedCount: selectedAnimalIds.length,
                     ),
+                    const SizedBox(height: 14),
+                    _HandlingHistoryCard(history: history),
                     const SizedBox(height: 18),
                     _SectionCard(
                       title: '1. O que será feito?',
@@ -1108,6 +1189,68 @@ class _Header extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _HandlingHistoryCard extends StatelessWidget {
+  const _HandlingHistoryCard({required this.history});
+
+  final List<FarmHandlingHistoryItem> history;
+
+  String _date(DateTime? value) {
+    if (value == null) return 'Data não informada';
+    return '${value.day.toString().padLeft(2, '0')}/'
+        '${value.month.toString().padLeft(2, '0')}/${value.year} '
+        '${value.hour.toString().padLeft(2, '0')}:'
+        '${value.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ExpansionTile(
+        leading: const Icon(Icons.history_outlined),
+        title: const Text(
+          'Manejos recentes',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        subtitle: Text(
+          history.isEmpty
+              ? 'Nenhum manejo coletivo auditável registrado ainda.'
+              : '${history.length} operação(ões) mais recente(s)',
+        ),
+        children: history.isEmpty
+            ? const [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(18, 0, 18, 18),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Os próximos manejos realizados aparecerão aqui '
+                      'com quantidade, data e responsável.',
+                    ),
+                  ),
+                ),
+              ]
+            : history
+                .take(8)
+                .map(
+                  (item) => ListTile(
+                    leading: const Icon(Icons.task_alt_outlined),
+                    title: Text(item.summary),
+                    subtitle: Text(
+                      '${_date(item.occurredAt)}'
+                      '${item.responsible.isEmpty ? '' : ' • ${item.responsible}'}',
+                    ),
+                    trailing: Text(
+                      '${item.affectedCount}',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                )
+                .toList(growable: false),
       ),
     );
   }
