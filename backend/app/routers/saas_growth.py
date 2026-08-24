@@ -1,11 +1,12 @@
 from __future__ import annotations
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ..authz import Principal, require_farm_scope, require_permission
 from ..database import get_db
+from ..models import ConsultancyContact, Farm, HerdLot, LivestockAnimal, OperationalTask
 from ..saas_growth_models import SaaSPlan,CompanySubscription,BillingInvoice,FeatureFlag,CommunicationTemplate,CommunicationDelivery,OnboardingProgress,DataImportJob,DataExportJob,AdminAuditAction
 
 router=APIRouter(prefix='/saas-growth',tags=['SaaS Growth'])
@@ -66,37 +67,195 @@ def communication_delivery(payload:Payload,db:Session=Depends(get_db),p:Principa
     row=CommunicationDelivery(tenant_id=p.company.tenant_id,company_id=p.company.id,template_id=payload.data.get('template_id'),channel=payload.data.get('channel','email'),recipient=recipient,status='queued',payload_json=payload.data)
     db.add(row); db.commit(); db.refresh(row); return {'id':row.id,'status':row.status}
 
-def _onboarding_payload(row: OnboardingProgress | None) -> dict:
-    if row is None:
-        return {
-            'id': None,
-            'steps': {},
-            'completion_percent': 0.0,
-            'completed_at': None,
-        }
+ONBOARDING_AUTOMATIC_STEPS = {
+    'farm_context',
+    'herd_baseline',
+    'technical_contact',
+    'agenda_routine',
+}
+ONBOARDING_MANUAL_STEPS = {'initial_training'}
+ONBOARDING_CANONICAL_STEPS = ONBOARDING_AUTOMATIC_STEPS | ONBOARDING_MANUAL_STEPS
+
+
+def _digits(value: str) -> str:
+    return ''.join(ch for ch in value if ch.isdigit())
+
+
+def _onboarding_farm(db: Session, principal: Principal, farm_id: str) -> Farm:
+    require_farm_scope(principal, farm_id)
+    farm = db.get(Farm, farm_id)
+    if farm is None or farm.company_id != principal.company.id or not farm.active:
+        raise HTTPException(404, 'Fazenda não encontrada.')
+    return farm
+
+
+def _onboarding_evidence(
+    db: Session,
+    principal: Principal,
+    farm: Farm,
+    row: OnboardingProgress | None,
+) -> tuple[dict[str, bool], dict[str, dict]]:
+    company_id = principal.company.id
+    farm_id = farm.id
+
+    farm_context = bool(
+        farm.name.strip()
+        and (farm.area or 0) > 0
+        and (farm.city.strip() or farm.state.strip())
+    )
+    animal_count = db.scalar(
+        select(func.count(LivestockAnimal.id)).where(
+            LivestockAnimal.company_id == company_id,
+            LivestockAnimal.farm_id == farm_id,
+            LivestockAnimal.status == 'active',
+        )
+    ) or 0
+    lot_count = db.scalar(
+        select(func.count(HerdLot.id)).where(
+            HerdLot.company_id == company_id,
+            HerdLot.farm_id == farm_id,
+            HerdLot.status == 'active',
+        )
+    ) or 0
+    herd_baseline = animal_count > 0 and lot_count > 0
+
+    contact = db.scalar(
+        select(ConsultancyContact).where(
+            ConsultancyContact.company_id == company_id,
+            ConsultancyContact.farm_id == farm_id,
+        )
+    )
+    contact_digits = _digits(contact.whatsapp_number) if contact else ''
+    technical_contact = bool(
+        contact
+        and contact.active
+        and contact.display_name.strip()
+        and 10 <= len(contact_digits) <= 15
+    )
+
+    task_count = db.scalar(
+        select(func.count(OperationalTask.id)).where(
+            OperationalTask.company_id == company_id,
+            OperationalTask.farm_id == farm_id,
+        )
+    ) or 0
+    agenda_routine = task_count > 0
+
+    persisted = dict(row.steps_json or {}) if row else {}
+    initial_training = persisted.get('initial_training') is True
+
+    steps = {
+        'farm_context': farm_context,
+        'herd_baseline': herd_baseline,
+        'technical_contact': technical_contact,
+        'agenda_routine': agenda_routine,
+        'initial_training': initial_training,
+    }
+    evidence = {
+        'farm_context': {
+            'automatic': True,
+            'verified': farm_context,
+            'detail': 'Nome, localização e área da fazenda confirmados.' if farm_context
+            else 'Complete nome, localização e área da fazenda.',
+        },
+        'herd_baseline': {
+            'automatic': True,
+            'verified': herd_baseline,
+            'detail': f'{animal_count} animais ativos • {lot_count} lotes ativos',
+        },
+        'technical_contact': {
+            'automatic': True,
+            'verified': technical_contact,
+            'detail': 'Contato veterinário oficial configurado.' if technical_contact
+            else 'Configure o veterinário responsável desta fazenda.',
+        },
+        'agenda_routine': {
+            'automatic': True,
+            'verified': agenda_routine,
+            'detail': f'{task_count} tarefas registradas na agenda da fazenda',
+        },
+        'initial_training': {
+            'automatic': False,
+            'verified': initial_training,
+            'detail': 'Confirmação manual da equipe responsável.',
+        },
+    }
+    return steps, evidence
+
+
+def _onboarding_payload(
+    row: OnboardingProgress | None,
+    *,
+    farm_id: str,
+    steps: dict[str, bool],
+    evidence: dict[str, dict],
+) -> dict:
+    percent = (sum(1 for value in steps.values() if value) / len(steps) * 100) if steps else 0.0
+    completed_at = row.completed_at if row else None
     return {
-        'id': row.id,
-        'steps': dict(row.steps_json or {}),
-        'completion_percent': float(row.completion_percent or 0),
-        'completed_at': row.completed_at.isoformat() if row.completed_at else None,
+        'id': row.id if row else None,
+        'farm_id': farm_id,
+        'steps': steps,
+        'evidence': evidence,
+        'completion_percent': percent,
+        'completed_at': completed_at.isoformat() if completed_at and percent == 100 else None,
     }
 
+
 @router.get('/onboarding')
-def get_onboarding(db:Session=Depends(get_db),p:Principal=Depends(require_permission('farms.read'))):
-    row=db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id==p.company.id))
-    return _onboarding_payload(row)
+def get_onboarding(
+    farm_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+    p: Principal = Depends(require_permission('farms.read')),
+):
+    farm = _onboarding_farm(db, p, farm_id)
+    row = db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id == p.company.id))
+    steps, evidence = _onboarding_evidence(db, p, farm, row)
+    return _onboarding_payload(row, farm_id=farm.id, steps=steps, evidence=evidence)
+
 
 @router.post('/onboarding')
-def onboarding(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(require_permission('farms.update'))):
-    row=db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id==p.company.id))
-    steps={str(k):bool(v) for k,v in payload.data.get('steps',{}).items()}
-    percent=(sum(1 for v in steps.values() if v)/len(steps)*100) if steps else 0
-    if row is None: row=OnboardingProgress(tenant_id=p.company.tenant_id,company_id=p.company.id)
-    row.steps_json=steps; row.completion_percent=percent; row.completed_at=now() if percent==100 else None
-    db.add(row); db.commit(); db.refresh(row); return _onboarding_payload(row)
+def onboarding(
+    payload: Payload,
+    farm_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+    p: Principal = Depends(require_permission('farms.update')),
+):
+    farm = _onboarding_farm(db, p, farm_id)
+    requested_steps = payload.data.get('steps', {})
+    requested_ids = set(requested_steps)
+    unknown = requested_ids - ONBOARDING_CANONICAL_STEPS
+    if unknown:
+        raise HTTPException(422, f'Passos de implantação inválidos: {sorted(unknown)}')
+    forbidden = requested_ids & ONBOARDING_AUTOMATIC_STEPS
+    if forbidden:
+        raise HTTPException(422, 'Etapas automáticas são validadas pelos dados oficiais do Atlas.')
+
+    row = db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id == p.company.id))
+    if row is None:
+        row = OnboardingProgress(tenant_id=p.company.tenant_id, company_id=p.company.id)
+
+    persisted = dict(row.steps_json or {})
+    if 'initial_training' in requested_steps:
+        persisted['initial_training'] = bool(requested_steps['initial_training'])
+    row.steps_json = {
+        'initial_training': persisted.get('initial_training') is True,
+    }
+
+    db.add(row)
+    db.flush()
+    steps, evidence = _onboarding_evidence(db, p, farm, row)
+    # O registro é company-scoped e não deve armazenar percentual derivado de uma
+    # fazenda específica. Persistimos apenas o passo realmente manual.
+    row.completion_percent = 20.0 if row.steps_json.get('initial_training') is True else 0.0
+    row.completed_at = None
+    db.commit()
+    db.refresh(row)
+    return _onboarding_payload(row, farm_id=farm.id, steps=steps, evidence=evidence)
+
 
 @router.get('/onboarding/deployment-readiness')
-def onboarding_deployment_readiness(db:Session=Depends(get_db)):
+def onboarding_deployment_readiness(db: Session = Depends(get_db)):
     db.scalar(select(func.count()).select_from(OnboardingProgress))
     return {
         'status': 'ready',
@@ -104,7 +263,11 @@ def onboarding_deployment_readiness(db:Session=Depends(get_db)):
         'read_api': True,
         'write_api': True,
         'persistent_progress': True,
+        'farm_scoped_evidence': True,
+        'automatic_evidence': True,
+        'manual_step_restricted': True,
     }
+
 
 @router.post('/imports')
 def create_import(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):

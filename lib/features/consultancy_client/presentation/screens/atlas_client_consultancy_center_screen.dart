@@ -101,7 +101,7 @@ class _AtlasClientConsultancyCenterScreenState
     }
 
     try {
-      loadedOnboarding = await onboardingService.load();
+      loadedOnboarding = await onboardingService.load(farmId);
     } catch (_) {
       failures.add('implantação');
     }
@@ -452,15 +452,27 @@ class _AtlasClientConsultancyCenterScreenState
   Future<void> updateOnboardingStep(String stepId, bool value) async {
     if (!widget.canManageContact || savingOnboarding) return;
 
+    final farmId = widget.farm.id?.trim() ?? '';
+    if (farmId.isEmpty) return;
+
+    final step = AtlasClientOnboardingProgress.canonicalSteps
+        .where((item) => item.id == stepId)
+        .firstOrNull;
+    if (step == null || step.automatic) return;
+
     final previous = onboarding;
-    final optimistic = onboarding.copyWithStep(stepId, value);
+    final optimistic = onboarding.copyWithManualStep(stepId, value);
     setState(() {
       onboarding = optimistic;
       savingOnboarding = true;
     });
 
     try {
-      final confirmed = await onboardingService.save(optimistic);
+      final confirmed = await onboardingService.saveManualStep(
+        farmId: farmId,
+        stepId: stepId,
+        value: value,
+      );
       if (!mounted) return;
       setState(() => onboarding = confirmed);
     } catch (exception) {

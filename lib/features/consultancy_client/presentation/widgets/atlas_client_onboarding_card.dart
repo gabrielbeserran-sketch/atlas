@@ -27,9 +27,7 @@ class AtlasClientOnboardingCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  child: Icon(Icons.rocket_launch_outlined),
-                ),
+                const CircleAvatar(child: Icon(Icons.verified_outlined)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -37,16 +35,13 @@ class AtlasClientOnboardingCard extends StatelessWidget {
                     children: [
                       const Text(
                         'Implantação Atlas',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         progress.complete
-                            ? 'Implantação inicial concluída.'
-                            : 'Acompanhe os passos essenciais antes de considerar a operação implantada.',
+                            ? 'Implantação comprovada pelos dados da operação.'
+                            : 'O Atlas valida automaticamente quatro etapas com dados reais da fazenda.',
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
@@ -63,25 +58,47 @@ class AtlasClientOnboardingCard extends StatelessWidget {
             const SizedBox(height: 12),
             ...AtlasClientOnboardingProgress.canonicalSteps.map((step) {
               final checked = progress.isComplete(step.id);
+              final evidence = progress.evidenceFor(step.id);
+              final detail = evidence?.detail.trim();
               return CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 value: checked,
-                onChanged: !canManage || saving
+                onChanged: step.automatic || !canManage || saving
                     ? null
                     : (value) => onChanged(step.id, value ?? false),
-                title: Text(
-                  step.title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        step.title,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    if (step.automatic)
+                      const Tooltip(
+                        message: 'Validado automaticamente pelos dados oficiais do Atlas',
+                        child: Icon(Icons.verified_user_outlined, size: 18),
+                      ),
+                  ],
                 ),
-                subtitle: Text(step.description),
+                subtitle: Text(
+                  detail?.isNotEmpty == true ? detail! : step.description,
+                ),
                 controlAffinity: ListTileControlAffinity.leading,
               );
             }),
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text(
+                'Etapas automáticas não podem ser marcadas manualmente. Corrija o dado de origem e o progresso será atualizado.',
+                style: TextStyle(color: Colors.black54),
+              ),
+            ),
             if (!canManage)
               const Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
-                  'O andamento é atualizado pela equipe responsável pela implantação.',
+                  'O treinamento é confirmado pela equipe responsável pela implantação.',
                   style: TextStyle(color: Colors.black54),
                 ),
               ),

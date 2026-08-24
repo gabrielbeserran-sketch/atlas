@@ -7,20 +7,27 @@ class AtlasClientOnboardingService {
 
   final AtlasEnterpriseApiClient _api;
 
-  Future<AtlasClientOnboardingProgress> load() async {
-    final response = await _api.request('GET', '/saas-growth/onboarding');
+  Future<AtlasClientOnboardingProgress> load(String farmId) async {
+    final response = await _api.request(
+      'GET',
+      '/saas-growth/onboarding',
+      queryParameters: {'farm_id': farmId},
+    );
     return AtlasClientOnboardingProgress.fromMap(response);
   }
 
-  Future<AtlasClientOnboardingProgress> save(
-    AtlasClientOnboardingProgress progress,
-  ) async {
+  Future<AtlasClientOnboardingProgress> saveManualStep({
+    required String farmId,
+    required String stepId,
+    required bool value,
+  }) async {
     final response = await _api.request(
       'POST',
       '/saas-growth/onboarding',
+      queryParameters: {'farm_id': farmId},
       body: {
         'data': {
-          'steps': progress.steps,
+          'steps': {stepId: value},
         },
       },
     );

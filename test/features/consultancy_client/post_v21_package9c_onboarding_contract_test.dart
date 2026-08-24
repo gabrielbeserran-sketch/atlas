@@ -4,16 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_client_onboarding_progress.dart';
 
 void main() {
-  test('onboarding calcula progresso a partir dos passos canônicos', () {
-    final progress = AtlasClientOnboardingProgress.empty()
-        .copyWithStep('farm_context', true)
-        .copyWithStep('herd_baseline', true);
+  test('onboarding preserva cálculo de progresso do contrato 9C', () {
+    final progress = AtlasClientOnboardingProgress.fromMap({
+      'steps': {
+        'farm_context': true,
+        'herd_baseline': true,
+      },
+    });
 
     expect(progress.completionPercent, 40);
     expect(progress.complete, isFalse);
   });
 
-  test('serviço usa leitura e gravação remotas oficiais', () {
+  test('serviço mantém leitura e gravação remotas oficiais', () {
     final service = File(
       'lib/features/consultancy_client/data/services/'
       'atlas_client_onboarding_service.dart',
@@ -21,16 +24,19 @@ void main() {
 
     final compactService = service.replaceAll(RegExp(r'\s+'), ' ');
     expect(
-      RegExp(r"request\s*\(\s*'GET'\s*,\s*'/saas-growth/onboarding'").hasMatch(compactService),
+      RegExp(r"request\s*\(\s*'GET'\s*,\s*'/saas-growth/onboarding'")
+          .hasMatch(compactService),
       isTrue,
     );
     expect(
-      RegExp(r"request\s*\(\s*'POST'\s*,\s*'/saas-growth/onboarding'").hasMatch(compactService),
+      RegExp(r"request\s*\(\s*'POST'\s*,\s*'/saas-growth/onboarding'")
+          .hasMatch(compactService),
       isTrue,
     );
+    expect(service.contains('saveManualStep'), isTrue);
   });
 
-  test('central de consultoria exibe implantação e persiste alteração', () {
+  test('central de consultoria mantém implantação integrada', () {
     final screen = File(
       'lib/features/consultancy_client/presentation/screens/'
       'atlas_client_consultancy_center_screen.dart',
@@ -38,10 +44,10 @@ void main() {
 
     expect(screen.contains('AtlasClientOnboardingCard('), isTrue);
     expect(screen.contains('updateOnboardingStep'), isTrue);
-    expect(screen.contains('onboardingService.save'), isTrue);
+    expect(screen.contains('onboardingService.saveManualStep'), isTrue);
   });
 
-  test('gate 9B ficou tolerante ao estado pós-commit', () {
+  test('gate 9B continua tolerante ao estado pós-commit', () {
     final script = File(
       'scripts/quality/check_post_v21_package9b_staged_release.ps1',
     ).readAsStringSync();

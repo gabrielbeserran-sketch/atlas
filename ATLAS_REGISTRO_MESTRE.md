@@ -6039,3 +6039,13 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 **Rollback:** restaurar os arquivos listados para a baseline 9B. Não há rollback de schema porque não há migration nova.
 
 **Status da entrega:** implementação concluída no pacote; homologação Windows e publicação em produção devem seguir os gates do 9C.
+
+
+## Registro de alteração — 2026-08-24 — Pós-V21 Pacote 9D
+
+- Implantação Atlas deixa de aceitar conclusão fictícia dos passos operacionais.
+- Progresso passa a ser escopado pela fazenda aberta na Central da Consultoria.
+- Fazenda/contexto, rebanho inicial, contato veterinário e rotina/agenda são derivados automaticamente das fontes oficiais.
+- Apenas treinamento inicial permanece como confirmação manual persistida.
+- Backend bloqueia a autoridade manual sobre passos automáticos e devolve evidências explicáveis por etapa.
+- Nenhuma migration nova: `onboarding_progress` continua armazenando somente o estado manual necessário.
