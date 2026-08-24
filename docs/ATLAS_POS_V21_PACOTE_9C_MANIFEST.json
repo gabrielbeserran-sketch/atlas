@@ -1,0 +1,24 @@
+{
+  "package": "Pós-V21 Pacote 9C — Implantação Atlas Persistente",
+  "baseline": "9B publicado e comprovado em produção",
+  "database_migration": null,
+  "reuses_table": "onboarding_progress",
+  "release_paths": [
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/app/routers/saas_growth.py",
+    "docs/ATLAS_POS_V21_PACOTE_9C_IMPLANTACAO_ATLAS_20260824.md",
+    "docs/ATLAS_POS_V21_PACOTE_9C_MANIFEST.json",
+    "lib/features/consultancy_client/data/services/atlas_client_onboarding_service.dart",
+    "lib/features/consultancy_client/domain/models/atlas_client_onboarding_progress.dart",
+    "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+    "lib/features/consultancy_client/presentation/widgets/atlas_client_onboarding_card.dart",
+    "scripts/quality/check_post_v21_package9b_staged_release.ps1",
+    "scripts/quality/check_post_v21_package9c_onboarding_deployed.ps1",
+    "scripts/quality/check_post_v21_package9c_staged_release.ps1",
+    "scripts/quality/run_post_v21_package9c_onboarding_homologation.ps1",
+    "scripts/quality/run_post_v21_package9c_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_package9c_release.ps1",
+    "test/features/consultancy_client/post_v21_package9c_onboarding_contract_test.dart",
+    "tools/atlas_post_v21_package9c_onboarding_gate.py"
+  ]
+}

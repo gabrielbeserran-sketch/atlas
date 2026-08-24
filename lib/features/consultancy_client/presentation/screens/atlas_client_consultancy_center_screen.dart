@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
+import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_client_onboarding_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_consultancy_contact_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_consultancy_whatsapp_service.dart';
+import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_client_onboarding_progress.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_consultancy_contact_profile.dart';
+import 'package:projeto_atlas/features/consultancy_client/presentation/widgets/atlas_client_onboarding_card.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/widgets/atlas_monthly_bulletins_card.dart';
 import 'package:projeto_atlas/features/dashboard/data/services/atlas_operational_intelligence_service.dart';
 import 'package:projeto_atlas/features/dashboard/domain/models/atlas_operational_intelligence_data.dart';
@@ -32,6 +35,8 @@ class _AtlasClientConsultancyCenterScreenState
     extends State<AtlasClientConsultancyCenterScreen> {
   final AtlasConsultancyContactService contactService =
       AtlasConsultancyContactService();
+  final AtlasClientOnboardingService onboardingService =
+      AtlasClientOnboardingService();
   final AtlasConsultancyWhatsAppService whatsAppService =
       const AtlasConsultancyWhatsAppService();
   final AtlasOperationalIntelligenceService intelligenceService =
@@ -41,8 +46,11 @@ class _AtlasClientConsultancyCenterScreenState
   AtlasOperationalIntelligenceData? intelligence;
   AtlasConsultancyContactProfile contact =
       AtlasConsultancyContactProfile.unavailable;
+  AtlasClientOnboardingProgress onboarding =
+      AtlasClientOnboardingProgress.empty();
   List<FarmAgendaData> agenda = const [];
   bool loading = true;
+  bool savingOnboarding = false;
   String? warning;
 
   @override
@@ -62,6 +70,8 @@ class _AtlasClientConsultancyCenterScreenState
     AtlasOperationalIntelligenceData? loadedIntelligence;
     AtlasConsultancyContactProfile loadedContact =
         AtlasConsultancyContactProfile.unavailable;
+    AtlasClientOnboardingProgress loadedOnboarding =
+        AtlasClientOnboardingProgress.empty();
     List<FarmAgendaData> loadedAgenda = const [];
     final failures = <String>[];
 
@@ -90,17 +100,24 @@ class _AtlasClientConsultancyCenterScreenState
       failures.add('agenda');
     }
 
+    try {
+      loadedOnboarding = await onboardingService.load();
+    } catch (_) {
+      failures.add('implantação');
+    }
+
     if (!mounted) return;
     setState(() {
       intelligence = loadedIntelligence;
       contact = loadedContact;
+      onboarding = loadedOnboarding;
       agenda = loadedAgenda;
       loading = false;
       warning = failures.isEmpty
           ? null
           : 'Não foi possível atualizar: ${failures.join(', ')}. '
-                'A central continua disponível; o WhatsApp só será habilitado '
-                'quando o contato oficial da fazenda estiver carregado.';
+                'As demais áreas da central continuam disponíveis; recursos '
+                'dependentes do dado indisponível ficam temporariamente limitados.';
     });
   }
 
@@ -432,6 +449,37 @@ class _AtlasClientConsultancyCenterScreenState
     }
   }
 
+  Future<void> updateOnboardingStep(String stepId, bool value) async {
+    if (!widget.canManageContact || savingOnboarding) return;
+
+    final previous = onboarding;
+    final optimistic = onboarding.copyWithStep(stepId, value);
+    setState(() {
+      onboarding = optimistic;
+      savingOnboarding = true;
+    });
+
+    try {
+      final confirmed = await onboardingService.save(optimistic);
+      if (!mounted) return;
+      setState(() => onboarding = confirmed);
+    } catch (exception) {
+      if (!mounted) return;
+      setState(() => onboarding = previous);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Não foi possível atualizar a implantação: $exception',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => savingOnboarding = false);
+    }
+  }
+
   void openReports() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -481,6 +529,13 @@ class _AtlasClientConsultancyCenterScreenState
                     'Gostaria de verificar uma data para visita à fazenda.',
                   ),
                   onSendSummary: () => openWhatsApp(_summaryMessage()),
+                ),
+                const SizedBox(height: 16),
+                AtlasClientOnboardingCard(
+                  progress: onboarding,
+                  canManage: widget.canManageContact,
+                  saving: savingOnboarding,
+                  onChanged: updateOnboardingStep,
                 ),
                 const SizedBox(height: 16),
                 AtlasMonthlyBulletinsCard(farm: widget.farm),

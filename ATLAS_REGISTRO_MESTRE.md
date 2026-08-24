@@ -8,10 +8,10 @@
 > `VALIDACAO_*` ou equivalentes para registrar evolução. Se um documento técnico específico for indispensável,
 > ele deve ser referenciado neste Registro Mestre na mesma entrega.
 
-**Versão do registro:** 1.0 — consolidado em 2026-08-07  
-**Base analisada:** Projeto Atlas V1 — passos 1 a 20  
-**Telas inventariadas:** 248  
-**Módulos Flutter (`lib/features`):** 163  
+**Versão do registro:** 1.0 — consolidado em 2026-08-07
+**Base analisada:** Projeto Atlas V1 — passos 1 a 20
+**Telas inventariadas:** 248
+**Módulos Flutter (`lib/features`):** 163
 **Arquivos históricos de orientação consolidados neste registro:** 170
 
 ---
@@ -6007,3 +6007,35 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - endpoint production HTTPS imutável.
 - Caddy/TLS + Alembic antes da API.
 - gate exige Android real e faixa Play.
+
+---
+
+## Registro de alteração — 2026-08-24 — Pós-V21 Pacote 9C
+
+**Objetivo:** tornar a implantação inicial do Atlas persistente e acompanhável pela Central da Consultoria, além de eliminar o falso negativo do gate de staging do 9B.
+
+**Baseline de entrada:** Pacote 9B publicado em produção; migration 0045 confirmada.
+
+**Arquivos funcionais principais:**
+- `backend/app/routers/saas_growth.py`;
+- `lib/features/consultancy_client/domain/models/atlas_client_onboarding_progress.dart`;
+- `lib/features/consultancy_client/data/services/atlas_client_onboarding_service.dart`;
+- `lib/features/consultancy_client/presentation/widgets/atlas_client_onboarding_card.dart`;
+- `lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart`.
+
+**Funções afetadas:** leitura e gravação do onboarding da empresa, visualização do progresso na Central da Consultoria e gestão dos cinco passos iniciais de implantação.
+
+**Backend/endpoints:**
+- `GET /saas-growth/onboarding`;
+- `POST /saas-growth/onboarding`;
+- `GET /saas-growth/onboarding/deployment-readiness`.
+
+**Persistência:** reutiliza `onboarding_progress`; não cria migration nova.
+
+**Permissões:** `farms.read` para leitura e `farms.update` para atualização.
+
+**Qualidade e prevenção:** gate estrutural específico do 9C, teste de contrato Flutter, checker pós-deploy e correção do checker de staging do 9B para reconhecer corretamente estado pós-commit.
+
+**Rollback:** restaurar os arquivos listados para a baseline 9B. Não há rollback de schema porque não há migration nova.
+
+**Status da entrega:** implementação concluída no pacote; homologação Windows e publicação em produção devem seguir os gates do 9C.
