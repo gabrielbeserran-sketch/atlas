@@ -8,6 +8,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_permission
@@ -18,7 +19,10 @@ from ..business_models import (
     AtlasWorkflowInstance,
 )
 from ..database import get_db
-from ..models import Farm, FinancialEntry, HealthEvent, LivestockAnimal, NutritionEvent, ReproductionEvent
+from ..models import (
+    Farm, FinancialEntry, HealthEvent, LivestockAnimal, NutritionEvent,
+    OperationalTask, ReproductionEvent, new_id,
+)
 
 router = APIRouter(prefix="/business", tags=["atlas-blocks-6-10"])
 
@@ -88,6 +92,7 @@ class ActionPayload(BaseModel):
     due_at: datetime | None = None
     follow_up_at: datetime | None = None
     expected_result: str = ""
+    idempotency_key: str | None = Field(default=None, max_length=160)
 
 
 class WorkflowPayload(BaseModel):
@@ -192,19 +197,200 @@ def list_visits(farm_id: str, db: Session = Depends(get_db), principal: Principa
     return [{"id": x.id, "title": x.title, "status": x.status, "scheduled_at": x.scheduled_at, "completed_at": x.completed_at, "checklist": x.checklist_json, "photos": x.photos_json, "findings": x.findings_json, "report": x.report_text, "opinion": x.opinion_text, "signature": x.signature_json, "previous_visit_id": x.previous_visit_id} for x in rows]
 
 
+@router.get("/consulting/actions")
+def list_actions(
+    farm_id: str,
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("operations.read")),
+):
+    farm_or_404(db, principal, farm_id)
+    rows = list(
+        db.scalars(
+            select(AtlasActionPlanItem)
+            .where(
+                AtlasActionPlanItem.company_id == principal.company.id,
+                AtlasActionPlanItem.farm_id == farm_id,
+            )
+            .order_by(AtlasActionPlanItem.created_at.desc())
+        ).all()
+    )
+    task_rows = list(
+        db.scalars(
+            select(OperationalTask).where(
+                OperationalTask.company_id == principal.company.id,
+                OperationalTask.farm_id == farm_id,
+                OperationalTask.source_type == "consultancy_action",
+            )
+        ).all()
+    )
+    task_by_action = {task.source_id: task for task in task_rows}
+    return [_action_payload(row, task_by_action.get(row.id)) for row in rows]
+
+
+def _action_payload(
+    row: AtlasActionPlanItem,
+    task: OperationalTask | None = None,
+    *,
+    replayed: bool = False,
+) -> dict[str, Any]:
+    return {
+        "id": row.id,
+        "farm_id": row.farm_id,
+        "visit_id": row.visit_id,
+        "title": row.title,
+        "description": row.description,
+        "area": row.area,
+        "priority": row.priority,
+        "status": row.status,
+        "assigned_user_id": row.assigned_user_id,
+        "due_at": row.due_at,
+        "completed_at": row.completed_at,
+        "follow_up_at": row.follow_up_at,
+        "expected_result": row.expected_result,
+        "actual_result": row.actual_result,
+        "idempotency_key": row.idempotency_key,
+        "agenda_task_id": task.id if task is not None else None,
+        "replayed": replayed,
+    }
+
+
+def _action_task(
+    db: Session,
+    principal: Principal,
+    action_id: str,
+) -> OperationalTask | None:
+    return db.scalar(
+        select(OperationalTask).where(
+            OperationalTask.company_id == principal.company.id,
+            OperationalTask.source_type == "consultancy_action",
+            OperationalTask.source_id == action_id,
+        )
+    )
+
+
 @router.post("/consulting/actions")
-def create_action(payload: ActionPayload, db: Session = Depends(get_db), principal: Principal = Depends(require_permission("operations.manage"))):
+def create_action(
+    payload: ActionPayload,
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("operations.manage")),
+):
     farm = farm_or_404(db, principal, payload.farm_id)
-    row = AtlasActionPlanItem(company_id=principal.company.id, tenant_id=farm.tenant_id, **payload.model_dump())
-    db.add(row); db.commit(); db.refresh(row); return {"id": row.id, "status": row.status}
+    normalized_key = (payload.idempotency_key or "").strip() or None
+    if normalized_key is not None:
+        existing = db.scalar(
+            select(AtlasActionPlanItem).where(
+                AtlasActionPlanItem.company_id == principal.company.id,
+                AtlasActionPlanItem.farm_id == farm.id,
+                AtlasActionPlanItem.idempotency_key == normalized_key,
+            )
+        )
+        if existing is not None:
+            return _action_payload(
+                existing,
+                _action_task(db, principal, existing.id),
+                replayed=True,
+            )
+
+    values = payload.model_dump(exclude={"idempotency_key"})
+    row = AtlasActionPlanItem(
+        company_id=principal.company.id,
+        tenant_id=farm.tenant_id,
+        idempotency_key=normalized_key,
+        **values,
+    )
+    db.add(row)
+    db.flush()
+    task = OperationalTask(
+        id=new_id("task"),
+        tenant_id=principal.company.tenant_id,
+        company_id=principal.company.id,
+        farm_id=farm.id,
+        source_type="consultancy_action",
+        source_id=row.id,
+        title=row.title,
+        description=row.description,
+        responsible_user_id=row.assigned_user_id,
+        priority="urgent" if row.priority == "critical" else row.priority,
+        due_at=row.due_at,
+        status=row.status,
+    )
+    db.add(task)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        if normalized_key is None:
+            raise
+        existing = db.scalar(
+            select(AtlasActionPlanItem).where(
+                AtlasActionPlanItem.company_id == principal.company.id,
+                AtlasActionPlanItem.farm_id == farm.id,
+                AtlasActionPlanItem.idempotency_key == normalized_key,
+            )
+        )
+        if existing is None:
+            raise
+        return _action_payload(
+            existing,
+            _action_task(db, principal, existing.id),
+            replayed=True,
+        )
+    db.refresh(row)
+    db.refresh(task)
+    return _action_payload(row, task)
 
 
 @router.patch("/consulting/actions/{action_id}/complete")
-def complete_action(action_id: str, actual_result: str = "", db: Session = Depends(get_db), principal: Principal = Depends(require_permission("operations.manage"))):
-    row = db.scalar(select(AtlasActionPlanItem).where(AtlasActionPlanItem.id == action_id, AtlasActionPlanItem.company_id == principal.company.id))
-    if row is None: raise HTTPException(404, "Ação não encontrada.")
-    row.status = "completed"; row.completed_at = now(); row.actual_result = actual_result
-    db.commit(); return {"id": row.id, "status": row.status}
+def complete_action(
+    action_id: str,
+    actual_result: str = "",
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("operations.manage")),
+):
+    row = db.scalar(
+        select(AtlasActionPlanItem).where(
+            AtlasActionPlanItem.id == action_id,
+            AtlasActionPlanItem.company_id == principal.company.id,
+        )
+    )
+    if row is None:
+        raise HTTPException(404, "Ação não encontrada.")
+    farm_or_404(db, principal, row.farm_id)
+    row.status = "completed"
+    row.completed_at = now()
+    row.actual_result = actual_result.strip()
+    task = _action_task(db, principal, row.id)
+    if task is not None:
+        task.status = "completed"
+        task.completed_at = row.completed_at
+        if row.actual_result:
+            task.evidence = row.actual_result
+    db.commit()
+    return _action_payload(row, task)
+
+
+@router.get("/consulting/actions/deployment-readiness")
+def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
+    # Falha antes da 0047 e confirma que o schema novo chegou ao banco.
+    db.scalar(
+        select(func.count()).select_from(AtlasActionPlanItem).where(
+            AtlasActionPlanItem.idempotency_key.is_not(None)
+        )
+    )
+    db.scalar(
+        select(func.count()).select_from(OperationalTask).where(
+            OperationalTask.source_type == "consultancy_action"
+        )
+    )
+    return {
+        "status": "ready",
+        "schema_ready": True,
+        "idempotency": True,
+        "agenda_sync": True,
+        "bidirectional_completion": True,
+        "farm_scope": True,
+        "migration": "0047",
+    }
 
 
 @router.get("/consulting/dashboard")

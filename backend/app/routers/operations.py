@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_permission
 from ..database import get_db
+from ..business_models import AtlasActionPlanItem
 from ..models import (
     AnimalMovement,
     EntityState,
@@ -316,7 +317,7 @@ def update_task(
     _farm_allowed(principal, task.farm_id)
     changes = payload.model_dump(exclude_unset=True)
     source_backed = bool(task.source_id) and task.source_type in {
-        "reproduction_event", "health_event"
+        "reproduction_event", "health_event", "consultancy_action"
     }
     if source_backed:
         changes.pop("source_type", None)
@@ -327,6 +328,24 @@ def update_task(
         task.completed_at = datetime.now(timezone.utc)
     elif task.status != "completed":
         task.completed_at = None
+
+    if task.source_type == "consultancy_action" and task.source_id:
+        action = db.scalar(
+            select(AtlasActionPlanItem).where(
+                AtlasActionPlanItem.id == task.source_id,
+                AtlasActionPlanItem.company_id == principal.company.id,
+                AtlasActionPlanItem.farm_id == task.farm_id,
+            )
+        )
+        if action is not None:
+            action.title = task.title
+            action.description = task.description
+            action.priority = "critical" if task.priority == "urgent" else task.priority
+            action.due_at = task.due_at
+            action.status = task.status
+            action.completed_at = task.completed_at
+            if task.status == "completed" and task.evidence.strip():
+                action.actual_result = task.evidence.strip()
 
     if source_backed and due_at_changed:
         if task.source_type == "reproduction_event":

@@ -1,0 +1,25 @@
+{
+  "package": "post-v21-9f-consultancy-action-plan",
+  "baseline_migration": "20260824_0046",
+  "target_migration": "20260824_0047",
+  "release_paths": [
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/alembic/versions/20260824_0047_consultancy_action_idempotency.py",
+    "backend/app/business_models.py",
+    "backend/app/routers/business.py",
+    "backend/app/routers/operations.py",
+    "docs/ATLAS_POS_V21_PACOTE_9F_MANIFEST.json",
+    "docs/ATLAS_POS_V21_PACOTE_9F_PLANO_ACAO_CONSULTIVO_20260824.md",
+    "lib/features/consultancy_client/data/services/atlas_consultancy_action_service.dart",
+    "lib/features/consultancy_client/domain/models/atlas_consultancy_action.dart",
+    "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+    "lib/features/consultancy_client/presentation/widgets/atlas_consultancy_action_plan_card.dart",
+    "scripts/quality/check_post_v21_package9f_consultancy_action_plan_deployed.ps1",
+    "scripts/quality/check_post_v21_package9f_staged_release.ps1",
+    "scripts/quality/run_post_v21_package9f_consultancy_action_plan_homologation.ps1",
+    "scripts/quality/run_post_v21_package9f_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_package9f_release.ps1",
+    "test/features/consultancy_client/post_v21_package9f_consultancy_action_plan_contract_test.dart",
+    "tools/atlas_post_v21_package9f_consultancy_action_plan_gate.py"
+  ]
+}

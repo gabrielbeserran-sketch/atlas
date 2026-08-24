@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_client_onboarding_service.dart';
+import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_consultancy_action_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_consultancy_contact_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_consultancy_whatsapp_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_client_onboarding_progress.dart';
+import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_consultancy_action.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_consultancy_contact_profile.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/widgets/atlas_client_onboarding_card.dart';
+import 'package:projeto_atlas/features/consultancy_client/presentation/widgets/atlas_consultancy_action_plan_card.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/widgets/atlas_monthly_bulletins_card.dart';
 import 'package:projeto_atlas/features/dashboard/data/services/atlas_operational_intelligence_service.dart';
 import 'package:projeto_atlas/features/dashboard/domain/models/atlas_operational_intelligence_data.dart';
@@ -37,6 +40,8 @@ class _AtlasClientConsultancyCenterScreenState
       AtlasConsultancyContactService();
   final AtlasClientOnboardingService onboardingService =
       AtlasClientOnboardingService();
+  final AtlasConsultancyActionService actionService =
+      AtlasConsultancyActionService();
   final AtlasConsultancyWhatsAppService whatsAppService =
       const AtlasConsultancyWhatsAppService();
   final AtlasOperationalIntelligenceService intelligenceService =
@@ -49,8 +54,10 @@ class _AtlasClientConsultancyCenterScreenState
   AtlasClientOnboardingProgress onboarding =
       AtlasClientOnboardingProgress.empty();
   List<FarmAgendaData> agenda = const [];
+  List<AtlasConsultancyAction> consultancyActions = const [];
   bool loading = true;
   bool savingOnboarding = false;
+  bool savingActions = false;
   String? warning;
 
   @override
@@ -73,6 +80,7 @@ class _AtlasClientConsultancyCenterScreenState
     AtlasClientOnboardingProgress loadedOnboarding =
         AtlasClientOnboardingProgress.empty();
     List<FarmAgendaData> loadedAgenda = const [];
+    List<AtlasConsultancyAction> loadedActions = const [];
     final failures = <String>[];
 
     final farmId = widget.farm.id?.trim() ?? '';
@@ -106,12 +114,21 @@ class _AtlasClientConsultancyCenterScreenState
       failures.add('implantação');
     }
 
+    if (farmId.isNotEmpty) {
+      try {
+        loadedActions = await actionService.load(farmId);
+      } catch (_) {
+        failures.add('plano de ação');
+      }
+    }
+
     if (!mounted) return;
     setState(() {
       intelligence = loadedIntelligence;
       contact = loadedContact;
       onboarding = loadedOnboarding;
       agenda = loadedAgenda;
+      consultancyActions = loadedActions;
       loading = false;
       warning = failures.isEmpty
           ? null
@@ -492,6 +509,90 @@ class _AtlasClientConsultancyCenterScreenState
     }
   }
 
+  Future<void> createActionsFromPriorities() async {
+    if (!widget.canManageContact || savingActions) return;
+    final farmId = widget.farm.id?.trim() ?? '';
+    final data = intelligence;
+    if (farmId.isEmpty || data == null || data.topActions.isEmpty) return;
+
+    setState(() => savingActions = true);
+    try {
+      for (final priority in data.topActions.take(3)) {
+        await actionService.createFromPriority(
+          farmId: farmId,
+          priority: priority,
+          generatedAt: data.generatedAt,
+        );
+      }
+      final refreshed = await actionService.load(farmId);
+      final refreshedAgenda = await agendaService.loadTasks(
+        widget.farm.name,
+        farmId: farmId,
+      );
+      if (!mounted) return;
+      setState(() {
+        consultancyActions = refreshed;
+        agenda = refreshedAgenda;
+      });
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Prioridades registradas no plano de ação e sincronizadas com a Agenda.',
+            ),
+          ),
+        );
+    } catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Não foi possível criar o plano: $exception')),
+        );
+    } finally {
+      if (mounted) setState(() => savingActions = false);
+    }
+  }
+
+  Future<void> completeConsultancyAction(AtlasConsultancyAction action) async {
+    if (!widget.canManageContact || savingActions) return;
+    setState(() => savingActions = true);
+    try {
+      await actionService.complete(
+        actionId: action.id,
+        actualResult: 'Concluída pela Central da Consultoria.',
+      );
+      final farmId = widget.farm.id?.trim() ?? '';
+      final refreshed = await actionService.load(farmId);
+      final refreshedAgenda = await agendaService.loadTasks(
+        widget.farm.name,
+        farmId: farmId,
+      );
+      if (!mounted) return;
+      setState(() {
+        consultancyActions = refreshed;
+        agenda = refreshedAgenda;
+      });
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Ação concluída também na Agenda.'),
+          ),
+        );
+    } catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Não foi possível concluir a ação: $exception')),
+        );
+    } finally {
+      if (mounted) setState(() => savingActions = false);
+    }
+  }
+
   void openReports() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -561,6 +662,15 @@ class _AtlasClientConsultancyCenterScreenState
                             '${data.openTasks} tarefas abertas',
                   items: decisionItems,
                   level: attentionLevel,
+                ),
+                const SizedBox(height: 16),
+                AtlasConsultancyActionPlanCard(
+                  actions: consultancyActions,
+                  canManage: widget.canManageContact,
+                  busy: savingActions,
+                  hasPriorities: data?.topActions.isNotEmpty == true,
+                  onCreateFromPriorities: createActionsFromPriorities,
+                  onComplete: completeConsultancyAction,
                 ),
                 const SizedBox(height: 18),
                 Wrap(

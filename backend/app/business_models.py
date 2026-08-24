@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -82,7 +82,15 @@ class AtlasConsultingVisit(Base):
 
 class AtlasActionPlanItem(Base):
     __tablename__ = "atlas_action_plan_items"
-    __table_args__ = (Index("ix_atlas_action_company_farm_status_due", "company_id", "farm_id", "status", "due_at"),)
+    __table_args__ = (
+        Index("ix_atlas_action_company_farm_status_due", "company_id", "farm_id", "status", "due_at"),
+        UniqueConstraint(
+            "company_id",
+            "farm_id",
+            "idempotency_key",
+            name="uq_atlas_action_company_farm_idempotency",
+        ),
+    )
     id: Mapped[str] = mapped_column(String(80), primary_key=True, default=lambda: new_id("action"))
     company_id: Mapped[str] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"), index=True)
     tenant_id: Mapped[str] = mapped_column(String(80), index=True)
@@ -99,6 +107,7 @@ class AtlasActionPlanItem(Base):
     follow_up_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     expected_result: Mapped[str] = mapped_column(Text, default="")
     actual_result: Mapped[str] = mapped_column(Text, default="")
+    idempotency_key: Mapped[str | None] = mapped_column(String(160), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
