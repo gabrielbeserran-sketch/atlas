@@ -1,0 +1,132 @@
+{
+  "package": "Pós-V21 Pacote 8B — Gateway físico da câmera",
+  "baseline": "8A publicado e homologado em produção",
+  "backend_changed": false,
+  "database_migration_required": false,
+  "vendor_specific_driver": false,
+  "offline_spool": true,
+  "local_idempotency": true,
+  "backend_idempotency_reused": true,
+  "event_types": [
+    "person",
+    "vehicle"
+  ],
+  "unapproved_cv_detector": false,
+  "files": [
+    {
+      "path": "edge/camera_gateway/pyproject.toml",
+      "sha256": "f0c1c60625d189d317371253607f02d537b7dcc71e57fc95674c550ef886295e",
+      "size": 327
+    },
+    {
+      "path": "edge/camera_gateway/.env.example",
+      "sha256": "0a409c935764e438b30a7501737b30308be1e9d8ddfba29ca90c1390113e4dac",
+      "size": 444
+    },
+    {
+      "path": "edge/camera_gateway/Dockerfile",
+      "sha256": "9a551218b303f4ae5631c1443788d5ab1b92383a59654efe8ff422a8661a94b2",
+      "size": 281
+    },
+    {
+      "path": "edge/camera_gateway/docker-compose.yml",
+      "sha256": "de3e03b903f72eaf421abc84e67b17d06b6622f1f9e6809341015f9ad8b7793c",
+      "size": 180
+    },
+    {
+      "path": "edge/camera_gateway/README.md",
+      "sha256": "db147b4ecd8dd35c780f97240f3244f617d5c32f9ed3c00fbe31979d81e318be",
+      "size": 1751
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/__init__.py",
+      "sha256": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+      "size": 22
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/config.py",
+      "sha256": "331aba9a2a77ee5765005c2df9bf272b685e49540745c23175ee2669f8a92a2e",
+      "size": 1865
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/event.py",
+      "sha256": "e4acf01e381cf84008522bbf38a991e062096e2c89eb331796bd374bee3b5316",
+      "size": 2594
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/adapter.py",
+      "sha256": "6b8bef6e2c827288ba40fc0c9341e319b1e80939761cd312f06099cd80847f18",
+      "size": 882
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/folder_adapter.py",
+      "sha256": "f006167769648f37409e0a3dfb378ddf5bf14e91908554266d9268adc7d45429",
+      "size": 3199
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/spool.py",
+      "sha256": "54bcd9202c1b2820389da8d33698859b25c2e8360064762108447e3364dec43a",
+      "size": 2827
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/transport.py",
+      "sha256": "15b5a540536bca953d897afd62ecbf3a2f11aea1a0fa4812030d4ce8d8bc6f22",
+      "size": 2740
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/worker.py",
+      "sha256": "b05c60496955b71ad3347344f0e44839407c0a51e5991792eff2b7a7cb35f5ae",
+      "size": 1957
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/cli.py",
+      "sha256": "dfc61b65d90b844ff23d289d3172d5165ceb72169493dae7c1addc16c67f1e8f",
+      "size": 4087
+    },
+    {
+      "path": "edge/camera_gateway/scripts/selftest.py",
+      "sha256": "05248dd4356c0f4b8fe70b60eee672852351ae1bdb69f4f03436f1c0c33eceb9",
+      "size": 2002
+    },
+    {
+      "path": "edge/camera_gateway/examples/vendor_adapter_example.py",
+      "sha256": "20d316c247a4d33eaf3aff48f83ab81b35243c70cd46d6ca701fe7a200dbf65c",
+      "size": 633
+    },
+    {
+      "path": "edge/camera_gateway/examples/person.event.json",
+      "sha256": "292580a0e9647fe04e17807db6a852bc642af7ff770074fbc8d4d87027f85abf",
+      "size": 169
+    },
+    {
+      "path": "edge/camera_gateway/tests/test_event_and_spool.py",
+      "sha256": "b6810a3e2f43e6be06691311ec660c52a7380d58d93d82588ee847cd476db68d",
+      "size": 1636
+    },
+    {
+      "path": "edge/camera_gateway/tests/test_folder_adapter.py",
+      "sha256": "ea5c6826e1af0ca7c10a1a9c5dad131dfb08c94dd83ba11677a759b7d2098e72",
+      "size": 1764
+    },
+    {
+      "path": "tools/atlas_post_v21_package8b_edge_gateway_gate.py",
+      "sha256": "7b0bf74029f417d81dba9a581e4903e45f2ba2f0056f04ddeecbbb030d5cde6b",
+      "size": 5702
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "9ffe90d56667de5b6f24937def7846e8ee2ae99fbc685eabbad7b750e1f44282",
+      "size": 7117
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8b_edge_gateway_homologation.ps1",
+      "sha256": "0e0035f3218a1698618ebd467b43eff4d7e8a4da2b3d2d3c1c32d56488d3b630",
+      "size": 1610
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8B_GATEWAY_FISICO_CAMERA_20260823.md",
+      "sha256": "91a250eb4aff8729c059aa56f247e3364252c79c2c4b7761e11ff12da14e9882",
+      "size": 3936
+    }
+  ]
+}

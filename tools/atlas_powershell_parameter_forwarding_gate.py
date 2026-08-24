@@ -160,6 +160,21 @@ critical = {
         "@Previous",
     ),
 
+    "scripts/quality/run_post_v21_package8b_edge_gateway_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package8c_camera_compatibility_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
+    "scripts/quality/run_post_v21_package9a_vet_contact_homologation.ps1": (
+        "$Previous = @{",
+        "@Previous",
+    ),
+
 }
 
 for rel, required in critical.items():

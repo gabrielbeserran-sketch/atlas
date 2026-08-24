@@ -1,22 +1,43 @@
+import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_consultancy_contact_profile.dart';
-import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 
 class AtlasConsultancyContactService {
-  const AtlasConsultancyContactService();
+  AtlasConsultancyContactService({AtlasHttpClient? httpClient})
+      : _http = httpClient ?? AtlasHttpClient();
 
-  static const AtlasConsultancyContactProfile _defaultProfile =
-      AtlasConsultancyContactProfile(
-        displayName: 'Gabriel Beserra do Nascimento',
-        role: 'Veterinário responsável',
-        whatsappNumber: '5561993886261',
-        companyLabel: 'Beserra',
-      );
+  final AtlasHttpClient _http;
 
-  AtlasConsultancyContactProfile resolveForFarm(FarmData farm) {
-    // O contrato já é por fazenda para permitir, futuramente, responsáveis
-    // diferentes vindos do backend sem alterar a tela do cliente.
-    final farmId = farm.id?.trim() ?? '';
-    if (farmId.isEmpty) return _defaultProfile;
-    return _defaultProfile;
+  Future<AtlasConsultancyContactProfile> loadForFarm(
+    String farmId,
+  ) async {
+    final response = await _http.send(
+      'GET',
+      '/consultancy/contact',
+      queryParameters: {'farm_id': farmId},
+    );
+    return AtlasConsultancyContactProfile.fromMap(response.asMap());
+  }
+
+  Future<AtlasConsultancyContactProfile> updateForFarm({
+    required String farmId,
+    required String displayName,
+    required String role,
+    required String whatsappNumber,
+    required String companyLabel,
+    required bool active,
+  }) async {
+    final response = await _http.send(
+      'PATCH',
+      '/consultancy/contact',
+      queryParameters: {'farm_id': farmId},
+      body: {
+        'display_name': displayName.trim(),
+        'role': role.trim(),
+        'whatsapp_number': whatsappNumber.trim(),
+        'company_label': companyLabel.trim(),
+        'active': active,
+      },
+    );
+    return AtlasConsultancyContactProfile.fromMap(response.asMap());
   }
 }

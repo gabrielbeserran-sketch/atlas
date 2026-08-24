@@ -2709,3 +2709,47 @@ class SecurityCameraEvent(Base):
         default=utcnow,
         index=True,
     )
+
+
+class ConsultancyContact(Base):
+    __tablename__ = "consultancy_contacts"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "farm_id",
+            name="uq_consultancy_contact_company_farm",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80),
+        primary_key=True,
+        default=lambda: new_id("consultancy_contact"),
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        index=True,
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"),
+        index=True,
+    )
+    display_name: Mapped[str] = mapped_column(String(180), default="")
+    role: Mapped[str] = mapped_column(
+        String(120),
+        default="Veterinário responsável",
+    )
+    whatsapp_number: Mapped[str] = mapped_column(String(30), default="")
+    company_label: Mapped[str] = mapped_column(String(180), default="")
+    active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    updated_by: Mapped[str] = mapped_column(String(80), default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )

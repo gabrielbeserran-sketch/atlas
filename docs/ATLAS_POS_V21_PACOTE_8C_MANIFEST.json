@@ -1,0 +1,58 @@
+{
+  "package": "Pós-V21 Pacote 8C — Compatibilidade física da câmera",
+  "baseline": "8B homologado",
+  "backend_changed": false,
+  "database_migration_required": false,
+  "onvif_probe": true,
+  "rtsp_tcp_probe": true,
+  "password_in_report": false,
+  "password_in_cli": false,
+  "specific_vendor_driver": false,
+  "files": [
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/hardware_profile.py",
+      "sha256": "fe3185c3f7060e85fd524652232a6a54038127d06c9233badfdaf3269811dce7",
+      "size": 6662
+    },
+    {
+      "path": "edge/camera_gateway/atlas_camera_gateway/cli.py",
+      "sha256": "08beb09400337129765f8d5669c7f74897222e1414212d2d2d894d03efbc4c51",
+      "size": 5180
+    },
+    {
+      "path": "edge/camera_gateway/README.md",
+      "sha256": "b2dc2439ed5afb7ba7e43077895bdcc3e075fc179a0723ca751af80eb13872e3",
+      "size": 3004
+    },
+    {
+      "path": "edge/camera_gateway/scripts/selftest.py",
+      "sha256": "d78de902e2b83ae45f8bf694c7e84b0387417eb6f10b1f7dded013e1a5f2379f",
+      "size": 2678
+    },
+    {
+      "path": "edge/camera_gateway/tests/test_hardware_profile.py",
+      "sha256": "093683699b8cc0db61dbe48a80d1788905d6fda5118fe95f41b6f16007d85e97",
+      "size": 1717
+    },
+    {
+      "path": "tools/atlas_post_v21_package8c_camera_compatibility_gate.py",
+      "sha256": "e4b9c6e49e22eefc06fe8916dcc5ea55b7e30553794e8a39b79e622f1c7b550a",
+      "size": 2356
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "ec5e2bfc948376ac1e83f5693de82e02fb6d8dd94a6c2a4472bd11a92c8cab94",
+      "size": 7258
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package8c_camera_compatibility_homologation.ps1",
+      "sha256": "6c9c6c382ab60e24080a8fd23cf1e9f8db85bd8e9c102cc5adf1a1a538557dbf",
+      "size": 1589
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_8C_COMPATIBILIDADE_CAMERA_20260823.md",
+      "sha256": "ad432579cad15aa5b1bdad53c861599fa73c8add02219b414d31835e0cf2a237",
+      "size": 2760
+    }
+  ]
+}

@@ -85,8 +85,9 @@ check(
     "O Atlas não envia mensagens sem a sua ação" in screen,
 )
 check(
-    "central não possui fallback quando inteligência falha",
-    "O contato com o veterinário continua disponível" in screen,
+    "central não possui fallback seguro quando atualização parcial falha",
+    "A central continua disponível" in screen
+    and "contato oficial da fazenda" in screen,
 )
 
 check(
@@ -98,13 +99,20 @@ check(
     "hasValidWhatsapp" in profile,
 )
 check(
-    "contato padrão está com número inválido/placeholder",
-    re.search(r"whatsappNumber:\s*'(\d{10,15})'", contact) is not None
-    and "99999" not in contact,
+    "contato oficial não vem do backend",
+    "'/consultancy/contact'" in contact
+    and "AtlasHttpClient" in contact,
 )
 check(
-    "resolver não tem contrato por fazenda",
-    "resolveForFarm(FarmData farm)" in contact,
+    "contato do veterinário voltou a ficar hardcoded",
+    re.search(r"whatsappNumber:\s*'\d{10,15}'", contact) is None
+    and "Gabriel Beserra do Nascimento" not in contact,
+)
+check(
+    "resolver remoto não tem contrato por fazenda",
+    "loadForFarm(" in contact
+    and "String farmId" in contact
+    and "queryParameters: {'farm_id': farmId}" in contact,
 )
 
 check(

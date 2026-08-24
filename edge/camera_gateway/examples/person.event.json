@@ -1,0 +1,7 @@
+{
+  "event_type": "person",
+  "image": "snapshot-001.jpg",
+  "event_external_id": "camera-evt-001",
+  "captured_at": "2026-08-23T15:30:00-03:00",
+  "confidence": 0.92
+}

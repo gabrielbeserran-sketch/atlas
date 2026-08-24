@@ -15,11 +15,13 @@ class AtlasClientConsultancyCenterScreen extends StatefulWidget {
   const AtlasClientConsultancyCenterScreen({
     required this.farm,
     this.embedded = false,
+    this.canManageContact = false,
     super.key,
   });
 
   final FarmData farm;
   final bool embedded;
+  final bool canManageContact;
 
   @override
   State<AtlasClientConsultancyCenterScreen> createState() =>
@@ -29,7 +31,7 @@ class AtlasClientConsultancyCenterScreen extends StatefulWidget {
 class _AtlasClientConsultancyCenterScreenState
     extends State<AtlasClientConsultancyCenterScreen> {
   final AtlasConsultancyContactService contactService =
-      const AtlasConsultancyContactService();
+      AtlasConsultancyContactService();
   final AtlasConsultancyWhatsAppService whatsAppService =
       const AtlasConsultancyWhatsAppService();
   final AtlasOperationalIntelligenceService intelligenceService =
@@ -37,12 +39,11 @@ class _AtlasClientConsultancyCenterScreenState
   final FarmAgendaStorageService agendaService = FarmAgendaStorageService();
 
   AtlasOperationalIntelligenceData? intelligence;
+  AtlasConsultancyContactProfile contact =
+      AtlasConsultancyContactProfile.unavailable;
   List<FarmAgendaData> agenda = const [];
   bool loading = true;
   String? warning;
-
-  AtlasConsultancyContactProfile get contact =>
-      contactService.resolveForFarm(widget.farm);
 
   @override
   void initState() {
@@ -59,6 +60,8 @@ class _AtlasClientConsultancyCenterScreenState
     }
 
     AtlasOperationalIntelligenceData? loadedIntelligence;
+    AtlasConsultancyContactProfile loadedContact =
+        AtlasConsultancyContactProfile.unavailable;
     List<FarmAgendaData> loadedAgenda = const [];
     final failures = <String>[];
 
@@ -68,6 +71,11 @@ class _AtlasClientConsultancyCenterScreenState
         loadedIntelligence = await intelligenceService.load(farmId);
       } catch (_) {
         failures.add('resumo operacional');
+      }
+      try {
+        loadedContact = await contactService.loadForFarm(farmId);
+      } catch (_) {
+        failures.add('contato do veterinário');
       }
     } else {
       failures.add('identificação da fazenda');
@@ -85,12 +93,14 @@ class _AtlasClientConsultancyCenterScreenState
     if (!mounted) return;
     setState(() {
       intelligence = loadedIntelligence;
+      contact = loadedContact;
       agenda = loadedAgenda;
       loading = false;
       warning = failures.isEmpty
           ? null
           : 'Não foi possível atualizar: ${failures.join(', ')}. '
-                'O contato com o veterinário continua disponível.';
+                'A central continua disponível; o WhatsApp só será habilitado '
+                'quando o contato oficial da fazenda estiver carregado.';
     });
   }
 
@@ -253,11 +263,167 @@ class _AtlasClientConsultancyCenterScreenState
   }
 
   Future<void> openWhatsApp(String message) async {
+    if (!contact.hasValidWhatsapp) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'O veterinário responsável ainda não está configurado para esta fazenda.',
+            ),
+          ),
+        );
+      return;
+    }
+
     try {
       await whatsAppService.openConversation(
         contact: contact,
         message: message,
       );
+    } catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(exception.toString())));
+    }
+  }
+
+  Future<void> configureResponsibleContact() async {
+    final farmId = widget.farm.id?.trim() ?? '';
+    if (farmId.isEmpty || !widget.canManageContact) return;
+
+    final name = TextEditingController(
+      text: contact.configured ? contact.displayName : '',
+    );
+    final role = TextEditingController(
+      text: contact.role.isEmpty
+          ? 'Veterinário responsável'
+          : contact.role,
+    );
+    final phone = TextEditingController(
+      text: contact.configured ? contact.whatsappNumber : '',
+    );
+    final company = TextEditingController(
+      text: contact.configured ? contact.companyLabel : '',
+    );
+    var active = contact.configured ? contact.active : true;
+
+    final draft = await showDialog<_ResponsibleContactDraft>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setLocal) => AlertDialog(
+          title: const Text('Veterinário responsável'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: name,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: role,
+                    decoration: const InputDecoration(
+                      labelText: 'Função',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: phone,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'WhatsApp',
+                      hintText: '5561999999999',
+                      helperText: 'Use DDI + DDD + número.',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: company,
+                    decoration: const InputDecoration(
+                      labelText: 'Consultoria / empresa',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: active,
+                    title: const Text('Contato ativo para esta fazenda'),
+                    onChanged: (value) =>
+                        setLocal(() => active = value),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (name.text.trim().length < 2 ||
+                    company.text.trim().length < 2 ||
+                    phone.text.replaceAll(RegExp(r'[^0-9]'), '').length < 10) {
+                  return;
+                }
+                Navigator.pop(
+                  dialogContext,
+                  _ResponsibleContactDraft(
+                    displayName: name.text.trim(),
+                    role: role.text.trim().isEmpty
+                        ? 'Veterinário responsável'
+                        : role.text.trim(),
+                    whatsappNumber: phone.text.trim(),
+                    companyLabel: company.text.trim(),
+                    active: active,
+                  ),
+                );
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    name.dispose();
+    role.dispose();
+    phone.dispose();
+    company.dispose();
+
+    if (draft == null) return;
+
+    try {
+      final updated = await contactService.updateForFarm(
+        farmId: farmId,
+        displayName: draft.displayName,
+        role: draft.role,
+        whatsappNumber: draft.whatsappNumber,
+        companyLabel: draft.companyLabel,
+        active: draft.active,
+      );
+      if (!mounted) return;
+      setState(() => contact = updated);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Veterinário responsável atualizado.'),
+          ),
+        );
     } catch (exception) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -304,6 +470,8 @@ class _AtlasClientConsultancyCenterScreenState
                 const SizedBox(height: 16),
                 _VeterinarianContactCard(
                   contact: contact,
+                  canManageContact: widget.canManageContact,
+                  onConfigure: configureResponsibleContact,
                   onContact: () => openWhatsApp(
                     '${_baseMessage('Orientação técnica')}\n\n'
                     'Gostaria de falar com o veterinário responsável.',
@@ -467,12 +635,16 @@ class _ConsultancyHeader extends StatelessWidget {
 class _VeterinarianContactCard extends StatelessWidget {
   const _VeterinarianContactCard({
     required this.contact,
+    required this.canManageContact,
+    required this.onConfigure,
     required this.onContact,
     required this.onRequestVisit,
     required this.onSendSummary,
   });
 
   final AtlasConsultancyContactProfile contact;
+  final bool canManageContact;
+  final VoidCallback onConfigure;
   final VoidCallback onContact;
   final VoidCallback onRequestVisit;
   final VoidCallback onSendSummary;
@@ -526,20 +698,32 @@ class _VeterinarianContactCard extends StatelessWidget {
               runSpacing: 10,
               children: [
                 FilledButton.icon(
-                  onPressed: onContact,
+                  onPressed: contact.hasValidWhatsapp ? onContact : null,
                   icon: const Icon(Icons.chat_outlined),
                   label: const Text('Falar no WhatsApp'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: onRequestVisit,
+                  onPressed:
+                      contact.hasValidWhatsapp ? onRequestVisit : null,
                   icon: const Icon(Icons.event_outlined),
                   label: const Text('Solicitar visita'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: onSendSummary,
+                  onPressed:
+                      contact.hasValidWhatsapp ? onSendSummary : null,
                   icon: const Icon(Icons.summarize_outlined),
                   label: const Text('Enviar resumo'),
                 ),
+                if (canManageContact)
+                  OutlinedButton.icon(
+                    onPressed: onConfigure,
+                    icon: const Icon(Icons.manage_accounts_outlined),
+                    label: Text(
+                      contact.configured
+                          ? 'Editar responsável'
+                          : 'Configurar responsável',
+                    ),
+                  ),
               ],
             ),
           ],
@@ -547,6 +731,22 @@ class _VeterinarianContactCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ResponsibleContactDraft {
+  const _ResponsibleContactDraft({
+    required this.displayName,
+    required this.role,
+    required this.whatsappNumber,
+    required this.companyLabel,
+    required this.active,
+  });
+
+  final String displayName;
+  final String role;
+  final String whatsappNumber;
+  final String companyLabel;
+  final bool active;
 }
 
 class _ConsultancyMetric extends StatelessWidget {

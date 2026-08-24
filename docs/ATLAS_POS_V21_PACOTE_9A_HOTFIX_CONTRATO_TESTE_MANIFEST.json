@@ -1,0 +1,39 @@
+{
+  "package": "Pós-V21 Pacote 9A — Hotfix contrato legado Consultoria",
+  "root_cause": "Package 4 Flutter test required hardcoded role literal inside remote contact service",
+  "fix": "behavioral remote-contact contract test",
+  "prevention": [
+    "atlas_test_contract_semantics_gate.py",
+    "9A gate checks legacy test",
+    "semantic gate runs before Flutter regression"
+  ],
+  "static_gates": "34/34",
+  "dart_structural": "5/5",
+  "files": [
+    {
+      "path": "test/features/consultancy_client/post_v21_package4_consultancy_contract_test.dart",
+      "sha256": "dbe6c7d85dd02bc960fb4ce4259eba3b2541d8d93ba7fac5f590b8e47daeaac0",
+      "size": 2461
+    },
+    {
+      "path": "tools/atlas_test_contract_semantics_gate.py",
+      "sha256": "bec9519bfc04159d15022bce98ba3a90f9e31ef36230f0e91f0de3d526e159f2",
+      "size": 4362
+    },
+    {
+      "path": "tools/atlas_post_v21_package9a_vet_contact_gate.py",
+      "sha256": "f400bc0a74d95c635ad17974e6344ef7a75d74ed46efa9c76085837716df533c",
+      "size": 4913
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package9a_vet_contact_homologation.ps1",
+      "sha256": "b6f5664fc6905144372a6f04e058f414bde50aa93fbc98470e624511b6833ab1",
+      "size": 1826
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_9A_HOTFIX_CONTRATO_TESTE_20260823.md",
+      "sha256": "51e8d98d8d8af61f78ace0370d3a92385ecfd75f9e7076a12aff1bb72396e63e",
+      "size": 1793
+    }
+  ]
+}

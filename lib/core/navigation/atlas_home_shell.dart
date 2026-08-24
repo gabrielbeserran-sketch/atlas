@@ -397,6 +397,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           : AtlasClientConsultancyCenterScreen(
               farm: farm,
               embedded: true,
+              canManageContact: controller.allows('farms.update'),
             );
     } else if (selected.label == 'Inteligência') {
       body = farm == null

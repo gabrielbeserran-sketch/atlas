@@ -76,6 +76,7 @@ from .routers import (
     animal_media,
     bulletins,
     security_camera,
+    consultancy,
 )
 from .services.observability import observability_middleware
 from .services.security_middleware import security_middleware
@@ -189,6 +190,7 @@ for router in (
     animal_media.router,
     bulletins.router,
     security_camera.router,
+    consultancy.router,
 ):
     app.include_router(router, prefix=API_PREFIX)
 

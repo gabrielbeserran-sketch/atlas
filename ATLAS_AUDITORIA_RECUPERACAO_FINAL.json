@@ -2,16 +2,16 @@
   "python_syntax_errors": [],
   "dart_missing_internal_imports": [],
   "missing_permission_catalog_entries": [],
-  "backend_route_count": 529,
+  "backend_route_count": 532,
   "duplicate_routes": [],
   "unsafe_farm_scope_checks": [],
   "livestock_farm_scope_contract_errors": [],
-  "alembic_revision_count": 43,
+  "alembic_revision_count": 44,
   "alembic_heads": [
-    "20260823_0043"
+    "20260823_0044"
   ],
   "alembic_orphans": [],
-  "deprecated_http_422_constants": 13,
+  "deprecated_http_422_constants": 14,
   "legacy_pet_icons": 6,
   "fontawesome_refs": 0,
   "farm_frontend_contract_errors": [],

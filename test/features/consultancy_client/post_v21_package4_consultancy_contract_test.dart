@@ -18,6 +18,10 @@ void main() {
     'lib/features/consultancy_client/data/services/'
     'atlas_consultancy_whatsapp_service.dart',
   ).readAsStringSync();
+  final profile = File(
+    'lib/features/consultancy_client/domain/models/'
+    'atlas_consultancy_contact_profile.dart',
+  ).readAsStringSync();
 
   test('Consultoria é um módulo real vinculado à fazenda', () {
     expect(shell.contains("label: 'Consultoria'"), isTrue);
@@ -33,7 +37,11 @@ void main() {
     expect(screen.contains("'Solicitar visita'"), isTrue);
     expect(screen.contains("'Enviar resumo'"), isTrue);
     expect(screen.contains('whatsAppService.openConversation('), isTrue);
-    expect(contact.contains("role: 'Veterinário responsável'"), isTrue);
+    expect(screen.contains('contact.role'), isTrue);
+    expect(screen.contains('contact.displayName'), isTrue);
+    expect(contact.contains("'/consultancy/contact'"), isTrue);
+    expect(contact.contains('loadForFarm('), isTrue);
+    expect(profile.contains("'Veterinário responsável'"), isTrue);
   });
 
   test('WhatsApp usa link seguro e mensagem codificada', () {

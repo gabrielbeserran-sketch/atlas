@@ -1,0 +1,11 @@
+services:
+  atlas-camera-gateway:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - atlas_camera_spool:/data
+
+volumes:
+  atlas_camera_spool:

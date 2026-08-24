@@ -1,0 +1,101 @@
+{
+  "package": "Pós-V21 Pacote 9A — Contato Veterinário",
+  "baseline": "8C homologado",
+  "backend_changed": true,
+  "database_migration": "20260823_0044",
+  "farm_scoped": true,
+  "hardcoded_flutter_contact": false,
+  "explicit_user_whatsapp_action": true,
+  "files": [
+    {
+      "path": "backend/app/models/legacy.py",
+      "sha256": "3123405f48d8046a571113bf027e44835f72abfcf3b0708a6e18e39d554fa1a5",
+      "size": 135602
+    },
+    {
+      "path": "backend/app/routers/consultancy.py",
+      "sha256": "a22f79727b1549516f89f1a96a161dc708559cb1954feb1c4d2ef1f5a827db1e",
+      "size": 4590
+    },
+    {
+      "path": "backend/app/main.py",
+      "sha256": "c4c1f7c8868ddcb4ca0c5aa2bddd3a41d3f360c12b1ab6694f21c4a7927182ec",
+      "size": 5635
+    },
+    {
+      "path": "backend/alembic/versions/20260823_0044_consultancy_contacts.py",
+      "sha256": "33d54c7c2da98803d2d09545e2fa4770d1c51f2f79349176018caaf6d0cdc2d5",
+      "size": 1905
+    },
+    {
+      "path": "lib/features/consultancy_client/domain/models/atlas_consultancy_contact_profile.dart",
+      "sha256": "97410b5f50454e3717dda8afe907cad6c5988c3eab2afbbd225ba024ef2c9e78",
+      "size": 1408
+    },
+    {
+      "path": "lib/features/consultancy_client/data/services/atlas_consultancy_contact_service.dart",
+      "sha256": "43629b0c1868b7d9793ab7da6758c6eaf927803b7f223cf85689a593ec4ec47a",
+      "size": 1340
+    },
+    {
+      "path": "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+      "sha256": "3a41b98f707829a152532dc651587fe89f5c1e69af185dee8a52cb875319da93",
+      "size": 28022
+    },
+    {
+      "path": "lib/core/navigation/atlas_home_shell.dart",
+      "sha256": "c387512cd32ef5ad528ba56f3af2d61cb6197a645942072b7cf965e6914a8efd",
+      "size": 28180
+    },
+    {
+      "path": "test/features/consultancy_client/post_v21_package9a_vet_contact_contract_test.dart",
+      "sha256": "e30d9921455653f4a3d318e39230ad77f67238953909adefd382783bf33c390f",
+      "size": 2142
+    },
+    {
+      "path": "tools/atlas_post_v21_package9a_vet_contact_gate.py",
+      "sha256": "461965b88b3330c4bfbe9f881700ae4e7bc9978d372abe0ee911e2d16b2c938d",
+      "size": 4466
+    },
+    {
+      "path": "tools/atlas_post_v21_package9a_release_gate.py",
+      "sha256": "701b07234899ae7697f481c3f10706936005ef458093819f9acb6876840ec739",
+      "size": 1826
+    },
+    {
+      "path": "tools/atlas_post_v21_package4_gate.py",
+      "sha256": "88970dc20eda2c6f17542749d21243d1ca4f947abfe0a7886cbc0e77264fd9e4",
+      "size": 5344
+    },
+    {
+      "path": "tools/atlas_powershell_parameter_forwarding_gate.py",
+      "sha256": "7b2385bbe3882b8ce87705a650f518aa112f42275731d12bbc1d659627331a07",
+      "size": 7390
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package9a_vet_contact_homologation.ps1",
+      "sha256": "300cfda4be8fa51024f2c7aa4bfa69bebfebd273d2adfe3e90c2744875f74170",
+      "size": 1658
+    },
+    {
+      "path": "scripts/quality/run_post_v21_package9a_release_preflight.ps1",
+      "sha256": "d1f0d559c4cbf02baf68f3347848d1690d98d1950edd41955fb701b3ac9fa8a1",
+      "size": 2067
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package9a_staged_release.ps1",
+      "sha256": "fd569b3607d04922f1574762478c4f251162f2b6a404006ee1263b5154e7783f",
+      "size": 1564
+    },
+    {
+      "path": "scripts/quality/check_post_v21_package9a_vet_contact_deployed.ps1",
+      "sha256": "70d18f97bec9bfd264a397b93aa8b7321bd5ba9045952d1bb77440158b0808c6",
+      "size": 2374
+    },
+    {
+      "path": "docs/ATLAS_POS_V21_PACOTE_9A_CONTATO_VETERINARIO_20260823.md",
+      "sha256": "2496c78acc2862c54707b93e69d39ce782090a6bfdb9ccdf4141379b9e8d97ee",
+      "size": 2582
+    }
+  ]
+}
