@@ -1,0 +1,21 @@
+{
+  "package": "9G",
+  "release_paths": [
+    "backend/alembic/versions/20260824_0048_consultancy_execution_evidence.py",
+    "backend/app/business_models.py",
+    "backend/app/routers/business.py",
+    "backend/app/routers/operations.py",
+    "docs/ATLAS_POS_V21_PACOTE_9G_EXECUCAO_COMPROVAVEL_20260824.md",
+    "docs/ATLAS_POS_V21_PACOTE_9G_MANIFEST.json",
+    "lib/features/consultancy_client/data/services/atlas_consultancy_action_service.dart",
+    "lib/features/consultancy_client/domain/models/atlas_consultancy_action.dart",
+    "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+    "scripts/quality/check_post_v21_package9g_execution_evidence_deployed.ps1",
+    "scripts/quality/check_post_v21_package9g_staged_release.ps1",
+    "scripts/quality/run_post_v21_package9g_execution_evidence_homologation.ps1",
+    "scripts/quality/run_post_v21_package9g_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_package9g_release.ps1",
+    "test/features/consultancy_client/post_v21_package9g_execution_evidence_contract_test.dart",
+    "tools/atlas_post_v21_package9g_execution_evidence_gate.py"
+  ]
+}

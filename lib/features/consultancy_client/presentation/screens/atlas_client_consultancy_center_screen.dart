@@ -557,11 +557,65 @@ class _AtlasClientConsultancyCenterScreenState
 
   Future<void> completeConsultancyAction(AtlasConsultancyAction action) async {
     if (!widget.canManageContact || savingActions) return;
+
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Registrar execução'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              action.title,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Descreva objetivamente o que foi realizado e o resultado observado. '
+              'Esse registro ficará vinculado à ação, à Agenda e à auditoria.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                labelText: 'Evidência / resultado da execução',
+                hintText: 'Ex.: lote 12 transferido para o piquete 4; 38 animais conferidos.',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.length < 3) return;
+              Navigator.of(dialogContext).pop(value);
+            },
+            child: const Text('Concluir com evidência'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result == null || result.trim().length < 3 || !mounted) return;
+
     setState(() => savingActions = true);
     try {
       await actionService.complete(
         actionId: action.id,
-        actualResult: 'Concluída pela Central da Consultoria.',
+        actualResult: result,
+        sourceModule: action.area,
+        evidence: [result],
       );
       final farmId = widget.farm.id?.trim() ?? '';
       final refreshed = await actionService.load(farmId);
@@ -578,7 +632,7 @@ class _AtlasClientConsultancyCenterScreenState
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
-            content: Text('Ação concluída também na Agenda.'),
+            content: Text('Execução registrada e ação concluída também na Agenda.'),
           ),
         );
     } catch (exception) {

@@ -19,6 +19,7 @@ from ..business_models import (
     AtlasWorkflowInstance,
 )
 from ..database import get_db
+from ..services.audit import record_audit
 from ..models import (
     Farm, FinancialEntry, HealthEvent, LivestockAnimal, NutritionEvent,
     OperationalTask, ReproductionEvent, new_id,
@@ -93,6 +94,14 @@ class ActionPayload(BaseModel):
     follow_up_at: datetime | None = None
     expected_result: str = ""
     idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+
+
+class ActionCompletionPayload(BaseModel):
+    actual_result: str = Field(min_length=3, max_length=4000)
+    evidence: list[str] = Field(default_factory=list)
+    source_module: str = Field(default="consultancy", max_length=80)
 
 
 class WorkflowPayload(BaseModel):
@@ -248,6 +257,8 @@ def _action_payload(
         "follow_up_at": row.follow_up_at,
         "expected_result": row.expected_result,
         "actual_result": row.actual_result,
+        "completed_by_user_id": row.completed_by_user_id,
+        "execution_evidence": row.execution_evidence_json or {},
         "idempotency_key": row.idempotency_key,
         "agenda_task_id": task.id if task is not None else None,
         "replayed": replayed,
@@ -343,7 +354,8 @@ def create_action(
 @router.patch("/consulting/actions/{action_id}/complete")
 def complete_action(
     action_id: str,
-    actual_result: str = "",
+    payload: ActionCompletionPayload | None = None,
+    actual_result: str = Query(default=""),
     db: Session = Depends(get_db),
     principal: Principal = Depends(require_permission("operations.manage")),
 ):
@@ -356,15 +368,59 @@ def complete_action(
     if row is None:
         raise HTTPException(404, "Ação não encontrada.")
     farm_or_404(db, principal, row.farm_id)
+
+    result = (payload.actual_result if payload is not None else actual_result).strip()
+    if len(result) < 3:
+        raise HTTPException(422, "Informe o resultado executado antes de concluir a ação.")
+
+    evidence_items = [
+        item.strip()
+        for item in (payload.evidence if payload is not None else [result])
+        if item.strip()
+    ]
+    source_module = (payload.source_module if payload is not None else row.area).strip() or row.area
+    completed_at = now()
+    before = {
+        "status": row.status,
+        "actual_result": row.actual_result,
+        "completed_at": row.completed_at.isoformat() if row.completed_at else None,
+    }
+
     row.status = "completed"
-    row.completed_at = now()
-    row.actual_result = actual_result.strip()
+    row.completed_at = completed_at
+    row.actual_result = result
+    row.completed_by_user_id = principal.user.id
+    row.execution_evidence_json = {
+        "source": "consultancy_center",
+        "source_module": source_module,
+        "evidence": evidence_items,
+        "recorded_at": completed_at.isoformat(),
+    }
+
     task = _action_task(db, principal, row.id)
     if task is not None:
         task.status = "completed"
-        task.completed_at = row.completed_at
-        if row.actual_result:
-            task.evidence = row.actual_result
+        task.completed_at = completed_at
+        task.evidence = result
+
+    record_audit(
+        db,
+        principal=principal,
+        action="consultancy_action_completed",
+        module="consultancy",
+        entity_type="atlas_action_plan_item",
+        entity_id=row.id,
+        farm_id=row.farm_id,
+        description=f"Ação consultiva concluída com evidência: {row.title}",
+        before=before,
+        after={
+            "status": row.status,
+            "actual_result": row.actual_result,
+            "completed_by_user_id": row.completed_by_user_id,
+            "completed_at": row.completed_at.isoformat(),
+            "execution_evidence": row.execution_evidence_json,
+        },
+    )
     db.commit()
     return _action_payload(row, task)
 
@@ -382,14 +438,27 @@ def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
             OperationalTask.source_type == "consultancy_action"
         )
     )
+    db.scalar(
+        select(func.count()).select_from(AtlasActionPlanItem).where(
+            AtlasActionPlanItem.completed_by_user_id.is_not(None)
+        )
+    )
+    db.scalar(
+        select(func.count()).select_from(AtlasActionPlanItem).where(
+            AtlasActionPlanItem.execution_evidence_json.is_not(None)
+        )
+    )
     return {
         "status": "ready",
         "schema_ready": True,
         "idempotency": True,
         "agenda_sync": True,
         "bidirectional_completion": True,
+        "execution_evidence_required": True,
+        "completion_actor": True,
+        "audit_trail": True,
         "farm_scope": True,
-        "migration": "0047",
+        "migration": "0048",
     }
 
 

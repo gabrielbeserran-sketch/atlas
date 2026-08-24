@@ -11,6 +11,8 @@ class AtlasConsultancyAction {
     required this.completedAt,
     required this.expectedResult,
     required this.actualResult,
+    required this.completedByUserId,
+    required this.executionEvidence,
     required this.agendaTaskId,
     required this.replayed,
   });
@@ -26,6 +28,8 @@ class AtlasConsultancyAction {
   final DateTime? completedAt;
   final String expectedResult;
   final String actualResult;
+  final String completedByUserId;
+  final Map<String, dynamic> executionEvidence;
   final String agendaTaskId;
   final bool replayed;
 
@@ -47,6 +51,10 @@ class AtlasConsultancyAction {
       )?.toLocal(),
       expectedResult: map['expected_result']?.toString() ?? '',
       actualResult: map['actual_result']?.toString() ?? '',
+      completedByUserId: map['completed_by_user_id']?.toString() ?? '',
+      executionEvidence: map['execution_evidence'] is Map
+          ? Map<String, dynamic>.from(map['execution_evidence'] as Map)
+          : const <String, dynamic>{},
       agendaTaskId: map['agenda_task_id']?.toString() ?? '',
       replayed: map['replayed'] == true,
     );

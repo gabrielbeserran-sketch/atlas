@@ -52,12 +52,18 @@ class AtlasConsultancyActionService {
 
   Future<AtlasConsultancyAction> complete({
     required String actionId,
-    String actualResult = '',
+    required String actualResult,
+    required String sourceModule,
+    List<String> evidence = const <String>[],
   }) async {
     final response = await _api.request(
       'PATCH',
       '/business/consulting/actions/$actionId/complete',
-      queryParameters: {'actual_result': actualResult},
+      body: {
+        'actual_result': actualResult.trim(),
+        'source_module': sourceModule.trim(),
+        'evidence': evidence.where((item) => item.trim().isNotEmpty).toList(),
+      },
     );
     return AtlasConsultancyAction.fromMap(response);
   }

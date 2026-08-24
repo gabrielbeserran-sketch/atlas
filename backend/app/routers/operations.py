@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_permission
 from ..database import get_db
+from ..services.audit import record_audit
 from ..business_models import AtlasActionPlanItem
 from ..models import (
     AnimalMovement,
@@ -322,6 +323,17 @@ def update_task(
     if source_backed:
         changes.pop("source_type", None)
     due_at_changed = "due_at" in changes
+    requested_status = changes.get("status", task.status)
+    requested_evidence = str(changes.get("evidence", task.evidence) or "").strip()
+    if (
+        task.source_type == "consultancy_action"
+        and requested_status == "completed"
+        and len(requested_evidence) < 3
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="Informe a evidência/resultado da execução antes de concluir esta ação consultiva.",
+        )
     for field, value in changes.items():
         setattr(task, field, value)
     if task.status == "completed" and task.completed_at is None:
@@ -344,8 +356,35 @@ def update_task(
             action.due_at = task.due_at
             action.status = task.status
             action.completed_at = task.completed_at
-            if task.status == "completed" and task.evidence.strip():
+            if task.status == "completed":
                 action.actual_result = task.evidence.strip()
+                action.completed_by_user_id = principal.user.id
+                action.execution_evidence_json = {
+                    "source": "agenda",
+                    "source_module": action.area,
+                    "evidence": [task.evidence.strip()],
+                    "recorded_at": task.completed_at.isoformat() if task.completed_at else None,
+                }
+                record_audit(
+                    db,
+                    principal=principal,
+                    action="consultancy_action_completed_from_agenda",
+                    module="agenda",
+                    entity_type="atlas_action_plan_item",
+                    entity_id=action.id,
+                    farm_id=action.farm_id,
+                    description=f"Ação consultiva concluída pela Agenda: {action.title}",
+                    after={
+                        "actual_result": action.actual_result,
+                        "completed_by_user_id": action.completed_by_user_id,
+                        "completed_at": action.completed_at.isoformat() if action.completed_at else None,
+                        "execution_evidence": action.execution_evidence_json,
+                    },
+                )
+            else:
+                action.actual_result = ""
+                action.completed_by_user_id = None
+                action.execution_evidence_json = {}
 
     if source_backed and due_at_changed:
         if task.source_type == "reproduction_event":
