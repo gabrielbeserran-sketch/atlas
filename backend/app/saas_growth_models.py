@@ -86,9 +86,13 @@ class CommunicationDelivery(Base):
 
 class OnboardingProgress(Base):
     __tablename__='onboarding_progress'
+    __table_args__=(
+        UniqueConstraint('company_id','farm_id',name='uq_onboarding_progress_company_farm'),
+    )
     id: Mapped[str]=mapped_column(String(80),primary_key=True,default=lambda:new_id('onboarding'))
     tenant_id: Mapped[str]=mapped_column(String(80),index=True)
-    company_id: Mapped[str]=mapped_column(ForeignKey('companies.id',ondelete='CASCADE'),unique=True,index=True)
+    company_id: Mapped[str]=mapped_column(ForeignKey('companies.id',ondelete='CASCADE'),index=True)
+    farm_id: Mapped[str|None]=mapped_column(ForeignKey('farms.id',ondelete='CASCADE'),nullable=True,index=True)
     steps_json: Mapped[dict[str,bool]]=mapped_column(JSON,default=dict)
     completion_percent: Mapped[float]=mapped_column(Float,default=0)
     completed_at: Mapped[datetime|None]=mapped_column(DateTime(timezone=True),nullable=True)

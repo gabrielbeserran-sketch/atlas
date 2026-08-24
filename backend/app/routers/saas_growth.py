@@ -89,6 +89,34 @@ def _onboarding_farm(db: Session, principal: Principal, farm_id: str) -> Farm:
     return farm
 
 
+def _onboarding_row(
+    db: Session,
+    principal: Principal,
+    farm_id: str,
+    *,
+    claim_legacy: bool = False,
+) -> OnboardingProgress | None:
+    row = db.scalar(
+        select(OnboardingProgress).where(
+            OnboardingProgress.company_id == principal.company.id,
+            OnboardingProgress.farm_id == farm_id,
+        )
+    )
+    if row is not None:
+        return row
+
+    legacy = db.scalar(
+        select(OnboardingProgress).where(
+            OnboardingProgress.company_id == principal.company.id,
+            OnboardingProgress.farm_id.is_(None),
+        )
+    )
+    if legacy is not None and claim_legacy:
+        legacy.farm_id = farm_id
+        db.add(legacy)
+    return legacy
+
+
 def _onboarding_evidence(
     db: Session,
     principal: Principal,
@@ -209,7 +237,7 @@ def get_onboarding(
     p: Principal = Depends(require_permission('farms.read')),
 ):
     farm = _onboarding_farm(db, p, farm_id)
-    row = db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id == p.company.id))
+    row = _onboarding_row(db, p, farm.id)
     steps, evidence = _onboarding_evidence(db, p, farm, row)
     return _onboarding_payload(row, farm_id=farm.id, steps=steps, evidence=evidence)
 
@@ -231,9 +259,13 @@ def onboarding(
     if forbidden:
         raise HTTPException(422, 'Etapas automáticas são validadas pelos dados oficiais do Atlas.')
 
-    row = db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id == p.company.id))
+    row = _onboarding_row(db, p, farm.id, claim_legacy=True)
     if row is None:
-        row = OnboardingProgress(tenant_id=p.company.tenant_id, company_id=p.company.id)
+        row = OnboardingProgress(
+            tenant_id=p.company.tenant_id,
+            company_id=p.company.id,
+            farm_id=farm.id,
+        )
 
     persisted = dict(row.steps_json or {})
     if 'initial_training' in requested_steps:
@@ -257,6 +289,12 @@ def onboarding(
 @router.get('/onboarding/deployment-readiness')
 def onboarding_deployment_readiness(db: Session = Depends(get_db)):
     db.scalar(select(func.count()).select_from(OnboardingProgress))
+    # Esta consulta falha antes da migration 0046 e prova que farm_id existe.
+    db.scalar(
+        select(func.count()).select_from(OnboardingProgress).where(
+            OnboardingProgress.farm_id.is_not(None)
+        )
+    )
     return {
         'status': 'ready',
         'schema_ready': True,
@@ -264,8 +302,11 @@ def onboarding_deployment_readiness(db: Session = Depends(get_db)):
         'write_api': True,
         'persistent_progress': True,
         'farm_scoped_evidence': True,
+        'farm_scoped_manual_progress': True,
+        'legacy_progress_migration': True,
         'automatic_evidence': True,
         'manual_step_restricted': True,
+        'migration': '0046',
     }
 
 
@@ -290,8 +331,13 @@ def create_export(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends
 def client_portal(db:Session=Depends(get_db),p:Principal=Depends(read_dep)):
     sub=db.scalar(select(CompanySubscription).where(CompanySubscription.company_id==p.company.id))
     invoices=db.scalar(select(func.count()).select_from(BillingInvoice).where(BillingInvoice.company_id==p.company.id)) or 0
-    onboarding=db.scalar(select(OnboardingProgress).where(OnboardingProgress.company_id==p.company.id))
-    return {'company_id':p.company.id,'subscription_status':sub.status if sub else 'none','invoice_count':invoices,'onboarding_percent':onboarding.completion_percent if onboarding else 0}
+    onboarding_percent=db.scalar(
+        select(func.avg(OnboardingProgress.completion_percent)).where(
+            OnboardingProgress.company_id==p.company.id,
+            OnboardingProgress.farm_id.is_not(None),
+        )
+    ) or 0
+    return {'company_id':p.company.id,'subscription_status':sub.status if sub else 'none','invoice_count':invoices,'onboarding_percent':float(onboarding_percent)}
 
 @router.get('/admin/dashboard')
 def admin_dashboard(db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):

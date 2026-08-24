@@ -6049,3 +6049,12 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - Apenas treinamento inicial permanece como confirmação manual persistida.
 - Backend bloqueia a autoridade manual sobre passos automáticos e devolve evidências explicáveis por etapa.
 - Nenhuma migration nova: `onboarding_progress` continua armazenando somente o estado manual necessário.
+
+## Registro de alteração — 2026-08-24 — Pós-V21 Pacote 9E
+
+- Corrige o último ponto ainda company-scoped da implantação: a confirmação manual de treinamento passa a ser isolada por fazenda.
+- Migration `20260824_0046` adiciona `farm_id` a `onboarding_progress`, remove unicidade exclusiva por empresa e cria unicidade `company_id + farm_id`.
+- Estado legado é preservado e expandido para as fazendas existentes; empresa sem fazenda mantém fallback legado até o primeiro vínculo real.
+- `GET/POST /saas-growth/onboarding` passam a selecionar o registro por empresa + fazenda.
+- Evidências automáticas do 9D permanecem calculadas pelos módulos oficiais e somente `initial_training` continua manual.
+- Readiness de produção passa a comprovar a coluna `farm_id` e a migration `0046`.

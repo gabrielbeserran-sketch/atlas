@@ -1,0 +1,21 @@
+{
+  "package": "Pós-V21 Pacote 9E — Onboarding realmente isolado por fazenda",
+  "baseline": "9D publicado em produção — commit d6e1b9f",
+  "database_migration": "20260824_0046",
+  "previous_migration": "20260824_0045",
+  "release_paths": [
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/alembic/versions/20260824_0046_onboarding_progress_farm_scope.py",
+    "backend/app/routers/saas_growth.py",
+    "backend/app/saas_growth_models.py",
+    "docs/ATLAS_POS_V21_PACOTE_9E_MANIFEST.json",
+    "docs/ATLAS_POS_V21_PACOTE_9E_ONBOARDING_FARM_SCOPED_20260824.md",
+    "scripts/quality/check_post_v21_package9e_farm_scoped_onboarding_deployed.ps1",
+    "scripts/quality/check_post_v21_package9e_staged_release.ps1",
+    "scripts/quality/run_post_v21_package9e_farm_scoped_onboarding_homologation.ps1",
+    "scripts/quality/run_post_v21_package9e_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_package9e_release.ps1",
+    "test/features/consultancy_client/post_v21_package9e_farm_scoped_onboarding_contract_test.dart",
+    "tools/atlas_post_v21_package9e_farm_scoped_onboarding_gate.py"
+  ]
+}
