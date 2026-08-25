@@ -1,0 +1,24 @@
+{
+  "package": "post-v21-macro10b-intelligence-integrity",
+  "baseline_migration": "0049",
+  "migration": null,
+  "release_paths": [
+    "ATLAS_BASELINE_MANIFEST.json",
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/app/routers/livestock.py",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10B_INTELIGENCIA_INTEGRIDADE_20260825.md",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10B_MANIFEST.json",
+    "docs/ATLAS_POS_V21_MACRO10B_INTEGRITY_MATRIX.csv",
+    "docs/ATLAS_POS_V21_MACRO10B_INTEGRITY_MATRIX.json",
+    "lib/features/dashboard/data/services/atlas_operational_intelligence_service.dart",
+    "lib/features/dashboard/domain/models/atlas_operational_intelligence_data.dart",
+    "scripts/quality/atlas_predictive_risk_audit.py",
+    "scripts/quality/check_post_v21_macro10b_deployed.ps1",
+    "scripts/quality/check_post_v21_macro10b_staged_release.ps1",
+    "scripts/quality/run_post_v21_macro10b_homologation.ps1",
+    "scripts/quality/run_post_v21_macro10b_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_macro10b_release.ps1",
+    "test/features/dashboard/post_v21_macro10b_intelligence_integrity_contract_test.dart",
+    "tools/atlas_post_v21_macro10b_integrity_gate.py"
+  ]
+}

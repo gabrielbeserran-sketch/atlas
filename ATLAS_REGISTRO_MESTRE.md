@@ -6065,3 +6065,13 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - Vínculo com registro operacional de origem.
 - Histórico longitudinal e eficácia por fazenda/área.
 - Migration 0049.
+
+## Pós-V21 — Macropacote 10B: Inteligência e Integridade do Produto (2026-08-25)
+
+- Inteligência operacional consolidada em uma fonte canônica compartilhada por Dashboard, Central de Alertas e Central da Consultoria.
+- Corrigido contrato de posição das prioridades (`position`, com compatibilidade `priority`).
+- Frontend passa a rejeitar resumo/alertas de fazenda divergente e versões contratuais incompatíveis.
+- Auditoria transversal 10B cobre 12 módulos essenciais, 541 rotas backend, sintaxe Python, contratos existentes, autoridade remota/cache e ausência de chamadas diretas fora da fonte canônica.
+- `atlas_full_project_audit.py` permanece aprovado e `atlas_predictive_risk_audit.py` foi promovido para a baseline `post-v21-macro10b-integrity`, eliminando o falso bloqueio da antiga baseline V18.
+- Matriz de integridade gerada em CSV + JSON dentro de `docs/`.
+- Nenhuma migration nova: banco permanece na revisão `0049`.

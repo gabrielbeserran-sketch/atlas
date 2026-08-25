@@ -21,9 +21,29 @@ class AtlasOperationalIntelligenceService {
       ),
     ]);
 
+    final summary = responses[0];
+    final alerts = responses[1];
+    final summaryFarmId = summary['farm_id']?.toString() ?? '';
+    final alertsFarmId = alerts['farm_id']?.toString() ?? '';
+    final summaryContract = summary['contract_version']?.toString() ?? '';
+    final alertsContract = alerts['contract_version']?.toString() ?? '';
+
+    if (summaryFarmId != farmId || alertsFarmId != farmId) {
+      throw StateError(
+        'Inteligência operacional retornou contexto de fazenda divergente.',
+      );
+    }
+    if (summaryContract.isNotEmpty &&
+        alertsContract.isNotEmpty &&
+        summaryContract != alertsContract) {
+      throw StateError(
+        'Contratos de inteligência operacional estão fora de sincronia.',
+      );
+    }
+
     return AtlasOperationalIntelligenceData.fromResponses(
-      summary: responses[0],
-      alertsResponse: responses[1],
+      summary: summary,
+      alertsResponse: alerts,
     );
   }
 }

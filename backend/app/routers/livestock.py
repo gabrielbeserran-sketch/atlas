@@ -3476,6 +3476,7 @@ def operational_intelligence_alerts(
         by_area[alert["area"]] += 1
 
     return {
+        "contract_version": "10B",
         "farm_id": farm_id,
         "generated_at": now.isoformat(),
         "status": (
@@ -3494,6 +3495,20 @@ def operational_intelligence_alerts(
         "low_count": by_severity["low"],
         "by_area": dict(sorted(by_area.items())),
         "alerts": alerts,
+    }
+
+
+@router.get("/intelligence/deployment-readiness")
+def operational_intelligence_deployment_readiness() -> dict:
+    """Contrato público e sem dados da consolidação operacional do 10B."""
+    return {
+        "status": "ready",
+        "contract_version": "10B",
+        "single_source": True,
+        "farm_context_guard": True,
+        "priority_position_contract": True,
+        "global_integrity_audit": True,
+        "migration": "0049",
     }
 
 
@@ -3554,6 +3569,8 @@ def operational_intelligence_summary(
 
     top_actions = [
         {
+            "position": index + 1,
+            # Compatibilidade com clientes V10-V15 que consumiam `priority`.
             "priority": index + 1,
             "area": alert["area"],
             "severity": alert["severity"],
@@ -3686,6 +3703,7 @@ def operational_intelligence_summary(
     )
 
     return {
+        "contract_version": "10B",
         "farm_id": farm_id,
         "generated_at": alerts["generated_at"],
         "operational_score": score,

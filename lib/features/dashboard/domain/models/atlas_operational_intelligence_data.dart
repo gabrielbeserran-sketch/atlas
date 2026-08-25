@@ -23,7 +23,7 @@ class AtlasOperationalActionData {
 
   factory AtlasOperationalActionData.fromMap(Map<String, dynamic> map) {
     return AtlasOperationalActionData(
-      position: _asInt(map['position']),
+      position: _asInt(map['position'] ?? map['priority']),
       priorityScore: _asInt(map['priority_score']),
       severity: map['severity']?.toString() ?? 'low',
       area: map['area']?.toString() ?? 'Operação',

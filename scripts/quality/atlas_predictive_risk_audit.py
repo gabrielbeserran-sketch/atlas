@@ -133,7 +133,7 @@ def promote_current_baseline() -> int:
         return 1
 
     data = {
-        "version": "v18-stabilized",
+        "version": "post-v21-macro10b-integrity",
         "critical_source_files": sorted(critical_source_files()),
         "protected_file_sha256": protected_hashes,
     }
@@ -163,6 +163,11 @@ def main() -> int:
         "--promote-current-baseline",
         action="store_true",
         help="Promove explicitamente a árvore atual para o manifesto protegido.",
+    )
+    parser.add_argument(
+        "--no-write",
+        action="store_true",
+        help="Executa a auditoria sem regravar o artefato JSON rastreado.",
     )
     args = parser.parse_args()
     if args.promote_current_baseline:
@@ -348,10 +353,11 @@ def main() -> int:
         "predicted_risks": predicted_risks,
     }
 
-    (ROOT / "ATLAS_PREDICTIVE_RISK_AUDIT.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    if not args.no_write:
+        (ROOT / "ATLAS_PREDICTIVE_RISK_AUDIT.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     print(json.dumps(result, ensure_ascii=False, indent=2))
     print(

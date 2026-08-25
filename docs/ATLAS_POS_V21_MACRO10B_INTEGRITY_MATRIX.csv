@@ -1,0 +1,13 @@
+module,feature_folder,dart_files,screens,services,remote_service_files,local_cache_service_files,status
+Fazenda,farm,8,4,2,1,1,present
+Rebanho,herd,7,3,2,2,1,present
+Animal,animal,8,3,4,3,1,present
+Reprodução,animal_reproduction,8,3,3,1,1,present
+Sanidade,animal_health,6,3,2,1,1,present
+Nutrição,nutrition,4,1,2,1,1,present
+Piquetes,paddock,4,2,1,1,0,present
+Estoque,farm_inventory,6,3,2,1,1,present
+Financeiro,farm_finance,6,3,2,1,1,present
+Agenda,farm_agenda,4,2,1,1,1,present
+Consultoria,consultancy_client,13,1,5,4,0,present
+Dashboard,dashboard,30,7,16,1,0,present
