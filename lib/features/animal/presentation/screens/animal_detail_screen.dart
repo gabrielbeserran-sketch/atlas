@@ -412,6 +412,33 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
         manualEventCount;
   }
 
+  int get traceabilityCoverage {
+    final checkpoints = <bool>[
+      animal.tag.trim().isNotEmpty,
+      animal.category.trim().isNotEmpty,
+      animal.sex.trim().isNotEmpty,
+      animal.breed.trim().isNotEmpty,
+      animal.birthDate.trim().isNotEmpty,
+      group.name.trim().isNotEmpty,
+      weights.isNotEmpty || animal.weight > 0,
+      healthRecordCount > 0,
+      reproductionRecords.isNotEmpty || const <String>{'macho', 'male'}.contains(animal.sex.toLowerCase()),
+      movementCount > 0 || animal.lotId.trim().isNotEmpty,
+      enterpriseTimelineCount > 0,
+      documentCount > 0 || photos.isNotEmpty,
+    ];
+    final completed = checkpoints.where((value) => value).length;
+    return ((completed / checkpoints.length) * 100).round();
+  }
+
+  String get traceabilityCoverageLabel {
+    final value = traceabilityCoverage;
+    if (value >= 90) return 'Rastreabilidade muito completa';
+    if (value >= 75) return 'Rastreabilidade consistente';
+    if (value >= 50) return 'Rastreabilidade parcial';
+    return 'Rastreabilidade precisa de dados';
+  }
+
   String get reproductionStatus {
     if (reproductionRecords.isEmpty) return 'Sem registros';
 
@@ -3352,6 +3379,12 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               value: '$totalTimelineRecords eventos',
               subtitle: 'Histórico consolidado',
               icon: Icons.history_outlined,
+            ),
+            AnimalMetricCard(
+              title: 'Rastreabilidade',
+              value: '$traceabilityCoverage%',
+              subtitle: traceabilityCoverageLabel,
+              icon: Icons.verified_outlined,
             ),
           ],
         ),

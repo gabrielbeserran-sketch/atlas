@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_event/domain/models/animal_event_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,7 +44,7 @@ class AnimalEventStorageService {
     }
 
     try {
-      final decodedData = jsonDecode(savedData) as List<dynamic>;
+      final decodedData = AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
 
       return decodedData
           .map(

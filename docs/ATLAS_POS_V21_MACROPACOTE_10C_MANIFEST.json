@@ -1,0 +1,26 @@
+{
+  "package": "10C",
+  "title": "Rastreabilidade, Dados e UX",
+  "release_paths": [
+    "ATLAS_BASELINE_MANIFEST.json",
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/alembic/versions/20260825_0050_data_quality_utf8_traceability.py",
+    "backend/app/routers/livestock.py",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10C_RASTREABILIDADE_DADOS_UX_20260825.md",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10C_MANIFEST.json",
+    "lib/features/animal/presentation/screens/animal_detail_screen.dart",
+    "lib/features/animal_weight/data/services/animal_weight_storage_service.dart",
+    "lib/features/animal_movement/data/services/animal_movement_storage_service.dart",
+    "lib/features/animal_event/data/services/animal_event_storage_service.dart",
+    "lib/features/animal_photo/data/services/animal_photo_storage_service.dart",
+    "lib/features/animal_document/data/services/animal_document_storage_service.dart",
+    "scripts/quality/atlas_predictive_risk_audit.py",
+    "scripts/quality/check_post_v21_macro10c_deployed.ps1",
+    "scripts/quality/check_post_v21_macro10c_staged_release.ps1",
+    "scripts/quality/run_post_v21_macro10c_homologation.ps1",
+    "scripts/quality/run_post_v21_macro10c_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_macro10c_release.ps1",
+    "test/features/animal/post_v21_macro10c_traceability_utf8_contract_test.dart",
+    "tools/atlas_post_v21_macro10c_traceability_data_ux_gate.py"
+  ]
+}

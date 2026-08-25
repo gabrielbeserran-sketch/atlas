@@ -6075,3 +6075,13 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - `atlas_full_project_audit.py` permanece aprovado e `atlas_predictive_risk_audit.py` foi promovido para a baseline `post-v21-macro10b-integrity`, eliminando o falso bloqueio da antiga baseline V18.
 - Matriz de integridade gerada em CSV + JSON dentro de `docs/`.
 - Nenhuma migration nova: banco permanece na revisão `0049`.
+
+## Pós-V21 — Macropacote 10C — Rastreabilidade, Dados e UX (2026-08-25)
+
+- Central do Animal passa a expor cobertura de rastreabilidade baseada em identificação, lote, pesagens, sanidade, reprodução, movimentações, timeline enterprise, fotos e documentos.
+- Caches legados usados pela Central do Animal são normalizados por `AtlasTextNormalizer` antes de reconstruir os modelos locais.
+- Migration `20260825_0050_data_quality_utf8_traceability.py` executa novo saneamento global de colunas textuais e, agora, também JSON/JSONB, registrando prova persistente em `atlas_data_quality_state`.
+- A normalização UTF-8 continua ativa na entrada/saída Flutter e na borda `before_flush` do SQLAlchemy, evitando reintrodução por operações ORM.
+- `AtlasUiText` permanece como vocabulário canônico para categorias técnicas (`health`, `nutrition`, `maintenance`, `inventory`, `reproduction`, `livestock`).
+- Gate 10C bloqueia mojibake em superfícies de produção, rótulos técnicos literais na UI e regressões de rastreabilidade/normalização.
+- A baseline Alembic avança de `0049` para `0050`.

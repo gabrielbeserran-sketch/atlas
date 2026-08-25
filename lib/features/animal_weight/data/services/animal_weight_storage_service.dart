@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,7 +86,7 @@ class AnimalWeightStorageService {
     }
 
     try {
-      final decodedData = jsonDecode(savedData) as List<dynamic>;
+      final decodedData = AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
 
       return decodedData
           .map(

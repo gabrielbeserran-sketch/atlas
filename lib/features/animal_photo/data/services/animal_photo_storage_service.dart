@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_media_remote_service.dart';
 import 'package:projeto_atlas/features/animal_photo/domain/models/animal_photo_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -179,7 +180,7 @@ class AnimalPhotoStorageService {
     if (saved == null || saved.isEmpty) return [];
 
     try {
-      final decoded = jsonDecode(saved) as List<dynamic>;
+      final decoded = AtlasTextNormalizer.normalize(jsonDecode(saved)) as List<dynamic>;
       return decoded
           .map(
             (item) => AnimalPhotoData.fromMap(
