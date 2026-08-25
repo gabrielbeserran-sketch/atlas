@@ -1,0 +1,7 @@
+﻿ M ATLAS_AUDITORIA_RECUPERACAO_FINAL.json
+ M ATLAS_POWERSHELL_STATIC_AUDIT.json
+ M backend/atlas_test.db
+?? ATLAS_10D_FAILURES.zip
+?? _atlas_snapshot_meta/
+?? criar_snapshot_integral_atlas_v1_rc.ps1
+?? sanitize_atlas_post_9c_worktree.ps1

@@ -1,0 +1,170 @@
+﻿module,files,screens_widgets,services_engines,models_contracts,local_dependency_count,depends_on,used_by,lines
+action_plan,5,1,3,1,4,"core, farm_audit, performance_center, strategy_execution","continuous_improvement, core, dashboard, farm_audit, knowledge_learning, performance_center",1199
+analytics,2,1,1,0,1,core,,231
+animal,8,3,4,1,60,"animal_document, animal_event, animal_executive_panel, animal_genealogy, animal_health, animal_health_enterprise, animal_intelligence_360, animal_movement, animal_nutrition_enterprise, animal_operations_center, animal_photo, animal_reproduction, animal_reproduction_enterprise, animal_weight, animal_weight_intelligence, animal_zootechnical, atlas_advanced_ai, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_environmental_ai, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_platform_resilience, atlas_precision_livestock, atlas_predictive_ai_suite, atlas_quality_release, atlas_reproductive_ai, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, atlas_veterinary_ai, core, enterprise_platform, farm, farm_finance, herd","animal_document, animal_event, animal_executive_panel, animal_health, animal_health_enterprise, animal_intelligence_360, animal_movement, animal_nutrition_enterprise, animal_operations_center, animal_photo, animal_reproduction, animal_reproduction_enterprise, animal_weight, animal_weight_intelligence, animal_zootechnical, atlas_advanced_ai, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_environmental_ai, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_platform_resilience, atlas_precision_livestock, atlas_predictive_ai_suite, atlas_quality_release, atlas_reproductive_ai, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, atlas_veterinary_ai, diagnostics, dr_beserra, executive_alerts, farm, farm_handling, herd, indicators, technical_dashboard",8526
+animal_document,4,2,1,1,4,"animal, core, farm, herd","animal, animal_event, animal_intelligence_360, animal_operations_center",1919
+animal_enterprise_suite,1,1,0,0,0,,"animal_executive_panel, animal_health_enterprise, animal_intelligence_360, animal_nutrition_enterprise, animal_operations_center, animal_reproduction_enterprise, animal_weight_intelligence, atlas_advanced_ai, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_environmental_ai, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_platform_resilience, atlas_precision_livestock, atlas_predictive_ai_suite, atlas_quality_release, atlas_reproductive_ai, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, atlas_veterinary_ai",213
+animal_event,7,2,2,3,11,"animal, animal_document, animal_health, animal_movement, animal_photo, animal_reproduction, animal_weight, core, enterprise_platform, farm, herd","animal, animal_intelligence_360",1960
+animal_executive_panel,1,1,0,0,8,"animal, animal_enterprise_suite, animal_health, animal_nutrition_enterprise, animal_reproduction, animal_weight, farm, herd",animal,370
+animal_genealogy,3,1,1,1,2,"core, enterprise_platform",animal,774
+animal_health,6,3,2,1,6,"animal, core, farm, farm_handling, farm_inventory, herd","animal, animal_event, animal_executive_panel, animal_health_enterprise, animal_intelligence_360, animal_operations_center, core, dashboard, dr_beserra, executive_alerts, farm, indicators, livestock_operations, technical_dashboard",2636
+animal_health_enterprise,1,1,0,0,5,"animal, animal_enterprise_suite, animal_health, farm, herd",animal,270
+animal_intelligence_360,3,1,2,0,14,"animal, animal_document, animal_enterprise_suite, animal_event, animal_health, animal_movement, animal_nutrition_enterprise, animal_operations_center, animal_photo, animal_reproduction, animal_weight, core, farm, herd",animal,1314
+animal_movement,5,2,2,1,5,"animal, core, enterprise_platform, farm, herd","animal, animal_event, animal_intelligence_360, herd",1054
+animal_nutrition_enterprise,3,1,1,1,4,"animal, animal_enterprise_suite, farm, herd","animal, animal_executive_panel, animal_intelligence_360, animal_operations_center",570
+animal_operations_center,3,1,1,1,10,"animal, animal_document, animal_enterprise_suite, animal_health, animal_nutrition_enterprise, animal_reproduction, animal_weight, core, farm, herd","animal, animal_intelligence_360",1153
+animal_photo,4,2,1,1,4,"animal, core, farm, herd","animal, animal_event, animal_intelligence_360",1238
+animal_reproduction,8,3,4,1,5,"animal, core, farm, farm_handling, herd","animal, animal_event, animal_executive_panel, animal_intelligence_360, animal_operations_center, animal_reproduction_enterprise, core, dashboard, dr_beserra, executive_alerts, farm, indicators, livestock_operations, technical_dashboard",2692
+animal_reproduction_enterprise,1,1,0,0,5,"animal, animal_enterprise_suite, animal_reproduction, farm, herd",animal,249
+animal_weight,6,2,3,1,5,"animal, core, enterprise_platform, farm, herd","animal, animal_event, animal_executive_panel, animal_intelligence_360, animal_operations_center, animal_weight_intelligence, animal_zootechnical, herd, indicators, technical_dashboard",1245
+animal_weight_intelligence,1,1,0,0,5,"animal, animal_enterprise_suite, animal_weight, farm, herd",animal,251
+animal_zootechnical,3,1,1,1,5,"animal, animal_weight, enterprise_platform, farm, herd",animal,966
+app,3,1,0,0,2,"core, unified_workflow",,191
+atlas_advanced,3,1,1,1,1,core,,241
+atlas_advanced_ai,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1355
+atlas_ai,15,2,8,5,4,"core, diagnostics, farm, predictive","dashboard, executive_alerts, executive_kpis, farm",6995
+atlas_ai_2,3,2,1,0,1,core,,481
+atlas_ai_enterprise,2,1,1,0,1,core,,359
+atlas_auth_sync_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1122
+atlas_automation_operations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1078
+atlas_autonomous_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1213
+atlas_backend_foundation,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,892
+atlas_bi,14,5,5,4,11,"atlas_bi_analytics, decision_engine, decision_engine_v2, executive_ai_advisor, executive_goals, executive_intelligence, executive_kpis, mission_control, predictive_analytics, strategy_center, workflow_engine","atlas_bi_analytics, atlas_copilot, dashboard, decision_engine, decision_engine_v2, decision_tracking, executive_ai_advisor, executive_intelligence, mission_control, predictive_analytics, workflow_engine",6392
+atlas_bi_analytics,3,1,1,1,1,atlas_bi,"atlas_bi, atlas_copilot, dashboard, decision_engine, executive_ai_advisor, executive_intelligence",1332
+atlas_business,3,1,1,1,1,core,,413
+atlas_climate_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1225
+atlas_cloud_security_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1210
+atlas_commercial_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1356
+atlas_commercial_operations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1238
+atlas_copilot,3,1,1,1,2,"atlas_bi, atlas_bi_analytics",,1684
+atlas_enterprise_50,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1345
+atlas_enterprise_operations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1245
+atlas_environmental_ai,4,1,2,1,4,"animal, animal_enterprise_suite, farm, herd",animal,1308
+atlas_executive_intelligence,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1241
+atlas_executive_platform,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1255
+atlas_finance_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1391
+atlas_financial_integrations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1199
+atlas_geospatial_platform,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1300
+atlas_global_platform,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1070
+atlas_governance_operations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1246
+atlas_governance_people_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1237
+atlas_intelligence,3,1,1,1,1,atlas_os,"dashboard, executive_core",1613
+atlas_intelligence_center,3,1,1,1,3,"core, enterprise_platform, reports","core, farm_finance",844
+atlas_intelligence_reports_experience,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1104
+atlas_iot_platform,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1218
+atlas_land_intelligence,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,980
+atlas_livestock_integration,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1081
+atlas_official_integrations,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1117
+atlas_operations_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1285
+atlas_os,3,1,1,1,3,"core, executive_brain, mission_control","atlas_intelligence, dashboard, executive_core",1406
+atlas_platform_resilience,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1230
+atlas_precision_livestock,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1375
+atlas_predictive_ai_suite,4,1,2,1,4,"animal, animal_enterprise_suite, farm, herd",animal,1294
+atlas_quality_release,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1069
+atlas_reproductive_ai,4,1,2,1,4,"animal, animal_enterprise_suite, farm, herd",animal,1076
+atlas_reproductive_premium,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1311
+atlas_rural_business,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1203
+atlas_saas_platform,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1302
+atlas_scale,2,1,0,1,0,,,87
+atlas_sprints_11_15,3,1,1,1,1,core,,138
+atlas_sprints_16_20,3,1,1,1,1,core,,289
+atlas_sprints_21_25,3,1,1,1,1,core,,299
+atlas_supply_chain,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1001
+atlas_supply_logistics_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1296
+atlas_sustainability_ecosystem,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,988
+atlas_sustainability_enterprise,4,1,2,1,5,"animal, animal_enterprise_suite, core, farm, herd",animal,1389
+atlas_veterinary_ai,4,1,2,1,4,"animal, animal_enterprise_suite, farm, herd",animal,1184
+authentication,4,4,0,0,3,"core, dashboard, enterprise_platform",core,731
+automation_strategy,2,1,1,0,1,core,,200
+autonomous_consultant,3,1,1,1,5,"core, digital_twin, farm_audit, optimization_engine, recommendation_intelligence","dashboard, farm_audit, optimization_engine",1212
+benefits_realization,4,1,2,1,4,"decision_intelligence_lab, farm_audit, strategy_execution, value_governance","dashboard, performance_center, portfolio_management, strategy_execution, value_governance",1144
+command_center,4,1,2,1,1,core,dashboard,945
+commercial_platform,2,1,1,0,1,core,,235
+commercial_readiness,2,1,0,1,0,,,98
+consultancy_client,13,4,5,4,6,"core, dashboard, enterprise_platform, farm, farm_agenda, reports",core,2485
+consultancy_hub,4,1,2,1,0,,dashboard,636
+consultancy_workflow,4,1,2,1,0,,dashboard,585
+continuous_improvement,4,1,2,1,4,"action_plan, farm_audit, knowledge_learning, performance_center","dashboard, knowledge_learning, performance_center",1014
+copilot,18,8,5,5,4,"core, dashboard, executive_brain, farm","dashboard, farm",5046
+core,251,57,74,24,20,"action_plan, animal_health, animal_reproduction, atlas_intelligence_center, authentication, consultancy_client, dashboard, digital_twin, dr_beserra, enterprise_platform, executive_alerts, farm, farm_agenda, farm_finance, farm_handling, farm_inventory, field_operations, herd, nutrition, reports","action_plan, analytics, animal, animal_document, animal_event, animal_genealogy, animal_health, animal_intelligence_360, animal_movement, animal_operations_center, animal_photo, animal_reproduction, animal_weight, app, atlas_advanced, atlas_advanced_ai, atlas_ai, atlas_ai_2, atlas_ai_enterprise, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_business, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_center, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_os, atlas_platform_resilience, atlas_precision_livestock, atlas_quality_release, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_sprints_11_15, atlas_sprints_16_20, atlas_sprints_21_25, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, authentication, automation_strategy, autonomous_consultant, command_center, commercial_platform, consultancy_client, copilot, dashboard, data_intelligence, decision_engine_v2, diagnostics, digital_twin, enterprise_operations, enterprise_platform, executive_alerts, executive_brain, farm, farm_agenda, farm_finance, farm_inventory, field_operations, governance_resilience, herd, indicators, integration_ecosystem, iot_enterprise, livestock_integration, livestock_operations, mission_control, ml_platform, nutrition, operations, optimization_engine, paddock, performance_center, performance_intelligence, platform_hubs, platform_v1, precision_hub, predictive, realtime, release_engineering, reports, saas_admin, scenario_simulator, security_camera, security_center, security_privacy_continuity, technical_dashboard, unified_workflow, workflow_engine",52843
+dashboard,30,11,15,4,67,"action_plan, animal_health, animal_reproduction, atlas_ai, atlas_bi, atlas_bi_analytics, atlas_intelligence, atlas_os, autonomous_consultant, benefits_realization, command_center, consultancy_hub, consultancy_workflow, continuous_improvement, copilot, core, data_governance, decision_engine, decision_engine_v2, decision_intelligence_lab, diagnostics, digital_twin, enterprise_platform, executive_ai_advisor, executive_alerts, executive_brain, executive_core, executive_goals, executive_intelligence, executive_kpis, farm, farm_agenda, farm_audit, farm_finance, farm_inventory, farm_operations, herd, indicators, integration_hub, investment_capital_allocation, knowledge_learning, mission_control, nutrition, observability, offline_field, optimization_engine, performance_center, performance_intelligence, portfolio_management, predictive_ai, predictive_analytics, quality_center, recommendation_intelligence, reporting, reports, scenario_simulator, strategic_alignment, strategic_capacity, strategic_execution_engine, strategic_scenario_planning, strategy_center, strategy_execution, sync_platform, technical_dashboard, unified_workflow, value_governance, workflow_engine","authentication, consultancy_client, copilot, core, diagnostics",34220
+data_governance,4,1,2,1,0,,dashboard,554
+data_intelligence,3,1,1,1,1,core,,327
+decision_engine,3,1,2,0,4,"atlas_bi, atlas_bi_analytics, executive_ai_advisor, executive_intelligence","atlas_bi, dashboard, decision_engine_v2, decision_tracking",1624
+decision_engine_v2,4,1,3,0,5,"atlas_bi, core, decision_engine, predictive_analytics, workflow_engine","atlas_bi, dashboard, mission_control",1809
+decision_intelligence_lab,3,1,1,1,4,"farm_audit, knowledge_learning, recommendation_intelligence, strategy_execution","benefits_realization, dashboard, recommendation_intelligence, strategy_execution",1313
+decision_tracking,3,1,1,1,2,"atlas_bi, decision_engine",workflow_engine,1154
+diagnostics,7,2,3,2,9,"animal, core, dashboard, farm, farm_agenda, farm_finance, farm_inventory, herd, paddock","atlas_ai, dashboard, executive_alerts, farm, predictive",3825
+digital_twin,7,1,3,2,1,core,"autonomous_consultant, core, dashboard, farm_audit, optimization_engine, scenario_simulator",1734
+dr_beserra,11,1,4,4,10,"animal, animal_health, animal_reproduction, farm, farm_agenda, farm_finance, farm_handling, farm_inventory, herd, nutrition",core,3057
+enterprise_operations,1,1,0,0,2,"core, platform_hubs",,211
+enterprise_platform,33,6,16,8,2,"core, farm","animal, animal_event, animal_genealogy, animal_movement, animal_weight, animal_zootechnical, atlas_intelligence_center, authentication, consultancy_client, core, dashboard, farm, farm_handling, herd, livestock_operations, paddock",8224
+executive_ai_advisor,3,1,1,1,3,"atlas_bi, atlas_bi_analytics, executive_intelligence","atlas_bi, dashboard, decision_engine",1649
+executive_alerts,8,1,5,2,12,"animal, animal_health, animal_reproduction, atlas_ai, core, diagnostics, farm, farm_agenda, farm_finance, farm_inventory, herd, paddock","core, dashboard, executive_kpis",3337
+executive_brain,10,3,4,2,2,"core, executive_core","atlas_os, copilot, dashboard, mission_control",4532
+executive_core,2,0,1,1,2,"atlas_intelligence, atlas_os","dashboard, executive_brain",1016
+executive_goals,8,2,4,2,1,executive_kpis,"atlas_bi, dashboard, executive_kpis, strategy_center",2606
+executive_intelligence,3,1,1,1,2,"atlas_bi, atlas_bi_analytics","atlas_bi, dashboard, decision_engine, executive_ai_advisor",1762
+executive_kpis,8,2,4,2,3,"atlas_ai, executive_alerts, executive_goals","atlas_bi, dashboard, executive_goals, strategy_center",3746
+farm,8,4,2,2,15,"animal, animal_health, animal_reproduction, atlas_ai, copilot, core, diagnostics, enterprise_platform, farm_agenda, farm_finance, farm_inventory, herd, nutrition, paddock, predictive","animal, animal_document, animal_event, animal_executive_panel, animal_health, animal_health_enterprise, animal_intelligence_360, animal_movement, animal_nutrition_enterprise, animal_operations_center, animal_photo, animal_reproduction, animal_reproduction_enterprise, animal_weight, animal_weight_intelligence, animal_zootechnical, atlas_advanced_ai, atlas_ai, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_environmental_ai, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_platform_resilience, atlas_precision_livestock, atlas_predictive_ai_suite, atlas_quality_release, atlas_reproductive_ai, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, atlas_veterinary_ai, consultancy_client, copilot, core, dashboard, diagnostics, dr_beserra, enterprise_platform, executive_alerts, farm_agenda, farm_finance, farm_handling, farm_inventory, field_operations, herd, indicators, livestock_operations, nutrition, paddock, predictive, reports, technical_dashboard",7187
+farm_agenda,4,2,1,1,2,"core, farm","consultancy_client, core, dashboard, diagnostics, dr_beserra, executive_alerts, farm, reports",2493
+farm_audit,4,1,2,1,3,"action_plan, autonomous_consultant, digital_twin","action_plan, autonomous_consultant, benefits_realization, continuous_improvement, dashboard, decision_intelligence_lab, knowledge_learning, performance_center, recommendation_intelligence, strategic_alignment, strategy_execution",1713
+farm_finance,6,3,2,1,3,"atlas_intelligence_center, core, farm","animal, core, dashboard, diagnostics, dr_beserra, executive_alerts, farm, farm_inventory, livestock_operations, reports, technical_dashboard",2910
+farm_handling,4,1,1,2,4,"animal, enterprise_platform, farm, herd","animal_health, animal_reproduction, core, dr_beserra",1556
+farm_inventory,6,3,2,1,3,"core, farm, farm_finance","animal_health, core, dashboard, diagnostics, dr_beserra, executive_alerts, farm, livestock_operations, nutrition, reports, technical_dashboard",3579
+farm_operations,4,1,2,1,0,,"dashboard, field_operations",1120
+field_operations,4,2,1,1,4,"core, farm, farm_operations, paddock",core,883
+flutter_quality,2,1,0,1,0,,,82
+governance_resilience,2,1,1,0,1,core,,249
+herd,7,3,2,2,6,"animal, animal_movement, animal_weight, core, enterprise_platform, farm","animal, animal_document, animal_event, animal_executive_panel, animal_health, animal_health_enterprise, animal_intelligence_360, animal_movement, animal_nutrition_enterprise, animal_operations_center, animal_photo, animal_reproduction, animal_reproduction_enterprise, animal_weight, animal_weight_intelligence, animal_zootechnical, atlas_advanced_ai, atlas_auth_sync_enterprise, atlas_automation_operations, atlas_autonomous_enterprise, atlas_backend_foundation, atlas_climate_enterprise, atlas_cloud_security_enterprise, atlas_commercial_enterprise, atlas_commercial_operations, atlas_enterprise_50, atlas_enterprise_operations, atlas_environmental_ai, atlas_executive_intelligence, atlas_executive_platform, atlas_finance_enterprise, atlas_financial_integrations, atlas_geospatial_platform, atlas_global_platform, atlas_governance_operations, atlas_governance_people_enterprise, atlas_intelligence_reports_experience, atlas_iot_platform, atlas_land_intelligence, atlas_livestock_integration, atlas_official_integrations, atlas_operations_enterprise, atlas_platform_resilience, atlas_precision_livestock, atlas_predictive_ai_suite, atlas_quality_release, atlas_reproductive_ai, atlas_reproductive_premium, atlas_rural_business, atlas_saas_platform, atlas_supply_chain, atlas_supply_logistics_enterprise, atlas_sustainability_ecosystem, atlas_sustainability_enterprise, atlas_veterinary_ai, core, dashboard, diagnostics, dr_beserra, executive_alerts, farm, farm_handling, indicators, technical_dashboard",2600
+indicators,1,1,0,0,7,"animal, animal_health, animal_reproduction, animal_weight, core, farm, herd",dashboard,1006
+integration_ecosystem,2,1,1,0,1,core,,274
+integration_hub,3,1,1,1,0,,dashboard,427
+investment_capital_allocation,7,1,2,4,1,strategic_execution_engine,"dashboard, strategic_scenario_planning",1398
+iot_enterprise,2,1,1,0,1,core,,236
+knowledge_learning,4,1,2,1,4,"action_plan, continuous_improvement, farm_audit, recommendation_intelligence","continuous_improvement, dashboard, decision_intelligence_lab, predictive_ai, recommendation_intelligence",1237
+livestock_integration,2,0,1,1,1,core,,162
+livestock_operations,3,1,1,1,8,"animal_health, animal_reproduction, core, enterprise_platform, farm, farm_finance, farm_inventory, nutrition",,969
+mission_control,3,1,1,1,6,"atlas_bi, core, decision_engine_v2, executive_brain, predictive_analytics, workflow_engine","atlas_bi, atlas_os, dashboard",1752
+ml_platform,2,1,1,0,1,core,,238
+nutrition,4,1,2,1,3,"core, farm, farm_inventory","core, dashboard, dr_beserra, farm, livestock_operations, technical_dashboard",2139
+observability,4,1,2,1,0,,dashboard,704
+offline_field,5,1,2,2,0,,dashboard,905
+operational_readiness,2,1,0,1,0,,,172
+operations,1,0,1,0,1,core,,85
+optimization_engine,5,2,1,2,4,"autonomous_consultant, core, digital_twin, scenario_simulator","autonomous_consultant, dashboard, scenario_simulator",1530
+paddock,4,2,1,1,3,"core, enterprise_platform, farm","diagnostics, executive_alerts, farm, field_operations",850
+performance_center,3,1,1,1,5,"action_plan, benefits_realization, continuous_improvement, core, farm_audit","action_plan, continuous_improvement, dashboard",905
+performance_intelligence,5,1,2,2,2,"core, predictive_ai","dashboard, strategic_execution_engine",1267
+pilot_program,2,1,0,1,0,,,135
+platform_hubs,3,1,1,1,1,core,"enterprise_operations, precision_hub, saas_admin",118
+platform_v1,3,1,1,1,1,core,,327
+portfolio_management,3,1,1,1,4,"benefits_realization, strategic_capacity, strategy_execution, value_governance","dashboard, value_governance",714
+precision_hub,1,1,0,0,3,"core, platform_hubs, security_camera",,235
+predictive,4,1,2,1,3,"core, diagnostics, farm","atlas_ai, farm",2860
+predictive_ai,4,1,2,1,1,knowledge_learning,"dashboard, performance_intelligence",794
+predictive_analytics,3,1,1,1,1,atlas_bi,"atlas_bi, dashboard, decision_engine_v2, mission_control",1747
+publication_center,2,1,0,1,0,,,135
+quality_center,4,1,2,1,0,,dashboard,722
+realtime,2,1,1,0,1,core,,270
+recommendation_intelligence,3,1,1,1,3,"decision_intelligence_lab, farm_audit, knowledge_learning","autonomous_consultant, dashboard, decision_intelligence_lab, knowledge_learning",937
+release_engineering,2,1,1,0,1,core,,303
+release_management,2,1,0,1,0,,,149
+reporting,4,1,2,1,0,,dashboard,956
+reports,19,9,6,2,5,"core, farm, farm_agenda, farm_finance, farm_inventory","atlas_intelligence_center, consultancy_client, core, dashboard",15918
+saas_admin,1,1,0,0,2,"core, platform_hubs",,243
+scenario_simulator,7,2,2,2,3,"core, digital_twin, optimization_engine","dashboard, optimization_engine",2227
+security_camera,3,1,1,1,1,core,precision_hub,683
+security_center,3,1,1,1,1,core,,260
+security_privacy_continuity,2,1,1,0,1,core,,285
+strategic_alignment,3,1,1,1,3,"farm_audit, strategic_scenario_planning, strategy_execution","dashboard, strategic_capacity",880
+strategic_capacity,3,1,1,1,2,"strategic_alignment, strategy_execution","dashboard, portfolio_management",943
+strategic_execution_engine,5,1,2,2,1,performance_intelligence,"dashboard, investment_capital_allocation",1353
+strategic_scenario_planning,5,1,2,2,1,investment_capital_allocation,"dashboard, strategic_alignment",1709
+strategy_center,4,1,2,1,2,"executive_goals, executive_kpis","atlas_bi, dashboard",1142
+strategy_execution,4,1,2,1,3,"benefits_realization, decision_intelligence_lab, farm_audit","action_plan, benefits_realization, dashboard, decision_intelligence_lab, portfolio_management, strategic_alignment, strategic_capacity",1380
+sync_platform,4,1,2,1,0,,dashboard,767
+technical_dashboard,13,1,1,11,10,"animal, animal_health, animal_reproduction, animal_weight, core, farm, farm_finance, farm_inventory, herd, nutrition",dashboard,2857
+unified_workflow,4,1,1,2,1,core,"app, dashboard",991
+value_governance,4,1,2,1,2,"benefits_realization, portfolio_management","benefits_realization, dashboard, portfolio_management",715
+workflow_engine,4,1,2,1,3,"atlas_bi, core, decision_tracking","atlas_bi, dashboard, decision_engine_v2, mission_control",1794

@@ -1,0 +1,20 @@
+{
+  "root": "C:\\Projetos\\Projetos Atlas",
+  "included_files": 2487,
+  "read_errors": 0,
+  "tracked_files_present": 2386,
+  "untracked_not_ignored_present": 10,
+  "physical_or_ignored_present": 91,
+  "excluded_directories": [
+    ".dart_tool",
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "node_modules"
+  ],
+  "excluded_suffixes": [
+    ".pyc",
+    ".pyo"
+  ]
+}

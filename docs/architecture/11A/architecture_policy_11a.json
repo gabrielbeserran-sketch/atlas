@@ -1,0 +1,20 @@
+{
+  "version": "11A-v1",
+  "strategy": "govern-before-move",
+  "flutter": "feature-first-clean-pragmatic",
+  "backend": "modular-monolith",
+  "rules": {
+    "big_bang_move_forbidden": true,
+    "domain_code_in_core_forbidden_for_new_files": true,
+    "schema_authority": "alembic",
+    "backend_security_boundary": true,
+    "remote_persistence_authority": true,
+    "orphan_auto_delete_forbidden": true
+  },
+  "debt_baseline": {
+    "dart_files": 1009,
+    "modules": 169,
+    "duplicate_public_declarations": 47,
+    "likely_orphans": 62
+  }
+}
