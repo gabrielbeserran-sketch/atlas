@@ -2282,7 +2282,7 @@ def delete_health_event(
             unit_cost=last_cost.get(product_id, 0),
             reason=f"Estorno do evento sanitário {item.event_type}",
             reference_type="health_event_reversal",
-            reference_id=f"{item.id}:delete:{product_id}",
+            reference_id=item.id,
             occurred_at=datetime.now(timezone.utc),
         )
 

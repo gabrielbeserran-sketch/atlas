@@ -7,6 +7,11 @@ import re
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
 
+VALID_QUALIFIERS = {
+    "env", "script", "global", "local", "private", "using",
+    "variable", "function", "alias", "cert", "wsman", "registry",
+}
+
 
 def strip_comments_and_strings(source: str) -> str:
     result: list[str] = []
@@ -89,6 +94,19 @@ def main() -> int:
         checked += 1
         source = path.read_text(encoding="utf-8", errors="ignore")
         relative = path.relative_to(ROOT)
+
+        # PowerShell interpreta $nome: como variável qualificada/PSDrive.
+        # Strings como "Tentativa $maxAttempts: ..." quebram o parser;
+        # a forma segura é "${maxAttempts}: ...".
+        for match in re.finditer(r"\$([A-Za-z_][A-Za-z0-9_]*):", source):
+            name = match.group(1)
+            if name.lower() in VALID_QUALIFIERS:
+                continue
+            line_number = source[:match.start()].count("\n") + 1
+            errors.append(
+                f"{relative}:{line_number}: referência ambígua de variável "
+                f"PowerShell ${name}:; use ${{{name}}}:"
+            )
 
         for line_number, line in enumerate(source.splitlines(), start=1):
             if re.match(r"^\s*\.[A-Za-z_][A-Za-z0-9_]*\s*\(", line):

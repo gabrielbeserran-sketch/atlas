@@ -133,7 +133,7 @@ def promote_current_baseline() -> int:
         return 1
 
     data = {
-        "version": "post-v21-macro10c-traceability-data-ux",
+        "version": "post-v21-macro10d-v1-release-candidate",
         "critical_source_files": sorted(critical_source_files()),
         "protected_file_sha256": protected_hashes,
     }

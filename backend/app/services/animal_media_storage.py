@@ -28,8 +28,19 @@ def _safe_suffix(filename: str) -> str:
 
 
 def _safe_segment(value: str) -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", value.strip())
-    return cleaned[:120] or "unknown"
+    """Return a deterministic, Windows-safe storage path segment.
+
+    Atlas IDs can be ~40 characters each.  Nesting tenant/company/farm/animal
+    therefore exceeded the classic Windows MAX_PATH during local storage and
+    tests.  Keep short human-readable values untouched and compact long IDs
+    with a hash suffix.  Existing storage keys remain readable because this
+    function is only used when creating a new key.
+    """
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", value.strip()) or "unknown"
+    if len(cleaned) <= 24:
+        return cleaned
+    digest = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()[:15]
+    return f"{cleaned[:8]}-{digest}"
 
 
 def storage_path(*, tenant_id: str, company_id: str, farm_id: str, animal_id: str, media_id: str, filename: str) -> Path:

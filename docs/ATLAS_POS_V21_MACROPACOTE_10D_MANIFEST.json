@@ -1,0 +1,25 @@
+{
+  "package": "10D",
+  "title": "V1 Release Candidate",
+  "release_paths": [
+    "ATLAS_BASELINE_MANIFEST.json",
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/app/routers/health.py",
+    "backend/app/routers/livestock.py",
+    "backend/app/services/animal_media_storage.py",
+    "backend/app/services/backup.py",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10D_MANIFEST.json",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10D_V1_RELEASE_CANDIDATE_20260825.md",
+    "scripts/quality/atlas_marco5b_security_contract.py",
+    "scripts/quality/atlas_powershell_static_audit.py",
+    "scripts/quality/atlas_predictive_risk_audit.py",
+    "scripts/quality/check_post_v21_macro10b_deployed.ps1",
+    "scripts/quality/check_post_v21_macro10d_deployed.ps1",
+    "scripts/quality/check_post_v21_macro10d_staged_release.ps1",
+    "scripts/quality/run_post_v21_macro10d_release_preflight.ps1",
+    "scripts/quality/run_post_v21_macro10d_v1_rc_homologation.ps1",
+    "scripts/quality/stage_post_v21_macro10d_release.ps1",
+    "test/v1/post_v21_macro10d_release_candidate_contract_test.dart",
+    "tools/atlas_post_v21_macro10d_v1_rc_gate.py"
+  ]
+}

@@ -160,7 +160,10 @@ class BackupService:
             for member in archive.getmembers():
                 destination = (target / member.name).resolve()
                 destination.relative_to(target.resolve())
-            archive.extractall(target)
+            # Python 3.14 changes tar extraction defaults.  Be explicit and
+            # retain the path-containment check above so restore remains both
+            # warning-free and protected against unsafe archive members.
+            archive.extractall(target, filter="data")
 
     def _verify_postgres_restore(self, dump_file: Path) -> dict:
         parsed = self._postgres_url(settings.atlas_database_url)
