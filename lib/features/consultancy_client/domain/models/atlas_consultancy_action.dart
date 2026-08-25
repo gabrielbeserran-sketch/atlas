@@ -13,6 +13,12 @@ class AtlasConsultancyAction {
     required this.actualResult,
     required this.completedByUserId,
     required this.executionEvidence,
+    required this.sourceEntityType,
+    required this.sourceEntityId,
+    required this.baselineMetrics,
+    required this.outcomeMetrics,
+    required this.outcomeStatus,
+    required this.outcomeMeasuredAt,
     required this.agendaTaskId,
     required this.replayed,
   });
@@ -30,6 +36,12 @@ class AtlasConsultancyAction {
   final String actualResult;
   final String completedByUserId;
   final Map<String, dynamic> executionEvidence;
+  final String sourceEntityType;
+  final String sourceEntityId;
+  final Map<String, dynamic> baselineMetrics;
+  final Map<String, dynamic> outcomeMetrics;
+  final String outcomeStatus;
+  final DateTime? outcomeMeasuredAt;
   final String agendaTaskId;
   final bool replayed;
 
@@ -55,6 +67,16 @@ class AtlasConsultancyAction {
       executionEvidence: map['execution_evidence'] is Map
           ? Map<String, dynamic>.from(map['execution_evidence'] as Map)
           : const <String, dynamic>{},
+      sourceEntityType: map['source_entity_type']?.toString() ?? '',
+      sourceEntityId: map['source_entity_id']?.toString() ?? '',
+      baselineMetrics: map['baseline_metrics'] is Map
+          ? Map<String, dynamic>.from(map['baseline_metrics'] as Map)
+          : const <String, dynamic>{},
+      outcomeMetrics: map['outcome_metrics'] is Map
+          ? Map<String, dynamic>.from(map['outcome_metrics'] as Map)
+          : const <String, dynamic>{},
+      outcomeStatus: map['outcome_status']?.toString() ?? 'pending',
+      outcomeMeasuredAt: DateTime.tryParse(map['outcome_measured_at']?.toString() ?? '')?.toLocal(),
       agendaTaskId: map['agenda_task_id']?.toString() ?? '',
       replayed: map['replayed'] == true,
     );

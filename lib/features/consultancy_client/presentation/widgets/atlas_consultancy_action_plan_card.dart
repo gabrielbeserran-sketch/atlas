@@ -7,6 +7,7 @@ class AtlasConsultancyActionPlanCard extends StatelessWidget {
     required this.canManage,
     required this.busy,
     required this.hasPriorities,
+    required this.outcomeSummary,
     required this.onCreateFromPriorities,
     required this.onComplete,
     super.key,
@@ -16,6 +17,7 @@ class AtlasConsultancyActionPlanCard extends StatelessWidget {
   final bool canManage;
   final bool busy;
   final bool hasPriorities;
+  final Map<String, dynamic> outcomeSummary;
   final VoidCallback onCreateFromPriorities;
   final ValueChanged<AtlasConsultancyAction> onComplete;
 
@@ -52,6 +54,17 @@ class AtlasConsultancyActionPlanCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
+            if ((outcomeSummary['measured_actions'] as num? ?? 0) > 0) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text('${outcomeSummary['measured_actions']} ações medidas')),
+                  Chip(label: Text('${outcomeSummary['effectiveness_percent']}% com melhora observada')),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             if (open.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -80,6 +93,20 @@ class AtlasConsultancyActionPlanCard extends StatelessWidget {
                       : null,
                 ),
               ),
+            if (completed > 0) ...[
+              const Divider(height: 24),
+              const Text('Resultados recentes', style: TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 6),
+              ...actions.where((item) => item.isCompleted).take(3).map(
+                (action) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  leading: Icon(_outcomeIcon(action.outcomeStatus)),
+                  title: Text(action.title),
+                  subtitle: Text('${_outcomeLabel(action.outcomeStatus)} • ${action.actualResult}'),
+                ),
+              ),
+            ],
             if (canManage) ...[
               const SizedBox(height: 10),
               FilledButton.icon(
@@ -114,6 +141,25 @@ class AtlasConsultancyActionPlanCard extends StatelessWidget {
       parts.add(action.description.trim());
     }
     return parts.join(' • ');
+  }
+
+  String _outcomeLabel(String value) {
+    switch (value) {
+      case 'improved': return 'Melhora observada';
+      case 'worsened': return 'Indicador piorou';
+      case 'stable': return 'Sem mudança mensurável';
+      case 'pending_measurement': return 'Aguardando medição';
+      default: return 'Resultado pendente';
+    }
+  }
+
+  IconData _outcomeIcon(String value) {
+    switch (value) {
+      case 'improved': return Icons.trending_up;
+      case 'worsened': return Icons.trending_down;
+      case 'stable': return Icons.trending_flat;
+      default: return Icons.hourglass_bottom_outlined;
+    }
   }
 
   String _priorityLabel(String value) {

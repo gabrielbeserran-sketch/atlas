@@ -1,0 +1,23 @@
+{
+  "package": "10A",
+  "release_paths": [
+    "ATLAS_REGISTRO_MESTRE.md",
+    "backend/app/business_models.py",
+    "backend/app/routers/business.py",
+    "backend/app/routers/operations.py",
+    "backend/alembic/versions/20260825_0049_consultancy_measurable_outcomes.py",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10A_CICLO_OPERACIONAL_MENSURAVEL_20260825.md",
+    "docs/ATLAS_POS_V21_MACROPACOTE_10A_MANIFEST.json",
+    "lib/features/consultancy_client/data/services/atlas_consultancy_action_service.dart",
+    "lib/features/consultancy_client/domain/models/atlas_consultancy_action.dart",
+    "lib/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart",
+    "lib/features/consultancy_client/presentation/widgets/atlas_consultancy_action_plan_card.dart",
+    "scripts/quality/run_post_v21_macro10a_homologation.ps1",
+    "scripts/quality/run_post_v21_macro10a_release_preflight.ps1",
+    "scripts/quality/stage_post_v21_macro10a_release.ps1",
+    "scripts/quality/check_post_v21_macro10a_staged_release.ps1",
+    "scripts/quality/check_post_v21_macro10a_deployed.ps1",
+    "test/features/consultancy_client/post_v21_macro10a_measurable_outcomes_contract_test.dart",
+    "tools/atlas_post_v21_macro10a_gate.py"
+  ]
+}

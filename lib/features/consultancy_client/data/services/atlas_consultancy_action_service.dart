@@ -19,6 +19,19 @@ class AtlasConsultancyActionService {
         .toList(growable: false);
   }
 
+  Future<Map<String, dynamic>> loadOutcomes(String farmId) async {
+    await _api.request(
+      'POST',
+      '/business/consulting/actions/reconcile-outcomes',
+      queryParameters: {'farm_id': farmId},
+    );
+    return _api.request(
+      'GET',
+      '/business/consulting/actions/outcomes',
+      queryParameters: {'farm_id': farmId},
+    );
+  }
+
   Future<AtlasConsultancyAction> createFromPriority({
     required String farmId,
     required AtlasOperationalActionData priority,
@@ -44,6 +57,8 @@ class AtlasConsultancyActionService {
         'priority': _priority(priority.severity),
         'due_at': priority.dueAt?.toUtc().toIso8601String(),
         'expected_result': priority.recommendedAction,
+        'source_entity_type': priority.entityType,
+        'source_entity_id': priority.entityId,
         'idempotency_key': idempotencyKey,
       },
     );

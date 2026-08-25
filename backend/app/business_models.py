@@ -111,6 +111,12 @@ class AtlasActionPlanItem(Base):
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
     execution_evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    source_entity_type: Mapped[str] = mapped_column(String(80), default="", index=True)
+    source_entity_id: Mapped[str] = mapped_column(String(120), default="", index=True)
+    baseline_metrics_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    outcome_metrics_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    outcome_status: Mapped[str] = mapped_column(String(30), default="pending", index=True)
+    outcome_measured_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     idempotency_key: Mapped[str | None] = mapped_column(String(160), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 

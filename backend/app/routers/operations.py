@@ -365,6 +365,8 @@ def update_task(
                     "evidence": [task.evidence.strip()],
                     "recorded_at": task.completed_at.isoformat() if task.completed_at else None,
                 }
+                action.outcome_status = "pending_measurement"
+                action.outcome_measured_at = None
                 record_audit(
                     db,
                     principal=principal,
@@ -385,6 +387,9 @@ def update_task(
                 action.actual_result = ""
                 action.completed_by_user_id = None
                 action.execution_evidence_json = {}
+                action.outcome_metrics_json = {}
+                action.outcome_status = "pending"
+                action.outcome_measured_at = None
 
     if source_backed and due_at_changed:
         if task.source_type == "reproduction_event":

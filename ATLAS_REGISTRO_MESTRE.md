@@ -6058,3 +6058,10 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - `GET/POST /saas-growth/onboarding` passam a selecionar o registro por empresa + fazenda.
 - Evidências automáticas do 9D permanecem calculadas pelos módulos oficiais e somente `initial_training` continua manual.
 - Readiness de produção passa a comprovar a coluna `farm_id` e a migration `0046`.
+
+
+## Pós-V21 — Macropacote 10A: Ciclo Operacional Mensurável
+- Linha de base e resultado por ação consultiva.
+- Vínculo com registro operacional de origem.
+- Histórico longitudinal e eficácia por fazenda/área.
+- Migration 0049.

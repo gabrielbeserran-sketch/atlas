@@ -21,7 +21,7 @@ from ..business_models import (
 from ..database import get_db
 from ..services.audit import record_audit
 from ..models import (
-    Farm, FinancialEntry, HealthEvent, LivestockAnimal, NutritionEvent,
+    Farm, FinancialEntry, HealthEvent, InventoryProduct, LivestockAnimal, NutritionEvent,
     OperationalTask, ReproductionEvent, new_id,
 )
 
@@ -93,6 +93,8 @@ class ActionPayload(BaseModel):
     due_at: datetime | None = None
     follow_up_at: datetime | None = None
     expected_result: str = ""
+    source_entity_type: str = Field(default="", max_length=80)
+    source_entity_id: str = Field(default="", max_length=120)
     idempotency_key: str | None = Field(default=None, max_length=160)
 
 
@@ -103,6 +105,91 @@ class ActionCompletionPayload(BaseModel):
     evidence: list[str] = Field(default_factory=list)
     source_module: str = Field(default="consultancy", max_length=80)
 
+
+
+
+def _farm_metrics(db: Session, principal: Principal, farm_id: str) -> dict[str, Any]:
+    company_id = principal.company.id
+    active_animals = int(db.scalar(select(func.count()).select_from(LivestockAnimal).where(
+        LivestockAnimal.company_id == company_id, LivestockAnimal.farm_id == farm_id, LivestockAnimal.status.in_(["active", "Ativo"])
+    )) or 0)
+    avg_weight = float(db.scalar(select(func.avg(LivestockAnimal.current_weight)).where(
+        LivestockAnimal.company_id == company_id, LivestockAnimal.farm_id == farm_id, LivestockAnimal.status.in_(["active", "Ativo"])
+    )) or 0)
+    open_tasks = int(db.scalar(select(func.count()).select_from(OperationalTask).where(
+        OperationalTask.company_id == company_id, OperationalTask.farm_id == farm_id, OperationalTask.status.in_(["open", "in_progress"])
+    )) or 0)
+    critical_stock = int(db.scalar(select(func.count()).select_from(InventoryProduct).where(
+        InventoryProduct.company_id == company_id, InventoryProduct.farm_id == farm_id, InventoryProduct.active.is_(True), InventoryProduct.quantity <= InventoryProduct.minimum_quantity
+    )) or 0)
+    income = float(db.scalar(select(func.coalesce(func.sum(FinancialEntry.amount), 0)).where(
+        FinancialEntry.company_id == company_id, FinancialEntry.farm_id == farm_id, FinancialEntry.entry_type.in_(["income", "revenue"])
+    )) or 0)
+    expense = float(db.scalar(select(func.coalesce(func.sum(FinancialEntry.amount), 0)).where(
+        FinancialEntry.company_id == company_id, FinancialEntry.farm_id == farm_id, FinancialEntry.entry_type == "expense"
+    )) or 0)
+    return {
+        "active_animals": active_animals, "average_weight_kg": round(avg_weight, 2),
+        "open_tasks": open_tasks, "critical_stock_items": critical_stock,
+        "financial_balance": round(income - expense, 2),
+    }
+
+def _entity_snapshot(db: Session, principal: Principal, farm_id: str, entity_type: str, entity_id: str) -> dict[str, Any]:
+    kind = entity_type.strip().lower()
+    entity_id = entity_id.strip()
+    if not kind or not entity_id:
+        return {}
+    mapping = {
+        "animal": LivestockAnimal, "livestock_animal": LivestockAnimal,
+        "reproduction_event": ReproductionEvent, "health_event": HealthEvent,
+        "inventory_product": InventoryProduct, "nutrition_event": NutritionEvent,
+        "financial_entry": FinancialEntry, "operational_task": OperationalTask,
+    }
+    model = mapping.get(kind)
+    if model is None:
+        return {"entity_type": kind, "entity_id": entity_id, "verified": False}
+    row = db.scalar(select(model).where(model.id == entity_id, model.company_id == principal.company.id, model.farm_id == farm_id))
+    if row is None:
+        raise HTTPException(422, f"Referência operacional inválida para esta fazenda: {kind}:{entity_id}")
+    payload: dict[str, Any] = {"entity_type": kind, "entity_id": entity_id, "verified": True}
+    for field in ("status", "current_weight", "reproductive_status", "result", "quantity", "minimum_quantity", "estimated_cost", "observed_daily_gain_kg", "amount"):
+        if hasattr(row, field):
+            value = getattr(row, field)
+            if isinstance(value, (int, float, str, bool)) or value is None:
+                payload[field] = value
+    return payload
+
+def _measure_action(db: Session, principal: Principal, row: AtlasActionPlanItem) -> dict[str, Any]:
+    return {
+        "measured_at": now().isoformat(),
+        "farm": _farm_metrics(db, principal, row.farm_id),
+        "source": _entity_snapshot(db, principal, row.farm_id, row.source_entity_type, row.source_entity_id),
+    }
+
+def _outcome_status(before: dict[str, Any], after: dict[str, Any]) -> str:
+    b = before.get("farm", {}) if isinstance(before, dict) else {}
+    a = after.get("farm", {}) if isinstance(after, dict) else {}
+    # Menos tarefas abertas/estoque crítico melhora; saldo/peso maiores melhoram.
+    score = 0
+    comparable = 0
+    for key, direction in (("open_tasks", -1), ("critical_stock_items", -1), ("financial_balance", 1), ("average_weight_kg", 1)):
+        if key not in b or key not in a:
+            continue
+        try:
+            delta = float(a[key]) - float(b[key])
+        except (TypeError, ValueError):
+            continue
+        if abs(delta) < 1e-9:
+            continue
+        comparable += 1
+        score += 1 if delta * direction > 0 else -1
+    if comparable == 0:
+        return "stable"
+    if score > 0:
+        return "improved"
+    if score < 0:
+        return "worsened"
+    return "stable"
 
 class WorkflowPayload(BaseModel):
     code: str = Field(min_length=1, max_length=80)
@@ -259,6 +346,12 @@ def _action_payload(
         "actual_result": row.actual_result,
         "completed_by_user_id": row.completed_by_user_id,
         "execution_evidence": row.execution_evidence_json or {},
+        "source_entity_type": row.source_entity_type,
+        "source_entity_id": row.source_entity_id,
+        "baseline_metrics": row.baseline_metrics_json or {},
+        "outcome_metrics": row.outcome_metrics_json or {},
+        "outcome_status": row.outcome_status,
+        "outcome_measured_at": row.outcome_measured_at,
         "idempotency_key": row.idempotency_key,
         "agenda_task_id": task.id if task is not None else None,
         "replayed": replayed,
@@ -311,6 +404,9 @@ def create_action(
     )
     db.add(row)
     db.flush()
+    # Valida a referência ao registro operacional e captura a linha de base.
+    row.baseline_metrics_json = _measure_action(db, principal, row)
+    row.outcome_status = "pending"
     task = OperationalTask(
         id=new_id("task"),
         tenant_id=principal.company.tenant_id,
@@ -396,6 +492,9 @@ def complete_action(
         "evidence": evidence_items,
         "recorded_at": completed_at.isoformat(),
     }
+    row.outcome_metrics_json = _measure_action(db, principal, row)
+    row.outcome_status = _outcome_status(row.baseline_metrics_json or {}, row.outcome_metrics_json)
+    row.outcome_measured_at = completed_at
 
     task = _action_task(db, principal, row.id)
     if task is not None:
@@ -425,6 +524,58 @@ def complete_action(
     return _action_payload(row, task)
 
 
+@router.post("/consulting/actions/reconcile-outcomes")
+def reconcile_consulting_action_outcomes(
+    farm_id: str,
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("operations.read")),
+):
+    farm_or_404(db, principal, farm_id)
+    rows = list(db.scalars(select(AtlasActionPlanItem).where(
+        AtlasActionPlanItem.company_id == principal.company.id,
+        AtlasActionPlanItem.farm_id == farm_id,
+        AtlasActionPlanItem.status == "completed",
+        AtlasActionPlanItem.outcome_status.in_(["pending", "pending_measurement"]),
+    )).all())
+    for row in rows:
+        row.outcome_metrics_json = _measure_action(db, principal, row)
+        row.outcome_status = _outcome_status(row.baseline_metrics_json or {}, row.outcome_metrics_json)
+        row.outcome_measured_at = now()
+    if rows:
+        db.commit()
+    return {"farm_id": farm_id, "reconciled": len(rows)}
+
+
+@router.get("/consulting/actions/outcomes")
+def consulting_action_outcomes(
+    farm_id: str,
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("operations.read")),
+):
+    farm_or_404(db, principal, farm_id)
+    rows = list(db.scalars(select(AtlasActionPlanItem).where(
+        AtlasActionPlanItem.company_id == principal.company.id, AtlasActionPlanItem.farm_id == farm_id
+    ).order_by(AtlasActionPlanItem.created_at.desc())).all())
+    completed = [row for row in rows if row.status == "completed"]
+    measured = [row for row in completed if row.outcome_status in {"improved", "stable", "worsened"}]
+    improved = sum(1 for row in measured if row.outcome_status == "improved")
+    by_area: dict[str, dict[str, int]] = {}
+    for row in rows:
+        area = row.area or "general"
+        bucket = by_area.setdefault(area, {"total": 0, "completed": 0, "improved": 0, "worsened": 0})
+        bucket["total"] += 1
+        if row.status == "completed": bucket["completed"] += 1
+        if row.outcome_status == "improved": bucket["improved"] += 1
+        if row.outcome_status == "worsened": bucket["worsened"] += 1
+    return {
+        "farm_id": farm_id, "total_actions": len(rows), "completed_actions": len(completed),
+        "measured_actions": len(measured), "improved_actions": improved,
+        "effectiveness_percent": round((improved / len(measured) * 100), 1) if measured else 0.0,
+        "by_area": by_area,
+        "recent": [_action_payload(row, _action_task(db, principal, row.id)) for row in rows[:10]],
+    }
+
+
 @router.get("/consulting/actions/deployment-readiness")
 def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
     # Falha antes da 0047 e confirma que o schema novo chegou ao banco.
@@ -448,6 +599,8 @@ def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
             AtlasActionPlanItem.execution_evidence_json.is_not(None)
         )
     )
+    db.scalar(select(func.count()).select_from(AtlasActionPlanItem).where(AtlasActionPlanItem.outcome_status.is_not(None)))
+    db.scalar(select(func.count()).select_from(AtlasActionPlanItem).where(AtlasActionPlanItem.baseline_metrics_json.is_not(None)))
     return {
         "status": "ready",
         "schema_ready": True,
@@ -458,7 +611,10 @@ def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
         "completion_actor": True,
         "audit_trail": True,
         "farm_scope": True,
-        "migration": "0048",
+        "measurable_outcomes": True,
+        "source_entity_link": True,
+        "longitudinal_outcomes": True,
+        "migration": "0049",
     }
 
 

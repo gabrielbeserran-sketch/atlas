@@ -55,6 +55,7 @@ class _AtlasClientConsultancyCenterScreenState
       AtlasClientOnboardingProgress.empty();
   List<FarmAgendaData> agenda = const [];
   List<AtlasConsultancyAction> consultancyActions = const [];
+  Map<String, dynamic> consultancyOutcomes = const <String, dynamic>{};
   bool loading = true;
   bool savingOnboarding = false;
   bool savingActions = false;
@@ -81,6 +82,7 @@ class _AtlasClientConsultancyCenterScreenState
         AtlasClientOnboardingProgress.empty();
     List<FarmAgendaData> loadedAgenda = const [];
     List<AtlasConsultancyAction> loadedActions = const [];
+    Map<String, dynamic> loadedOutcomes = const <String, dynamic>{};
     final failures = <String>[];
 
     final farmId = widget.farm.id?.trim() ?? '';
@@ -117,6 +119,7 @@ class _AtlasClientConsultancyCenterScreenState
     if (farmId.isNotEmpty) {
       try {
         loadedActions = await actionService.load(farmId);
+        loadedOutcomes = await actionService.loadOutcomes(farmId);
       } catch (_) {
         failures.add('plano de ação');
       }
@@ -129,6 +132,7 @@ class _AtlasClientConsultancyCenterScreenState
       onboarding = loadedOnboarding;
       agenda = loadedAgenda;
       consultancyActions = loadedActions;
+      consultancyOutcomes = loadedOutcomes;
       loading = false;
       warning = failures.isEmpty
           ? null
@@ -525,6 +529,7 @@ class _AtlasClientConsultancyCenterScreenState
         );
       }
       final refreshed = await actionService.load(farmId);
+      final refreshedOutcomes = await actionService.loadOutcomes(farmId);
       final refreshedAgenda = await agendaService.loadTasks(
         widget.farm.name,
         farmId: farmId,
@@ -532,6 +537,7 @@ class _AtlasClientConsultancyCenterScreenState
       if (!mounted) return;
       setState(() {
         consultancyActions = refreshed;
+        consultancyOutcomes = refreshedOutcomes;
         agenda = refreshedAgenda;
       });
       ScaffoldMessenger.of(context)
@@ -619,6 +625,7 @@ class _AtlasClientConsultancyCenterScreenState
       );
       final farmId = widget.farm.id?.trim() ?? '';
       final refreshed = await actionService.load(farmId);
+      final refreshedOutcomes = await actionService.loadOutcomes(farmId);
       final refreshedAgenda = await agendaService.loadTasks(
         widget.farm.name,
         farmId: farmId,
@@ -626,6 +633,7 @@ class _AtlasClientConsultancyCenterScreenState
       if (!mounted) return;
       setState(() {
         consultancyActions = refreshed;
+        consultancyOutcomes = refreshedOutcomes;
         agenda = refreshedAgenda;
       });
       ScaffoldMessenger.of(context)
@@ -723,6 +731,7 @@ class _AtlasClientConsultancyCenterScreenState
                   canManage: widget.canManageContact,
                   busy: savingActions,
                   hasPriorities: data?.topActions.isNotEmpty == true,
+                  outcomeSummary: consultancyOutcomes,
                   onCreateFromPriorities: createActionsFromPriorities,
                   onComplete: completeConsultancyAction,
                 ),
