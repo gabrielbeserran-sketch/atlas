@@ -75,3 +75,9 @@ O checkpoint de fonte anterior à validação é `f3db6d97b6dc7d87c247dae47694a7
 - Não executar scripts `APLICAR_*`, `PROMOVER_*`, `ROLLBACK_*`, `LIMPAR_*` ou payloads ZIP históricos.
 - Não rodar `git reset`, `git clean`, cópia em massa ou exclusão entre as três árvores.
 - Não iniciar a fase funcional 6.5.3 enquanto a baseline acima não estiver commitada, etiquetada e homologada.
+
+## Saneamento concluído
+
+Em 2026-09-04, os 593 resíduos não rastreados e as versões de trabalho dos sete arquivos históricos modificados foram copiados para `C:\Projetos\Atlas_Evidence_Archive_20260904` antes da limpeza. A cópia verificou SHA-256 arquivo a arquivo: 597 entradas e 619 arquivos verificados.
+
+Após a verificação, os resíduos foram removidos somente do workspace e os sete arquivos versionados foram restaurados a partir de `master`. `git status --porcelain` ficou vazio. O arquivo externo não deve ser apagado até a homologação Android e a publicação da próxima release; ele é a trilha de auditoria recuperável, não uma fonte paralela de desenvolvimento.
