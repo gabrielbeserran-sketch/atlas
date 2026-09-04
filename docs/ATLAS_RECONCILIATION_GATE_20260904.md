@@ -66,6 +66,14 @@ O checkpoint de fonte anterior à validação é `f3db6d97b6dc7d87c247dae47694a7
 - [ ] Rodar build Windows da candidata com os `dart-define` oficiais e fazer uma abertura controlada.
 - [ ] Executar regressão Android sem alterar a APK homologada; registrar hashes de APK/AAB.
 - [ ] Configurar keystore de release Android: o `build.gradle.kts` ainda aponta a configuração `release` para a assinatura debug. Isso bloqueia publicação, embora não bloqueie o checkpoint de fonte/Windows.
+
+### Validação Android Debug
+
+- [x] A APK Debug foi compilada com `ATLAS_ENV=production` e a URL HTTPS oficial, sem alterar a APK homologada.
+- [x] Artefato: `build/app/outputs/flutter-apk/app-debug.apk`, 176.506.234 bytes, SHA-256 `B00CAE03BA5AF83C84E34C96C10A5E9B66219E5243ABF5659894FB0638A52839`.
+- [x] O manifest Debug declara a precedência de `usesCleartextTraffic=true` somente no build local; o manifest principal permanece em `false`.
+- [x] O recurso Android 12 foi ajustado para não depender de `postSplashScreenTheme` sem a biblioteca AndroidX SplashScreen correspondente.
+- [ ] APK/AAB Release permanece bloqueado até a entrega de um keystore de produção. Os avisos de AGP 8.9.1 e Kotlin 2.1.0 são dívida técnica planejada, não falha desta APK Debug.
 - [ ] Revisar migrations e endpoints de Campo/Manejo/Dr. Beserra antes de declarar operações remotas prontas.
 - [ ] Fazer snapshot imutável e criar commits lógicos, tag de baseline e manifesto mestre.
 - [ ] Só então retirar resíduos regeneráveis. Backup, payloads e evidências só poderão ser movidos após hash e inventário.
