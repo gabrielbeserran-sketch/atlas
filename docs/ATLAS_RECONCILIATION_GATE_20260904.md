@@ -53,6 +53,12 @@ O checkpoint de fonte anterior à validação é `f3db6d97b6dc7d87c247dae47694a7
 
 `test/core/navigation/atlas_home_shell_route_contract_test.dart` protege o menu operacional atual. Ele verifica que os itens com builder de reserva são resolvidos no shell para Manejo, Agenda, Dr. Beserra, Campo, Relatórios, Consultoria e Inteligência. Para módulos dependentes de fazenda, a ausência de contexto leva à tela de seleção de fazenda, nunca a uma área em branco.
 
+## Gate de iconografia pecuária
+
+- A busca estática não encontrou `Icons.pets` nem `Icons.pets_outlined` no produto; a única referência é a asserção negativa do teste.
+- O símbolo canônico de Rebanho é `AtlasLivestockMark`, apoiado pelo `IconData` central `AtlasLivestockIcons.cow`; há 41 consumidores no código de produto.
+- `flutter test test/phase650 --reporter compact` passou com três proteções: Nelore vetorial para Rebanho, brinco para Animais e renderer central sem troca indevida de outros módulos.
+
 ## Próximos gates obrigatórios
 
 - [ ] Rodar a suíte Flutter completa com resultado registrado e classificar cada falha real.
