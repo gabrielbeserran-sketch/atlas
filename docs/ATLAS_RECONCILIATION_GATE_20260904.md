@@ -49,6 +49,10 @@ O checkpoint de fonte anterior à validação é `f3db6d97b6dc7d87c247dae47694a7
 4. **Contratos e persistência:** `pubspec`, dependências, backend/migrations somente após checagem de origem e sem promover `atlas_test.db` como dado de produção.
 5. **Evidência fora da baseline:** ZIPs, scripts históricos, manifestos de entrega e backups permanecem arquivados, fora do commit de produto.
 
+## Gate de navegação
+
+`test/core/navigation/atlas_home_shell_route_contract_test.dart` protege o menu operacional atual. Ele verifica que os itens com builder de reserva são resolvidos no shell para Manejo, Agenda, Dr. Beserra, Campo, Relatórios, Consultoria e Inteligência. Para módulos dependentes de fazenda, a ausência de contexto leva à tela de seleção de fazenda, nunca a uma área em branco.
+
 ## Próximos gates obrigatórios
 
 - [ ] Rodar a suíte Flutter completa com resultado registrado e classificar cada falha real.
