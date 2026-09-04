@@ -25,11 +25,21 @@ Validações executadas na candidata em 2026-09-04:
 - [x] `flutter analyze` sem diagnósticos.
 - [x] `git diff --check` sem erros de whitespace.
 - [x] `flutter test test/core/bootstrap --reporter compact`: 9 testes passaram.
+- [x] `flutter test`: 276 testes visíveis passaram, zero falhas.
+- [x] `flutter build windows` com os `dart-define` oficiais: Release gerado em `build/windows/x64/runner/Release/projeto_atlas.exe`.
+- [x] SHA-256 do Release Windows: `5F53433228F5538A11CF11FA6FACDBE518C73173B40D1037FFA9B28CB861D059` (92.672 bytes, 2026-09-04 06:45:10).
 - [x] Bootstrap mostra um primeiro frame antes de inicializar a camada operacional.
 - [x] Runner Windows anexa a view, aguarda `SetNextFrameCallback`, então mostra a janela e solicita redraw.
 - [x] Sessão tem timeout de 30 segundos e telas explícitas de falha/retentativa; não há caminho intencional para tela em branco.
 
 Os quatro testes inicialmente vermelhos continham expectativas obsoletas de implementações 11C.3.6 anteriores. Foram atualizados para verificar a baseline 11C.3.8 efetivamente presente: primeiro frame, handshake Windows, timeout e recuperação visível. Nenhum arquivo de produção foi alterado por esse ajuste.
+
+A regressão completa revelou e corrigiu dois defeitos reais antes da promoção:
+
+- `AtlasApp` mantinha um temporizador do primeiro frame após o descarte do widget. O temporizador agora é guardado e cancelado em `dispose`.
+- O login desktop combinava rolagem vertical com `Row`/`Spacer` que exigiam altura finita. A tela agora usa alinhamento e espaçamento explícitos, eliminando `BoxConstraints` infinitas e o risco de RenderBox sem layout.
+
+O checkpoint de fonte anterior à validação é `f3db6d97b6dc7d87c247dae47694a79253455378`, na branch `codex/reconciliation-prebaseline-20260904`, etiquetado como `atlas-preconsolidacao-20260904`. A validação atual será registrada em commit separado para que ambas as etapas possam ser recuperadas.
 
 ## Escopo a promover, em commits separados
 
@@ -45,6 +55,7 @@ Os quatro testes inicialmente vermelhos continham expectativas obsoletas de impl
 - [ ] Auditar imports, rotas e permissões de todos os itens de menu; cada rota deve ter tela, estado vazio/erro e autorização.
 - [ ] Rodar build Windows da candidata com os `dart-define` oficiais e fazer uma abertura controlada.
 - [ ] Executar regressão Android sem alterar a APK homologada; registrar hashes de APK/AAB.
+- [ ] Configurar keystore de release Android: o `build.gradle.kts` ainda aponta a configuração `release` para a assinatura debug. Isso bloqueia publicação, embora não bloqueie o checkpoint de fonte/Windows.
 - [ ] Revisar migrations e endpoints de Campo/Manejo/Dr. Beserra antes de declarar operações remotas prontas.
 - [ ] Fazer snapshot imutável e criar commits lógicos, tag de baseline e manifesto mestre.
 - [ ] Só então retirar resíduos regeneráveis. Backup, payloads e evidências só poderão ser movidos após hash e inventário.

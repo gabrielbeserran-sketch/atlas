@@ -164,7 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   constraints: const BoxConstraints(maxWidth: 1180),
                   child: wide
                       ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          // A Row dentro de SingleChildScrollView recebe altura
+                          // ilimitada. "stretch" tenta forçar essa altura nos
+                          // filhos e resulta em BoxConstraints infinitas.
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Expanded(child: _AtlasLoginStory()),
                             const SizedBox(width: AtlasSpacing.xxl),
@@ -250,7 +253,10 @@ class _AtlasLoginStory extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const BeserraLogo(height: 118),
-          const Spacer(),
+          // Este painel também pode viver dentro de uma rolagem vertical.
+          // Spacer exige altura finita; um espaçamento explícito preserva a
+          // composição sem introduzir constraints infinitas no desktop.
+          const SizedBox(height: 88),
           Text(
             'Decisões melhores começam com uma fazenda bem compreendida.',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(

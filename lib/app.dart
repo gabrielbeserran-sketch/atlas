@@ -19,6 +19,7 @@ class AtlasApp extends StatefulWidget {
 class _AtlasAppState extends State<AtlasApp> {
   bool _operationalLayerEnabled = false;
   bool _startupScheduled = false;
+  Timer? _operationalLayerTimer;
 
   @override
   void initState() {
@@ -40,7 +41,9 @@ class _AtlasAppState extends State<AtlasApp> {
      * O frame inicial precisa chegar ao compositor Windows antes de qualquer
      * infraestrutura do Atlas.
      */
-    Timer(const Duration(milliseconds: 900), () {
+    _operationalLayerTimer = Timer(const Duration(milliseconds: 900), () {
+      _operationalLayerTimer = null;
+
       if (!mounted) {
         return;
       }
@@ -83,6 +86,8 @@ class _AtlasAppState extends State<AtlasApp> {
 
   @override
   void dispose() {
+    _operationalLayerTimer?.cancel();
+
     try {
       AtlasUnifiedWorkflowEngine.instance.stop();
     } catch (_) {}
