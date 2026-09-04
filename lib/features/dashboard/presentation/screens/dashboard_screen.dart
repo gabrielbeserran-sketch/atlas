@@ -26,6 +26,7 @@ import 'package:projeto_atlas/features/reports/domain/models/report_action_item_
 import 'package:projeto_atlas/features/reports/presentation/screens/report_action_list_screen.dart';
 import 'package:projeto_atlas/features/technical_dashboard/presentation/screens/technical_dashboard_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, this.onNavigateModule});
@@ -720,117 +721,163 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF6F7F9),
+      color: AtlasColors.canvas,
       child: SafeArea(
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const AtlasStatePanel(
+                title: 'Preparando sua visão da fazenda',
+                message:
+                    'Estamos reunindo agenda, alertas e indicadores operacionais.',
+                icon: Icons.insights_outlined,
+                loading: true,
+              )
             : RefreshIndicator(
                 onRefresh: loadDashboard,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AtlasSpacing.pageHorizontal,
+                    vertical: AtlasSpacing.pageVertical,
+                  ),
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1200),
+                      constraints: const BoxConstraints(maxWidth: 1280),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          AtlasPageHeader(
+                            eyebrow: 'Fazenda ativa',
+                            title: 'O que precisa da sua atenção hoje',
+                            description:
+                                'Prioridades, indicadores e atividades reunidos '
+                                'para orientar a próxima decisão sem perder o '
+                                'contexto da operação.',
+                            actions: [
+                              AtlasButton(
+                                label: 'Atualizar',
+                                icon: Icons.refresh_rounded,
+                                onPressed: loadDashboard,
+                                variant: AtlasButtonVariant.secondary,
+                              ),
+                              AtlasButton(
+                                label: 'Abrir agenda',
+                                icon: Icons.calendar_month_outlined,
+                                onPressed: chooseFarmAgenda,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AtlasSpacing.lg),
                           WelcomeHeader(
                             todayCount: todayCount,
                             alertCount: alertCount,
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: AtlasSpacing.lg),
                           DashboardIndicators(
                             farmCount: farms.length,
                             todayCount: todayCount,
                             pendingCount: pendingCount,
                             alertCount: alertCount,
                           ),
-                          const SizedBox(height: 24),
-                          OperationalIntelligenceCard(
-                            data: operationalData,
-                            farmName: operationalFarmName ?? 'Fazenda ativa',
-                            warning: operationalWarning,
-                            onRefresh: loadDashboard,
-                            onOpenArea: openOperationalArea,
-                            onOpenAlerts: openOperationalAlertCenter,
-                          ),
-                          const SizedBox(height: 16),
-                          ExecutiveIndicatorsCard(
-                            data: operationalData,
-                            farmName: operationalFarmName ?? 'Fazenda ativa',
-                          ),
-                          const SizedBox(height: 24),
-                          AdvancedAnalysisAccessCard(
-                            actionCount: managementActions.length,
-                            alertCount: actionAlertCount,
-                            onOpenExecutive: openExecutiveDashboard,
-                            onOpenTechnical: openTechnicalDashboard,
-                          ),
-                          const SizedBox(height: 24),
-                          DashboardActionSummaryCard(
-                            key: ValueKey(dashboardRefreshVersion),
-                          ),
-                          const SizedBox(height: 32),
-                          const SectionTitle(
-                            title: 'Acesso rápido',
-                            subtitle: 'Principais áreas da operação',
-                          ),
-                          const SizedBox(height: 16),
-                          ModulesGrid(
-                            onOpenFarms: openFarms,
-                            onOpenIndicators: openIndicators,
-                            onOpenAgenda: chooseFarmAgenda,
-                            onOpenReports: openReports,
-                            onOpenHerd: openHerd,
-                            onOpenReproduction: openReproduction,
-                            onOpenHealth: openHealth,
-                            onOpenNutrition: openNutrition,
-                            onOpenFinance: openFinance,
-                            onOpenInventory: openInventory,
-                            onComingSoon: showComingSoon,
-                          ),
-                          const SizedBox(height: 32),
-                          Row(
-                            children: [
-                              const Expanded(
-                                child: SectionTitle(
-                                  title: 'Atividades de hoje',
-                                  subtitle:
-                                      'Compromissos reais de todas as fazendas',
+                          const SizedBox(height: AtlasSpacing.sectionGap),
+                          AtlasSection(
+                            title: 'Inteligência operacional',
+                            description:
+                                'Sinais consolidados da fazenda para decidir '
+                                'onde agir primeiro.',
+                            child: Column(
+                              children: [
+                                OperationalIntelligenceCard(
+                                  data: operationalData,
+                                  farmName:
+                                      operationalFarmName ?? 'Fazenda ativa',
+                                  warning: operationalWarning,
+                                  onRefresh: loadDashboard,
+                                  onOpenArea: openOperationalArea,
+                                  onOpenAlerts: openOperationalAlertCenter,
                                 ),
-                              ),
-                              TextButton.icon(
-                                onPressed: chooseFarmAgenda,
-                                icon: const Icon(Icons.calendar_month_outlined),
-                                label: const Text('Abrir agenda'),
-                              ),
-                            ],
+                                const SizedBox(height: AtlasSpacing.md),
+                                ExecutiveIndicatorsCard(
+                                  data: operationalData,
+                                  farmName:
+                                      operationalFarmName ?? 'Fazenda ativa',
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          TodayActivities(
-                            activities: todayActivities,
-                            onOpenAgenda: openFarmAgenda,
+                          const SizedBox(height: AtlasSpacing.sectionGap),
+                          AtlasSection(
+                            title: 'Ações e decisões',
+                            description:
+                                'Acompanhe pendências consultivas e aprofunde '
+                                'a análise quando a situação exigir.',
+                            child: Column(
+                              children: [
+                                AdvancedAnalysisAccessCard(
+                                  actionCount: managementActions.length,
+                                  alertCount: actionAlertCount,
+                                  onOpenExecutive: openExecutiveDashboard,
+                                  onOpenTechnical: openTechnicalDashboard,
+                                ),
+                                const SizedBox(height: AtlasSpacing.md),
+                                DashboardActionSummaryCard(
+                                  key: ValueKey(dashboardRefreshVersion),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 32),
-                          const SectionTitle(
+                          const SizedBox(height: AtlasSpacing.sectionGap),
+                          AtlasSection(
+                            title: 'Operação',
+                            description:
+                                'Acesso direto às áreas mais usadas da fazenda.',
+                            child: ModulesGrid(
+                              onOpenFarms: openFarms,
+                              onOpenIndicators: openIndicators,
+                              onOpenAgenda: chooseFarmAgenda,
+                              onOpenReports: openReports,
+                              onOpenHerd: openHerd,
+                              onOpenReproduction: openReproduction,
+                              onOpenHealth: openHealth,
+                              onOpenNutrition: openNutrition,
+                              onOpenFinance: openFinance,
+                              onOpenInventory: openInventory,
+                              onComingSoon: showComingSoon,
+                            ),
+                          ),
+                          const SizedBox(height: AtlasSpacing.sectionGap),
+                          AtlasSection(
+                            title: 'Atividades de hoje',
+                            description:
+                                'Compromissos reais de todas as fazendas.',
+                            trailing: AtlasButton(
+                              label: 'Ver agenda',
+                              icon: Icons.arrow_forward_rounded,
+                              onPressed: chooseFarmAgenda,
+                              variant: AtlasButtonVariant.ghost,
+                            ),
+                            child: TodayActivities(
+                              activities: todayActivities,
+                              onOpenAgenda: openFarmAgenda,
+                            ),
+                          ),
+                          const SizedBox(height: AtlasSpacing.sectionGap),
+                          AtlasSection(
                             title: 'Próximas atividades',
-                            subtitle:
-                                'Tarefas pendentes organizadas por prazo e prioridade',
+                            description:
+                                'Tarefas pendentes por prazo e prioridade.',
+                            child: NextActivitiesCard(
+                              activities: nextActivities,
+                              onOpenAgenda: openFarmAgenda,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          NextActivitiesCard(
-                            activities: nextActivities,
-                            onOpenAgenda: openFarmAgenda,
-                          ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: AtlasSpacing.sectionGap),
                           DashboardAlertsCard(
                             overdueCount: overdueCount,
                             urgentCount: urgentCount,
                             todayCount: todayCount,
                             onOpenAgenda: chooseFarmAgenda,
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: AtlasSpacing.lg),
                           AtlasInsightCard(
                             pendingCount: pendingCount,
                             overdueCount: overdueCount,
@@ -838,7 +885,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             onOpenIndicators: openIndicators,
                             onOpenReports: openReports,
                           ),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: AtlasSpacing.xl),
                         ],
                       ),
                     ),
@@ -1163,9 +1210,11 @@ class WelcomeHeader extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AtlasColors.brandStrong, AtlasColors.brand],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AtlasRadius.lg),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1248,8 +1297,8 @@ class WelcomeMetric extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 105),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(17),
+        color: AtlasColors.textInverse.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AtlasRadius.md),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1437,14 +1486,10 @@ class SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF263238),
-          ),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 4),
-        Text(subtitle, style: const TextStyle(color: Colors.black54)),
+        Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }
@@ -1517,7 +1562,7 @@ class ModulesGrid extends StatelessWidget {
             final module = modules[index];
 
             return InkWell(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(AtlasRadius.md),
               onTap: () {
                 if (module.title == 'Fazendas') {
                   onOpenFarms();
@@ -1571,31 +1616,39 @@ class ModulesGrid extends StatelessWidget {
 
                 onComingSoon(module.title);
               },
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
+              child: AtlasSurface(
+                elevated: false,
+                child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        module.icon,
-                        size: 38,
-                        color: const Color(0xFF1B5E20),
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AtlasColors.brandSoft,
+                          borderRadius:
+                              BorderRadius.circular(AtlasRadius.sm),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          module.icon,
+                          size: 26,
+                          color: AtlasColors.brand,
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AtlasSpacing.sm),
                       Text(
                         module.title,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF263238),
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelLarge
+                            ?.copyWith(color: AtlasColors.textPrimary),
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
+              );
           },
         );
       },
@@ -1870,7 +1923,7 @@ class DashboardAlertsCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AtlasRadius.md),
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(

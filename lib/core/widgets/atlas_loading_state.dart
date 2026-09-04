@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 
 class AtlasLoadingState extends StatelessWidget {
   const AtlasLoadingState({super.key, this.message = 'Carregando dados...'});
@@ -7,18 +8,11 @@ class AtlasLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(message, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
+    return AtlasStatePanel(
+      title: 'Preparando informações',
+      message: message,
+      icon: Icons.hourglass_top_rounded,
+      loading: true,
     );
   }
 }

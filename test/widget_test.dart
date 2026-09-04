@@ -3,12 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/app.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  testWidgets('Atlas pinta uma interface antes de iniciar infraestrutura', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const AtlasApp());
 
-  test('O Projeto Atlas possui um widget raiz válido', () {
-    const app = AtlasApp();
+    expect(
+      find.byKey(const ValueKey<String>('atlas-first-frame')),
+      findsOneWidget,
+    );
 
-    expect(app, isA<StatefulWidget>());
-    expect(app.createState(), isNotNull);
+    expect(find.text('Projeto Atlas'), findsOneWidget);
+
+    expect(find.text('Preparando o ambiente...'), findsOneWidget);
   });
 }

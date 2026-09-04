@@ -32,6 +32,7 @@ import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_ser
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_list_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart';
 
 class FarmDetailScreen extends StatefulWidget {
   const FarmDetailScreen({required this.farm, super.key});
@@ -315,7 +316,8 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
       final results = await Future.wait<dynamic>([
         _loadSafely<HerdGroupData>(
           label: 'lotes',
-          loader: () => herdStorage.loadGroups(farm.name, farmId: farm.id ?? ''),
+          loader: () =>
+              herdStorage.loadGroups(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<PaddockData>(
@@ -325,17 +327,20 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
         ),
         _loadSafely<FarmFinanceData>(
           label: 'financeiro',
-          loader: () => financeStorage.loadRecords(farm.name, farmId: farm.id ?? ''),
+          loader: () =>
+              financeStorage.loadRecords(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmInventoryData>(
           label: 'estoque',
-          loader: () => inventoryStorage.loadItems(farm.name, farmId: farm.id ?? ''),
+          loader: () =>
+              inventoryStorage.loadItems(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
         _loadSafely<FarmAgendaData>(
           label: 'agenda',
-          loader: () => agendaStorage.loadTasks(farm.name, farmId: farm.id ?? ''),
+          loader: () =>
+              agendaStorage.loadTasks(farm.name, farmId: farm.id ?? ''),
           warnings: warnings,
         ),
       ]);
@@ -442,19 +447,17 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
   }
 
   Future<void> openHerd() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const HerdOverviewScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const HerdOverviewScreen()));
     await loadDashboard();
   }
 
-  Future<void> openFinance() => _openOperationalScreen(
-    FarmFinanceListScreen(farm: farm),
-  );
+  Future<void> openFinance() =>
+      _openOperationalScreen(FarmFinanceListScreen(farm: farm));
 
-  Future<void> openInventory() => _openOperationalScreen(
-    FarmInventoryListScreen(farm: farm),
-  );
+  Future<void> openInventory() =>
+      _openOperationalScreen(FarmInventoryListScreen(farm: farm));
 
   Future<void> _openOperationalScreen(Widget screen) async {
     await Navigator.of(
@@ -475,17 +478,14 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
     await loadDashboard();
   }
 
-  Future<void> openReproduction() => _openOperationalScreen(
-    ReproductionOverviewScreen(farm: farm),
-  );
+  Future<void> openReproduction() =>
+      _openOperationalScreen(ReproductionOverviewScreen(farm: farm));
 
-  Future<void> openHealth() => _openOperationalScreen(
-    HealthOverviewScreen(farm: farm),
-  );
+  Future<void> openHealth() =>
+      _openOperationalScreen(HealthOverviewScreen(farm: farm));
 
-  Future<void> openNutrition() => _openOperationalScreen(
-    NutritionOverviewScreen(farm: farm),
-  );
+  Future<void> openNutrition() =>
+      _openOperationalScreen(NutritionOverviewScreen(farm: farm));
 
   Future<void> openAtlasAi() async {
     final aiContext = aiContextData;
@@ -780,6 +780,34 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
     await loadDashboard();
   }
 
+  Future<void> openIntelligenceCenter({int initialTab = 0}) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (centerContext) {
+          void leaveCenterAndOpen(Future<void> Function() action) {
+            Navigator.of(centerContext).pop();
+            action();
+          }
+
+          return AtlasIntelligenceCenterScreen(
+            initialTab: initialTab,
+            onOpenAtlasAi: () => leaveCenterAndOpen(openAtlasAi),
+            onOpenPredictive: () =>
+                leaveCenterAndOpen(openPredictiveIntelligence),
+            onOpenDiagnostic: () => leaveCenterAndOpen(openDiagnostic),
+            onOpenCopilot: () => leaveCenterAndOpen(openFarmCopilot),
+            onOpenFarmIntelligence: () =>
+                leaveCenterAndOpen(openFarmIntelligence),
+          );
+        },
+      ),
+    );
+
+    if (mounted) {
+      await loadDashboard();
+    }
+  }
+
   void showComingSoon(String moduleName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -798,38 +826,9 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
         title: Text(farm.name),
         actions: [
           IconButton(
-            tooltip: 'Conversar com Atlas IA',
-            onPressed: isLoading || aiContextData == null ? null : openAtlasAi,
-            icon: const Icon(Icons.psychology_outlined),
-          ),
-          IconButton(
-            tooltip: 'Simular Decisões',
-            onPressed:
-                isLoading || intelligenceData == null || diagnosticData == null
-                ? null
-                : openPredictiveIntelligence,
-            icon: const Icon(Icons.auto_graph_outlined),
-          ),
-          IconButton(
-            tooltip: 'Diagnóstico Inteligente',
-            onPressed: isLoading || diagnosticData == null
-                ? null
-                : openDiagnostic,
-            icon: const Icon(Icons.health_and_safety_outlined),
-          ),
-          IconButton(
-            tooltip: 'Copiloto Atlas',
-            onPressed: isLoading || intelligenceData == null
-                ? null
-                : openFarmCopilot,
-            icon: const Icon(Icons.smart_toy_outlined),
-          ),
-          IconButton(
-            tooltip: 'Inteligência da Fazenda',
-            onPressed: isLoading || intelligenceData == null
-                ? null
-                : openFarmIntelligence,
-            icon: const Icon(Icons.auto_awesome_outlined),
+            tooltip: 'Central de Inteligência Atlas',
+            onPressed: isLoading ? null : () => openIntelligenceCenter(),
+            icon: const Icon(Icons.insights_outlined),
           ),
           IconButton(
             tooltip: 'Atualizar indicadores',
@@ -885,34 +884,13 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
                           todayTasks: agendaTodayCount,
                         ),
                         const SizedBox(height: 24),
-                        if (aiContextData != null)
-                          FarmAtlasAiAccessCard(
-                            contextData: aiContextData!,
-                            onOpen: openAtlasAi,
-                          ),
-                        if (aiContextData != null) const SizedBox(height: 16),
-                        if (intelligenceData != null && diagnosticData != null)
-                          FarmPredictiveAccessCard(
-                            diagnostic: diagnosticData!,
-                            intelligence: intelligenceData!,
-                            onOpen: openPredictiveIntelligence,
-                          ),
-                        if (intelligenceData != null && diagnosticData != null)
-                          const SizedBox(height: 16),
-                        if (diagnosticData != null)
-                          FarmDiagnosticAccessCard(
-                            data: diagnosticData!,
-                            onOpen: openDiagnostic,
-                          ),
-                        if (diagnosticData != null) const SizedBox(height: 16),
-                        if (intelligenceData != null)
-                          FarmIntelligenceAccessCard(
-                            data: intelligenceData!,
-                            onOpenIntelligence: openFarmIntelligence,
-                            onOpenCopilot: openFarmCopilot,
-                          ),
-                        if (intelligenceData != null)
-                          const SizedBox(height: 28),
+                        FarmUnifiedIntelligenceAccessCard(
+                          contextData: aiContextData,
+                          intelligence: intelligenceData,
+                          diagnostic: diagnosticData,
+                          onOpen: () => openIntelligenceCenter(),
+                        ),
+                        const SizedBox(height: 28),
                         const SectionTitle(
                           title: 'Indicadores da propriedade',
                           subtitle:
@@ -1385,36 +1363,38 @@ class _FarmDetailScreenState extends State<FarmDetailScreen> {
   }
 }
 
-class FarmAtlasAiAccessCard extends StatelessWidget {
-  const FarmAtlasAiAccessCard({
+class FarmUnifiedIntelligenceAccessCard extends StatelessWidget {
+  const FarmUnifiedIntelligenceAccessCard({
     required this.contextData,
+    required this.intelligence,
+    required this.diagnostic,
     required this.onOpen,
     super.key,
   });
 
-  final AtlasAiFarmContext contextData;
+  final AtlasAiFarmContext? contextData;
+  final AtlasFarmIntelligenceData? intelligence;
+  final AtlasDiagnosticData? diagnostic;
   final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
-    final color = _farmAtlasAiLevelColor(contextData.level);
+    final colorScheme = Theme.of(context).colorScheme;
+    final availableSignals = <String>[
+      if (contextData != null) 'conversa e contexto',
+      if (diagnostic != null) 'diagnóstico',
+      if (intelligence != null) 'predição e decisão',
+    ];
 
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onOpen,
-        child: Container(
-          width: double.infinity,
+        child: Padding(
           padding: const EdgeInsets.all(22),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF2A173D), Color(0xFF3E2457), Color(0xFF51336D)],
-            ),
-          ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxWidth < 760;
-
+              final compact = constraints.maxWidth < 720;
               final information = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1424,87 +1404,52 @@ class FarmAtlasAiAccessCard extends StatelessWidget {
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(15),
+                          color: colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
-                          Icons.psychology_outlined,
-                          color: color,
-                          size: 30,
+                          Icons.insights_outlined,
+                          color: colorScheme.onPrimaryContainer,
+                          size: 28,
                         ),
                       ),
-                      const SizedBox(width: 13),
+                      const SizedBox(width: 14),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Atlas IA',
+                              'Central de Inteligência Atlas',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 21,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Consultor inteligente da propriedade',
-                              style: TextStyle(
-                                color: Color(0xFFD7C1E8),
-                                fontWeight: FontWeight.w600,
-                              ),
+                              'Uma entrada para análises, diagnóstico, simulação, decisões e assistência.',
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Text(
-                    contextData.simpleSummary,
-                    maxLines: compact ? 7 : 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70, height: 1.48),
+                    availableSignals.isEmpty
+                        ? 'A central está pronta. Atualize a fazenda para carregar os sinais inteligentes.'
+                        : 'Sinais disponíveis agora: ${availableSignals.join(', ')}.',
                   ),
-                  const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(13),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: Text(
-                      'Pergunte: "${contextData.suggestedQuestions.isEmpty ? 'Qual é a prioridade da fazenda?' : contextData.suggestedQuestions.first}"',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFE4C86A),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 13),
-                  Wrap(
+                  const SizedBox(height: 12),
+                  const Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _FarmAtlasAiChip(
-                        label: 'Score',
-                        value: contextData.score.toStringAsFixed(0),
-                      ),
-                      _FarmAtlasAiChip(
-                        label: 'Riscos',
-                        value: contextData.risks.length,
-                      ),
-                      _FarmAtlasAiChip(
-                        label: 'Cenários',
-                        value: contextData.predictiveScenarios.length,
-                      ),
-                      _FarmAtlasAiChip(
-                        label: 'Perguntas',
-                        value: contextData.suggestedQuestions.length,
-                      ),
+                      Chip(label: Text('Resumo')),
+                      Chip(label: Text('O que fazer')),
+                      Chip(label: Text('Por área')),
+                      Chip(label: Text('Simular')),
+                      Chip(label: Text('Decisões')),
                     ],
                   ),
                 ],
@@ -1512,19 +1457,8 @@ class FarmAtlasAiAccessCard extends StatelessWidget {
 
               final button = FilledButton.icon(
                 onPressed: onOpen,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE4C86A),
-                  foregroundColor: const Color(0xFF2A173D),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
-                ),
-                icon: const Icon(Icons.chat_outlined),
-                label: const Text(
-                  'Conversar com Atlas IA',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                icon: const Icon(Icons.arrow_forward_rounded),
+                label: const Text('Abrir central'),
               );
 
               if (compact) {
@@ -1535,7 +1469,7 @@ class FarmAtlasAiAccessCard extends StatelessWidget {
               }
 
               return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(child: information),
                   const SizedBox(width: 24),
@@ -1547,623 +1481,6 @@ class FarmAtlasAiAccessCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _FarmAtlasAiChip extends StatelessWidget {
-  const _FarmAtlasAiChip({required this.label, required this.value});
-
-  final String label;
-  final Object value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-Color _farmAtlasAiLevelColor(AtlasDiagnosticLevel level) {
-  switch (level) {
-    case AtlasDiagnosticLevel.excellent:
-      return const Color(0xFF81C784);
-
-    case AtlasDiagnosticLevel.stable:
-      return const Color(0xFFA5D6A7);
-
-    case AtlasDiagnosticLevel.attention:
-      return const Color(0xFFFFCC80);
-
-    case AtlasDiagnosticLevel.critical:
-      return const Color(0xFFEF9A9A);
-  }
-}
-
-class FarmPredictiveAccessCard extends StatelessWidget {
-  const FarmPredictiveAccessCard({
-    required this.diagnostic,
-    required this.intelligence,
-    required this.onOpen,
-    super.key,
-  });
-
-  final AtlasDiagnosticData diagnostic;
-
-  final AtlasFarmIntelligenceData intelligence;
-
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    final recommendedCount = _recommendedScenarioCount(intelligence);
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF102A43), Color(0xFF243B53), Color(0xFF334E68)],
-            ),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 760;
-
-              final information = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.auto_graph_outlined,
-                        color: Color(0xFFC8A951),
-                        size: 31,
-                      ),
-                      SizedBox(width: 11),
-                      Expanded(
-                        child: Text(
-                          'Inteligência Preditiva',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 11),
-                  const Text(
-                    'Simule decisões antes de executá-las e compare impacto, risco, esforço e retorno financeiro.',
-                    style: TextStyle(color: Colors.white70, height: 1.45),
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 9,
-                    runSpacing: 9,
-                    children: [
-                      _FarmPredictiveChip(
-                        label: 'Cenários',
-                        value: recommendedCount,
-                        icon: Icons.tune_outlined,
-                      ),
-                      _FarmPredictiveChip(
-                        label: 'Score atual',
-                        value: diagnostic.score.toStringAsFixed(0),
-                        icon: Icons.speed_outlined,
-                      ),
-                      _FarmPredictiveChip(
-                        label: 'Riscos',
-                        value: diagnostic.risks.length,
-                        icon: Icons.warning_amber_outlined,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: Text(
-                      recommendedCount == 0
-                          ? 'Cadastre mais dados para gerar cenários automáticos.'
-                          : '$recommendedCount cenários podem ser comparados para encontrar a melhor decisão.',
-                      style: const TextStyle(
-                        color: Color(0xFFC8A951),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-
-              final button = FilledButton.icon(
-                onPressed: onOpen,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8A951),
-                  foregroundColor: const Color(0xFF263238),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
-                ),
-                icon: const Icon(Icons.play_circle_outline),
-                label: const Text(
-                  'Simular decisões',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              );
-
-              if (compact) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [information, const SizedBox(height: 18), button],
-                );
-              }
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: information),
-                  const SizedBox(width: 24),
-                  button,
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  int _recommendedScenarioCount(AtlasFarmIntelligenceData data) {
-    var count = 0;
-
-    if (data.finance.totalExpenses > 0) {
-      count++;
-    }
-
-    if (data.finance.totalIncome > 0) {
-      count++;
-    }
-
-    if (data.agenda.overdueCount > 0) {
-      count++;
-    }
-
-    if (data.inventory.expiredCount > 0 ||
-        data.inventory.nearExpirationCount > 0) {
-      count++;
-    }
-
-    if (data.herd.registrationCoverage < 95) {
-      count++;
-    }
-
-    if (data.paddocks.score < 85) {
-      count++;
-    }
-
-    return count;
-  }
-}
-
-class _FarmPredictiveChip extends StatelessWidget {
-  const _FarmPredictiveChip({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final Object value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white70),
-          const SizedBox(width: 6),
-          Text(
-            '$label: $value',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FarmDiagnosticAccessCard extends StatelessWidget {
-  const FarmDiagnosticAccessCard({
-    required this.data,
-    required this.onOpen,
-    super.key,
-  });
-
-  final AtlasDiagnosticData data;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _farmDiagnosticAccessColor(data.level);
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF263238), Color(0xFF37474F), Color(0xFF455A64)],
-            ),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 760;
-
-              final information = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 51,
-                        height: 51,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Icon(
-                          Icons.health_and_safety_outlined,
-                          color: color,
-                          size: 29,
-                        ),
-                      ),
-                      const SizedBox(width: 13),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Diagnóstico Inteligente Atlas',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              data.title,
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    data.mainDiagnosis,
-                    maxLines: compact ? 7 : 4,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70, height: 1.45),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: Text(
-                      'Prioridade nº 1: ${data.mainPriority.title}',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFC8A951),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 13),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _FarmDiagnosticChip(
-                        label: 'Riscos',
-                        value: data.risks.length,
-                        color: const Color(0xFFEF5350),
-                      ),
-                      _FarmDiagnosticChip(
-                        label: 'Gargalos',
-                        value: data.bottlenecks.length,
-                        color: const Color(0xFFFFB74D),
-                      ),
-                      _FarmDiagnosticChip(
-                        label: 'Ações 7 dias',
-                        value: data.plan7Days.length,
-                        color: const Color(0xFF64B5F6),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-
-              final side = Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    data.score.toStringAsFixed(0),
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      height: 1,
-                    ),
-                  ),
-                  const Text(
-                    'Score diagnóstico',
-                    style: TextStyle(color: Colors.white54, fontSize: 11),
-                  ),
-                  const SizedBox(height: 14),
-                  FilledButton.icon(
-                    onPressed: onOpen,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFC8A951),
-                      foregroundColor: const Color(0xFF263238),
-                    ),
-                    icon: const Icon(Icons.arrow_forward),
-                    label: const Text(
-                      'Abrir diagnóstico',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              );
-
-              if (compact) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [information, const SizedBox(height: 20), side],
-                );
-              }
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: information),
-                  const SizedBox(width: 25),
-                  side,
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FarmDiagnosticChip extends StatelessWidget {
-  const _FarmDiagnosticChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final int value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.24)),
-      ),
-      child: Text(
-        '$label: $value',
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-Color _farmDiagnosticAccessColor(AtlasDiagnosticLevel level) {
-  switch (level) {
-    case AtlasDiagnosticLevel.excellent:
-      return const Color(0xFF66BB6A);
-
-    case AtlasDiagnosticLevel.stable:
-      return const Color(0xFF81C784);
-
-    case AtlasDiagnosticLevel.attention:
-      return const Color(0xFFFFB74D);
-
-    case AtlasDiagnosticLevel.critical:
-      return const Color(0xFFEF5350);
-  }
-}
-
-class FarmIntelligenceAccessCard extends StatelessWidget {
-  const FarmIntelligenceAccessCard({
-    required this.data,
-    required this.onOpenIntelligence,
-    required this.onOpenCopilot,
-    super.key,
-  });
-
-  final AtlasFarmIntelligenceData data;
-  final VoidCallback onOpenIntelligence;
-  final VoidCallback onOpenCopilot;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _farmIntelligenceAccessColor(data.level);
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(21),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0E2F24), Color(0xFF174B37)],
-          ),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < 720;
-
-            final information = Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.auto_awesome_outlined, color: color, size: 29),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        data.situationTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      data.score.toStringAsFixed(0),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  data.executiveSummary,
-                  maxLines: compact ? 6 : 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white70, height: 1.45),
-                ),
-                const SizedBox(height: 13),
-                Text(
-                  'Prioridade nº 1: ${data.mainPriority.title}',
-                  style: const TextStyle(
-                    color: Color(0xFFC8A951),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            );
-
-            final buttons = Wrap(
-              spacing: 9,
-              runSpacing: 9,
-              children: [
-                FilledButton.icon(
-                  onPressed: onOpenIntelligence,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFC8A951),
-                    foregroundColor: const Color(0xFF263238),
-                  ),
-                  icon: const Icon(Icons.insights_outlined),
-                  label: const Text('Ver inteligência'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: onOpenCopilot,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white54),
-                  ),
-                  icon: const Icon(Icons.smart_toy_outlined),
-                  label: const Text('Perguntar'),
-                ),
-              ],
-            );
-
-            if (compact) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [information, const SizedBox(height: 17), buttons],
-              );
-            }
-
-            return Row(
-              children: [
-                Expanded(child: information),
-                const SizedBox(width: 20),
-                buttons,
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-Color _farmIntelligenceAccessColor(AtlasFarmIntelligenceLevel level) {
-  switch (level) {
-    case AtlasFarmIntelligenceLevel.excellent:
-      return const Color(0xFF66BB6A);
-    case AtlasFarmIntelligenceLevel.stable:
-      return const Color(0xFF81C784);
-    case AtlasFarmIntelligenceLevel.attention:
-      return const Color(0xFFFFB74D);
-    case AtlasFarmIntelligenceLevel.critical:
-      return const Color(0xFFEF5350);
   }
 }
 

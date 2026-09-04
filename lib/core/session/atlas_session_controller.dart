@@ -119,8 +119,8 @@ class AtlasSessionController extends ChangeNotifier {
     }
   }
 
-  /// Sincroniza a sessão e a carteira de fazendas depois de criar, editar ou
-  /// desativar uma propriedade. Diferente de [loadContext], não desmonta o
+  /// Sincroniza a sess├úo e a carteira de fazendas depois de criar, editar ou
+  /// desativar uma propriedade. Diferente de [loadContext], n├úo desmonta o
   /// AtlasHomeShell nem troca a tela inteira por um estado de loading/failure.
   Future<void> refreshAfterFarmMutation() async {
     final refreshedSession = await _api.me();
@@ -169,14 +169,14 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   /// Seleciona a fazenda validando-a contra o backend quando o contexto local
-  /// estiver desatualizado. Evita falsos "Fazenda não autorizada" após CRUD.
+  /// estiver desatualizado. Evita falsos "Fazenda n├úo autorizada" ap├│s CRUD.
   Future<void> selectFarmById(String farmId) async {
     var target = _findFarm(farmId);
     if (target == null) {
       final remote = await _api.request('GET', '/farms/$farmId');
       target = AtlasRemoteFarm.fromMap(remote);
       if (target.id.isEmpty || !target.active) {
-        throw StateError('Fazenda indisponível para a sessão atual.');
+        throw StateError('Fazenda indispon├¡vel para a sess├úo atual.');
       }
       _farms = [..._farms.where((item) => item.id != target!.id), target]
         ..sort((a, b) => a.name.compareTo(b.name));

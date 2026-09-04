@@ -7,6 +7,7 @@ import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_detail_screen.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_form_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 
 class FarmListScreen extends StatefulWidget {
   const FarmListScreen({super.key, this.onFarmSelected, this.embedded = false});
@@ -398,115 +399,153 @@ class _FarmListScreenState extends State<FarmListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AtlasColors.canvas,
       appBar: widget.embedded
           ? null
           : AppBar(
-              title: const Text(
-                'Fazendas',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+              title: const Text('Fazendas'),
               actions: [
                 IconButton(
                   onPressed: isLoading ? null : loadFarms,
-                  tooltip: 'Atualizar permissões e fazendas',
-                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Atualizar fazendas',
+                  icon: const Icon(Icons.refresh_rounded),
                 ),
               ],
             ),
-      floatingActionButton: canCreate
-          ? FloatingActionButton.extended(
-              onPressed: openFarmForm,
-              backgroundColor: const Color(0xFF1B5E20),
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add),
-              label: const Text('Nova fazenda'),
-            )
-          : null,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      const Text(
-                        'Propriedades cadastradas',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF263238),
+        child: isLoading
+            ? const AtlasStatePanel(
+                title: 'Carregando suas fazendas',
+                message:
+                    'Estamos validando acesso, permissões e propriedades disponíveis.',
+                icon: Icons.home_work_outlined,
+                loading: true,
+              )
+            : RefreshIndicator(
+                onRefresh: loadFarms,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1120),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AtlasSpacing.pageHorizontal,
+                        vertical: AtlasSpacing.pageVertical,
+                      ),
+                      children: [
+                        AtlasPageHeader(
+                          eyebrow: 'Portfólio rural',
+                          title: 'Fazendas',
+                          description:
+                              '${farms.length} ${farms.length == 1 ? 'propriedade disponível' : 'propriedades disponíveis'} '
+                              'para esta sessão. Abra uma fazenda para assumir '
+                              'seu contexto operacional.',
+                          actions: [
+                            AtlasButton(
+                              label: 'Atualizar',
+                              icon: Icons.refresh_rounded,
+                              onPressed: loadFarms,
+                              variant: AtlasButtonVariant.secondary,
+                            ),
+                            if (canCreate)
+                              AtlasButton(
+                                label: 'Nova fazenda',
+                                icon: Icons.add_rounded,
+                                onPressed: openFarmForm,
+                              ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'A lista respeita o escopo e as permissões da sessão Enterprise.',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                      if (!canCreate) ...[
-                        const SizedBox(height: 12),
-                        const Card(
-                          child: ListTile(
-                            leading: Icon(Icons.lock_outline),
-                            title: Text('Cadastro de fazendas bloqueado'),
-                            subtitle: Text(
-                              'A permissão farms.create não está habilitada para este usuário.',
+                        if (!canCreate) ...[
+                          const SizedBox(height: AtlasSpacing.lg),
+                          const AtlasSurface(
+                            backgroundColor: AtlasColors.surfaceMuted,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  color: AtlasColors.textSecondary,
+                                ),
+                                SizedBox(width: AtlasSpacing.sm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Cadastro de fazendas indisponível',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: AtlasColors.textPrimary,
+                                        ),
+                                      ),
+                                      SizedBox(height: AtlasSpacing.xxs),
+                                      Text(
+                                        'Seu perfil pode consultar as propriedades '
+                                        'autorizadas, mas não possui farms.create.',
+                                        style: TextStyle(
+                                          color: AtlasColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      if (farms.isEmpty)
-                        const EmptyFarmsMessage()
-                      else
-                        ...farms.map((farm) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: FarmCard(
-                              farm: farm,
-                              canUpdate: canUpdate,
-                              onOpen: () {
-                                openFarm(farm);
-                              },
-                              onEdit: () {
-                                editFarm(farm);
-                              },
-                              onDelete: () {
-                                deleteFarm(farm);
-                              },
+                        ],
+                        const SizedBox(height: AtlasSpacing.xl),
+                        if (farms.isEmpty)
+                          EmptyFarmsMessage(
+                            canCreate: canCreate,
+                            onCreate: canCreate ? openFarmForm : null,
+                          )
+                        else
+                          ...farms.map(
+                            (farm) => Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AtlasSpacing.md,
+                              ),
+                              child: FarmCard(
+                                farm: farm,
+                                canUpdate: canUpdate,
+                                onOpen: () => openFarm(farm),
+                                onEdit: () => editFarm(farm),
+                                onDelete: () => deleteFarm(farm),
+                              ),
                             ),
-                          );
-                        }),
-                      const SizedBox(height: 80),
-                    ],
+                          ),
+                        const SizedBox(height: AtlasSpacing.xl),
+                      ],
+                    ),
                   ),
-          ),
-        ),
+                ),
+              ),
       ),
     );
   }
 }
 
 class EmptyFarmsMessage extends StatelessWidget {
-  const EmptyFarmsMessage({super.key});
+  const EmptyFarmsMessage({
+    required this.canCreate,
+    this.onCreate,
+    super.key,
+  });
+
+  final bool canCreate;
+  final VoidCallback? onCreate;
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Column(
-          children: [
-            Icon(Icons.landscape_outlined, size: 56, color: Color(0xFF1B5E20)),
-            SizedBox(height: 16),
-            Text(
-              'Nenhuma fazenda disponível para esta sessão.',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
+    return AtlasStatePanel(
+      title: 'Nenhuma fazenda disponível',
+      message: canCreate
+          ? 'Cadastre a primeira propriedade para iniciar o contexto operacional.'
+          : 'Não há propriedades liberadas para esta sessão.',
+      icon: Icons.landscape_outlined,
+      actionLabel: canCreate ? 'Cadastrar fazenda' : null,
+      onAction: canCreate ? onCreate : null,
     );
   }
 }
@@ -529,94 +568,76 @@ class FarmCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B5E20).withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.landscape_outlined,
-                  color: Color(0xFF1B5E20),
-                  size: 30,
-                ),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      farm.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF263238),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 18,
-                          color: Colors.black54,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${farm.city} - ${farm.state}',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 20,
-                      runSpacing: 10,
-                      children: [
-                        FarmInformation(
-                          icon: AtlasLivestockIcons.cow,
-                          text: '${farm.animals} animais',
-                        ),
-                        FarmInformation(
-                          icon: Icons.straighten_outlined,
-                          text: '${farm.area} hectares',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              if (canUpdate)
-                PopupMenuButton<String>(
-                  tooltip: 'Opções',
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      onEdit();
-                    }
+    return InkWell(
+      borderRadius: BorderRadius.circular(AtlasRadius.md),
+      onTap: onOpen,
+      child: AtlasSurface(
+        elevated: true,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 620;
 
-                    if (value == 'delete') {
-                      onDelete();
-                    }
-                  },
-                  itemBuilder: (context) {
-                    return const [
+            final identity = Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: AtlasColors.brandSoft,
+                    borderRadius: BorderRadius.circular(AtlasRadius.sm),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.landscape_outlined,
+                    color: AtlasColors.brand,
+                    size: 27,
+                  ),
+                ),
+                const SizedBox(width: AtlasSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        farm.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AtlasSpacing.xs),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 17,
+                            color: AtlasColors.textSecondary,
+                          ),
+                          const SizedBox(width: AtlasSpacing.xxs),
+                          Expanded(
+                            child: Text(
+                              '${farm.city} - ${farm.state}',
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (canUpdate)
+                  PopupMenuButton<String>(
+                    tooltip: 'Opções da fazenda',
+                    onSelected: (value) {
+                      if (value == 'edit') onEdit();
+                      if (value == 'delete') onDelete();
+                    },
+                    itemBuilder: (context) => const [
                       PopupMenuItem<String>(
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
-                            SizedBox(width: 10),
+                            Icon(Icons.edit_outlined),
+                            SizedBox(width: AtlasSpacing.sm),
                             Text('Editar fazenda'),
                           ],
                         ),
@@ -625,18 +646,111 @@ class FarmCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete_outline, color: Colors.red),
-                            SizedBox(width: 10),
+                            Icon(
+                              Icons.delete_outline,
+                              color: AtlasColors.critical,
+                            ),
+                            SizedBox(width: AtlasSpacing.sm),
                             Text('Excluir fazenda'),
                           ],
                         ),
                       ),
-                    ];
-                  },
+                    ],
+                  ),
+              ],
+            );
+
+            final metrics = Wrap(
+              spacing: AtlasSpacing.sm,
+              runSpacing: AtlasSpacing.sm,
+              children: [
+                _FarmMetric(
+                  icon: AtlasLivestockIcons.cow,
+                  value: '${farm.animals}',
+                  label: 'animais',
                 ),
-            ],
-          ),
+                _FarmMetric(
+                  icon: Icons.straighten_outlined,
+                  value: '${farm.area}',
+                  label: 'hectares',
+                ),
+              ],
+            );
+
+            final open = AtlasButton(
+              label: 'Abrir fazenda',
+              icon: Icons.arrow_forward_rounded,
+              onPressed: onOpen,
+              variant: AtlasButtonVariant.secondary,
+            );
+
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  identity,
+                  const SizedBox(height: AtlasSpacing.lg),
+                  metrics,
+                  const SizedBox(height: AtlasSpacing.lg),
+                  open,
+                ],
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                identity,
+                const SizedBox(height: AtlasSpacing.lg),
+                Row(
+                  children: [
+                    Expanded(child: metrics),
+                    const SizedBox(width: AtlasSpacing.lg),
+                    open,
+                  ],
+                ),
+              ],
+            );
+          },
         ),
+      ),
+    );
+  }
+}
+
+class _FarmMetric extends StatelessWidget {
+  const _FarmMetric({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AtlasSpacing.sm,
+        vertical: AtlasSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AtlasColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(AtlasRadius.pill),
+        border: Border.all(color: AtlasColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AtlasColors.brand),
+          const SizedBox(width: AtlasSpacing.xs),
+          Text(
+            '$value $label',
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+        ],
       ),
     );
   }
@@ -653,7 +767,7 @@ class FarmInformation extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF1B5E20)),
+        Icon(icon, size: 18, color: AtlasColors.brand),
         const SizedBox(width: 6),
         Text(text),
       ],

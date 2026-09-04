@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
+import 'package:projeto_atlas/core/design_system/components/atlas_page_header.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
@@ -48,8 +49,7 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
   int get animalsWithoutWeight =>
       workspace.records.where((record) => record.animal.weight <= 0).length;
 
-  int get inactiveAnimals =>
-      workspace.totalAnimals - workspace.activeAnimals;
+  int get inactiveAnimals => workspace.totalAnimals - workspace.activeAnimals;
 
   AtlasModuleAttentionLevel get moduleLevel {
     if (workspace.totalAnimals > 0 && workspace.groups.isEmpty) {
@@ -222,9 +222,7 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
 
     final warnings = <String>[];
     try {
-      final previousGroups = List<HerdGroupData>.unmodifiable(
-        workspace.groups,
-      );
+      final previousGroups = List<HerdGroupData>.unmodifiable(workspace.groups);
       final previousAnimals = List<AnimalData>.unmodifiable(
         workspace.records.map((record) => record.animal),
       );
@@ -530,8 +528,16 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _Header(
-                        farmName: farm?.name ?? 'Nenhuma fazenda selecionada',
+                      AtlasPageHeader(
+                        eyebrow: 'Operação pecuária',
+                        title: 'Rebanho',
+                        description: farm == null
+                            ? 'Selecione uma fazenda para acessar a carteira de animais.'
+                            : '${farm.name} • visão operacional de lotes, animais e decisões do dia.',
+                        leading: const CircleAvatar(
+                          radius: 24,
+                          child: Icon(AtlasLivestockIcons.cow),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       AtlasOperationalActionBar(
@@ -573,12 +579,13 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
                         AtlasModuleWorkspaceGuide(
                           moduleLabel: 'Rebanho',
                           workflows:
-                              AtlasProductSurfacePolicy.moduleWorkflows['Rebanho'] ??
-                                  const <String>[],
+                              AtlasProductSurfacePolicy
+                                  .moduleWorkflows['Rebanho'] ??
+                              const <String>[],
                           specializedFamilies:
                               AtlasProductSurfacePolicy
-                                      .specializedCapabilityCountByOwner['Rebanho'] ??
-                                  0,
+                                  .specializedCapabilityCountByOwner['Rebanho'] ??
+                              0,
                         ),
                         const SizedBox(height: 20),
                         _Indicators(workspace: workspace),
@@ -657,27 +664,6 @@ class _HerdOverviewScreenState extends State<HerdOverviewScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.farmName});
-
-  final String farmName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Gestão do rebanho',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text(farmName, style: const TextStyle(color: Colors.black54)),
-      ],
     );
   }
 }
@@ -1166,10 +1152,8 @@ class _EmptyAnimals extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AtlasEmptyState(
-    icon: Icons.pets_outlined,
-    title: hasAnimals
-        ? 'Nenhum animal encontrado'
-        : 'Nenhum animal cadastrado',
+    icon: Icons.groups_outlined,
+    title: hasAnimals ? 'Nenhum animal encontrado' : 'Nenhum animal cadastrado',
     message: hasAnimals
         ? 'Os filtros atuais não encontraram animais. Limpe os filtros para ver todo o rebanho.'
         : 'Cadastre o primeiro animal para iniciar o histórico, as pesagens e os manejos.',

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
+import 'package:projeto_atlas/core/design_system/components/atlas_page_header.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_document/data/services/animal_document_storage_service.dart';
 import 'package:projeto_atlas/features/animal_document/presentation/screens/animal_document_list_screen.dart';
@@ -598,6 +599,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
+                  AtlasPageHeader(
+                    eyebrow: '${farm.name} • ${group.name}',
+                    title: 'Central do animal',
+                    description: 'Prontuário individual para acompanhar situação, desempenho e histórico sem perder o contexto da fazenda.',
+                    actions: [
+                      OutlinedButton.icon(
+                        onPressed: isLoading ? null : loadDashboard,
+                        icon: const Icon(Icons.refresh_outlined),
+                        label: const Text('Atualizar'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   AnimalHubHeader(
                     animal: animal,
                     farm: farm,

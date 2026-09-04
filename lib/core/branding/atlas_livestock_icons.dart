@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 
-/// Iconografia pecuária própria do Projeto Atlas.
+/// Ponte de compatibilidade da iconografia pecuaria oficial do Atlas.
 ///
-/// Mantém os contratos `IconData` usados pela arquitetura e evita dependência
-/// de pacotes externos cuja API de ícones seja incompatível com o Flutter.
+/// O glifo 0xE900 da familia AtlasLivestock e agora o MESMO simbolo bovino
+/// aprovado usado por AtlasLivestockMark. Mantemos IconData para nao quebrar
+/// dezenas de contratos historicos que ainda exigem IconData.
 abstract final class AtlasLivestockIcons {
   static const IconData cow = IconData(0xE900, fontFamily: 'AtlasLivestock');
 }

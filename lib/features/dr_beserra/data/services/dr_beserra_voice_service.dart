@@ -53,6 +53,20 @@ class DrBeserraVoiceService {
       return state.value.available;
     }
 
+    // A implementação nativa de voz do Windows fica desabilitada no V1 RC
+    // porque ela participa do bootstrap do runner. Android/iOS/macOS mantêm
+    // speech_to_text normalmente.
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      state.value = const DrBeserraVoiceState(
+        available: false,
+        initialized: true,
+        listening: false,
+        errorMessage:
+            'Reconhecimento de voz está temporariamente indisponível no Windows.',
+      );
+      return false;
+    }
+
     final available = await _speech.initialize(
       onStatus: _onStatus,
       onError: (error) {

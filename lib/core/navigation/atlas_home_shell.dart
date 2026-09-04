@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
+import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 import 'package:projeto_atlas/core/offline/presentation/atlas_offline_center_screen.dart';
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
@@ -20,6 +21,7 @@ import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inven
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/shared/design_system/iconography/atlas_livestock_mark.dart';
 
 class AtlasHomeShell extends StatefulWidget {
   const AtlasHomeShell({super.key});
@@ -194,7 +196,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
         final desktop = constraints.maxWidth >= 1000;
         if (desktop) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF6F7F4),
+            backgroundColor: AtlasColors.canvas,
             body: Row(
               children: [
                 _AtlasSidebar(
@@ -202,7 +204,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   selectedIndex: selectedIndex,
                   userName: userName,
                   farmName: controller.activeFarm?.name,
-                  onSelected: (index) => _handleRouteSelection(visibleRoutes, index),
+                  onSelected: (index) =>
+                      _handleRouteSelection(visibleRoutes, index),
                   onLogout: controller.logout,
                 ),
                 Expanded(
@@ -232,10 +235,10 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF6F7F4),
+          backgroundColor: AtlasColors.canvas,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
+            backgroundColor: AtlasColors.surface,
+            surfaceTintColor: AtlasColors.surface,
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -308,8 +311,9 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
 
     if (farmScopedModules.contains(target.label) &&
         controller.activeFarm == null) {
-      final farmsIndex =
-          visibleRoutes.indexWhere((route) => route.label == 'Fazendas');
+      final farmsIndex = visibleRoutes.indexWhere(
+        (route) => route.label == 'Fazendas',
+      );
       if (farmsIndex >= 0) {
         setState(() => selectedIndex = farmsIndex);
         ScaffoldMessenger.of(context)
@@ -401,12 +405,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
             );
     } else if (selected.label == 'Inteligência') {
       body = farm == null
-          ? _AtlasSelectFarmMessage(
-              onSelectFarm: () => _selectFarm(context),
-            )
-          : AtlasIntelligenceCenterScreen(
-              onNavigateModule: _navigateToLabel,
-            );
+          ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
+          : AtlasIntelligenceCenterScreen(onNavigateModule: _navigateToLabel);
     } else if (selected.label == 'Relatórios') {
       body = const ReportsScreen(embedded: true);
     } else {
@@ -475,11 +475,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
   }
 }
 
-
 class _AtlasSelectFarmMessage extends StatelessWidget {
-  const _AtlasSelectFarmMessage({
-    required this.onSelectFarm,
-  });
+  const _AtlasSelectFarmMessage({required this.onSelectFarm});
 
   final VoidCallback onSelectFarm;
 
@@ -502,9 +499,9 @@ class _AtlasSelectFarmMessage extends StatelessWidget {
               Text(
                 'Escolha uma fazenda para continuar',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -525,7 +522,6 @@ class _AtlasSelectFarmMessage extends StatelessWidget {
   }
 }
 
-
 class _AtlasSidebarSectionHeader extends StatelessWidget {
   const _AtlasSidebarSectionHeader({required this.group});
 
@@ -537,7 +533,12 @@ class _AtlasSidebarSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 12, 4),
       child: Row(
         children: [
-          Icon(group.icon, size: 15, color: Colors.black45),
+          group == AtlasNavigationGroup.herd
+              ? const AtlasAnimalsGroupIcon(
+                  size: 15,
+                  color: AtlasColors.textTertiary,
+                )
+              : Icon(group.icon, size: 15, color: AtlasColors.textTertiary),
           const SizedBox(width: 7),
           Text(
             group.label,
@@ -545,7 +546,7 @@ class _AtlasSidebarSectionHeader extends StatelessWidget {
               fontSize: 12,
               letterSpacing: 0.2,
               fontWeight: FontWeight.w800,
-              color: Colors.black45,
+              color: AtlasColors.textTertiary,
             ),
           ),
         ],
@@ -577,46 +578,53 @@ class _AtlasSidebar extends StatelessWidget {
     BuildContext context,
     Iterable<MapEntry<int, AtlasRouteDefinition>> entries,
   ) {
-    return entries.map((entry) {
-      final index = entry.key;
-      final route = entry.value;
-      final isSelected = index == selectedIndex;
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: ListTile(
-          selected: isSelected,
-          selectedTileColor: const Color(0xFFEAF3E2),
-          selectedColor: AtlasBranding.forest,
-          textColor: const Color(0xFF263238),
-          iconColor: const Color(0xFF304B34),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          leading: SizedBox(
-            width: 24,
-            child: Center(
-              child: Icon(
-                isSelected ? route.selectedIcon : route.icon,
-                size: 20,
+    return entries
+        .map((entry) {
+          final index = entry.key;
+          final route = entry.value;
+          final isSelected = index == selectedIndex;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: ListTile(
+              selected: isSelected,
+              selectedTileColor: AtlasColors.brandSoft,
+              selectedColor: AtlasColors.brand,
+              textColor: AtlasColors.textPrimary,
+              iconColor: AtlasColors.brand,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AtlasRadius.sm),
               ),
+              leading: SizedBox(
+                width: 24,
+                child: Center(
+                  child: AtlasNavigationIcon(
+                    routeLabel: route.label,
+                    fallback: route.icon,
+                    selectedFallback: route.selectedIcon,
+                    selected: isSelected,
+                    size: 20,
+                  ),
+                ),
+              ),
+              title: Text(
+                route.visibleLabel,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+              onTap: () => onSelected(index),
             ),
-          ),
-          title: Text(
-            route.visibleLabel,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-          onTap: () => onSelected(index),
-        ),
-      );
-    }).toList(growable: false);
+          );
+        })
+        .toList(growable: false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: compact ? double.infinity : 248,
-      color: Colors.white,
+      color: AtlasColors.surface,
       child: SafeArea(
         child: Column(
           children: [
@@ -633,15 +641,15 @@ class _AtlasSidebar extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F6EC),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AtlasColors.brandSoft,
+                  borderRadius: BorderRadius.circular(AtlasRadius.sm),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.home_work_outlined,
                       size: 18,
-                      color: AtlasBranding.forest,
+                      color: AtlasColors.brand,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -661,7 +669,10 @@ class _AtlasSidebar extends StatelessWidget {
             const Divider(height: 1),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 children: [
                   for (final group in AtlasNavigationGroup.values)
                     if (group != AtlasNavigationGroup.administration &&
@@ -710,13 +721,13 @@ class _AtlasSidebar extends StatelessWidget {
             ListTile(
               leading: CircleAvatar(
                 radius: 18,
-                backgroundColor: AtlasBranding.forest,
+                backgroundColor: AtlasColors.brand,
                 child: Text(
                   userName.trim().isEmpty
                       ? 'A'
                       : userName.trim()[0].toUpperCase(),
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AtlasColors.surface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -765,8 +776,8 @@ class _AtlasTopBar extends StatelessWidget {
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE4E9E2))),
+        color: AtlasColors.surface,
+        border: Border(bottom: BorderSide(color: AtlasColors.border)),
       ),
       child: Row(
         children: [
@@ -785,7 +796,10 @@ class _AtlasTopBar extends StatelessWidget {
                 if (farmName != null && farmName!.trim().isNotEmpty)
                   Text(
                     farmName!,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AtlasColors.textSecondary,
+                    ),
                   ),
               ],
             ),

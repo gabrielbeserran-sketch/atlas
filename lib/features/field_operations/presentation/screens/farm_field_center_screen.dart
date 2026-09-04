@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_role_card.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
@@ -329,7 +329,7 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
                       title: 'Animais nos piquetes',
                       value: '$animalsInPaddocks',
                       subtitle: 'Ocupação cadastrada',
-                      icon: Icons.pets_outlined,
+                      icon: Icons.groups_outlined,
                     ),
                     _FieldMetric(
                       title: 'Operações abertas',

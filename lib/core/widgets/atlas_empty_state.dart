@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 
 class AtlasEmptyState extends StatelessWidget {
   const AtlasEmptyState({
@@ -18,31 +19,12 @@ class AtlasEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(message, textAlign: TextAlign.center),
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 20),
-                FilledButton(onPressed: onAction, child: Text(actionLabel!)),
-              ],
-            ],
-          ),
-        ),
-      ),
+    return AtlasStatePanel(
+      title: title,
+      message: message,
+      icon: icon,
+      actionLabel: actionLabel,
+      onAction: onAction,
     );
   }
 }

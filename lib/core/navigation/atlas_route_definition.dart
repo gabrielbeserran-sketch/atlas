@@ -23,7 +23,7 @@ extension AtlasNavigationGroupLabel on AtlasNavigationGroup {
 
   IconData get icon => switch (this) {
     AtlasNavigationGroup.today => Icons.today_outlined,
-    AtlasNavigationGroup.herd => Icons.pets_outlined,
+    AtlasNavigationGroup.herd => Icons.sell_outlined,
     AtlasNavigationGroup.farm => Icons.agriculture_outlined,
     AtlasNavigationGroup.management => Icons.assessment_outlined,
     AtlasNavigationGroup.support => Icons.support_agent_outlined,
@@ -62,7 +62,6 @@ class AtlasRouteDefinition {
   final AtlasRouteMaturity maturity;
   final AtlasNavigationGroup group;
 
-  String get visibleLabel => menuLabel?.trim().isNotEmpty == true
-      ? menuLabel!.trim()
-      : label;
+  String get visibleLabel =>
+      menuLabel?.trim().isNotEmpty == true ? menuLabel!.trim() : label;
 }

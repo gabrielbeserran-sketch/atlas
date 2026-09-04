@@ -1,45 +1,72 @@
-import 'package:flutter/foundation.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:speech_to_text_windows/speech_to_text_windows.dart';
 
 import 'app.dart';
-import 'core/errors/atlas_error_reporter.dart';
-import 'core/widgets/atlas_error_state.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (defaultTargetPlatform == TargetPlatform.windows) {
-    SpeechToTextWindows.registerWith();
-  }
-
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    AtlasErrorReporter.report(
-      details.exception,
-      details.stack ?? StackTrace.current,
-      context: 'flutter',
-      fatal: false,
-    );
+
+    debugPrint('ATLAS FLUTTER ERROR: ${details.exceptionAsString()}');
+
+    final stack = details.stack;
+
+    if (stack != null) {
+      debugPrintStack(label: 'ATLAS FLUTTER STACK', stackTrace: stack);
+    }
   };
 
-  PlatformDispatcher.instance.onError = (error, stackTrace) {
-    AtlasErrorReporter.report(
-      error,
-      stackTrace,
-      context: 'platform',
-      fatal: true,
-    );
-    return true;
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stackTrace) {
+    debugPrint('ATLAS PLATFORM ERROR: $error');
+
+    debugPrintStack(label: 'ATLAS PLATFORM STACK', stackTrace: stackTrace);
+
+    /*
+     * false é proposital.
+     *
+     * Durante a estabilização do bootstrap, uma exceção fatal não pode ser
+     * silenciosamente considerada tratada.
+     */
+    return false;
   };
 
   ErrorWidget.builder = (details) {
     return Material(
-      child: AtlasErrorState(
-        title: 'O Atlas encontrou um problema nesta tela',
-        message:
-            'Feche esta tela e tente novamente. '
-            'Se o problema persistir, registre o momento e a operação realizada.',
+      color: const Color(0xFFF4F6F4),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 54,
+                    color: Color(0xFFB42318),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'O Atlas encontrou um problema de interface',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    details.exceptionAsString(),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   };

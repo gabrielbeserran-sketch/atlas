@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/consultancy_client/data/services/atlas_monthly_bulletin_service.dart';
 import 'package:projeto_atlas/features/consultancy_client/domain/models/atlas_monthly_bulletin_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -85,7 +85,7 @@ class _AtlasMonthlyBulletinsCardState
 
   IconData _icon(String type) {
     return switch (type) {
-      'zootechnical' => Icons.pets_outlined,
+      'zootechnical' => Icons.agriculture_outlined,
       'operations' => Icons.groups_outlined,
       'financial' => Icons.account_balance_wallet_outlined,
       _ => Icons.summarize_outlined,

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/design_system/foundations/atlas_colors.dart';
 
 class AtlasBranding {
   const AtlasBranding._();
 
   static const String logoAsset = 'assets/branding/beserra_logo.png';
-  static const Color forest = Color(0xFF153E1B);
-  static const Color surface = Color(0xFFF7F8F4);
+  static const Color forest = AtlasColors.brand;
+  static const Color surface = AtlasColors.canvas;
 }
 
 class BeserraLogo extends StatelessWidget {

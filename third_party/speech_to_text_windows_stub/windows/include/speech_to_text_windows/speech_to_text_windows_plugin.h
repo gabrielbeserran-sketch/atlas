@@ -1,0 +1,6 @@
+#ifndef FLUTTER_PLUGIN_SPEECH_TO_TEXT_WINDOWS_PLUGIN_COMPAT_H_
+#define FLUTTER_PLUGIN_SPEECH_TO_TEXT_WINDOWS_PLUGIN_COMPAT_H_
+
+#include "speech_to_text_windows.h"
+
+#endif

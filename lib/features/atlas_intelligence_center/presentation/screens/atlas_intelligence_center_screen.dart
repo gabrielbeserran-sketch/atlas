@@ -4,17 +4,28 @@ import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/data/services/atlas_intelligence_service.dart';
+import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/atlas_intelligence_capability.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/atlas_intelligence_models.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 
 class AtlasIntelligenceCenterScreen extends StatefulWidget {
   const AtlasIntelligenceCenterScreen({
     this.onNavigateModule,
+    this.onOpenAtlasAi,
+    this.onOpenPredictive,
+    this.onOpenDiagnostic,
+    this.onOpenCopilot,
+    this.onOpenFarmIntelligence,
     this.initialTab = 0,
     super.key,
   });
 
   final ValueChanged<String>? onNavigateModule;
+  final VoidCallback? onOpenAtlasAi;
+  final VoidCallback? onOpenPredictive;
+  final VoidCallback? onOpenDiagnostic;
+  final VoidCallback? onOpenCopilot;
+  final VoidCallback? onOpenFarmIntelligence;
   final int initialTab;
 
   @override
@@ -41,7 +52,7 @@ class _AtlasIntelligenceCenterScreenState
       title: 'Rebanho',
       moduleLabel: 'Rebanho',
       aliases: ['rebanho', 'animal', 'zootec'],
-      icon: Icons.pets_outlined,
+      icon: Icons.analytics_outlined,
       description: 'Desempenho, evolução do rebanho e qualidade dos dados.',
     ),
     _AnalysisArea(
@@ -157,11 +168,11 @@ class _AtlasIntelligenceCenterScreenState
           moduleLabel: 'Análises',
           workflows:
               AtlasProductSurfacePolicy.moduleWorkflows['Análises'] ??
-                  const <String>[],
+              const <String>[],
           specializedFamilies:
               AtlasProductSurfacePolicy
-                      .specializedCapabilityCountByOwner['Análises'] ??
-                  0,
+                  .specializedCapabilityCountByOwner['Análises'] ??
+              0,
         ),
         const SizedBox(height: 16),
         AtlasModuleRoleCard(
@@ -172,6 +183,8 @@ class _AtlasIntelligenceCenterScreenState
               AtlasProductSurfacePolicy.moduleDoesNotReplace['Análises']!,
           icon: Icons.insights_outlined,
         ),
+        const SizedBox(height: 16),
+        buildSpecializedCapabilities(context),
         const SizedBox(height: 16),
         Wrap(
           spacing: 10,
@@ -214,6 +227,135 @@ class _AtlasIntelligenceCenterScreenState
     );
   }
 
+  Widget buildSpecializedCapabilities(BuildContext context) {
+    final launchers = <AtlasIntelligenceCapabilityFamily, VoidCallback?>{
+      AtlasIntelligenceCapabilityFamily.conversation: widget.onOpenAtlasAi,
+      AtlasIntelligenceCapabilityFamily.diagnosis: widget.onOpenDiagnostic,
+      AtlasIntelligenceCapabilityFamily.prediction: widget.onOpenPredictive,
+      AtlasIntelligenceCapabilityFamily.decision: null,
+      AtlasIntelligenceCapabilityFamily.executive:
+          widget.onOpenFarmIntelligence,
+    };
+
+    final specialized = AtlasIntelligenceCapabilityRegistry.canonical
+        .where(
+          (definition) =>
+              launchers[definition.family] != null ||
+              definition.nativeTabIndex != null,
+        )
+        .toList(growable: false);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Inteligência Atlas',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Cinco capacidades organizam as inteligências existentes. '
+              'As antigas telas deixam de ser produtos concorrentes e passam '
+              'a funcionar como ferramentas especializadas desta Central.',
+            ),
+            const SizedBox(height: 14),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 900
+                    ? 3
+                    : constraints.maxWidth >= 560
+                    ? 2
+                    : 1;
+                final width =
+                    (constraints.maxWidth - (columns - 1) * 10) / columns;
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: specialized
+                      .map((definition) {
+                        final launcher = launchers[definition.family];
+                        final nativeTab = definition.nativeTabIndex;
+                        final action =
+                            launcher ??
+                            (nativeTab == null
+                                ? null
+                                : () => DefaultTabController.of(
+                                    context,
+                                  ).animateTo(nativeTab));
+                        return SizedBox(
+                          width: width,
+                          child: OutlinedButton(
+                            onPressed: action,
+                            style: OutlinedButton.styleFrom(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.all(14),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(_capabilityIcon(definition.family)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        definition.title,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        definition.description,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
+                );
+              },
+            ),
+            if (widget.onOpenCopilot != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: widget.onOpenCopilot,
+                icon: const Icon(Icons.smart_toy_outlined),
+                label: const Text('Copiloto operacional'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _capabilityIcon(AtlasIntelligenceCapabilityFamily family) {
+    return switch (family) {
+      AtlasIntelligenceCapabilityFamily.conversation =>
+        Icons.chat_bubble_outline,
+      AtlasIntelligenceCapabilityFamily.diagnosis =>
+        Icons.health_and_safety_outlined,
+      AtlasIntelligenceCapabilityFamily.prediction => Icons.auto_graph_outlined,
+      AtlasIntelligenceCapabilityFamily.decision => Icons.rule_outlined,
+      AtlasIntelligenceCapabilityFamily.executive => Icons.insights_outlined,
+    };
+  }
+
   Widget buildRecommendations(BuildContext context, String farmId) {
     return RefreshIndicator(
       onRefresh: () => loadRecommendations(farmId),
@@ -240,9 +382,7 @@ class _AtlasIntelligenceCenterScreenState
           if (recommendations.isEmpty)
             const Padding(
               padding: EdgeInsets.all(32),
-              child: Center(
-                child: Text('Nenhuma prioridade calculada ainda.'),
-              ),
+              child: Center(child: Text('Nenhuma prioridade calculada ainda.')),
             ),
           ...recommendations.map(buildRecommendationCard),
         ],
@@ -281,16 +421,15 @@ class _AtlasIntelligenceCenterScreenState
                   : constraints.maxWidth >= 620
                   ? 2
                   : 1;
-              final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+              final width =
+                  (constraints.maxWidth - (columns - 1) * 12) / columns;
               return Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: areas
                     .map(
-                      (area) => SizedBox(
-                        width: width,
-                        child: buildAreaCard(area),
-                      ),
+                      (area) =>
+                          SizedBox(width: width, child: buildAreaCard(area)),
                     )
                     .toList(growable: false),
               );
@@ -400,10 +539,7 @@ class _AtlasIntelligenceCenterScreenState
         ),
         childrenPadding: const EdgeInsets.all(16),
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(item.description),
-          ),
+          Align(alignment: Alignment.centerLeft, child: Text(item.description)),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerLeft,
@@ -448,11 +584,13 @@ class _AtlasIntelligenceCenterScreenState
   }
 
   Widget buildAreaCard(_AnalysisArea area) {
-    final matches = recommendations.where((item) {
-      final haystack = '${item.area} ${item.title} ${item.description}'
-          .toLowerCase();
-      return area.aliases.any((alias) => haystack.contains(alias));
-    }).toList(growable: false);
+    final matches = recommendations
+        .where((item) {
+          final haystack = '${item.area} ${item.title} ${item.description}'
+              .toLowerCase();
+          return area.aliases.any((alias) => haystack.contains(alias));
+        })
+        .toList(growable: false);
 
     final top = matches.isEmpty ? null : matches.first;
     return Card(
@@ -478,27 +616,26 @@ class _AtlasIntelligenceCenterScreenState
             const SizedBox(height: 10),
             Text(area.description),
             const SizedBox(height: 10),
-            ...(
-              AtlasProductSurfacePolicy.moduleWorkflows[area.title] ??
-                  const <String>[]
-            ).map(
-              (workflow) => Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.check_circle_outline, size: 16),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        workflow,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+            ...(AtlasProductSurfacePolicy.moduleWorkflows[area.title] ??
+                    const <String>[])
+                .map(
+                  (workflow) => Padding(
+                    padding: const EdgeInsets.only(bottom: 5),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.check_circle_outline, size: 16),
+                        const SizedBox(width: 7),
+                        Expanded(
+                          child: Text(
+                            workflow,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
             if ((AtlasProductSurfacePolicy
                         .specializedCapabilityCountByOwner[area.title] ??
                     0) >
@@ -580,9 +717,9 @@ class _AtlasIntelligenceCenterScreenState
   }
 
   void openReports() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ReportsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const ReportsScreen()));
   }
 
   Future<void> loadContext(String farmId) async {
@@ -666,9 +803,9 @@ class _AtlasIntelligenceCenterScreenState
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

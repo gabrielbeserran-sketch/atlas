@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/data/services/animal_enterprise_service.dart';
@@ -1325,7 +1325,7 @@ class _SelectionSummary extends StatelessWidget {
           children: preview
               .map(
                 (animal) => Chip(
-                  avatar: const Icon(Icons.pets_outlined, size: 16),
+                  avatar: const Icon(Icons.groups_outlined, size: 16),
                   label: Text(
                     '${animal.tag} • ${lotName(animal.lotId)}',
                   ),
