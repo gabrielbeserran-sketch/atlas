@@ -78,7 +78,10 @@ de navegação.
 Em 05/09/2026, `flutter devices` detectou somente Windows, Chrome e Edge. O
 Android SDK e o ADB 37.0.0 estão instalados e saudáveis, mas `adb devices -l`
 retornou uma lista vazia; o telefone não está visível como dispositivo USB de
-depuração neste computador. O Android precisa ser exposto por depuração USB
-para que a hierarquia da versão mais recente seja extraída e comparada ao
-quadro acima. Até esse confronto, esta auditoria impede que o menu seja
-refeito por suposição.
+depuração neste computador.
+
+A validação visual do usuário confirmou que a organização atualmente exibida
+no Atlas já está alinhada à versão mais recente do celular. Assim, não há
+reorganização de menu pendente e a extração Android deixa de bloquear a
+próxima fase. A conexão USB continua útil como evidência complementar em uma
+regressão futura, especialmente antes de excluir qualquer rota.
