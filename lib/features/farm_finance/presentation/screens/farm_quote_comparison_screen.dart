@@ -1,11 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:intl/intl.dart';
+import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_quote_request.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_quote_comparison_service.dart';
+import 'package:projeto_atlas/features/farm_finance/domain/services/farm_quote_request_excel_service.dart';
 
 class FarmQuoteComparisonScreen extends StatefulWidget {
-  const FarmQuoteComparisonScreen({required this.request, super.key});
+  const FarmQuoteComparisonScreen({
+    required this.farm,
+    required this.request,
+    super.key,
+  });
 
+  final FarmData farm;
   final FarmQuoteRequest request;
 
   @override
@@ -15,7 +25,9 @@ class FarmQuoteComparisonScreen extends StatefulWidget {
 
 class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
   static const _comparison = FarmQuoteComparisonService();
+  static final _excel = FarmQuoteRequestExcelService();
   late FarmQuoteRequest request = widget.request;
+  bool exporting = false;
 
   List<FarmSupplierProposal> get ranked => _comparison.rank(request.proposals);
 
@@ -41,6 +53,45 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
     return false;
   }
 
+  Future<void> exportSpreadsheet() async {
+    if (exporting) return;
+    final suggestedName = _excel.suggestedFileName(request);
+    final location = await getSaveLocation(
+      suggestedName: suggestedName,
+      acceptedTypeGroups: const [
+        XTypeGroup(
+          label: 'Planilha Excel',
+          extensions: ['xlsx'],
+        ),
+      ],
+    );
+    if (location == null || !mounted) return;
+
+    setState(() => exporting = true);
+    try {
+      final bytes = _excel.build(farm: widget.farm, request: request);
+      await XFile.fromData(
+        Uint8List.fromList(bytes),
+        mimeType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        name: suggestedName,
+      ).saveTo(location.path);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Planilha de cotação exportada.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível salvar a planilha. Tente novamente.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => exporting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final best = _comparison.bestProposal(request.proposals);
@@ -49,7 +100,22 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
     return WillPopScope(
       onWillPop: closeWithUpdatedRequest,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Comparar cotações')),
+        appBar: AppBar(
+          title: const Text('Comparar cotações'),
+          actions: [
+            IconButton(
+              onPressed: exporting ? null : exportSpreadsheet,
+              icon: exporting
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.table_view_outlined),
+              tooltip: 'Exportar planilha XLSX',
+            ),
+          ],
+        ),
         floatingActionButton: request.proposals.length >= 4
             ? null
             : FloatingActionButton.extended(

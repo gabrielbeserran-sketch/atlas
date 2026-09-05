@@ -53,7 +53,10 @@ class _FarmQuoteRequestsScreenState extends State<FarmQuoteRequestsScreen> {
   Future<void> openComparison(FarmQuoteRequest request) async {
     final updated = await Navigator.of(context).push<FarmQuoteRequest>(
       MaterialPageRoute<FarmQuoteRequest>(
-        builder: (_) => FarmQuoteComparisonScreen(request: request),
+        builder: (_) => FarmQuoteComparisonScreen(
+          farm: widget.farm,
+          request: request,
+        ),
       ),
     );
     if (updated == null || !mounted) return;
