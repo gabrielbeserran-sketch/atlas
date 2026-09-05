@@ -58,6 +58,21 @@ receberá uma destas decisões: **manter**, **mover**, **renomear**,
 lista de consumidores, rota substituta e teste de navegação antes de remover
 o código.
 
+## Evidência de integridade
+
+Em 05/09/2026, antes de qualquer reorganização, os gates locais abaixo foram
+executados com êxito:
+
+- `tools/atlas_post_v21_package6a_navigation_gate.py`: **64/64**;
+- `tools/atlas_post_v21_package6b_information_architecture_gate.py`:
+  aprovado;
+- `tools/atlas_post_v21_package6d_d_global_ux_gate.py`: aprovado.
+
+O resultado confirma que a reorganização deve preservar rótulos de destino,
+permissões, escopo de fazenda, contratos do Centro do Animal e entradas entre
+módulos. O objetivo é simplificar a superfície, não criar uma segunda árvore
+de navegação.
+
 ## Gate pendente
 
 Em 05/09/2026, `flutter devices` detectou somente Windows, Chrome e Edge. O
