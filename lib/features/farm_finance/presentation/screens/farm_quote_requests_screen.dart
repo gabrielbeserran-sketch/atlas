@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_quote_request_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_quote_request.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_quote_comparison_screen.dart';
 
 class FarmQuoteRequestsScreen extends StatefulWidget {
   const FarmQuoteRequestsScreen({required this.farm, super.key});
@@ -49,6 +50,21 @@ class _FarmQuoteRequestsScreenState extends State<FarmQuoteRequestsScreen> {
     if (mounted) setState(() => requests = updated);
   }
 
+  Future<void> openComparison(FarmQuoteRequest request) async {
+    final updated = await Navigator.of(context).push<FarmQuoteRequest>(
+      MaterialPageRoute<FarmQuoteRequest>(
+        builder: (_) => FarmQuoteComparisonScreen(request: request),
+      ),
+    );
+    if (updated == null || !mounted) return;
+
+    final next = requests
+        .map((item) => item.id == updated.id ? updated : item)
+        .toList(growable: false);
+    await storage.save(farmKey, next);
+    if (mounted) setState(() => requests = next);
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Documentos e cotações')),
@@ -68,7 +84,7 @@ class _FarmQuoteRequestsScreenState extends State<FarmQuoteRequestsScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Crie uma solicitação e acompanhe até quatro fornecedores. A comparação de retornos será a próxima etapa deste fluxo.',
+                'Crie uma solicitação, registre até quatro propostas e compare os valores recebidos.',
               ),
               const SizedBox(height: 20),
               if (requests.isEmpty)
@@ -87,10 +103,11 @@ class _FarmQuoteRequestsScreenState extends State<FarmQuoteRequestsScreen> {
                       leading: const Icon(Icons.request_quote_outlined),
                       title: Text(request.title),
                       subtitle: Text(
-                        '${request.itemsDescription}\n${request.suppliers.length} fornecedor(es): ${request.suppliers.join(', ')}',
+                        '${request.itemsDescription}\n${request.proposals.length} proposta(s) registrada(s) • ${request.suppliers.length} fornecedor(es) previsto(s)',
                       ),
                       isThreeLine: true,
-                      trailing: Chip(label: Text(request.status)),
+                      trailing: Chip(label: Text(request.displayStatus)),
+                      onTap: () => openComparison(request),
                     ),
                   ),
                 ),
