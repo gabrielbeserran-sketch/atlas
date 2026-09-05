@@ -9,6 +9,7 @@ import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_s
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance_event_service.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_quote_requests_screen.dart';
 
 class FarmFinanceListScreen extends StatefulWidget {
   const FarmFinanceListScreen({
@@ -218,6 +219,14 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     );
   }
 
+  Future<void> openQuotes() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FarmQuoteRequestsScreen(farm: widget.farm),
+      ),
+    );
+  }
+
   Future<void> editRecord(FarmFinanceData record) async {
     final editedRecord = await Navigator.push<FarmFinanceData>(
       context,
@@ -277,7 +286,8 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir lançamento',
-      message: 'Deseja excluir ${record.description} no valor de ${formatCurrency(record.amount)}? Essa ação não pode ser desfeita.',
+      message:
+          'Deseja excluir ${record.description} no valor de ${formatCurrency(record.amount)}? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {
@@ -324,16 +334,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     final visibleRecords = filteredRecords;
 
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(
-        title: const Text('Financeiro'),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar',
-            onPressed: isLoading ? null : loadRecords,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Financeiro'),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: isLoading ? null : loadRecords,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -341,11 +353,11 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : loadError != null && records.isEmpty
-                    ? AtlasLoadErrorState(
-                        message: 'Verifique sua conexão e tente novamente.',
-                        onRetry: loadRecords,
-                      )
-                    : RefreshIndicator(
+                ? AtlasLoadErrorState(
+                    message: 'Verifique sua conexão e tente novamente.',
+                    onRetry: loadRecords,
+                  )
+                : RefreshIndicator(
                     onRefresh: loadRecords,
                     child: ListView(
                       padding: const EdgeInsets.all(24),
@@ -355,6 +367,9 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                         AtlasOperationalActionBar(
                           primaryLabel: 'Novo lançamento',
                           onPrimary: openFinanceForm,
+                          secondaryLabel: 'Cotações',
+                          secondaryIcon: Icons.request_quote_outlined,
+                          onSecondary: openQuotes,
                           onRefresh: loadRecords,
                           busy: isLoading,
                         ),
@@ -489,7 +504,8 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                           EmptyFinanceMessage(
                             hasFilter: selectedFilter != 'Todos',
                             onCreate: openFinanceForm,
-                            onClear: () => setState(() => selectedFilter = 'Todos'),
+                            onClear: () =>
+                                setState(() => selectedFilter = 'Todos'),
                           )
                         else
                           ...visibleRecords.map(
@@ -755,10 +771,10 @@ class FinanceRecordCard extends StatelessWidget {
                         record.animalIdentification.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        [
-                          record.lotName,
-                          record.animalIdentification,
-                        ].where((e) => e.isNotEmpty).map(AtlasUiText.clean).join(' • '),
+                        [record.lotName, record.animalIdentification]
+                            .where((e) => e.isNotEmpty)
+                            .map(AtlasUiText.clean)
+                            .join(' • '),
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
