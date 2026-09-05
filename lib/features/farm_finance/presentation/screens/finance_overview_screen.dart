@@ -9,13 +9,10 @@ import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_list_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_quote_requests_screen.dart';
 
 class FinanceOverviewScreen extends StatefulWidget {
-  const FinanceOverviewScreen({
-    this.farm,
-    this.embedded = false,
-    super.key,
-  });
+  const FinanceOverviewScreen({this.farm, this.embedded = false, super.key});
 
   final FarmData? farm;
   final bool embedded;
@@ -225,6 +222,14 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
     await loadData();
   }
 
+  Future<void> openQuotes(FinanceFarmContext contextData) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => FarmQuoteRequestsScreen(farm: contextData.farm),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -286,12 +291,19 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
                             AtlasModuleWorkspaceGuide(
                               moduleLabel: 'Financeiro',
                               workflows:
-                                  AtlasProductSurfacePolicy.moduleWorkflows['Financeiro'] ??
-                                      const <String>[],
+                                  AtlasProductSurfacePolicy
+                                      .moduleWorkflows['Financeiro'] ??
+                                  const <String>[],
                               specializedFamilies:
                                   AtlasProductSurfacePolicy
-                                          .specializedCapabilityCountByOwner['Financeiro'] ??
-                                      0,
+                                      .specializedCapabilityCountByOwner['Financeiro'] ??
+                                  0,
+                            ),
+                            const SizedBox(height: 16),
+                            _FinanceQuotesCard(
+                              onOpen: activeContext == null
+                                  ? null
+                                  : () => openQuotes(activeContext!),
                             ),
                             const SizedBox(height: 16),
                             const _FinancialCycleGuidance(),
@@ -391,6 +403,45 @@ class _FinanceOverviewScreenState extends State<FinanceOverviewScreen> {
   }
 }
 
+class _FinanceQuotesCard extends StatelessWidget {
+  const _FinanceQuotesCard({this.onOpen});
+  final VoidCallback? onOpen;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(18),
+      child: Row(
+        children: [
+          const CircleAvatar(child: Icon(Icons.request_quote_outlined)),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Documentos e cotações',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Organize solicitações para até quatro fornecedores dentro da fazenda ativa.',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton.icon(
+            onPressed: onOpen,
+            icon: const Icon(Icons.arrow_forward_outlined),
+            label: const Text('Abrir'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class FinanceFarmContext {
   const FinanceFarmContext({required this.farm, required this.records});
 
@@ -434,7 +485,6 @@ class FinanceFarmContext {
   }
 }
 
-
 class _FinancialCycleGuidance extends StatelessWidget {
   const _FinancialCycleGuidance();
 
@@ -446,9 +496,7 @@ class _FinancialCycleGuidance extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CircleAvatar(
-              child: Icon(Icons.timeline_outlined),
-            ),
+            const CircleAvatar(child: Icon(Icons.timeline_outlined)),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
@@ -456,10 +504,7 @@ class _FinancialCycleGuidance extends StatelessWidget {
                 children: [
                   Text(
                     'Leia o financeiro dentro do ciclo da pecuária',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                   ),
                   SizedBox(height: 5),
                   Text(
