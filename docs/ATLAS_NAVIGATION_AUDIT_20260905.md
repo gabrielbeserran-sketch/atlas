@@ -8,7 +8,9 @@ partir de `AtlasHomeShell.routes` e filtrados pelas permissões da sessão.
 
 `lib/core/presentation/layouts/atlas_main_layout.dart` contém uma navegação
 legada sem consumidores no diretório `lib/`. Ela não define o menu exibido
-no Atlas e não deve ser tomada como referência para a reorganização.
+no Atlas e não deve ser tomada como referência para a reorganização. O
+inventário 11A a classifica como `REVIEW_ONLY_DO_NOT_DELETE`; portanto, ela
+permanece preservada até uma auditoria de remoção própria.
 
 ## Menu canônico atual
 
