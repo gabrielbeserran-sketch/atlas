@@ -76,6 +76,9 @@ de navegação.
 ## Gate pendente
 
 Em 05/09/2026, `flutter devices` detectou somente Windows, Chrome e Edge. O
-Android precisa ser exposto por depuração USB para que a hierarquia da versão
-mais recente seja extraída e comparada ao quadro acima. Até esse confronto,
-esta auditoria impede que o menu seja refeito por suposição.
+Android SDK e o ADB 37.0.0 estão instalados e saudáveis, mas `adb devices -l`
+retornou uma lista vazia; o telefone não está visível como dispositivo USB de
+depuração neste computador. O Android precisa ser exposto por depuração USB
+para que a hierarquia da versão mais recente seja extraída e comparada ao
+quadro acima. Até esse confronto, esta auditoria impede que o menu seja
+refeito por suposição.
