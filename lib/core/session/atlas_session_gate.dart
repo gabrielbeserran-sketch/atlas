@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/navigation/atlas_home_shell.dart';
 import 'package:projeto_atlas/core/session/atlas_session_controller.dart';
@@ -70,15 +68,11 @@ class _AtlasSessionGateState extends State<AtlasSessionGate> {
       });
 
       try {
-        await controller.restore().timeout(const Duration(seconds: 30));
-      } on TimeoutException catch (error) {
-        if (!mounted) {
-          return;
-        }
-
-        setState(() {
-          _startupError = error;
-        });
+        // O controlador possui um limite próprio para validar uma sessão
+        // persistida. Não aplique um segundo timeout aqui: ele poderia
+        // interromper a transição para o login e deixar o app em uma tela de
+        // falha apesar de a API estar disponível.
+        await controller.restore();
       } catch (error, stackTrace) {
         debugPrint('ATLAS session restore: $error');
 

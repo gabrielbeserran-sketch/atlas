@@ -5,6 +5,8 @@ import 'package:projeto_atlas/features/enterprise_platform/domain/models/atlas_e
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
 
+const _sessionValidationTimeout = Duration(seconds: 12);
+
 enum AtlasSessionStatus {
   restoring,
   unauthenticated,
@@ -64,7 +66,11 @@ class AtlasSessionController extends ChangeNotifier {
     }
 
     try {
-      final restored = await _api.me();
+      // A sessão persistida não pode impedir a abertura do Atlas. O cliente
+      // HTTP ainda pode aplicar retries em operações remotas; para o
+      // bootstrap, porém, preferimos voltar ao login de forma previsível a
+      // manter o usuário preso em uma tela de inicialização.
+      final restored = await _api.me().timeout(_sessionValidationTimeout);
       await acceptSession(restored);
     } catch (_) {
       await _store.clearSession();
