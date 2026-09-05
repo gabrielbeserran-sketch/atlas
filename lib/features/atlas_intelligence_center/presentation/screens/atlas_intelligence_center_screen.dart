@@ -3,9 +3,12 @@ import 'package:projeto_atlas/core/widgets/atlas_module_role_card.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
+import 'package:projeto_atlas/features/atlas_ai/presentation/screens/atlas_ai_screen.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/data/services/atlas_intelligence_service.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/atlas_intelligence_capability.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/atlas_intelligence_models.dart';
+import 'package:projeto_atlas/features/farm/data/services/atlas_farm_intelligence_snapshot_loader.dart';
+import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 
 class AtlasIntelligenceCenterScreen extends StatefulWidget {
@@ -36,6 +39,8 @@ class AtlasIntelligenceCenterScreen extends StatefulWidget {
 class _AtlasIntelligenceCenterScreenState
     extends State<AtlasIntelligenceCenterScreen> {
   final AtlasIntelligenceService service = AtlasIntelligenceService();
+  final AtlasFarmIntelligenceSnapshotLoader contextLoader =
+      AtlasFarmIntelligenceSnapshotLoader();
   final TextEditingController saleController = TextEditingController();
   final TextEditingController costController = TextEditingController();
   final TextEditingController investmentController = TextEditingController();
@@ -229,7 +234,8 @@ class _AtlasIntelligenceCenterScreenState
 
   Widget buildSpecializedCapabilities(BuildContext context) {
     final launchers = <AtlasIntelligenceCapabilityFamily, VoidCallback?>{
-      AtlasIntelligenceCapabilityFamily.conversation: widget.onOpenAtlasAi,
+      AtlasIntelligenceCapabilityFamily.conversation:
+          widget.onOpenAtlasAi ?? openConversationFromCenter,
       AtlasIntelligenceCapabilityFamily.diagnosis: widget.onOpenDiagnostic,
       AtlasIntelligenceCapabilityFamily.prediction: widget.onOpenPredictive,
       AtlasIntelligenceCapabilityFamily.decision: null,
@@ -720,6 +726,78 @@ class _AtlasIntelligenceCenterScreenState
     Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => const ReportsScreen()));
+  }
+
+  Future<void> openConversationFromCenter() async {
+    final remoteFarm = AtlasSessionScope.read(context).activeFarm;
+    if (remoteFarm == null) {
+      showMessage('Escolha uma fazenda antes de abrir a Conversação Atlas.');
+      return;
+    }
+
+    setState(() {
+      loading = true;
+      errorMessage = null;
+    });
+
+    late final AtlasFarmIntelligenceSnapshot snapshot;
+    try {
+      snapshot = await contextLoader.load(
+        FarmData(
+          id: remoteFarm.id,
+          name: remoteFarm.name,
+          city: remoteFarm.city,
+          state: remoteFarm.state,
+          animals: remoteFarm.animals,
+          area: remoteFarm.area.round(),
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          loading = false;
+          errorMessage = 'Não foi possível preparar a conversação: $error';
+        });
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => loading = false);
+
+    final aiContext = snapshot.aiContext;
+    if (aiContext == null) {
+      final details = snapshot.warnings.isEmpty
+          ? ''
+          : ' Fontes indisponíveis: ${snapshot.warnings.join(', ')}.';
+      showMessage(
+        'O contexto da fazenda ainda não pôde ser preparado.$details',
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (conversationContext) {
+          VoidCallback? navigateTo(String label) {
+            if (widget.onNavigateModule == null) return null;
+            return () {
+              Navigator.of(conversationContext).pop();
+              widget.onNavigateModule!(label);
+            };
+          }
+
+          return AtlasAiScreen(
+            contextData: aiContext,
+            onOpenFinance: navigateTo('Financeiro'),
+            onOpenHerd: navigateTo('Rebanho'),
+            onOpenPaddocks: navigateTo('Campo'),
+            onOpenInventory: navigateTo('Estoque'),
+            onOpenAgenda: navigateTo('Agenda'),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> loadContext(String farmId) async {

@@ -48,4 +48,19 @@ void main() {
       expect(homeShell, isNot(contains(legacyScreen)));
     }
   });
+
+  test('Central prepara a conversação pelo contexto compartilhado', () {
+    final center = File(
+      'lib/features/atlas_intelligence_center/presentation/screens/'
+      'atlas_intelligence_center_screen.dart',
+    ).readAsStringSync();
+
+    expect(center, contains('AtlasFarmIntelligenceSnapshotLoader'));
+    expect(center, contains('openConversationFromCenter'));
+    expect(
+      center,
+      contains('widget.onOpenAtlasAi ?? openConversationFromCenter'),
+    );
+    expect(center, contains('AtlasAiScreen('));
+  });
 }
