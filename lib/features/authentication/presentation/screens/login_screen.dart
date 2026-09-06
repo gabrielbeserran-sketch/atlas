@@ -20,7 +20,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _backendReadinessTimeout = Duration(seconds: 20);
+  // Em produção, a API pode precisar sair do cold start do provedor. O
+  // cliente HTTP já limita cada requisição a 60 segundos; esta margem evita
+  // que a tela interrompa a conexão saudável antes da resposta chegar.
+  static const _backendReadinessTimeout = Duration(seconds: 65);
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -61,9 +64,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      await AtlasEnterpriseApiClient.instance
-          .healthReady()
-          .timeout(_backendReadinessTimeout);
+      await AtlasEnterpriseApiClient.instance.healthReady().timeout(
+        _backendReadinessTimeout,
+      );
       if (mounted) {
         setState(() => backendConnection = _BackendConnectionState.ready);
       }
@@ -261,18 +264,14 @@ class _LoginScreenState extends State<LoginScreen> {
   void _openPasswordRecovery() {
     Navigator.push<void>(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => const PasswordRecoveryScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const PasswordRecoveryScreen()),
     );
   }
 
   void _openRegister() {
     Navigator.push<void>(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => const RegisterScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const RegisterScreen()),
     );
   }
 }
@@ -302,28 +301,37 @@ class _AtlasLoginStory extends StatelessWidget {
           Text(
             'Decisões melhores começam com uma fazenda bem compreendida.',
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AtlasColors.textInverse,
-                  fontWeight: FontWeight.w700,
-                  height: 1.08,
-                ),
+              color: AtlasColors.textInverse,
+              fontWeight: FontWeight.w700,
+              height: 1.08,
+            ),
           ),
           const SizedBox(height: AtlasSpacing.lg),
           Text(
             'O Atlas reúne operação, rebanho, gestão e consultoria em um único '
             'ambiente para transformar dados do campo em decisões práticas.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AtlasColors.textInverse.withValues(alpha: 0.78),
-                  height: 1.55,
-                ),
+              color: AtlasColors.textInverse.withValues(alpha: 0.78),
+              height: 1.55,
+            ),
           ),
           const SizedBox(height: AtlasSpacing.xl),
           const Wrap(
             spacing: AtlasSpacing.sm,
             runSpacing: AtlasSpacing.sm,
             children: [
-              _TrustChip(icon: Icons.verified_user_outlined, label: 'Acesso seguro'),
-              _TrustChip(icon: Icons.home_work_outlined, label: 'Contexto por fazenda'),
-              _TrustChip(icon: Icons.insights_outlined, label: 'Decisão orientada por dados'),
+              _TrustChip(
+                icon: Icons.verified_user_outlined,
+                label: 'Acesso seguro',
+              ),
+              _TrustChip(
+                icon: Icons.home_work_outlined,
+                label: 'Contexto por fazenda',
+              ),
+              _TrustChip(
+                icon: Icons.insights_outlined,
+                label: 'Decisão orientada por dados',
+              ),
             ],
           ),
         ],
@@ -397,17 +405,14 @@ class _AtlasLoginForm extends StatelessWidget {
           Text(
             'Bem-vindo ao Atlas',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AtlasColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: AtlasColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: AtlasSpacing.xs),
           const Text(
             'Entre para continuar na fazenda e nos módulos autorizados para sua conta.',
-            style: TextStyle(
-              color: AtlasColors.textSecondary,
-              height: 1.45,
-            ),
+            style: TextStyle(color: AtlasColors.textSecondary, height: 1.45),
           ),
           const SizedBox(height: AtlasSpacing.xl),
           if (backendConnection != _BackendConnectionState.ready) ...[
@@ -543,10 +548,7 @@ class _BackendConnectionBanner extends StatelessWidget {
             ),
           ),
           if (!checking)
-            TextButton(
-              onPressed: onRetry,
-              child: const Text('Tentar conexão'),
-            ),
+            TextButton(onPressed: onRetry, child: const Text('Tentar conexão')),
         ],
       ),
     );
