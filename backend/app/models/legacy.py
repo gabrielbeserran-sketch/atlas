@@ -628,6 +628,41 @@ class FinancialEntry(Base):
     created_by: Mapped[str] = mapped_column(String(80))
 
 
+class FinancialDocument(Base):
+    """Documento fiscal/comprovante auditável vinculado a um lançamento."""
+
+    __tablename__ = "financial_documents"
+
+    id: Mapped[str] = mapped_column(
+        String(80), primary_key=True, default=lambda: new_id("finance_document")
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"), index=True
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    financial_entry_id: Mapped[str] = mapped_column(
+        ForeignKey("financial_entries.id", ondelete="CASCADE"), index=True
+    )
+    original_filename: Mapped[str] = mapped_column(String(255), default="")
+    content_type: Mapped[str] = mapped_column(String(160), default="")
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    sha256: Mapped[str] = mapped_column(String(64), default="", index=True)
+    storage_key: Mapped[str] = mapped_column(String(700), default="")
+    review_status: Mapped[str] = mapped_column(String(30), default="pending", index=True)
+    extracted_data: Mapped[dict] = mapped_column(JSON, default=dict)
+    review_notes: Mapped[str] = mapped_column(Text, default="")
+    created_by: Mapped[str] = mapped_column(String(80), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
 class NutritionIngredient(Base):
     __tablename__ = "nutrition_ingredients"
     __table_args__ = (UniqueConstraint("company_id", "farm_id", "name", name="uq_nutrition_ingredient_farm_name"),)
