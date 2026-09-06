@@ -10,6 +10,7 @@ import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_d
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance_event_service.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_quote_requests_screen.dart';
+import 'package:projeto_atlas/features/farm_finance/presentation/screens/financial_document_center_screen.dart';
 
 class FarmFinanceListScreen extends StatefulWidget {
   const FarmFinanceListScreen({
@@ -226,6 +227,16 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       ),
     );
   }
+
+  Future<void> openDocuments(FarmFinanceData record) =>
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => FinancialDocumentCenterScreen(
+            entryId: record.id,
+            title: record.description,
+          ),
+        ),
+      );
 
   Future<void> editRecord(FarmFinanceData record) async {
     final editedRecord = await Navigator.push<FarmFinanceData>(
@@ -519,6 +530,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                                 onDelete: () {
                                   deleteRecord(record);
                                 },
+                                onDocuments: () => openDocuments(record),
                               ),
                             ),
                           ),
@@ -688,12 +700,14 @@ class FinanceRecordCard extends StatelessWidget {
     required this.record,
     required this.onEdit,
     required this.onDelete,
+    required this.onDocuments,
     super.key,
   });
 
   final FarmFinanceData record;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onDocuments;
 
   @override
   Widget build(BuildContext context) {
@@ -808,9 +822,23 @@ class FinanceRecordCard extends StatelessWidget {
                   if (value == 'delete') {
                     onDelete();
                   }
+                  if (value == 'documents') onDocuments();
                 },
                 itemBuilder: (context) {
                   return const [
+                    PopupMenuItem<String>(
+                      value: 'documents',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.attach_file_outlined,
+                            color: Color(0xFF1B5E20),
+                          ),
+                          SizedBox(width: 10),
+                          Text('Documentos'),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem<String>(
                       value: 'edit',
                       child: Row(
