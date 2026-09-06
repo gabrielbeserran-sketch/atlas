@@ -50,6 +50,7 @@ android {
 
     defaultConfig {
         applicationId = "br.com.projetoatlas.app"
+        manifestPlaceholders["appLabel"] = "Atlas"
         minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
@@ -70,6 +71,9 @@ android {
     buildTypes {
         debug {
             signingConfig = signingConfigs.getByName("debug")
+            // Permite validar no celular sem substituir o APK oficial assinado.
+            applicationIdSuffix = ".validation"
+            manifestPlaceholders["appLabel"] = "Atlas — validação"
         }
         release {
             signingConfig = signingConfigs.getByName("release")
