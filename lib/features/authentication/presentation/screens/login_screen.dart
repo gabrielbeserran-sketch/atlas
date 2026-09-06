@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
@@ -23,11 +25,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool obscurePassword = true;
   bool isLoading = false;
+  _BackendConnectionState backendConnection = _BackendConnectionState.checking;
+
+  bool get backendReady => backendConnection == _BackendConnectionState.ready;
 
   @override
   void initState() {
     super.initState();
-    _restoreSession();
+    unawaited(_restoreSession());
+    unawaited(_warmBackend());
   }
 
   @override
@@ -47,7 +53,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _warmBackend() async {
+    if (mounted) {
+      setState(() => backendConnection = _BackendConnectionState.checking);
+    }
+
+    try {
+      await AtlasEnterpriseApiClient.instance.healthReady();
+      if (mounted) {
+        setState(() => backendConnection = _BackendConnectionState.ready);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => backendConnection = _BackendConnectionState.unavailable);
+      }
+    }
+  }
+
   Future<void> login() async {
+    if (!backendReady) {
+      _message(
+        backendConnection == _BackendConnectionState.checking
+            ? 'Conectando ao servidor Atlas. Aguarde antes de entrar.'
+            : 'O servidor ainda não está pronto. Use “Tentar conexão”.',
+      );
+      return;
+    }
+
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -178,10 +210,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 passwordController: passwordController,
                                 obscurePassword: obscurePassword,
                                 isLoading: isLoading,
+                                backendConnection: backendConnection,
                                 onTogglePassword: () => setState(
                                   () => obscurePassword = !obscurePassword,
                                 ),
                                 onLogin: login,
+                                onRetryBackend: _warmBackend,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -199,10 +233,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 passwordController: passwordController,
                                 obscurePassword: obscurePassword,
                                 isLoading: isLoading,
+                                backendConnection: backendConnection,
                                 onTogglePassword: () => setState(
                                   () => obscurePassword = !obscurePassword,
                                 ),
                                 onLogin: login,
+                                onRetryBackend: _warmBackend,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -236,6 +272,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+enum _BackendConnectionState { checking, ready, unavailable }
 
 class _AtlasLoginStory extends StatelessWidget {
   const _AtlasLoginStory();
@@ -325,8 +363,10 @@ class _AtlasLoginForm extends StatelessWidget {
     required this.passwordController,
     required this.obscurePassword,
     required this.isLoading,
+    required this.backendConnection,
     required this.onTogglePassword,
     required this.onLogin,
+    required this.onRetryBackend,
     required this.onForgotPassword,
     required this.onRegister,
   });
@@ -335,8 +375,10 @@ class _AtlasLoginForm extends StatelessWidget {
   final TextEditingController passwordController;
   final bool obscurePassword;
   final bool isLoading;
+  final _BackendConnectionState backendConnection;
   final VoidCallback onTogglePassword;
   final VoidCallback onLogin;
+  final VoidCallback onRetryBackend;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -364,6 +406,13 @@ class _AtlasLoginForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AtlasSpacing.xl),
+          if (backendConnection != _BackendConnectionState.ready) ...[
+            _BackendConnectionBanner(
+              state: backendConnection,
+              onRetry: onRetryBackend,
+            ),
+            const SizedBox(height: AtlasSpacing.md),
+          ],
           TextField(
             controller: emailController,
             enabled: !isLoading,
@@ -407,7 +456,10 @@ class _AtlasLoginForm extends StatelessWidget {
           AtlasButton(
             label: 'Entrar',
             icon: Icons.arrow_forward_rounded,
-            onPressed: isLoading ? null : onLogin,
+            onPressed:
+                isLoading || backendConnection != _BackendConnectionState.ready
+                ? null
+                : onLogin,
             busy: isLoading,
             expand: true,
           ),
@@ -440,6 +492,57 @@ class _AtlasLoginForm extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackendConnectionBanner extends StatelessWidget {
+  const _BackendConnectionBanner({required this.state, required this.onRetry});
+
+  final _BackendConnectionState state;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state == _BackendConnectionState.ready) {
+      return const SizedBox.shrink();
+    }
+
+    final checking = state == _BackendConnectionState.checking;
+    return Container(
+      padding: const EdgeInsets.all(AtlasSpacing.md),
+      decoration: BoxDecoration(
+        color: checking ? const Color(0xFFF3F7F3) : const Color(0xFFFFF5E8),
+        borderRadius: BorderRadius.circular(AtlasRadius.md),
+        border: Border.all(
+          color: checking ? const Color(0xFFB7CDBB) : const Color(0xFFE9C892),
+        ),
+      ),
+      child: Row(
+        children: [
+          checking
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.cloud_off_outlined, color: Color(0xFF9A5B00)),
+          const SizedBox(width: AtlasSpacing.sm),
+          Expanded(
+            child: Text(
+              checking
+                  ? 'Conectando ao servidor Atlas. Isso pode levar alguns segundos.'
+                  : 'O servidor ainda não respondeu. Verifique a conexão e tente novamente.',
+              style: const TextStyle(color: AtlasColors.textSecondary),
+            ),
+          ),
+          if (!checking)
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Tentar conexão'),
+            ),
         ],
       ),
     );

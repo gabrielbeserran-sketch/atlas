@@ -189,6 +189,23 @@ class AtlasEnterpriseApiClient {
     return request('GET', '/health', authenticated: false);
   }
 
+  /// Confirma que a API e sua dependência de banco estão prontas antes de um
+  /// fluxo sensível, como autenticação. A chamada é pública por definição.
+  Future<void> healthReady() async {
+    final response = await request(
+      'GET',
+      '/health/ready',
+      authenticated: false,
+    );
+    final status = response['status']?.toString().toLowerCase();
+    if (status != 'ready' && status != 'ok') {
+      throw const AtlasEnterpriseApiException(
+        'O servidor Atlas ainda não está pronto.',
+        code: 'backend_not_ready',
+      );
+    }
+  }
+
   Future<List<Map<String, dynamic>>> backups() {
     return requestList('GET', '/backups');
   }
