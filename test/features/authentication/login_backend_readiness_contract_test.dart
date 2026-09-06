@@ -16,6 +16,8 @@ void main() {
     expect(api, contains("'/health/ready'"));
     expect(api, contains('authenticated: false'));
     expect(login, contains('unawaited(_warmBackend());'));
+    expect(login, contains('const _backendReadinessTimeout'));
+    expect(login, contains('.timeout(_backendReadinessTimeout)'));
     expect(login, contains('backendConnection != _BackendConnectionState.ready'));
     expect(login, contains('Tentar conexão'));
   });

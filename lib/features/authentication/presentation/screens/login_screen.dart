@@ -20,6 +20,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _backendReadinessTimeout = Duration(seconds: 20);
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -59,7 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      await AtlasEnterpriseApiClient.instance.healthReady();
+      await AtlasEnterpriseApiClient.instance
+          .healthReady()
+          .timeout(_backendReadinessTimeout);
       if (mounted) {
         setState(() => backendConnection = _BackendConnectionState.ready);
       }
