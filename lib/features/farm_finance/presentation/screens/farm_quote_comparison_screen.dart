@@ -7,6 +7,7 @@ import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_quote_request.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_quote_comparison_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_quote_request_excel_service.dart';
+import 'package:projeto_atlas/features/farm_finance/domain/services/farm_quote_return_import_service.dart';
 
 class FarmQuoteComparisonScreen extends StatefulWidget {
   const FarmQuoteComparisonScreen({
@@ -26,8 +27,10 @@ class FarmQuoteComparisonScreen extends StatefulWidget {
 class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
   static const _comparison = FarmQuoteComparisonService();
   static final _excel = FarmQuoteRequestExcelService();
+  static final _returnImporter = FarmQuoteReturnImportService();
   late FarmQuoteRequest request = widget.request;
   bool exporting = false;
+  bool importing = false;
 
   List<FarmSupplierProposal> get ranked => _comparison.rank(request.proposals);
 
@@ -92,6 +95,55 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
     }
   }
 
+  Future<void> importSpreadsheet() async {
+    if (importing || request.proposals.length >= 4) return;
+    final file = await openFile(
+      acceptedTypeGroups: const [
+        XTypeGroup(label: 'Planilha Excel', extensions: ['xlsx']),
+      ],
+    );
+    if (file == null || !mounted) return;
+
+    setState(() => importing = true);
+    try {
+      final result = _returnImporter.import(
+        bytes: await file.readAsBytes(),
+        request: request,
+        importedAt: DateTime.now(),
+      );
+      if (!mounted) return;
+      final approved = await showDialog<List<FarmSupplierProposal>>(
+        context: context,
+        builder: (_) => _ImportedProposalsReviewDialog(result: result),
+      );
+      if (approved == null || approved.isEmpty || !mounted) return;
+      setState(() {
+        request = request.copyWith(
+          proposals: [...request.proposals, ...approved],
+        );
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${approved.length} proposta(s) incorporada(s) à comparação.'),
+        ),
+      );
+    } on FormatException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível ler a planilha. Use o XLSX exportado pelo Atlas.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => importing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final best = _comparison.bestProposal(request.proposals);
@@ -104,7 +156,20 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
           title: const Text('Comparar cotações'),
           actions: [
             IconButton(
-              onPressed: exporting ? null : exportSpreadsheet,
+              onPressed: importing || exporting || request.proposals.length >= 4
+                  ? null
+                  : importSpreadsheet,
+              icon: importing
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.upload_file_outlined),
+              tooltip: 'Importar retorno XLSX',
+            ),
+            IconButton(
+              onPressed: exporting || importing ? null : exportSpreadsheet,
               icon: exporting
                   ? const SizedBox(
                       height: 18,
@@ -189,6 +254,76 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ImportedProposalsReviewDialog extends StatelessWidget {
+  const _ImportedProposalsReviewDialog({required this.result});
+
+  final FarmQuoteReturnImportResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    return AlertDialog(
+      title: const Text('Revisar retorno importado'),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 440),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (result.proposals.isEmpty)
+                const Text(
+                  'Nenhuma proposta válida foi encontrada para incorporar.',
+                )
+              else ...[
+                const Text(
+                  'Confira os valores abaixo. Eles só serão incorporados quando você confirmar.',
+                ),
+                const SizedBox(height: 12),
+                ...result.proposals.map(
+                  (proposal) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.request_quote_outlined),
+                    title: Text(proposal.supplierName),
+                    subtitle: proposal.notes.isEmpty ? null : Text(proposal.notes),
+                    trailing: Text(
+                      currency.format(proposal.totalAmount),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
+              if (result.warnings.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('Avisos', style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                ...result.warnings.map(
+                  (warning) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text('• $warning'),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: result.proposals.isEmpty
+              ? null
+              : () => Navigator.pop(context, result.proposals),
+          child: const Text('Incorporar propostas'),
+        ),
+      ],
     );
   }
 }
