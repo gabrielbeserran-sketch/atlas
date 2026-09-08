@@ -16,10 +16,32 @@ class OperationalNoteRemoteService {
     return rows.map(OperationalNote.fromMap).toList(growable: false);
   }
 
+  Future<List<OperationalNoteFolder>> listFolders(String farmId) async {
+    final rows = await _api.requestList(
+      'GET',
+      '/operational-notes/folders',
+      queryParameters: {'farm_id': farmId},
+    );
+    return rows.map(OperationalNoteFolder.fromMap).toList(growable: false);
+  }
+
+  Future<OperationalNoteFolder> createFolder({
+    required String farmId,
+    required String name,
+  }) async {
+    final row = await _api.request(
+      'POST',
+      '/operational-notes/folders',
+      body: {'farm_id': farmId, 'name': name},
+    );
+    return OperationalNoteFolder.fromMap(row);
+  }
+
   Future<OperationalNote> create({
     required String farmId,
     required String content,
     required bool cameFromVoice,
+    String? folderId,
   }) async {
     final row = await _api.request(
       'POST',
@@ -29,9 +51,32 @@ class OperationalNoteRemoteService {
         'content': content,
         'source': cameFromVoice ? 'voice_transcription' : 'text',
         'transcript': cameFromVoice ? content : '',
+        'folder_id': folderId,
       },
     );
     return OperationalNote.fromMap(row);
+  }
+
+  Future<OperationalNote> moveToFolder({
+    required String noteId,
+    String? folderId,
+  }) async {
+    final row = await _api.request(
+      'PATCH',
+      '/operational-notes/$noteId/folder',
+      body: {'folder_id': folderId},
+    );
+    return OperationalNote.fromMap(row);
+  }
+
+  Future<bool> delete(String noteId) async {
+    final result = await _api.request('DELETE', '/operational-notes/$noteId');
+    return result['agenda_task_preserved'] == true;
+  }
+
+  Future<int> deleteFolder(String folderId) async {
+    final result = await _api.request('DELETE', '/operational-notes/folders/$folderId');
+    return (result['notes_preserved'] as num?)?.toInt() ?? 0;
   }
 
   Future<bool> createAgendaTask({

@@ -787,6 +787,32 @@ class OperationalTask(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class OperationalNoteFolder(Base):
+    """Pasta de assunto para organizar anotações sem misturar fazendas."""
+
+    __tablename__ = "operational_note_folders"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id", "farm_id", "name", name="uq_operational_note_folder_name"
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(80), primary_key=True, default=lambda: new_id("note_folder")
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"), index=True
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+
+
 class OperationalNote(Base):
     """Registro curto de campo, sempre pertencente a uma fazenda e autor."""
 
@@ -801,6 +827,11 @@ class OperationalNote(Base):
     )
     farm_id: Mapped[str] = mapped_column(
         ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    folder_id: Mapped[str | None] = mapped_column(
+        ForeignKey("operational_note_folders.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
     )
     author_user_id: Mapped[str] = mapped_column(String(80), index=True)
     content: Mapped[str] = mapped_column(Text)

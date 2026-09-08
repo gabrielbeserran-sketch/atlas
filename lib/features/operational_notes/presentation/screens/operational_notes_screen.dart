@@ -20,6 +20,8 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   final _voice = DrBeserraVoiceService.instance;
   final _content = TextEditingController();
   List<OperationalNote> _notes = const [];
+  List<OperationalNoteFolder> _folders = const [];
+  String? _selectedFolderId;
   bool _loading = true;
   bool _saving = false;
   bool _voiceDraft = false;
@@ -68,8 +70,21 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       return;
     }
     try {
-      final notes = await _service.list(_farmId);
-      if (mounted) setState(() => _notes = notes);
+      final results = await Future.wait([
+        _service.list(_farmId),
+        _service.listFolders(_farmId),
+      ]);
+      if (mounted) {
+        final folders = results[1] as List<OperationalNoteFolder>;
+        setState(() {
+          _notes = results[0] as List<OperationalNote>;
+          _folders = folders;
+          if (_selectedFolderId != null &&
+              !folders.any((folder) => folder.id == _selectedFolderId)) {
+            _selectedFolderId = null;
+          }
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _error = 'Não foi possível carregar as anotações.');
     } finally {
@@ -105,6 +120,7 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         farmId: _farmId,
         content: content,
         cameFromVoice: _voiceDraft,
+        folderId: _selectedFolderId,
       );
       if (!mounted) return;
       setState(() {
@@ -141,6 +157,151 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
     }
   }
 
+  Future<void> _createFolder() async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nova pasta de assunto'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 100,
+          decoration: const InputDecoration(
+            labelText: 'Assunto',
+            hintText: 'Ex.: Sanidade, Compras ou Reprodução',
+          ),
+          onSubmitted: (value) => Navigator.pop(context, value.trim()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Criar pasta'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null || name.isEmpty) return;
+    try {
+      final folder = await _service.createFolder(farmId: _farmId, name: name);
+      if (!mounted) return;
+      setState(() {
+        _folders = [..._folders, folder]..sort((a, b) => a.name.compareTo(b.name));
+        _selectedFolderId = folder.id;
+      });
+      _message('Pasta "$name" criada e selecionada.');
+    } catch (_) {
+      if (mounted) _message('Não foi possível criar a pasta. Verifique se o assunto já existe.');
+    }
+  }
+
+  Future<void> _move(OperationalNote note) async {
+    final folderId = await showModalBottomSheet<String?>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const ListTile(title: Text('Mover anotação para')),
+            ListTile(
+              leading: const Icon(Icons.folder_off_outlined),
+              title: const Text('Sem pasta'),
+              onTap: () => Navigator.pop(context, ''),
+            ),
+            ..._folders.map(
+              (folder) => ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(folder.name),
+                trailing: folder.id == note.folderId ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(context, folder.id),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (folderId == null) return;
+    try {
+      final updated = await _service.moveToFolder(
+        noteId: note.id,
+        folderId: folderId.isEmpty ? null : folderId,
+      );
+      if (!mounted) return;
+      setState(() => _notes = _notes.map((item) => item.id == updated.id ? updated : item).toList());
+      _message('Pasta da anotação atualizada.');
+    } catch (_) {
+      if (mounted) _message('Não foi possível mover a anotação.');
+    }
+  }
+
+  Future<void> _deleteNote(OperationalNote note) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir anotação?'),
+        content: const Text('Esta ação remove a anotação. Um compromisso já criado na Agenda será preservado.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      final keptTask = await _service.delete(note.id);
+      if (!mounted) return;
+      setState(() => _notes = _notes.where((item) => item.id != note.id).toList());
+      _message(keptTask ? 'Anotação excluída; compromisso da Agenda preservado.' : 'Anotação excluída.');
+    } catch (_) {
+      if (mounted) _message('Não foi possível excluir a anotação.');
+    }
+  }
+
+  Future<void> _deleteSelectedFolder() async {
+    final folderId = _selectedFolderId;
+    if (folderId == null) return;
+    final folder = _folderById(folderId);
+    if (folder == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Excluir pasta "${folder.name}"?'),
+        content: const Text('As anotações serão preservadas e ficarão sem pasta.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir pasta'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      final preserved = await _service.deleteFolder(folder.id);
+      if (!mounted) return;
+      setState(() {
+        _notes = _notes.map((note) => note.folderId == folder.id
+            ? OperationalNote(
+                id: note.id, farmId: note.farmId, folderId: null, authorUserId: note.authorUserId,
+                content: note.content, source: note.source, transcript: note.transcript, createdAt: note.createdAt)
+            : note).toList();
+        _folders = _folders.where((item) => item.id != folder.id).toList();
+        _selectedFolderId = null;
+      });
+      _message('Pasta excluída; $preserved anotações foram preservadas.');
+    } catch (_) {
+      if (mounted) _message('Não foi possível excluir a pasta.');
+    }
+  }
+
   String _titleFrom(String value) {
     final firstLine = value.split(RegExp(r'\r?\n')).first.trim();
     return firstLine.length > 80 ? '${firstLine.substring(0, 80)}…' : firstLine;
@@ -149,6 +310,20 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   void _message(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
+
+  OperationalNoteFolder? _folderById(String? id) {
+    if (id == null) return null;
+    for (final folder in _folders) {
+      if (folder.id == id) return folder;
+    }
+    return null;
+  }
+
+  String _folderName(String? id) => _folderById(id)?.name ?? 'Sem pasta';
+
+  List<OperationalNote> get _visibleNotes => _selectedFolderId == null
+      ? _notes
+      : _notes.where((note) => note.folderId == _selectedFolderId).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -174,10 +349,22 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
           saving: _saving,
           voiceDraft: _voiceDraft,
           voice: _voice,
+          folders: _folders,
+          selectedFolderId: _selectedFolderId,
+          onFolderChanged: (value) => setState(() => _selectedFolderId = value),
+          onCreateFolder: _createFolder,
           onRecord: _toggleVoice,
           onSave: _save,
         ),
         const SizedBox(height: 20),
+        OperationalNoteFolderControls(
+          folders: _folders,
+          selectedFolderId: _selectedFolderId,
+          onChanged: (value) => setState(() => _selectedFolderId = value),
+          onCreate: _createFolder,
+          onDeleteSelected: _selectedFolderId == null ? null : _deleteSelectedFolder,
+        ),
+        const SizedBox(height: 12),
         if (_error != null)
           Card(
             color: Theme.of(context).colorScheme.errorContainer,
@@ -192,26 +379,39 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
             padding: EdgeInsets.all(32),
             child: Center(child: CircularProgressIndicator()),
           )
-        else if (_notes.isEmpty)
+        else if (_visibleNotes.isEmpty)
           const Card(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('Ainda não há anotações nesta fazenda.'),
+              child: Text('Ainda não há anotações nesta pasta.'),
             ),
           )
         else
-          ..._notes.map(
+          ..._visibleNotes.map(
             (note) => Card(
               child: ListTile(
                 leading: Icon(note.cameFromVoice ? Icons.mic_outlined : Icons.sticky_note_2_outlined),
                 title: Text(note.content, maxLines: 3, overflow: TextOverflow.ellipsis),
                 subtitle: Text(
-                  '${note.cameFromVoice ? 'Voz transcrita' : 'Texto'} · ${_date(note.createdAt)}',
+                  '${_folderName(note.folderId)} · ${note.cameFromVoice ? 'Voz transcrita' : 'Texto'} · ${_date(note.createdAt)}',
                 ),
-                trailing: IconButton(
-                  tooltip: 'Criar compromisso na Agenda',
-                  onPressed: () => _promote(note),
-                  icon: const Icon(Icons.event_available_outlined),
+                trailing: PopupMenuButton<_NoteAction>(
+                  onSelected: (action) {
+                    switch (action) {
+                      case _NoteAction.agenda:
+                        _promote(note);
+                      case _NoteAction.move:
+                        _move(note);
+                      case _NoteAction.delete:
+                        _deleteNote(note);
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(value: _NoteAction.agenda, child: Text('Criar compromisso na Agenda')),
+                    PopupMenuItem(value: _NoteAction.move, child: Text('Mover para pasta')),
+                    PopupMenuDivider(),
+                    PopupMenuItem(value: _NoteAction.delete, child: Text('Excluir anotação')),
+                  ],
                 ),
               ),
             ),
@@ -232,6 +432,10 @@ class _Composer extends StatelessWidget {
     required this.saving,
     required this.voiceDraft,
     required this.voice,
+    required this.folders,
+    required this.selectedFolderId,
+    required this.onFolderChanged,
+    required this.onCreateFolder,
     required this.onRecord,
     required this.onSave,
   });
@@ -240,6 +444,10 @@ class _Composer extends StatelessWidget {
   final bool saving;
   final bool voiceDraft;
   final DrBeserraVoiceService voice;
+  final List<OperationalNoteFolder> folders;
+  final String? selectedFolderId;
+  final ValueChanged<String?> onFolderChanged;
+  final VoidCallback onCreateFolder;
   final VoidCallback onRecord;
   final VoidCallback onSave;
 
@@ -261,6 +469,31 @@ class _Composer extends StatelessWidget {
                 hintText: 'Registre contexto, decisão ou pendência.',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: selectedFolderId ?? '',
+                    decoration: const InputDecoration(
+                      labelText: 'Pasta de assunto',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      const DropdownMenuItem(value: '', child: Text('Sem pasta')),
+                      ...folders.map((folder) => DropdownMenuItem(value: folder.id, child: Text(folder.name))),
+                    ],
+                    onChanged: saving ? null : (value) => onFolderChanged(value == '' ? null : value),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  tooltip: 'Criar pasta',
+                  onPressed: saving ? null : onCreateFolder,
+                  icon: const Icon(Icons.create_new_folder_outlined),
+                ),
+              ],
             ),
             if (voiceDraft) ...[
               const SizedBox(height: 8),
@@ -291,6 +524,56 @@ class _Composer extends StatelessWidget {
         ),
       ),
     ),
+  );
+}
+
+enum _NoteAction { agenda, move, delete }
+
+class OperationalNoteFolderControls extends StatelessWidget {
+  const OperationalNoteFolderControls({
+    required this.folders,
+    required this.selectedFolderId,
+    required this.onChanged,
+    required this.onCreate,
+    required this.onDeleteSelected,
+    super.key,
+  });
+
+  final List<OperationalNoteFolder> folders;
+  final String? selectedFolderId;
+  final ValueChanged<String?> onChanged;
+  final VoidCallback onCreate;
+  final VoidCallback? onDeleteSelected;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      ChoiceChip(
+        label: const Text('Todas'),
+        selected: selectedFolderId == null,
+        onSelected: (_) => onChanged(null),
+      ),
+      ...folders.map(
+        (folder) => ChoiceChip(
+          label: Text(folder.name),
+          selected: selectedFolderId == folder.id,
+          onSelected: (_) => onChanged(folder.id),
+        ),
+      ),
+      ActionChip(
+        avatar: const Icon(Icons.create_new_folder_outlined, size: 18),
+        label: const Text('Nova pasta'),
+        onPressed: onCreate,
+      ),
+      if (onDeleteSelected != null)
+        ActionChip(
+          avatar: const Icon(Icons.delete_outline, size: 18),
+          label: const Text('Excluir pasta'),
+          onPressed: onDeleteSelected,
+        ),
+    ],
   );
 }
 
