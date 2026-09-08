@@ -25,6 +25,8 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   bool _voiceDraft = false;
   String? _error;
 
+  String get _farmId => widget.farm.id?.trim() ?? '';
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +58,17 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       _loading = true;
       _error = null;
     });
+    if (_farmId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _error = 'Selecione uma fazenda válida para acessar as anotações.';
+          _loading = false;
+        });
+      }
+      return;
+    }
     try {
-      final notes = await _service.list(widget.farm.id);
+      final notes = await _service.list(_farmId);
       if (mounted) setState(() => _notes = notes);
     } catch (_) {
       if (mounted) setState(() => _error = 'Não foi possível carregar as anotações.');
@@ -84,10 +95,14 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       _message('Escreva ou dite uma anotação antes de salvar.');
       return;
     }
+    if (_farmId.isEmpty) {
+      _message('Selecione uma fazenda válida antes de salvar.');
+      return;
+    }
     setState(() => _saving = true);
     try {
       final note = await _service.create(
-        farmId: widget.farm.id,
+        farmId: _farmId,
         content: content,
         cameFromVoice: _voiceDraft,
       );
