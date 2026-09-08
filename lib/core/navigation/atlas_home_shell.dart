@@ -20,6 +20,7 @@ import 'package:projeto_atlas/features/farm_finance/presentation/screens/finance
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart';
+import 'package:projeto_atlas/features/operational_notes/presentation/screens/operational_notes_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 import 'package:projeto_atlas/shared/design_system/iconography/atlas_livestock_mark.dart';
 
@@ -154,6 +155,14 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       icon: Icons.bar_chart_outlined,
       selectedIcon: Icons.bar_chart,
       permission: 'reports.read',
+      builder: (_) => const SizedBox.shrink(),
+    ),
+    AtlasRouteDefinition(
+      label: 'Anotações',
+      group: AtlasNavigationGroup.support,
+      icon: Icons.sticky_note_2_outlined,
+      selectedIcon: Icons.sticky_note_2,
+      permission: 'operations.read',
       builder: (_) => const SizedBox.shrink(),
     ),
     AtlasRouteDefinition(
@@ -306,6 +315,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       'Estoque',
       'Agenda',
       'Campo',
+      'Anotações',
       'Consultoria',
     };
 
@@ -395,6 +405,10 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       body = farm == null
           ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
           : FarmFieldCenterScreen(farm: farm, embedded: true);
+    } else if (selected.label == 'Anotações') {
+      body = farm == null
+          ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
+          : OperationalNotesScreen(farm: farm, embedded: true);
     } else if (selected.label == 'Consultoria') {
       body = farm == null
           ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))

@@ -787,6 +787,33 @@ class OperationalTask(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class OperationalNote(Base):
+    """Registro curto de campo, sempre pertencente a uma fazenda e autor."""
+
+    __tablename__ = "operational_notes"
+
+    id: Mapped[str] = mapped_column(
+        String(80), primary_key=True, default=lambda: new_id("note")
+    )
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"), index=True
+    )
+    farm_id: Mapped[str] = mapped_column(
+        ForeignKey("farms.id", ondelete="CASCADE"), index=True
+    )
+    author_user_id: Mapped[str] = mapped_column(String(80), index=True)
+    content: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(30), default="text", index=True)
+    transcript: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
 class IndicatorSnapshot(Base):
     __tablename__ = "indicator_snapshots"
 

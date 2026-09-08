@@ -20,6 +20,7 @@ abstract final class AtlasProductSurfacePolicy {
     'Inteligência',
     'Relatórios',
     'Offline',
+    'Anotações',
     'Consultoria',
   };
 
