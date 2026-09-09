@@ -104,9 +104,31 @@ function Assert-AndroidApi36 {
 function Get-KeytoolPath {
     $command = Get-Command keytool -ErrorAction SilentlyContinue
     if ($command) { return $command.Source }
+
+    # O Android Studio inclui um JDK próprio (jbr). Em instalações Windows ele
+    # pode ser usado pelo Gradle sem estar no PATH nem em JAVA_HOME.
+    $candidates = New-Object System.Collections.Generic.List[string]
     if ($env:JAVA_HOME) {
-        $candidate = Join-Path $env:JAVA_HOME "bin\keytool.exe"
-        if (Test-Path $candidate) { return $candidate }
+        $candidates.Add((Join-Path $env:JAVA_HOME "bin\keytool.exe"))
+    }
+    if ($env:ProgramFiles) {
+        $candidates.Add(
+            (Join-Path $env:ProgramFiles "Android\Android Studio\jbr\bin\keytool.exe")
+        )
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $candidates.Add(
+            (Join-Path ${env:ProgramFiles(x86)} "Android\Android Studio\jbr\bin\keytool.exe")
+        )
+    }
+    if ($env:LOCALAPPDATA) {
+        $candidates.Add(
+            (Join-Path $env:LOCALAPPDATA "Programs\Android Studio\jbr\bin\keytool.exe")
+        )
+    }
+
+    foreach ($candidate in ($candidates | Select-Object -Unique)) {
+        if ($candidate -and (Test-Path $candidate)) { return $candidate }
     }
     throw "keytool não encontrado."
 }
