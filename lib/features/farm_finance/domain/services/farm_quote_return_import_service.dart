@@ -103,7 +103,7 @@ class FarmQuoteReturnImportService {
       );
     }
 
-    final suppliedName = _cellText(sheet, 1, 1).trim();
+    final suppliedName = _findLabeledText(sheet, 'Fornecedor').trim();
     final supplier =
         suppliedName.isEmpty || suppliedName == 'Preencher pelo fornecedor'
         ? _unknownSupplierName(request)
@@ -197,6 +197,17 @@ class FarmQuoteReturnImportService {
       }
     }
     return null;
+  }
+
+  String _findLabeledText(Sheet sheet, String label) {
+    for (var row = 0; row < sheet.maxRows; row++) {
+      for (var column = 0; column < sheet.maxColumns - 1; column++) {
+        if (_cellText(sheet, row, column).trim() == label) {
+          return _cellText(sheet, row, column + 1);
+        }
+      }
+    }
+    return '';
   }
 
   String _unknownSupplierName(FarmQuoteRequest request) {

@@ -74,6 +74,20 @@ void main() {
     expect(result.proposals.single.totalAmount, 1005);
     expect(result.warnings.single, contains('Fornecedor não informado'));
   });
+
+  test('localiza o fornecedor pelo rótulo mesmo após ajuste na planilha', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbook(
+        supplier: 'Fornecedor D',
+        labelColumn: 1,
+      ),
+      request: request,
+      importedAt: DateTime(2026, 9, 6),
+    );
+
+    expect(result.warnings, isEmpty);
+    expect(result.proposals.single.supplierName, 'Fornecedor D');
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -101,13 +115,24 @@ List<int> _returnsWorkbook(List<List<Object>> rows) {
   return workbook.encode()!;
 }
 
-List<int> _structuredReturnsWorkbook({String supplier = 'Fornecedor C'}) {
+List<int> _structuredReturnsWorkbook({
+  String supplier = 'Fornecedor C',
+  int labelColumn = 0,
+}) {
   final workbook = Excel.createExcel();
   final defaultSheet = workbook.getDefaultSheet();
   if (defaultSheet != null) workbook.rename(defaultSheet, 'Retornos');
   final sheet = workbook['Retornos'];
   sheet.appendRow([TextCellValue('PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO')]);
-  sheet.appendRow([TextCellValue('Fornecedor'), TextCellValue(supplier)]);
+  sheet.appendRow(
+    labelColumn == 0
+        ? [TextCellValue('Fornecedor'), TextCellValue(supplier)]
+        : [
+            TextCellValue(''),
+            TextCellValue('Fornecedor'),
+            TextCellValue(supplier),
+          ],
+  );
   sheet.appendRow([
     TextCellValue('Data da proposta'),
     TextCellValue('05/09/2026'),
