@@ -17,8 +17,10 @@ void main() {
 
       expect(api, contains("'/health/ready'"));
       expect(api, contains('authenticated: false'));
-      expect(login, contains('unawaited(_warmBackend());'));
+      expect(login, contains('unawaited(_restoreSessionAfterBackendReady());'));
       expect(login, contains('const _backendReadinessTimeout'));
+      expect(login, contains('return _backendWarmup ??='));
+      expect(login, contains('await _warmBackend();'));
       expect(
         login,
         contains('healthReady().timeout(\n        _backendReadinessTimeout,'),

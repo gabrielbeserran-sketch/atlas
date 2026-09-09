@@ -31,14 +31,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
   bool isLoading = false;
   _BackendConnectionState backendConnection = _BackendConnectionState.checking;
+  Future<void>? _backendWarmup;
 
   bool get backendReady => backendConnection == _BackendConnectionState.ready;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_restoreSession());
-    unawaited(_warmBackend());
+    // Primeiro acorda e confirma a API. Restaurar a sessão em paralelo gera
+    // uma segunda chamada durante o cold start e torna a entrada mais lenta.
+    unawaited(_restoreSessionAfterBackendReady());
   }
 
   @override
@@ -58,7 +60,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _warmBackend() async {
+  Future<void> _restoreSessionAfterBackendReady() async {
+    await _warmBackend();
+    if (!mounted || !backendReady) return;
+    await _restoreSession();
+  }
+
+  Future<void> _warmBackend() {
+    return _backendWarmup ??= _checkBackend().whenComplete(() {
+      _backendWarmup = null;
+    });
+  }
+
+  Future<void> _checkBackend() async {
     if (mounted) {
       setState(() => backendConnection = _BackendConnectionState.checking);
     }
