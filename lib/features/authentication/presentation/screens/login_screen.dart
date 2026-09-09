@@ -293,7 +293,10 @@ class _AtlasLoginStory extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const BeserraLogo(height: 118),
+          const Align(
+            alignment: Alignment.center,
+            child: BeserraLogo(height: 118),
+          ),
           // Este painel também pode viver dentro de uma rolagem vertical.
           // Spacer exige altura finita; um espaçamento explícito preserva a
           // composição sem introduzir constraints infinitas no desktop.

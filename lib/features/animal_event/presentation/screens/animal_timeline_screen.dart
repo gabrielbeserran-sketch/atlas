@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -257,8 +258,8 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
     final entries = timelineItems;
     document.addPage(
       pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        pageFormat: PdfPageFormat.a4.landscape,
+        margin: const pw.EdgeInsets.fromLTRB(36, 28, 36, 28),
         header: (context) => pw.Text(
           'PROJETO ATLAS  •  Histórico Unificado do Animal',
           style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
@@ -333,7 +334,7 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
           if (entries.isEmpty)
             pw.Text('Nenhum registro disponível para este animal.')
           else
-            ...entries.map(_pdfTimelineEntry),
+            ..._pdfTimelineBands(entries),
         ],
       ),
     );
@@ -383,34 +384,85 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
     ),
   );
 
-  pw.Widget _pdfTimelineEntry(TimelineItem item) => pw.Container(
-    margin: const pw.EdgeInsets.only(bottom: 8),
-    padding: const pw.EdgeInsets.all(10),
-    decoration: pw.BoxDecoration(
-      border: pw.Border(
-        left: pw.BorderSide(color: PdfColor.fromInt(0xFF2E7D32), width: 3),
-      ),
-    ),
-    child: pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          '${item.date}  •  ${item.category}',
-          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
-        ),
-        pw.SizedBox(height: 3),
-        pw.Text(
-          item.title,
-          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
-        ),
-        if (item.subtitle.trim().isNotEmpty)
-          pw.Text(item.subtitle, style: const pw.TextStyle(fontSize: 10)),
-        if (item.description.trim().isNotEmpty) ...[
-          pw.SizedBox(height: 3),
-          pw.Text(item.description, style: const pw.TextStyle(fontSize: 9)),
-        ],
+  List<pw.Widget> _pdfTimelineBands(List<TimelineItem> entries) {
+    const eventsPerBand = 3;
+    final bands = <pw.Widget>[];
+    for (var start = 0; start < entries.length; start += eventsPerBand) {
+      final end = math.min(start + eventsPerBand, entries.length);
+      bands.add(_pdfTimelineBand(entries.sublist(start, end)));
+      if (end < entries.length) bands.add(pw.SizedBox(height: 20));
+    }
+    return bands;
+  }
+
+  pw.Widget _pdfTimelineBand(List<TimelineItem> items) => pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      for (var index = 0; index < items.length; index++) ...[
+        pw.Expanded(child: _pdfTimelineNode(items[index])),
+        if (index < items.length - 1)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(top: 7),
+            child: pw.Container(
+              width: 26,
+              height: 3,
+              color: PdfColor.fromInt(0xFF73AA78),
+            ),
+          ),
       ],
-    ),
+    ],
+  );
+
+  pw.Widget _pdfTimelineNode(TimelineItem item) => pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.Container(
+        width: 16,
+        height: 16,
+        decoration: pw.BoxDecoration(
+          color: PdfColor.fromInt(0xFF16472A),
+          shape: pw.BoxShape.circle,
+          border: pw.Border.all(color: PdfColor.fromInt(0xFFB9D9BD), width: 3),
+        ),
+      ),
+      pw.SizedBox(height: 6),
+      pw.Text(
+        '${item.date}  •  ${item.category}',
+        style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+      ),
+      pw.SizedBox(height: 5),
+      pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.fromLTRB(11, 10, 11, 10),
+        decoration: pw.BoxDecoration(
+          color: PdfColor.fromInt(0xFFF7FAF7),
+          borderRadius: pw.BorderRadius.circular(8),
+          border: pw.Border(
+            top: pw.BorderSide(color: PdfColor.fromInt(0xFF2E7D32), width: 3),
+            left: pw.BorderSide(color: PdfColors.grey300),
+            right: pw.BorderSide(color: PdfColors.grey300),
+            bottom: pw.BorderSide(color: PdfColors.grey300),
+          ),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              item.title,
+              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+            ),
+            if (item.subtitle.trim().isNotEmpty) ...[
+              pw.SizedBox(height: 2),
+              pw.Text(item.subtitle, style: const pw.TextStyle(fontSize: 9)),
+            ],
+            if (item.description.trim().isNotEmpty) ...[
+              pw.SizedBox(height: 4),
+              pw.Text(item.description, style: const pw.TextStyle(fontSize: 8)),
+            ],
+          ],
+        ),
+      ),
+    ],
   );
 
   Future<void> openEventForm() async {
