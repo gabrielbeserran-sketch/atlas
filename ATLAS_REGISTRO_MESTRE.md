@@ -6085,3 +6085,19 @@ diretamente pelo PowerShell. Foi adicionado teste de regressão dedicado.
 - `AtlasUiText` permanece como vocabulário canônico para categorias técnicas (`health`, `nutrition`, `maintenance`, `inventory`, `reproduction`, `livestock`).
 - Gate 10C bloqueia mojibake em superfícies de produção, rótulos técnicos literais na UI e regressões de rastreabilidade/normalização.
 - A baseline Alembic avança de `0049` para `0050`.
+
+## Gate de regressão transversal — 2026-09-09
+
+- Base validada após o pacote Android assinado e os avanços de Anotações,
+  cotações financeiras, Central de Inteligência e Histórico Unificado do Animal.
+- `flutter test --no-pub --reporter compact`: **292 testes aprovados**, sem
+  falhas.
+- O resultado cobre inicialização e recuperação visível, autenticação,
+  navegação por fazenda, Rebanho, Sanidade, Reprodução, Agenda, Estoque,
+  Financeiro, Análises, cotações e os contratos de PDF premium do animal.
+- APK Android de produção gerado em
+  `build/app/outputs/flutter-apk/app-release.apk`; SHA-256:
+  `E9421D2E78D305B21E28911534D02C45E7333649C9BBD51D108D165A4B75FEAF`.
+- A chave de assinatura e `android/key.properties` permanecem fora do Git.
+- Ponto de retorno da distribuição: tag local
+  `atlas-android-release-20260909`.
