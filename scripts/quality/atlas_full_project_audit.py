@@ -405,6 +405,9 @@ def main() -> int:
             marco4_errors.append(f"TODO/FIXME: {path.relative_to(ROOT)}")
 
     intentionally_hidden_post_v21 = {
+        # Ferramenta interna de referência visual; não integra o menu de
+        # produção e, portanto, não deve ser tratada como rota ausente.
+        "AtlasDesignSystemCatalogScreen",
         "AtlasFlutterQualityScreen",
         "AtlasOperationalReadinessScreen",
         "AtlasCommercialReadinessScreen",
