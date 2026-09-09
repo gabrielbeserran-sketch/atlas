@@ -36,8 +36,9 @@ class FarmQuoteReturnImportService {
       if (supplier.isEmpty &&
           amount == null &&
           dateText.isEmpty &&
-          notes.isEmpty)
+          notes.isEmpty) {
         continue;
+      }
       if (supplier.isEmpty) {
         warnings.add('Uma linha sem fornecedor foi ignorada.');
         continue;

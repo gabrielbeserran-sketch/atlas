@@ -56,10 +56,12 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   }
 
   Future<void> _load() async {
-    if (mounted) setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (mounted) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     if (_farmId.isEmpty) {
       if (mounted) {
         setState(() {
@@ -475,7 +477,8 @@ class _Composer extends StatelessWidget {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: selectedFolderId ?? '',
+                    key: ValueKey(selectedFolderId),
+                    initialValue: selectedFolderId ?? '',
                     decoration: const InputDecoration(
                       labelText: 'Pasta de assunto',
                       border: OutlineInputBorder(),
@@ -615,7 +618,7 @@ class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
           decoration: const InputDecoration(labelText: 'Título do compromisso'),
         ),
         DropdownButtonFormField<String>(
-          value: _priority,
+          initialValue: _priority,
           decoration: const InputDecoration(labelText: 'Prioridade'),
           items: const [
             DropdownMenuItem(value: 'low', child: Text('Baixa')),

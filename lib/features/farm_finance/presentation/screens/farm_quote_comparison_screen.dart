@@ -51,9 +51,8 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
     setState(() => request = updated);
   }
 
-  Future<bool> closeWithUpdatedRequest() async {
+  void closeWithUpdatedRequest() {
     Navigator.of(context).pop(request);
-    return false;
   }
 
   Future<void> exportSpreadsheet() async {
@@ -149,8 +148,13 @@ class _FarmQuoteComparisonScreenState extends State<FarmQuoteComparisonScreen> {
     final best = _comparison.bestProposal(request.proposals);
     final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
-    return WillPopScope(
-      onWillPop: closeWithUpdatedRequest,
+    return PopScope<FarmQuoteRequest>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          closeWithUpdatedRequest();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Comparar cotações'),
