@@ -80,7 +80,7 @@ void main() {
     final start = animal.indexOf(
       'Future<void> selectSection(AnimalHubSection section)',
     );
-    final end = animal.indexOf('  @override\n  Widget build', start);
+    final end = animal.indexOf('Widget build(BuildContext context)', start);
     final selection = animal.substring(start, end);
 
     expect(

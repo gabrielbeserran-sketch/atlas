@@ -43,15 +43,20 @@ void main() {
     expect(
       (workbook['Solicitação'].cell(CellIndex.indexByString('A1')).value
               as TextCellValue)
-          .value,
+          .value
+          .toString(),
       contains('SOLICITAÇÃO DE COTAÇÃO'),
     );
     expect(
       (workbook['Retornos'].cell(CellIndex.indexByString('A3')).value
               as TextCellValue)
-          .value,
+          .value
+          .toString(),
       'Fornecedor A',
     );
-    expect(service.suggestedFileName(request), 'solicitacao_atlas_compra_de_suplemento.xlsx');
+    expect(
+      service.suggestedFileName(request),
+      'solicitacao_atlas_compra_de_suplemento.xlsx',
+    );
   });
 }
