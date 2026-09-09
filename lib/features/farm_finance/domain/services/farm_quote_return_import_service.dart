@@ -15,6 +15,13 @@ class FarmQuoteReturnImportService {
         'A aba “Retornos” não foi encontrada na planilha.',
       );
     }
+    if (_cellText(sheet, 0, 0).contains('PROPOSTA COMERCIAL')) {
+      return _importStructuredProposal(
+        sheet: sheet,
+        request: request,
+        importedAt: importedAt,
+      );
+    }
     final warnings = <String>[];
     final proposals = <FarmSupplierProposal>[];
     final known = request.proposals
@@ -82,6 +89,110 @@ class FarmQuoteReturnImportService {
       proposals: proposals,
       warnings: warnings,
     );
+  }
+
+  FarmQuoteReturnImportResult _importStructuredProposal({
+    required Sheet sheet,
+    required FarmQuoteRequest request,
+    required DateTime importedAt,
+  }) {
+    final warnings = <String>[];
+    if (request.proposals.length >= 4) {
+      return const FarmQuoteReturnImportResult(
+        warnings: ['Esta cotação já possui o limite de quatro propostas.'],
+      );
+    }
+
+    final supplier = _cellText(sheet, 1, 1).trim();
+    if (supplier.isEmpty || supplier == 'Preencher pelo fornecedor') {
+      return const FarmQuoteReturnImportResult(
+        warnings: ['Informe o fornecedor no cabeçalho da proposta antes de importar.'],
+      );
+    }
+    final normalized = _normalizedSupplier(supplier);
+    if (request.proposals
+        .map((proposal) => _normalizedSupplier(proposal.supplierName))
+        .contains(normalized)) {
+      return FarmQuoteReturnImportResult(
+        warnings: ['$supplier já possui uma proposta no Atlas e foi ignorado.'],
+      );
+    }
+
+    final headerRow = _findStructuredItemsHeader(sheet);
+    if (headerRow == null) {
+      throw const FormatException(
+        'A tabela de itens da proposta não foi encontrada na planilha.',
+      );
+    }
+    var total = 0.0;
+    var validItems = 0;
+    for (var row = headerRow + 1; row < sheet.maxRows; row++) {
+      final item = _cellText(sheet, row, 0).trim();
+      if (item.isEmpty) break;
+      final quantity = _cellAmount(sheet, row, 2);
+      final unitAmount = _cellAmount(sheet, row, 3);
+      final lineAmount = _cellAmount(sheet, row, 4);
+      final computed = quantity != null && unitAmount != null
+          ? quantity * unitAmount
+          : lineAmount;
+      if (computed == null || computed <= 0) {
+        warnings.add('O item $item não possui valor válido e foi ignorado.');
+        continue;
+      }
+      total += computed;
+      validItems++;
+    }
+    if (validItems == 0) {
+      return FarmQuoteReturnImportResult(
+        warnings: [...warnings, 'Nenhum item com valor válido foi encontrado.'],
+      );
+    }
+
+    final freight = _findLabeledAmount(sheet, 'Frete (R\$)');
+    final discount = _findLabeledAmount(sheet, 'Desconto (R\$)');
+    total += freight ?? 0;
+    total -= discount ?? 0;
+    if (total <= 0) {
+      return FarmQuoteReturnImportResult(
+        warnings: [...warnings, 'O total calculado da proposta não é válido.'],
+      );
+    }
+    final dateText = _cellText(sheet, 2, 1).trim();
+    final receivedAt = _parseDate(dateText);
+    if (dateText.isNotEmpty && receivedAt == null) {
+      warnings.add(
+        'A data de $supplier foi substituída pela data da importação.',
+      );
+    }
+    return FarmQuoteReturnImportResult(
+      proposals: [
+        FarmSupplierProposal(
+          supplierName: supplier,
+          totalAmount: total,
+          receivedAt: (receivedAt ?? importedAt).toIso8601String(),
+          notes: _cellText(sheet, 3, 1).trim(),
+        ),
+      ],
+      warnings: warnings,
+    );
+  }
+
+  int? _findStructuredItemsHeader(Sheet sheet) {
+    for (var row = 0; row < sheet.maxRows; row++) {
+      final first = _cellText(sheet, row, 0).trim();
+      final price = _cellText(sheet, row, 3).trim();
+      if (first == 'Item' && price.startsWith('Valor unitário')) return row;
+    }
+    return null;
+  }
+
+  double? _findLabeledAmount(Sheet sheet, String label) {
+    for (var row = 0; row < sheet.maxRows; row++) {
+      if (_cellText(sheet, row, 3).trim() == label) {
+        return _cellAmount(sheet, row, 4);
+      }
+    }
+    return null;
   }
 
   String _cellText(Sheet sheet, int row, int column) {

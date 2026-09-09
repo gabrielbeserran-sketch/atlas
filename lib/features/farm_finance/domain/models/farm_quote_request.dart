@@ -5,6 +5,10 @@ class FarmQuoteRequest {
     required this.itemsDescription,
     required this.suppliers,
     required this.createdAt,
+    this.items = const [],
+    this.deliveryInstructions = '',
+    this.paymentTerms = '',
+    this.deadline,
     this.status = 'Em preparação',
     this.proposals = const [],
   });
@@ -14,6 +18,10 @@ class FarmQuoteRequest {
   final String itemsDescription;
   final List<String> suppliers;
   final String createdAt;
+  final List<FarmQuoteItem> items;
+  final String deliveryInstructions;
+  final String paymentTerms;
+  final String? deadline;
   final String status;
   final List<FarmSupplierProposal> proposals;
 
@@ -23,10 +31,26 @@ class FarmQuoteRequest {
     return status;
   }
 
+  List<FarmQuoteItem> get normalizedItems {
+    if (items.isNotEmpty) return items;
+    if (itemsDescription.trim().isEmpty) return const [];
+    return [
+      FarmQuoteItem(
+        description: itemsDescription.trim(),
+        unit: 'un.',
+        quantity: 1,
+      ),
+    ];
+  }
+
   FarmQuoteRequest copyWith({
     String? title,
     String? itemsDescription,
     List<String>? suppliers,
+    List<FarmQuoteItem>? items,
+    String? deliveryInstructions,
+    String? paymentTerms,
+    String? deadline,
     String? status,
     List<FarmSupplierProposal>? proposals,
   }) => FarmQuoteRequest(
@@ -34,6 +58,10 @@ class FarmQuoteRequest {
     title: title ?? this.title,
     itemsDescription: itemsDescription ?? this.itemsDescription,
     suppliers: suppliers ?? this.suppliers,
+    items: items ?? this.items,
+    deliveryInstructions: deliveryInstructions ?? this.deliveryInstructions,
+    paymentTerms: paymentTerms ?? this.paymentTerms,
+    deadline: deadline ?? this.deadline,
     createdAt: createdAt,
     status: status ?? this.status,
     proposals: proposals ?? this.proposals,
@@ -45,6 +73,10 @@ class FarmQuoteRequest {
     'itemsDescription': itemsDescription,
     'suppliers': suppliers,
     'createdAt': createdAt,
+    'items': items.map((item) => item.toMap()).toList(),
+    'deliveryInstructions': deliveryInstructions,
+    'paymentTerms': paymentTerms,
+    'deadline': deadline,
     'status': status,
     'proposals': proposals.map((proposal) => proposal.toMap()).toList(),
   };
@@ -60,6 +92,14 @@ class FarmQuoteRequest {
             .take(4)
             .toList(growable: false),
         createdAt: map['createdAt']?.toString() ?? '',
+        items: (map['items'] as List? ?? const [])
+            .whereType<Map>()
+            .map((item) => FarmQuoteItem.fromMap(Map<String, dynamic>.from(item)))
+            .where((item) => item.description.isNotEmpty && item.quantity > 0)
+            .toList(growable: false),
+        deliveryInstructions: map['deliveryInstructions']?.toString() ?? '',
+        paymentTerms: map['paymentTerms']?.toString() ?? '',
+        deadline: map['deadline']?.toString(),
         status: map['status']?.toString() ?? 'Em preparação',
         proposals: (map['proposals'] as List? ?? const [])
             .whereType<Map>()
@@ -70,6 +110,32 @@ class FarmQuoteRequest {
             .take(4)
             .toList(growable: false),
       );
+}
+
+class FarmQuoteItem {
+  const FarmQuoteItem({
+    required this.description,
+    required this.unit,
+    required this.quantity,
+  });
+
+  final String description;
+  final String unit;
+  final double quantity;
+
+  Map<String, dynamic> toMap() => {
+    'description': description,
+    'unit': unit,
+    'quantity': quantity,
+  };
+
+  factory FarmQuoteItem.fromMap(Map<String, dynamic> map) => FarmQuoteItem(
+    description: map['description']?.toString().trim() ?? '',
+    unit: map['unit']?.toString().trim().isEmpty ?? true
+        ? 'un.'
+        : map['unit'].toString().trim(),
+    quantity: (map['quantity'] as num?)?.toDouble() ?? 0,
+  );
 }
 
 class FarmSupplierProposal {

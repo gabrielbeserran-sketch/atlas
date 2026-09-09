@@ -12,10 +12,7 @@ class FarmQuoteRequestExcelService {
   static final ExcelColor _lightGreen = ExcelColor.fromHexString('#E8F5E9');
   static final ExcelColor _white = ExcelColor.fromHexString('#FFFFFF');
 
-  List<int> build({
-    required FarmData farm,
-    required FarmQuoteRequest request,
-  }) {
+  List<int> build({required FarmData farm, required FarmQuoteRequest request}) {
     final excel = Excel.createExcel();
     final defaultSheet = excel.getDefaultSheet();
     if (defaultSheet != null && defaultSheet != 'Solicitação') {
@@ -53,55 +50,114 @@ class FarmQuoteRequestExcelService {
     _appendLabelValue(sheet, 'Solicitação', request.title);
     _appendLabelValue(sheet, 'Criada em', _formatDate(request.createdAt));
     _appendLabelValue(sheet, 'Código interno', request.id);
-    _appendSection(sheet, 'Itens e quantidades', 4);
-    sheet.merge(
-      CellIndex.indexByString('A8'),
-      CellIndex.indexByString('D10'),
-      customValue: TextCellValue(request.itemsDescription),
-    );
-    _styleRange(
-      sheet,
-      startRow: 7,
-      endRow: 9,
-      startColumn: 0,
-      endColumn: 3,
-      style: CellStyle(textWrapping: TextWrapping.WrapText),
-    );
-
-    _appendSection(sheet, 'Fornecedores previstos', 4);
-    final suppliers = request.suppliers.isEmpty
-        ? const ['A definir']
-        : request.suppliers;
-    for (var index = 0; index < suppliers.length; index++) {
+    if (request.deadline?.trim().isNotEmpty == true) {
+      _appendLabelValue(sheet, 'Retorno até', _formatDate(request.deadline!));
+    }
+    if (request.deliveryInstructions.trim().isNotEmpty) {
+      _appendLabelValue(sheet, 'Entrega', request.deliveryInstructions);
+    }
+    if (request.paymentTerms.trim().isNotEmpty) {
+      _appendLabelValue(sheet, 'Pagamento', request.paymentTerms);
+    }
+    _appendSection(sheet, 'Itens solicitados', 4);
+    _appendTableHeader(sheet, const [
+      'Item',
+      'Unidade',
+      'Quantidade',
+      'Observações',
+    ]);
+    for (final item in request.normalizedItems) {
       sheet.appendRow([
-        IntCellValue(index + 1),
-        TextCellValue(suppliers[index]),
-        TextCellValue('Retorno a registrar'),
+        TextCellValue(item.description),
+        TextCellValue(item.unit),
+        DoubleCellValue(item.quantity),
         TextCellValue(''),
       ]);
     }
-
-    sheet.setColumnWidth(0, 18);
-    sheet.setColumnWidth(1, 34);
-    sheet.setColumnWidth(2, 24);
-    sheet.setColumnWidth(3, 30);
+    sheet.setColumnWidth(0, 42);
+    sheet.setColumnWidth(1, 16);
+    sheet.setColumnWidth(2, 16);
+    sheet.setColumnWidth(3, 38);
   }
 
   void _buildReturnsSheet(Sheet sheet, FarmQuoteRequest request) {
-    _appendTitle(sheet, 'RETORNOS DE FORNECEDORES', 5);
-    sheet.appendRow([
-      TextCellValue('Fornecedor'),
-      TextCellValue('Valor total (R\$)'),
-      TextCellValue('Data de recebimento'),
-      TextCellValue('Observações'),
-      TextCellValue('Revisado no Atlas'),
+    _appendTitle(sheet, 'PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO', 5);
+    _appendLabelValue(sheet, 'Fornecedor', 'Preencher pelo fornecedor');
+    _appendLabelValue(sheet, 'Data da proposta', 'Preencher no retorno');
+    _appendLabelValue(sheet, 'Prazo / condições', 'Preencher no retorno');
+    _appendTableHeader(sheet, const [
+      'Item',
+      'Unidade',
+      'Quantidade',
+      'Valor unitário (R\$)',
+      'Valor total (R\$)',
     ]);
+
+    final firstItemRow = sheet.maxRows;
+    for (final item in request.normalizedItems) {
+      final rowIndex = sheet.maxRows;
+      final excelRow = rowIndex + 1;
+      sheet.appendRow([
+        TextCellValue(item.description),
+        TextCellValue(item.unit),
+        DoubleCellValue(item.quantity),
+        TextCellValue(''),
+        FormulaCellValue('C$excelRow*D$excelRow'),
+      ]);
+      _currencyStyle(sheet, rowIndex, 3);
+      _currencyStyle(sheet, rowIndex, 4);
+    }
+    final lastItemRow = sheet.maxRows - 1;
+    final freightRow = sheet.maxRows;
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue('Frete (R\$)'),
+      TextCellValue(''),
+    ]);
+    _currencyStyle(sheet, freightRow, 4);
+    final discountRow = sheet.maxRows;
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue('Desconto (R\$)'),
+      TextCellValue(''),
+    ]);
+    _currencyStyle(sheet, discountRow, 4);
+    final totalRow = sheet.maxRows;
+    final firstExcelRow = firstItemRow + 1;
+    final lastExcelRow = lastItemRow + 1;
+    final freightExcelRow = freightRow + 1;
+    final discountExcelRow = discountRow + 1;
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue('TOTAL DA PROPOSTA (R\$)'),
+      FormulaCellValue(
+        'SUM(E$firstExcelRow:E$lastExcelRow)+E$freightExcelRow-E$discountExcelRow',
+      ),
+    ]);
+    _currencyStyle(sheet, totalRow, 4, bold: true);
+
+    sheet.setColumnWidth(0, 42);
+    sheet.setColumnWidth(1, 16);
+    sheet.setColumnWidth(2, 14);
+    sheet.setColumnWidth(3, 22);
+    sheet.setColumnWidth(4, 22);
+  }
+
+  void _appendTableHeader(Sheet sheet, List<String> labels) {
+    final row = sheet.maxRows;
+    sheet.appendRow(labels.map(TextCellValue.new).toList(growable: false));
     _styleRange(
       sheet,
-      startRow: 1,
-      endRow: 1,
+      startRow: row,
+      endRow: row,
       startColumn: 0,
-      endColumn: 4,
+      endColumn: labels.length - 1,
       style: CellStyle(
         backgroundColorHex: _green,
         fontColorHex: _white,
@@ -110,52 +166,17 @@ class FarmQuoteRequestExcelService {
         textWrapping: TextWrapping.WrapText,
       ),
     );
+  }
 
-    final rows = request.proposals.isEmpty
-        ? request.suppliers.map(
-            (supplier) => _ReturnRow(supplier: supplier),
-          )
-        : request.proposals.map(
-            (proposal) => _ReturnRow(
-              supplier: proposal.supplierName,
-              amount: proposal.totalAmount,
-              receivedAt: proposal.receivedAt,
-              notes: proposal.notes,
-              reviewed: 'Sim',
-            ),
-          );
-
-    for (final row in rows.take(4)) {
-      final rowIndex = sheet.maxRows;
-      sheet.appendRow([
-        TextCellValue(row.supplier),
-        row.amount == null ? TextCellValue('') : DoubleCellValue(row.amount!),
-        TextCellValue(_formatDate(row.receivedAt)),
-        TextCellValue(row.notes),
-        TextCellValue(row.reviewed),
-      ]);
-      if (row.amount != null) {
-        sheet
-                .cell(
-                  CellIndex.indexByColumnRow(
-                    columnIndex: 1,
-                    rowIndex: rowIndex,
-                  ),
-                )
-                .cellStyle =
-            CellStyle(
-              numberFormat: CustomNumericNumFormat(
-                formatCode: 'R\$ #,##0.00;[Red]-R\$ #,##0.00',
-              ),
-            );
-      }
-    }
-
-    sheet.setColumnWidth(0, 32);
-    sheet.setColumnWidth(1, 20);
-    sheet.setColumnWidth(2, 24);
-    sheet.setColumnWidth(3, 48);
-    sheet.setColumnWidth(4, 20);
+  void _currencyStyle(Sheet sheet, int row, int column, {bool bold = false}) {
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row))
+        .cellStyle = CellStyle(
+      bold: bold,
+      numberFormat: CustomNumericNumFormat(
+        formatCode: 'R\$ #,##0.00;[Red]-R\$ #,##0.00',
+      ),
+    );
   }
 
   void _appendTitle(Sheet sheet, String title, int columns) {
@@ -206,9 +227,12 @@ class FarmQuoteRequestExcelService {
     final row = sheet.maxRows;
     sheet.appendRow([TextCellValue(label), TextCellValue(value)]);
     sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-            .cellStyle =
-        CellStyle(backgroundColorHex: _lightGreen, fontColorHex: _green, bold: true);
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+        .cellStyle = CellStyle(
+      backgroundColorHex: _lightGreen,
+      fontColorHex: _green,
+      bold: true,
+    );
   }
 
   void _styleRange(
@@ -239,20 +263,4 @@ class FarmQuoteRequestExcelService {
     if (parsed == null) return value;
     return '${parsed.day.toString().padLeft(2, '0')}/${parsed.month.toString().padLeft(2, '0')}/${parsed.year}';
   }
-}
-
-class _ReturnRow {
-  const _ReturnRow({
-    required this.supplier,
-    this.amount,
-    this.receivedAt = '',
-    this.notes = '',
-    this.reviewed = 'Não',
-  });
-
-  final String supplier;
-  final double? amount;
-  final String receivedAt;
-  final String notes;
-  final String reviewed;
 }

@@ -16,6 +16,13 @@ void main() {
         itemsDescription: '20 sacos de suplemento mineral',
         suppliers: ['A', 'B', 'C', 'D', 'E'],
         createdAt: '2026-09-05T14:00:00.000',
+        items: [
+          FarmQuoteItem(
+            description: 'Suplemento mineral',
+            unit: 'saco',
+            quantity: 20,
+          ),
+        ],
       );
 
       await storage.save('fazenda-a', const [request]);
@@ -26,6 +33,7 @@ void main() {
       expect(fromFarmA, hasLength(1));
       expect(fromFarmA.single.title, 'Suplemento mineral');
       expect(fromFarmA.single.suppliers, ['A', 'B', 'C', 'D']);
+      expect(fromFarmA.single.items.single.quantity, 20);
       expect(fromFarmB, isEmpty);
     },
   );

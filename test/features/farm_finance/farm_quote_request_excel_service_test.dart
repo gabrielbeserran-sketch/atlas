@@ -19,6 +19,13 @@ void main() {
     itemsDescription: '20 sacos de suplemento mineral',
     suppliers: ['Fornecedor A', 'Fornecedor B'],
     createdAt: '2026-09-05T10:00:00.000',
+    items: [
+      FarmQuoteItem(
+        description: 'Suplemento mineral',
+        unit: 'saco',
+        quantity: 20,
+      ),
+    ],
     proposals: [
       FarmSupplierProposal(
         supplierName: 'Fornecedor A',
@@ -29,7 +36,7 @@ void main() {
     ],
   );
 
-  test('gera uma planilha com solicitação e retornos revisáveis', () {
+  test('gera uma planilha comercial neutra com total automático', () {
     final service = FarmQuoteRequestExcelService();
     final bytes = service.build(farm: farm, request: request);
     final workbook = Excel.decodeBytes(bytes);
@@ -48,11 +55,22 @@ void main() {
       contains('SOLICITAÇÃO DE COTAÇÃO'),
     );
     expect(
-      (workbook['Retornos'].cell(CellIndex.indexByString('A3')).value
+      (workbook['Retornos'].cell(CellIndex.indexByString('B2')).value
               as TextCellValue)
           .value
           .toString(),
-      'Fornecedor A',
+      'Preencher pelo fornecedor',
+    );
+    expect(
+      (workbook['Retornos'].cell(CellIndex.indexByString('A5')).value
+              as TextCellValue)
+          .value
+          .toString(),
+      'Item',
+    );
+    expect(
+      workbook['Retornos'].cell(CellIndex.indexByString('E6')).value,
+      const FormulaCellValue('C6*D6'),
     );
     expect(
       service.suggestedFileName(request),

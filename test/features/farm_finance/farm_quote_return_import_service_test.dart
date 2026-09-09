@@ -48,6 +48,19 @@ void main() {
     expect(result.proposals, isEmpty);
     expect(result.warnings, hasLength(2));
   });
+
+  test('calcula uma proposta estruturada pelos valores dos itens', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbook(),
+      request: request,
+      importedAt: DateTime(2026, 9, 6),
+    );
+
+    expect(result.warnings, isEmpty);
+    expect(result.proposals, hasLength(1));
+    expect(result.proposals.single.supplierName, 'Fornecedor C');
+    expect(result.proposals.single.totalAmount, 1005);
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -70,5 +83,45 @@ List<int> _returnsWorkbook(List<List<Object>> rows) {
       TextCellValue(row[3].toString()),
     ]);
   }
+  return workbook.encode()!;
+}
+
+List<int> _structuredReturnsWorkbook() {
+  final workbook = Excel.createExcel();
+  final defaultSheet = workbook.getDefaultSheet();
+  if (defaultSheet != null) workbook.rename(defaultSheet, 'Retornos');
+  final sheet = workbook['Retornos'];
+  sheet.appendRow([TextCellValue('PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO')]);
+  sheet.appendRow([TextCellValue('Fornecedor'), TextCellValue('Fornecedor C')]);
+  sheet.appendRow([TextCellValue('Data da proposta'), TextCellValue('05/09/2026')]);
+  sheet.appendRow([TextCellValue('Prazo / condições'), TextCellValue('Frete incluso')]);
+  sheet.appendRow([
+    TextCellValue('Item'),
+    TextCellValue('Unidade'),
+    TextCellValue('Quantidade'),
+    TextCellValue('Valor unitário (R\$)'),
+    TextCellValue('Valor total (R\$)'),
+  ]);
+  sheet.appendRow([
+    TextCellValue('Ração mineral'),
+    TextCellValue('saco'),
+    DoubleCellValue(20),
+    DoubleCellValue(50),
+    FormulaCellValue('C6*D6'),
+  ]);
+  sheet.appendRow([
+    TextCellValue(''),
+    TextCellValue(''),
+    TextCellValue(''),
+    TextCellValue('Frete (R\$)'),
+    DoubleCellValue(15),
+  ]);
+  sheet.appendRow([
+    TextCellValue(''),
+    TextCellValue(''),
+    TextCellValue(''),
+    TextCellValue('Desconto (R\$)'),
+    DoubleCellValue(10),
+  ]);
   return workbook.encode()!;
 }
