@@ -103,10 +103,14 @@ class FarmQuoteReturnImportService {
       );
     }
 
-    final supplier = _cellText(sheet, 1, 1).trim();
-    if (supplier.isEmpty || supplier == 'Preencher pelo fornecedor') {
-      return const FarmQuoteReturnImportResult(
-        warnings: ['Informe o fornecedor no cabeçalho da proposta antes de importar.'],
+    final suppliedName = _cellText(sheet, 1, 1).trim();
+    final supplier =
+        suppliedName.isEmpty || suppliedName == 'Preencher pelo fornecedor'
+        ? _unknownSupplierName(request)
+        : suppliedName;
+    if (supplier != suppliedName) {
+      warnings.add(
+        'Fornecedor não informado: a proposta será incorporada como “$supplier”.',
       );
     }
     final normalized = _normalizedSupplier(supplier);
@@ -193,6 +197,19 @@ class FarmQuoteReturnImportService {
       }
     }
     return null;
+  }
+
+  String _unknownSupplierName(FarmQuoteRequest request) {
+    const base = 'Fornecedor não identificado';
+    final names = request.proposals
+        .map((proposal) => _normalizedSupplier(proposal.supplierName))
+        .toSet();
+    if (!names.contains(_normalizedSupplier(base))) return base;
+    var index = 2;
+    while (names.contains(_normalizedSupplier('$base $index'))) {
+      index++;
+    }
+    return '$base $index';
   }
 
   String _cellText(Sheet sheet, int row, int column) {

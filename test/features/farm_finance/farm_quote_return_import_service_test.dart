@@ -61,6 +61,19 @@ void main() {
     expect(result.proposals.single.supplierName, 'Fornecedor C');
     expect(result.proposals.single.totalAmount, 1005);
   });
+
+  test('permite incorporar uma proposta estruturada sem fornecedor', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbook(supplier: ''),
+      request: request,
+      importedAt: DateTime(2026, 9, 6),
+    );
+
+    expect(result.proposals, hasLength(1));
+    expect(result.proposals.single.supplierName, 'Fornecedor não identificado');
+    expect(result.proposals.single.totalAmount, 1005);
+    expect(result.warnings.single, contains('Fornecedor não informado'));
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -78,7 +91,9 @@ List<int> _returnsWorkbook(List<List<Object>> rows) {
   for (final row in rows) {
     sheet.appendRow([
       TextCellValue(row[0].toString()),
-      row[1] is num ? DoubleCellValue((row[1] as num).toDouble()) : TextCellValue(row[1].toString()),
+      row[1] is num
+          ? DoubleCellValue((row[1] as num).toDouble())
+          : TextCellValue(row[1].toString()),
       TextCellValue(row[2].toString()),
       TextCellValue(row[3].toString()),
     ]);
@@ -86,15 +101,21 @@ List<int> _returnsWorkbook(List<List<Object>> rows) {
   return workbook.encode()!;
 }
 
-List<int> _structuredReturnsWorkbook() {
+List<int> _structuredReturnsWorkbook({String supplier = 'Fornecedor C'}) {
   final workbook = Excel.createExcel();
   final defaultSheet = workbook.getDefaultSheet();
   if (defaultSheet != null) workbook.rename(defaultSheet, 'Retornos');
   final sheet = workbook['Retornos'];
   sheet.appendRow([TextCellValue('PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO')]);
-  sheet.appendRow([TextCellValue('Fornecedor'), TextCellValue('Fornecedor C')]);
-  sheet.appendRow([TextCellValue('Data da proposta'), TextCellValue('05/09/2026')]);
-  sheet.appendRow([TextCellValue('Prazo / condições'), TextCellValue('Frete incluso')]);
+  sheet.appendRow([TextCellValue('Fornecedor'), TextCellValue(supplier)]);
+  sheet.appendRow([
+    TextCellValue('Data da proposta'),
+    TextCellValue('05/09/2026'),
+  ]);
+  sheet.appendRow([
+    TextCellValue('Prazo / condições'),
+    TextCellValue('Frete incluso'),
+  ]);
   sheet.appendRow([
     TextCellValue('Item'),
     TextCellValue('Unidade'),
