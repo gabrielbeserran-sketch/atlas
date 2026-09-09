@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -255,87 +256,83 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
       author: 'Projeto Atlas',
       subject: 'Histórico sanitário, produtivo e operacional do animal',
     );
-    final entries = timelineItems;
+    // A tela mostra o mais recente primeiro. No PDF, a leitura percorre o
+    // passado ao presente: o registro atual termina na faixa inferior, mais
+    // próxima de quem lê o documento.
+    final entries = timelineItems.reversed.toList(growable: false);
+    final logoData = await rootBundle.load('assets/branding/beserra_logo.png');
+    final logo = pw.MemoryImage(logoData.buffer.asUint8List());
     document.addPage(
-      pw.MultiPage(
+      pw.Page(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.fromLTRB(36, 28, 36, 28),
-        header: (context) => pw.Text(
-          'PROJETO ATLAS  •  Histórico Unificado do Animal',
-          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
-        ),
-        footer: (context) => pw.Align(
-          alignment: pw.Alignment.centerRight,
-          child: pw.Text(
-            'Página ${context.pageNumber}',
-            style: const pw.TextStyle(fontSize: 9),
-          ),
-        ),
-        build: (context) => [
-          pw.Container(
-            padding: const pw.EdgeInsets.all(18),
-            decoration: pw.BoxDecoration(
-              color: PdfColor.fromInt(0xFF16472A),
-              borderRadius: pw.BorderRadius.circular(10),
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            _pdfPremiumHeader(logo),
+            pw.SizedBox(height: 12),
+            pw.Row(
+              children: [
+                _pdfFact('Raça', widget.animal.breed),
+                pw.SizedBox(width: 10),
+                _pdfFact('Sexo', widget.animal.sex),
+                pw.SizedBox(width: 10),
+                _pdfFact(
+                  'Peso atual',
+                  '${widget.animal.weight.toStringAsFixed(1).replaceAll('.', ',')} kg',
+                ),
+                pw.SizedBox(width: 10),
+                _pdfFact('Registros', '${entries.length}'),
+              ],
             ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+            pw.SizedBox(height: 17),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  'HISTÓRICO UNIFICADO',
+                  'Linha do tempo consolidada',
                   style: pw.TextStyle(
-                    color: PdfColors.white,
-                    fontSize: 10,
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
+                    color: PdfColor.fromInt(0xFF163325),
                   ),
                 ),
-                pw.SizedBox(height: 7),
                 pw.Text(
-                  widget.animal.name.trim().isEmpty
-                      ? 'Animal ${widget.animal.tag}'
-                      : widget.animal.name,
+                  'DO PRIMEIRO REGISTRO AO EVENTO MAIS ATUAL',
                   style: pw.TextStyle(
-                    color: PdfColors.white,
-                    fontSize: 22,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 4),
-                pw.Text(
-                  'Brinco ${widget.animal.tag}  •  ${widget.farm.name}  •  Lote ${widget.group.name}',
-                  style: const pw.TextStyle(
-                    color: PdfColors.white,
-                    fontSize: 11,
+                    fontSize: 8,
+                    color: PdfColor.fromInt(0xFF6B786F),
                   ),
                 ),
               ],
             ),
-          ),
-          pw.SizedBox(height: 18),
-          pw.Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              _pdfFact('Raça', widget.animal.breed),
-              _pdfFact('Sexo', widget.animal.sex),
-              _pdfFact(
-                'Peso atual',
-                '${widget.animal.weight.toStringAsFixed(1).replaceAll('.', ',')} kg',
-              ),
-              _pdfFact('Registros', '${entries.length}'),
-            ],
-          ),
-          pw.SizedBox(height: 22),
-          pw.Text(
-            'Linha do tempo consolidada',
-            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.SizedBox(height: 8),
-          if (entries.isEmpty)
-            pw.Text('Nenhum registro disponível para este animal.')
-          else
-            ..._pdfTimelineBands(entries),
-        ],
+            pw.SizedBox(height: 8),
+            if (entries.isEmpty)
+              pw.Expanded(
+                child: pw.Center(
+                  child: pw.Text(
+                    'Nenhum registro disponível para este animal.',
+                  ),
+                ),
+              )
+            else
+              pw.Expanded(child: _pdfPremiumTimeline(entries)),
+            pw.SizedBox(height: 8),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'Projeto Atlas  •  Histórico individual auditável',
+                  style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+                ),
+                pw.Text(
+                  'Documento consolidado em página única',
+                  style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
     final bytes = await document.save();
@@ -362,78 +359,214 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
     }
   }
 
-  pw.Widget _pdfFact(String label, String value) => pw.Container(
-    padding: const pw.EdgeInsets.all(9),
+  pw.Widget _pdfPremiumHeader(pw.MemoryImage logo) => pw.Container(
+    padding: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
     decoration: pw.BoxDecoration(
-      border: pw.Border.all(color: PdfColors.grey300),
-      borderRadius: pw.BorderRadius.circular(6),
+      color: PdfColor.fromInt(0xFF16472A),
+      borderRadius: pw.BorderRadius.circular(12),
     ),
-    child: pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
+    child: pw.Row(
       children: [
-        pw.Text(
-          label.toUpperCase(),
-          style: pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
+        pw.Container(
+          width: 56,
+          height: 44,
+          padding: const pw.EdgeInsets.all(4),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.white,
+            borderRadius: pw.BorderRadius.circular(6),
+          ),
+          child: pw.Image(logo, fit: pw.BoxFit.contain),
         ),
-        pw.SizedBox(height: 3),
+        pw.SizedBox(width: 14),
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'HISTÓRICO UNIFICADO',
+                style: pw.TextStyle(
+                  color: PdfColors.white,
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(
+                widget.animal.name.trim().isEmpty
+                    ? 'Animal ${widget.animal.tag}'
+                    : widget.animal.name,
+                style: pw.TextStyle(
+                  color: PdfColors.white,
+                  fontSize: 19,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 3),
+              pw.Text(
+                'Brinco ${widget.animal.tag}  •  ${widget.farm.name}  •  Lote ${widget.group.name}',
+                style: const pw.TextStyle(color: PdfColors.white, fontSize: 9),
+              ),
+            ],
+          ),
+        ),
         pw.Text(
-          value.trim().isEmpty ? 'Não informado' : value,
-          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+          'BESERRA\nGESTÃO PECUÁRIA',
+          textAlign: pw.TextAlign.right,
+          style: pw.TextStyle(
+            color: PdfColor.fromInt(0xFFC8A95D),
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
+          ),
         ),
       ],
     ),
   );
 
-  List<pw.Widget> _pdfTimelineBands(List<TimelineItem> entries) {
-    const eventsPerBand = 3;
-    final bands = <pw.Widget>[];
-    for (var start = 0; start < entries.length; start += eventsPerBand) {
-      final end = math.min(start + eventsPerBand, entries.length);
-      bands.add(_pdfTimelineBand(entries.sublist(start, end)));
-      if (end < entries.length) bands.add(pw.SizedBox(height: 20));
-    }
-    return bands;
-  }
+  pw.Widget _pdfFact(String label, String value) => pw.Expanded(
+    child: pw.Container(
+      padding: const pw.EdgeInsets.all(9),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(6),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            label.toUpperCase(),
+            style: pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Text(
+            value.trim().isEmpty ? 'Não informado' : value,
+            style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  );
 
-  pw.Widget _pdfTimelineBand(List<TimelineItem> items) => pw.Row(
-    crossAxisAlignment: pw.CrossAxisAlignment.start,
-    children: [
-      for (var index = 0; index < items.length; index++) ...[
-        pw.Expanded(child: _pdfTimelineNode(items[index])),
-        if (index < items.length - 1)
-          pw.Padding(
-            padding: const pw.EdgeInsets.only(top: 7),
-            child: pw.Container(
-              width: 26,
-              height: 3,
-              color: PdfColor.fromInt(0xFF73AA78),
+  pw.Widget _pdfPremiumTimeline(List<TimelineItem> entries) {
+    final eventsPerBand = entries.length <= 6
+        ? 3
+        : entries.length <= 16
+        ? 4
+        : entries.length <= 32
+        ? 5
+        : 6;
+    final bands = <List<TimelineItem>>[];
+    for (var start = 0; start < entries.length; start += eventsPerBand) {
+      bands.add(
+        entries.sublist(start, math.min(start + eventsPerBand, entries.length)),
+      );
+    }
+    final compact = entries.length > 12;
+    return pw.Column(
+      children: [
+        for (var index = 0; index < bands.length; index++) ...[
+          pw.Expanded(
+            child: _pdfTimelineBand(
+              bands[index],
+              compact: compact,
+              isCurrentBand: index == bands.length - 1,
             ),
           ),
+          if (index < bands.length - 1) pw.SizedBox(height: 8),
+        ],
       ],
+    );
+  }
+
+  pw.Widget _pdfTimelineBand(
+    List<TimelineItem> items, {
+    required bool compact,
+    required bool isCurrentBand,
+  }) => pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.Stack(
+        children: [
+          pw.Positioned(
+            left: 8,
+            right: 8,
+            top: 8,
+            child: pw.Container(
+              height: 8,
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromInt(0xFF0B3420),
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          pw.Positioned(
+            left: 8,
+            right: 8,
+            top: 5,
+            child: pw.Container(
+              height: 5,
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromInt(0xFF398447),
+                borderRadius: pw.BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (var index = 0; index < items.length; index++) ...[
+                pw.Expanded(
+                  child: _pdfTimelineNode(
+                    items[index],
+                    compact: compact,
+                    isLatest: isCurrentBand && index == items.length - 1,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     ],
   );
 
-  pw.Widget _pdfTimelineNode(TimelineItem item) => pw.Column(
+  pw.Widget _pdfTimelineNode(
+    TimelineItem item, {
+    required bool compact,
+    required bool isLatest,
+  }) => pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
       pw.Container(
-        width: 16,
-        height: 16,
+        width: isLatest ? 20 : 16,
+        height: isLatest ? 20 : 16,
         decoration: pw.BoxDecoration(
-          color: PdfColor.fromInt(0xFF16472A),
+          color: isLatest
+              ? PdfColor.fromInt(0xFFC8A95D)
+              : PdfColor.fromInt(0xFF16472A),
           shape: pw.BoxShape.circle,
-          border: pw.Border.all(color: PdfColor.fromInt(0xFFB9D9BD), width: 3),
+          border: pw.Border.all(color: PdfColors.white, width: 3),
         ),
       ),
       pw.SizedBox(height: 6),
       pw.Text(
-        '${item.date}  •  ${item.category}',
-        style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+        isLatest
+            ? '${item.date}  •  EVENTO ATUAL'
+            : '${item.date}  •  ${item.category}',
+        style: pw.TextStyle(
+          fontSize: compact ? 6 : 8,
+          color: PdfColors.grey700,
+          fontWeight: isLatest ? pw.FontWeight.bold : pw.FontWeight.normal,
+        ),
       ),
       pw.SizedBox(height: 5),
       pw.Container(
         width: double.infinity,
-        padding: const pw.EdgeInsets.fromLTRB(11, 10, 11, 10),
+        padding: pw.EdgeInsets.fromLTRB(
+          10,
+          compact ? 5 : 8,
+          10,
+          compact ? 5 : 8,
+        ),
         decoration: pw.BoxDecoration(
           color: PdfColor.fromInt(0xFFF7FAF7),
           borderRadius: pw.BorderRadius.circular(8),
@@ -449,15 +582,27 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
           children: [
             pw.Text(
               item.title,
-              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+              maxLines: compact ? 1 : 2,
+              style: pw.TextStyle(
+                fontSize: compact ? 7 : 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
             if (item.subtitle.trim().isNotEmpty) ...[
               pw.SizedBox(height: 2),
-              pw.Text(item.subtitle, style: const pw.TextStyle(fontSize: 9)),
+              pw.Text(
+                item.subtitle,
+                maxLines: 1,
+                style: pw.TextStyle(fontSize: compact ? 6 : 8),
+              ),
             ],
             if (item.description.trim().isNotEmpty) ...[
               pw.SizedBox(height: 4),
-              pw.Text(item.description, style: const pw.TextStyle(fontSize: 8)),
+              pw.Text(
+                item.description,
+                maxLines: compact ? 1 : 2,
+                style: pw.TextStyle(fontSize: compact ? 5 : 7),
+              ),
             ],
           ],
         ),
@@ -577,7 +722,7 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
         title: const Text('Timeline inteligente'),
         actions: [
           IconButton(
-            tooltip: 'Gerar PDF do histórico',
+            tooltip: 'Gerar PDF premium em página única',
             onPressed: isLoading ? null : exportUnifiedHistoryPdf,
             icon: const Icon(Icons.picture_as_pdf_outlined),
           ),
