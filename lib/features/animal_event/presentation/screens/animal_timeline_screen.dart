@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_document/data/services/animal_document_storage_service.dart';
 import 'package:projeto_atlas/features/animal_document/domain/models/animal_document_data.dart';
@@ -23,6 +25,7 @@ import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/core/platform/atlas_external_open_service.dart';
 
 class AnimalTimelineScreen extends StatefulWidget {
   const AnimalTimelineScreen({
@@ -262,7 +265,10 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
         ),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('Página ${context.pageNumber}', style: const pw.TextStyle(fontSize: 9)),
+          child: pw.Text(
+            'Página ${context.pageNumber}',
+            style: const pw.TextStyle(fontSize: 9),
+          ),
         ),
         build: (context) => [
           pw.Container(
@@ -274,13 +280,33 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('HISTÓRICO UNIFICADO', style: pw.TextStyle(color: PdfColors.white, fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  'HISTÓRICO UNIFICADO',
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 7),
-                pw.Text(widget.animal.name.trim().isEmpty ? 'Animal ${widget.animal.tag}' : widget.animal.name,
-                    style: pw.TextStyle(color: PdfColors.white, fontSize: 22, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  widget.animal.name.trim().isEmpty
+                      ? 'Animal ${widget.animal.tag}'
+                      : widget.animal.name,
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 22,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(height: 4),
-                pw.Text('Brinco ${widget.animal.tag}  •  ${widget.farm.name}  •  Lote ${widget.group.name}',
-                    style: const pw.TextStyle(color: PdfColors.white, fontSize: 11)),
+                pw.Text(
+                  'Brinco ${widget.animal.tag}  •  ${widget.farm.name}  •  Lote ${widget.group.name}',
+                  style: const pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),
@@ -291,12 +317,18 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
             children: [
               _pdfFact('Raça', widget.animal.breed),
               _pdfFact('Sexo', widget.animal.sex),
-              _pdfFact('Peso atual', '${widget.animal.weight.toStringAsFixed(1).replaceAll('.', ',')} kg'),
+              _pdfFact(
+                'Peso atual',
+                '${widget.animal.weight.toStringAsFixed(1).replaceAll('.', ',')} kg',
+              ),
               _pdfFact('Registros', '${entries.length}'),
             ],
           ),
           pw.SizedBox(height: 22),
-          pw.Text('Linha do tempo consolidada', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            'Linha do tempo consolidada',
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
           pw.SizedBox(height: 8),
           if (entries.isEmpty)
             pw.Text('Nenhum registro disponível para este animal.')
@@ -306,34 +338,79 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
       ),
     );
     final bytes = await document.save();
-    if (!mounted) return;
-    await Printing.layoutPdf(
-      name: 'historico_${widget.animal.tag.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.pdf',
-      onLayout: (_) async => bytes,
+    final directory = await getApplicationDocumentsDirectory();
+    final historyDirectory = Directory(
+      '${directory.path}${Platform.pathSeparator}Atlas${Platform.pathSeparator}Historicos',
     );
+    await historyDirectory.create(recursive: true);
+    final safeTag = widget.animal.tag.replaceAll(
+      RegExp(r'[^a-zA-Z0-9_-]'),
+      '_',
+    );
+    final file = File(
+      '${historyDirectory.path}${Platform.pathSeparator}historico_$safeTag.pdf',
+    );
+    await file.writeAsBytes(bytes, flush: true);
+    await AtlasExternalOpenService.open(file.path);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PDF gerado e aberto no visualizador do dispositivo.'),
+        ),
+      );
+    }
   }
 
   pw.Widget _pdfFact(String label, String value) => pw.Container(
     padding: const pw.EdgeInsets.all(9),
-    decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300), borderRadius: pw.BorderRadius.circular(6)),
-    child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-      pw.Text(label.toUpperCase(), style: pw.TextStyle(fontSize: 7, color: PdfColors.grey600)),
-      pw.SizedBox(height: 3),
-      pw.Text(value.trim().isEmpty ? 'Não informado' : value, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-    ]),
+    decoration: pw.BoxDecoration(
+      border: pw.Border.all(color: PdfColors.grey300),
+      borderRadius: pw.BorderRadius.circular(6),
+    ),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          label.toUpperCase(),
+          style: pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
+        ),
+        pw.SizedBox(height: 3),
+        pw.Text(
+          value.trim().isEmpty ? 'Não informado' : value,
+          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+        ),
+      ],
+    ),
   );
 
   pw.Widget _pdfTimelineEntry(TimelineItem item) => pw.Container(
     margin: const pw.EdgeInsets.only(bottom: 8),
     padding: const pw.EdgeInsets.all(10),
-    decoration: pw.BoxDecoration(border: pw.Border(left: pw.BorderSide(color: PdfColor.fromInt(0xFF2E7D32), width: 3))),
-    child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-      pw.Text('${item.date}  •  ${item.category}', style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
-      pw.SizedBox(height: 3),
-      pw.Text(item.title, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-      if (item.subtitle.trim().isNotEmpty) pw.Text(item.subtitle, style: const pw.TextStyle(fontSize: 10)),
-      if (item.description.trim().isNotEmpty) ...[pw.SizedBox(height: 3), pw.Text(item.description, style: const pw.TextStyle(fontSize: 9))],
-    ]),
+    decoration: pw.BoxDecoration(
+      border: pw.Border(
+        left: pw.BorderSide(color: PdfColor.fromInt(0xFF2E7D32), width: 3),
+      ),
+    ),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          '${item.date}  •  ${item.category}',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
+        ),
+        pw.SizedBox(height: 3),
+        pw.Text(
+          item.title,
+          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        ),
+        if (item.subtitle.trim().isNotEmpty)
+          pw.Text(item.subtitle, style: const pw.TextStyle(fontSize: 10)),
+        if (item.description.trim().isNotEmpty) ...[
+          pw.SizedBox(height: 3),
+          pw.Text(item.description, style: const pw.TextStyle(fontSize: 9)),
+        ],
+      ],
+    ),
   );
 
   Future<void> openEventForm() async {
