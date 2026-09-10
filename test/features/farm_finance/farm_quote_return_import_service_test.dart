@@ -88,6 +88,20 @@ void main() {
     expect(result.warnings, isEmpty);
     expect(result.proposals.single.supplierName, 'Fornecedor D');
   });
+
+  test('ignora instrução da planilha e lê o primeiro valor real à direita', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbook(
+        supplier: 'AGRO DF',
+        templateHintBeforeSupplier: true,
+      ),
+      request: request,
+      importedAt: DateTime(2026, 9, 6),
+    );
+
+    expect(result.warnings, isEmpty);
+    expect(result.proposals.single.supplierName, 'AGRO DF');
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -118,6 +132,7 @@ List<int> _returnsWorkbook(List<List<Object>> rows) {
 List<int> _structuredReturnsWorkbook({
   String supplier = 'Fornecedor C',
   int labelColumn = 0,
+  bool templateHintBeforeSupplier = false,
 }) {
   final workbook = Excel.createExcel();
   final defaultSheet = workbook.getDefaultSheet();
@@ -125,7 +140,13 @@ List<int> _structuredReturnsWorkbook({
   final sheet = workbook['Retornos'];
   sheet.appendRow([TextCellValue('PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO')]);
   sheet.appendRow(
-    labelColumn == 0
+    templateHintBeforeSupplier
+        ? [
+            TextCellValue('Fornecedor'),
+            TextCellValue('Preencher pelo fornecedor'),
+            TextCellValue(supplier),
+          ]
+        : labelColumn == 0
         ? [TextCellValue('Fornecedor'), TextCellValue(supplier)]
         : [
             TextCellValue(''),

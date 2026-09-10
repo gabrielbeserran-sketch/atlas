@@ -161,7 +161,7 @@ class FarmQuoteReturnImportService {
         warnings: [...warnings, 'O total calculado da proposta não é válido.'],
       );
     }
-    final dateText = _cellText(sheet, 2, 1).trim();
+    final dateText = _findLabeledText(sheet, 'Data da proposta').trim();
     final receivedAt = _parseDate(dateText);
     if (dateText.isNotEmpty && receivedAt == null) {
       warnings.add(
@@ -174,7 +174,7 @@ class FarmQuoteReturnImportService {
           supplierName: supplier,
           totalAmount: total,
           receivedAt: (receivedAt ?? importedAt).toIso8601String(),
-          notes: _cellText(sheet, 3, 1).trim(),
+          notes: _findLabeledText(sheet, 'Prazo / condições').trim(),
         ),
       ],
       warnings: warnings,
@@ -201,9 +201,19 @@ class FarmQuoteReturnImportService {
 
   String _findLabeledText(Sheet sheet, String label) {
     for (var row = 0; row < sheet.maxRows; row++) {
-      for (var column = 0; column < sheet.maxColumns - 1; column++) {
+      for (var column = 0; column < sheet.maxColumns; column++) {
         if (_cellText(sheet, row, column).trim() == label) {
-          return _cellText(sheet, row, column + 1);
+          for (var valueColumn = column + 1;
+              valueColumn < sheet.maxColumns;
+              valueColumn++) {
+            final value = _cellText(sheet, row, valueColumn).trim();
+            if (value.isEmpty ||
+                value.toLowerCase().startsWith('preencher')) {
+              continue;
+            }
+            return value;
+          }
+          return '';
         }
       }
     }
