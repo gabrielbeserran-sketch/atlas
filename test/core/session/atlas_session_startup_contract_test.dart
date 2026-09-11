@@ -28,6 +28,7 @@ void main() {
     expect(controller, contains('_session = stored;'));
     expect(controller, contains('unawaited(_refreshContextAfterStartup());'));
     expect(controller, contains('_offlineMode = true;'));
+    expect(controller, contains('Future<void> retryConnection() async'));
     expect(controller, isNot(contains('await _store.clearSession();')));
     expect(store, contains('saveFarmPortfolio'));
     expect(store, contains('loadFarmPortfolio'));

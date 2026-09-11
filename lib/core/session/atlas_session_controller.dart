@@ -34,6 +34,7 @@ class AtlasSessionController extends ChangeNotifier {
   AtlasRemoteFarm? _activeFarm;
   String? _error;
   bool _offlineMode = false;
+  bool _refreshingConnection = false;
 
   AtlasSessionStatus get status => _status;
   AtlasRemoteSession? get session => _session;
@@ -41,6 +42,7 @@ class AtlasSessionController extends ChangeNotifier {
   AtlasRemoteFarm? get activeFarm => _activeFarm;
   String? get error => _error;
   bool get offlineMode => _offlineMode;
+  bool get refreshingConnection => _refreshingConnection;
 
   bool get isAuthenticated =>
       _status == AtlasSessionStatus.authenticated && _session != null;
@@ -97,6 +99,18 @@ class AtlasSessionController extends ChangeNotifier {
       // Dados locais continuam disponíveis. O aviso visual é discreto e não
       // troca de tela nem bloqueia ações locais.
       _offlineMode = true;
+      notifyListeners();
+    }
+  }
+
+  Future<void> retryConnection() async {
+    if (_refreshingConnection) return;
+    _refreshingConnection = true;
+    notifyListeners();
+    try {
+      await _refreshContextAfterStartup();
+    } finally {
+      _refreshingConnection = false;
       notifyListeners();
     }
   }

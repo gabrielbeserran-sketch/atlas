@@ -230,7 +230,11 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                             : () => _selectFarm(context),
                         onLogout: controller.logout,
                       ),
-                      if (controller.offlineMode) const _OfflineModeBanner(),
+                      if (controller.offlineMode)
+                        _OfflineModeBanner(
+                          refreshing: controller.refreshingConnection,
+                          onRetry: controller.retryConnection,
+                        ),
                       Expanded(child: _selectedBody(selected, activeFarm?.id)),
                     ],
                   ),
@@ -291,7 +295,11 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           ),
           body: Column(
             children: [
-              if (controller.offlineMode) const _OfflineModeBanner(),
+              if (controller.offlineMode)
+                _OfflineModeBanner(
+                  refreshing: controller.refreshingConnection,
+                  onRetry: controller.retryConnection,
+                ),
               Expanded(child: _selectedBody(selected, activeFarm?.id)),
             ],
           ),
@@ -492,21 +500,42 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
 }
 
 class _OfflineModeBanner extends StatelessWidget {
-  const _OfflineModeBanner();
+  const _OfflineModeBanner({required this.refreshing, required this.onRetry});
+
+  final bool refreshing;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
     color: const Color(0xFF163D2B),
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-    child: const Row(
+    child: Row(
       children: [
-        Icon(Icons.cloud_off_outlined, color: Colors.white, size: 20),
-        SizedBox(width: 10),
-        Expanded(
+        const Icon(Icons.cloud_off_outlined, color: Colors.white, size: 20),
+        const SizedBox(width: 10),
+        const Expanded(
           child: Text(
             'Modo offline: exibindo dados salvos. Novas alterações serão sincronizadas quando a conexão voltar.',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+        ),
+        const SizedBox(width: 12),
+        TextButton.icon(
+          onPressed: refreshing ? null : onRetry,
+          icon: refreshing
+              ? const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.refresh, color: Colors.white),
+          label: Text(
+            refreshing ? 'Conectando...' : 'Tentar conexão',
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ],
