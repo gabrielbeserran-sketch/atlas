@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:projeto_atlas/core/network/atlas_environment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../farm/domain/models/atlas_remote_farm.dart';
 import '../../domain/models/atlas_enterprise_remote_session.dart';
 
 class AtlasEnterpriseRemoteAuthStore {
@@ -15,6 +16,7 @@ class AtlasEnterpriseRemoteAuthStore {
   static const _sessionKey = 'atlas_enterprise_secure_remote_session';
   static const _baseUrlKey = 'atlas_enterprise_base_url';
   static const _activeFarmKey = 'atlas_enterprise_active_farm';
+  static const _farmPortfolioKey = 'atlas_enterprise_cached_farm_portfolio';
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -51,9 +53,7 @@ class AtlasEnterpriseRemoteAuthStore {
 
   Future<void> saveBaseUrl(String value) {
     if (AtlasEnvironmentConfig.isProduction) {
-      throw UnsupportedError(
-        'A URL da API é imutável em build de produção.',
-      );
+      throw UnsupportedError('A URL da API é imutável em build de produção.');
     }
     final normalized = AtlasEnvironmentConfig.normalizeApiBaseUrl(value);
     return _preferences.setString(_baseUrlKey, normalized);
@@ -61,9 +61,7 @@ class AtlasEnterpriseRemoteAuthStore {
 
   Future<void> resetBaseUrl() {
     if (AtlasEnvironmentConfig.isProduction) {
-      throw UnsupportedError(
-        'A URL da API é imutável em build de produção.',
-      );
+      throw UnsupportedError('A URL da API é imutável em build de produção.');
     }
     return _preferences.remove(_baseUrlKey);
   }
@@ -112,6 +110,7 @@ class AtlasEnterpriseRemoteAuthStore {
       await _recoverSecureStorage();
     }
     await _preferences.remove(_activeFarmKey);
+    await _preferences.remove(_farmPortfolioKey);
   }
 
   Future<void> _recoverSecureStorage() async {
@@ -138,7 +137,6 @@ class AtlasEnterpriseRemoteAuthStore {
     await _preferences.remove(_activeFarmKey);
   }
 
-
   Future<void> saveActiveFarm(String farmId) {
     return _preferences.setString(_activeFarmKey, farmId);
   }
@@ -149,5 +147,40 @@ class AtlasEnterpriseRemoteAuthStore {
 
   Future<void> clearActiveFarm() {
     return _preferences.remove(_activeFarmKey);
+  }
+
+  Future<void> saveFarmPortfolio(List<AtlasRemoteFarm> farms) {
+    final values = farms
+        .map(
+          (farm) => <String, dynamic>{
+            'id': farm.id,
+            'tenant_id': farm.tenantId,
+            'company_id': farm.companyId,
+            'name': farm.name,
+            'city': farm.city,
+            'state': farm.state,
+            'animals': farm.animals,
+            'area': farm.area,
+            'active': farm.active,
+          },
+        )
+        .toList(growable: false);
+    return _preferences.setString(_farmPortfolioKey, jsonEncode(values));
+  }
+
+  Future<List<AtlasRemoteFarm>> loadFarmPortfolio() async {
+    final raw = await _preferences.getString(_farmPortfolioKey);
+    if (raw == null || raw.isEmpty) return const [];
+    try {
+      return (jsonDecode(raw) as List<dynamic>)
+          .whereType<Map>()
+          .map(
+            (item) => AtlasRemoteFarm.fromMap(Map<String, dynamic>.from(item)),
+          )
+          .where((farm) => farm.id.isNotEmpty && farm.active)
+          .toList(growable: false);
+    } catch (_) {
+      return const [];
+    }
   }
 }

@@ -17,4 +17,21 @@ void main() {
       contains('_api.me().timeout(_sessionValidationTimeout)'),
     );
   });
+
+  test('preserva a sessão e usa a carteira local quando não há conexão', () {
+    final controller = read('lib/core/session/atlas_session_controller.dart');
+    final store = read(
+      'lib/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart',
+    );
+
+    expect(
+      controller,
+      contains('final cachedFarms = await _store.loadFarmPortfolio();'),
+    );
+    expect(controller, contains('_session = stored;'));
+    expect(controller, contains('_offlineMode = true;'));
+    expect(controller, isNot(contains('await _store.clearSession();')));
+    expect(store, contains('saveFarmPortfolio'));
+    expect(store, contains('loadFarmPortfolio'));
+  });
 }

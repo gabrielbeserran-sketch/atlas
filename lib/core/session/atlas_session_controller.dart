@@ -31,12 +31,14 @@ class AtlasSessionController extends ChangeNotifier {
   List<AtlasRemoteFarm> _farms = const [];
   AtlasRemoteFarm? _activeFarm;
   String? _error;
+  bool _offlineMode = false;
 
   AtlasSessionStatus get status => _status;
   AtlasRemoteSession? get session => _session;
   List<AtlasRemoteFarm> get farms => List.unmodifiable(_farms);
   AtlasRemoteFarm? get activeFarm => _activeFarm;
   String? get error => _error;
+  bool get offlineMode => _offlineMode;
 
   bool get isAuthenticated =>
       _status == AtlasSessionStatus.authenticated && _session != null;
@@ -73,19 +75,29 @@ class AtlasSessionController extends ChangeNotifier {
       final restored = await _api.me().timeout(_sessionValidationTimeout);
       await acceptSession(restored);
     } catch (_) {
-      await _store.clearSession();
-      await _store.clearActiveFarm();
-      await AtlasActiveContext.instance.clear();
-      _session = null;
-      _farms = const [];
-      _activeFarm = null;
-      _setStatus(AtlasSessionStatus.unauthenticated);
+      final cachedFarms = await _store.loadFarmPortfolio();
+      if (cachedFarms.isEmpty) {
+        _error =
+            'Sem conexão e sem dados locais suficientes para abrir o Atlas.';
+        _setStatus(AtlasSessionStatus.failure);
+        return;
+      }
+      _session = stored;
+      _farms = cachedFarms;
+      _offlineMode = true;
+      await AtlasActiveContext.instance.restore();
+      final savedFarmId = await _store.loadActiveFarm();
+      _activeFarm = _findFarm(savedFarmId) ?? _farms.first;
+      await AtlasActiveContext.instance.selectFarm(_activeFarm!.id);
+      _error = null;
+      _setStatus(AtlasSessionStatus.authenticated);
     }
   }
 
   Future<void> acceptSession(AtlasRemoteSession session) async {
     _session = session;
     _error = null;
+    _offlineMode = false;
     await _store.saveSession(session);
     await AtlasActiveContext.instance.restore();
 
@@ -118,6 +130,7 @@ class AtlasSessionController extends ChangeNotifier {
     try {
       await _reloadFarmPortfolio();
       _error = null;
+      _offlineMode = false;
       _setStatus(AtlasSessionStatus.authenticated);
     } catch (error) {
       _error = error.toString();
@@ -154,6 +167,7 @@ class AtlasSessionController extends ChangeNotifier {
             .where((farm) => farm.id.isNotEmpty && farm.active)
             .toList(growable: false)
           ..sort((a, b) => a.name.compareTo(b.name));
+    await _store.saveFarmPortfolio(_farms);
 
     _activeFarm = _findFarm(previousActiveId) ?? _findFarm(savedFarmId);
 
@@ -208,6 +222,7 @@ class AtlasSessionController extends ChangeNotifier {
       _farms = const [];
       _activeFarm = null;
       _error = null;
+      _offlineMode = false;
       _setStatus(AtlasSessionStatus.unauthenticated);
     }
   }
