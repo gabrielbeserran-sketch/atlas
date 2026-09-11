@@ -11,9 +11,14 @@ import 'package:projeto_atlas/features/enterprise_platform/domain/models/atlas_e
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({this.onAuthenticated, super.key});
+  const LoginScreen({
+    this.onAuthenticated,
+    this.autoRestoreSession = true,
+    super.key,
+  });
 
   final Future<void> Function(AtlasRemoteSession session)? onAuthenticated;
+  final bool autoRestoreSession;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -40,7 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     // Primeiro acorda e confirma a API. Restaurar a sessão em paralelo gera
     // uma segunda chamada durante o cold start e torna a entrada mais lenta.
-    unawaited(_restoreSessionAfterBackendReady());
+    if (widget.autoRestoreSession) {
+      unawaited(_restoreSessionAfterBackendReady());
+    } else {
+      unawaited(_warmBackend());
+    }
   }
 
   @override

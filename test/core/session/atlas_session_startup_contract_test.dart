@@ -18,17 +18,21 @@ void main() {
     );
   });
 
-  test('abre a sessão local antes de validar a conexão em segundo plano', () {
+  test('preserva contexto local e mantém a entrada como ação explícita', () {
     final controller = read('lib/core/session/atlas_session_controller.dart');
+    final gate = read('lib/core/session/atlas_session_gate.dart');
     final store = read(
       'lib/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart',
     );
 
     expect(controller, contains('_farms = await _store.loadFarmPortfolio();'));
     expect(controller, contains('_session = stored;'));
-    expect(controller, contains('unawaited(_refreshContextAfterStartup());'));
-    expect(controller, contains('_offlineMode = true;'));
+    expect(
+      controller,
+      contains('_setStatus(AtlasSessionStatus.unauthenticated);'),
+    );
     expect(controller, contains('Future<void> retryConnection() async'));
+    expect(gate, contains('autoRestoreSession: false'));
     expect(controller, isNot(contains('await _store.clearSession();')));
     expect(store, contains('saveFarmPortfolio'));
     expect(store, contains('loadFarmPortfolio'));

@@ -141,7 +141,10 @@ class _AtlasSessionGateState extends State<AtlasSessionGate> {
               return const _LoadingScreen(message: 'Carregando sua fazenda...');
 
             case AtlasSessionStatus.unauthenticated:
-              return LoginScreen(onAuthenticated: controller.acceptSession);
+              return LoginScreen(
+                onAuthenticated: controller.acceptSession,
+                autoRestoreSession: false,
+              );
 
             case AtlasSessionStatus.selectingCompany:
               return CompanySelectionScreen(

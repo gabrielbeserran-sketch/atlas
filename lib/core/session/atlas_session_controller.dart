@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
@@ -71,9 +69,8 @@ class AtlasSessionController extends ChangeNotifier {
       return;
     }
 
-    // A abertura não depende da rede: usa imediatamente a sessão protegida e
-    // o contexto salvo. A atualização remota acontece depois, sem bloquear a
-    // interface nem transformar uma demora do servidor em falha de login.
+    // Mantém o contexto local disponível, mas devolve o usuário à tela de
+    // login. A entrada no painel passa a ser uma ação explícita.
     _session = stored;
     _farms = await _store.loadFarmPortfolio();
     await AtlasActiveContext.instance.restore();
@@ -82,8 +79,7 @@ class AtlasSessionController extends ChangeNotifier {
         _findFarm(savedFarmId) ?? (_farms.isNotEmpty ? _farms.first : null);
     _offlineMode = false;
     _error = null;
-    _setStatus(AtlasSessionStatus.authenticated);
-    unawaited(_refreshContextAfterStartup());
+    _setStatus(AtlasSessionStatus.unauthenticated);
   }
 
   Future<void> _refreshContextAfterStartup() async {
