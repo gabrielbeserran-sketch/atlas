@@ -37,4 +37,33 @@ void main() {
       expect(fromFarmB, isEmpty);
     },
   );
+
+  test('exclui somente a cotação selecionada da fazenda', () async {
+    final storage = FarmQuoteRequestStorageService();
+    const first = FarmQuoteRequest(
+      id: 'quote-1',
+      title: 'Sal mineral',
+      itemsDescription: '10 sacos',
+      suppliers: [],
+      createdAt: '2026-09-11T10:00:00.000',
+    );
+    const second = FarmQuoteRequest(
+      id: 'quote-2',
+      title: 'Vacina',
+      itemsDescription: '20 doses',
+      suppliers: [],
+      createdAt: '2026-09-11T10:00:00.000',
+    );
+
+    await storage.save('fazenda-a', const [first, second]);
+    await storage.save('fazenda-b', const [second]);
+    await storage.delete('fazenda-a', first.id);
+
+    expect((await storage.load('fazenda-a')).map((request) => request.id), [
+      second.id,
+    ]);
+    expect((await storage.load('fazenda-b')).map((request) => request.id), [
+      second.id,
+    ]);
+  });
 }

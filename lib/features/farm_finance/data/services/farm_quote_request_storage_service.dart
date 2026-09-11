@@ -33,4 +33,12 @@ class FarmQuoteRequestStorageService {
       jsonEncode(requests.map((request) => request.toMap()).toList()),
     );
   }
+
+  Future<void> delete(String farmId, String requestId) async {
+    final current = await load(farmId);
+    final updated = current
+        .where((request) => request.id != requestId)
+        .toList(growable: false);
+    await save(farmId, updated);
+  }
 }
