@@ -102,6 +102,22 @@ void main() {
     expect(result.warnings, isEmpty);
     expect(result.proposals.single.supplierName, 'AGRO DF');
   });
+
+  test('aceita data abreviada no retorno preenchido pelo fornecedor', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbook(
+        supplier: 'AGRO DF',
+        templateHintBeforeSupplier: true,
+        templateHintBeforeDate: true,
+        dateText: '10/set',
+      ),
+      request: request,
+      importedAt: DateTime(2026, 9, 11),
+    );
+
+    expect(result.warnings, isEmpty);
+    expect(result.proposals.single.receivedAt, startsWith('2026-09-10'));
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -133,6 +149,8 @@ List<int> _structuredReturnsWorkbook({
   String supplier = 'Fornecedor C',
   int labelColumn = 0,
   bool templateHintBeforeSupplier = false,
+  bool templateHintBeforeDate = false,
+  String dateText = '05/09/2026',
 }) {
   final workbook = Excel.createExcel();
   final defaultSheet = workbook.getDefaultSheet();
@@ -154,10 +172,16 @@ List<int> _structuredReturnsWorkbook({
             TextCellValue(supplier),
           ],
   );
-  sheet.appendRow([
-    TextCellValue('Data da proposta'),
-    TextCellValue('05/09/2026'),
-  ]);
+  sheet.appendRow(
+    templateHintBeforeDate
+        ? [
+            TextCellValue('Data da proposta'),
+            TextCellValue('Preencher no retorno'),
+            TextCellValue(''),
+            TextCellValue(dateText),
+          ]
+        : [TextCellValue('Data da proposta'), TextCellValue(dateText)],
+  );
   sheet.appendRow([
     TextCellValue('Prazo / condições'),
     TextCellValue('Frete incluso'),

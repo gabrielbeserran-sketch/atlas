@@ -70,7 +70,7 @@ class FarmQuoteReturnImportService {
         break;
       }
       known.add(normalized);
-      final receivedAt = _parseDate(dateText);
+      final receivedAt = _parseDate(dateText, fallbackYear: importedAt.year);
       if (dateText.isNotEmpty && receivedAt == null) {
         warnings.add(
           'A data de $supplier foi substituída pela data da importação.',
@@ -162,7 +162,7 @@ class FarmQuoteReturnImportService {
       );
     }
     final dateText = _findLabeledText(sheet, 'Data da proposta').trim();
-    final receivedAt = _parseDate(dateText);
+    final receivedAt = _parseDate(dateText, fallbackYear: importedAt.year);
     if (dateText.isNotEmpty && receivedAt == null) {
       warnings.add(
         'A data de $supplier foi substituída pela data da importação.',
@@ -203,12 +203,13 @@ class FarmQuoteReturnImportService {
     for (var row = 0; row < sheet.maxRows; row++) {
       for (var column = 0; column < sheet.maxColumns; column++) {
         if (_cellText(sheet, row, column).trim() == label) {
-          for (var valueColumn = column + 1;
-              valueColumn < sheet.maxColumns;
-              valueColumn++) {
+          for (
+            var valueColumn = column + 1;
+            valueColumn < sheet.maxColumns;
+            valueColumn++
+          ) {
             final value = _cellText(sheet, row, valueColumn).trim();
-            if (value.isEmpty ||
-                value.toLowerCase().startsWith('preencher')) {
+            if (value.isEmpty || value.toLowerCase().startsWith('preencher')) {
               continue;
             }
             return value;
@@ -260,14 +261,58 @@ class FarmQuoteReturnImportService {
     );
   }
 
-  DateTime? _parseDate(String value) {
-    final iso = DateTime.tryParse(value);
+  DateTime? _parseDate(String value, {int? fallbackYear}) {
+    final normalizedValue = value.trim().toLowerCase();
+    final iso = DateTime.tryParse(normalizedValue);
     if (iso != null) return iso;
-    final parts = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(value);
-    if (parts == null) return null;
-    final day = int.tryParse(parts.group(1)!);
-    final month = int.tryParse(parts.group(2)!);
-    final year = int.tryParse(parts.group(3)!);
+    final parts = RegExp(
+      r'^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$',
+    ).firstMatch(normalizedValue);
+    if (parts != null) {
+      return _validDate(
+        int.tryParse(parts.group(3)!),
+        int.tryParse(parts.group(2)!),
+        int.tryParse(parts.group(1)!),
+      );
+    }
+    final shortMonth = RegExp(
+      r'^(\d{1,2})\s*[/ -]\s*([a-zç]+)$',
+    ).firstMatch(normalizedValue);
+    if (shortMonth == null || fallbackYear == null) return null;
+    const months = {
+      'jan': 1,
+      'janeiro': 1,
+      'fev': 2,
+      'fevereiro': 2,
+      'mar': 3,
+      'março': 3,
+      'abr': 4,
+      'abril': 4,
+      'mai': 5,
+      'maio': 5,
+      'jun': 6,
+      'junho': 6,
+      'jul': 7,
+      'julho': 7,
+      'ago': 8,
+      'agosto': 8,
+      'set': 9,
+      'setembro': 9,
+      'out': 10,
+      'outubro': 10,
+      'nov': 11,
+      'novembro': 11,
+      'dez': 12,
+      'dezembro': 12,
+    };
+    return _validDate(
+      fallbackYear,
+      months[shortMonth.group(2)!],
+      int.tryParse(shortMonth.group(1)!),
+    );
+  }
+
+  DateTime? _validDate(int? year, int? month, int? day) {
     if (day == null || month == null || year == null) return null;
     final parsed = DateTime(year, month, day);
     return parsed.day == day && parsed.month == month && parsed.year == year
