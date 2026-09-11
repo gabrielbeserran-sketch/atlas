@@ -14,11 +14,15 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({
     this.onAuthenticated,
     this.autoRestoreSession = true,
+    this.canContinueOffline = false,
+    this.onContinueOffline,
     super.key,
   });
 
   final Future<void> Function(AtlasRemoteSession session)? onAuthenticated;
   final bool autoRestoreSession;
+  final bool canContinueOffline;
+  final Future<void> Function()? onContinueOffline;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -246,6 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
+                                canContinueOffline: widget.canContinueOffline,
+                                onContinueOffline: widget.onContinueOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -269,6 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
+                                canContinueOffline: widget.canContinueOffline,
+                                onContinueOffline: widget.onContinueOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -405,6 +413,8 @@ class _AtlasLoginForm extends StatelessWidget {
     required this.onTogglePassword,
     required this.onLogin,
     required this.onRetryBackend,
+    required this.canContinueOffline,
+    required this.onContinueOffline,
     required this.onForgotPassword,
     required this.onRegister,
   });
@@ -417,6 +427,8 @@ class _AtlasLoginForm extends StatelessWidget {
   final VoidCallback onTogglePassword;
   final VoidCallback onLogin;
   final VoidCallback onRetryBackend;
+  final bool canContinueOffline;
+  final Future<void> Function()? onContinueOffline;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -498,6 +510,20 @@ class _AtlasLoginForm extends StatelessWidget {
             busy: isLoading,
             expand: true,
           ),
+          if (canContinueOffline) ...[
+            const SizedBox(height: AtlasSpacing.sm),
+            AtlasButton(
+              label: 'Continuar com dados salvos',
+              icon: Icons.cloud_off_outlined,
+              onPressed: isLoading
+                  ? null
+                  : () async => onContinueOffline == null
+                        ? null
+                        : await onContinueOffline!(),
+              variant: AtlasButtonVariant.secondary,
+              expand: true,
+            ),
+          ],
           const SizedBox(height: AtlasSpacing.sm),
           AtlasButton(
             label: 'Criar uma conta',
