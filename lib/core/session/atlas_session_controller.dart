@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
@@ -67,30 +69,35 @@ class AtlasSessionController extends ChangeNotifier {
       return;
     }
 
+    // A abertura não depende da rede: usa imediatamente a sessão protegida e
+    // o contexto salvo. A atualização remota acontece depois, sem bloquear a
+    // interface nem transformar uma demora do servidor em falha de login.
+    _session = stored;
+    _farms = await _store.loadFarmPortfolio();
+    await AtlasActiveContext.instance.restore();
+    final savedFarmId = await _store.loadActiveFarm();
+    _activeFarm =
+        _findFarm(savedFarmId) ?? (_farms.isNotEmpty ? _farms.first : null);
+    _offlineMode = false;
+    _error = null;
+    _setStatus(AtlasSessionStatus.authenticated);
+    unawaited(_refreshContextAfterStartup());
+  }
+
+  Future<void> _refreshContextAfterStartup() async {
     try {
-      // A sessão persistida não pode impedir a abertura do Atlas. O cliente
-      // HTTP ainda pode aplicar retries em operações remotas; para o
-      // bootstrap, porém, preferimos voltar ao login de forma previsível a
-      // manter o usuário preso em uma tela de inicialização.
       final restored = await _api.me().timeout(_sessionValidationTimeout);
-      await acceptSession(restored);
-    } catch (_) {
-      final cachedFarms = await _store.loadFarmPortfolio();
-      if (cachedFarms.isEmpty) {
-        _error =
-            'Sem conexão e sem dados locais suficientes para abrir o Atlas.';
-        _setStatus(AtlasSessionStatus.failure);
-        return;
-      }
-      _session = stored;
-      _farms = cachedFarms;
-      _offlineMode = true;
-      await AtlasActiveContext.instance.restore();
-      final savedFarmId = await _store.loadActiveFarm();
-      _activeFarm = _findFarm(savedFarmId) ?? _farms.first;
-      await AtlasActiveContext.instance.selectFarm(_activeFarm!.id);
+      _session = restored;
+      await _store.saveSession(restored);
+      await _reloadFarmPortfolio();
+      _offlineMode = false;
       _error = null;
-      _setStatus(AtlasSessionStatus.authenticated);
+      notifyListeners();
+    } catch (_) {
+      // Dados locais continuam disponíveis. O aviso visual é discreto e não
+      // troca de tela nem bloqueia ações locais.
+      _offlineMode = true;
+      notifyListeners();
     }
   }
 

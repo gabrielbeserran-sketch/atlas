@@ -18,17 +18,15 @@ void main() {
     );
   });
 
-  test('preserva a sessão e usa a carteira local quando não há conexão', () {
+  test('abre a sessão local antes de validar a conexão em segundo plano', () {
     final controller = read('lib/core/session/atlas_session_controller.dart');
     final store = read(
       'lib/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart',
     );
 
-    expect(
-      controller,
-      contains('final cachedFarms = await _store.loadFarmPortfolio();'),
-    );
+    expect(controller, contains('_farms = await _store.loadFarmPortfolio();'));
     expect(controller, contains('_session = stored;'));
+    expect(controller, contains('unawaited(_refreshContextAfterStartup());'));
     expect(controller, contains('_offlineMode = true;'));
     expect(controller, isNot(contains('await _store.clearSession();')));
     expect(store, contains('saveFarmPortfolio'));

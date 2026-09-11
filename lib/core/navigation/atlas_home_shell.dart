@@ -179,6 +179,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
   Widget build(BuildContext context) {
     final controller = AtlasSessionScope.of(context);
     final session = controller.session!;
+    final activeFarm = controller.activeFarm;
     final visibleRoutes = routes
         .where(
           (route) =>
@@ -212,7 +213,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   routes: visibleRoutes,
                   selectedIndex: selectedIndex,
                   userName: userName,
-                  farmName: controller.activeFarm?.name,
+                  farmName: activeFarm?.name,
                   onSelected: (index) =>
                       _handleRouteSelection(visibleRoutes, index),
                   onLogout: controller.logout,
@@ -222,7 +223,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                     children: [
                       _AtlasTopBar(
                         title: selected.visibleLabel,
-                        farmName: controller.activeFarm?.name,
+                        farmName: activeFarm?.name,
                         userName: userName,
                         onSelectFarm: controller.farms.isEmpty
                             ? null
@@ -230,12 +231,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                         onLogout: controller.logout,
                       ),
                       if (controller.offlineMode) const _OfflineModeBanner(),
-                      Expanded(
-                        child: _selectedBody(
-                          selected,
-                          controller.activeFarm?.id,
-                        ),
-                      ),
+                      Expanded(child: _selectedBody(selected, activeFarm?.id)),
                     ],
                   ),
                 ),
@@ -256,9 +252,9 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                   selected.visibleLabel,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                if (controller.activeFarm != null)
+                if (activeFarm != null)
                   Text(
-                    controller.activeFarm!.name,
+                    activeFarm.name,
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -281,7 +277,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
               routes: visibleRoutes,
               selectedIndex: selectedIndex,
               userName: userName,
-              farmName: controller.activeFarm?.name,
+              farmName: activeFarm?.name,
               compact: true,
               onSelected: (index) {
                 Navigator.pop(context);
@@ -296,9 +292,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           body: Column(
             children: [
               if (controller.offlineMode) const _OfflineModeBanner(),
-              Expanded(
-                child: _selectedBody(selected, controller.activeFarm?.id),
-              ),
+              Expanded(child: _selectedBody(selected, activeFarm?.id)),
             ],
           ),
         );
