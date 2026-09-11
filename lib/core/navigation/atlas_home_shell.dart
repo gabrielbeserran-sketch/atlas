@@ -4,6 +4,7 @@ import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 import 'package:projeto_atlas/core/offline/presentation/atlas_offline_center_screen.dart';
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
+import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:projeto_atlas/features/dr_beserra/presentation/screens/dr_beserra_screen.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart';
@@ -229,6 +230,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                             ? null
                             : () => _selectFarm(context),
                         onLogout: controller.logout,
+                        onConfigureOfflinePin: _configureOfflinePin,
                       ),
                       if (controller.offlineMode)
                         _OfflineModeBanner(
@@ -463,6 +465,38 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       return;
     }
     _handleRouteSelection(visibleRoutes, index);
+  }
+
+  Future<void> _configureOfflinePin() async {
+    final pin = TextEditingController();
+    final confirm = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Configurar PIN offline'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Crie um PIN de 6 dígitos para liberar o Atlas sem internet neste dispositivo.'),
+            const SizedBox(height: 16),
+            TextField(controller: pin, keyboardType: TextInputType.number, obscureText: true, maxLength: 6, decoration: const InputDecoration(labelText: 'PIN')), 
+            TextField(controller: confirm, keyboardType: TextInputType.number, obscureText: true, maxLength: 6, decoration: const InputDecoration(labelText: 'Confirmar PIN')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, pin.text == confirm.text ? pin.text : ''), child: const Text('Salvar')),
+        ],
+      ),
+    );
+    pin.dispose(); confirm.dispose();
+    if (result == null || result.isEmpty || !mounted) return;
+    try {
+      await AtlasOfflinePinService.instance.save(result);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN offline configurado.')));
+    } on ArgumentError {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Use e confirme um PIN numérico de 6 dígitos.')));
+    }
   }
 
   Future<void> _selectFarm(BuildContext context) async {
@@ -829,6 +863,7 @@ class _AtlasTopBar extends StatelessWidget {
     required this.title,
     required this.userName,
     required this.onLogout,
+    required this.onConfigureOfflinePin,
     this.farmName,
     this.onSelectFarm,
   });
@@ -837,6 +872,7 @@ class _AtlasTopBar extends StatelessWidget {
   final String? farmName;
   final VoidCallback? onSelectFarm;
   final Future<void> Function() onLogout;
+  final Future<void> Function() onConfigureOfflinePin;
 
   @override
   Widget build(BuildContext context) {
@@ -881,10 +917,12 @@ class _AtlasTopBar extends StatelessWidget {
             tooltip: userName,
             onSelected: (value) async {
               if (value == 'logout') await onLogout();
+              if (value == 'offlinePin') await onConfigureOfflinePin();
             },
             itemBuilder: (_) => [
               PopupMenuItem(enabled: false, child: Text(userName)),
               const PopupMenuDivider(),
+              const PopupMenuItem(value: 'offlinePin', child: Text('Configurar PIN offline')),
               const PopupMenuItem(value: 'logout', child: Text('Sair')),
             ],
           ),
