@@ -460,6 +460,10 @@ class _AtlasLoginForm extends StatelessWidget {
             ),
             const SizedBox(height: AtlasSpacing.md),
           ],
+          if (canContinueOffline) ...[
+            const _SavedContextBanner(),
+            const SizedBox(height: AtlasSpacing.md),
+          ],
           TextField(
             controller: emailController,
             enabled: !isLoading,
@@ -557,6 +561,33 @@ class _AtlasLoginForm extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SavedContextBanner extends StatelessWidget {
+  const _SavedContextBanner();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFEAF3EC),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0xFF8CB79B)),
+    ),
+    child: const Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.cloud_done_outlined, color: Color(0xFF164C30)),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Dados salvos disponíveis neste dispositivo. Você pode continuar sem internet e sincronizar quando a conexão voltar.',
+            style: TextStyle(color: Color(0xFF164C30), height: 1.35),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _BackendConnectionBanner extends StatelessWidget {
