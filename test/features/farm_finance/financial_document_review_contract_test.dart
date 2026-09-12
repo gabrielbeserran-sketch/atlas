@@ -45,6 +45,7 @@ void main() {
     expect(financeList, contains('_confirmOcr'));
     expect(financeList, contains('_ocrFailureMessage'));
     expect(financeList, contains('ainda não foi configurada no servidor'));
+    expect(financeList, contains('A foto poderá ser anexada após conectar.'));
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));

@@ -202,6 +202,12 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
             farmId: farmId,
             record: newRecord,
           );
+    final isPendingOffline =
+        farmId.isNotEmpty &&
+        await storage.isPendingOffline(
+          farmName: widget.farm.name,
+          recordId: savedRecord.id,
+        );
 
     if (!mounted) {
       return;
@@ -230,17 +236,23 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          documentPhotoPath == null
-              ? 'Lançamento salvo com sucesso.'
-              : 'Lançamento salvo. Confirme o anexo da foto para concluir.',
+          isPendingOffline
+              ? (documentPhotoPath == null
+                    ? 'Lançamento salvo neste dispositivo e aguardando conexão.'
+                    : 'Lançamento salvo neste dispositivo. A foto poderá ser anexada após conectar.')
+              : (documentPhotoPath == null
+                    ? 'Lançamento salvo com sucesso.'
+                    : 'Lançamento salvo. Confirme o anexo da foto para concluir.'),
         ),
-        action: SnackBarAction(
-          label: 'ANEXAR NOTA',
-          onPressed: () => openDocuments(
-            savedRecord,
-            capturedDocumentPath: documentPhotoPath,
-          ),
-        ),
+        action: documentPhotoPath != null && !isPendingOffline
+            ? SnackBarAction(
+                label: 'ANEXAR NOTA',
+                onPressed: () => openDocuments(
+                  savedRecord,
+                  capturedDocumentPath: documentPhotoPath,
+                ),
+              )
+            : null,
       ),
     );
   }

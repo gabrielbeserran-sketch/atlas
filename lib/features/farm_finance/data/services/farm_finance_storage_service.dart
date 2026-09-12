@@ -18,6 +18,9 @@ class FarmFinanceStorageService {
   String _createStorageKey(String farmName) =>
       'atlas_farm_finance_${_normalize(farmName)}';
 
+  String _createPendingStorageKey(String farmName) =>
+      '${_createStorageKey(farmName)}_pending_sync';
+
   Future<List<FarmFinanceData>> loadRecords(
     String farmName, {
     String farmId = '',
@@ -28,20 +31,75 @@ class FarmFinanceStorageService {
         : await _resolveFarmId(farmName);
     if (resolvedFarmId.isNotEmpty) {
       try {
-        final records = await _loadRemoteRecords(
+        var records = await _loadRemoteRecords(
           farmId: resolvedFarmId,
           farmName: farmName,
         );
+        final pending = await _loadPending(farmName);
+        if (pending.isNotEmpty) {
+          final remaining = <FarmFinanceData>[];
+          for (final record in pending) {
+            try {
+              final synced = await _createRemoteRecord(
+                farmName: farmName,
+                farmId: resolvedFarmId,
+                record: record,
+              );
+              records = [
+                synced,
+                ...records.where((item) => item.id != synced.id),
+              ];
+            } on AtlasHttpException catch (error) {
+              if (!_isTransient(error)) rethrow;
+              remaining.add(record);
+            }
+          }
+          await _savePending(farmName, remaining);
+          records = _mergeLocalAndPending(records, remaining);
+        }
         await _saveLocal(storageKey, records);
         return records;
       } catch (_) {
         // Cache local é apenas contingência offline.
       }
     }
-    return _loadLocal(storageKey);
+    return _mergeLocalAndPending(
+      await _loadLocal(storageKey),
+      await _loadPending(farmName),
+    );
   }
 
   Future<FarmFinanceData> createRecord({
+    required String farmName,
+    required String farmId,
+    required FarmFinanceData record,
+    String referenceType = '',
+    String referenceId = '',
+  }) async {
+    try {
+      final verified = await _createRemoteRecord(
+        farmName: farmName,
+        farmId: farmId,
+        record: record,
+        referenceType: referenceType,
+        referenceId: referenceId,
+      );
+      await _upsertLocal(farmName, verified);
+      return verified;
+    } on AtlasHttpException catch (error) {
+      if (!_isTransient(error)) rethrow;
+      await _queuePending(farmName, record);
+      await _upsertLocal(farmName, record);
+      return record;
+    }
+  }
+
+  Future<bool> isPendingOffline({
+    required String farmName,
+    required String recordId,
+  }) async => (await _loadPending(farmName)).any((item) => item.id == recordId);
+
+  Future<FarmFinanceData> _createRemoteRecord({
     required String farmName,
     required String farmId,
     required FarmFinanceData record,
@@ -57,20 +115,23 @@ class FarmFinanceStorageService {
         farmId,
         lotId: refs.lotId,
         animalId: refs.animalId,
-        referenceType: referenceType,
-        referenceId: referenceId,
+        referenceType: referenceType.isEmpty
+            ? 'offline_finance'
+            : referenceType,
+        referenceId: referenceId.isEmpty ? record.id : referenceId,
       ),
     );
     final immediate = _fromApi(response.asMap(), fallback: record);
-    final verified = await _verifyRecord(
+    return _verifyRecord(
       farmId: farmId,
       farmName: farmName,
       entryId: immediate.id,
       fallback: record,
     );
-    await _upsertLocal(farmName, verified);
-    return verified;
   }
+
+  bool _isTransient(AtlasHttpException error) =>
+      error.statusCode == null || error.statusCode! >= 500;
 
   Future<FarmFinanceData> updateRecord({
     required String farmName,
@@ -179,7 +240,8 @@ class FarmFinanceStorageService {
       return [];
     }
     try {
-      final decodedData = AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
+      final decodedData =
+          AtlasTextNormalizer.normalize(jsonDecode(savedData)) as List<dynamic>;
       return decodedData
           .map(
             (item) =>
@@ -208,6 +270,52 @@ class FarmFinanceStorageService {
     }
     await _saveLocal(key, records);
   }
+
+  Future<List<FarmFinanceData>> _loadPending(String farmName) async {
+    final savedData = await _preferences.getString(
+      _createPendingStorageKey(farmName),
+    );
+    if (savedData == null || savedData.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(savedData) as List<dynamic>;
+      return decoded
+          .map(
+            (item) =>
+                FarmFinanceData.fromMap(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> _savePending(String farmName, List<FarmFinanceData> records) =>
+      _preferences.setString(
+        _createPendingStorageKey(farmName),
+        jsonEncode(records.map((record) => record.toMap()).toList()),
+      );
+
+  Future<void> _queuePending(String farmName, FarmFinanceData record) async {
+    final pending = await _loadPending(farmName);
+    final index = pending.indexWhere((item) => item.id == record.id);
+    if (index < 0) {
+      pending.add(record);
+    } else {
+      pending[index] = record;
+    }
+    await _savePending(farmName, pending);
+  }
+
+  List<FarmFinanceData> _mergeLocalAndPending(
+    List<FarmFinanceData> records,
+    List<FarmFinanceData> pending,
+  ) => [
+    ...pending,
+    ...records.where(
+      (record) =>
+          !pending.any((pendingRecord) => pendingRecord.id == record.id),
+    ),
+  ];
 
   Future<String> _resolveFarmId(String farmName) async {
     try {
