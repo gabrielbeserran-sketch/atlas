@@ -4,9 +4,15 @@ import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 
 class FarmFinanceFormScreen extends StatefulWidget {
-  const FarmFinanceFormScreen({this.record, this.documentPhotoPath, super.key});
+  const FarmFinanceFormScreen({
+    this.record,
+    this.documentPhotoPath,
+    this.ocrSuggestion = const {},
+    super.key,
+  });
   final FarmFinanceData? record;
   final String? documentPhotoPath;
+  final Map<String, dynamic> ocrSuggestion;
 
   @override
   State<FarmFinanceFormScreen> createState() => _FarmFinanceFormScreenState();
@@ -90,8 +96,27 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
       paymentDateController.text = formatDate(now);
       competenceController.text =
           '${now.month.toString().padLeft(2, '0')}/${now.year}';
+      _applyOcrSuggestion();
     }
   }
+
+  void _applyOcrSuggestion() {
+    final suggestion = widget.ocrSuggestion;
+    if (suggestion.isEmpty) return;
+    counterpartyController.text = _valueOf(suggestion['supplier']);
+    documentController.text = _valueOf(suggestion['document_number']);
+    amountController.text = _valueOf(suggestion['total_amount']);
+    final type = _valueOf(suggestion['type']);
+    if (type == 'Receita' || type == 'Despesa') selectedType = type;
+    final category = _valueOf(suggestion['category']);
+    if (availableCategories.contains(category)) selectedCategory = category;
+    if (counterpartyController.text.isNotEmpty) {
+      descriptionController.text =
+          'Documento de ${counterpartyController.text}';
+    }
+  }
+
+  String _valueOf(Object? value) => value?.toString().trim() ?? '';
 
   @override
   void dispose() {
@@ -249,11 +274,17 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                     if (widget.documentPhotoPath != null) ...[
                       Card(
                         color: Theme.of(context).colorScheme.primaryContainer,
-                        child: const ListTile(
+                        child: ListTile(
                           leading: Icon(Icons.receipt_long_outlined),
-                          title: Text('Nota fotografada para este lançamento'),
+                          title: Text(
+                            widget.ocrSuggestion.isEmpty
+                                ? 'Nota fotografada para este lançamento'
+                                : 'Sugestões da nota prontas para revisão',
+                          ),
                           subtitle: Text(
-                            'Preencha ou confira os dados abaixo. A foto será anexada quando você salvar.',
+                            widget.ocrSuggestion.isEmpty
+                                ? 'Preencha ou confira os dados abaixo. A foto será anexada quando você salvar.'
+                                : 'Confira os campos preenchidos pela IA. A foto será anexada quando você salvar.',
                           ),
                         ),
                       ),

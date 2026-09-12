@@ -104,6 +104,10 @@ class Settings(BaseSettings):
     atlas_whatsapp_webhook_verify_token: str = ""
     atlas_whatsapp_app_secret: str = ""
 
+    atlas_financial_ocr_enabled: bool = False
+    openai_api_key: str = ""
+    atlas_financial_ocr_model: str = "gpt-5"
+
     # Forwarded headers are untrusted by default. They are only honored when
     # the direct peer belongs to one of the explicitly configured proxy CIDRs.
     atlas_trust_proxy_headers: bool = False

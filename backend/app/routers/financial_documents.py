@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.authz import Principal, require_farm_scope, require_permission
+from app.config import get_settings
 from app.database import get_db
 from app.models import FinancialDocument, FinancialEntry, new_id
 from app.services.animal_media_storage import (
@@ -20,6 +21,7 @@ from app.services.animal_media_storage import (
     storage_path,
 )
 from app.services.audit import record_audit
+from app.services.financial_document_ocr import OcrFailed, OcrUnavailable, suggest
 
 router = APIRouter(prefix="/financial-documents", tags=["financial-documents"])
 
@@ -90,6 +92,37 @@ async def upload_document(entry_id: str, file: UploadFile = File(...), db: Sessi
         description="Documento financeiro anexado.", after={"entry_id": entry.id, "sha256": digest, "size_bytes": size_bytes})
     db.commit(); db.refresh(item)
     return _payload(item)
+
+@router.post("/ocr-preview")
+async def ocr_preview(
+    farm_id: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_permission("finance.write")),
+):
+    require_farm_scope(principal, farm_id)
+    content = await file.read()
+    if not content or len(content) > get_settings().atlas_attachment_max_mb * 1024 * 1024:
+        raise HTTPException(status_code=422, detail="Imagem inválida ou maior que o limite.")
+    try:
+        data = await suggest(content, file.content_type or "image/jpeg")
+    except OcrUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except OcrFailed as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    record_audit(
+        db,
+        principal=principal,
+        action="financial_document_ocr_previewed",
+        module="finance",
+        entity_type="financial_document_preview",
+        entity_id="preview",
+        farm_id=farm_id,
+        description="Sugestão OCR gerada para revisão.",
+        after={"fields": sorted(data.keys())},
+    )
+    db.commit()
+    return {"suggested_data": data, "requires_review": True}
 
 
 @router.patch("/{document_id}/review")

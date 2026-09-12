@@ -19,6 +19,9 @@ void main() {
       'lib/features/farm_finance/presentation/screens/farm_finance_form_screen.dart',
     );
     final manifest = read('android/app/src/main/AndroidManifest.xml');
+    final backendRouter = read('backend/app/routers/financial_documents.py');
+    final backendOcr = read('backend/app/services/financial_document_ocr.py');
+    final backendConfig = read('backend/app/config.py');
 
     expect(screen, contains('Conferir dados do documento'));
     expect(screen, contains('Fornecedor / emissor'));
@@ -35,9 +38,20 @@ void main() {
     expect(financeList, contains('Lançar por foto'));
     expect(financeList, contains('ImageSource.camera'));
     expect(financeList, contains('capturedDocumentPath: documentPhotoPath'));
+    expect(financeList, contains('Ler nota com IA'));
+    expect(financeList, contains('_confirmOcr'));
+    expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
+    expect(financeForm, contains('Sugestões da nota prontas para revisão'));
     expect(screen, contains('Foto capturada pronta para anexar'));
     expect(screen, contains('Anexar foto'));
     expect(manifest, contains('android.permission.CAMERA'));
+    expect(backendRouter, contains('@router.post("/ocr-preview")'));
+    expect(backendRouter, contains('"requires_review": True'));
+    expect(backendOcr, contains('"store": False'));
+    expect(
+      backendConfig,
+      contains('atlas_financial_ocr_enabled: bool = False'),
+    );
   });
 }

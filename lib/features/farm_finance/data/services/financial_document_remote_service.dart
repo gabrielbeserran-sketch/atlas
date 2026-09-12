@@ -19,6 +19,16 @@ class FinancialDocumentRemoteService {
     filePath: filePath,
   );
 
+  Future<Map<String, dynamic>> previewOcr({
+    required String farmId,
+    required String filePath,
+  }) => _api.uploadFile(
+    'POST',
+    '/financial-documents/ocr-preview',
+    filePath: filePath,
+    fields: {'farm_id': farmId},
+  );
+
   Future<Map<String, dynamic>> review({
     required String documentId,
     required String status,

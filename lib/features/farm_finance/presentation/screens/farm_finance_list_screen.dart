@@ -7,6 +7,7 @@ import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
+import 'package:projeto_atlas/features/farm_finance/data/services/financial_document_remote_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance_event_service.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
@@ -34,6 +35,8 @@ class FarmFinanceListScreen extends StatefulWidget {
 class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final FarmFinanceStorageService storage = FarmFinanceStorageService();
   final ImagePicker imagePicker = ImagePicker();
+  final FinancialDocumentRemoteService documentService =
+      FinancialDocumentRemoteService();
 
   final FarmFinanceEventService eventService = const FarmFinanceEventService();
 
@@ -170,12 +173,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     );
   }
 
-  Future<void> openFinanceForm({String? documentPhotoPath}) async {
+  Future<void> openFinanceForm({
+    String? documentPhotoPath,
+    Map<String, dynamic> ocrSuggestion = const {},
+  }) async {
     final newRecord = await Navigator.push<FarmFinanceData>(
       context,
       MaterialPageRoute<FarmFinanceData>(
         builder: (context) {
-          return FarmFinanceFormScreen(documentPhotoPath: documentPhotoPath);
+          return FarmFinanceFormScreen(
+            documentPhotoPath: documentPhotoPath,
+            ocrSuggestion: ocrSuggestion,
+          );
         },
       ),
     );
@@ -281,7 +290,37 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         maxHeight: 2400,
       );
       if (photo == null || !mounted) return;
-      await openFinanceForm(documentPhotoPath: photo.path);
+      final readWithAi = await _confirmOcr(photo.name);
+      if (!mounted) return;
+      Map<String, dynamic> suggestion = const {};
+      final farmId = widget.farm.id ?? '';
+      if (readWithAi && farmId.isNotEmpty) {
+        try {
+          final response = await documentService.previewOcr(
+            farmId: farmId,
+            filePath: photo.path,
+          );
+          final data = response['suggested_data'];
+          if (data is Map) {
+            suggestion = Map<String, dynamic>.from(data);
+          }
+        } catch (_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Não foi possível ler a nota agora. Você pode preencher manualmente.',
+                ),
+              ),
+            );
+          }
+        }
+      }
+      if (!mounted) return;
+      await openFinanceForm(
+        documentPhotoPath: photo.path,
+        ocrSuggestion: suggestion,
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -292,6 +331,32 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         ),
       );
     }
+  }
+
+  Future<bool> _confirmOcr(String photoName) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Ler nota com IA?'),
+            content: const Text(
+              'A foto será enviada ao serviço de leitura para sugerir os dados do '
+              'lançamento. Nada será salvo automaticamente: você confere e ajusta '
+              'tudo antes de salvar.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Preencher manualmente'),
+              ),
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                icon: const Icon(Icons.auto_awesome_outlined),
+                label: const Text('Ler nota com IA'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   Future<void> openQuotes() async {
