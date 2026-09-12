@@ -105,6 +105,50 @@ class _FinancialDocumentCenterScreenState
     }
   }
 
+  Map<String, dynamic> _extractedData(Map<String, dynamic> item) {
+    final raw = item['extracted_data'];
+    if (raw is! Map) return const {};
+    return raw.map((key, value) => MapEntry(key.toString(), value));
+  }
+
+  String _dataSummary(Map<String, dynamic> item) {
+    final data = _extractedData(item);
+    final values = [
+      data['supplier']?.toString(),
+      data['document_number']?.toString(),
+      data['document_date']?.toString(),
+      data['total_amount']?.toString(),
+    ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
+    return values.isEmpty ? 'Dados ainda não conferidos' : values.join(' • ');
+  }
+
+  Future<void> _captureData(Map<String, dynamic> item) async {
+    final data = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _DocumentDataDialog(initialData: _extractedData(item)),
+    );
+    if (data == null || !mounted) return;
+
+    final currentStatus = item['review_status']?.toString();
+    try {
+      await _service.review(
+        documentId: item['id'].toString(),
+        status:
+            const {'pending', 'reviewed', 'rejected'}.contains(currentStatus)
+            ? currentStatus!
+            : 'pending',
+        extractedData: data,
+        notes: item['review_notes']?.toString() ?? '',
+      );
+      await _load();
+      if (!mounted) return;
+      _showMessage('Dados do documento registrados para conferência.');
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage('Não foi possível registrar os dados do documento.');
+    }
+  }
+
   String _reviewMessage(String status) => switch (status) {
     'reviewed' => 'Documento marcado como revisado.',
     'rejected' => 'Documento marcado para correção.',
@@ -118,7 +162,9 @@ class _FinancialDocumentCenterScreenState
   };
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -128,10 +174,12 @@ class _FinancialDocumentCenterScreenState
       actions: [
         IconButton(
           tooltip: 'Atualizar',
-          onPressed: _loading ? null : () {
-            setState(() => _loading = true);
-            _load();
-          },
+          onPressed: _loading
+              ? null
+              : () {
+                  setState(() => _loading = true);
+                  _load();
+                },
           icon: const Icon(Icons.refresh),
         ),
       ],
@@ -149,7 +197,7 @@ class _FinancialDocumentCenterScreenState
               Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               const Text(
-                'Os arquivos ficam vinculados ao lançamento. A leitura e a aprovação são sempre humanas.',
+                'Os arquivos ficam vinculados ao lançamento. Confira os dados antes de aprovar; a aprovação continua sempre humana.',
               ),
               const SizedBox(height: 16),
               if (_loadError != null)
@@ -162,7 +210,10 @@ class _FinancialDocumentCenterScreenState
                         const Icon(Icons.cloud_off_outlined),
                         const SizedBox(width: 12),
                         Expanded(child: Text(_loadError!)),
-                        TextButton(onPressed: _load, child: const Text('Tentar novamente')),
+                        TextButton(
+                          onPressed: _load,
+                          child: const Text('Tentar novamente'),
+                        ),
                       ],
                     ),
                   ),
@@ -181,7 +232,10 @@ class _FinancialDocumentCenterScreenState
                     title: Text(
                       item['original_filename']?.toString() ?? 'Documento',
                     ),
-                    subtitle: Text('Revisão: ${_reviewLabel(item['review_status'])}'),
+                    subtitle: Text(
+                      'Revisão: ${_reviewLabel(item['review_status'])}\n${_dataSummary(item)}',
+                    ),
+                    isThreeLine: true,
                     trailing: PopupMenuButton<String>(
                       tooltip: 'Ações do documento',
                       onSelected: (value) async {
@@ -189,12 +243,29 @@ class _FinancialDocumentCenterScreenState
                           await _saveCopy(item);
                           return;
                         }
+                        if (value == 'capture') {
+                          await _captureData(item);
+                          return;
+                        }
                         await _review(item, value);
                       },
                       itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'save', child: Text('Salvar cópia')),
-                        PopupMenuItem(value: 'reviewed', child: Text('Marcar como revisado')),
-                        PopupMenuItem(value: 'rejected', child: Text('Marcar para correção')),
+                        PopupMenuItem(
+                          value: 'save',
+                          child: Text('Salvar cópia'),
+                        ),
+                        PopupMenuItem(
+                          value: 'capture',
+                          child: Text('Conferir dados do documento'),
+                        ),
+                        PopupMenuItem(
+                          value: 'reviewed',
+                          child: Text('Marcar como revisado'),
+                        ),
+                        PopupMenuItem(
+                          value: 'rejected',
+                          child: Text('Marcar para correção'),
+                        ),
                       ],
                     ),
                   ),
@@ -213,6 +284,106 @@ class _ReviewDocumentDialog extends StatefulWidget {
 
   @override
   State<_ReviewDocumentDialog> createState() => _ReviewDocumentDialogState();
+}
+
+class _DocumentDataDialog extends StatefulWidget {
+  const _DocumentDataDialog({required this.initialData});
+
+  final Map<String, dynamic> initialData;
+
+  @override
+  State<_DocumentDataDialog> createState() => _DocumentDataDialogState();
+}
+
+class _DocumentDataDialogState extends State<_DocumentDataDialog> {
+  late final TextEditingController _supplier;
+  late final TextEditingController _documentNumber;
+  late final TextEditingController _documentDate;
+  late final TextEditingController _totalAmount;
+
+  @override
+  void initState() {
+    super.initState();
+    _supplier = TextEditingController(
+      text: widget.initialData['supplier']?.toString() ?? '',
+    );
+    _documentNumber = TextEditingController(
+      text: widget.initialData['document_number']?.toString() ?? '',
+    );
+    _documentDate = TextEditingController(
+      text: widget.initialData['document_date']?.toString() ?? '',
+    );
+    _totalAmount = TextEditingController(
+      text: widget.initialData['total_amount']?.toString() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _supplier.dispose();
+    _documentNumber.dispose();
+    _documentDate.dispose();
+    _totalAmount.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> _data() {
+    final values = <String, String>{
+      'supplier': _supplier.text.trim(),
+      'document_number': _documentNumber.text.trim(),
+      'document_date': _documentDate.text.trim(),
+      'total_amount': _totalAmount.text.trim(),
+    };
+    values.removeWhere((_, value) => value.isEmpty);
+    return values;
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Conferir dados do documento'),
+    content: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Registre os dados que você conferiu no arquivo. Eles ficam auditáveis junto ao lançamento.',
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _supplier,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Fornecedor / emissor',
+            ),
+          ),
+          TextField(
+            controller: _documentNumber,
+            decoration: const InputDecoration(labelText: 'Número do documento'),
+          ),
+          TextField(
+            controller: _documentDate,
+            keyboardType: TextInputType.datetime,
+            decoration: const InputDecoration(labelText: 'Data do documento'),
+          ),
+          TextField(
+            controller: _totalAmount,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Valor total'),
+          ),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(context, _data()),
+        child: const Text('Salvar conferência'),
+      ),
+    ],
+  );
 }
 
 class _ReviewDocumentDialogState extends State<_ReviewDocumentDialog> {
@@ -257,7 +428,10 @@ class _ReviewDocumentDialogState extends State<_ReviewDocumentDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
         FilledButton(
           onPressed: () {
             final notes = _notes.text.trim();
