@@ -10,6 +10,7 @@ void main() {
     final offlineCenter = read(
       'lib/core/offline/presentation/atlas_offline_center_screen.dart',
     );
+    final homeShell = read('lib/core/navigation/atlas_home_shell.dart');
 
     expect(settings, contains('Segurança e acesso'));
     expect(settings, isNot(contains('Conexão e sincronização')));
@@ -17,5 +18,8 @@ void main() {
     expect(offlineCenter, contains('Central offline'));
     expect(offlineCenter, contains('Sincronizar agora'));
     expect(offlineCenter, contains('Conflitos pendentes'));
+    expect(homeShell, contains("label: 'Configurações'"));
+    expect(homeShell, isNot(contains('onConfigureOfflinePin')));
+    expect(homeShell, isNot(contains("value: 'offlinePin'")));
   });
 }
