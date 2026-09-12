@@ -37,6 +37,9 @@ void main() {
     expect(financeList, contains("label: 'ANEXAR NOTA'"));
     expect(financeList, contains('Lançar por foto'));
     expect(financeList, contains('ImageSource.camera'));
+    expect(financeList, contains('ImageSource.gallery'));
+    expect(financeList, contains('Importar foto da galeria'));
+    expect(financeList, contains('recebida pelo WhatsApp'));
     expect(financeList, contains('capturedDocumentPath: documentPhotoPath'));
     expect(financeList, contains('Ler nota com IA'));
     expect(financeList, contains('_confirmOcr'));

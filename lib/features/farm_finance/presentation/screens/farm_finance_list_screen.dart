@@ -278,13 +278,43 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       await openFinanceForm();
       return;
     }
-    await _launchPhotoFlow();
+    await _choosePhotoSource();
   }
 
-  Future<void> _launchPhotoFlow() async {
+  Future<void> _choosePhotoSource() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Fotografar agora'),
+              subtitle: const Text('Use a câmera para registrar a nota.'),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Importar foto da galeria'),
+              subtitle: const Text(
+                'Use uma nota recebida pelo WhatsApp ou já salva no dispositivo.',
+              ),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+    if (source != null && mounted) await _launchPhotoFlow(source);
+  }
+
+  Future<void> _launchPhotoFlow(ImageSource source) async {
     try {
       final photo = await imagePicker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 90,
         maxWidth: 2400,
         maxHeight: 2400,
@@ -329,7 +359,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Não foi possível abrir a câmera. Verifique a permissão do dispositivo.',
+            'Não foi possível acessar a foto. Verifique a permissão do dispositivo.',
           ),
         ),
       );
