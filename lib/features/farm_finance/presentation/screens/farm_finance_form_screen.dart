@@ -113,6 +113,15 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
     }
     final category = _valueOf(suggestion['category']);
     if (availableCategories.contains(category)) selectedCategory = category;
+    final documentDate = _parseOcrDate(_valueOf(suggestion['document_date']));
+    if (documentDate != null) {
+      final formatted = formatDate(documentDate);
+      dateController.text = formatted;
+      dueDateController.text = formatted;
+      paymentDateController.text = formatted;
+      competenceController.text =
+          '${documentDate.month.toString().padLeft(2, '0')}/${documentDate.year}';
+    }
     if (counterpartyController.text.isNotEmpty) {
       descriptionController.text =
           'Documento de ${counterpartyController.text}';
@@ -120,6 +129,26 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
   }
 
   String _valueOf(Object? value) => value?.toString().trim() ?? '';
+
+  DateTime? _parseOcrDate(String value) {
+    final normalized = value.trim();
+    final iso = RegExp(
+      r'^(\d{4})[/-](\d{2})[/-](\d{2})$',
+    ).firstMatch(normalized);
+    final brazilian = RegExp(
+      r'^(\d{2})[/-](\d{2})[/-](\d{4})$',
+    ).firstMatch(normalized);
+    final match = iso ?? brazilian;
+    if (match == null) return null;
+    final year = int.tryParse(iso != null ? match.group(1)! : match.group(3)!);
+    final month = int.tryParse(match.group(2)!);
+    final day = int.tryParse(iso != null ? match.group(3)! : match.group(1)!);
+    if (year == null || month == null || day == null) return null;
+    final parsed = DateTime(year, month, day);
+    return parsed.year == year && parsed.month == month && parsed.day == day
+        ? parsed
+        : null;
+  }
 
   int get _ocrConfidence {
     final raw = widget.ocrSuggestion['confidence'];

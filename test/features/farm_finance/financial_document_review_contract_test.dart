@@ -47,6 +47,8 @@ void main() {
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));
     expect(financeForm, contains('Confiança estimada:'));
+    expect(financeForm, contains('_parseOcrDate'));
+    expect(financeForm, contains("suggestion['document_date']"));
     expect(screen, contains('Foto capturada pronta para anexar'));
     expect(screen, contains('Anexar foto'));
     expect(manifest, contains('android.permission.CAMERA'));
