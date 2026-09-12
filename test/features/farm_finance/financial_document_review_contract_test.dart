@@ -43,6 +43,8 @@ void main() {
     expect(financeList, contains('capturedDocumentPath: documentPhotoPath'));
     expect(financeList, contains('Ler nota com IA'));
     expect(financeList, contains('_confirmOcr'));
+    expect(financeList, contains('_ocrFailureMessage'));
+    expect(financeList, contains('ainda não foi configurada no servidor'));
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));

@@ -13,6 +13,7 @@ import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_quote_requests_screen.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/financial_document_center_screen.dart';
+import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class FarmFinanceListScreen extends StatefulWidget {
   const FarmFinanceListScreen({
@@ -335,6 +336,12 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           if (data is Map) {
             suggestion = Map<String, dynamic>.from(data);
           }
+        } on AtlasEnterpriseApiException catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(_ocrFailureMessage(error))));
+          }
         } catch (_) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -364,6 +371,17 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         ),
       );
     }
+  }
+
+  String _ocrFailureMessage(AtlasEnterpriseApiException error) {
+    final message = error.message.trim();
+    if (error.statusCode == 503 &&
+        message.toLowerCase().contains('não está configurado')) {
+      return 'A leitura com IA ainda não foi configurada no servidor. Você pode preencher manualmente.';
+    }
+    return message.isEmpty
+        ? 'Não foi possível ler a nota agora. Você pode preencher manualmente.'
+        : '$message Você pode preencher manualmente.';
   }
 
   Future<bool> _confirmOcr() async {
