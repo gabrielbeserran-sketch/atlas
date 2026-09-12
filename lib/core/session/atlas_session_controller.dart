@@ -36,6 +36,7 @@ class AtlasSessionController extends ChangeNotifier {
   String? _error;
   bool _offlineMode = false;
   bool _refreshingConnection = false;
+  bool _offlinePinConfigured = false;
 
   AtlasSessionStatus get status => _status;
   AtlasRemoteSession? get session => _session;
@@ -44,7 +45,8 @@ class AtlasSessionController extends ChangeNotifier {
   String? get error => _error;
   bool get offlineMode => _offlineMode;
   bool get refreshingConnection => _refreshingConnection;
-  bool get hasOfflineContext => _session != null && _farms.isNotEmpty;
+  bool get hasOfflineContext =>
+      _offlinePinConfigured && _session != null && _farms.isNotEmpty;
 
   bool get isAuthenticated =>
       _status == AtlasSessionStatus.authenticated && _session != null;
@@ -69,6 +71,7 @@ class AtlasSessionController extends ChangeNotifier {
     final stored = await _store.loadSession();
     if (stored == null) {
       _session = null;
+      _offlinePinConfigured = false;
       _setStatus(AtlasSessionStatus.unauthenticated);
       return;
     }
@@ -81,6 +84,7 @@ class AtlasSessionController extends ChangeNotifier {
     final savedFarmId = await _store.loadActiveFarm();
     _activeFarm =
         _findFarm(savedFarmId) ?? (_farms.isNotEmpty ? _farms.first : null);
+    _offlinePinConfigured = await AtlasOfflinePinService.instance.isConfigured;
     _offlineMode = false;
     _error = null;
     _setStatus(AtlasSessionStatus.unauthenticated);
@@ -123,6 +127,13 @@ class AtlasSessionController extends ChangeNotifier {
     _setStatus(AtlasSessionStatus.authenticated);
     unawaited(_refreshContextAfterStartup());
     return true;
+  }
+
+  /// Atualiza a elegibilidade do desbloqueio offline depois que o usuário
+  /// cria ou remove o PIN nas configurações deste dispositivo.
+  Future<void> refreshOfflineAccess() async {
+    _offlinePinConfigured = await AtlasOfflinePinService.instance.isConfigured;
+    notifyListeners();
   }
 
   Future<void> acceptSession(AtlasRemoteSession session) async {
@@ -254,6 +265,7 @@ class AtlasSessionController extends ChangeNotifier {
       _activeFarm = null;
       _error = null;
       _offlineMode = false;
+      _offlinePinConfigured = false;
       _setStatus(AtlasSessionStatus.unauthenticated);
     }
   }

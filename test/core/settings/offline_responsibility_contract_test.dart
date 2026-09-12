@@ -11,6 +11,9 @@ void main() {
       'lib/core/offline/presentation/atlas_offline_center_screen.dart',
     );
     final homeShell = read('lib/core/navigation/atlas_home_shell.dart');
+    final sessionController = read(
+      'lib/core/session/atlas_session_controller.dart',
+    );
 
     expect(settings, contains('Segurança e acesso'));
     expect(settings, isNot(contains('Conexão e sincronização')));
@@ -21,5 +24,7 @@ void main() {
     expect(homeShell, contains("label: 'Configurações'"));
     expect(homeShell, isNot(contains('onConfigureOfflinePin')));
     expect(homeShell, isNot(contains("value: 'offlinePin'")));
+    expect(sessionController, contains('_offlinePinConfigured'));
+    expect(sessionController, contains('refreshOfflineAccess() async'));
   });
 }

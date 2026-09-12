@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
+import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 
 class AtlasSettingsScreen extends StatefulWidget {
   const AtlasSettingsScreen({super.key});
@@ -83,6 +84,8 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
     try {
       await _pin.save(next);
       await _load();
+      if (!mounted) return;
+      await AtlasSessionScope.read(context).refreshOfflineAccess();
     } on ArgumentError {
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,6 +99,8 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
     if (current == null || !await _pin.verify(current)) return;
     await _pin.remove();
     await _load();
+    if (!mounted) return;
+    await AtlasSessionScope.read(context).refreshOfflineAccess();
   }
 
   @override
