@@ -99,6 +99,9 @@ class FarmFinanceStorageService {
     required String recordId,
   }) async => (await _loadPending(farmName)).any((item) => item.id == recordId);
 
+  Future<int> pendingOfflineCount(String farmName) async =>
+      (await _loadPending(farmName)).length;
+
   Future<FarmFinanceData> _createRemoteRecord({
     required String farmName,
     required String farmId,

@@ -42,6 +42,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final FarmFinanceEventService eventService = const FarmFinanceEventService();
 
   List<FarmFinanceData> records = [];
+  int pendingOfflineCount = 0;
 
   bool isLoading = true;
   String? loadError;
@@ -131,6 +132,8 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         records = savedRecords;
         sortRecords();
       });
+      pendingOfflineCount = await storage.pendingOfflineCount(widget.farm.name);
+      if (mounted) setState(() {});
     } catch (error) {
       if (mounted) {
         setState(() => loadError = error.toString());
@@ -613,6 +616,24 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                           busy: isLoading,
                         ),
                         const SizedBox(height: 24),
+                        if (pendingOfflineCount > 0) ...[
+                          Card(
+                            child: ListTile(
+                              leading: const Icon(Icons.cloud_upload_outlined),
+                              title: Text(
+                                '$pendingOfflineCount lançamento(s) aguardando conexão',
+                              ),
+                              subtitle: const Text(
+                                'O Atlas tentará sincronizar ao atualizar o Financeiro.',
+                              ),
+                              trailing: TextButton(
+                                onPressed: loadRecords,
+                                child: const Text('TENTAR'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         Wrap(
                           spacing: 16,
                           runSpacing: 16,
