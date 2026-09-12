@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
+import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/models/atlas_enterprise_remote_session.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
@@ -43,6 +44,7 @@ class AtlasSessionController extends ChangeNotifier {
   String? get error => _error;
   bool get offlineMode => _offlineMode;
   bool get refreshingConnection => _refreshingConnection;
+  bool get hasOfflineContext => _session != null && _farms.isNotEmpty;
 
   bool get isAuthenticated =>
       _status == AtlasSessionStatus.authenticated && _session != null;
@@ -111,6 +113,16 @@ class AtlasSessionController extends ChangeNotifier {
       _refreshingConnection = false;
       notifyListeners();
     }
+  }
+
+  Future<bool> unlockOffline(String pin) async {
+    if (!hasOfflineContext ||
+        !await AtlasOfflinePinService.instance.verify(pin))
+      return false;
+    _offlineMode = true;
+    _setStatus(AtlasSessionStatus.authenticated);
+    unawaited(_refreshContextAfterStartup());
+    return true;
   }
 
   Future<void> acceptSession(AtlasRemoteSession session) async {

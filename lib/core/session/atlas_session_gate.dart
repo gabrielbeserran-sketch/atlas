@@ -144,6 +144,8 @@ class _AtlasSessionGateState extends State<AtlasSessionGate> {
               return LoginScreen(
                 onAuthenticated: controller.acceptSession,
                 autoRestoreSession: false,
+                canUnlockOffline: controller.hasOfflineContext,
+                onUnlockOffline: controller.unlockOffline,
               );
 
             case AtlasSessionStatus.selectingCompany:

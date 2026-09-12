@@ -13,4 +13,7 @@ class AtlasOfflinePinService {
     }
     await _storage.write(key: _key, value: pin);
   }
+
+  Future<bool> verify(String pin) async =>
+      (await _storage.read(key: _key)) == pin;
 }

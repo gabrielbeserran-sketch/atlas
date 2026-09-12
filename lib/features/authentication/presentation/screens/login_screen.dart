@@ -14,11 +14,15 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({
     this.onAuthenticated,
     this.autoRestoreSession = true,
+    this.canUnlockOffline = false,
+    this.onUnlockOffline,
     super.key,
   });
 
   final Future<void> Function(AtlasRemoteSession session)? onAuthenticated;
   final bool autoRestoreSession;
+  final bool canUnlockOffline;
+  final Future<bool> Function(String pin)? onUnlockOffline;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -246,6 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
+                                canUnlockOffline: widget.canUnlockOffline,
+                                onUnlockOffline: widget.onUnlockOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -269,6 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
+                                canUnlockOffline: widget.canUnlockOffline,
+                                onUnlockOffline: widget.onUnlockOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
                               ),
@@ -405,6 +413,8 @@ class _AtlasLoginForm extends StatelessWidget {
     required this.onTogglePassword,
     required this.onLogin,
     required this.onRetryBackend,
+    required this.canUnlockOffline,
+    required this.onUnlockOffline,
     required this.onForgotPassword,
     required this.onRegister,
   });
@@ -417,6 +427,8 @@ class _AtlasLoginForm extends StatelessWidget {
   final VoidCallback onTogglePassword;
   final VoidCallback onLogin;
   final VoidCallback onRetryBackend;
+  final bool canUnlockOffline;
+  final Future<bool> Function(String pin)? onUnlockOffline;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -498,6 +510,46 @@ class _AtlasLoginForm extends StatelessWidget {
             busy: isLoading,
             expand: true,
           ),
+          if (canUnlockOffline) ...[
+            const SizedBox(height: AtlasSpacing.sm),
+            AtlasButton(
+              label: 'Desbloquear dados offline',
+              icon: Icons.pin_outlined,
+              onPressed: () async {
+                final pin = TextEditingController();
+                final value = await showDialog<String>(
+                  context: context,
+                  builder: (d) => AlertDialog(
+                    title: const Text('PIN offline'),
+                    content: TextField(
+                      controller: pin,
+                      obscureText: true,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(d),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(d, pin.text),
+                        child: const Text('Desbloquear'),
+                      ),
+                    ],
+                  ),
+                );
+                pin.dispose();
+                if (value == null || onUnlockOffline == null) return;
+                if (!await onUnlockOffline!(value) && context.mounted)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('PIN inválido.')),
+                  );
+              },
+              variant: AtlasButtonVariant.secondary,
+              expand: true,
+            ),
+          ],
           const SizedBox(height: AtlasSpacing.sm),
           AtlasButton(
             label: 'Criar uma conta',
