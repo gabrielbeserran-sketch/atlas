@@ -5,6 +5,7 @@ import 'package:projeto_atlas/core/offline/presentation/atlas_offline_center_scr
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
+import 'package:projeto_atlas/core/settings/atlas_settings_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:projeto_atlas/features/dr_beserra/presentation/screens/dr_beserra_screen.dart';
 import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/screens/atlas_intelligence_center_screen.dart';
@@ -132,6 +133,13 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       selectedIcon: Icons.cloud_done,
       permission: 'sync.read',
       builder: (_) => const AtlasOfflineCenterScreen(),
+    ),
+    AtlasRouteDefinition(
+      label: 'Configurações',
+      group: AtlasNavigationGroup.support,
+      icon: Icons.settings_outlined,
+      selectedIcon: Icons.settings,
+      builder: (_) => const AtlasSettingsScreen(),
     ),
     AtlasRouteDefinition(
       label: 'Campo',
@@ -477,25 +485,57 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Crie um PIN de 6 dígitos para liberar o Atlas sem internet neste dispositivo.'),
+            const Text(
+              'Crie um PIN de 6 dígitos para liberar o Atlas sem internet neste dispositivo.',
+            ),
             const SizedBox(height: 16),
-            TextField(controller: pin, keyboardType: TextInputType.number, obscureText: true, maxLength: 6, decoration: const InputDecoration(labelText: 'PIN')), 
-            TextField(controller: confirm, keyboardType: TextInputType.number, obscureText: true, maxLength: 6, decoration: const InputDecoration(labelText: 'Confirmar PIN')),
+            TextField(
+              controller: pin,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              maxLength: 6,
+              decoration: const InputDecoration(labelText: 'PIN'),
+            ),
+            TextField(
+              controller: confirm,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              maxLength: 6,
+              decoration: const InputDecoration(labelText: 'Confirmar PIN'),
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(dialogContext, pin.text == confirm.text ? pin.text : ''), child: const Text('Salvar')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(
+              dialogContext,
+              pin.text == confirm.text ? pin.text : '',
+            ),
+            child: const Text('Salvar'),
+          ),
         ],
       ),
     );
-    pin.dispose(); confirm.dispose();
+    pin.dispose();
+    confirm.dispose();
     if (result == null || result.isEmpty || !mounted) return;
     try {
       await AtlasOfflinePinService.instance.save(result);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN offline configurado.')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('PIN offline configurado.')),
+        );
     } on ArgumentError {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Use e confirme um PIN numérico de 6 dígitos.')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Use e confirme um PIN numérico de 6 dígitos.'),
+          ),
+        );
     }
   }
 
@@ -922,7 +962,10 @@ class _AtlasTopBar extends StatelessWidget {
             itemBuilder: (_) => [
               PopupMenuItem(enabled: false, child: Text(userName)),
               const PopupMenuDivider(),
-              const PopupMenuItem(value: 'offlinePin', child: Text('Configurar PIN offline')),
+              const PopupMenuItem(
+                value: 'offlinePin',
+                child: Text('Configurar PIN offline'),
+              ),
               const PopupMenuItem(value: 'logout', child: Text('Sair')),
             ],
           ),

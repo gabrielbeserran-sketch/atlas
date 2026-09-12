@@ -16,4 +16,9 @@ class AtlasOfflinePinService {
 
   Future<bool> verify(String pin) async =>
       (await _storage.read(key: _key)) == pin;
+
+  Future<bool> get isConfigured async =>
+      (await _storage.read(key: _key))?.isNotEmpty == true;
+
+  Future<void> remove() => _storage.delete(key: _key);
 }
