@@ -290,11 +290,12 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         maxHeight: 2400,
       );
       if (photo == null || !mounted) return;
-      final readWithAi = await _confirmOcr(photo.name);
+      final readWithAi = await _confirmOcr();
       if (!mounted) return;
       Map<String, dynamic> suggestion = const {};
       final farmId = widget.farm.id ?? '';
       if (readWithAi && farmId.isNotEmpty) {
+        _showOcrProgress();
         try {
           final response = await documentService.previewOcr(
             farmId: farmId,
@@ -314,6 +315,8 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
               ),
             );
           }
+        } finally {
+          if (mounted) Navigator.of(context, rootNavigator: true).pop();
         }
       }
       if (!mounted) return;
@@ -333,7 +336,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     }
   }
 
-  Future<bool> _confirmOcr(String photoName) async {
+  Future<bool> _confirmOcr() async {
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
@@ -357,6 +360,29 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           ),
         ) ??
         false;
+  }
+
+  void _showOcrProgress() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(),
+              ),
+              SizedBox(width: 20),
+              Expanded(child: Text('Lendo a nota e preparando sugestões...')),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> openQuotes() async {

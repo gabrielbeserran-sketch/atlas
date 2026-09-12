@@ -49,7 +49,9 @@ async def suggest(content: bytes, content_type: str) -> dict:
         ],
     }
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        # OCR é uma conveniência: se o provedor estiver lento, o lançamento
+        # manual continua disponível em vez de prender a operação financeira.
+        async with httpx.AsyncClient(timeout=25.0) as client:
             response = await client.post(
                 "https://api.openai.com/v1/responses",
                 headers={"Authorization": f"Bearer {settings.openai_api_key}"},
