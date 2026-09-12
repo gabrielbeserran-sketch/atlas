@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
+import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 
 class AtlasSettingsScreen extends StatefulWidget {
   const AtlasSettingsScreen({super.key});
@@ -99,42 +100,85 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Configurações')),
-    body: ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Text(
-          'Segurança e acesso',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.pin_outlined),
-                title: Text(
-                  configured == true
-                      ? 'PIN offline configurado'
-                      : 'Configurar PIN offline',
-                ),
-                subtitle: const Text(
-                  'Protege o acesso aos dados salvos sem internet.',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _setPin(changing: configured == true),
-              ),
-              if (configured == true)
-                ListTile(
-                  leading: const Icon(Icons.delete_outline),
-                  title: const Text('Remover PIN offline'),
-                  onTap: _removePin,
-                ),
-            ],
+  Widget build(BuildContext context) {
+    final session = AtlasSessionScope.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Configurações')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(
+            'Segurança e acesso',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.pin_outlined),
+                  title: Text(
+                    configured == true
+                        ? 'PIN offline configurado'
+                        : 'Configurar PIN offline',
+                  ),
+                  subtitle: const Text(
+                    'Protege o acesso aos dados salvos sem internet.',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _setPin(changing: configured == true),
+                ),
+                if (configured == true)
+                  ListTile(
+                    leading: const Icon(Icons.delete_outline),
+                    title: const Text('Remover PIN offline'),
+                    onTap: _removePin,
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Conexão e sincronização',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: Icon(
+                session.offlineMode
+                    ? Icons.cloud_off_outlined
+                    : Icons.cloud_done_outlined,
+              ),
+              title: Text(
+                session.offlineMode
+                    ? 'Trabalhando sem conexão'
+                    : 'Conexão com o Atlas disponível',
+              ),
+              subtitle: Text(
+                session.offlineMode
+                    ? 'Dados locais continuam utilizáveis e serão sincronizados ao reconectar.'
+                    : 'A sincronização é feita em segundo plano.',
+              ),
+              trailing: OutlinedButton.icon(
+                onPressed: session.refreshingConnection
+                    ? null
+                    : session.retryConnection,
+                icon: session.refreshingConnection
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh),
+                label: Text(
+                  session.refreshingConnection ? 'Conectando' : 'Tentar',
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
