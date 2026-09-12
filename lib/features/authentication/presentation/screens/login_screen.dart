@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 import 'package:projeto_atlas/features/authentication/presentation/screens/company_selection_screen.dart';
@@ -22,7 +23,7 @@ class LoginScreen extends StatefulWidget {
   final Future<void> Function(AtlasRemoteSession session)? onAuthenticated;
   final bool autoRestoreSession;
   final bool canUnlockOffline;
-  final Future<bool> Function(String pin)? onUnlockOffline;
+  final Future<AtlasOfflineUnlockAttempt> Function(String pin)? onUnlockOffline;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -428,7 +429,7 @@ class _AtlasLoginForm extends StatelessWidget {
   final VoidCallback onLogin;
   final VoidCallback onRetryBackend;
   final bool canUnlockOffline;
-  final Future<bool> Function(String pin)? onUnlockOffline;
+  final Future<AtlasOfflineUnlockAttempt> Function(String pin)? onUnlockOffline;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
 
@@ -541,10 +542,21 @@ class _AtlasLoginForm extends StatelessWidget {
                 );
                 pin.dispose();
                 if (value == null || onUnlockOffline == null) return;
-                if (!await onUnlockOffline!(value) && context.mounted)
+                final result = await onUnlockOffline!(value);
+                if (!result.unlocked && context.mounted) {
+                  final minutes = result.retryAfter == null
+                      ? null
+                      : (result.retryAfter!.inSeconds / 60).ceil().clamp(1, 5);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('PIN inválido.')),
+                    SnackBar(
+                      content: Text(
+                        minutes == null
+                            ? 'PIN inválido.'
+                            : 'Muitas tentativas. Tente novamente em $minutes minuto(s).',
+                      ),
+                    ),
                   );
+                }
               },
               variant: AtlasButtonVariant.secondary,
               expand: true,

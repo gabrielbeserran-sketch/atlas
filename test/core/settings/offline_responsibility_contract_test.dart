@@ -14,6 +14,10 @@ void main() {
     final sessionController = read(
       'lib/core/session/atlas_session_controller.dart',
     );
+    final pinService = read('lib/core/auth/atlas_offline_pin_service.dart');
+    final loginScreen = read(
+      'lib/features/authentication/presentation/screens/login_screen.dart',
+    );
 
     expect(settings, contains('Segurança e acesso'));
     expect(settings, isNot(contains('Conexão e sincronização')));
@@ -26,5 +30,12 @@ void main() {
     expect(homeShell, isNot(contains("value: 'offlinePin'")));
     expect(sessionController, contains('_offlinePinConfigured'));
     expect(sessionController, contains('refreshOfflineAccess() async'));
+    expect(pinService, contains('static const _maxFailedAttempts = 5'));
+    expect(
+      pinService,
+      contains('static const _lockDuration = Duration(minutes: 5)'),
+    );
+    expect(pinService, contains('verifyForUnlock'));
+    expect(loginScreen, contains('Muitas tentativas. Tente novamente em'));
   });
 }

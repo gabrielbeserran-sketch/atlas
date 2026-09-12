@@ -119,14 +119,14 @@ class AtlasSessionController extends ChangeNotifier {
     }
   }
 
-  Future<bool> unlockOffline(String pin) async {
-    if (!hasOfflineContext ||
-        !await AtlasOfflinePinService.instance.verify(pin))
-      return false;
+  Future<AtlasOfflineUnlockAttempt> unlockOffline(String pin) async {
+    if (!hasOfflineContext) return const AtlasOfflineUnlockAttempt.invalid();
+    final attempt = await AtlasOfflinePinService.instance.verifyForUnlock(pin);
+    if (!attempt.unlocked) return attempt;
     _offlineMode = true;
     _setStatus(AtlasSessionStatus.authenticated);
     unawaited(_refreshContextAfterStartup());
-    return true;
+    return attempt;
   }
 
   /// Atualiza a elegibilidade do desbloqueio offline depois que o usuário
