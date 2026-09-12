@@ -12,6 +12,10 @@ void main() {
     final service = read(
       'lib/features/farm_finance/data/services/financial_document_remote_service.dart',
     );
+    final financeList = read(
+      'lib/features/farm_finance/presentation/screens/farm_finance_list_screen.dart',
+    );
+    final manifest = read('android/app/src/main/AndroidManifest.xml');
 
     expect(screen, contains('Conferir dados do documento'));
     expect(screen, contains('Fornecedor / emissor'));
@@ -22,5 +26,9 @@ void main() {
     );
     expect(service, contains("'extracted_data': extractedData"));
     expect(service, contains("'notes': notes"));
+    expect(screen, contains('Fotografar nota ou documento'));
+    expect(screen, contains('ImageSource.camera'));
+    expect(financeList, contains("label: 'ANEXAR NOTA'"));
+    expect(manifest, contains('android.permission.CAMERA'));
   });
 }

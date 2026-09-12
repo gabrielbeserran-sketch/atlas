@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/financial_document_remote_service.dart';
 
 class FinancialDocumentCenterScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class FinancialDocumentCenterScreen extends StatefulWidget {
 class _FinancialDocumentCenterScreenState
     extends State<FinancialDocumentCenterScreen> {
   final _service = FinancialDocumentRemoteService();
+  final _imagePicker = ImagePicker();
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
   bool _uploading = false;
@@ -50,12 +52,43 @@ class _FinancialDocumentCenterScreenState
       ],
     );
     if (file == null || !mounted) return;
+    await _uploadPath(
+      file.path,
+      successMessage: 'Documento anexado e aguardando revisão humana.',
+    );
+  }
+
+  Future<void> _captureDocument() async {
+    try {
+      final photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+        maxWidth: 2400,
+        maxHeight: 2400,
+      );
+      if (photo == null || !mounted) return;
+      await _uploadPath(
+        photo.path,
+        successMessage: 'Foto da nota anexada e aguardando conferência.',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage(
+        'Não foi possível abrir a câmera. Verifique a permissão do dispositivo.',
+      );
+    }
+  }
+
+  Future<void> _uploadPath(
+    String filePath, {
+    required String successMessage,
+  }) async {
     setState(() => _uploading = true);
     try {
-      await _service.upload(entryId: widget.entryId, filePath: file.path);
+      await _service.upload(entryId: widget.entryId, filePath: filePath);
       await _load();
       if (!mounted) return;
-      _showMessage('Documento anexado e aguardando revisão humana.');
+      _showMessage(successMessage);
     } catch (_) {
       if (!mounted) return;
       _showMessage('Não foi possível anexar o documento. Tente novamente.');
@@ -200,6 +233,21 @@ class _FinancialDocumentCenterScreenState
                 'Os arquivos ficam vinculados ao lançamento. Confira os dados antes de aprovar; a aprovação continua sempre humana.',
               ),
               const SizedBox(height: 16),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Fotografar nota ou documento'),
+                  subtitle: const Text(
+                    'Use a câmera do celular para anexar o comprovante a este lançamento.',
+                  ),
+                  trailing: FilledButton.icon(
+                    onPressed: _uploading ? null : _captureDocument,
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: const Text('Fotografar'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               if (_loadError != null)
                 Card(
                   color: Theme.of(context).colorScheme.errorContainer,

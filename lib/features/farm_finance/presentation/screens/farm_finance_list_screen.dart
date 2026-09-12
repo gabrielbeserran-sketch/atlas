@@ -216,7 +216,13 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Lançamento salvo com sucesso.')),
+      SnackBar(
+        content: const Text('Lançamento salvo com sucesso.'),
+        action: SnackBarAction(
+          label: 'ANEXAR NOTA',
+          onPressed: () => openDocuments(savedRecord),
+        ),
+      ),
     );
   }
 
