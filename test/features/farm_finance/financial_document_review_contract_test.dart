@@ -43,12 +43,14 @@ void main() {
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));
+    expect(financeForm, contains('Confiança estimada:'));
     expect(screen, contains('Foto capturada pronta para anexar'));
     expect(screen, contains('Anexar foto'));
     expect(manifest, contains('android.permission.CAMERA'));
     expect(backendRouter, contains('@router.post("/ocr-preview")'));
     expect(backendRouter, contains('"requires_review": True'));
     expect(backendOcr, contains('"store": False'));
+    expect(backendOcr, contains('"json_schema"'));
     expect(
       backendConfig,
       contains('atlas_financial_ocr_enabled: bool = False'),

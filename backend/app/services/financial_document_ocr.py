@@ -17,6 +17,54 @@ class OcrFailed(RuntimeError):
     pass
 
 
+_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "supplier",
+        "document_number",
+        "document_date",
+        "total_amount",
+        "type",
+        "category",
+        "confidence",
+        "warnings",
+    ],
+    "properties": {
+        "supplier": {"type": "string"},
+        "document_number": {"type": "string"},
+        "document_date": {"type": "string"},
+        "total_amount": {"type": "string"},
+        "type": {"type": "string", "enum": ["", "Receita", "Despesa"]},
+        "category": {"type": "string"},
+        "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+        "warnings": {"type": "array", "items": {"type": "string"}, "maxItems": 8},
+    },
+}
+
+
+def _normalize(result: dict) -> dict:
+    """Preserva somente dados previstos pelo contrato de sugestão."""
+    warnings = result.get("warnings", [])
+    if not isinstance(warnings, list):
+        warnings = [warnings]
+    confidence = result.get("confidence", 0)
+    try:
+        confidence = max(0, min(100, int(confidence)))
+    except (TypeError, ValueError):
+        confidence = 0
+    return {
+        "supplier": str(result.get("supplier") or "").strip()[:255],
+        "document_number": str(result.get("document_number") or "").strip()[:120],
+        "document_date": str(result.get("document_date") or "").strip()[:32],
+        "total_amount": str(result.get("total_amount") or "").strip()[:64],
+        "type": result.get("type") if result.get("type") in {"Receita", "Despesa"} else "",
+        "category": str(result.get("category") or "").strip()[:120],
+        "confidence": confidence,
+        "warnings": [str(item).strip()[:300] for item in warnings if str(item).strip()][:8],
+    }
+
+
 async def suggest(content: bytes, content_type: str) -> dict:
     settings = get_settings()
     if not settings.atlas_financial_ocr_enabled or not settings.openai_api_key:
@@ -34,6 +82,14 @@ async def suggest(content: bytes, content_type: str) -> dict:
     body = {
         "model": settings.atlas_financial_ocr_model,
         "store": False,
+        "text": {
+            "format": {
+                "type": "json_schema",
+                "name": "financial_document_preview",
+                "strict": True,
+                "schema": _SCHEMA,
+            },
+        },
         "input": [
             {
                 "role": "user",
@@ -70,6 +126,6 @@ async def suggest(content: bytes, content_type: str) -> dict:
         result = json.loads(text)
         if not isinstance(result, dict):
             raise ValueError("Resposta OCR inválida")
-        return result
+        return _normalize(result)
     except (httpx.HTTPError, ValueError, json.JSONDecodeError) as exc:
         raise OcrFailed("Não foi possível ler a nota agora.") from exc

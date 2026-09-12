@@ -107,7 +107,10 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
     documentController.text = _valueOf(suggestion['document_number']);
     amountController.text = _valueOf(suggestion['total_amount']);
     final type = _valueOf(suggestion['type']);
-    if (type == 'Receita' || type == 'Despesa') selectedType = type;
+    if (type == 'Receita' || type == 'Despesa') {
+      selectedType = type;
+      selectedStatus = availableStatuses.first;
+    }
     final category = _valueOf(suggestion['category']);
     if (availableCategories.contains(category)) selectedCategory = category;
     if (counterpartyController.text.isNotEmpty) {
@@ -117,6 +120,20 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
   }
 
   String _valueOf(Object? value) => value?.toString().trim() ?? '';
+
+  int get _ocrConfidence {
+    final raw = widget.ocrSuggestion['confidence'];
+    return (raw is num ? raw.toInt() : int.tryParse('$raw') ?? 0).clamp(0, 100);
+  }
+
+  List<String> get _ocrWarnings {
+    final raw = widget.ocrSuggestion['warnings'];
+    if (raw is! List) return const [];
+    return raw
+        .map((item) => '$item'.trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
 
   @override
   void dispose() {
@@ -288,6 +305,36 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                           ),
                         ),
                       ),
+                      if (widget.ocrSuggestion.isNotEmpty)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Revisão da leitura',
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                const SizedBox(height: 6),
+                                Text('Confiança estimada: $_ocrConfidence%'),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Revise fornecedor, número, valor, categoria e situação antes de salvar.',
+                                ),
+                                if (_ocrWarnings.isNotEmpty) ...[
+                                  const SizedBox(height: 10),
+                                  ..._ocrWarnings.map(
+                                    (warning) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text('• $warning'),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 18),
                     ],
                     SegmentedButton<String>(
