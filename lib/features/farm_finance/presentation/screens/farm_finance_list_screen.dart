@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
 import 'package:projeto_atlas/core/text/atlas_ui_text.dart';
@@ -32,6 +33,7 @@ class FarmFinanceListScreen extends StatefulWidget {
 
 class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final FarmFinanceStorageService storage = FarmFinanceStorageService();
+  final ImagePicker imagePicker = ImagePicker();
 
   final FarmFinanceEventService eventService = const FarmFinanceEventService();
 
@@ -168,12 +170,12 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     );
   }
 
-  Future<void> openFinanceForm() async {
+  Future<void> openFinanceForm({String? documentPhotoPath}) async {
     final newRecord = await Navigator.push<FarmFinanceData>(
       context,
       MaterialPageRoute<FarmFinanceData>(
         builder: (context) {
-          return const FarmFinanceFormScreen();
+          return FarmFinanceFormScreen(documentPhotoPath: documentPhotoPath);
         },
       ),
     );
@@ -217,13 +219,79 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Lançamento salvo com sucesso.'),
+        content: Text(
+          documentPhotoPath == null
+              ? 'Lançamento salvo com sucesso.'
+              : 'Lançamento salvo. Confirme o anexo da foto para concluir.',
+        ),
         action: SnackBarAction(
           label: 'ANEXAR NOTA',
-          onPressed: () => openDocuments(savedRecord),
+          onPressed: () => openDocuments(
+            savedRecord,
+            capturedDocumentPath: documentPhotoPath,
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _chooseCreationMode() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Lançar por foto'),
+              subtitle: const Text(
+                'Fotografe a nota antes de conferir os dados do lançamento.',
+              ),
+              onTap: () => Navigator.pop(sheetContext, 'photo'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note_outlined),
+              title: const Text('Preencher manualmente'),
+              subtitle: const Text(
+                'Registrar receita ou despesa sem documento agora.',
+              ),
+              onTap: () => Navigator.pop(sheetContext, 'manual'),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'manual') {
+      await openFinanceForm();
+      return;
+    }
+    await _launchPhotoFlow();
+  }
+
+  Future<void> _launchPhotoFlow() async {
+    try {
+      final photo = await imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+        maxWidth: 2400,
+        maxHeight: 2400,
+      );
+      if (photo == null || !mounted) return;
+      await openFinanceForm(documentPhotoPath: photo.path);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível abrir a câmera. Verifique a permissão do dispositivo.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> openQuotes() async {
@@ -234,15 +302,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
     );
   }
 
-  Future<void> openDocuments(FarmFinanceData record) =>
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => FinancialDocumentCenterScreen(
-            entryId: record.id,
-            title: record.description,
-          ),
-        ),
-      );
+  Future<void> openDocuments(
+    FarmFinanceData record, {
+    String? capturedDocumentPath,
+  }) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => FinancialDocumentCenterScreen(
+        entryId: record.id,
+        title: record.description,
+        capturedDocumentPath: capturedDocumentPath,
+      ),
+    ),
+  );
 
   Future<void> editRecord(FarmFinanceData record) async {
     final editedRecord = await Navigator.push<FarmFinanceData>(
@@ -383,7 +454,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                         const SizedBox(height: 12),
                         AtlasOperationalActionBar(
                           primaryLabel: 'Novo lançamento',
-                          onPrimary: openFinanceForm,
+                          onPrimary: _chooseCreationMode,
                           secondaryLabel: 'Cotações',
                           secondaryIcon: Icons.request_quote_outlined,
                           onSecondary: openQuotes,

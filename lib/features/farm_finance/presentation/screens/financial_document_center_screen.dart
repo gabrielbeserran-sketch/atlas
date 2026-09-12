@@ -9,10 +9,12 @@ class FinancialDocumentCenterScreen extends StatefulWidget {
   const FinancialDocumentCenterScreen({
     required this.entryId,
     required this.title,
+    this.capturedDocumentPath,
     super.key,
   });
   final String entryId;
   final String title;
+  final String? capturedDocumentPath;
   @override
   State<FinancialDocumentCenterScreen> createState() =>
       _FinancialDocumentCenterScreenState();
@@ -26,9 +28,11 @@ class _FinancialDocumentCenterScreenState
   bool _loading = true;
   bool _uploading = false;
   String? _loadError;
+  String? _capturedDocumentPath;
   @override
   void initState() {
     super.initState();
+    _capturedDocumentPath = widget.capturedDocumentPath;
     _load();
   }
 
@@ -79,7 +83,7 @@ class _FinancialDocumentCenterScreenState
     }
   }
 
-  Future<void> _uploadPath(
+  Future<bool> _uploadPath(
     String filePath, {
     required String successMessage,
   }) async {
@@ -87,14 +91,26 @@ class _FinancialDocumentCenterScreenState
     try {
       await _service.upload(entryId: widget.entryId, filePath: filePath);
       await _load();
-      if (!mounted) return;
+      if (!mounted) return false;
       _showMessage(successMessage);
+      return true;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showMessage('Não foi possível anexar o documento. Tente novamente.');
+      return false;
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
+  }
+
+  Future<void> _attachCapturedDocument() async {
+    final path = _capturedDocumentPath;
+    if (path == null) return;
+    final attached = await _uploadPath(
+      path,
+      successMessage: 'Foto da nota anexada e aguardando conferência.',
+    );
+    if (attached && mounted) setState(() => _capturedDocumentPath = null);
   }
 
   Future<void> _saveCopy(Map<String, dynamic> item) async {
@@ -233,6 +249,23 @@ class _FinancialDocumentCenterScreenState
                 'Os arquivos ficam vinculados ao lançamento. Confira os dados antes de aprovar; a aprovação continua sempre humana.',
               ),
               const SizedBox(height: 16),
+              if (_capturedDocumentPath != null) ...[
+                Card(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: ListTile(
+                    leading: const Icon(Icons.receipt_long_outlined),
+                    title: const Text('Foto capturada pronta para anexar'),
+                    subtitle: const Text(
+                      'Confirme o envio para vincular a foto a este lançamento.',
+                    ),
+                    trailing: FilledButton(
+                      onPressed: _uploading ? null : _attachCapturedDocument,
+                      child: const Text('Anexar foto'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.photo_camera_outlined),

@@ -15,6 +15,9 @@ void main() {
     final financeList = read(
       'lib/features/farm_finance/presentation/screens/farm_finance_list_screen.dart',
     );
+    final financeForm = read(
+      'lib/features/farm_finance/presentation/screens/farm_finance_form_screen.dart',
+    );
     final manifest = read('android/app/src/main/AndroidManifest.xml');
 
     expect(screen, contains('Conferir dados do documento'));
@@ -29,6 +32,12 @@ void main() {
     expect(screen, contains('Fotografar nota ou documento'));
     expect(screen, contains('ImageSource.camera'));
     expect(financeList, contains("label: 'ANEXAR NOTA'"));
+    expect(financeList, contains('Lançar por foto'));
+    expect(financeList, contains('ImageSource.camera'));
+    expect(financeList, contains('capturedDocumentPath: documentPhotoPath'));
+    expect(financeForm, contains('Nota fotografada para este lançamento'));
+    expect(screen, contains('Foto capturada pronta para anexar'));
+    expect(screen, contains('Anexar foto'));
     expect(manifest, contains('android.permission.CAMERA'));
   });
 }

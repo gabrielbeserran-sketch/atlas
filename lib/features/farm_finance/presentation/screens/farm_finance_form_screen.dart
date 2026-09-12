@@ -4,8 +4,9 @@ import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 
 class FarmFinanceFormScreen extends StatefulWidget {
-  const FarmFinanceFormScreen({this.record, super.key});
+  const FarmFinanceFormScreen({this.record, this.documentPhotoPath, super.key});
   final FarmFinanceData? record;
+  final String? documentPhotoPath;
 
   @override
   State<FarmFinanceFormScreen> createState() => _FarmFinanceFormScreenState();
@@ -245,6 +246,19 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                       style: TextStyle(color: Colors.black54),
                     ),
                     const SizedBox(height: 24),
+                    if (widget.documentPhotoPath != null) ...[
+                      Card(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        child: const ListTile(
+                          leading: Icon(Icons.receipt_long_outlined),
+                          title: Text('Nota fotografada para este lançamento'),
+                          subtitle: Text(
+                            'Preencha ou confira os dados abaixo. A foto será anexada quando você salvar.',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                    ],
                     SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(
@@ -445,7 +459,9 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                     AtlasFormActions(
                       onSave: saveRecord,
                       isSaving: isSaving,
-                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar lançamento',
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar lançamento',
                     ),
                   ],
                 ),
