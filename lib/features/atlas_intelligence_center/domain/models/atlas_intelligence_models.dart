@@ -23,7 +23,7 @@ class AtlasAiRecommendation {
 
   factory AtlasAiRecommendation.fromMap(Map<String, dynamic> map) {
     List<String> strings(Object? value) => value is List
-        ? value.map((item) => item.toString()).toList(growable: false)
+        ? value.map(_readableEvidence).toList(growable: false)
         : const [];
     return AtlasAiRecommendation(
       id: map['id']?.toString() ?? '',
@@ -36,6 +36,54 @@ class AtlasAiRecommendation {
       evidence: strings(map['evidence']),
       limitations: strings(map['limitations']),
     );
+  }
+
+  static String _readableEvidence(Object? value) {
+    if (value is! Map) return value?.toString() ?? '';
+    final data = Map<String, dynamic>.from(value);
+    final parts = <String>[];
+
+    void add(String label, Object? item) {
+      if (item != null) parts.add('$label: $item');
+    }
+
+    final herd = data['herd'];
+    if (herd is Map) {
+      final values = Map<String, dynamic>.from(herd);
+      add('Rebanho ativo', values['active_animals']);
+      add('Fêmeas', values['females']);
+      add('Com peso atual', values['with_current_weight']);
+    }
+
+    final reproduction = data['reproduction'];
+    if (reproduction is Map) {
+      final values = Map<String, dynamic>.from(reproduction);
+      add('Eventos reprodutivos', values['events']);
+      add('Prenhes registradas', values['pregnant']);
+    }
+
+    final health = data['health'];
+    if (health is Map) add('Eventos sanitários', health['events']);
+    final nutrition = data['nutrition'];
+    if (nutrition is Map) add('Registros nutricionais', nutrition['events']);
+    final finance = data['finance'];
+    if (finance is Map) add('Lançamentos financeiros', finance['entries']);
+
+    final quality = data['quality'] ?? data;
+    if (quality is Map) {
+      add(
+        'Cobertura de pesagem',
+        quality['weight_coverage_percent'] == null
+            ? null
+            : '${quality['weight_coverage_percent']}%',
+      );
+      add('Animais cadastrados', quality['animal_count']);
+    }
+
+    if (parts.isNotEmpty) return parts.join(' • ');
+    return data.entries
+        .map((entry) => '${entry.key}: ${entry.value}')
+        .join(' • ');
   }
 }
 

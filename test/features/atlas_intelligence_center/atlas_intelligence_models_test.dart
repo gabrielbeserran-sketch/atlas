@@ -27,4 +27,25 @@ void main() {
     expect(result.projectedVariation, 12000);
     expect(result.roiPercent, 40);
   });
+
+  test('traduz evidência operacional estruturada para leitura humana', () {
+    final item = AtlasAiRecommendation.fromMap({
+      'id': 'rec-2',
+      'area': 'general',
+      'title': 'Acompanhar operação',
+      'confidence': 0.72,
+      'priority': 'low',
+      'evidence': [
+        {
+          'herd': {'active_animals': 4, 'females': 3},
+          'health': {'events': 2},
+          'quality': {'weight_coverage_percent': 100, 'animal_count': 4},
+        },
+      ],
+    });
+
+    expect(item.evidence.single, contains('Rebanho ativo: 4'));
+    expect(item.evidence.single, contains('Eventos sanitários: 2'));
+    expect(item.evidence.single, contains('Cobertura de pesagem: 100%'));
+  });
 }
