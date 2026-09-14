@@ -37,4 +37,25 @@ def generate_recommendations(context: dict) -> list[dict]:
     if health['events']==0 and herd['active_animals']>0: items.append({'area':'health','title':'Revisar calendário sanitário','description':'Não há eventos sanitários registrados para um rebanho ativo.','evidence':[health,herd],'confidence':0.75,'priority':'medium','recommended_action':'Confirmar protocolos e registrar procedimentos recentes.','limitations':['Ausência de registro não confirma ausência de manejo.']})
     if nutrition['events']==0 and herd['active_animals']>0: items.append({'area':'nutrition','title':'Registrar fornecimento nutricional','description':'Não existem consumos nutricionais oficiais no período.','evidence':[nutrition],'confidence':0.8,'priority':'medium','recommended_action':'Registrar consumo por lote para calcular eficiência alimentar.','limitations':[]})
     if finance['entries']==0: items.append({'area':'financial','title':'Completar dados financeiros','description':'Não existem lançamentos suficientes para análise econômica.','evidence':[finance],'confidence':0.98,'priority':'medium','recommended_action':'Registrar receitas e despesas antes de simulações financeiras.','limitations':['Sem dados financeiros não há projeção confiável.']})
+    # A Central precisa confirmar o resultado da análise mesmo quando nenhuma
+    # regra de risco foi acionada. Sem esta devolutiva a interface recebe uma
+    # lista vazia, que é indistinguível de uma atualização que não ocorreu.
+    if not items:
+        items.append({
+            'area':'general',
+            'title':'Manter acompanhamento da operação',
+            'description':'Os indicadores oficiais disponíveis não acionaram prioridades críticas nesta análise.',
+            'evidence':[{
+                'herd': herd,
+                'reproduction': rep,
+                'health': health,
+                'nutrition': nutrition,
+                'finance': finance,
+                'quality': q,
+            }],
+            'confidence':0.72,
+            'priority':'low',
+            'recommended_action':'Atualizar os registros da rotina e revisar esta Central após o próximo evento operacional.',
+            'limitations':['A conclusão considera somente os dados oficiais atualmente cadastrados.'],
+        })
     return items

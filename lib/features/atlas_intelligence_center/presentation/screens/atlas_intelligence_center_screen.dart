@@ -391,7 +391,12 @@ class _AtlasIntelligenceCenterScreenState
           if (recommendations.isEmpty)
             const Padding(
               padding: EdgeInsets.all(32),
-              child: Center(child: Text('Nenhuma prioridade calculada ainda.')),
+              child: Center(
+                child: Text(
+                  'Atualize as prioridades para analisar os dados oficiais da fazenda.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ...recommendations.map(buildRecommendationCard),
         ],

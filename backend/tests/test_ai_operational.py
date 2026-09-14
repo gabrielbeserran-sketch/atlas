@@ -12,3 +12,22 @@ def test_recommendations_are_explainable():
     rows=generate_recommendations(context)
     assert rows
     assert all(r.get('evidence') is not None and r.get('recommended_action') for r in rows)
+
+
+def test_stable_context_returns_an_analysis_confirmation():
+    context={
+        'payload':{
+            'herd':{'active_animals':10,'females':6},
+            'reproduction':{'pregnant':4},
+            'health':{'events':1},
+            'nutrition':{'events':1},
+            'finance':{'entries':1},
+        },
+        'quality':{'weight_coverage_percent':100},
+    }
+
+    rows=generate_recommendations(context)
+
+    assert len(rows) == 1
+    assert rows[0]['priority'] == 'low'
+    assert rows[0]['title'] == 'Manter acompanhamento da operação'
