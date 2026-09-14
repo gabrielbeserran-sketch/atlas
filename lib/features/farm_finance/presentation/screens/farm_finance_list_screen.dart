@@ -420,31 +420,49 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         if (mounted) Navigator.of(context, rootNavigator: true).pop();
       }
 
-      if (!mounted || !await _offerOcrRetry(failureMessage)) {
+      if (!mounted ||
+          !await _offerOcrRetry(
+            failureMessage,
+            canRetry: _canRetryOcr(failureMessage),
+          )) {
         return const {};
       }
     }
     return const {};
   }
 
-  Future<bool> _offerOcrRetry(String message) async {
+  bool _canRetryOcr(String message) {
+    final normalized = message.toLowerCase();
+    return !normalized.contains('limite da api') &&
+        !normalized.contains('chave do ocr não foi aceita') &&
+        !normalized.contains('configuração do modelo ocr foi recusada');
+  }
+
+  Future<bool> _offerOcrRetry(String message, {required bool canRetry}) async {
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Leitura da nota não concluída'),
+            title: Text(
+              canRetry
+                  ? 'Leitura da nota não concluída'
+                  : 'Leitura indisponível no momento',
+            ),
             content: Text(
-              '$message\n\nVocê pode tentar novamente com esta mesma foto ou seguir com o preenchimento manual.',
+              canRetry
+                  ? '$message\n\nVocê pode tentar novamente com esta mesma foto ou seguir com o preenchimento manual.'
+                  : '$message\n\nPara evitar novas tentativas sem resultado, aguarde a renovação do limite ou regularize a configuração do serviço. Enquanto isso, o lançamento manual continua disponível.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Preencher manualmente'),
+                child: Text(canRetry ? 'Preencher manualmente' : 'Entendi'),
               ),
-              FilledButton.icon(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Tentar novamente'),
-              ),
+              if (canRetry)
+                FilledButton.icon(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Tentar novamente'),
+                ),
             ],
           ),
         ) ??

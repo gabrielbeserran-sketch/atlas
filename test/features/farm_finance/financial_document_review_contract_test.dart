@@ -53,6 +53,9 @@ void main() {
     expect(financeList, contains('_ocrFailureMessage'));
     expect(financeList, contains('_readPhotoWithAi'));
     expect(financeList, contains('_offerOcrRetry'));
+    expect(financeList, contains('_canRetryOcr'));
+    expect(financeList, contains("normalized.contains('limite da api')"));
+    expect(financeList, contains('Leitura indisponível no momento'));
     expect(financeList, contains('Tentar novamente'));
     expect(financeList, contains('esta mesma foto'));
     expect(financeList, contains('ainda não foi configurada no servidor'));
