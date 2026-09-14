@@ -14,6 +14,7 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Financeiro: prevenção de repetição sem resultado | Concluído | 100% | Quando a chave, modelo ou limite do OCR impedirem a leitura, o aplicativo explica a situação e não oferece uma nova chamada inútil. Análise, contrato e build Windows aprovados. |
 | Financeiro: OCR local no celular | Em validação | 97% | Android/iOS leem texto e chave de acesso NF-e/QR no próprio aparelho antes de qualquer opção de nuvem; fornecedor, data, documento, valor e categoria são sugestões revisáveis. A foto e o texto não saem do dispositivo. Contrato, APK Android de validação, build Windows e testes determinísticos de parsing aprovados; falta teste em aparelho. |
 | Cotações: importação tolerante de retornos XLSX | Concluído | 100% | O importador aceita aba com outro nome e cabeçalhos usuais, permite fornecedor ausente com identificação provisória e usa total declarado quando os itens estiverem incompletos. Nenhum dado é gravado sem revisão; nove cenários automatizados aprovados. |
+| Regressão transversal: Financeiro e acesso offline | Concluído | 100% | 26 testes cobriram Financeiro, OCR local, cotações, login offline, sessão e fila de sincronização. Build Windows de produção e APK Android atual foram gerados sem erros. |
 | Publicação do OCR no Render | Bloqueado externamente | 90% | O servidor e a chave estão ativos, mas a API de leitura retornou limite atingido. A homologação final depende da renovação/ampliação da cota do provedor. |
 
 ## Regra de entrega
@@ -22,5 +23,6 @@ Uma etapa só muda para **Concluído** quando houver arquivos alterados, teste/v
 
 ## Entrega em validação
 
-- Testes concluídos: `flutter analyze` dos serviços/tela financeira e `financial_document_review_contract_test.dart`.
-- Gate finalizado: checkpoint Git, análise estática, teste de contrato e build Windows de regressão concluídos.
+- Testes concluídos: regressão transversal com 26 cenários e análise estática dos serviços/telas modificados.
+- APK Android: `build/app/outputs/flutter-apk/app-debug.apk` — SHA-256 `39FF3C1282BF4ED9145B4DA239D8AFE974E4262CE41E8D9C703619FFFAC47B9A`.
+- Gate finalizado: checkpoint Git, análise estática, contratos, build Windows de produção e APK Android de validação concluídos.
