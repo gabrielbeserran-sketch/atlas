@@ -75,6 +75,9 @@ void main() {
     expect(backendRouter, contains('"requires_review": True'));
     expect(backendOcr, contains('"store": False'));
     expect(backendOcr, contains('"json_schema"'));
+    expect(backendOcr, contains('financial_ocr_provider_rejected status=%s'));
+    expect(backendOcr, contains('A chave do OCR não foi aceita'));
+    expect(backendOcr, contains('A configuração do modelo OCR foi recusada'));
     expect(
       backendConfig,
       contains('atlas_financial_ocr_enabled: bool = False'),

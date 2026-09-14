@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 
 import httpx
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class OcrUnavailable(RuntimeError):
@@ -63,6 +66,19 @@ def _normalize(result: dict) -> dict:
         "confidence": confidence,
         "warnings": [str(item).strip()[:300] for item in warnings if str(item).strip()][:8],
     }
+
+
+def _provider_failure(exc: httpx.HTTPStatusError) -> OcrFailed:
+    """Traduz falhas do provedor sem expor chave, imagem ou resposta bruta."""
+    status = exc.response.status_code
+    logger.warning("financial_ocr_provider_rejected status=%s", status)
+    if status in {401, 403}:
+        return OcrFailed("A chave do OCR não foi aceita. Revise a configuração no servidor.")
+    if status == 429:
+        return OcrFailed("O limite da API de leitura foi atingido. Tente novamente mais tarde.")
+    if status in {400, 404}:
+        return OcrFailed("A configuração do modelo OCR foi recusada pelo provedor.")
+    return OcrFailed("Não foi possível ler a nota agora.")
 
 
 async def suggest(content: bytes, content_type: str) -> dict:
@@ -127,5 +143,8 @@ async def suggest(content: bytes, content_type: str) -> dict:
         if not isinstance(result, dict):
             raise ValueError("Resposta OCR inválida")
         return _normalize(result)
+    except httpx.HTTPStatusError as exc:
+        raise _provider_failure(exc) from exc
     except (httpx.HTTPError, ValueError, json.JSONDecodeError) as exc:
+        logger.warning("financial_ocr_provider_failed type=%s", type(exc).__name__)
         raise OcrFailed("Não foi possível ler a nota agora.") from exc
