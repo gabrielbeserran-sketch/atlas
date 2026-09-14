@@ -293,7 +293,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         _notes = _notes.map((note) => note.folderId == folder.id
             ? OperationalNote(
                 id: note.id, farmId: note.farmId, folderId: null, authorUserId: note.authorUserId,
-                content: note.content, source: note.source, transcript: note.transcript, createdAt: note.createdAt)
+                content: note.content, source: note.source, transcript: note.transcript,
+                referenceType: note.referenceType, referenceId: note.referenceId,
+                createdAt: note.createdAt)
             : note).toList();
         _folders = _folders.where((item) => item.id != folder.id).toList();
         _selectedFolderId = null;

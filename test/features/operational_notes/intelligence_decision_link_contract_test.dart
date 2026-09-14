@@ -25,5 +25,9 @@ void main() {
     expect(notes, contains(r"'/operational-notes/$noteId/task'"));
     expect(model, contains('final String referenceType;'));
     expect(model, contains('final String referenceId;'));
+    expect(
+      read('lib/features/operational_notes/presentation/screens/operational_notes_screen.dart'),
+      contains('referenceType: note.referenceType'),
+    );
   });
 }
