@@ -8,6 +8,7 @@ import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/financial_document_remote_service.dart';
+import 'package:projeto_atlas/features/farm_finance/data/services/financial_offline_photo_queue.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/services/farm_finance_event_service.dart';
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/farm_finance_form_screen.dart';
@@ -38,6 +39,8 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final ImagePicker imagePicker = ImagePicker();
   final FinancialDocumentRemoteService documentService =
       FinancialDocumentRemoteService();
+  final FinancialOfflinePhotoQueue offlinePhotoQueue =
+      FinancialOfflinePhotoQueue();
 
   final FarmFinanceEventService eventService = const FarmFinanceEventService();
 
@@ -212,6 +215,20 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           recordId: savedRecord.id,
         );
 
+    var photoPreservedOffline = false;
+    if (isPendingOffline && documentPhotoPath != null) {
+      try {
+        await offlinePhotoQueue.stage(
+          farmName: widget.farm.name,
+          entryId: savedRecord.id,
+          sourcePath: documentPhotoPath,
+        );
+        photoPreservedOffline = true;
+      } catch (_) {
+        // O lançamento continua preservado mesmo que a cópia da foto falhe.
+      }
+    }
+
     if (!mounted) {
       return;
     }
@@ -242,7 +259,9 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           isPendingOffline
               ? (documentPhotoPath == null
                     ? 'Lançamento salvo neste dispositivo e aguardando conexão.'
-                    : 'Lançamento salvo neste dispositivo. A foto poderá ser anexada após conectar.')
+                    : (photoPreservedOffline
+                          ? 'Lançamento e foto preservados neste dispositivo. Ambos aguardam conexão.'
+                          : 'Lançamento salvo, mas a cópia da foto não pôde ser preservada. Não exclua o original.'))
               : (documentPhotoPath == null
                     ? 'Lançamento salvo com sucesso.'
                     : 'Lançamento salvo. Confirme o anexo da foto para concluir.'),

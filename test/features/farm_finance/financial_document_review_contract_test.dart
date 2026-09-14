@@ -18,6 +18,12 @@ void main() {
     final financeForm = read(
       'lib/features/farm_finance/presentation/screens/farm_finance_form_screen.dart',
     );
+    final offlinePhotoQueue = read(
+      'lib/features/farm_finance/data/services/financial_offline_photo_queue.dart',
+    );
+    final financeStorage = read(
+      'lib/features/farm_finance/data/services/farm_finance_storage_service.dart',
+    );
     final manifest = read('android/app/src/main/AndroidManifest.xml');
     final backendRouter = read('backend/app/routers/financial_documents.py');
     final backendOcr = read('backend/app/services/financial_document_ocr.py');
@@ -45,7 +51,8 @@ void main() {
     expect(financeList, contains('_confirmOcr'));
     expect(financeList, contains('_ocrFailureMessage'));
     expect(financeList, contains('ainda não foi configurada no servidor'));
-    expect(financeList, contains('A foto poderá ser anexada após conectar.'));
+    expect(financeList, contains('Lançamento e foto preservados neste dispositivo.'));
+    expect(financeList, contains('offlinePhotoQueue.stage('));
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));
@@ -63,5 +70,11 @@ void main() {
       backendConfig,
       contains('atlas_financial_ocr_enabled: bool = False'),
     );
+    expect(offlinePhotoQueue, contains('getApplicationDocumentsDirectory'));
+    expect(offlinePhotoQueue, contains('markRemoteEntry'));
+    expect(offlinePhotoQueue, contains('syncReady'));
+    expect(offlinePhotoQueue, contains('await file.delete()'));
+    expect(financeStorage, contains('await _offlinePhotos.markRemoteEntry('));
+    expect(financeStorage, contains('await _offlinePhotos.syncReady(farmName)'));
   });
 }

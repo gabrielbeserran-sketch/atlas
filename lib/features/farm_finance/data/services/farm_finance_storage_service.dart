@@ -2,15 +2,20 @@ import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
+import 'package:projeto_atlas/features/farm_finance/data/services/financial_offline_photo_queue.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FarmFinanceStorageService {
-  FarmFinanceStorageService({AtlasHttpClient? httpClient})
-    : _http = httpClient ?? AtlasHttpClient();
+  FarmFinanceStorageService({
+    AtlasHttpClient? httpClient,
+    FinancialOfflinePhotoQueue? offlinePhotos,
+  }) : _http = httpClient ?? AtlasHttpClient(),
+       _offlinePhotos = offlinePhotos ?? FinancialOfflinePhotoQueue();
 
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   final AtlasHttpClient _http;
+  final FinancialOfflinePhotoQueue _offlinePhotos;
 
   String _normalize(String value) =>
       value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
@@ -49,6 +54,11 @@ class FarmFinanceStorageService {
                 synced,
                 ...records.where((item) => item.id != synced.id),
               ];
+              await _offlinePhotos.markRemoteEntry(
+                farmName: farmName,
+                localEntryId: record.id,
+                remoteEntryId: synced.id,
+              );
             } on AtlasHttpException catch (error) {
               if (!_isTransient(error)) rethrow;
               remaining.add(record);
@@ -57,6 +67,7 @@ class FarmFinanceStorageService {
           await _savePending(farmName, remaining);
           records = _mergeLocalAndPending(records, remaining);
         }
+        await _offlinePhotos.syncReady(farmName);
         await _saveLocal(storageKey, records);
         return records;
       } catch (_) {
