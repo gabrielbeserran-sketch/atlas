@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart'
+    hide InputImage;
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 /// Extrai texto da nota no próprio aparelho.
@@ -16,13 +18,38 @@ class FinancialLocalOcrService {
     if (!isAvailable) return const {};
 
     final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    final scanner = BarcodeScanner(
+      formats: const [BarcodeFormat.qrCode, BarcodeFormat.code128],
+    );
     try {
-      final result = await recognizer.processImage(
-        InputImage.fromFilePath(filePath),
+      final image = InputImage.fromFilePath(filePath);
+      final results = await Future.wait([
+        recognizer.processImage(image),
+        scanner.processImage(image),
+      ]);
+      final suggestion = parseRecognizedText(
+        (results[0] as RecognizedText).text,
       );
-      return parseRecognizedText(result.text);
+      final accessKey = accessKeyFromBarcode(
+        (results[1] as List<Barcode>)
+            .map((barcode) => barcode.rawValue ?? '')
+            .join('\n'),
+      );
+      if (accessKey.isEmpty) return suggestion;
+      return {
+        ...suggestion,
+        'document_number': accessKey,
+        'document_access_key': accessKey,
+        'confidence': 100,
+        'warnings': (suggestion['warnings'] as List)
+            .where(
+              (warning) => warning != 'Número do documento não identificado.',
+            )
+            .toList(),
+      };
     } finally {
       await recognizer.close();
+      await scanner.close();
     }
   }
 
@@ -72,6 +99,15 @@ class FinancialLocalOcrService {
       'warnings': warnings,
       'source': 'on_device',
     };
+  }
+
+  /// Localiza a chave de acesso de 44 dígitos presente no QR Code da NF-e.
+  String accessKeyFromBarcode(String value) {
+    final queryKey = RegExp(
+      r'(?:chNFe|chaveNFe)=([0-9]{44})',
+      caseSensitive: false,
+    ).firstMatch(value)?.group(1);
+    return queryKey ?? RegExp(r'\b\d{44}\b').firstMatch(value)?.group(0) ?? '';
   }
 
   String _supplier(List<String> lines) {

@@ -36,4 +36,13 @@ VALOR TOTAL R\$ 1.250,50
     expect(suggestion['warnings'], contains('Valor total não identificado.'));
     expect(suggestion['confidence'], lessThan(100));
   });
+
+  test('preserva a chave de acesso da NF-e lida no QR Code', () {
+    expect(
+      service.accessKeyFromBarcode(
+        'https://www.nfce.fazenda.gov.br/?chNFe=35260912345678000190550010000012341000012345',
+      ),
+      '35260912345678000190550010000012341000012345',
+    );
+  });
 }
