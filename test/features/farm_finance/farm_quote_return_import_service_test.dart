@@ -118,6 +118,31 @@ void main() {
     expect(result.warnings, isEmpty);
     expect(result.proposals.single.receivedAt, startsWith('2026-09-10'));
   });
+
+  test('aceita aba e cabeçalhos usuais, sem fornecedor', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _genericWorkbookWithoutSupplier(),
+      request: request,
+      importedAt: DateTime(2026, 9, 11),
+    );
+
+    expect(result.proposals, hasLength(1));
+    expect(result.proposals.single.supplierName, 'Fornecedor não identificado');
+    expect(result.proposals.single.totalAmount, 890.75);
+    expect(result.proposals.single.receivedAt, startsWith('2026-09-10'));
+    expect(result.warnings.single, contains('Fornecedor não informado'));
+  });
+
+  test('usa total declarado quando os itens não estiverem preenchidos', () {
+    final result = FarmQuoteReturnImportService().import(
+      bytes: _structuredReturnsWorkbookWithDeclaredTotalOnly(),
+      request: request,
+      importedAt: DateTime(2026, 9, 11),
+    );
+
+    expect(result.proposals, hasLength(1));
+    expect(result.proposals.single.totalAmount, 1275.40);
+  });
 }
 
 List<int> _returnsWorkbook(List<List<Object>> rows) {
@@ -214,5 +239,37 @@ List<int> _structuredReturnsWorkbook({
     TextCellValue('Desconto (R\$)'),
     DoubleCellValue(10),
   ]);
+  return workbook.encode()!;
+}
+
+List<int> _genericWorkbookWithoutSupplier() {
+  final workbook = Excel.createExcel();
+  final defaultSheet = workbook.getDefaultSheet();
+  if (defaultSheet != null) workbook.rename(defaultSheet, 'Proposta setembro');
+  final sheet = workbook['Proposta setembro'];
+  sheet.appendRow([TextCellValue('Proposta de insumos')]);
+  sheet.appendRow([
+    TextCellValue('Valor total'),
+    TextCellValue('Recebimento'),
+    TextCellValue('Condições'),
+  ]);
+  sheet.appendRow([
+    DoubleCellValue(890.75),
+    TextCellValue('10/09/2026'),
+    TextCellValue('Pagamento em 30 dias'),
+  ]);
+  return workbook.encode()!;
+}
+
+List<int> _structuredReturnsWorkbookWithDeclaredTotalOnly() {
+  final workbook = Excel.createExcel();
+  final defaultSheet = workbook.getDefaultSheet();
+  if (defaultSheet != null) workbook.rename(defaultSheet, 'Retornos');
+  final sheet = workbook['Retornos'];
+  sheet.appendRow([TextCellValue('PROPOSTA COMERCIAL — RETORNO DE COTAÇÃO')]);
+  sheet.appendRow([TextCellValue('Fornecedor'), TextCellValue('AGRO DF')]);
+  sheet.appendRow([TextCellValue('Item'), TextCellValue('Unidade'), TextCellValue('Quantidade'), TextCellValue('Valor unitário (R\$)'), TextCellValue('Valor total (R\$)')]);
+  sheet.appendRow([TextCellValue('Ração'), TextCellValue('saco'), TextCellValue(''), TextCellValue(''), TextCellValue('')]);
+  sheet.appendRow([TextCellValue(''), TextCellValue(''), TextCellValue(''), TextCellValue('TOTAL DA PROPOSTA (R\$)'), DoubleCellValue(1275.40)]);
   return workbook.encode()!;
 }

@@ -9,10 +9,11 @@ class FarmQuoteReturnImportService {
     required FarmQuoteRequest request,
     required DateTime importedAt,
   }) {
-    final sheet = Excel.decodeBytes(bytes).tables['Retornos'];
+    final workbook = Excel.decodeBytes(bytes);
+    final sheet = _selectSheet(workbook);
     if (sheet == null) {
       throw const FormatException(
-        'A aba “Retornos” não foi encontrada na planilha.',
+        'Nenhuma aba com dados foi encontrada na planilha.',
       );
     }
     if (_cellText(sheet, 0, 0).contains('PROPOSTA COMERCIAL')) {
@@ -34,32 +35,44 @@ class FarmQuoteReturnImportService {
       );
     }
 
-    // Linha 0 é o título e linha 1 é o cabeçalho da planilha exportada.
-    for (var row = 2; row < sheet.maxRows; row++) {
-      final supplier = _cellText(sheet, row, 0).trim();
-      final amount = _cellAmount(sheet, row, 1);
-      final dateText = _cellText(sheet, row, 2).trim();
-      final notes = _cellText(sheet, row, 3).trim();
+    final header = _findGenericHeader(sheet);
+    if (header == null) {
+      return const FarmQuoteReturnImportResult(
+        warnings: [
+          'Não foi possível localizar as colunas de valor na planilha. '
+              'Use uma coluna “Valor total” ou “Total”.',
+        ],
+      );
+    }
+    for (var row = header.row + 1; row < sheet.maxRows; row++) {
+      final supplier = _cellText(sheet, row, header.supplierColumn).trim();
+      final amount = _cellAmount(sheet, row, header.amountColumn);
+      final dateText = _cellText(sheet, row, header.dateColumn).trim();
+      final notes = _cellText(sheet, row, header.notesColumn).trim();
       if (supplier.isEmpty &&
           amount == null &&
           dateText.isEmpty &&
           notes.isEmpty) {
         continue;
       }
-      if (supplier.isEmpty) {
-        warnings.add('Uma linha sem fornecedor foi ignorada.');
-        continue;
-      }
       if (amount == null || amount <= 0) {
         warnings.add(
-          'O retorno de $supplier não possui valor válido e foi ignorado.',
+          'Uma linha sem valor válido foi ignorada.',
         );
         continue;
       }
-      final normalized = _normalizedSupplier(supplier);
+      final effectiveSupplier = supplier.isEmpty
+          ? _unknownSupplierName(request, proposals)
+          : supplier;
+      if (supplier.isEmpty) {
+        warnings.add(
+          'Fornecedor não informado: a proposta será incorporada como “$effectiveSupplier”.',
+        );
+      }
+      final normalized = _normalizedSupplier(effectiveSupplier);
       if (known.contains(normalized)) {
         warnings.add(
-          '$supplier já possui uma proposta no Atlas e foi ignorado.',
+          '$effectiveSupplier já possui uma proposta no Atlas e foi ignorado.',
         );
         continue;
       }
@@ -73,12 +86,12 @@ class FarmQuoteReturnImportService {
       final receivedAt = _parseDate(dateText, fallbackYear: importedAt.year);
       if (dateText.isNotEmpty && receivedAt == null) {
         warnings.add(
-          'A data de $supplier foi substituída pela data da importação.',
+          'A data de $effectiveSupplier foi substituída pela data da importação.',
         );
       }
       proposals.add(
         FarmSupplierProposal(
-          supplierName: supplier,
+          supplierName: effectiveSupplier,
           totalAmount: amount,
           receivedAt: (receivedAt ?? importedAt).toIso8601String(),
           notes: notes,
@@ -106,7 +119,7 @@ class FarmQuoteReturnImportService {
     final suppliedName = _findLabeledText(sheet, 'Fornecedor').trim();
     final supplier =
         suppliedName.isEmpty || suppliedName == 'Preencher pelo fornecedor'
-        ? _unknownSupplierName(request)
+        ? _unknownSupplierName(request, const [])
         : suppliedName;
     if (supplier != suppliedName) {
       warnings.add(
@@ -146,7 +159,8 @@ class FarmQuoteReturnImportService {
       total += computed;
       validItems++;
     }
-    if (validItems == 0) {
+    final declaredTotal = _findLabeledAmount(sheet, 'TOTAL DA PROPOSTA');
+    if (validItems == 0 && (declaredTotal == null || declaredTotal <= 0)) {
       return FarmQuoteReturnImportResult(
         warnings: [...warnings, 'Nenhum item com valor válido foi encontrado.'],
       );
@@ -154,8 +168,9 @@ class FarmQuoteReturnImportService {
 
     final freight = _findLabeledAmount(sheet, 'Frete (R\$)');
     final discount = _findLabeledAmount(sheet, 'Desconto (R\$)');
-    total += freight ?? 0;
-    total -= discount ?? 0;
+    total = declaredTotal != null && declaredTotal > 0
+        ? declaredTotal
+        : total + (freight ?? 0) - (discount ?? 0);
     if (total <= 0) {
       return FarmQuoteReturnImportResult(
         warnings: [...warnings, 'O total calculado da proposta não é válido.'],
@@ -192,7 +207,7 @@ class FarmQuoteReturnImportService {
 
   double? _findLabeledAmount(Sheet sheet, String label) {
     for (var row = 0; row < sheet.maxRows; row++) {
-      if (_cellText(sheet, row, 3).trim() == label) {
+      if (_cellText(sheet, row, 3).trim().startsWith(label)) {
         return _cellAmount(sheet, row, 4);
       }
     }
@@ -221,10 +236,65 @@ class FarmQuoteReturnImportService {
     return '';
   }
 
-  String _unknownSupplierName(FarmQuoteRequest request) {
+  Sheet? _selectSheet(Excel workbook) {
+    final named = workbook.tables['Retornos'];
+    if (named != null) return named;
+    for (final sheet in workbook.tables.values) {
+      if (sheet.maxRows > 0 && sheet.maxColumns > 0) return sheet;
+    }
+    return null;
+  }
+
+  _GenericHeader? _findGenericHeader(Sheet sheet) {
+    for (var row = 0; row < sheet.maxRows; row++) {
+      int? supplierColumn;
+      int? amountColumn;
+      int? dateColumn;
+      int? notesColumn;
+      for (var column = 0; column < sheet.maxColumns; column++) {
+        final label = _normalizeHeader(_cellText(sheet, row, column));
+        if (label.isEmpty) continue;
+        if (label.contains('fornecedor') || label.contains('empresa')) {
+          supplierColumn ??= column;
+        } else if (label.contains('valor total') || label == 'total' || label == 'valor') {
+          amountColumn ??= column;
+        } else if (label.contains('data') || label.contains('recebimento')) {
+          dateColumn ??= column;
+        } else if (label.contains('observa') || label.contains('condi') || label.contains('prazo')) {
+          notesColumn ??= column;
+        }
+      }
+      if (amountColumn != null) {
+        return _GenericHeader(
+          row: row,
+          supplierColumn: supplierColumn ?? -1,
+          amountColumn: amountColumn,
+          dateColumn: dateColumn ?? -1,
+          notesColumn: notesColumn ?? -1,
+        );
+      }
+    }
+    return null;
+  }
+
+  String _normalizeHeader(String value) => value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[áàãâä]'), 'a')
+      .replaceAll(RegExp(r'[éèêë]'), 'e')
+      .replaceAll(RegExp(r'[íìîï]'), 'i')
+      .replaceAll(RegExp(r'[óòõôö]'), 'o')
+      .replaceAll(RegExp(r'[úùûü]'), 'u')
+      .replaceAll(RegExp(r'[^a-z0-9 ]'), '')
+      .trim();
+
+  String _unknownSupplierName(
+    FarmQuoteRequest request,
+    Iterable<FarmSupplierProposal> pending,
+  ) {
     const base = 'Fornecedor não identificado';
     final names = request.proposals
         .map((proposal) => _normalizedSupplier(proposal.supplierName))
+        .followedBy(pending.map((proposal) => _normalizedSupplier(proposal.supplierName)))
         .toSet();
     if (!names.contains(_normalizedSupplier(base))) return base;
     var index = 2;
@@ -235,6 +305,7 @@ class FarmQuoteReturnImportService {
   }
 
   String _cellText(Sheet sheet, int row, int column) {
+    if (column < 0) return '';
     final value = sheet
         .cell(CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row))
         .value;
@@ -245,6 +316,7 @@ class FarmQuoteReturnImportService {
   }
 
   double? _cellAmount(Sheet sheet, int row, int column) {
+    if (column < 0) return null;
     final value = sheet
         .cell(CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row))
         .value;
@@ -321,6 +393,22 @@ class FarmQuoteReturnImportService {
   }
 
   String _normalizedSupplier(String value) => value.trim().toLowerCase();
+}
+
+class _GenericHeader {
+  const _GenericHeader({
+    required this.row,
+    required this.supplierColumn,
+    required this.amountColumn,
+    required this.dateColumn,
+    required this.notesColumn,
+  });
+
+  final int row;
+  final int supplierColumn;
+  final int amountColumn;
+  final int dateColumn;
+  final int notesColumn;
 }
 
 class FarmQuoteReturnImportResult {
