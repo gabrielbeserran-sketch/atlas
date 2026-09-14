@@ -18,6 +18,8 @@ dependencies:
   http_parser: ^4.1.2
   file_selector: ^1.1.0
   image_picker: ^1.2.2
+  # OCR executado no aparelho (Android/iOS), sem enviar a nota para um servidor.
+  google_mlkit_text_recognition: ^0.17.1
   url_launcher: ^6.3.2
   flutter_secure_storage: ^9.2.4
   sqflite_common_ffi: ^2.3.4+4

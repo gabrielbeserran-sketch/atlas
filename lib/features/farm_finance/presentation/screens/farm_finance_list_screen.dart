@@ -7,6 +7,7 @@ import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
+import 'package:projeto_atlas/features/farm_finance/data/services/financial_local_ocr_service.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/financial_document_remote_service.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/financial_offline_photo_queue.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
@@ -39,6 +40,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
   final ImagePicker imagePicker = ImagePicker();
   final FinancialDocumentRemoteService documentService =
       FinancialDocumentRemoteService();
+  final FinancialLocalOcrService localOcr = const FinancialLocalOcrService();
   final FinancialOfflinePhotoQueue offlinePhotoQueue =
       FinancialOfflinePhotoQueue();
 
@@ -369,15 +371,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         maxHeight: 2400,
       );
       if (photo == null || !mounted) return;
-      final readWithAi = await _confirmOcr();
+      var suggestion = await _readPhotoLocally(photo.path);
       if (!mounted) return;
-      Map<String, dynamic> suggestion = const {};
       final farmId = widget.farm.id ?? '';
-      if (readWithAi && farmId.isNotEmpty) {
-        suggestion = await _readPhotoWithAi(
-          farmId: farmId,
-          photoPath: photo.path,
-        );
+      if (suggestion.isEmpty) {
+        final readWithAi = await _confirmOcr();
+        if (!mounted) return;
+        if (readWithAi && farmId.isNotEmpty) {
+          suggestion = await _readPhotoWithAi(
+            farmId: farmId,
+            photoPath: photo.path,
+          );
+        }
       }
       if (!mounted) return;
       await openFinanceForm(
@@ -393,6 +398,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           ),
         ),
       );
+    }
+  }
+
+  Future<Map<String, dynamic>> _readPhotoLocally(String photoPath) async {
+    if (!localOcr.isAvailable) return const {};
+    _showOcrProgress(local: true);
+    try {
+      return await localOcr.readSuggestion(photoPath);
+    } catch (_) {
+      return const {};
+    } finally {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
@@ -506,11 +523,11 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         false;
   }
 
-  void _showOcrProgress() {
+  void _showOcrProgress({bool local = false}) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => const PopScope(
+      builder: (dialogContext) => PopScope(
         canPop: false,
         child: AlertDialog(
           content: Row(
@@ -521,7 +538,13 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                 child: CircularProgressIndicator(),
               ),
               SizedBox(width: 20),
-              Expanded(child: Text('Lendo a nota e preparando sugestões...')),
+              Expanded(
+                child: Text(
+                  local
+                      ? 'Lendo a nota neste dispositivo...'
+                      : 'Lendo a nota e preparando sugestões...',
+                ),
+              ),
             ],
           ),
         ),

@@ -164,6 +164,9 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
         .toList();
   }
 
+  bool get _usedOnDeviceOcr =>
+      widget.ocrSuggestion['source']?.toString() == 'on_device';
+
   @override
   void dispose() {
     for (final controller in [
@@ -325,11 +328,15 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                           title: Text(
                             widget.ocrSuggestion.isEmpty
                                 ? 'Nota fotografada para este lançamento'
+                                : _usedOnDeviceOcr
+                                ? 'Sugestões lidas neste dispositivo'
                                 : 'Sugestões da nota prontas para revisão',
                           ),
                           subtitle: Text(
                             widget.ocrSuggestion.isEmpty
                                 ? 'Preencha ou confira os dados abaixo. A foto será anexada quando você salvar.'
+                                : _usedOnDeviceOcr
+                                ? 'A imagem não foi enviada ao servidor. Confira os dados antes de salvar.'
                                 : 'Confira os campos preenchidos pela IA. A foto será anexada quando você salvar.',
                           ),
                         ),
@@ -346,7 +353,11 @@ class _FarmFinanceFormScreenState extends State<FarmFinanceFormScreen> {
                                   style: Theme.of(context).textTheme.titleSmall,
                                 ),
                                 const SizedBox(height: 6),
-                                Text('Confiança estimada: $_ocrConfidence%'),
+                                Text(
+                                  _usedOnDeviceOcr
+                                      ? 'Leitura local estimada: $_ocrConfidence%'
+                                      : 'Confiança estimada: $_ocrConfidence%',
+                                ),
                                 const SizedBox(height: 8),
                                 const Text(
                                   'Revise fornecedor, número, valor, categoria e situação antes de salvar.',

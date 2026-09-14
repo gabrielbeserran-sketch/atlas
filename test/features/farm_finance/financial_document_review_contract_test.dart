@@ -24,6 +24,9 @@ void main() {
     final financeStorage = read(
       'lib/features/farm_finance/data/services/farm_finance_storage_service.dart',
     );
+    final localOcr = read(
+      'lib/features/farm_finance/data/services/financial_local_ocr_service.dart',
+    );
     final httpClient = read('lib/core/network/atlas_http_client.dart');
     final manifest = read('android/app/src/main/AndroidManifest.xml');
     final backendRouter = read('backend/app/routers/financial_documents.py');
@@ -52,6 +55,9 @@ void main() {
     expect(financeList, contains('_confirmOcr'));
     expect(financeList, contains('_ocrFailureMessage'));
     expect(financeList, contains('_readPhotoWithAi'));
+    expect(financeList, contains('_readPhotoLocally'));
+    expect(financeList, contains('Lendo a nota neste dispositivo'));
+    expect(financeList, contains('FinancialLocalOcrService'));
     expect(financeList, contains('_offerOcrRetry'));
     expect(financeList, contains('_canRetryOcr'));
     expect(financeList, contains("normalized.contains('limite da api')"));
@@ -72,6 +78,8 @@ void main() {
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));
+    expect(financeForm, contains('Sugestões lidas neste dispositivo'));
+    expect(financeForm, contains('A imagem não foi enviada ao servidor'));
     expect(financeForm, contains('Confiança estimada:'));
     expect(financeForm, contains('_parseOcrDate'));
     expect(financeForm, contains("suggestion['document_date']"));
@@ -100,5 +108,8 @@ void main() {
     );
     expect(httpClient, contains('contentType: _contentTypeForPath(filePath)'));
     expect(httpClient, contains("MediaType('image', 'jpeg')"));
+    expect(localOcr, contains('Platform.isAndroid || Platform.isIOS'));
+    expect(localOcr, contains('TextRecognizer'));
+    expect(localOcr, contains("'source': 'on_device'"));
   });
 }
