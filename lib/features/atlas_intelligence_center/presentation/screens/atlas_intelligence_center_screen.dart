@@ -49,6 +49,7 @@ class _AtlasIntelligenceCenterScreenState
   final TextEditingController returnController = TextEditingController();
 
   Map<String, dynamic>? officialContext;
+  String? contextSnapshotId;
   List<AtlasAiRecommendation> recommendations = const [];
   AtlasAiSimulation? simulation;
   bool loading = false;
@@ -810,12 +811,23 @@ class _AtlasIntelligenceCenterScreenState
   Future<void> loadContext(String farmId) async {
     await runRequest(() async {
       officialContext = await service.buildContext(farmId);
+      contextSnapshotId = officialContext?['id']?.toString();
     });
+  }
+
+  Future<void> ensureSnapshot(String farmId) async {
+    if (contextSnapshotId?.isNotEmpty == true) return;
+    officialContext = await service.buildContext(farmId);
+    contextSnapshotId = officialContext?['id']?.toString();
   }
 
   Future<void> loadRecommendations(String farmId) async {
     await runRequest(() async {
-      recommendations = await service.recommendations(farmId);
+      await ensureSnapshot(farmId);
+      recommendations = await service.recommendations(
+        farmId,
+        contextSnapshotId: contextSnapshotId,
+      );
     });
   }
 
@@ -845,6 +857,7 @@ class _AtlasIntelligenceCenterScreenState
 
   Future<void> simulate(String farmId) async {
     await runRequest(() async {
+      await ensureSnapshot(farmId);
       double parse(TextEditingController controller) {
         return double.tryParse(controller.text.replaceAll(',', '.')) ?? 0;
       }
@@ -855,6 +868,7 @@ class _AtlasIntelligenceCenterScreenState
         extraCost: parse(costController),
         investment: parse(investmentController),
         expectedReturn: parse(returnController),
+        contextSnapshotId: contextSnapshotId,
       );
     });
   }

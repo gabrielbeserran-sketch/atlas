@@ -17,6 +17,7 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Regressão transversal: Financeiro e acesso offline | Concluído | 100% | 26 testes cobriram Financeiro, OCR local, cotações, login offline, sessão e fila de sincronização. Build Windows de produção e APK Android atual foram gerados sem erros. |
 | Arquitetura de Inteligência e Analytics | Concluído | 100% | Central única de Análises definida e protegida por contrato: resumo, diagnóstico, análise por área, cenários e decisões. Copilot e motores especializados permanecem contextuais, sem virar menu concorrente. |
 | Inteligência: decisão vinculada a Anotações e Agenda | Pronto para publicação | 95% | Uma decisão pode gerar anotação com referência persistente à recomendação e a anotação aproveita a promoção idempotente já existente para a Agenda. Frontend, rota, modelo, migração e contratos locais aprovados; falta publicar a migração/servidor antes de expor o comando aos usuários. |
+| Inteligência: snapshot único por fazenda | Pronto para publicação | 95% | A Central guarda um contexto oficial por atualização e envia seu identificador às prioridades e aos cenários. O servidor valida empresa e fazenda antes de reutilizar o snapshot, evitando leituras cruzadas ou dados de momentos diferentes. |
 | Publicação do OCR no Render | Bloqueado externamente | 90% | O servidor e a chave estão ativos, mas a API de leitura retornou limite atingido. A homologação final depende da renovação/ampliação da cota do provedor. |
 
 ## Regra de entrega

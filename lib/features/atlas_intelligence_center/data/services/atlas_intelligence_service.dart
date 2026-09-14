@@ -9,10 +9,16 @@ class AtlasIntelligenceService {
   Future<Map<String, dynamic>> buildContext(String farmId) =>
       _api.request('POST', '/ai-operational/farms/$farmId/context');
 
-  Future<List<AtlasAiRecommendation>> recommendations(String farmId) async {
+  Future<List<AtlasAiRecommendation>> recommendations(
+    String farmId, {
+    String? contextSnapshotId,
+  }) async {
     final data = await _api.request(
       'POST',
       '/ai-operational/farms/$farmId/recommendations',
+      body: contextSnapshotId == null
+          ? const <String, dynamic>{}
+          : {'context_snapshot_id': contextSnapshotId},
     );
     final items = data['recommendations'];
     if (items is! List) return const [];
@@ -39,6 +45,7 @@ class AtlasIntelligenceService {
     required double extraCost,
     required double investment,
     required double expectedReturn,
+    String? contextSnapshotId,
   }) async {
     final data = await _api.request(
       'POST',
@@ -48,6 +55,7 @@ class AtlasIntelligenceService {
         'extra_cost': extraCost,
         'investment': investment,
         'expected_return': expectedReturn,
+        if (contextSnapshotId != null) 'context_snapshot_id': contextSnapshotId,
       },
     );
     return AtlasAiSimulation.fromMap(data);

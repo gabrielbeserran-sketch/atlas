@@ -13,7 +13,8 @@ from ..services.ai_operational_service import build_official_context, generate_r
 router=APIRouter(prefix='/ai-operational', tags=['AI Operational'])
 class DecisionIn(BaseModel): decision:str; result:dict=Field(default_factory=dict)
 class MemoryIn(BaseModel): area:str; title:str; summary:str=''; evidence:list=Field(default_factory=list); decision:dict=Field(default_factory=dict); result:dict=Field(default_factory=dict); confidence:float=0
-class SimulationIn(BaseModel): sale_amount:float=0; extra_cost:float=0; investment:float=0; expected_return:float=0
+class SimulationIn(BaseModel): sale_amount:float=0; extra_cost:float=0; investment:float=0; expected_return:float=0; context_snapshot_id:str|None=None
+class RecommendationsIn(BaseModel): context_snapshot_id:str|None=None
 class AutomationIn(BaseModel): recommendation_id:str|None=None; action_type:str; payload:dict=Field(default_factory=dict); requires_approval:bool=True; financial_limit:float=0
 class ModelIn(BaseModel): model_key:str; version:str; owner:str; authorized_data:list=Field(default_factory=list); minimum_metrics:dict=Field(default_factory=dict); current_metrics:dict=Field(default_factory=dict); rollback_version:str=''
 
@@ -27,9 +28,16 @@ def context(farm_id:str, period_days:int=90, db:Session=Depends(get_db), p:Princ
     db.add(row); db.commit(); db.refresh(row)
     return {'id':row.id,**built}
 @router.post('/farms/{farm_id}/recommendations')
-def recommendations(farm_id:str, db:Session=Depends(get_db), p:Principal=Depends(principal_dep)):
-    require_farm_scope(p,farm_id); built=build_official_context(db,company_id=p.company.id,farm_id=farm_id)
-    snapshot=AiContextSnapshot(tenant_id=p.company.tenant_id,company_id=p.company.id,farm_id=farm_id,context_hash=built['context_hash'],payload=built['payload'],quality=built['quality'],created_by=p.user.id); db.add(snapshot); db.flush()
+def recommendations(farm_id:str,payload:RecommendationsIn, db:Session=Depends(get_db), p:Principal=Depends(principal_dep)):
+    require_farm_scope(p,farm_id)
+    snapshot=None
+    if payload.context_snapshot_id:
+        snapshot=db.scalar(select(AiContextSnapshot).where(AiContextSnapshot.id==payload.context_snapshot_id,AiContextSnapshot.company_id==p.company.id,AiContextSnapshot.farm_id==farm_id))
+        if snapshot is None: raise HTTPException(404,'Snapshot de contexto não encontrado.')
+        built={'context_hash':snapshot.context_hash,'payload':snapshot.payload,'quality':snapshot.quality}
+    else:
+        built=build_official_context(db,company_id=p.company.id,farm_id=farm_id)
+        snapshot=AiContextSnapshot(tenant_id=p.company.tenant_id,company_id=p.company.id,farm_id=farm_id,context_hash=built['context_hash'],payload=built['payload'],quality=built['quality'],created_by=p.user.id); db.add(snapshot); db.flush()
     out=[]
     for item in generate_recommendations(built):
         row=AiRecommendationRecord(tenant_id=p.company.tenant_id,company_id=p.company.id,farm_id=farm_id,context_snapshot_id=snapshot.id,area=item['area'],title=item['title'],description=item['description'],evidence=item['evidence'],limitations=item['limitations'],confidence=item['confidence'],priority=item['priority'],recommended_action=item['recommended_action'])
@@ -45,9 +53,13 @@ def decision(recommendation_id:str, payload:DecisionIn, db:Session=Depends(get_d
 def memory(farm_id:str,payload:MemoryIn,db:Session=Depends(get_db),p:Principal=Depends(principal_dep)):
     require_farm_scope(p,farm_id); row=AtlasBrainMemory(company_id=p.company.id,tenant_id=p.company.tenant_id,farm_id=farm_id,area=payload.area,title=payload.title,summary=payload.summary,evidence_json=payload.evidence,decision_json=payload.decision,result_json=payload.result,confidence=payload.confidence); db.add(row); db.commit(); db.refresh(row); return {'id':row.id}
 @router.post('/farms/{farm_id}/simulate')
-def simulate(farm_id:str,payload:SimulationIn,p:Principal=Depends(principal_dep)):
-    require_farm_scope(p,farm_id); net=payload.sale_amount+payload.expected_return-payload.extra_cost-payload.investment
-    return {'farm_id':farm_id,'projected_variation':net,'roi_percent':round((payload.expected_return-payload.investment)/payload.investment*100,2) if payload.investment else None,'assumptions':payload.model_dump(),'confidence':0.7}
+def simulate(farm_id:str,payload:SimulationIn,db:Session=Depends(get_db),p:Principal=Depends(principal_dep)):
+    require_farm_scope(p,farm_id)
+    if payload.context_snapshot_id:
+        snapshot=db.scalar(select(AiContextSnapshot).where(AiContextSnapshot.id==payload.context_snapshot_id,AiContextSnapshot.company_id==p.company.id,AiContextSnapshot.farm_id==farm_id))
+        if snapshot is None: raise HTTPException(404,'Snapshot de contexto não encontrado.')
+    net=payload.sale_amount+payload.expected_return-payload.extra_cost-payload.investment
+    return {'farm_id':farm_id,'context_snapshot_id':payload.context_snapshot_id or '','projected_variation':net,'roi_percent':round((payload.expected_return-payload.investment)/payload.investment*100,2) if payload.investment else None,'assumptions':payload.model_dump(),'confidence':0.7}
 @router.post('/farms/{farm_id}/automations')
 def create_automation(farm_id:str,payload:AutomationIn,db:Session=Depends(get_db),p:Principal=Depends(require_permission('automation.manage'))):
     require_farm_scope(p,farm_id); status='pending_approval' if payload.requires_approval else 'approved'; row=AiSupervisedAutomation(tenant_id=p.company.tenant_id,company_id=p.company.id,farm_id=farm_id,recommendation_id=payload.recommendation_id,action_type=payload.action_type,payload=payload.payload,requires_approval=payload.requires_approval,financial_limit=payload.financial_limit,status=status); db.add(row); db.commit(); db.refresh(row); return {'id':row.id,'status':row.status}
