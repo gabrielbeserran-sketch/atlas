@@ -16,8 +16,10 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Cotações: importação tolerante de retornos XLSX | Concluído | 100% | O importador aceita aba com outro nome e cabeçalhos usuais, permite fornecedor ausente com identificação provisória e usa total declarado quando os itens estiverem incompletos. Nenhum dado é gravado sem revisão; nove cenários automatizados aprovados. |
 | Regressão transversal: Financeiro e acesso offline | Concluído | 100% | 26 testes cobriram Financeiro, OCR local, cotações, login offline, sessão e fila de sincronização. Build Windows de produção e APK Android atual foram gerados sem erros. |
 | Arquitetura de Inteligência e Analytics | Concluído | 100% | Central única de Análises definida e protegida por contrato: resumo, diagnóstico, análise por área, cenários e decisões. Copilot e motores especializados permanecem contextuais, sem virar menu concorrente. |
-| Inteligência: decisão vinculada a Anotações e Agenda | Pronto para publicação | 95% | Uma decisão pode gerar anotação com referência persistente à recomendação e a anotação aproveita a promoção idempotente já existente para a Agenda. Frontend, rota, modelo, migração e contratos locais aprovados; falta publicar a migração/servidor antes de expor o comando aos usuários. |
-| Inteligência: snapshot único por fazenda | Pronto para publicação | 95% | A Central guarda um contexto oficial por atualização e envia seu identificador às prioridades e aos cenários. O servidor valida empresa e fazenda antes de reutilizar o snapshot, evitando leituras cruzadas ou dados de momentos diferentes. |
+| Inteligência: decisão vinculada a Anotações e Agenda | Publicado, homologação remota pendente | 97% | Uma decisão gera anotação com referência persistente à recomendação e a anotação aproveita a promoção idempotente já existente para a Agenda. Frontend, rota, modelo, migração e contratos passaram; o commit está no repositório remoto e a saúde do servidor respondeu 200. Falta exercitar o fluxo contra a API publicada para confirmar a migration em produção. |
+| Inteligência: snapshot único por fazenda | Publicado, homologação remota pendente | 97% | A Central guarda um contexto oficial por atualização e envia seu identificador às prioridades e aos cenários. O servidor valida empresa e fazenda antes de reutilizar o snapshot, evitando leituras cruzadas ou dados de momentos diferentes. Contrato Flutter e teste do servidor aprovados; falta homologação contra a API publicada. |
+| Android: atualização da cadeia de build | Concluído | 100% | Gradle 8.14, Android Gradle Plugin 8.11.1 e Kotlin 2.2.20. APK debug recompilado com sucesso pela cadeia atualizada e checkpoint Git auditável. |
+| Regressão integrada: Inteligência, Anotações e documentos financeiros | Concluído | 100% | Três contratos Flutter e três testes de servidor aprovados: decisão rastreável, snapshot por fazenda e comprovantes financeiros offline. |
 | Publicação do OCR no Render | Bloqueado externamente | 90% | O servidor e a chave estão ativos, mas a API de leitura retornou limite atingido. A homologação final depende da renovação/ampliação da cota do provedor. |
 
 ## Regra de entrega
@@ -26,6 +28,6 @@ Uma etapa só muda para **Concluído** quando houver arquivos alterados, teste/v
 
 ## Entrega em validação
 
-- Testes concluídos: regressão transversal com 26 cenários e análise estática dos serviços/telas modificados.
-- APK Android: `build/app/outputs/flutter-apk/app-debug.apk` — SHA-256 `39FF3C1282BF4ED9145B4DA239D8AFE974E4262CE41E8D9C703619FFFAC47B9A`.
-- Gate finalizado: checkpoint Git, análise estática, contratos, build Windows de produção e APK Android de validação concluídos.
+- Testes concluídos: regressão transversal com 26 cenários; neste pacote, três contratos Flutter e três testes de servidor aprovados.
+- APK Android: `build/app/outputs/flutter-apk/app-debug.apk` — SHA-256 `959ADC1D8AF1569F653C5696B1B724D8F80E4043240C96E4FBD82709C4F1613A`.
+- Gate finalizado: checkpoint Git, contratos integrados e APK Android recompilado com Gradle 8.14, AGP 8.11.1 e Kotlin 2.2.20.
