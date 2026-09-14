@@ -24,6 +24,7 @@ void main() {
     final financeStorage = read(
       'lib/features/farm_finance/data/services/farm_finance_storage_service.dart',
     );
+    final httpClient = read('lib/core/network/atlas_http_client.dart');
     final manifest = read('android/app/src/main/AndroidManifest.xml');
     final backendRouter = read('backend/app/routers/financial_documents.py');
     final backendOcr = read('backend/app/services/financial_document_ocr.py');
@@ -87,5 +88,7 @@ void main() {
       financeStorage,
       contains('await _offlinePhotos.syncReady(farmName)'),
     );
+    expect(httpClient, contains('contentType: _contentTypeForPath(filePath)'));
+    expect(httpClient, contains("MediaType('image', 'jpeg')"));
   });
 }

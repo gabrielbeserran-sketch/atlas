@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:uuid/uuid.dart';
 import 'package:projeto_atlas/core/network/atlas_environment.dart';
 import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
@@ -118,9 +119,7 @@ class AtlasHttpClient {
     int retriesRemaining, {
     Map<String, String>? headers,
   }) {
-    return Future<void>.delayed(
-      _retryDelay(retriesRemaining, headers),
-    );
+    return Future<void>.delayed(_retryDelay(retriesRemaining, headers));
   }
 
   Future<AtlasHttpResponse> send(
@@ -251,10 +250,7 @@ class AtlasHttpClient {
     if (_isTransientStatus(response.statusCode) &&
         transientRetries > 0 &&
         _isIdempotentMethod(method)) {
-      await _waitBeforeRetry(
-        transientRetries,
-        headers: response.headers,
-      );
+      await _waitBeforeRetry(transientRetries, headers: response.headers);
       return send(
         method,
         path,
@@ -417,7 +413,6 @@ class AtlasHttpClient {
     }
   }
 
-
   Future<AtlasHttpResponse> uploadFile(
     String method,
     String path, {
@@ -437,7 +432,11 @@ class AtlasHttpClient {
     );
     request.fields.addAll(fields);
     request.files.add(
-      await http.MultipartFile.fromPath(fileField, filePath),
+      await http.MultipartFile.fromPath(
+        fileField,
+        filePath,
+        contentType: _contentTypeForPath(filePath),
+      ),
     );
 
     http.StreamedResponse streamed;
@@ -493,6 +492,26 @@ class AtlasHttpClient {
     );
   }
 
+  /// Alguns seletores do Windows devolvem uma foto como octet-stream. O OCR
+  /// exige o MIME real para aceitar a imagem recebida pela API multipart.
+  MediaType _contentTypeForPath(String filePath) {
+    final extension = filePath
+        .trim()
+        .split(RegExp(r'[\\/]'))
+        .last
+        .split('.')
+        .last
+        .toLowerCase();
+    return switch (extension) {
+      'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+      'png' => MediaType('image', 'png'),
+      'webp' => MediaType('image', 'webp'),
+      'gif' => MediaType('image', 'gif'),
+      'pdf' => MediaType('application', 'pdf'),
+      _ => MediaType('application', 'octet-stream'),
+    };
+  }
+
   Future<List<int>> downloadBytes(
     String path, {
     bool retryOnUnauthorized = true,
@@ -504,13 +523,15 @@ class AtlasHttpClient {
 
     http.Response response;
     try {
-      response = await _client.get(
-        uri,
-        headers: await _authenticatedHeaders(
-          session,
-          includeJsonContentType: false,
-        ),
-      ).timeout(AtlasEnvironmentConfig.current.receiveTimeout);
+      response = await _client
+          .get(
+            uri,
+            headers: await _authenticatedHeaders(
+              session,
+              includeJsonContentType: false,
+            ),
+          )
+          .timeout(AtlasEnvironmentConfig.current.receiveTimeout);
     } on TimeoutException {
       throw const AtlasHttpException(
         'O servidor demorou para preparar o download.',
