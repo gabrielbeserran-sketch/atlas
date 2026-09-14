@@ -51,8 +51,16 @@ void main() {
     expect(financeList, contains('_confirmOcr'));
     expect(financeList, contains('_ocrFailureMessage'));
     expect(financeList, contains('ainda não foi configurada no servidor'));
-    expect(financeList, contains('Lançamento e foto preservados neste dispositivo.'));
+    expect(
+      financeList,
+      contains('Lançamento e foto preservados neste dispositivo.'),
+    );
     expect(financeList, contains('offlinePhotoQueue.stage('));
+    expect(financeList, contains('pendingOfflinePhotoCount'));
+    expect(
+      financeList,
+      contains('comprovante(s) também aguardando envio seguro'),
+    );
     expect(service, contains('/financial-documents/ocr-preview'));
     expect(financeForm, contains('Nota fotografada para este lançamento'));
     expect(financeForm, contains('Sugestões da nota prontas para revisão'));
@@ -75,6 +83,9 @@ void main() {
     expect(offlinePhotoQueue, contains('syncReady'));
     expect(offlinePhotoQueue, contains('await file.delete()'));
     expect(financeStorage, contains('await _offlinePhotos.markRemoteEntry('));
-    expect(financeStorage, contains('await _offlinePhotos.syncReady(farmName)'));
+    expect(
+      financeStorage,
+      contains('await _offlinePhotos.syncReady(farmName)'),
+    );
   });
 }

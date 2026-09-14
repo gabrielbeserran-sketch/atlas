@@ -46,6 +46,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
 
   List<FarmFinanceData> records = [];
   int pendingOfflineCount = 0;
+  int pendingOfflinePhotoCount = 0;
 
   bool isLoading = true;
   String? loadError;
@@ -135,8 +136,18 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         records = savedRecords;
         sortRecords();
       });
-      pendingOfflineCount = await storage.pendingOfflineCount(widget.farm.name);
-      if (mounted) setState(() {});
+      final pendingEntries = await storage.pendingOfflineCount(
+        widget.farm.name,
+      );
+      final pendingPhotos = await offlinePhotoQueue.pendingCount(
+        widget.farm.name,
+      );
+      if (mounted) {
+        setState(() {
+          pendingOfflineCount = pendingEntries;
+          pendingOfflinePhotoCount = pendingPhotos;
+        });
+      }
     } catch (error) {
       if (mounted) {
         setState(() => loadError = error.toString());
@@ -224,6 +235,9 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
           sourcePath: documentPhotoPath,
         );
         photoPreservedOffline = true;
+        if (mounted) {
+          setState(() => pendingOfflinePhotoCount++);
+        }
       } catch (_) {
         // O lançamento continua preservado mesmo que a cópia da foto falhe.
       }
@@ -642,8 +656,10 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
                               title: Text(
                                 '$pendingOfflineCount lançamento(s) aguardando conexão',
                               ),
-                              subtitle: const Text(
-                                'O Atlas tentará sincronizar ao atualizar o Financeiro.',
+                              subtitle: Text(
+                                pendingOfflinePhotoCount == 0
+                                    ? 'O Atlas tentará sincronizar ao atualizar o Financeiro.'
+                                    : '$pendingOfflinePhotoCount comprovante(s) também aguardando envio seguro.',
                               ),
                               trailing: TextButton(
                                 onPressed: loadRecords,
