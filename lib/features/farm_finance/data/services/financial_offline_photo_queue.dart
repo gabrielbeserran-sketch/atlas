@@ -88,6 +88,12 @@ class FinancialOfflinePhotoQueue {
   Future<int> pendingCount(String farmName) async =>
       (await _read(farmName)).length;
 
+  /// Informa se um lançamento específico ainda possui comprovante preservado.
+  Future<bool> hasPendingForEntry({
+    required String farmName,
+    required String entryId,
+  }) async => (await _read(farmName)).containsKey(entryId);
+
   Future<Map<String, _QueuedPhoto>> _read(String farmName) async {
     final raw = await _preferences.getString(_key(farmName));
     if (raw == null || raw.isEmpty) return {};

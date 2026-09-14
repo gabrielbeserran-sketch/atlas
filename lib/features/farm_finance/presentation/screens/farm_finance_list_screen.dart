@@ -568,6 +568,7 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       builder: (_) => FinancialDocumentCenterScreen(
         entryId: record.id,
         title: record.description,
+        farmName: widget.farm.name,
         capturedDocumentPath: capturedDocumentPath,
       ),
     ),

@@ -85,6 +85,11 @@ void main() {
     expect(financeForm, contains("suggestion['document_date']"));
     expect(screen, contains('Foto capturada pronta para anexar'));
     expect(screen, contains('Anexar foto'));
+    expect(screen, contains('Comprovante preservado neste dispositivo'));
+    expect(screen, contains('será enviada ao atualizar'));
+    expect(screen, contains('_offlinePhotoQueue.stage('));
+    expect(screen, contains('_offlinePhotoQueue.syncReady(widget.farmName)'));
+    expect(financeList, contains('farmName: widget.farm.name'));
     expect(manifest, contains('android.permission.CAMERA'));
     expect(backendRouter, contains('@router.post("/ocr-preview")'));
     expect(backendRouter, contains('"requires_review": True'));
@@ -100,6 +105,7 @@ void main() {
     expect(offlinePhotoQueue, contains('getApplicationDocumentsDirectory'));
     expect(offlinePhotoQueue, contains('markRemoteEntry'));
     expect(offlinePhotoQueue, contains('syncReady'));
+    expect(offlinePhotoQueue, contains('hasPendingForEntry'));
     expect(offlinePhotoQueue, contains('await file.delete()'));
     expect(financeStorage, contains('await _offlinePhotos.markRemoteEntry('));
     expect(

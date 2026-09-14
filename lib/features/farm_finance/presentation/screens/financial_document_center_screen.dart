@@ -4,16 +4,19 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/financial_document_remote_service.dart';
+import 'package:projeto_atlas/features/farm_finance/data/services/financial_offline_photo_queue.dart';
 
 class FinancialDocumentCenterScreen extends StatefulWidget {
   const FinancialDocumentCenterScreen({
     required this.entryId,
     required this.title,
+    required this.farmName,
     this.capturedDocumentPath,
     super.key,
   });
   final String entryId;
   final String title;
+  final String farmName;
   final String? capturedDocumentPath;
   @override
   State<FinancialDocumentCenterScreen> createState() =>
@@ -23,12 +26,14 @@ class FinancialDocumentCenterScreen extends StatefulWidget {
 class _FinancialDocumentCenterScreenState
     extends State<FinancialDocumentCenterScreen> {
   final _service = FinancialDocumentRemoteService();
+  final _offlinePhotoQueue = FinancialOfflinePhotoQueue();
   final _imagePicker = ImagePicker();
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
   bool _uploading = false;
   String? _loadError;
   String? _capturedDocumentPath;
+  bool _hasPendingOfflinePhoto = false;
   @override
   void initState() {
     super.initState();
@@ -40,9 +45,17 @@ class _FinancialDocumentCenterScreenState
     if (mounted) setState(() => _loadError = null);
     try {
       _items = await _service.list(widget.entryId);
+      final uploaded = await _offlinePhotoQueue.syncReady(widget.farmName);
+      if (uploaded > 0) {
+        _items = await _service.list(widget.entryId);
+      }
     } catch (_) {
       _loadError = 'Não foi possível carregar os documentos agora.';
     }
+    _hasPendingOfflinePhoto = await _offlinePhotoQueue.hasPendingForEntry(
+      farmName: widget.farmName,
+      entryId: widget.entryId,
+    );
     if (mounted) setState(() => _loading = false);
   }
 
@@ -95,6 +108,27 @@ class _FinancialDocumentCenterScreenState
       _showMessage(successMessage);
       return true;
     } catch (_) {
+      try {
+        await _offlinePhotoQueue.stage(
+          farmName: widget.farmName,
+          entryId: widget.entryId,
+          sourcePath: filePath,
+        );
+        await _offlinePhotoQueue.markRemoteEntry(
+          farmName: widget.farmName,
+          localEntryId: widget.entryId,
+          remoteEntryId: widget.entryId,
+        );
+        _hasPendingOfflinePhoto = true;
+        if (mounted) {
+          _showMessage(
+            'Sem conexão: a foto foi preservada neste dispositivo e será enviada ao atualizar.',
+          );
+        }
+        return true;
+      } catch (_) {
+        // Mantém a mensagem de falha abaixo quando a cópia local também falhar.
+      }
       if (!mounted) return false;
       _showMessage('Não foi possível anexar o documento. Tente novamente.');
       return false;
@@ -249,6 +283,19 @@ class _FinancialDocumentCenterScreenState
                 'Os arquivos ficam vinculados ao lançamento. Confira os dados antes de aprovar; a aprovação continua sempre humana.',
               ),
               const SizedBox(height: 16),
+              if (_hasPendingOfflinePhoto) ...[
+                Card(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  child: const ListTile(
+                    leading: Icon(Icons.cloud_upload_outlined),
+                    title: Text('Comprovante preservado neste dispositivo'),
+                    subtitle: Text(
+                      'Ele será enviado automaticamente quando você atualizar com conexão.',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               if (_capturedDocumentPath != null) ...[
                 Card(
                   color: Theme.of(context).colorScheme.primaryContainer,
