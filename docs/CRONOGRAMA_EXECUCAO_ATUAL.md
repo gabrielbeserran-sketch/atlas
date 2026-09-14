@@ -11,7 +11,7 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Financeiro: diagnóstico seguro do provedor OCR | Concluído | 100% | O servidor traduz erros de chave, limite e modelo sem registrar foto, resposta bruta ou segredo. A leitura real confirmou o diagnóstico de limite do provedor. |
 | Financeiro: repetir leitura da mesma foto | Concluído | 100% | Se o OCR falhar temporariamente, o usuário pode repetir a leitura com a mesma imagem ou preencher manualmente, sem nova captura. Análise, contrato e build Windows aprovados. |
 | Financeiro: prevenção de repetição sem resultado | Concluído | 100% | Quando a chave, modelo ou limite do OCR impedirem a leitura, o aplicativo explica a situação e não oferece uma nova chamada inútil. Análise, contrato e build Windows aprovados. |
-| Financeiro: OCR local no celular | Em validação | 90% | Android/iOS leem o texto no próprio aparelho antes de qualquer opção de nuvem; fornecedor, data, documento, valor e categoria são sugestões revisáveis. A foto e o texto não saem do dispositivo. Contrato, APK Android de validação e build Windows aprovados; falta teste em aparelho. |
+| Financeiro: OCR local no celular | Em validação | 95% | Android/iOS leem o texto no próprio aparelho antes de qualquer opção de nuvem; fornecedor, data, documento, valor e categoria são sugestões revisáveis. A foto e o texto não saem do dispositivo. Contrato, APK Android de validação, build Windows e testes determinísticos de parsing aprovados; falta teste em aparelho. |
 | Publicação do OCR no Render | Bloqueado externamente | 90% | O servidor e a chave estão ativos, mas a API de leitura retornou limite atingido. A homologação final depende da renovação/ampliação da cota do provedor. |
 
 ## Regra de entrega

@@ -20,13 +20,15 @@ class FinancialLocalOcrService {
       final result = await recognizer.processImage(
         InputImage.fromFilePath(filePath),
       );
-      return _suggestFromText(result.text);
+      return parseRecognizedText(result.text);
     } finally {
       await recognizer.close();
     }
   }
 
-  Map<String, dynamic> _suggestFromText(String rawText) {
+  /// Converte texto reconhecido em sugestões conservadoras para revisão.
+  /// Público para permitir testes sem câmera, plugin nativo ou rede.
+  Map<String, dynamic> parseRecognizedText(String rawText) {
     final lines = rawText
         .split(RegExp(r'\r?\n'))
         .map((line) => line.trim().replaceAll(RegExp(r'\s+'), ' '))
@@ -98,7 +100,7 @@ class FinancialLocalOcrService {
 
   String _documentNumber(String text) {
     final match = RegExp(
-      r'(?:n(?:ota)?\s*fiscal|nf-?e|n[úu]mero)\s*(?:n[º°.]?\s*)?[:#-]?\s*([A-Za-z0-9.-]{3,})',
+      r'\b(?:n(?:ota)?\s*fiscal|nf-?e|n[úu]mero)\b\s*(?:n[º°.]?\s*)?[:#-]?\s*([A-Za-z0-9.-]{3,})',
       caseSensitive: false,
     ).firstMatch(text);
     return match?.group(1)?.trim() ?? '';
