@@ -374,35 +374,10 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
       Map<String, dynamic> suggestion = const {};
       final farmId = widget.farm.id ?? '';
       if (readWithAi && farmId.isNotEmpty) {
-        _showOcrProgress();
-        try {
-          final response = await documentService.previewOcr(
-            farmId: farmId,
-            filePath: photo.path,
-          );
-          final data = response['suggested_data'];
-          if (data is Map) {
-            suggestion = Map<String, dynamic>.from(data);
-          }
-        } on AtlasEnterpriseApiException catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(_ocrFailureMessage(error))));
-          }
-        } catch (_) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Não foi possível ler a nota agora. Você pode preencher manualmente.',
-                ),
-              ),
-            );
-          }
-        } finally {
-          if (mounted) Navigator.of(context, rootNavigator: true).pop();
-        }
+        suggestion = await _readPhotoWithAi(
+          farmId: farmId,
+          photoPath: photo.path,
+        );
       }
       if (!mounted) return;
       await openFinanceForm(
@@ -419,6 +394,61 @@ class _FarmFinanceListScreenState extends State<FarmFinanceListScreen> {
         ),
       );
     }
+  }
+
+  Future<Map<String, dynamic>> _readPhotoWithAi({
+    required String farmId,
+    required String photoPath,
+  }) async {
+    while (mounted) {
+      _showOcrProgress();
+      var failureMessage =
+          'Não foi possível ler a nota agora. Você pode preencher manualmente.';
+      try {
+        final response = await documentService.previewOcr(
+          farmId: farmId,
+          filePath: photoPath,
+        );
+        final data = response['suggested_data'];
+        return data is Map ? Map<String, dynamic>.from(data) : const {};
+      } on AtlasEnterpriseApiException catch (error) {
+        failureMessage = _ocrFailureMessage(error);
+      } catch (_) {
+        failureMessage =
+            'Não foi possível ler a nota agora. Você pode preencher manualmente.';
+      } finally {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      if (!mounted || !await _offerOcrRetry(failureMessage)) {
+        return const {};
+      }
+    }
+    return const {};
+  }
+
+  Future<bool> _offerOcrRetry(String message) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Leitura da nota não concluída'),
+            content: Text(
+              '$message\n\nVocê pode tentar novamente com esta mesma foto ou seguir com o preenchimento manual.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Preencher manualmente'),
+              ),
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   String _ocrFailureMessage(AtlasEnterpriseApiException error) {

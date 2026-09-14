@@ -51,6 +51,10 @@ void main() {
     expect(financeList, contains('Ler nota com IA'));
     expect(financeList, contains('_confirmOcr'));
     expect(financeList, contains('_ocrFailureMessage'));
+    expect(financeList, contains('_readPhotoWithAi'));
+    expect(financeList, contains('_offerOcrRetry'));
+    expect(financeList, contains('Tentar novamente'));
+    expect(financeList, contains('esta mesma foto'));
     expect(financeList, contains('ainda não foi configurada no servidor'));
     expect(
       financeList,
