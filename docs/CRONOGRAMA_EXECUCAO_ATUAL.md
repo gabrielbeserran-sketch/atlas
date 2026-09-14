@@ -16,6 +16,7 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Cotações: importação tolerante de retornos XLSX | Concluído | 100% | O importador aceita aba com outro nome e cabeçalhos usuais, permite fornecedor ausente com identificação provisória e usa total declarado quando os itens estiverem incompletos. Nenhum dado é gravado sem revisão; nove cenários automatizados aprovados. |
 | Regressão transversal: Financeiro e acesso offline | Concluído | 100% | 26 testes cobriram Financeiro, OCR local, cotações, login offline, sessão e fila de sincronização. Build Windows de produção e APK Android atual foram gerados sem erros. |
 | Arquitetura de Inteligência e Analytics | Concluído | 100% | Central única de Análises definida e protegida por contrato: resumo, diagnóstico, análise por área, cenários e decisões. Copilot e motores especializados permanecem contextuais, sem virar menu concorrente. |
+| Inteligência: decisão vinculada a Anotações e Agenda | Pronto para publicação | 95% | Uma decisão pode gerar anotação com referência persistente à recomendação e a anotação aproveita a promoção idempotente já existente para a Agenda. Frontend, rota, modelo, migração e contratos locais aprovados; falta publicar a migração/servidor antes de expor o comando aos usuários. |
 | Publicação do OCR no Render | Bloqueado externamente | 90% | O servidor e a chave estão ativos, mas a API de leitura retornou limite atingido. A homologação final depende da renovação/ampliação da cota do provedor. |
 
 ## Regra de entrega

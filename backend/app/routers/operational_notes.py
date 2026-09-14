@@ -19,9 +19,13 @@ router = APIRouter(prefix="/operational-notes", tags=["operational-notes"])
 class NoteCreatePayload(BaseModel):
     farm_id: str = Field(min_length=1, max_length=80)
     content: str = Field(min_length=1, max_length=12000)
-    source: str = Field(default="text", pattern="^(text|voice_transcription)$")
+    source: str = Field(
+        default="text", pattern="^(text|voice_transcription|intelligence_decision)$"
+    )
     transcript: str = Field(default="", max_length=12000)
     folder_id: str | None = Field(default=None, max_length=80)
+    reference_type: str = Field(default="", max_length=40)
+    reference_id: str = Field(default="", max_length=120)
 
 
 class NoteFolderCreatePayload(BaseModel):
@@ -48,6 +52,8 @@ def _note_payload(item: OperationalNote) -> dict:
         "content": item.content,
         "source": item.source,
         "transcript": item.transcript,
+        "reference_type": item.reference_type,
+        "reference_id": item.reference_id,
         "created_at": item.created_at.isoformat(),
         "updated_at": item.updated_at.isoformat(),
     }
@@ -207,6 +213,8 @@ def create_note(
         content=content,
         source=payload.source,
         transcript=payload.transcript.strip(),
+        reference_type=payload.reference_type.strip(),
+        reference_id=payload.reference_id.strip(),
     )
     db.add(item)
     record_audit(
@@ -222,6 +230,8 @@ def create_note(
             "source": item.source,
             "content_length": len(item.content),
             "folder_id": item.folder_id,
+            "reference_type": item.reference_type,
+            "reference_id": item.reference_id,
         },
     )
     db.commit()

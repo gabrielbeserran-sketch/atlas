@@ -9,6 +9,7 @@ import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/a
 import 'package:projeto_atlas/features/atlas_intelligence_center/domain/models/atlas_intelligence_models.dart';
 import 'package:projeto_atlas/features/farm/data/services/atlas_farm_intelligence_snapshot_loader.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/operational_notes/data/services/operational_note_remote_service.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
 
 class AtlasIntelligenceCenterScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _AtlasIntelligenceCenterScreenState
   final AtlasIntelligenceService service = AtlasIntelligenceService();
   final AtlasFarmIntelligenceSnapshotLoader contextLoader =
       AtlasFarmIntelligenceSnapshotLoader();
+  final OperationalNoteRemoteService noteService = OperationalNoteRemoteService();
   final TextEditingController saleController = TextEditingController();
   final TextEditingController costController = TextEditingController();
   final TextEditingController investmentController = TextEditingController();
@@ -582,6 +584,11 @@ class _AtlasIntelligenceCenterScreenState
                 onPressed: () => decide(item, 'rejected'),
                 child: const Text('Não seguir'),
               ),
+              TextButton.icon(
+                onPressed: () => saveDecisionAsNote(item),
+                icon: const Icon(Icons.sticky_note_2_outlined),
+                label: const Text('Salvar em Anotações'),
+              ),
             ],
           ),
         ],
@@ -815,6 +822,25 @@ class _AtlasIntelligenceCenterScreenState
   Future<void> decide(AtlasAiRecommendation item, String decision) async {
     await runRequest(() => service.decide(item.id, decision));
     if (mounted) showMessage('Decisão registrada.');
+  }
+
+  Future<void> saveDecisionAsNote(AtlasAiRecommendation item) async {
+    final farm = AtlasSessionScope.read(context).activeFarm;
+    if (farm == null || farm.id.trim().isEmpty) {
+      showMessage('Escolha uma fazenda antes de salvar a decisão.');
+      return;
+    }
+    await runRequest(() => noteService.create(
+      farmId: farm.id,
+      content: 'Decisão vinculada à análise\n${item.title}\n\nAção sugerida: ${item.action}',
+      cameFromVoice: false,
+      source: 'intelligence_decision',
+      referenceType: 'ai_recommendation',
+      referenceId: item.id,
+    ));
+    if (mounted && errorMessage == null) {
+      showMessage('Decisão salva em Anotações com referência à análise.');
+    }
   }
 
   Future<void> simulate(String farmId) async {

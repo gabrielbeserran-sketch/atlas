@@ -7,6 +7,8 @@ class OperationalNote {
     required this.content,
     required this.source,
     required this.transcript,
+    required this.referenceType,
+    required this.referenceId,
     required this.createdAt,
   });
 
@@ -17,6 +19,8 @@ class OperationalNote {
   final String content;
   final String source;
   final String transcript;
+  final String referenceType;
+  final String referenceId;
   final DateTime? createdAt;
 
   bool get cameFromVoice => source == 'voice_transcription';
@@ -29,6 +33,8 @@ class OperationalNote {
     content: map['content']?.toString() ?? '',
     source: map['source']?.toString() ?? 'text',
     transcript: map['transcript']?.toString() ?? '',
+    referenceType: map['reference_type']?.toString() ?? '',
+    referenceId: map['reference_id']?.toString() ?? '',
     createdAt: DateTime.tryParse(map['created_at']?.toString() ?? '')?.toLocal(),
   );
 }

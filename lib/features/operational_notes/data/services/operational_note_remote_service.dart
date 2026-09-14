@@ -42,6 +42,9 @@ class OperationalNoteRemoteService {
     required String content,
     required bool cameFromVoice,
     String? folderId,
+    String? source,
+    String referenceType = '',
+    String referenceId = '',
   }) async {
     final row = await _api.request(
       'POST',
@@ -49,9 +52,11 @@ class OperationalNoteRemoteService {
       body: {
         'farm_id': farmId,
         'content': content,
-        'source': cameFromVoice ? 'voice_transcription' : 'text',
+        'source': source ?? (cameFromVoice ? 'voice_transcription' : 'text'),
         'transcript': cameFromVoice ? content : '',
         'folder_id': folderId,
+        'reference_type': referenceType,
+        'reference_id': referenceId,
       },
     );
     return OperationalNote.fromMap(row);

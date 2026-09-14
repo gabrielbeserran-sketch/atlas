@@ -837,6 +837,8 @@ class OperationalNote(Base):
     content: Mapped[str] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(30), default="text", index=True)
     transcript: Mapped[str] = mapped_column(Text, default="")
+    reference_type: Mapped[str] = mapped_column(String(40), default="", index=True)
+    reference_id: Mapped[str] = mapped_column(String(120), default="", index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, index=True
     )
