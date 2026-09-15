@@ -45,4 +45,23 @@ VALOR TOTAL R\$ 1.250,50
       '35260912345678000190550010000012341000012345',
     );
   });
+
+  test('normaliza data curta de DANFE e rejeita data inexistente', () {
+    final normalized = service.parseRecognizedText('''
+MERCADO RURAL LTDA
+NFE 12345
+Emissão: 09-09-26
+TOTAL R\$ 74,00
+''');
+    final invalid = service.parseRecognizedText('''
+MERCADO RURAL LTDA
+NFE 12346
+Emissão: 31/02/2026
+TOTAL R\$ 75,00
+''');
+
+    expect(normalized['document_date'], '09/09/2026');
+    expect(invalid['document_date'], isEmpty);
+    expect(invalid['warnings'], contains('Data da nota não identificada.'));
+  });
 }

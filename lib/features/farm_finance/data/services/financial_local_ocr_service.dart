@@ -64,7 +64,7 @@ class FinancialLocalOcrService {
     if (lines.isEmpty) return const {};
 
     final supplier = _supplier(lines);
-    final date = _firstMatch(rawText, RegExp(r'\b(\d{2}[/-]\d{2}[/-]\d{4})\b'));
+    final date = _documentDate(rawText);
     final documentNumber = _documentNumber(rawText);
     final total = _total(lines);
     final category = _category(rawText);
@@ -120,6 +120,15 @@ class FinancialLocalOcrService {
       'cnpj',
       'cpf',
       'endereço',
+      'data de emissão',
+      'data emissao',
+      'emitente',
+      'destinatário',
+      'destinatario',
+      'inscrição estadual',
+      'inscricao estadual',
+      'telefone',
+      'cep',
       'total',
     ];
     for (final line in lines.take(12)) {
@@ -140,6 +149,26 @@ class FinancialLocalOcrService {
       caseSensitive: false,
     ).firstMatch(text);
     return match?.group(1)?.trim() ?? '';
+  }
+
+  /// Aceita as datas numéricas usuais do DANFE e só devolve valores de
+  /// calendário válidos. O formulário financeiro recebe sempre dd/MM/aaaa.
+  String _documentDate(String text) {
+    final match = RegExp(
+      r'\b(\d{2})[/-](\d{2})[/-](\d{2}|\d{4})\b',
+    ).firstMatch(text);
+    if (match == null) return '';
+    final day = int.tryParse(match.group(1) ?? '');
+    final month = int.tryParse(match.group(2) ?? '');
+    final yearText = match.group(3) ?? '';
+    final parsedYear = int.tryParse(yearText);
+    if (day == null || month == null || parsedYear == null) return '';
+    final year = yearText.length == 2 ? 2000 + parsedYear : parsedYear;
+    final value = DateTime(year, month, day);
+    if (value.year != year || value.month != month || value.day != day) {
+      return '';
+    }
+    return '${day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/$year';
   }
 
   String _total(List<String> lines) {
@@ -183,6 +212,4 @@ class FinancialLocalOcrService {
     return 'Outras despesas';
   }
 
-  String _firstMatch(String text, RegExp pattern) =>
-      pattern.firstMatch(text)?.group(1)?.trim() ?? '';
 }
