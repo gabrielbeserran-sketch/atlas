@@ -141,7 +141,11 @@ class AnimalReproductionStorageService {
       'GET',
       '/livestock/animals/$animalId/reproduction',
     );
-    return response.asMapList().map(AnimalReproductionData.fromMap).toList();
+    return response
+        .asMapList()
+        .map(AnimalReproductionData.fromMap)
+        .map((record) => record.withAnimalId(animalId))
+        .toList();
   }
 
   Future<List<AnimalReproductionData>> _loadLocal(String key) async {
@@ -160,11 +164,9 @@ class AnimalReproductionStorageService {
     }
   }
 
-  Future<void> _saveLocal(
-    String key,
-    List<AnimalReproductionData> records,
-  ) => _preferences.setString(
-    key,
-    jsonEncode(records.map((record) => record.toMap()).toList()),
-  );
+  Future<void> _saveLocal(String key, List<AnimalReproductionData> records) =>
+      _preferences.setString(
+        key,
+        jsonEncode(records.map((record) => record.toMap()).toList()),
+      );
 }

@@ -81,11 +81,11 @@ class TechnicalDashboardService {
           ),
         );
         reproductionRecords.addAll(
-          await _reproductionStorage.loadRecords(
+          (await _reproductionStorage.loadRecords(
             farmName: farm.name,
             groupName: group.name,
             animalId: animal.id,
-          ),
+          )).map((record) => record.withAnimalId(animal.id)),
         );
 
         final weights = await _weightStorage.loadWeights(

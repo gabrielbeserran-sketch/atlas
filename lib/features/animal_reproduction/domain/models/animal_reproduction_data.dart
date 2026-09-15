@@ -18,6 +18,7 @@ class AnimalReproductionData {
     this.calfSex = '',
     this.birthType = '',
     this.synced = false,
+    this.animalId = '',
   });
   final String id,
       type,
@@ -36,6 +37,7 @@ class AnimalReproductionData {
       birthType;
   final int attemptNumber, pregnancyDays;
   final bool synced;
+  final String animalId;
   bool get isInsemination =>
       eventCode == 'ai' ||
       eventCode == 'iatf' ||
@@ -62,6 +64,7 @@ class AnimalReproductionData {
     'calfSex': calfSex,
     'birthType': birthType,
     'synced': synced,
+    'animalId': animalId,
   };
   Map<String, dynamic> toApi() => {
     'event_type': type,
@@ -105,7 +108,30 @@ class AnimalReproductionData {
         calfSex: '${m['calfSex'] ?? m['calf_sex'] ?? ''}',
         birthType: '${m['birthType'] ?? m['birth_type'] ?? ''}',
         synced: m['synced'] == true || m.containsKey('event_type'),
+        animalId: '${m['animalId'] ?? m['animal_id'] ?? ''}',
       );
+
+  AnimalReproductionData withAnimalId(String value) => AnimalReproductionData(
+    id: id,
+    type: type,
+    date: date,
+    result: result,
+    bullOrSemen: bullOrSemen,
+    responsible: responsible,
+    notes: notes,
+    eventCode: eventCode,
+    protocolName: protocolName,
+    protocolStage: protocolStage,
+    expectedDate: expectedDate,
+    reproductiveStatus: reproductiveStatus,
+    attemptNumber: attemptNumber,
+    pregnancyDays: pregnancyDays,
+    calfId: calfId,
+    calfSex: calfSex,
+    birthType: birthType,
+    synced: synced,
+    animalId: value,
+  );
   static String eventCodeFor(String type, String current) {
     if (current != 'observation') return current;
     const x = {
