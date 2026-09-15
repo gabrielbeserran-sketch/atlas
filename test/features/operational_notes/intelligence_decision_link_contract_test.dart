@@ -35,6 +35,20 @@ void main() {
         ),
         contains('referenceType: note.referenceType'),
       );
+      final notesScreen = read(
+        'lib/features/operational_notes/presentation/screens/operational_notes_screen.dart',
+      );
+      expect(notesScreen, contains('bool _creatingFolder = false;'));
+      expect(
+        notesScreen,
+        contains(
+          'final refreshedFolders = await _service.listFolders(_farmId);',
+        ),
+      );
+      expect(
+        notesScreen,
+        contains(r'Pasta "$name" criada, sincronizada e selecionada.'),
+      );
       expect(
         read('backend/app/routers/operational_notes.py'),
         contains('Uma decisão aponta para uma recomendação única.'),

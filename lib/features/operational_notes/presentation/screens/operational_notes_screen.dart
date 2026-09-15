@@ -4,9 +4,14 @@ import 'package:projeto_atlas/features/dr_beserra/data/services/dr_beserra_voice
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/operational_notes/data/services/operational_note_remote_service.dart';
 import 'package:projeto_atlas/features/operational_notes/domain/models/operational_note.dart';
+import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 
 class OperationalNotesScreen extends StatefulWidget {
-  const OperationalNotesScreen({required this.farm, this.embedded = false, super.key});
+  const OperationalNotesScreen({
+    required this.farm,
+    this.embedded = false,
+    super.key,
+  });
 
   final FarmData farm;
   final bool embedded;
@@ -24,6 +29,7 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   String? _selectedFolderId;
   bool _loading = true;
   bool _saving = false;
+  bool _creatingFolder = false;
   bool _voiceDraft = false;
   String? _error;
 
@@ -88,7 +94,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Não foi possível carregar as anotações.');
+      if (mounted) {
+        setState(() => _error = 'Não foi possível carregar as anotações.');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -102,7 +110,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
     }
     final available = await _voice.startListening();
     if (!available && mounted) {
-      _message('O reconhecimento de voz não está disponível neste dispositivo.');
+      _message(
+        'O reconhecimento de voz não está disponível neste dispositivo.',
+      );
     }
   }
 
@@ -132,7 +142,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       });
       _message('Anotação salva para ${widget.farm.name}.');
     } catch (_) {
-      if (mounted) _message('Não foi possível salvar a anotação. Tente novamente.');
+      if (mounted) {
+        _message('Não foi possível salvar a anotação. Tente novamente.');
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -141,7 +153,8 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   Future<void> _promote(OperationalNote note) async {
     final draft = await showDialog<_TaskDraft>(
       context: context,
-      builder: (_) => _CreateAgendaTaskDialog(initialTitle: _titleFrom(note.content)),
+      builder: (_) =>
+          _CreateAgendaTaskDialog(initialTitle: _titleFrom(note.content)),
     );
     if (draft == null || !mounted) return;
     try {
@@ -151,15 +164,24 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         priority: draft.priority,
       );
       if (!mounted) return;
-      _message(created
-          ? 'Compromisso criado na Agenda.'
-          : 'Esta anotação já possui um compromisso na Agenda.');
+      _message(
+        created
+            ? 'Compromisso criado na Agenda.'
+            : 'Esta anotação já possui um compromisso na Agenda.',
+      );
     } catch (_) {
-      if (mounted) _message('Não foi possível criar o compromisso. Tente novamente.');
+      if (mounted) {
+        _message('Não foi possível criar o compromisso. Tente novamente.');
+      }
     }
   }
 
   Future<void> _createFolder() async {
+    if (_creatingFolder) return;
+    if (_farmId.isEmpty) {
+      _message('Selecione uma fazenda válida antes de criar uma pasta.');
+      return;
+    }
     final controller = TextEditingController();
     final name = await showDialog<String>(
       context: context,
@@ -176,7 +198,10 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
           onSubmitted: (value) => Navigator.pop(context, value.trim()),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
             child: const Text('Criar pasta'),
@@ -186,17 +211,48 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
     );
     controller.dispose();
     if (name == null || name.isEmpty) return;
+    setState(() => _creatingFolder = true);
     try {
       final folder = await _service.createFolder(farmId: _farmId, name: name);
+      // O POST isolado não é evidência suficiente de que a pasta será
+      // encontrada no próximo acesso. Releia a fonte oficial antes de
+      // informar sucesso e de selecioná-la na interface.
+      final refreshedFolders = await _service.listFolders(_farmId);
+      if (!refreshedFolders.any((item) => item.id == folder.id)) {
+        throw const AtlasEnterpriseApiException(
+          'A pasta foi recebida, mas não pôde ser confirmada no servidor.',
+          code: 'folder_not_persisted',
+        );
+      }
       if (!mounted) return;
       setState(() {
-        _folders = [..._folders, folder]..sort((a, b) => a.name.compareTo(b.name));
+        _folders = refreshedFolders;
         _selectedFolderId = folder.id;
       });
-      _message('Pasta "$name" criada e selecionada.');
+      _message('Pasta "$name" criada, sincronizada e selecionada.');
+    } on AtlasEnterpriseApiException catch (error) {
+      if (mounted) _message(_folderErrorMessage(error));
     } catch (_) {
-      if (mounted) _message('Não foi possível criar a pasta. Verifique se o assunto já existe.');
+      if (mounted) {
+        _message(
+          'Não foi possível confirmar a pasta no servidor. Tente novamente.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _creatingFolder = false);
     }
+  }
+
+  String _folderErrorMessage(AtlasEnterpriseApiException error) {
+    return switch (error.statusCode) {
+      401 => 'Sua sessão expirou. Entre novamente para criar a pasta.',
+      403 => 'Sua conta não tem permissão para criar pastas nesta fazenda.',
+      409 => 'Já existe uma pasta com este assunto nesta fazenda.',
+      _ =>
+        error.message.trim().isEmpty
+            ? 'Não foi possível criar a pasta no servidor.'
+            : 'Não foi possível criar a pasta: ${error.message}',
+    };
   }
 
   Future<void> _move(OperationalNote note) async {
@@ -216,7 +272,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
               (folder) => ListTile(
                 leading: const Icon(Icons.folder_outlined),
                 title: Text(folder.name),
-                trailing: folder.id == note.folderId ? const Icon(Icons.check) : null,
+                trailing: folder.id == note.folderId
+                    ? const Icon(Icons.check)
+                    : null,
                 onTap: () => Navigator.pop(context, folder.id),
               ),
             ),
@@ -231,7 +289,11 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         folderId: folderId.isEmpty ? null : folderId,
       );
       if (!mounted) return;
-      setState(() => _notes = _notes.map((item) => item.id == updated.id ? updated : item).toList());
+      setState(
+        () => _notes = _notes
+            .map((item) => item.id == updated.id ? updated : item)
+            .toList(),
+      );
       _message('Pasta da anotação atualizada.');
     } catch (_) {
       if (mounted) _message('Não foi possível mover a anotação.');
@@ -243,11 +305,18 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Excluir anotação?'),
-        content: const Text('Esta ação remove a anotação. Um compromisso já criado na Agenda será preservado.'),
+        content: const Text(
+          'Esta ação remove a anotação. Um compromisso já criado na Agenda será preservado.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Excluir'),
           ),
@@ -258,8 +327,14 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
     try {
       final keptTask = await _service.delete(note.id);
       if (!mounted) return;
-      setState(() => _notes = _notes.where((item) => item.id != note.id).toList());
-      _message(keptTask ? 'Anotação excluída; compromisso da Agenda preservado.' : 'Anotação excluída.');
+      setState(
+        () => _notes = _notes.where((item) => item.id != note.id).toList(),
+      );
+      _message(
+        keptTask
+            ? 'Anotação excluída; compromisso da Agenda preservado.'
+            : 'Anotação excluída.',
+      );
     } catch (_) {
       if (mounted) _message('Não foi possível excluir a anotação.');
     }
@@ -274,11 +349,18 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Excluir pasta "${folder.name}"?'),
-        content: const Text('As anotações serão preservadas e ficarão sem pasta.'),
+        content: const Text(
+          'As anotações serão preservadas e ficarão sem pasta.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Excluir pasta'),
           ),
@@ -290,13 +372,24 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
       final preserved = await _service.deleteFolder(folder.id);
       if (!mounted) return;
       setState(() {
-        _notes = _notes.map((note) => note.folderId == folder.id
-            ? OperationalNote(
-                id: note.id, farmId: note.farmId, folderId: null, authorUserId: note.authorUserId,
-                content: note.content, source: note.source, transcript: note.transcript,
-                referenceType: note.referenceType, referenceId: note.referenceId,
-                createdAt: note.createdAt)
-            : note).toList();
+        _notes = _notes
+            .map(
+              (note) => note.folderId == folder.id
+                  ? OperationalNote(
+                      id: note.id,
+                      farmId: note.farmId,
+                      folderId: null,
+                      authorUserId: note.authorUserId,
+                      content: note.content,
+                      source: note.source,
+                      transcript: note.transcript,
+                      referenceType: note.referenceType,
+                      referenceId: note.referenceId,
+                      createdAt: note.createdAt,
+                    )
+                  : note,
+            )
+            .toList();
         _folders = _folders.where((item) => item.id != folder.id).toList();
         _selectedFolderId = null;
       });
@@ -312,7 +405,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
   }
 
   void _message(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   OperationalNoteFolder? _folderById(String? id) {
@@ -344,9 +439,14 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
     child: ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('Anotações da operação', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+          'Anotações da operação',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
         const SizedBox(height: 6),
-        Text('${widget.farm.name} · texto ou voz transcrita, sempre vinculada à fazenda.'),
+        Text(
+          '${widget.farm.name} · texto ou voz transcrita, sempre vinculada à fazenda.',
+        ),
         const SizedBox(height: 16),
         _Composer(
           controller: _content,
@@ -366,7 +466,9 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
           selectedFolderId: _selectedFolderId,
           onChanged: (value) => setState(() => _selectedFolderId = value),
           onCreate: _createFolder,
-          onDeleteSelected: _selectedFolderId == null ? null : _deleteSelectedFolder,
+          onDeleteSelected: _selectedFolderId == null
+              ? null
+              : _deleteSelectedFolder,
         ),
         const SizedBox(height: 12),
         if (_error != null)
@@ -375,7 +477,10 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
             child: ListTile(
               leading: const Icon(Icons.cloud_off_outlined),
               title: Text(_error!),
-              trailing: TextButton(onPressed: _load, child: const Text('Tentar novamente')),
+              trailing: TextButton(
+                onPressed: _load,
+                child: const Text('Tentar novamente'),
+              ),
             ),
           ),
         if (_loading)
@@ -394,8 +499,16 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
           ..._visibleNotes.map(
             (note) => Card(
               child: ListTile(
-                leading: Icon(note.cameFromVoice ? Icons.mic_outlined : Icons.sticky_note_2_outlined),
-                title: Text(note.content, maxLines: 3, overflow: TextOverflow.ellipsis),
+                leading: Icon(
+                  note.cameFromVoice
+                      ? Icons.mic_outlined
+                      : Icons.sticky_note_2_outlined,
+                ),
+                title: Text(
+                  note.content,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 subtitle: Text(
                   '${_folderName(note.folderId)} · ${note.cameFromVoice ? 'Voz transcrita' : 'Texto'} · ${_date(note.createdAt)}',
                 ),
@@ -411,10 +524,19 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
                     }
                   },
                   itemBuilder: (context) => const [
-                    PopupMenuItem(value: _NoteAction.agenda, child: Text('Criar compromisso na Agenda')),
-                    PopupMenuItem(value: _NoteAction.move, child: Text('Mover para pasta')),
+                    PopupMenuItem(
+                      value: _NoteAction.agenda,
+                      child: Text('Criar compromisso na Agenda'),
+                    ),
+                    PopupMenuItem(
+                      value: _NoteAction.move,
+                      child: Text('Mover para pasta'),
+                    ),
                     PopupMenuDivider(),
-                    PopupMenuItem(value: _NoteAction.delete, child: Text('Excluir anotação')),
+                    PopupMenuItem(
+                      value: _NoteAction.delete,
+                      child: Text('Excluir anotação'),
+                    ),
                   ],
                 ),
               ),
@@ -486,10 +608,21 @@ class _Composer extends StatelessWidget {
                       border: OutlineInputBorder(),
                     ),
                     items: [
-                      const DropdownMenuItem(value: '', child: Text('Sem pasta')),
-                      ...folders.map((folder) => DropdownMenuItem(value: folder.id, child: Text(folder.name))),
+                      const DropdownMenuItem(
+                        value: '',
+                        child: Text('Sem pasta'),
+                      ),
+                      ...folders.map(
+                        (folder) => DropdownMenuItem(
+                          value: folder.id,
+                          child: Text(folder.name),
+                        ),
+                      ),
                     ],
-                    onChanged: saving ? null : (value) => onFolderChanged(value == '' ? null : value),
+                    onChanged: saving
+                        ? null
+                        : (value) =>
+                              onFolderChanged(value == '' ? null : value),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -506,7 +639,10 @@ class _Composer extends StatelessWidget {
             ],
             if (state.errorMessage.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(state.errorMessage, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(
+                state.errorMessage,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 12),
             Wrap(
@@ -515,8 +651,14 @@ class _Composer extends StatelessWidget {
               children: [
                 OutlinedButton.icon(
                   onPressed: saving ? null : onRecord,
-                  icon: Icon(state.listening ? Icons.stop_circle_outlined : Icons.mic_none_outlined),
-                  label: Text(state.listening ? 'Parar ditado' : 'Ditar anotação'),
+                  icon: Icon(
+                    state.listening
+                        ? Icons.stop_circle_outlined
+                        : Icons.mic_none_outlined,
+                  ),
+                  label: Text(
+                    state.listening ? 'Parar ditado' : 'Ditar anotação',
+                  ),
                 ),
                 FilledButton.icon(
                   onPressed: saving ? null : onSave,
@@ -595,7 +737,8 @@ class _CreateAgendaTaskDialog extends StatefulWidget {
   final String initialTitle;
 
   @override
-  State<_CreateAgendaTaskDialog> createState() => _CreateAgendaTaskDialogState();
+  State<_CreateAgendaTaskDialog> createState() =>
+      _CreateAgendaTaskDialogState();
 }
 
 class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
@@ -633,7 +776,10 @@ class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
       ],
     ),
     actions: [
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
       FilledButton(
         onPressed: () => Navigator.pop(
           context,
