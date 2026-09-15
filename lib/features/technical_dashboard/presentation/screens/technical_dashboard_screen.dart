@@ -267,7 +267,10 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                       else if (analysis == null)
                         const _EmptyDashboard()
                       else
-                        _SummaryContent(analysis: analysis!),
+                        _SummaryContent(
+                          analysis: analysis!,
+                          productionFocus: widget.productionFocus,
+                        ),
                     ],
                   ),
                 ),
@@ -538,9 +541,10 @@ class _VariationBadge extends StatelessWidget {
 }
 
 class _SummaryContent extends StatelessWidget {
-  const _SummaryContent({required this.analysis});
+  const _SummaryContent({required this.analysis, this.productionFocus});
 
   final TechnicalDashboardAnalysis analysis;
+  final TechnicalProductionFocus? productionFocus;
 
   TechnicalFarmSummary get summary => analysis.current;
 
@@ -553,6 +557,40 @@ class _SummaryContent extends StatelessWidget {
         const SizedBox(height: 18),
         _FinancialEvolutionCard(points: analysis.financialSeries),
         const SizedBox(height: 18),
+        if (productionFocus == TechnicalProductionFocus.dairy) ...[
+          _ModuleCard(
+            width: double.infinity,
+            title: 'Índices reprodutivos do leite',
+            icon: Icons.monitor_heart_outlined,
+            metrics: [
+              (
+                'DEL médio',
+                summary.dairyReproduction.averageDaysInMilk == null
+                    ? 'Dados insuficientes'
+                    : '${summary.dairyReproduction.averageDaysInMilk!.toStringAsFixed(0)} dias',
+              ),
+              (
+                'Matrizes com parto conhecido',
+                '${summary.dairyReproduction.lactatingCowsWithKnownCalving}',
+              ),
+              (
+                'Taxa de concepção',
+                summary.dairyReproduction.conceptionRate == null
+                    ? 'Dados insuficientes'
+                    : '${summary.dairyReproduction.conceptionRate!.toStringAsFixed(1)}%',
+              ),
+              (
+                'Inseminações',
+                '${summary.dairyReproduction.inseminationAttempts}',
+              ),
+              (
+                'Diagnósticos positivos',
+                '${summary.dairyReproduction.confirmedPregnancies}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+        ],
         Wrap(
           spacing: 14,
           runSpacing: 14,

@@ -5,6 +5,7 @@ import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_d
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_data.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 
 class TechnicalFarmSummary {
   const TechnicalFarmSummary({
@@ -34,6 +35,7 @@ class TechnicalFarmSummary {
     required this.lowStockItems,
     required this.outOfStockItems,
     required this.inventoryMovements,
+    required this.dairyReproduction,
   });
 
   final int groupCount;
@@ -62,6 +64,7 @@ class TechnicalFarmSummary {
   final int lowStockItems;
   final int outOfStockItems;
   final int inventoryMovements;
+  final DairyReproductionIndicators dairyReproduction;
 
   double get balance => income - expenses;
 
@@ -153,6 +156,11 @@ class TechnicalFarmSummary {
     final expenses = periodFinances
         .where((record) => record.isExpense && record.status != 'Cancelado')
         .fold<double>(0, (sum, record) => sum + record.amount);
+    final dairyReproduction = DairyReproductionIndicatorCalculator().calculate(
+      animals: animals,
+      records: reproductionRecords,
+      referenceDate: today,
+    );
 
     return TechnicalFarmSummary(
       groupCount: groups.length,
@@ -211,6 +219,7 @@ class TechnicalFarmSummary {
         0,
         (sum, item) => sum + item.movements.length,
       ),
+      dairyReproduction: dairyReproduction,
     );
   }
 }
