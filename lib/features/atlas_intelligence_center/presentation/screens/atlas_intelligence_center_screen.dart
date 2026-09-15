@@ -42,7 +42,8 @@ class _AtlasIntelligenceCenterScreenState
   final AtlasIntelligenceService service = AtlasIntelligenceService();
   final AtlasFarmIntelligenceSnapshotLoader contextLoader =
       AtlasFarmIntelligenceSnapshotLoader();
-  final OperationalNoteRemoteService noteService = OperationalNoteRemoteService();
+  final OperationalNoteRemoteService noteService =
+      OperationalNoteRemoteService();
   final TextEditingController saleController = TextEditingController();
   final TextEditingController costController = TextEditingController();
   final TextEditingController investmentController = TextEditingController();
@@ -53,6 +54,7 @@ class _AtlasIntelligenceCenterScreenState
   List<AtlasAiRecommendation> recommendations = const [];
   AtlasAiSimulation? simulation;
   bool loading = false;
+  bool savingDecisionNote = false;
   String? errorMessage;
 
   static const List<_AnalysisArea> areas = [
@@ -591,9 +593,15 @@ class _AtlasIntelligenceCenterScreenState
                 child: const Text('Não seguir'),
               ),
               TextButton.icon(
-                onPressed: () => saveDecisionAsNote(item),
+                onPressed: savingDecisionNote
+                    ? null
+                    : () => saveDecisionAsNote(item),
                 icon: const Icon(Icons.sticky_note_2_outlined),
-                label: const Text('Salvar em Anotações'),
+                label: Text(
+                  savingDecisionNote
+                      ? 'Salvando em Anotações...'
+                      : 'Salvar em Anotações',
+                ),
               ),
             ],
           ),
@@ -847,14 +855,20 @@ class _AtlasIntelligenceCenterScreenState
       showMessage('Escolha uma fazenda antes de salvar a decisão.');
       return;
     }
-    await runRequest(() => noteService.create(
-      farmId: farm.id,
-      content: 'Decisão vinculada à análise\n${item.title}\n\nAção sugerida: ${item.action}',
-      cameFromVoice: false,
-      source: 'intelligence_decision',
-      referenceType: 'ai_recommendation',
-      referenceId: item.id,
-    ));
+    if (savingDecisionNote) return;
+    setState(() => savingDecisionNote = true);
+    await runRequest(
+      () => noteService.create(
+        farmId: farm.id,
+        content:
+            'Decisão vinculada à análise\n${item.title}\n\nAção sugerida: ${item.action}',
+        cameFromVoice: false,
+        source: 'intelligence_decision',
+        referenceType: 'ai_recommendation',
+        referenceId: item.id,
+      ),
+    );
+    if (mounted) setState(() => savingDecisionNote = false);
     if (mounted && errorMessage == null) {
       showMessage('Decisão salva em Anotações com referência à análise.');
     }

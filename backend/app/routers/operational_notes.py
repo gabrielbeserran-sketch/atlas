@@ -202,6 +202,27 @@ def create_note(
     content = payload.content.strip()
     if not content:
         raise HTTPException(status_code=422, detail="Escreva ou dite uma anotação.")
+    reference_type = payload.reference_type.strip()
+    reference_id = payload.reference_id.strip()
+    # Uma decisão aponta para uma recomendação única. Isso torna o comando
+    # seguro contra toques repetidos e novas tentativas após perda de conexão,
+    # sem deduplicar as anotações livres escritas pelo usuário.
+    if (
+        payload.source == "intelligence_decision"
+        and reference_type == "ai_recommendation"
+        and reference_id
+    ):
+        existing = db.scalar(
+            select(OperationalNote).where(
+                OperationalNote.company_id == principal.company.id,
+                OperationalNote.farm_id == payload.farm_id,
+                OperationalNote.source == "intelligence_decision",
+                OperationalNote.reference_type == reference_type,
+                OperationalNote.reference_id == reference_id,
+            )
+        )
+        if existing is not None:
+            return _note_payload(existing)
     folder = _folder_for_farm(db, principal, payload.folder_id, payload.farm_id)
     item = OperationalNote(
         id=new_id("note"),
@@ -213,8 +234,8 @@ def create_note(
         content=content,
         source=payload.source,
         transcript=payload.transcript.strip(),
-        reference_type=payload.reference_type.strip(),
-        reference_id=payload.reference_id.strip(),
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(item)
     record_audit(
