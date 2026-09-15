@@ -7,6 +7,7 @@ import 'package:projeto_atlas/core/reactivity/atlas_reactive_intelligence.dart';
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_runtime.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/dairy_production/presentation/screens/dairy_production_screen.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_analysis.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_period.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_financial_series_point.dart';
@@ -186,6 +187,19 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       appBar: AppBar(
         title: Text(_title),
         actions: [
+          if (widget.productionFocus == TechnicalProductionFocus.dairy &&
+              selectedFarm != null)
+            IconButton(
+              tooltip: 'Registrar produção diária',
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DairyProductionScreen(farm: selectedFarm!),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add_chart_outlined),
+            ),
           IconButton(
             tooltip: 'Atualizar indicadores',
             onPressed: isLoading ? null : loadSummary,
