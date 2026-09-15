@@ -1,6 +1,6 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 15/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
 
 | Etapa | Situação | Progresso | Critério de aceite |
 |---|---:|---:|---|
@@ -18,6 +18,7 @@ Atualizado em 14/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 | Regressão transversal: Financeiro e acesso offline | Concluído | 100% | 26 testes cobriram Financeiro, OCR local, cotações, login offline, sessão e fila de sincronização. Build Windows de produção e APK Android atual foram gerados sem erros. |
 | Arquitetura de Inteligência e Analytics | Concluído | 100% | Central única de Análises definida e protegida por contrato: resumo, diagnóstico, análise por área, cenários e decisões. Copilot e motores especializados permanecem contextuais, sem virar menu concorrente. |
 | Inteligência: decisão vinculada a Anotações e Agenda | Concluído | 100% | Uma decisão gera anotação com referência persistente à recomendação e a anotação aproveita a promoção idempotente já existente para a Agenda. Frontend, rota, modelo, migração e contratos passaram. Em 15/09, a recomendação real “Manter acompanhamento da operação” foi salva pela Central e confirmada na lista de Anotações da Fazenda Atlas Produção como “Decisão vinculada à análise”, sem criação duplicada. |
+| Anotações: compromisso com data prevista na Agenda | Em validação | 90% | A promoção de uma anotação passou a exigir escolha explícita de data prevista, já enviada ao contrato `due_at` do servidor. Análise estática e dois contratos Flutter aprovados; falta o build Windows por o aplicativo estar aberto. |
 | Inteligência: snapshot único por fazenda | Concluído | 100% | A Central guarda um contexto oficial por atualização e envia seu identificador às prioridades e aos cenários. O servidor valida empresa e fazenda antes de reutilizar o snapshot, evitando leituras cruzadas ou dados de momentos diferentes. Contratos Flutter e servidor aprovados; em 14/09 a Central carregou uma prioridade real em sessão autenticada no Windows, confirmando o fluxo completo. |
 | Android: atualização da cadeia de build | Concluído | 100% | Gradle 8.14, Android Gradle Plugin 8.11.1 e Kotlin 2.2.20. APK debug recompilado com sucesso pela cadeia atualizada e checkpoint Git auditável. |
 | Regressão integrada: Inteligência, Anotações e documentos financeiros | Concluído | 100% | Três contratos Flutter e três testes de servidor aprovados: decisão rastreável, snapshot por fazenda e comprovantes financeiros offline. |

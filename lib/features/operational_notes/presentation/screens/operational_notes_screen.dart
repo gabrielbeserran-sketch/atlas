@@ -162,6 +162,7 @@ class _OperationalNotesScreenState extends State<OperationalNotesScreen> {
         noteId: note.id,
         title: draft.title,
         priority: draft.priority,
+        dueAt: draft.dueAt,
       );
       if (!mounted) return;
       _message(
@@ -725,10 +726,15 @@ class OperationalNoteFolderControls extends StatelessWidget {
 }
 
 class _TaskDraft {
-  const _TaskDraft({required this.title, required this.priority});
+  const _TaskDraft({
+    required this.title,
+    required this.priority,
+    required this.dueAt,
+  });
 
   final String title;
   final String priority;
+  final DateTime dueAt;
 }
 
 class _CreateAgendaTaskDialog extends StatefulWidget {
@@ -744,6 +750,22 @@ class _CreateAgendaTaskDialog extends StatefulWidget {
 class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
   late final _title = TextEditingController(text: widget.initialTitle);
   String _priority = 'medium';
+  DateTime _dueAt = DateTime.now();
+
+  Future<void> _selectDueDate() async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _dueAt,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      helpText: 'Data prevista do compromisso',
+      cancelText: 'Cancelar',
+      confirmText: 'Confirmar',
+    );
+    if (selected != null && mounted) {
+      setState(() => _dueAt = selected);
+    }
+  }
 
   @override
   void dispose() {
@@ -773,6 +795,14 @@ class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
           ],
           onChanged: (value) => setState(() => _priority = value ?? 'medium'),
         ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _selectDueDate,
+          icon: const Icon(Icons.calendar_month_outlined),
+          label: Text(
+            'Data prevista: ${DateFormat('dd/MM/yyyy', 'pt_BR').format(_dueAt)}',
+          ),
+        ),
       ],
     ),
     actions: [
@@ -783,7 +813,11 @@ class _CreateAgendaTaskDialogState extends State<_CreateAgendaTaskDialog> {
       FilledButton(
         onPressed: () => Navigator.pop(
           context,
-          _TaskDraft(title: _title.text.trim(), priority: _priority),
+          _TaskDraft(
+            title: _title.text.trim(),
+            priority: _priority,
+            dueAt: _dueAt,
+          ),
         ),
         child: const Text('Criar compromisso'),
       ),

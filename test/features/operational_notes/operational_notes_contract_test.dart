@@ -22,8 +22,12 @@ void main() {
     expect(navigation, contains('OperationalNotesScreen(farm: farm, embedded: true)'));
     expect(screen, contains('DrBeserraVoiceService.instance'));
     expect(screen, contains('Criar compromisso na Agenda'));
+    expect(screen, contains('Data prevista:'));
+    expect(screen, contains('showDatePicker'));
     expect(service, contains("'/operational-notes'"));
     expect(service, contains("'/operational-notes/\$noteId/task'"));
+    expect(service, contains("'due_at': dueAt.toUtc().toIso8601String()"));
+    expect(router, contains('due_at: datetime | None = None'));
     expect(router, contains('require_farm_scope'));
     expect(router, contains('record_audit'));
     expect(router, contains('source_type == "operational_note"'));

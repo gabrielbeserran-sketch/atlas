@@ -80,7 +80,10 @@ class OperationalNoteRemoteService {
   }
 
   Future<int> deleteFolder(String folderId) async {
-    final result = await _api.request('DELETE', '/operational-notes/folders/$folderId');
+    final result = await _api.request(
+      'DELETE',
+      '/operational-notes/folders/$folderId',
+    );
     return (result['notes_preserved'] as num?)?.toInt() ?? 0;
   }
 
@@ -88,11 +91,16 @@ class OperationalNoteRemoteService {
     required String noteId,
     required String title,
     required String priority,
+    required DateTime dueAt,
   }) async {
     final result = await _api.request(
       'POST',
       '/operational-notes/$noteId/task',
-      body: {'title': title, 'priority': priority},
+      body: {
+        'title': title,
+        'priority': priority,
+        'due_at': dueAt.toUtc().toIso8601String(),
+      },
     );
     return result['created'] == true;
   }
