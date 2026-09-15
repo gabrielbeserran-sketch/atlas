@@ -11,6 +11,7 @@ import 'package:projeto_atlas/features/atlas_intelligence_center/presentation/sc
 import 'package:projeto_atlas/features/field_operations/presentation/screens/farm_field_center_screen.dart';
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
+import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
 import 'package:projeto_atlas/features/farm_handling/presentation/screens/farm_handling_screen.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
@@ -20,6 +21,7 @@ import 'package:projeto_atlas/features/nutrition/presentation/screens/nutrition_
 import 'package:projeto_atlas/features/farm_finance/presentation/screens/finance_overview_screen.dart';
 import 'package:projeto_atlas/features/farm_inventory/presentation/screens/inventory_overview_screen.dart';
 import 'package:projeto_atlas/features/reports/presentation/screens/reports_screen.dart';
+import 'package:projeto_atlas/features/technical_dashboard/presentation/screens/technical_dashboard_screen.dart';
 import 'package:projeto_atlas/features/consultancy_client/presentation/screens/atlas_client_consultancy_center_screen.dart';
 import 'package:projeto_atlas/features/operational_notes/presentation/screens/operational_notes_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
@@ -166,6 +168,22 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       builder: (_) => const SizedBox.shrink(),
     ),
     AtlasRouteDefinition(
+      label: 'Produção de leite',
+      group: AtlasNavigationGroup.herd,
+      icon: Icons.water_drop_outlined,
+      selectedIcon: Icons.water_drop,
+      permission: 'herd.read',
+      builder: (_) => const SizedBox.shrink(),
+    ),
+    AtlasRouteDefinition(
+      label: 'Produção de corte',
+      group: AtlasNavigationGroup.herd,
+      icon: Icons.trending_up_outlined,
+      selectedIcon: Icons.trending_up,
+      permission: 'herd.read',
+      builder: (_) => const SizedBox.shrink(),
+    ),
+    AtlasRouteDefinition(
       label: 'Anotações',
       group: AtlasNavigationGroup.support,
       icon: Icons.sticky_note_2_outlined,
@@ -191,7 +209,9 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     final visibleRoutes = routes
         .where(
           (route) =>
-              route.permission == null || controller.allows(route.permission!),
+              (route.permission == null ||
+                  controller.allows(route.permission!)) &&
+              _isAvailableForProductionProfile(route, activeFarm),
         )
         .toList(growable: false);
 
@@ -335,6 +355,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       'Campo',
       'Anotações',
       'Consultoria',
+      'Produção de leite',
+      'Produção de corte',
     };
 
     if (farmScopedModules.contains(target.label) &&
@@ -383,6 +405,20 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       body = farm == null
           ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
           : const HerdOverviewScreen();
+    } else if (selected.label == 'Produção de leite') {
+      body = farm == null
+          ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
+          : TechnicalDashboardScreen(
+              initialFarm: farm,
+              productionFocus: TechnicalProductionFocus.dairy,
+            );
+    } else if (selected.label == 'Produção de corte') {
+      body = farm == null
+          ? _AtlasSelectFarmMessage(onSelectFarm: () => _selectFarm(context))
+          : TechnicalDashboardScreen(
+              initialFarm: farm,
+              productionFocus: TechnicalProductionFocus.beef,
+            );
     } else if (selected.label == 'Fazendas') {
       body = const FarmListScreen(embedded: true);
     } else if (selected.label == 'Realizar manejo') {
@@ -458,7 +494,9 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
     final visibleRoutes = routes
         .where(
           (route) =>
-              route.permission == null || controller.allows(route.permission!),
+              (route.permission == null ||
+                  controller.allows(route.permission!)) &&
+              _isAvailableForProductionProfile(route, controller.activeFarm),
         )
         .toList(growable: false);
     final index = visibleRoutes.indexWhere((route) => route.label == label);
@@ -473,6 +511,19 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
       return;
     }
     _handleRouteSelection(visibleRoutes, index);
+  }
+
+  static bool _isAvailableForProductionProfile(
+    AtlasRouteDefinition route,
+    AtlasRemoteFarm? farm,
+  ) {
+    if (route.label == 'Produção de leite') {
+      return farm?.hasDairyProduction ?? false;
+    }
+    if (route.label == 'Produção de corte') {
+      return farm?.hasBeefProduction ?? false;
+    }
+    return true;
   }
 
   Future<void> _selectFarm(BuildContext context) async {

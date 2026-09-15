@@ -14,8 +14,17 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_dashboard_service.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
+enum TechnicalProductionFocus { dairy, beef }
+
 class TechnicalDashboardScreen extends StatefulWidget {
-  const TechnicalDashboardScreen({super.key});
+  const TechnicalDashboardScreen({
+    this.initialFarm,
+    this.productionFocus,
+    super.key,
+  });
+
+  final FarmData? initialFarm;
+  final TechnicalProductionFocus? productionFocus;
 
   @override
   State<TechnicalDashboardScreen> createState() =>
@@ -100,7 +109,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
   Future<void> loadFarms() async {
     setState(() => isLoading = true);
     final loadedFarms = await farmStorage.loadFarms();
-    final currentName = selectedFarm?.name;
+    final currentName = selectedFarm?.name ?? widget.initialFarm?.name;
     FarmData? nextFarm;
     for (final farm in loadedFarms) {
       if (farm.name == currentName) {
@@ -108,6 +117,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
         break;
       }
     }
+    nextFarm ??= widget.initialFarm;
     nextFarm ??= loadedFarms.isEmpty ? null : loadedFarms.first;
     if (!mounted) return;
     setState(() {
@@ -174,7 +184,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
       appBar: AppBar(
-        title: const Text('Painel Técnico Integrado'),
+        title: Text(_title),
         actions: [
           IconButton(
             tooltip: 'Atualizar indicadores',
@@ -196,16 +206,16 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Visão técnica da fazenda',
+                      Text(
+                        _heading,
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Indicadores reais de rebanho, reprodução, sanidade, nutrição, financeiro e estoque.',
+                      Text(
+                        _description,
                         style: TextStyle(color: Colors.black54, fontSize: 15),
                       ),
                       const SizedBox(height: 20),
@@ -254,6 +264,27 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       ),
     );
   }
+
+  String get _title => switch (widget.productionFocus) {
+    TechnicalProductionFocus.dairy => 'Produção de leite',
+    TechnicalProductionFocus.beef => 'Produção de corte',
+    null => 'Painel Técnico Integrado',
+  };
+
+  String get _heading => switch (widget.productionFocus) {
+    TechnicalProductionFocus.dairy => 'Indicadores técnicos do leite',
+    TechnicalProductionFocus.beef => 'Indicadores técnicos do corte',
+    null => 'Visão técnica da fazenda',
+  };
+
+  String get _description => switch (widget.productionFocus) {
+    TechnicalProductionFocus.dairy =>
+      'Acompanhe os dados de rebanho e reprodução que formarão os índices produtivos e reprodutivos.',
+    TechnicalProductionFocus.beef =>
+      'Acompanhe peso, ganho, reprodução e sanidade para formar os indicadores de desempenho do rebanho.',
+    null =>
+      'Indicadores reais de rebanho, reprodução, sanidade, nutrição, financeiro e estoque.',
+  };
 }
 
 class _FarmSelector extends StatelessWidget {
