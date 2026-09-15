@@ -161,6 +161,8 @@ class AtlasEnterpriseRemoteAuthStore {
             'state': farm.state,
             'animals': farm.animals,
             'area': farm.area,
+            'production_profile': farm.productionProfile,
+            'production_system': farm.productionSystem,
             'active': farm.active,
           },
         )

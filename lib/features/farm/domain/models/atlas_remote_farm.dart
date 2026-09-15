@@ -8,6 +8,8 @@ class AtlasRemoteFarm {
     required this.state,
     required this.animals,
     required this.area,
+    this.productionProfile = 'mixed',
+    this.productionSystem = '',
     required this.active,
   });
 
@@ -19,7 +21,14 @@ class AtlasRemoteFarm {
   final String state;
   final int animals;
   final double area;
+  final String productionProfile;
+  final String productionSystem;
   final bool active;
+
+  bool get hasBeefProduction =>
+      productionProfile == 'beef' || productionProfile == 'mixed';
+  bool get hasDairyProduction =>
+      productionProfile == 'dairy' || productionProfile == 'mixed';
 
   String get location {
     final parts = <String>[
@@ -39,7 +48,16 @@ class AtlasRemoteFarm {
       state: map['state']?.toString() ?? '',
       animals: (map['animals'] as num?)?.toInt() ?? 0,
       area: (map['area'] as num?)?.toDouble() ?? 0,
+      productionProfile: _normalizeProductionProfile(
+        map['production_profile']?.toString(),
+      ),
+      productionSystem: map['production_system']?.toString() ?? '',
       active: map['active'] as bool? ?? true,
     );
   }
+
+  static String _normalizeProductionProfile(String? value) => switch (value) {
+    'beef' || 'dairy' || 'mixed' => value!,
+    _ => 'mixed',
+  };
 }

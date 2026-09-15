@@ -372,6 +372,8 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
             state: remoteFarm.state,
             animals: remoteFarm.animals,
             area: remoteFarm.area.round(),
+            productionProfile: remoteFarm.productionProfile,
+            productionSystem: remoteFarm.productionSystem,
           );
 
     Widget body;
