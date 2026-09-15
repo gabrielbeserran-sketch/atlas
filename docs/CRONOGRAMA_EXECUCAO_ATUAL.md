@@ -32,5 +32,5 @@ Uma etapa só muda para **Concluído** quando houver arquivos alterados, teste/v
 ## Entrega em validação
 
 - Testes concluídos: regressão transversal com 26 cenários; neste pacote, três contratos Flutter e três testes de servidor aprovados.
-- APK Android: `build/app/outputs/flutter-apk/app-debug.apk` — SHA-256 `959ADC1D8AF1569F653C5696B1B724D8F80E4043240C96E4FBD82709C4F1613A`.
+- APK Android: `build/app/outputs/flutter-apk/app-debug.apk` — pacote atualizado em 15/09 com a Agenda por data prevista; SHA-256 `3B4934D3B7F866B7C97D6B7627AD387DA7345DEC2B03983AB56C1230D7D9FAAD`.
 - Gate finalizado: checkpoint Git, contratos integrados e APK Android recompilado com Gradle 8.14, AGP 8.11.1 e Kotlin 2.2.20.
