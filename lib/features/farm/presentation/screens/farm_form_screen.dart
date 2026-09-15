@@ -20,6 +20,8 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
   final stateController = TextEditingController();
   final animalsController = TextEditingController();
   final areaController = TextEditingController();
+  String productionProfile = 'mixed';
+  String productionSystem = '';
 
   bool checkingPermission = true;
   bool allowed = false;
@@ -38,6 +40,8 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
       stateController.text = farm.state;
       animalsController.text = farm.animals.toString();
       areaController.text = farm.area.toString();
+      productionProfile = farm.productionProfile;
+      productionSystem = farm.productionSystem;
     }
 
     _checkPermission();
@@ -100,6 +104,8 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
       state: stateController.text.trim().toUpperCase(),
       animals: int.parse(animalsController.text.trim()),
       area: int.parse(areaController.text.trim()),
+      productionProfile: productionProfile,
+      productionSystem: productionSystem,
     );
 
     if (!mounted) return;
@@ -256,6 +262,57 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
                               prefixIcon: Icon(Icons.straighten_outlined),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            initialValue: productionProfile,
+                            decoration: const InputDecoration(
+                              labelText: 'Tipo de produção',
+                              helperText:
+                                  'Define os painéis técnicos exibidos na fazenda.',
+                              prefixIcon: Icon(Icons.account_tree_outlined),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'beef',
+                                child: Text('Corte'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'dairy',
+                                child: Text('Leite'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'mixed',
+                                child: Text('Misto — corte e leite'),
+                              ),
+                            ],
+                            onChanged: (value) => setState(() {
+                              productionProfile = value ?? 'mixed';
+                              productionSystem = '';
+                            }),
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            key: ValueKey(productionProfile),
+                            initialValue: productionSystem.isEmpty
+                                ? null
+                                : productionSystem,
+                            decoration: const InputDecoration(
+                              labelText: 'Sistema produtivo',
+                              hintText:
+                                  'Selecione para melhorar os indicadores',
+                              prefixIcon: Icon(Icons.tune_outlined),
+                            ),
+                            items: _productionSystems(productionProfile)
+                                .map(
+                                  (item) => DropdownMenuItem(
+                                    value: item,
+                                    child: Text(item),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => productionSystem = value ?? ''),
+                          ),
                           const SizedBox(height: 28),
                           SizedBox(
                             height: 54,
@@ -283,4 +340,16 @@ class _FarmFormScreenState extends State<FarmFormScreen> {
       ),
     );
   }
+
+  List<String> _productionSystems(String profile) => switch (profile) {
+    'beef' => const [
+      'Cria',
+      'Recria',
+      'Engorda',
+      'Ciclo completo',
+      'Confinamento',
+    ],
+    'dairy' => const ['A pasto', 'Semi-intensivo', 'Intensivo'],
+    _ => const ['Corte e leite integrados', 'Dupla aptidão'],
+  };
 }

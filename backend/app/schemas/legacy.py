@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -74,6 +74,8 @@ class FarmCreateRequest(BaseModel):
     state: str = ""
     animals: int = Field(default=0, ge=0)
     area: int = Field(default=0, ge=0)
+    production_profile: Literal["beef", "dairy", "mixed"] = "mixed"
+    production_system: str = Field(default="", max_length=60)
 
 
 class FarmUpdateRequest(BaseModel):
@@ -82,6 +84,8 @@ class FarmUpdateRequest(BaseModel):
     state: str | None = None
     animals: int | None = Field(default=None, ge=0)
     area: int | None = Field(default=None, ge=0)
+    production_profile: Literal["beef", "dairy", "mixed"] | None = None
+    production_system: str | None = Field(default=None, max_length=60)
     active: bool | None = None
 
 
@@ -96,6 +100,8 @@ class FarmResponse(BaseModel):
     state: str
     animals: int
     area: int
+    production_profile: str
+    production_system: str
     active: bool
 
 

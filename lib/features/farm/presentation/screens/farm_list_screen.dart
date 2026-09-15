@@ -167,6 +167,8 @@ class _FarmListScreenState extends State<FarmListScreen> {
           'state': newFarm.state,
           'animals': newFarm.animals,
           'area': newFarm.area,
+          'production_profile': newFarm.productionProfile,
+          'production_system': newFarm.productionSystem,
         },
       );
 
@@ -260,6 +262,8 @@ class _FarmListScreenState extends State<FarmListScreen> {
           'state': editedFarm.state,
           'animals': editedFarm.animals,
           'area': editedFarm.area,
+          'production_profile': editedFarm.productionProfile,
+          'production_system': editedFarm.productionSystem,
         },
       );
 

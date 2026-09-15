@@ -6,6 +6,8 @@ class FarmData {
     required this.state,
     required this.animals,
     required this.area,
+    this.productionProfile = 'mixed',
+    this.productionSystem = '',
   });
 
   final String? id;
@@ -14,6 +16,19 @@ class FarmData {
   final String state;
   final int animals;
   final int area;
+  final String productionProfile;
+  final String productionSystem;
+
+  bool get hasBeefProduction =>
+      productionProfile == 'beef' || productionProfile == 'mixed';
+  bool get hasDairyProduction =>
+      productionProfile == 'dairy' || productionProfile == 'mixed';
+
+  String get productionProfileLabel => switch (productionProfile) {
+    'beef' => 'Corte',
+    'dairy' => 'Leite',
+    _ => 'Misto',
+  };
 
   FarmData copyWith({
     String? id,
@@ -22,6 +37,8 @@ class FarmData {
     String? state,
     int? animals,
     int? area,
+    String? productionProfile,
+    String? productionSystem,
   }) {
     return FarmData(
       id: id ?? this.id,
@@ -30,6 +47,8 @@ class FarmData {
       state: state ?? this.state,
       animals: animals ?? this.animals,
       area: area ?? this.area,
+      productionProfile: productionProfile ?? this.productionProfile,
+      productionSystem: productionSystem ?? this.productionSystem,
     );
   }
 
@@ -41,6 +60,8 @@ class FarmData {
       'state': state,
       'animals': animals,
       'area': area,
+      'production_profile': productionProfile,
+      'production_system': productionSystem,
     };
   }
 
@@ -52,6 +73,15 @@ class FarmData {
       state: map['state']?.toString() ?? '',
       animals: (map['animals'] as num?)?.toInt() ?? 0,
       area: (map['area'] as num?)?.toInt() ?? 0,
+      productionProfile: _normalizeProductionProfile(
+        map['production_profile']?.toString(),
+      ),
+      productionSystem: map['production_system']?.toString() ?? '',
     );
   }
+
+  static String _normalizeProductionProfile(String? value) => switch (value) {
+    'beef' || 'dairy' || 'mixed' => value!,
+    _ => 'mixed',
+  };
 }

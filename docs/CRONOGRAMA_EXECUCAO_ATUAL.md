@@ -4,6 +4,7 @@ Atualizado em 15/09/2026. Este arquivo é a fonte visível de acompanhamento dos
 
 | Etapa | Situação | Progresso | Critério de aceite |
 |---|---:|---:|---|
+| Fundação técnica: perfil produtivo da fazenda | Concluído | 100% | Cadastro remoto e local identificam Corte, Leite ou Misto, com sistema produtivo opcional e compatibilidade segura para fazendas anteriores. API, migração Alembic, três contratos Flutter, três testes de servidor, análise estática e build Windows de produção aprovados. |
 | Financeiro: OCR, galeria e lançamento offline | Concluído | 100% | Checkpoints `f932fc1` até `614a35a`, análise estática e builds Windows concluídos. |
 | Financeiro: fila persistente de fotos offline | Concluído | 100% | A foto é copiada ao armazenamento interno, vinculada ao lançamento local, recebe o id remoto após a confirmação e só é apagada após upload confirmado. Falhas preservam arquivo e vínculo para a próxima tentativa; contrato e build Windows validados. |
 | Financeiro: anexos de lançamentos existentes sem conexão | Concluído | 100% | Ao anexar foto a um lançamento já existente sem rede, o Centro de documentos preserva cópia local, mantém o vínculo ao lançamento e sincroniza no próximo carregamento conectado. A interface informa o comprovante pendente sem bloquear a conferência humana. |

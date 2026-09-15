@@ -80,6 +80,8 @@ def create_farm(
         state=request.state.strip().upper(),
         animals=request.animals,
         area=request.area,
+        production_profile=request.production_profile,
+        production_system=request.production_system.strip(),
         active=True,
     )
 
@@ -100,6 +102,8 @@ def create_farm(
             "state": farm.state,
             "animals": farm.animals,
             "area": farm.area,
+            "production_profile": farm.production_profile,
+            "production_system": farm.production_system,
         },
     )
 
@@ -140,6 +144,8 @@ def update_farm(
         "state": farm.state,
         "animals": farm.animals,
         "area": farm.area,
+        "production_profile": farm.production_profile,
+        "production_system": farm.production_system,
         "active": farm.active,
     }
 
@@ -153,6 +159,10 @@ def update_farm(
         farm.animals = request.animals
     if request.area is not None:
         farm.area = request.area
+    if request.production_profile is not None:
+        farm.production_profile = request.production_profile
+    if request.production_system is not None:
+        farm.production_system = request.production_system.strip()
     if request.active is not None:
         farm.active = request.active
 
@@ -172,6 +182,8 @@ def update_farm(
             "state": farm.state,
             "animals": farm.animals,
             "area": farm.area,
+            "production_profile": farm.production_profile,
+            "production_system": farm.production_system,
             "active": farm.active,
         },
     )
@@ -202,6 +214,8 @@ def delete_farm(
         "state": farm.state,
         "animals": farm.animals,
         "area": farm.area,
+        "production_profile": farm.production_profile,
+        "production_system": farm.production_system,
         "active": farm.active,
     }
 
