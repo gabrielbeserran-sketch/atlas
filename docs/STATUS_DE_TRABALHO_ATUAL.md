@@ -5,17 +5,16 @@ Atualizado em 16/09/2026.
 ## Estado
 
 - Situação: concluído e publicado.
-- Etapa concluída: cobertura de reposição das matrizes.
-- Progresso: 100%.
-- Componentes concluídos: cálculo de 12 meses por entradas e saídas datadas, descarte reprodutivo separado e card técnico com cobertura e contagens da base.
-- Validações concluídas: teste unitário de cálculo, análise estática e verificação de diff.
-- Validações concluídas: teste unitário de cálculo, análise estática, verificação de diff e build Windows de produção.
-- Checkpoint principal: `08d8f9e` — publicado no branch `master`.
-- Próximo marco: transformar cobertura em alerta operacional por limiar configurável.
+- Situação: em execução.
+- Etapa atual: resultado comercial do rebanho de Corte.
+- Progresso: 10%.
+- Componentes previstos: receita bruta de vendas, valor médio por cabeça, base de saídas datadas e apresentação no painel técnico.
+- Validações planejadas: teste unitário, análise estática, build Windows, checkpoint Git e publicação.
+- Próximo marco: integrar resultado comercial com indicadores de peso e ganho.
 
 ## Próximo pacote planejado
 
-Criar alertas operacionais para lacunas de registro e limiares técnicos configuráveis, sem emitir recomendações quando a cobertura for insuficiente.
+Calcular o resultado comercial de vendas de Corte nos últimos 12 meses sem incluir registros sem data ou valor.
 
 ## Como acompanhar
 

@@ -28,6 +28,7 @@ void main() {
           weight: 500,
           status: 'Vendido',
           saleDate: '10/09/2026',
+          saleValue: 5200,
         ),
         AnimalData(
           id: 'old',
@@ -44,5 +45,7 @@ void main() {
     );
     expect(result.commercialExits, 1);
     expect(result.offtakeRate, 50);
+    expect(result.commercialRevenue, 5200);
+    expect(result.averageSaleValue, 5200);
   });
 }

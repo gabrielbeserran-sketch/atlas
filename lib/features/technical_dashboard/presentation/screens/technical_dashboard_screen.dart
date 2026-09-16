@@ -711,6 +711,16 @@ class _SummaryContent extends StatelessWidget {
                 'Saídas comerciais datadas',
                 '${summary.beefHerd.commercialExits}',
               ),
+              (
+                'Receita bruta de vendas (12 meses)',
+                'R\$ ${summary.beefHerd.commercialRevenue.toStringAsFixed(2)}',
+              ),
+              (
+                'Valor médio por cabeça',
+                summary.beefHerd.averageSaleValue == null
+                    ? 'Sem valores registrados'
+                    : 'R\$ ${summary.beefHerd.averageSaleValue!.toStringAsFixed(2)}',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],
