@@ -80,8 +80,9 @@ class DairyReproductionIndicatorCalculator {
         final candidates = services
             .where((date) => !date.isBefore(calving))
             .toList();
-        if (candidates.isNotEmpty)
+        if (candidates.isNotEmpty) {
           servicePeriods.add(candidates.first.difference(calving).inDays);
+        }
       }
     }
     final inseminations = records
