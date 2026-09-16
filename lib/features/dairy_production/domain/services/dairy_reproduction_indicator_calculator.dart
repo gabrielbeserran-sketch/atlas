@@ -17,6 +17,7 @@ class DairyReproductionIndicators {
     required this.femaleEntries,
     required this.femaleExits,
     required this.reproductiveCulls,
+    required this.activeFemaleCount,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -34,6 +35,32 @@ class DairyReproductionIndicators {
   final int femaleEntries;
   final int femaleExits;
   final int reproductiveCulls;
+  final int activeFemaleCount;
+
+  List<String> get dataQualityAlerts {
+    final alerts = <String>[];
+    if (activeFemaleCount == 0) {
+      alerts.add('Cadastre as matrizes ativas para iniciar os indicadores.');
+      return alerts;
+    }
+    if (lactatingCowsWithKnownCalving == 0) {
+      alerts.add(
+        'Registre partos para calcular DEL e idade ao primeiro parto.',
+      );
+    }
+    if (inseminationAttempts == 0) {
+      alerts.add('Registre inseminações para acompanhar a concepção.');
+    }
+    if (cowsWithPregnancyDiagnosis == 0) {
+      alerts.add('Registre diagnósticos para acompanhar a taxa de prenhez.');
+    }
+    if (femaleEntries == 0 && femaleExits == 0 && reproductiveCulls == 0) {
+      alerts.add(
+        'Registre entradas, saídas ou descartes para cobrir reposição.',
+      );
+    }
+    return alerts;
+  }
 }
 
 /// Calcula somente métricas cuja origem pode ser comprovada por animal e data.
@@ -191,6 +218,7 @@ class DairyReproductionIndicatorCalculator {
       femaleEntries: femaleEntries,
       femaleExits: femaleExits,
       reproductiveCulls: reproductiveCulls,
+      activeFemaleCount: activeFemales.length,
     );
   }
 

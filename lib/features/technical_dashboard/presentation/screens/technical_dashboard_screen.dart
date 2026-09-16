@@ -644,6 +644,22 @@ class _SummaryContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
+          if (summary.dairyReproduction.dataQualityAlerts.isNotEmpty) ...[
+            _ModuleCard(
+              width: double.infinity,
+              title: 'Alertas de qualidade da base',
+              icon: Icons.fact_check_outlined,
+              metrics: [
+                (
+                  'Matrizes ativas na base',
+                  '${summary.dairyReproduction.activeFemaleCount}',
+                ),
+                for (final alert in summary.dairyReproduction.dataQualityAlerts)
+                  ('Registro necessário', alert),
+              ],
+            ),
+            const SizedBox(height: 18),
+          ],
         ],
         if (productionFocus == TechnicalProductionFocus.beef) ...[
           _ModuleCard(
