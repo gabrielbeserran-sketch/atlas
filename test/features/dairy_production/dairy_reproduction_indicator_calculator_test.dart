@@ -65,6 +65,46 @@ void main() {
       expect(result.averageAgeAtFirstCalvingDays, 2435);
       expect(result.pregnancyRateFromLatestDiagnosis, 100);
       expect(result.cowsWithPregnancyDiagnosis, 1);
+      expect(result.replacementCoverageRate, isNull);
+      expect(result.femaleEntries, 0);
+    },
+  );
+
+  test(
+    'calcula cobertura de reposição apenas com entradas e saídas datadas',
+    () {
+      const calculator = DairyReproductionIndicatorCalculator();
+      final result = calculator.calculate(
+        referenceDate: DateTime(2026, 9, 16),
+        animals: [
+          AnimalData(
+            id: 'entry',
+            tag: '1',
+            name: 'Novilha',
+            sex: 'Fêmea',
+            breed: 'G',
+            birthDate: '01/01/2024',
+            weight: 300,
+            status: 'Ativo',
+            acquisitionDate: '20/09/2025',
+          ),
+          AnimalData(
+            id: 'exit',
+            tag: '2',
+            name: 'Matriz',
+            sex: 'Fêmea',
+            breed: 'G',
+            birthDate: '01/01/2020',
+            weight: 480,
+            status: 'Vendido',
+            saleDate: '10/09/2026',
+          ),
+        ],
+        records: const [],
+      );
+      expect(result.femaleEntries, 1);
+      expect(result.femaleExits, 1);
+      expect(result.replacementCoverageRate, 100);
     },
   );
 }

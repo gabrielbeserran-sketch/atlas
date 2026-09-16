@@ -5,16 +5,17 @@ Atualizado em 16/09/2026.
 ## Estado
 
 - Situação: concluído e publicado.
-- Etapa concluída: indicadores reprodutivos de Leite e perdas gestacionais auditáveis.
+- Etapa concluída: cobertura de reposição das matrizes.
 - Progresso: 100%.
-- Componentes concluídos: idade ao primeiro parto no painel técnico; perdas gestacionais com denominador explícito; persistência compatível com registros anteriores; e validação para impedir perdas maiores que as gestações acompanhadas.
-- Validações concluídas: três testes unitários, análise estática, verificação de diff e build Windows de produção.
-- Checkpoint principal: `b3c4457` — publicado no branch `master`.
-- Próximo marco: taxa de reposição baseada em entradas, saídas e descarte das matrizes.
+- Componentes concluídos: cálculo de 12 meses por entradas e saídas datadas, descarte reprodutivo separado e card técnico com cobertura e contagens da base.
+- Validações concluídas: teste unitário de cálculo, análise estática e verificação de diff.
+- Validações concluídas: teste unitário de cálculo, análise estática, verificação de diff e build Windows de produção.
+- Checkpoint: será registrado após a publicação deste conjunto.
+- Próximo marco: transformar cobertura em alerta operacional por limiar configurável.
 
 ## Próximo pacote planejado
 
-Calcular a taxa de reposição a partir de entradas, saídas e descartes das matrizes, sempre mostrando a cobertura da base usada.
+Criar alertas operacionais para lacunas de registro e limiares técnicos configuráveis, sem emitir recomendações quando a cobertura for insuficiente.
 
 ## Como acompanhar
 

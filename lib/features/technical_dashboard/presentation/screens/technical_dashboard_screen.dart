@@ -626,6 +626,21 @@ class _SummaryContent extends StatelessWidget {
                 'Matrizes diagnosticadas',
                 '${summary.dairyReproduction.cowsWithPregnancyDiagnosis}',
               ),
+              (
+                'Cobertura de reposição (12 meses)',
+                summary.dairyReproduction.replacementCoverageRate == null
+                    ? 'Sem saídas registradas'
+                    : '${summary.dairyReproduction.replacementCoverageRate!.toStringAsFixed(1)}%',
+              ),
+              (
+                'Entradas / saídas de fêmeas',
+                '${summary.dairyReproduction.femaleEntries} / '
+                    '${summary.dairyReproduction.femaleExits + summary.dairyReproduction.reproductiveCulls}',
+              ),
+              (
+                'Descartes reprodutivos',
+                '${summary.dairyReproduction.reproductiveCulls}',
+              ),
             ],
           ),
           const SizedBox(height: 18),

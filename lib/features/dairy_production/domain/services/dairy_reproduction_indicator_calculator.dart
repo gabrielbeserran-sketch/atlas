@@ -13,6 +13,10 @@ class DairyReproductionIndicators {
     required this.averageAgeAtFirstCalvingDays,
     required this.pregnancyRateFromLatestDiagnosis,
     required this.cowsWithPregnancyDiagnosis,
+    required this.replacementCoverageRate,
+    required this.femaleEntries,
+    required this.femaleExits,
+    required this.reproductiveCulls,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -24,6 +28,12 @@ class DairyReproductionIndicators {
   final double? averageAgeAtFirstCalvingDays;
   final double? pregnancyRateFromLatestDiagnosis;
   final int cowsWithPregnancyDiagnosis;
+
+  /// Entradas de fêmeas divididas pelas saídas no período de 12 meses.
+  final double? replacementCoverageRate;
+  final int femaleEntries;
+  final int femaleExits;
+  final int reproductiveCulls;
 }
 
 /// Calcula somente métricas cuja origem pode ser comprovada por animal e data.
@@ -42,6 +52,19 @@ class DairyReproductionIndicatorCalculator {
         .where((animal) => animal.status == 'Ativo' && animal.sex == 'Fêmea')
         .map((animal) => animal.id)
         .toSet();
+    final periodStart = DateTime(today.year - 1, today.month, today.day);
+    final femaleAnimals = animals.where((animal) => animal.sex == 'Fêmea');
+    final femaleAnimalIds = femaleAnimals.map((animal) => animal.id).toSet();
+    final femaleEntries = femaleAnimals.where((animal) {
+      final entryDate = _date(animal.acquisitionDate);
+      final birthDate = _date(animal.birthDate);
+      return _inPeriod(entryDate, periodStart, today) ||
+          _inPeriod(birthDate, periodStart, today);
+    }).length;
+    final femaleExits = femaleAnimals.where((animal) {
+      if (animal.status == 'Ativo') return false;
+      return _inPeriod(_date(animal.saleDate), periodStart, today);
+    }).length;
     final recordsByAnimal = <String, List<AnimalReproductionData>>{};
     for (final record in records) {
       if (record.animalId.isEmpty || !activeFemales.contains(record.animalId)) {
@@ -108,12 +131,23 @@ class DairyReproductionIndicatorCalculator {
     final pregnancies = records
         .where(
           (event) =>
-              activeFemales.contains(event.animalId) &&
+              femaleAnimalIds.contains(event.animalId) &&
               event.isPositivePregnancyDiagnosis,
         )
         .length;
     var diagnosedCows = 0;
     var currentlyPregnant = 0;
+    final reproductiveCulls = records
+        .where(
+          (event) =>
+              activeFemales.contains(event.animalId) &&
+              event.eventCode == 'reproductive_cull' &&
+              _inPeriod(_date(event.date), periodStart, today),
+        )
+        .map((event) => event.animalId)
+        .toSet()
+        .length;
+    final totalExits = femaleExits + reproductiveCulls;
     for (final events in recordsByAnimal.values) {
       final diagnoses =
           events
@@ -151,6 +185,12 @@ class DairyReproductionIndicatorCalculator {
           ? null
           : currentlyPregnant / diagnosedCows * 100,
       cowsWithPregnancyDiagnosis: diagnosedCows,
+      replacementCoverageRate: totalExits == 0
+          ? null
+          : femaleEntries / totalExits * 100,
+      femaleEntries: femaleEntries,
+      femaleExits: femaleExits,
+      reproductiveCulls: reproductiveCulls,
     );
   }
 
@@ -166,4 +206,7 @@ class DairyReproductionIndicatorCalculator {
         ? null
         : DateTime(year, month, day);
   }
+
+  bool _inPeriod(DateTime? date, DateTime start, DateTime end) =>
+      date != null && !date.isBefore(start) && !date.isAfter(end);
 }
