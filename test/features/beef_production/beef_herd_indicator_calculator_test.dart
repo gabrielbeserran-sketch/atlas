@@ -47,5 +47,7 @@ void main() {
     expect(result.offtakeRate, 50);
     expect(result.commercialRevenue, 5200);
     expect(result.averageSaleValue, 5200);
+    expect(result.commercialExitsWithValue, 1);
+    expect(result.dataQualityAlerts, isEmpty);
   });
 }

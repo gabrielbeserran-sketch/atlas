@@ -7,6 +7,7 @@ class BeefHerdIndicators {
     required this.offtakeRate,
     required this.commercialRevenue,
     required this.averageSaleValue,
+    required this.commercialExitsWithValue,
   });
 
   final int activeAnimals;
@@ -16,6 +17,16 @@ class BeefHerdIndicators {
   final double? offtakeRate;
   final double commercialRevenue;
   final double? averageSaleValue;
+  final int commercialExitsWithValue;
+
+  List<String> get dataQualityAlerts {
+    if (commercialExits == 0 || commercialExitsWithValue == commercialExits) {
+      return const [];
+    }
+    return [
+      '${commercialExits - commercialExitsWithValue} saída(s) comercial(is) têm data, mas não valor de venda.',
+    ];
+  }
 }
 
 class BeefHerdIndicatorCalculator {
@@ -54,6 +65,7 @@ class BeefHerdIndicatorCalculator {
                   (sum, animal) => sum + animal.saleValue,
                 ) /
                 salesWithValue.length,
+      commercialExitsWithValue: salesWithValue.length,
     );
   }
 

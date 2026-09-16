@@ -721,11 +721,27 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Sem valores registrados'
                     : 'R\$ ${summary.beefHerd.averageSaleValue!.toStringAsFixed(2)}',
               ),
+              (
+                'Vendas com valor registrado',
+                '${summary.beefHerd.commercialExitsWithValue}/${summary.beefHerd.commercialExits}',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],
           ),
           const SizedBox(height: 18),
+          if (summary.beefHerd.dataQualityAlerts.isNotEmpty) ...[
+            _ModuleCard(
+              width: double.infinity,
+              title: 'Base comercial pendente',
+              icon: Icons.receipt_long_outlined,
+              metrics: [
+                for (final alert in summary.beefHerd.dataQualityAlerts)
+                  ('Registro necessário', alert),
+              ],
+            ),
+            const SizedBox(height: 18),
+          ],
         ],
         Wrap(
           spacing: 14,
