@@ -76,6 +76,22 @@ class TechnicalFarmSummary {
 
   double get balance => income - expenses;
 
+  /// Alertas de cobertura: não interpretam desempenho; indicam se a base
+  /// registrada sustenta os índices exibidos no painel de Leite.
+  List<String> get dairyOperationalDataAlerts {
+    final alerts = [...dairyReproduction.dataQualityAlerts];
+    if (dairyProduction.recordedDays == 0) {
+      alerts.add(
+        'Registre ordenhas diárias para iniciar o indicador de produção.',
+      );
+    } else if (dairyProduction.recordedDays < 20) {
+      alerts.add(
+        'Há ${dairyProduction.recordedDays} dia(s) de ordenha nos últimos 30; complete ao menos 20 para uma média mais representativa.',
+      );
+    }
+    return alerts;
+  }
+
   double get costPerActiveAnimal =>
       activeAnimals == 0 ? 0 : expenses / activeAnimals;
 

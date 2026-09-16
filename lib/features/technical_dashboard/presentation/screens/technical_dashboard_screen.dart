@@ -587,7 +587,7 @@ class _SummaryContent extends StatelessWidget {
               ),
               (
                 'Dias de ordenha na base',
-                '${summary.dairyProduction.recordedDays}',
+                '${summary.dairyProduction.recordedDays}/30',
               ),
               (
                 'DEL médio',
@@ -660,7 +660,7 @@ class _SummaryContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          if (summary.dairyReproduction.dataQualityAlerts.isNotEmpty) ...[
+          if (summary.dairyOperationalDataAlerts.isNotEmpty) ...[
             _ModuleCard(
               width: double.infinity,
               title: 'Alertas de qualidade da base',
@@ -670,7 +670,7 @@ class _SummaryContent extends StatelessWidget {
                   'Matrizes ativas na base',
                   '${summary.dairyReproduction.activeFemaleCount}',
                 ),
-                for (final alert in summary.dairyReproduction.dataQualityAlerts)
+                for (final alert in summary.dairyOperationalDataAlerts)
                   ('Registro necessário', alert),
               ],
             ),
