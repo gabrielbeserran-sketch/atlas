@@ -4,12 +4,11 @@ Atualizado em 16/09/2026.
 
 ## Estado
 
-- Situação: em validação.
-- Etapa atual: taxa de prenhez por diagnóstico mais recente de cada matriz.
-- Progresso: 85%.
-- Componentes em alteração: motor de indicadores reprodutivos e card de Leite.
-- Validações concluídas: análise estática dos componentes; checkpoint e publicação pendentes.
-- Próximo marco: teste unitário do último diagnóstico por matriz e publicação.
+- Situação: pronto para o próximo pacote autônomo.
+- Etapa concluída mais recente: taxa de prenhez por último diagnóstico de cada matriz.
+- Progresso da etapa concluída: 100%.
+- Validações concluídas: análise estática, checkpoint e publicação `0483262`.
+- Próximo marco: reposição e perdas gestacionais percentuais.
 
 ## Próximo pacote planejado
 
