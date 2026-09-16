@@ -64,8 +64,9 @@ class DairyReproductionIndicatorCalculator {
         final matches = dryStarts
             .where((date) => !date.isAfter(calving))
             .toList();
-        if (matches.isNotEmpty)
+        if (matches.isNotEmpty) {
           dryPeriods.add(calving.difference(matches.last).inDays);
+        }
       }
     }
     final inseminations = records
