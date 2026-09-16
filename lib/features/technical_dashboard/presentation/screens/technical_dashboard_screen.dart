@@ -591,6 +591,30 @@ class _SummaryContent extends StatelessWidget {
           ),
           const SizedBox(height: 18),
         ],
+        if (productionFocus == TechnicalProductionFocus.beef) ...[
+          _ModuleCard(
+            width: double.infinity,
+            title: 'Indicadores de corte',
+            icon: Icons.trending_up_outlined,
+            metrics: [
+              (
+                'Taxa de lotação',
+                summary.stockingRate == null
+                    ? 'Informe a área'
+                    : '${summary.stockingRate!.toStringAsFixed(2)} animais/ha',
+              ),
+              (
+                'Peso vivo por hectare',
+                summary.liveWeightPerHectare == null
+                    ? 'Informe a área'
+                    : '${summary.liveWeightPerHectare!.toStringAsFixed(1)} kg/ha',
+              ),
+              ('Animais ativos', '${summary.activeAnimals}'),
+              ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
+            ],
+          ),
+          const SizedBox(height: 18),
+        ],
         Wrap(
           spacing: 14,
           runSpacing: 14,

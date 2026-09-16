@@ -36,6 +36,8 @@ class TechnicalFarmSummary {
     required this.outOfStockItems,
     required this.inventoryMovements,
     required this.dairyReproduction,
+    required this.stockingRate,
+    required this.liveWeightPerHectare,
   });
 
   final int groupCount;
@@ -65,6 +67,8 @@ class TechnicalFarmSummary {
   final int outOfStockItems;
   final int inventoryMovements;
   final DairyReproductionIndicators dairyReproduction;
+  final double? stockingRate;
+  final double? liveWeightPerHectare;
 
   double get balance => income - expenses;
 
@@ -87,6 +91,7 @@ class TechnicalFarmSummary {
     required List<NutritionPlanData> nutritionPlans,
     required List<FarmFinanceData> finances,
     required List<FarmInventoryData> inventory,
+    double? farmArea,
     DateTime? referenceDate,
     DateTime? periodStart,
     DateTime? periodEnd,
@@ -139,6 +144,14 @@ class TechnicalFarmSummary {
                 (sum, animal) => sum + animal.weight,
               ) /
               weightedAnimals.length;
+    final activeAnimals = animals
+        .where((animal) => animal.status == 'Ativo')
+        .toList();
+    final activeWeight = activeAnimals.fold<double>(
+      0,
+      (sum, animal) => sum + animal.weight,
+    );
+    final validArea = farmArea != null && farmArea > 0 ? farmArea : null;
 
     bool isPast(String value) {
       final date = _parseDate(value);
@@ -165,7 +178,7 @@ class TechnicalFarmSummary {
     return TechnicalFarmSummary(
       groupCount: groups.length,
       totalAnimals: animals.length,
-      activeAnimals: animals.where((animal) => animal.status == 'Ativo').length,
+      activeAnimals: activeAnimals.length,
       soldAnimals: animals.where((animal) => animal.status == 'Vendido').length,
       averageWeight: averageWeight,
       reproductionRecords: periodReproductionRecords.length,
@@ -220,6 +233,8 @@ class TechnicalFarmSummary {
         (sum, item) => sum + item.movements.length,
       ),
       dairyReproduction: dairyReproduction,
+      stockingRate: validArea == null ? null : activeAnimals.length / validArea,
+      liveWeightPerHectare: validArea == null ? null : activeWeight / validArea,
     );
   }
 }

@@ -113,6 +113,7 @@ class TechnicalDashboardService {
         nutritionPlans: plans,
         finances: finances,
         inventory: inventory,
+        farmArea: farm.area.toDouble(),
         referenceDate: now,
         periodStart: start,
         periodEnd: end,
