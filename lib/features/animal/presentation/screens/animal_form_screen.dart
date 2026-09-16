@@ -42,6 +42,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   String selectedStatus = 'Ativo';
   String selectedCategory = 'Matriz';
   String selectedAcquisitionType = 'Nascido na fazenda';
+  String selectedDeathCause = 'Não informada';
   bool isSaving = false;
 
   bool get isEditing => widget.animal != null;
@@ -92,6 +93,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       saleCounterpartyController.text = animal.saleCounterparty;
       saleDocumentController.text = animal.saleDocument;
       deathDateController.text = animal.deathDate;
+      selectedDeathCause = animal.deathCause.isEmpty
+          ? 'Não informada'
+          : animal.deathCause;
       selectedSex = animal.sex;
       selectedStatus = animal.status;
       selectedCategory = categories.contains(animal.category)
@@ -238,6 +242,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       saleCounterparty: saleCounterpartyController.text.trim(),
       saleDocument: saleDocumentController.text.trim(),
       deathDate: deathDateController.text.trim(),
+      deathCause: selectedStatus == 'Morto' ? selectedDeathCause : '',
     );
     Navigator.pop<AnimalData>(context, animal);
   }
@@ -582,6 +587,34 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Data da morte',
                           prefixIcon: Icon(Icons.calendar_month_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedDeathCause,
+                        decoration: const InputDecoration(
+                          labelText: 'Causa do óbito',
+                          prefixIcon: Icon(Icons.monitor_heart_outlined),
+                        ),
+                        items:
+                            const [
+                                  'Não informada',
+                                  'Doença',
+                                  'Acidente',
+                                  'Predação',
+                                  'Parto',
+                                  'Outra',
+                                ]
+                                .map(
+                                  (cause) => DropdownMenuItem(
+                                    value: cause,
+                                    child: Text(cause),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) => setState(
+                          () =>
+                              selectedDeathCause = value ?? selectedDeathCause,
                         ),
                       ),
                     ],

@@ -27,6 +27,7 @@ class AnimalData {
     this.saleCounterparty = '',
     this.saleDocument = '',
     this.deathDate = '',
+    this.deathCause = '',
     this.version = 0,
     this.updatedAt = '',
   });
@@ -58,6 +59,7 @@ class AnimalData {
   final String saleCounterparty;
   final String saleDocument;
   final String deathDate;
+  final String deathCause;
   final int version;
   final String updatedAt;
 
@@ -98,6 +100,7 @@ class AnimalData {
     String? saleCounterparty,
     String? saleDocument,
     String? deathDate,
+    String? deathCause,
     int? version,
     String? updatedAt,
   }) {
@@ -130,6 +133,7 @@ class AnimalData {
       saleCounterparty: saleCounterparty ?? this.saleCounterparty,
       saleDocument: saleDocument ?? this.saleDocument,
       deathDate: deathDate ?? this.deathDate,
+      deathCause: deathCause ?? this.deathCause,
       version: version ?? this.version,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -164,6 +168,7 @@ class AnimalData {
       'saleCounterparty': saleCounterparty,
       'saleDocument': saleDocument,
       'deathDate': deathDate,
+      'deathCause': deathCause,
       'version': version,
       'updatedAt': updatedAt,
     };
@@ -213,6 +218,7 @@ class AnimalData {
       'sale_counterparty': saleCounterparty,
       'sale_document': saleDocument,
       'death_date': deathDate,
+      'death_cause': deathCause,
     };
   }
 
@@ -246,6 +252,7 @@ class AnimalData {
       saleCounterparty: map['saleCounterparty']?.toString() ?? '',
       saleDocument: map['saleDocument']?.toString() ?? '',
       deathDate: map['deathDate']?.toString() ?? '',
+      deathCause: map['deathCause']?.toString() ?? '',
       version: (map['version'] as num?)?.toInt() ?? 0,
       updatedAt: map['updatedAt']?.toString() ?? '',
     );
@@ -288,6 +295,7 @@ class AnimalData {
       saleCounterparty: metadata['sale_counterparty']?.toString() ?? '',
       saleDocument: metadata['sale_document']?.toString() ?? '',
       deathDate: metadata['death_date']?.toString() ?? '',
+      deathCause: metadata['death_cause']?.toString() ?? '',
       updatedAt: map['updated_at']?.toString() ?? '',
     );
   }
