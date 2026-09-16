@@ -88,7 +88,10 @@ class TechnicalExecutiveDiagnosis {
         'Atlas Score de ${score.total}/1000 (${score.classification}), $trendText. '
         'O diagnóstico combina indicadores de rebanho, reprodução, sanidade, nutrição, financeiro e estoque.';
 
-    final officialDecision = score.priorityActions.isEmpty
+    final dairyDataGaps = summary.dairyReproduction.dataQualityAlerts;
+    final officialDecision = dairyDataGaps.isNotEmpty
+        ? 'Antes de mudar o manejo, complete os registros prioritários: ${dairyDataGaps.first}'
+        : score.priorityActions.isEmpty
         ? 'Manter o monitoramento e atualizar os registros da fazenda.'
         : '${score.priorityActions.first.title}. ${score.priorityActions.first.expectedImpact}.';
 

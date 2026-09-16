@@ -162,6 +162,20 @@ class TechnicalAtlasScore {
   ) {
     final actions = <TechnicalAtlasPriorityAction>[];
 
+    final dairyDataGaps = summary.dairyReproduction.dataQualityAlerts;
+    if (dairyDataGaps.isNotEmpty) {
+      actions.add(
+        TechnicalAtlasPriorityAction(
+          area: 'Qualidade dos dados',
+          title: 'Completar a base reprodutiva antes de concluir recomendações',
+          description: dairyDataGaps.first,
+          priority: 2,
+          deadlineLabel: 'Nos próximos 7 dias',
+          expectedImpact: 'Aumenta a confiabilidade dos índices de Leite',
+        ),
+      );
+    }
+
     if (summary.outOfStockItems > 0) {
       actions.add(
         TechnicalAtlasPriorityAction(
