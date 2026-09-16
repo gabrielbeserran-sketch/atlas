@@ -725,6 +725,16 @@ class _SummaryContent extends StatelessWidget {
                 'Vendas com valor registrado',
                 '${summary.beefHerd.commercialExitsWithValue}/${summary.beefHerd.commercialExits}',
               ),
+              (
+                'Preço médio realizado por kg',
+                summary.beefHerd.averageSalePricePerKg == null
+                    ? 'Informe peso e valor da venda'
+                    : 'R\$ ${summary.beefHerd.averageSalePricePerKg!.toStringAsFixed(2)}/kg',
+              ),
+              (
+                'Vendas com peso e valor',
+                '${summary.beefHerd.salesWithWeightAndValue}/${summary.beefHerd.commercialExits}',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],

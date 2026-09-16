@@ -49,5 +49,7 @@ void main() {
     expect(result.averageSaleValue, 5200);
     expect(result.commercialExitsWithValue, 1);
     expect(result.dataQualityAlerts, isEmpty);
+    expect(result.salesWithWeightAndValue, 1);
+    expect(result.averageSalePricePerKg, 10.4);
   });
 }

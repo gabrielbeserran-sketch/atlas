@@ -8,6 +8,8 @@ class BeefHerdIndicators {
     required this.commercialRevenue,
     required this.averageSaleValue,
     required this.commercialExitsWithValue,
+    required this.salesWithWeightAndValue,
+    required this.averageSalePricePerKg,
   });
 
   final int activeAnimals;
@@ -18,6 +20,8 @@ class BeefHerdIndicators {
   final double commercialRevenue;
   final double? averageSaleValue;
   final int commercialExitsWithValue;
+  final int salesWithWeightAndValue;
+  final double? averageSalePricePerKg;
 
   List<String> get dataQualityAlerts {
     if (commercialExits == 0 || commercialExitsWithValue == commercialExits) {
@@ -53,6 +57,17 @@ class BeefHerdIndicatorCalculator {
     final salesWithValue = sold
         .where((animal) => animal.saleValue > 0)
         .toList();
+    final salesWithWeightAndValue = salesWithValue
+        .where((animal) => animal.weight > 0)
+        .toList();
+    final totalSaleValueWithWeight = salesWithWeightAndValue.fold<double>(
+      0,
+      (sum, animal) => sum + animal.saleValue,
+    );
+    final totalSaleWeight = salesWithWeightAndValue.fold<double>(
+      0,
+      (sum, animal) => sum + animal.weight,
+    );
     return BeefHerdIndicators(
       activeAnimals: active,
       commercialExits: exits,
@@ -66,6 +81,10 @@ class BeefHerdIndicatorCalculator {
                 ) /
                 salesWithValue.length,
       commercialExitsWithValue: salesWithValue.length,
+      salesWithWeightAndValue: salesWithWeightAndValue.length,
+      averageSalePricePerKg: totalSaleWeight == 0
+          ? null
+          : totalSaleValueWithWeight / totalSaleWeight,
     );
   }
 
