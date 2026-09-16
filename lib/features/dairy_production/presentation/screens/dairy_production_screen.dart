@@ -46,7 +46,11 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final summary = _calculator.summarize(_records, hectares: widget.farm.area);
+    final summary = _calculator.summarize(
+      _records,
+      hectares: widget.farm.area,
+      lactatingCows: _snapshot?.lactatingCows,
+    );
     final currency = NumberFormat.decimalPattern('pt_BR');
     return Scaffold(
       appBar: AppBar(
@@ -99,6 +103,12 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                       value: summary.averageLitersPerHectare == null
                           ? 'Informe a área'
                           : '${currency.format(summary.averageLitersPerHectare)} L/ha/dia',
+                    ),
+                    _Metric(
+                      label: 'Litros por vaca em lactação',
+                      value: summary.litersPerLactatingCow == null
+                          ? 'Registre produção e lote'
+                          : '${currency.format(summary.litersPerLactatingCow)} L/vaca/dia',
                     ),
                     _Metric(
                       label: 'Dias com registro',

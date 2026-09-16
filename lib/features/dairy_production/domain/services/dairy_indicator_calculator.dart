@@ -5,11 +5,13 @@ class DairyProductionSummary {
     required this.latestLiters,
     required this.averageLitersPerDay,
     required this.averageLitersPerHectare,
+    required this.litersPerLactatingCow,
     required this.recordedDays,
   });
   final double? latestLiters;
   final double? averageLitersPerDay;
   final double? averageLitersPerHectare;
+  final double? litersPerLactatingCow;
   final int recordedDays;
 }
 
@@ -19,6 +21,7 @@ class DairyIndicatorCalculator {
   DairyProductionSummary summarize(
     List<DairyDailyProductionData> records, {
     required int hectares,
+    int? lactatingCows,
     DateTime? referenceDate,
   }) {
     if (records.isEmpty) {
@@ -26,6 +29,7 @@ class DairyIndicatorCalculator {
         latestLiters: null,
         averageLitersPerDay: null,
         averageLitersPerHectare: null,
+        litersPerLactatingCow: null,
         recordedDays: 0,
       );
     }
@@ -45,6 +49,9 @@ class DairyIndicatorCalculator {
       latestLiters: records.first.totalLiters,
       averageLitersPerDay: average,
       averageLitersPerHectare: hectares > 0 ? average / hectares : null,
+      litersPerLactatingCow: lactatingCows == null || lactatingCows <= 0
+          ? null
+          : average / lactatingCows,
       recordedDays: source.length,
     );
   }

@@ -7,6 +7,7 @@ import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_finance/data/services/farm_finance_storage_service.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
@@ -36,6 +37,7 @@ class TechnicalDashboardService {
     FarmInventoryStorageService? inventoryStorage,
     AnimalWeightStorageService? weightStorage,
     DairyProductionStorageService? dairyProductionStorage,
+    DairyHerdSnapshotStorageService? dairySnapshotStorage,
   }) : _herdStorage = herdStorage ?? HerdStorageService(),
        _animalStorage = animalStorage ?? AnimalStorageService(),
        _healthStorage = healthStorage ?? AnimalHealthStorageService(),
@@ -46,7 +48,9 @@ class TechnicalDashboardService {
        _inventoryStorage = inventoryStorage ?? FarmInventoryStorageService(),
        _weightStorage = weightStorage ?? AnimalWeightStorageService(),
        _dairyProductionStorage =
-           dairyProductionStorage ?? DairyProductionStorageService();
+           dairyProductionStorage ?? DairyProductionStorageService(),
+       _dairySnapshotStorage =
+           dairySnapshotStorage ?? DairyHerdSnapshotStorageService();
 
   final HerdStorageService _herdStorage;
   final AnimalStorageService _animalStorage;
@@ -57,6 +61,7 @@ class TechnicalDashboardService {
   final FarmInventoryStorageService _inventoryStorage;
   final AnimalWeightStorageService _weightStorage;
   final DairyProductionStorageService _dairyProductionStorage;
+  final DairyHerdSnapshotStorageService _dairySnapshotStorage;
 
   Future<TechnicalDashboardAnalysis> loadAnalysis(
     FarmData farm, {
@@ -111,6 +116,9 @@ class TechnicalDashboardService {
     final dairyRecords = await _dairyProductionStorage.load(
       farm.id ?? farm.name,
     );
+    final dairySnapshots = await _dairySnapshotStorage.load(
+      farm.id ?? farm.name,
+    );
 
     TechnicalFarmSummary buildSummary(DateTime? start, DateTime? end) {
       return TechnicalFarmSummary.fromData(
@@ -123,6 +131,7 @@ class TechnicalDashboardService {
         inventory: inventory,
         farmArea: farm.area.toDouble(),
         dairyRecords: dairyRecords,
+        dairySnapshots: dairySnapshots,
         referenceDate: now,
         periodStart: start,
         periodEnd: end,

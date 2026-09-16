@@ -23,12 +23,14 @@ void main() {
           ),
         ],
         hectares: 20,
+        lactatingCows: 10,
         referenceDate: DateTime(2026, 9, 15),
       );
       expect(summary.latestLiters, 120);
       expect(summary.averageLitersPerDay, 140);
       expect(summary.averageLitersPerHectare, 7);
       expect(summary.recordedDays, 2);
+      expect(summary.litersPerLactatingCow, 14);
     },
   );
 }

@@ -586,6 +586,12 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.dairyProduction.averageLitersPerHectare!.toStringAsFixed(1)} L/ha/dia',
               ),
               (
+                'Litros por vaca em lactação',
+                summary.dairyProduction.litersPerLactatingCow == null
+                    ? 'Informe ordenhas e lote'
+                    : '${summary.dairyProduction.litersPerLactatingCow!.toStringAsFixed(1)} L/vaca/dia',
+              ),
+              (
                 'Dias de ordenha na base',
                 '${summary.dairyProduction.recordedDays}/30',
               ),

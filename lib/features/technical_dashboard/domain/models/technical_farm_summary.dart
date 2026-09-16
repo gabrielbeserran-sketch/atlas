@@ -8,6 +8,7 @@ import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_da
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/beef_production/domain/services/beef_herd_indicator_calculator.dart';
 
 class TechnicalFarmSummary {
@@ -116,6 +117,7 @@ class TechnicalFarmSummary {
     required List<FarmInventoryData> inventory,
     double? farmArea,
     List<DairyDailyProductionData> dairyRecords = const [],
+    List<DairyHerdSnapshotData> dairySnapshots = const [],
     DateTime? referenceDate,
     DateTime? periodStart,
     DateTime? periodEnd,
@@ -201,6 +203,9 @@ class TechnicalFarmSummary {
     final dairyProduction = DairyIndicatorCalculator().summarize(
       dairyRecords,
       hectares: farmArea?.round() ?? 0,
+      lactatingCows: dairySnapshots.isEmpty
+          ? null
+          : dairySnapshots.first.lactatingCows,
       referenceDate: today,
     );
     final beefHerd = BeefHerdIndicatorCalculator().calculate(
