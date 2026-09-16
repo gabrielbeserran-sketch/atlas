@@ -153,6 +153,12 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   ),
               ],
             ),
+      _Metric(
+        label: 'Perdas gestacionais',
+        value: _snapshot == null
+            ? 'Registre o lote'
+            : '${_snapshot!.pregnancyLosses}',
+      ),
     );
   }
 
@@ -220,11 +226,13 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
   final _eligible = TextEditingController();
   final _lactating = TextEditingController();
   final _dry = TextEditingController();
+  final _losses = TextEditingController(text: '0');
   @override
   void dispose() {
     _eligible.dispose();
     _lactating.dispose();
     _dry.dispose();
+    _losses.dispose();
     super.dispose();
   }
 
@@ -239,6 +247,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
           _field(_eligible, 'Vacas elegíveis'),
           _field(_lactating, 'Em lactação'),
           _field(_dry, 'Secas'),
+          _field(_losses, 'Perdas gestacionais'),
         ],
       ),
     ),
@@ -266,6 +275,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
         eligibleCows: int.parse(_eligible.text),
         lactatingCows: int.parse(_lactating.text),
         dryCows: int.parse(_dry.text),
+        pregnancyLosses: int.parse(_losses.text),
       ),
     );
   }
