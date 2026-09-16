@@ -574,6 +574,22 @@ class _SummaryContent extends StatelessWidget {
             icon: Icons.monitor_heart_outlined,
             metrics: [
               (
+                'Produção média',
+                summary.dairyProduction.averageLitersPerDay == null
+                    ? 'Sem ordenhas registradas'
+                    : '${summary.dairyProduction.averageLitersPerDay!.toStringAsFixed(1)} L/dia',
+              ),
+              (
+                'Litros por hectare',
+                summary.dairyProduction.averageLitersPerHectare == null
+                    ? 'Informe área e ordenhas'
+                    : '${summary.dairyProduction.averageLitersPerHectare!.toStringAsFixed(1)} L/ha/dia',
+              ),
+              (
+                'Dias de ordenha na base',
+                '${summary.dairyProduction.recordedDays}',
+              ),
+              (
                 'DEL médio',
                 summary.dairyReproduction.averageDaysInMilk == null
                     ? 'Dados insuficientes'

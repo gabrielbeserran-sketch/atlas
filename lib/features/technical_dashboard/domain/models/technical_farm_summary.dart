@@ -6,6 +6,8 @@ import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_invento
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
 
 class TechnicalFarmSummary {
   const TechnicalFarmSummary({
@@ -38,6 +40,7 @@ class TechnicalFarmSummary {
     required this.dairyReproduction,
     required this.stockingRate,
     required this.liveWeightPerHectare,
+    required this.dairyProduction,
   });
 
   final int groupCount;
@@ -69,6 +72,7 @@ class TechnicalFarmSummary {
   final DairyReproductionIndicators dairyReproduction;
   final double? stockingRate;
   final double? liveWeightPerHectare;
+  final DairyProductionSummary dairyProduction;
 
   double get balance => income - expenses;
 
@@ -92,6 +96,7 @@ class TechnicalFarmSummary {
     required List<FarmFinanceData> finances,
     required List<FarmInventoryData> inventory,
     double? farmArea,
+    List<DairyDailyProductionData> dairyRecords = const [],
     DateTime? referenceDate,
     DateTime? periodStart,
     DateTime? periodEnd,
@@ -174,6 +179,11 @@ class TechnicalFarmSummary {
       records: reproductionRecords,
       referenceDate: today,
     );
+    final dairyProduction = DairyIndicatorCalculator().summarize(
+      dairyRecords,
+      hectares: farmArea?.round() ?? 0,
+      referenceDate: today,
+    );
 
     return TechnicalFarmSummary(
       groupCount: groups.length,
@@ -235,6 +245,7 @@ class TechnicalFarmSummary {
       dairyReproduction: dairyReproduction,
       stockingRate: validArea == null ? null : activeAnimals.length / validArea,
       liveWeightPerHectare: validArea == null ? null : activeWeight / validArea,
+      dairyProduction: dairyProduction,
     );
   }
 }
