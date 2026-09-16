@@ -26,6 +26,7 @@ class AnimalData {
     this.saleValue = 0,
     this.saleCounterparty = '',
     this.saleDocument = '',
+    this.deathDate = '',
     this.version = 0,
     this.updatedAt = '',
   });
@@ -56,6 +57,7 @@ class AnimalData {
   final double saleValue;
   final String saleCounterparty;
   final String saleDocument;
+  final String deathDate;
   final int version;
   final String updatedAt;
 
@@ -95,6 +97,7 @@ class AnimalData {
     double? saleValue,
     String? saleCounterparty,
     String? saleDocument,
+    String? deathDate,
     int? version,
     String? updatedAt,
   }) {
@@ -126,6 +129,7 @@ class AnimalData {
       saleValue: saleValue ?? this.saleValue,
       saleCounterparty: saleCounterparty ?? this.saleCounterparty,
       saleDocument: saleDocument ?? this.saleDocument,
+      deathDate: deathDate ?? this.deathDate,
       version: version ?? this.version,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -159,6 +163,7 @@ class AnimalData {
       'saleValue': saleValue,
       'saleCounterparty': saleCounterparty,
       'saleDocument': saleDocument,
+      'deathDate': deathDate,
       'version': version,
       'updatedAt': updatedAt,
     };
@@ -207,6 +212,7 @@ class AnimalData {
       'sale_value': saleValue,
       'sale_counterparty': saleCounterparty,
       'sale_document': saleDocument,
+      'death_date': deathDate,
     };
   }
 
@@ -239,6 +245,7 @@ class AnimalData {
       saleValue: (map['saleValue'] as num?)?.toDouble() ?? 0,
       saleCounterparty: map['saleCounterparty']?.toString() ?? '',
       saleDocument: map['saleDocument']?.toString() ?? '',
+      deathDate: map['deathDate']?.toString() ?? '',
       version: (map['version'] as num?)?.toInt() ?? 0,
       updatedAt: map['updatedAt']?.toString() ?? '',
     );
@@ -280,6 +287,7 @@ class AnimalData {
       saleValue: (metadata['sale_value'] as num?)?.toDouble() ?? 0,
       saleCounterparty: metadata['sale_counterparty']?.toString() ?? '',
       saleDocument: metadata['sale_document']?.toString() ?? '',
+      deathDate: metadata['death_date']?.toString() ?? '',
       updatedAt: map['updated_at']?.toString() ?? '',
     );
   }

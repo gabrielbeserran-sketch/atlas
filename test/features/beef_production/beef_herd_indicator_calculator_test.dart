@@ -51,5 +51,7 @@ void main() {
     expect(result.dataQualityAlerts, isEmpty);
     expect(result.salesWithWeightAndValue, 1);
     expect(result.averageSalePricePerKg, 10.4);
+    expect(result.mortalities, 0);
+    expect(result.mortalityRate, 0);
   });
 }

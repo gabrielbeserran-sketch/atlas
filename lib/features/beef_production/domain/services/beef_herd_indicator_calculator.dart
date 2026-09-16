@@ -10,6 +10,8 @@ class BeefHerdIndicators {
     required this.commercialExitsWithValue,
     required this.salesWithWeightAndValue,
     required this.averageSalePricePerKg,
+    required this.mortalities,
+    required this.mortalityRate,
   });
 
   final int activeAnimals;
@@ -22,6 +24,8 @@ class BeefHerdIndicators {
   final int commercialExitsWithValue;
   final int salesWithWeightAndValue;
   final double? averageSalePricePerKg;
+  final int mortalities;
+  final double? mortalityRate;
 
   List<String> get dataQualityAlerts {
     if (commercialExits == 0 || commercialExitsWithValue == commercialExits) {
@@ -50,6 +54,12 @@ class BeefHerdIndicatorCalculator {
     }).toList();
     final exits = sold.length;
     final exposed = active + exits;
+    final mortalities = animals.where((animal) {
+      if (animal.status != 'Morto') return false;
+      final date = _date(animal.deathDate);
+      return date != null && !date.isBefore(start) && !date.isAfter(now);
+    }).length;
+    final mortalityExposed = active + mortalities;
     final revenue = sold.fold<double>(
       0,
       (sum, animal) => sum + animal.saleValue,
@@ -85,6 +95,10 @@ class BeefHerdIndicatorCalculator {
       averageSalePricePerKg: totalSaleWeight == 0
           ? null
           : totalSaleValueWithWeight / totalSaleWeight,
+      mortalities: mortalities,
+      mortalityRate: mortalityExposed == 0
+          ? null
+          : mortalities / mortalityExposed * 100,
     );
   }
 

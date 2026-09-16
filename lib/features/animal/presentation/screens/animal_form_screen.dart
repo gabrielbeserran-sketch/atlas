@@ -36,6 +36,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
   final saleValueController = TextEditingController();
   final saleCounterpartyController = TextEditingController();
   final saleDocumentController = TextEditingController();
+  final deathDateController = TextEditingController();
 
   String selectedSex = 'Fêmea';
   String selectedStatus = 'Ativo';
@@ -90,6 +91,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
           : animal.saleValue.toStringAsFixed(2).replaceAll('.', ',');
       saleCounterpartyController.text = animal.saleCounterparty;
       saleDocumentController.text = animal.saleDocument;
+      deathDateController.text = animal.deathDate;
       selectedSex = animal.sex;
       selectedStatus = animal.status;
       selectedCategory = categories.contains(animal.category)
@@ -121,6 +123,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       saleValueController,
       saleCounterpartyController,
       saleDocumentController,
+      deathDateController,
     ]) {
       controller.dispose();
     }
@@ -234,6 +237,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       saleValue: parseMoney(saleValueController.text),
       saleCounterparty: saleCounterpartyController.text.trim(),
       saleDocument: saleDocumentController.text.trim(),
+      deathDate: deathDateController.text.trim(),
     );
     Navigator.pop<AnimalData>(context, animal);
   }
@@ -569,6 +573,18 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                         ),
                       ),
                     ],
+                    if (selectedStatus == 'Morto') ...[
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: deathDateController,
+                        readOnly: true,
+                        onTap: () => selectDate(deathDateController),
+                        decoration: const InputDecoration(
+                          labelText: 'Data da morte',
+                          prefixIcon: Icon(Icons.calendar_month_outlined),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 28),
                     sectionTitle(
                       'Arquivos e observações',
@@ -597,7 +613,9 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                     AtlasFormActions(
                       onSave: saveAnimal,
                       isSaving: isSaving,
-                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar animal',
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar animal',
                     ),
                   ],
                 ),

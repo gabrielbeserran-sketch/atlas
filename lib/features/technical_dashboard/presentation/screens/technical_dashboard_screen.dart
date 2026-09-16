@@ -760,6 +760,13 @@ class _SummaryContent extends StatelessWidget {
                 'Vendas com peso e valor',
                 '${summary.beefHerd.salesWithWeightAndValue}/${summary.beefHerd.commercialExits}',
               ),
+              (
+                'Mortalidade (12 meses)',
+                summary.beefHerd.mortalityRate == null
+                    ? 'Sem rebanho exposto'
+                    : '${summary.beefHerd.mortalityRate!.toStringAsFixed(1)}% '
+                          '(${summary.beefHerd.mortalities})',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],
