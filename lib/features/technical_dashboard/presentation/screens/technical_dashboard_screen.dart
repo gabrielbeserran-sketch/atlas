@@ -603,6 +603,12 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Dados insuficientes'
                     : '${summary.dairyReproduction.averageDryPeriodDays!.toStringAsFixed(0)} dias',
               ),
+              (
+                'Período de serviço',
+                summary.dairyReproduction.averageServicePeriodDays == null
+                    ? 'Dados insuficientes'
+                    : '${summary.dairyReproduction.averageServicePeriodDays!.toStringAsFixed(0)} dias',
+              ),
             ],
           ),
           const SizedBox(height: 18),
