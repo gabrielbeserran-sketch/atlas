@@ -12,6 +12,7 @@ class BeefHerdIndicators {
     required this.averageSalePricePerKg,
     required this.mortalities,
     required this.mortalityRate,
+    required this.mortalityByCause,
   });
 
   final int activeAnimals;
@@ -26,6 +27,14 @@ class BeefHerdIndicators {
   final double? averageSalePricePerKg;
   final int mortalities;
   final double? mortalityRate;
+  final Map<String, int> mortalityByCause;
+
+  String? get primaryMortalityCause {
+    if (mortalityByCause.isEmpty) return null;
+    final entries = mortalityByCause.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return entries.first.key;
+  }
 
   List<String> get dataQualityAlerts {
     if (commercialExits == 0 || commercialExitsWithValue == commercialExits) {
@@ -54,11 +63,19 @@ class BeefHerdIndicatorCalculator {
     }).toList();
     final exits = sold.length;
     final exposed = active + exits;
-    final mortalities = animals.where((animal) {
+    final deadAnimals = animals.where((animal) {
       if (animal.status != 'Morto') return false;
       final date = _date(animal.deathDate);
       return date != null && !date.isBefore(start) && !date.isAfter(now);
-    }).length;
+    }).toList();
+    final mortalities = deadAnimals.length;
+    final mortalityByCause = <String, int>{};
+    for (final animal in deadAnimals) {
+      final cause = animal.deathCause.trim().isEmpty
+          ? 'Não informada'
+          : animal.deathCause;
+      mortalityByCause[cause] = (mortalityByCause[cause] ?? 0) + 1;
+    }
     final mortalityExposed = active + mortalities;
     final revenue = sold.fold<double>(
       0,
@@ -99,6 +116,7 @@ class BeefHerdIndicatorCalculator {
       mortalityRate: mortalityExposed == 0
           ? null
           : mortalities / mortalityExposed * 100,
+      mortalityByCause: mortalityByCause,
     );
   }
 

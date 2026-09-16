@@ -767,6 +767,10 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.beefHerd.mortalityRate!.toStringAsFixed(1)}% '
                           '(${summary.beefHerd.mortalities})',
               ),
+              (
+                'Principal causa de óbito',
+                summary.beefHerd.primaryMortalityCause ?? 'Sem óbitos datados',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],

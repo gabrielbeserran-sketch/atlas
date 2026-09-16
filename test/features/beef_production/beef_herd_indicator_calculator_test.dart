@@ -53,5 +53,6 @@ void main() {
     expect(result.averageSalePricePerKg, 10.4);
     expect(result.mortalities, 0);
     expect(result.mortalityRate, 0);
+    expect(result.primaryMortalityCause, isNull);
   });
 }
