@@ -227,6 +227,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
   final _lactating = TextEditingController();
   final _dry = TextEditingController();
   final _losses = TextEditingController(text: '0');
+  DateTime _date = DateTime.now();
   @override
   void dispose() {
     _eligible.dispose();
@@ -238,12 +239,29 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Estado do lote hoje'),
+    title: const Text('Estado do lote'),
     content: Form(
       key: _form,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Data do estado do lote'),
+            subtitle: Text(DateFormat('dd/MM/yyyy').format(_date)),
+            trailing: IconButton(
+              icon: const Icon(Icons.calendar_today_outlined),
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                  initialDate: _date,
+                );
+                if (picked != null) setState(() => _date = picked);
+              },
+            ),
+          ),
           _field(_eligible, 'Vacas elegíveis'),
           _field(_lactating, 'Em lactação'),
           _field(_dry, 'Secas'),
@@ -284,7 +302,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
     Navigator.pop(
       context,
       DairyHerdSnapshotData(
-        date: DateTime.now(),
+        date: _date,
         eligibleCows: eligible,
         lactatingCows: lactating,
         dryCows: dry,
