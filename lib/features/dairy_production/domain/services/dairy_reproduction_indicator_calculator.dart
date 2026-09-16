@@ -37,6 +37,25 @@ class DairyReproductionIndicators {
   final int reproductiveCulls;
   final int activeFemaleCount;
 
+  int get dataCoveragePercent {
+    if (activeFemaleCount == 0) return 0;
+    final sources = [
+      lactatingCowsWithKnownCalving > 0,
+      inseminationAttempts > 0,
+      cowsWithPregnancyDiagnosis > 0,
+      femaleEntries > 0 || femaleExits > 0 || reproductiveCulls > 0,
+    ].where((available) => available).length;
+    return (sources / 4 * 100).round();
+  }
+
+  String get recommendationConfidenceLabel {
+    final coverage = dataCoveragePercent;
+    if (coverage == 0) return 'Sem base reprodutiva';
+    if (coverage < 50) return 'Confiança limitada';
+    if (coverage < 100) return 'Confiança parcial';
+    return 'Confiança sustentada';
+  }
+
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
     if (activeFemaleCount == 0) {

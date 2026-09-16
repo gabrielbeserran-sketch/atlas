@@ -86,7 +86,9 @@ class TechnicalExecutiveDiagnosis {
 
     final summaryText =
         'Atlas Score de ${score.total}/1000 (${score.classification}), $trendText. '
-        'O diagnóstico combina indicadores de rebanho, reprodução, sanidade, nutrição, financeiro e estoque.';
+        'O diagnóstico combina indicadores de rebanho, reprodução, sanidade, nutrição, financeiro e estoque. '
+        'Dados reprodutivos: ${summary.dairyReproduction.recommendationConfidenceLabel} '
+        '(${summary.dairyReproduction.dataCoveragePercent}% de cobertura operacional).';
 
     final dairyDataGaps = summary.dairyReproduction.dataQualityAlerts;
     final officialDecision = dairyDataGaps.isNotEmpty

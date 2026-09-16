@@ -67,6 +67,8 @@ void main() {
       expect(result.cowsWithPregnancyDiagnosis, 1);
       expect(result.replacementCoverageRate, isNull);
       expect(result.femaleEntries, 0);
+      expect(result.dataCoveragePercent, 75);
+      expect(result.recommendationConfidenceLabel, 'Confiança parcial');
     },
   );
 
@@ -105,6 +107,8 @@ void main() {
       expect(result.femaleEntries, 1);
       expect(result.femaleExits, 1);
       expect(result.replacementCoverageRate, 100);
+      expect(result.dataCoveragePercent, 25);
+      expect(result.recommendationConfidenceLabel, 'Confiança limitada');
     },
   );
 }
