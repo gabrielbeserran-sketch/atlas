@@ -44,4 +44,20 @@ class DairyHerdSnapshotStorageService {
       jsonEncode(values.map((item) => item.toMap()).toList()),
     );
   }
+
+  Future<void> delete(String farmId, DateTime date) async {
+    final values = await load(farmId);
+    final filtered = values
+        .where(
+          (item) =>
+              item.date.year != date.year ||
+              item.date.month != date.month ||
+              item.date.day != date.day,
+        )
+        .toList();
+    await _preferences.setString(
+      _key(farmId),
+      jsonEncode(filtered.map((item) => item.toMap()).toList()),
+    );
+  }
 }

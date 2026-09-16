@@ -145,6 +145,17 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         '${snapshot.eligibleCows} elegíveis · '
                         '${snapshot.pregnancyLosses} perdas',
                       ),
+                      trailing: IconButton(
+                        tooltip: 'Excluir estado do lote',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          await _snapshotStorage.delete(
+                            _farmKey,
+                            snapshot.date,
+                          );
+                          await _load();
+                        },
+                      ),
                     ),
                   ),
                 const SizedBox(height: 28),
