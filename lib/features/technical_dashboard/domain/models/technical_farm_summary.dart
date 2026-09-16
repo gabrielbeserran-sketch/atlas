@@ -44,6 +44,7 @@ class TechnicalFarmSummary {
     required this.liveWeightPerHectare,
     required this.dairyProduction,
     required this.beefHerd,
+    this.latestDairySnapshot,
   });
 
   final int groupCount;
@@ -77,6 +78,7 @@ class TechnicalFarmSummary {
   final double? liveWeightPerHectare;
   final DairyProductionSummary dairyProduction;
   final BeefHerdIndicators beefHerd;
+  final DairyHerdSnapshotData? latestDairySnapshot;
 
   double get balance => income - expenses;
 
@@ -275,6 +277,7 @@ class TechnicalFarmSummary {
       liveWeightPerHectare: validArea == null ? null : activeWeight / validArea,
       dairyProduction: dairyProduction,
       beefHerd: beefHerd,
+      latestDairySnapshot: dairySnapshots.isEmpty ? null : dairySnapshots.first,
     );
   }
 }

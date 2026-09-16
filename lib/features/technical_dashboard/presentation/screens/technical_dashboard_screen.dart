@@ -592,6 +592,18 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.dairyProduction.litersPerLactatingCow!.toStringAsFixed(1)} L/vaca/dia',
               ),
               (
+                '% de vacas em lactação',
+                summary.latestDairySnapshot?.lactatingPercent == null
+                    ? 'Registre o estado do lote'
+                    : '${summary.latestDairySnapshot!.lactatingPercent!.toStringAsFixed(1)}%',
+              ),
+              (
+                '% de vacas secas',
+                summary.latestDairySnapshot?.dryPercent == null
+                    ? 'Registre o estado do lote'
+                    : '${summary.latestDairySnapshot!.dryPercent!.toStringAsFixed(1)}%',
+              ),
+              (
                 'Dias de ordenha na base',
                 '${summary.dairyProduction.recordedDays}/30',
               ),
