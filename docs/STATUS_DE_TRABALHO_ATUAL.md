@@ -10,7 +10,7 @@ Atualizado em 16/09/2026.
 - Componentes concluídos: cálculo de 12 meses por entradas e saídas datadas, descarte reprodutivo separado e card técnico com cobertura e contagens da base.
 - Validações concluídas: teste unitário de cálculo, análise estática e verificação de diff.
 - Validações concluídas: teste unitário de cálculo, análise estática, verificação de diff e build Windows de produção.
-- Checkpoint: será registrado após a publicação deste conjunto.
+- Checkpoint principal: `08d8f9e` — publicado no branch `master`.
 - Próximo marco: transformar cobertura em alerta operacional por limiar configurável.
 
 ## Próximo pacote planejado
