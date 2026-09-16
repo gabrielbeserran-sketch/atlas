@@ -701,6 +701,16 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Registre duas pesagens'
                     : '${_beefAverageDailyGain!.toStringAsFixed(3)} kg/dia',
               ),
+              (
+                'Taxa de desfrute comercial (12 meses)',
+                summary.beefHerd.offtakeRate == null
+                    ? 'Sem rebanho exposto'
+                    : '${summary.beefHerd.offtakeRate!.toStringAsFixed(1)}%',
+              ),
+              (
+                'Saídas comerciais datadas',
+                '${summary.beefHerd.commercialExits}',
+              ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
             ],

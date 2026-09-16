@@ -8,6 +8,7 @@ import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_da
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
+import 'package:projeto_atlas/features/beef_production/domain/services/beef_herd_indicator_calculator.dart';
 
 class TechnicalFarmSummary {
   const TechnicalFarmSummary({
@@ -41,6 +42,7 @@ class TechnicalFarmSummary {
     required this.stockingRate,
     required this.liveWeightPerHectare,
     required this.dairyProduction,
+    required this.beefHerd,
   });
 
   final int groupCount;
@@ -73,6 +75,7 @@ class TechnicalFarmSummary {
   final double? stockingRate;
   final double? liveWeightPerHectare;
   final DairyProductionSummary dairyProduction;
+  final BeefHerdIndicators beefHerd;
 
   double get balance => income - expenses;
 
@@ -200,6 +203,10 @@ class TechnicalFarmSummary {
       hectares: farmArea?.round() ?? 0,
       referenceDate: today,
     );
+    final beefHerd = BeefHerdIndicatorCalculator().calculate(
+      animals: animals,
+      referenceDate: today,
+    );
 
     return TechnicalFarmSummary(
       groupCount: groups.length,
@@ -262,6 +269,7 @@ class TechnicalFarmSummary {
       stockingRate: validArea == null ? null : activeAnimals.length / validArea,
       liveWeightPerHectare: validArea == null ? null : activeWeight / validArea,
       dairyProduction: dairyProduction,
+      beefHerd: beefHerd,
     );
   }
 }
