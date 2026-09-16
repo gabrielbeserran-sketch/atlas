@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -15,8 +17,10 @@ class DairyProductionScreen extends StatefulWidget {
 
 class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _storage = DairyProductionStorageService();
+  final _snapshotStorage = DairyHerdSnapshotStorageService();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
+  DairyHerdSnapshotData? _snapshot;
   bool _loading = true;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
@@ -28,9 +32,11 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
 
   Future<void> _load() async {
     final values = await _storage.load(_farmKey);
+    final snapshots = await _snapshotStorage.load(_farmKey);
     if (mounted) {
       setState(() {
         _records = values;
+        _snapshot = snapshots.isEmpty ? null : snapshots.first;
         _loading = false;
       });
     }
@@ -41,7 +47,16 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
     final summary = _calculator.summarize(_records, hectares: widget.farm.area);
     final currency = NumberFormat.decimalPattern('pt_BR');
     return Scaffold(
-      appBar: AppBar(title: const Text('Produção diária de leite')),
+      appBar: AppBar(
+        title: const Text('Produção diária de leite'),
+        actions: [
+          IconButton(
+            tooltip: 'Estado do lote',
+            icon: const Icon(Icons.groups_outlined),
+            onPressed: _openSnapshotForm,
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openForm,
         icon: const Icon(Icons.add),
@@ -86,6 +101,18 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                     _Metric(
                       label: 'Dias com registro',
                       value: '${summary.recordedDays} nos últimos 30 dias',
+                    ),
+                    _Metric(
+                      label: 'Vacas em lactação',
+                      value: _snapshot?.lactatingPercent == null
+                          ? 'Registre o lote'
+                          : '${_snapshot!.lactatingPercent!.toStringAsFixed(1)}%',
+                    ),
+                    _Metric(
+                      label: 'Vacas secas',
+                      value: _snapshot?.dryPercent == null
+                          ? 'Registre o lote'
+                          : '${_snapshot!.dryPercent!.toStringAsFixed(1)}%',
                     ),
                   ],
                 ),
@@ -138,6 +165,16 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
     await _storage.upsert(_farmKey, result);
     await _load();
   }
+
+  Future<void> _openSnapshotForm() async {
+    final result = await showDialog<DairyHerdSnapshotData>(
+      context: context,
+      builder: (_) => const _HerdSnapshotDialog(),
+    );
+    if (result == null) return;
+    await _snapshotStorage.upsert(_farmKey, result);
+    await _load();
+  }
 }
 
 class _Metric extends StatelessWidget {
@@ -170,6 +207,68 @@ class _DairyRecordDialog extends StatefulWidget {
   const _DairyRecordDialog();
   @override
   State<_DairyRecordDialog> createState() => _DairyRecordDialogState();
+}
+
+class _HerdSnapshotDialog extends StatefulWidget {
+  const _HerdSnapshotDialog();
+  @override
+  State<_HerdSnapshotDialog> createState() => _HerdSnapshotDialogState();
+}
+
+class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
+  final _form = GlobalKey<FormState>();
+  final _eligible = TextEditingController();
+  final _lactating = TextEditingController();
+  final _dry = TextEditingController();
+  @override
+  void dispose() {
+    _eligible.dispose();
+    _lactating.dispose();
+    _dry.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Estado do lote hoje'),
+    content: Form(
+      key: _form,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _field(_eligible, 'Vacas elegíveis'),
+          _field(_lactating, 'Em lactação'),
+          _field(_dry, 'Secas'),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(onPressed: _save, child: const Text('Salvar')),
+    ],
+  );
+  Widget _field(TextEditingController c, String label) => TextFormField(
+    controller: c,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(labelText: label),
+    validator: (v) =>
+        int.tryParse(v ?? '') == null ? 'Informe um número' : null,
+  );
+  void _save() {
+    if (!_form.currentState!.validate()) return;
+    Navigator.pop(
+      context,
+      DairyHerdSnapshotData(
+        date: DateTime.now(),
+        eligibleCows: int.parse(_eligible.text),
+        lactatingCows: int.parse(_lactating.text),
+        dryCows: int.parse(_dry.text),
+      ),
+    );
+  }
 }
 
 class _DairyRecordDialogState extends State<_DairyRecordDialog> {
