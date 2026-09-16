@@ -268,13 +268,26 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
   );
   void _save() {
     if (!_form.currentState!.validate()) return;
+    final eligible = int.parse(_eligible.text);
+    final lactating = int.parse(_lactating.text);
+    final dry = int.parse(_dry.text);
+    if (lactating + dry > eligible) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Vacas em lactação e secas não podem superar as vacas elegíveis.',
+          ),
+        ),
+      );
+      return;
+    }
     Navigator.pop(
       context,
       DairyHerdSnapshotData(
         date: DateTime.now(),
-        eligibleCows: int.parse(_eligible.text),
-        lactatingCows: int.parse(_lactating.text),
-        dryCows: int.parse(_dry.text),
+        eligibleCows: eligible,
+        lactatingCows: lactating,
+        dryCows: dry,
         pregnancyLosses: int.parse(_losses.text),
       ),
     );
