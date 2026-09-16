@@ -219,6 +219,7 @@ class _AnimalReproductionFormScreenState
                                 'Monta natural',
                                 'Diagnóstico de gestação',
                                 'Parto',
+                                'Início do período seco',
                                 'Aborto',
                                 'Exame ginecológico',
                                 'Protocolo hormonal',
@@ -435,7 +436,9 @@ class _AnimalReproductionFormScreenState
                     AtlasFormActions(
                       onSave: saveRecord,
                       isSaving: isSaving,
-                      saveLabel: isEditing ? 'Salvar alterações' : 'Salvar registro',
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar registro',
                     ),
                   ],
                 ),
