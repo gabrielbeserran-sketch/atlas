@@ -21,6 +21,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
+  List<DairyHerdSnapshotData> _snapshots = const [];
   bool _loading = true;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
@@ -37,6 +38,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       setState(() {
         _records = values;
         _snapshot = snapshots.isEmpty ? null : snapshots.first;
+        _snapshots = snapshots;
         _loading = false;
       });
     }
@@ -122,6 +124,29 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 28),
+                Text(
+                  'Histórico do lote',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 10),
+                if (_snapshots.isEmpty)
+                  const Text('Nenhum estado de lote registrado ainda.'),
+                for (final snapshot in _snapshots.take(5))
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.groups_outlined),
+                      title: Text(
+                        DateFormat('dd/MM/yyyy').format(snapshot.date),
+                      ),
+                      subtitle: Text(
+                        '${snapshot.lactatingCows} em lactação · '
+                        '${snapshot.dryCows} secas · '
+                        '${snapshot.eligibleCows} elegíveis · '
+                        '${snapshot.pregnancyLosses} perdas',
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 28),
                 Text(
                   'Histórico de ordenhas',
