@@ -114,6 +114,12 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           ? 'Registre o lote'
                           : '${_snapshot!.dryPercent!.toStringAsFixed(1)}%',
                     ),
+                    _Metric(
+                      label: 'Perdas gestacionais',
+                      value: _snapshot == null
+                          ? 'Registre o lote'
+                          : '${_snapshot!.pregnancyLosses}',
+                    ),
                   ],
                 ),
                 const SizedBox(height: 28),
@@ -153,12 +159,6 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   ),
               ],
             ),
-      _Metric(
-        label: 'Perdas gestacionais',
-        value: _snapshot == null
-            ? 'Registre o lote'
-            : '${_snapshot!.pregnancyLosses}',
-      ),
     );
   }
 
