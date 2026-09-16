@@ -9,6 +9,7 @@ class DairyReproductionIndicators {
     required this.inseminationAttempts,
     required this.confirmedPregnancies,
     required this.averageDryPeriodDays,
+    required this.averageServicePeriodDays,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -16,6 +17,7 @@ class DairyReproductionIndicators {
   final int inseminationAttempts;
   final int confirmedPregnancies;
   final double? averageDryPeriodDays;
+  final double? averageServicePeriodDays;
 }
 
 /// Calcula somente métricas cuja origem pode ser comprovada por animal e data.
@@ -43,6 +45,7 @@ class DairyReproductionIndicatorCalculator {
     }
     final del = <int>[];
     final dryPeriods = <int>[];
+    final servicePeriods = <int>[];
     for (final events in recordsByAnimal.values) {
       final calvings =
           events
@@ -67,6 +70,18 @@ class DairyReproductionIndicatorCalculator {
         if (matches.isNotEmpty) {
           dryPeriods.add(calving.difference(matches.last).inDays);
         }
+      }
+      final services = events
+          .where((event) => event.isInsemination)
+          .map((event) => _date(event.date))
+          .whereType<DateTime>()
+          .toList();
+      for (final calving in calvings) {
+        final candidates = services
+            .where((date) => !date.isBefore(calving))
+            .toList();
+        if (candidates.isNotEmpty)
+          servicePeriods.add(candidates.first.difference(calving).inDays);
       }
     }
     final inseminations = records
@@ -95,6 +110,9 @@ class DairyReproductionIndicatorCalculator {
       averageDryPeriodDays: dryPeriods.isEmpty
           ? null
           : dryPeriods.reduce((a, b) => a + b) / dryPeriods.length,
+      averageServicePeriodDays: servicePeriods.isEmpty
+          ? null
+          : servicePeriods.reduce((a, b) => a + b) / servicePeriods.length,
     );
   }
 
