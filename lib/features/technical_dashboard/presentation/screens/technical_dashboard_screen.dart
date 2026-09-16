@@ -597,6 +597,12 @@ class _SummaryContent extends StatelessWidget {
                 'Diagnósticos positivos',
                 '${summary.dairyReproduction.confirmedPregnancies}',
               ),
+              (
+                'Período seco médio',
+                summary.dairyReproduction.averageDryPeriodDays == null
+                    ? 'Dados insuficientes'
+                    : '${summary.dairyReproduction.averageDryPeriodDays!.toStringAsFixed(0)} dias',
+              ),
             ],
           ),
           const SizedBox(height: 18),
