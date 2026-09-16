@@ -9,7 +9,7 @@ Atualizado em 16/09/2026.
 - Progresso: 100%.
 - Componentes concluídos: idade ao primeiro parto no painel técnico; perdas gestacionais com denominador explícito; persistência compatível com registros anteriores; e validação para impedir perdas maiores que as gestações acompanhadas.
 - Validações concluídas: três testes unitários, análise estática, verificação de diff e build Windows de produção.
-- Checkpoint: este arquivo será atualizado com o hash do commit publicado ao final da entrega.
+- Checkpoint principal: `b3c4457` — publicado no branch `master`.
 - Próximo marco: taxa de reposição baseada em entradas, saídas e descarte das matrizes.
 
 ## Próximo pacote planejado
