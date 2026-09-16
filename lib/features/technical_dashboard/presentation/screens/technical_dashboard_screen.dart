@@ -610,6 +610,12 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.dairyReproduction.averageServicePeriodDays!.toStringAsFixed(0)} dias',
               ),
               (
+                'Idade ao 1º parto',
+                summary.dairyReproduction.averageAgeAtFirstCalvingDays == null
+                    ? 'Dados insuficientes'
+                    : '${(summary.dairyReproduction.averageAgeAtFirstCalvingDays! / 30.4375).toStringAsFixed(1)} meses',
+              ),
+              (
                 'Taxa de prenhez (diagnósticos)',
                 summary.dairyReproduction.pregnancyRateFromLatestDiagnosis ==
                         null

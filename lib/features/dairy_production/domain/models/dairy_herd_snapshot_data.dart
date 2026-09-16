@@ -4,6 +4,7 @@ class DairyHerdSnapshotData {
     required this.eligibleCows,
     required this.lactatingCows,
     required this.dryCows,
+    this.pregnanciesMonitored = 0,
     this.pregnancyLosses = 0,
   });
 
@@ -11,18 +12,26 @@ class DairyHerdSnapshotData {
   final int eligibleCows;
   final int lactatingCows;
   final int dryCows;
+
+  /// Gestações em acompanhamento no fechamento do lote.
+  /// É o denominador declarado para a taxa de perdas do mesmo registro.
+  final int pregnanciesMonitored;
   final int pregnancyLosses;
 
   double? get lactatingPercent =>
       eligibleCows == 0 ? null : lactatingCows / eligibleCows * 100;
   double? get dryPercent =>
       eligibleCows == 0 ? null : dryCows / eligibleCows * 100;
+  double? get pregnancyLossPercent => pregnanciesMonitored == 0
+      ? null
+      : pregnancyLosses / pregnanciesMonitored * 100;
 
   Map<String, dynamic> toMap() => {
     'date': DateTime(date.year, date.month, date.day).toIso8601String(),
     'eligible_cows': eligibleCows,
     'lactating_cows': lactatingCows,
     'dry_cows': dryCows,
+    'pregnancies_monitored': pregnanciesMonitored,
     'pregnancy_losses': pregnancyLosses,
   };
 
@@ -35,6 +44,7 @@ class DairyHerdSnapshotData {
       eligibleCows: integer(map['eligible_cows']),
       lactatingCows: integer(map['lactating_cows']),
       dryCows: integer(map['dry_cows']),
+      pregnanciesMonitored: integer(map['pregnancies_monitored']),
       pregnancyLosses: integer(map['pregnancy_losses']),
     );
   }

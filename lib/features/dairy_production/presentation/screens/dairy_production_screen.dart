@@ -118,9 +118,10 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                     ),
                     _Metric(
                       label: 'Perdas gestacionais',
-                      value: _snapshot == null
-                          ? 'Registre o lote'
-                          : '${_snapshot!.pregnancyLosses}',
+                      value: _snapshot?.pregnancyLossPercent == null
+                          ? 'Informe gestações'
+                          : '${_snapshot!.pregnancyLossPercent!.toStringAsFixed(1)}% '
+                                '(${_snapshot!.pregnancyLosses}/${_snapshot!.pregnanciesMonitored})',
                     ),
                   ],
                 ),
@@ -140,10 +141,16 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         DateFormat('dd/MM/yyyy').format(snapshot.date),
                       ),
                       subtitle: Text(
-                        '${snapshot.lactatingCows} em lactação · '
-                        '${snapshot.dryCows} secas · '
-                        '${snapshot.eligibleCows} elegíveis · '
-                        '${snapshot.pregnancyLosses} perdas',
+                        snapshot.pregnancyLossPercent == null
+                            ? '${snapshot.lactatingCows} em lactação · '
+                                  '${snapshot.dryCows} secas · '
+                                  '${snapshot.eligibleCows} elegíveis · '
+                                  '${snapshot.pregnancyLosses} perdas'
+                            : '${snapshot.lactatingCows} em lactação · '
+                                  '${snapshot.dryCows} secas · '
+                                  '${snapshot.eligibleCows} elegíveis · '
+                                  '${snapshot.pregnancyLosses}/${snapshot.pregnanciesMonitored} perdas '
+                                  '(${snapshot.pregnancyLossPercent!.toStringAsFixed(1)}%)',
                       ),
                       trailing: IconButton(
                         tooltip: 'Excluir estado do lote',
@@ -262,6 +269,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
   final _eligible = TextEditingController();
   final _lactating = TextEditingController();
   final _dry = TextEditingController();
+  final _pregnanciesMonitored = TextEditingController(text: '0');
   final _losses = TextEditingController(text: '0');
   DateTime _date = DateTime.now();
   @override
@@ -269,6 +277,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
     _eligible.dispose();
     _lactating.dispose();
     _dry.dispose();
+    _pregnanciesMonitored.dispose();
     _losses.dispose();
     super.dispose();
   }
@@ -301,6 +310,7 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
           _field(_eligible, 'Vacas elegíveis'),
           _field(_lactating, 'Em lactação'),
           _field(_dry, 'Secas'),
+          _field(_pregnanciesMonitored, 'Gestações acompanhadas'),
           _field(_losses, 'Perdas gestacionais'),
         ],
       ),
@@ -325,11 +335,23 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
     final eligible = int.parse(_eligible.text);
     final lactating = int.parse(_lactating.text);
     final dry = int.parse(_dry.text);
+    final pregnanciesMonitored = int.parse(_pregnanciesMonitored.text);
+    final losses = int.parse(_losses.text);
     if (lactating + dry > eligible) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             'Vacas em lactação e secas não podem superar as vacas elegíveis.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (losses > pregnanciesMonitored) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'As perdas gestacionais não podem superar as gestações acompanhadas.',
           ),
         ),
       );
@@ -342,7 +364,8 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
         eligibleCows: eligible,
         lactatingCows: lactating,
         dryCows: dry,
-        pregnancyLosses: int.parse(_losses.text),
+        pregnanciesMonitored: pregnanciesMonitored,
+        pregnancyLosses: losses,
       ),
     );
   }

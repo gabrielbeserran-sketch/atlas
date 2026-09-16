@@ -61,6 +61,10 @@ void main() {
       expect(result.averageDaysInMilk, 14);
       expect(result.lactatingCowsWithKnownCalving, 1);
       expect(result.conceptionRate, 100);
+      expect(result.averageServicePeriodDays, 4);
+      expect(result.averageAgeAtFirstCalvingDays, 2435);
+      expect(result.pregnancyRateFromLatestDiagnosis, 100);
+      expect(result.cowsWithPregnancyDiagnosis, 1);
     },
   );
 }

@@ -4,15 +4,17 @@ Atualizado em 16/09/2026.
 
 ## Estado
 
-- Situação: pronto para o próximo pacote autônomo.
-- Etapa concluída mais recente: taxa de prenhez por último diagnóstico de cada matriz.
-- Progresso da etapa concluída: 100%.
-- Validações concluídas: análise estática, checkpoint e publicação `0483262`.
-- Próximo marco: reposição e perdas gestacionais percentuais.
+- Situação: concluído e publicado.
+- Etapa concluída: indicadores reprodutivos de Leite e perdas gestacionais auditáveis.
+- Progresso: 100%.
+- Componentes concluídos: idade ao primeiro parto no painel técnico; perdas gestacionais com denominador explícito; persistência compatível com registros anteriores; e validação para impedir perdas maiores que as gestações acompanhadas.
+- Validações concluídas: três testes unitários, análise estática, verificação de diff e build Windows de produção.
+- Checkpoint: este arquivo será atualizado com o hash do commit publicado ao final da entrega.
+- Próximo marco: taxa de reposição baseada em entradas, saídas e descarte das matrizes.
 
 ## Próximo pacote planejado
 
-Calcular a taxa de prenhez com base no último diagnóstico registrado por matriz ativa. Em seguida: reposição e perdas gestacionais percentuais.
+Calcular a taxa de reposição a partir de entradas, saídas e descartes das matrizes, sempre mostrando a cobertura da base usada.
 
 ## Como acompanhar
 
