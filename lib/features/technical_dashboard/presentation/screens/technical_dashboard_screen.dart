@@ -609,6 +609,17 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Dados insuficientes'
                     : '${summary.dairyReproduction.averageServicePeriodDays!.toStringAsFixed(0)} dias',
               ),
+              (
+                'Taxa de prenhez (diagnósticos)',
+                summary.dairyReproduction.pregnancyRateFromLatestDiagnosis ==
+                        null
+                    ? 'Dados insuficientes'
+                    : '${summary.dairyReproduction.pregnancyRateFromLatestDiagnosis!.toStringAsFixed(1)}%',
+              ),
+              (
+                'Matrizes diagnosticadas',
+                '${summary.dairyReproduction.cowsWithPregnancyDiagnosis}',
+              ),
             ],
           ),
           const SizedBox(height: 18),

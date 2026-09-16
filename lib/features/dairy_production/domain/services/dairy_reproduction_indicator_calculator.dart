@@ -11,6 +11,8 @@ class DairyReproductionIndicators {
     required this.averageDryPeriodDays,
     required this.averageServicePeriodDays,
     required this.averageAgeAtFirstCalvingDays,
+    required this.pregnancyRateFromLatestDiagnosis,
+    required this.cowsWithPregnancyDiagnosis,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -20,6 +22,8 @@ class DairyReproductionIndicators {
   final double? averageDryPeriodDays;
   final double? averageServicePeriodDays;
   final double? averageAgeAtFirstCalvingDays;
+  final double? pregnancyRateFromLatestDiagnosis;
+  final int cowsWithPregnancyDiagnosis;
 }
 
 /// Calcula somente métricas cuja origem pode ser comprovada por animal e data.
@@ -63,8 +67,9 @@ class DairyReproductionIndicatorCalculator {
         (item) => item.id == events.first.animalId,
       );
       final birth = _date(animal.birthDate);
-      if (birth != null)
+      if (birth != null) {
         firstCalvingAges.add(calvings.first.difference(birth).inDays);
+      }
       final days = today.difference(calvings.last).inDays;
       if (days >= 0) del.add(days);
       final dryStarts = events
@@ -107,6 +112,22 @@ class DairyReproductionIndicatorCalculator {
               event.isPositivePregnancyDiagnosis,
         )
         .length;
+    var diagnosedCows = 0;
+    var currentlyPregnant = 0;
+    for (final events in recordsByAnimal.values) {
+      final diagnoses =
+          events
+              .where((event) => event.eventCode == 'pregnancy_diagnosis')
+              .where((event) => _date(event.date) != null)
+              .toList()
+            ..sort((a, b) => _date(a.date)!.compareTo(_date(b.date)!));
+      if (diagnoses.isNotEmpty) {
+        diagnosedCows++;
+        if (diagnoses.last.reproductiveStatus == 'pregnant') {
+          currentlyPregnant++;
+        }
+      }
+    }
     return DairyReproductionIndicators(
       averageDaysInMilk: del.isEmpty
           ? null
@@ -126,6 +147,10 @@ class DairyReproductionIndicatorCalculator {
       averageAgeAtFirstCalvingDays: firstCalvingAges.isEmpty
           ? null
           : firstCalvingAges.reduce((a, b) => a + b) / firstCalvingAges.length,
+      pregnancyRateFromLatestDiagnosis: diagnosedCows == 0
+          ? null
+          : currentlyPregnant / diagnosedCows * 100,
+      cowsWithPregnancyDiagnosis: diagnosedCows,
     );
   }
 
