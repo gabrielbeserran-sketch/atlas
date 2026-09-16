@@ -604,6 +604,13 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.latestDairySnapshot!.dryPercent!.toStringAsFixed(1)}%',
               ),
               (
+                'Perdas gestacionais',
+                summary.latestDairySnapshot?.pregnancyLossPercent == null
+                    ? 'Informe gestações acompanhadas'
+                    : '${summary.latestDairySnapshot!.pregnancyLossPercent!.toStringAsFixed(1)}% '
+                          '(${summary.latestDairySnapshot!.pregnancyLosses}/${summary.latestDairySnapshot!.pregnanciesMonitored})',
+              ),
+              (
                 'Dias de ordenha na base',
                 '${summary.dairyProduction.recordedDays}/30',
               ),
