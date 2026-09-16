@@ -548,6 +548,16 @@ class _SummaryContent extends StatelessWidget {
 
   TechnicalFarmSummary get summary => analysis.current;
 
+  double? get _beefAverageDailyGain {
+    final points = analysis.weightSeries;
+    if (points.length < 2) return null;
+    final first = points.first;
+    final last = points.last;
+    final days = last.periodStart.difference(first.periodStart).inDays;
+    if (days <= 0) return null;
+    return (last.averageWeight - first.averageWeight) / days;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -608,6 +618,12 @@ class _SummaryContent extends StatelessWidget {
                 summary.liveWeightPerHectare == null
                     ? 'Informe a área'
                     : '${summary.liveWeightPerHectare!.toStringAsFixed(1)} kg/ha',
+              ),
+              (
+                'Ganho médio diário',
+                _beefAverageDailyGain == null
+                    ? 'Registre duas pesagens'
+                    : '${_beefAverageDailyGain!.toStringAsFixed(3)} kg/dia',
               ),
               ('Animais ativos', '${summary.activeAnimals}'),
               ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
