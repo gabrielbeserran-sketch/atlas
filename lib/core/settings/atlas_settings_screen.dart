@@ -87,10 +87,11 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
       if (!mounted) return;
       await AtlasSessionScope.read(context).refreshOfflineAccess();
     } on ArgumentError {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Use um PIN numérico de 6 dígitos.')),
         );
+      }
     }
   }
 
@@ -110,6 +111,54 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Text(
+            'Perfil de acesso',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 12),
+          Builder(
+            builder: (context) {
+              final session = AtlasSessionScope.of(context).session;
+              final permissions =
+                  session == null
+                        ? <String>[]
+                        : session.effectivePermissions.toList()
+                    ..sort();
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _roleLabel(session?.role),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        session?.hasUnrestrictedFarmAccess == true
+                            ? 'Acesso completo aos módulos autorizados da fazenda.'
+                            : '${permissions.length} permissão(ões) ativa(s). O menu mostra somente o necessário para seu trabalho.',
+                      ),
+                      if (session?.hasUnrestrictedFarmAccess != true &&
+                          permissions.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: permissions
+                              .take(8)
+                              .map((item) => Chip(label: Text(item)))
+                              .toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 28),
           Text(
             'Segurança e acesso',
             style: Theme.of(context).textTheme.headlineSmall,
@@ -144,4 +193,13 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
       ),
     );
   }
+
+  String _roleLabel(String? role) => switch (role) {
+    'owner' => 'Proprietário',
+    'admin' || 'companyAdministrator' => 'Administrador',
+    'superAdministrator' => 'Administrador da plataforma',
+    'worker' => 'Trabalhador operacional',
+    'consultant' => 'Consultor',
+    _ => 'Perfil de acesso',
+  };
 }
