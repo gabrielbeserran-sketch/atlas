@@ -4,16 +4,17 @@ Atualizado em 18/09/2026.
 
 ## Estado
 
-- Situação: validações concluídas; registrando checkpoint e publicação.
-- Etapa atual: pacote de governança de acesso e confiabilidade do histórico em PDF.
-- Progresso: 95%.
+- Situação: concluído e publicado.
+- Etapa atual: qualidade de dados do rebanho de Corte.
+- Progresso: 0%.
 - Componentes concluídos: perfil de acesso em linguagem operacional, leitura do plano efetivo da empresa, catálogo dos três níveis comerciais, feedback verificável da geração de histórico e abertura externa não bloqueante.
 - Validações concluídas: 4 testes Flutter, 2 contratos de servidor, análise estática Flutter e build Windows de produção.
-- Próximo marco: checkpoint Git publicado e início da qualidade de dados do rebanho de Corte.
+- Checkpoint publicado: `0456b06 feat(access): expose plans and reliable history PDF`.
+- Próximo marco: identificar lacunas de valor, peso e causa de mortalidade antes de recomendar decisões técnicas de Corte.
 
 ## Próximo pacote planejado
 
-Concluir a leitura do plano da empresa e assegurar que a exportação do histórico em PDF nunca falhe silenciosamente.
+Qualificar a base de dados do rebanho de Corte, explicitando registros incompletos sem esconder indicadores calculados com base válida.
 
 ## Como acompanhar
 
