@@ -12,6 +12,26 @@ from ..saas_growth_models import SaaSPlan,CompanySubscription,BillingInvoice,Fea
 router=APIRouter(prefix='/saas-growth',tags=['SaaS Growth'])
 def read_dep(p=Depends(require_permission('platform.read'))): return p
 def manage_dep(p=Depends(require_permission('platform.manage'))): return p
+
+# Catálogo comercial canônico. A cobrança continua externa a este módulo; este
+# contrato apenas descreve, de modo auditável, o que cada assinatura libera.
+ATLAS_PLAN_CATALOG = {
+    'basic': {
+        'name': 'Atlas Essencial',
+        'limits': {'monthly_credits': 100, 'data_entries': 100},
+        'features': ['operacao_basica', 'registro_offline'],
+    },
+    'professional': {
+        'name': 'Atlas Profissional',
+        'limits': {'monthly_credits': None, 'data_entries': None},
+        'features': ['operacao_completa', 'registro_offline', 'indicadores_tecnicos'],
+    },
+    'consultancy': {
+        'name': 'Atlas Consultoria',
+        'limits': {'monthly_credits': None, 'data_entries': None},
+        'features': ['operacao_completa', 'registro_offline', 'indicadores_tecnicos', 'consultoria', 'gestao_de_equipes'],
+    },
+}
 class Payload(BaseModel):
     code:str=''; name:str=''; status:str=''; amount:float=0; farm_id:str|None=None
     data:dict=Field(default_factory=dict); items:list[dict]=Field(default_factory=list)
@@ -36,6 +56,23 @@ def subscribe(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(man
     row.plan_id=plan.id; row.status=payload.status or 'active'; row.cancel_at_period_end=bool(payload.data.get('cancel_at_period_end',False)); row.provider=payload.data.get('provider','manual')
     db.add(AdminAuditAction(actor_id=p.user.id,company_id=p.company.id,action='subscription.updated',details_json={'plan':plan.code,'status':row.status}))
     db.commit(); db.refresh(row); return {'id':row.id,'status':row.status,'plan_code':plan.code}
+
+@router.get('/subscriptions/current')
+def current_subscription(db:Session=Depends(get_db),p:Principal=Depends(read_dep)):
+    subscription=db.scalar(select(CompanySubscription).where(CompanySubscription.company_id==p.company.id))
+    plan=db.get(SaaSPlan,subscription.plan_id) if subscription else None
+    code=(plan.code if plan else p.company.subscription_plan or 'basic').strip().lower()
+    catalog=ATLAS_PLAN_CATALOG.get(code,{})
+    limits=plan.limits_json if plan and plan.limits_json else catalog.get('limits',{})
+    features=plan.features_json if plan and plan.features_json else catalog.get('features',[])
+    return {
+        'code':code,
+        'name':plan.name if plan else catalog.get('name','Plano Atlas'),
+        'status':subscription.status if subscription else 'not_configured',
+        'limits':limits,
+        'features':features,
+        'consultancy_included':'consultoria' in features,
+    }
 
 @router.post('/invoices')
 def invoice(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):

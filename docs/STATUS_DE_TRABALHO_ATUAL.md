@@ -1,20 +1,19 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 16/09/2026.
+Atualizado em 18/09/2026.
 
 ## Estado
 
-- Situação: concluído e publicado.
-- Situação: em execução.
-- Etapa atual: resultado comercial do rebanho de Corte.
-- Progresso: 10%.
-- Componentes previstos: receita bruta de vendas, valor médio por cabeça, base de saídas datadas e apresentação no painel técnico.
-- Validações planejadas: teste unitário, análise estática, build Windows, checkpoint Git e publicação.
-- Próximo marco: integrar resultado comercial com indicadores de peso e ganho.
+- Situação: validações concluídas; registrando checkpoint e publicação.
+- Etapa atual: pacote de governança de acesso e confiabilidade do histórico em PDF.
+- Progresso: 95%.
+- Componentes concluídos: perfil de acesso em linguagem operacional, leitura do plano efetivo da empresa, catálogo dos três níveis comerciais, feedback verificável da geração de histórico e abertura externa não bloqueante.
+- Validações concluídas: 4 testes Flutter, 2 contratos de servidor, análise estática Flutter e build Windows de produção.
+- Próximo marco: checkpoint Git publicado e início da qualidade de dados do rebanho de Corte.
 
 ## Próximo pacote planejado
 
-Calcular o resultado comercial de vendas de Corte nos últimos 12 meses sem incluir registros sem data ou valor.
+Concluir a leitura do plano da empresa e assegurar que a exportação do histórico em PDF nunca falhe silenciosamente.
 
 ## Como acompanhar
 

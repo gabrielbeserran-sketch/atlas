@@ -65,6 +65,7 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
   List<TimelineItem> timelineItems = <TimelineItem>[];
 
   bool isLoading = true;
+  bool isExportingPdf = false;
   String? selectedCategory;
   TimelinePeriod selectedPeriod = TimelinePeriod.all;
 
@@ -250,7 +251,49 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
   }
 
   Future<void> exportUnifiedHistoryPdf() async {
-    if (isLoading) return;
+    if (isLoading || isExportingPdf) return;
+    setState(() => isExportingPdf = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gerando histórico em PDF...'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      final file = await _createUnifiedHistoryPdf();
+      if (!mounted) return;
+      try {
+        await AtlasExternalOpenService.open(file.path);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'PDF gerado e aberto no visualizador do dispositivo.',
+            ),
+          ),
+        );
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'PDF foi gerado, mas não abriu automaticamente: $error',
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Não foi possível gerar o PDF: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => isExportingPdf = false);
+    }
+  }
+
+  Future<File> _createUnifiedHistoryPdf() async {
     final document = pw.Document(
       title: 'Histórico Unificado - ${widget.animal.tag}',
       author: 'Projeto Atlas',
@@ -349,14 +392,7 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
       '${historyDirectory.path}${Platform.pathSeparator}historico_$safeTag.pdf',
     );
     await file.writeAsBytes(bytes, flush: true);
-    await AtlasExternalOpenService.open(file.path);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF gerado e aberto no visualizador do dispositivo.'),
-        ),
-      );
-    }
+    return file;
   }
 
   pw.Widget _pdfPremiumHeader(pw.MemoryImage logo) => pw.Container(
@@ -723,8 +759,16 @@ class _AnimalTimelineScreenState extends State<AnimalTimelineScreen> {
         actions: [
           IconButton(
             tooltip: 'Gerar PDF premium em página única',
-            onPressed: isLoading ? null : exportUnifiedHistoryPdf,
-            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: isLoading || isExportingPdf
+                ? null
+                : exportUnifiedHistoryPdf,
+            icon: isExportingPdf
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.picture_as_pdf_outlined),
           ),
           IconButton(
             tooltip: 'Limpar filtros',

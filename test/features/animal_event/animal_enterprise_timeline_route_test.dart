@@ -31,5 +31,8 @@ void main() {
     expect(source.contains('timelineItems.reversed'), isTrue);
     expect(source.contains('_pdfPremiumTimeline(entries)'), isTrue);
     expect(source.contains('Gerar PDF premium em página única'), isTrue);
+    expect(source.contains('Gerando histórico em PDF...'), isTrue);
+    expect(source.contains('PDF foi gerado, mas não abriu automaticamente'), isTrue);
+    expect(source.contains('bool isExportingPdf = false'), isTrue);
   });
 }

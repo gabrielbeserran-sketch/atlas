@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
+import 'package:projeto_atlas/core/subscription/atlas_subscription_profile.dart';
+import 'package:projeto_atlas/core/subscription/atlas_subscription_service.dart';
 
 class AtlasSettingsScreen extends StatefulWidget {
   const AtlasSettingsScreen({super.key});
@@ -11,11 +13,14 @@ class AtlasSettingsScreen extends StatefulWidget {
 
 class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
   final _pin = AtlasOfflinePinService.instance;
+  final _subscription = AtlasSubscriptionService.instance;
   bool? configured;
+  late Future<AtlasSubscriptionProfile> _subscriptionFuture;
 
   @override
   void initState() {
     super.initState();
+    _subscriptionFuture = _subscription.loadCurrent();
     _load();
   }
 
@@ -148,12 +153,104 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
                           runSpacing: 8,
                           children: permissions
                               .take(8)
-                              .map((item) => Chip(label: Text(item)))
+                              .map(
+                                (item) =>
+                                    Chip(label: Text(_permissionLabel(item))),
+                              )
                               .toList(),
                         ),
                       ],
                     ],
                   ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'Plano da fazenda',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<AtlasSubscriptionProfile>(
+            future: _subscriptionFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final plan = snapshot.requireData;
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.workspace_premium_outlined),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                plan.name,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            Text(
+                              plan.hasUnlimitedData
+                                  ? 'Dados ilimitados'
+                                  : '${plan.limits['monthly_credits'] ?? 0} créditos/mês',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          plan.consultancyIncluded
+                              ? 'Inclui consultoria e gestão de equipes com acessos por função.'
+                              : 'Os módulos liberados dependem deste plano e do perfil de cada colaborador.',
+                        ),
+                        if (plan.features.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: plan.features
+                                .map(
+                                  (feature) =>
+                                      Chip(label: Text(_featureLabel(feature))),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+              if (snapshot.hasError) {
+                return Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.cloud_off_outlined),
+                    title: const Text(
+                      'Plano disponível na próxima sincronização',
+                    ),
+                    subtitle: const Text(
+                      'O trabalho offline continua disponível e não é bloqueado por esta consulta.',
+                    ),
+                    trailing: TextButton(
+                      onPressed: () => setState(
+                        () => _subscriptionFuture = _subscription.loadCurrent(),
+                      ),
+                      child: const Text('Tentar'),
+                    ),
+                  ),
+                );
+              }
+              return const Card(
+                child: ListTile(
+                  leading: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  title: Text('Consultando plano da fazenda...'),
                 ),
               );
             },
@@ -201,5 +298,42 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
     'worker' => 'Trabalhador operacional',
     'consultant' => 'Consultor',
     _ => 'Perfil de acesso',
+  };
+
+  String _permissionLabel(String permission) {
+    const labels = <String, String>{
+      'animals.read': 'Consultar rebanho',
+      'animals.create': 'Cadastrar animais',
+      'animals.update': 'Atualizar rebanho',
+      'animals.delete': 'Excluir animais',
+      'finance.read': 'Consultar financeiro',
+      'finance.create': 'Lançar financeiro',
+      'finance.update': 'Atualizar financeiro',
+      'analytics.read': 'Consultar análises',
+      'analytics.manage': 'Gerir análises',
+      'farms.read': 'Consultar fazenda',
+      'farms.update': 'Gerir fazenda',
+      'sync.manage': 'Sincronizar dados',
+    };
+    if (labels.containsKey(permission)) return labels[permission]!;
+    final namespace = permission.split('.').first;
+    return switch (namespace) {
+      'animals' => 'Atividades de rebanho',
+      'finance' => 'Atividades financeiras',
+      'analytics' => 'Análises da fazenda',
+      'farms' => 'Gestão da fazenda',
+      'sync' => 'Sincronização',
+      _ => 'Acesso autorizado',
+    };
+  }
+
+  String _featureLabel(String feature) => switch (feature) {
+    'operacao_basica' => 'Operação básica',
+    'operacao_completa' => 'Operação completa',
+    'registro_offline' => 'Uso offline',
+    'indicadores_tecnicos' => 'Indicadores técnicos',
+    'consultoria' => 'Consultoria',
+    'gestao_de_equipes' => 'Gestão de equipes',
+    _ => 'Função liberada',
   };
 }

@@ -4,8 +4,11 @@ def test_saas_growth_files_and_router():
     root=Path(__file__).resolve().parents[1]
     assert (root/'app/saas_growth_models.py').exists()
     router=(root/'app/routers/saas_growth.py').read_text(encoding='utf-8')
-    for path in ['/plans','/subscriptions','/invoices','/feature-flags','/onboarding','/imports','/exports','/client-portal','/admin/dashboard']:
+    for path in ['/plans','/subscriptions','/subscriptions/current','/invoices','/feature-flags','/onboarding','/imports','/exports','/client-portal','/admin/dashboard']:
         assert path in router
+    assert 'ATLAS_PLAN_CATALOG' in router
+    for plan in ['basic', 'professional', 'consultancy']:
+        assert plan in router
 
 def test_migration_chain():
     text=(Path(__file__).resolve().parents[1]/'alembic/versions/20260806_0033_saas_growth.py').read_text(encoding='utf-8')
