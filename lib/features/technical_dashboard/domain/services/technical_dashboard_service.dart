@@ -275,6 +275,7 @@ class TechnicalDashboardService {
             )
             .where((item) => item.date != null)
             .map((item) => (entry: item.entry, date: item.date!))
+            .where((item) => !item.date.isAfter(referenceDate))
             .toList()
           ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -325,6 +326,7 @@ class TechnicalDashboardService {
             averageWeight: total / monthEntries.length,
             measurementCount: monthEntries.length,
             animalCount: animalIds.length,
+            latestMeasurementDate: monthEntries.last.date,
           ),
         );
       }

@@ -5,6 +5,7 @@ class TechnicalWeightSeriesPoint {
     required this.averageWeight,
     required this.measurementCount,
     required this.animalCount,
+    required this.latestMeasurementDate,
   });
 
   final DateTime periodStart;
@@ -12,4 +13,5 @@ class TechnicalWeightSeriesPoint {
   final double averageWeight;
   final int measurementCount;
   final int animalCount;
+  final DateTime latestMeasurementDate;
 }

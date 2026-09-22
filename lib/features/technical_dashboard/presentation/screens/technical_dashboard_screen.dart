@@ -564,6 +564,18 @@ class _SummaryContent extends StatelessWidget {
     return analysis.weightSeries.last.animalCount / activeAnimals * 100;
   }
 
+  int? get _beefLatestWeightAgeDays {
+    if (analysis.weightSeries.isEmpty) return null;
+    final reference = DateTime(
+      analysis.generatedAt.year,
+      analysis.generatedAt.month,
+      analysis.generatedAt.day,
+    );
+    final last = analysis.weightSeries.last.latestMeasurementDate;
+    final date = DateTime(last.year, last.month, last.day);
+    return reference.difference(date).inDays;
+  }
+
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
     final points = analysis.weightSeries;
@@ -578,6 +590,12 @@ class _SummaryContent extends StatelessWidget {
     if (coverage != null && coverage < 50) {
       alerts.add(
         'A última pesagem cobre ${coverage.toStringAsFixed(0)}% dos animais ativos; amplie a amostra antes de usar o GMD como referência do rebanho.',
+      );
+    }
+    final age = _beefLatestWeightAgeDays;
+    if (age != null && age > 90) {
+      alerts.add(
+        'A última pesagem foi há $age dias; atualize os pesos antes de usar GMD e peso por hectare como retrato atual.',
       );
     }
     return alerts;
@@ -825,6 +843,13 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Sem pesagens válidas'
                     : '${analysis.weightSeries.last.animalCount}/${summary.activeAnimals} animais '
                           '(${_beefLatestWeightCoveragePercent!.toStringAsFixed(0)}%)',
+              ),
+              (
+                'Atualização da última pesagem',
+                _beefLatestWeightAgeDays == null
+                    ? 'Sem pesagens válidas'
+                    : '${DateFormat('dd/MM/yyyy').format(analysis.weightSeries.last.latestMeasurementDate)} '
+                          '· há $_beefLatestWeightAgeDays dia(s)',
               ),
               (
                 'Base do ganho médio diário',
