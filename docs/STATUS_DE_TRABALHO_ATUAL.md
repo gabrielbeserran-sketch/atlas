@@ -4,18 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: em execução.
-- Etapa atual: alertas operacionais unificados de Leite e Corte.
-- Progresso: 90%.
+- Situação: concluída e publicada.
+- Etapa concluída: alertas operacionais unificados de Leite e Corte.
+- Progresso: 100%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
 - Componentes concluídos: alertas de Leite e Corte foram centralizados antes dos indicadores no painel técnico, com título específico da produção e contagem de itens que exigem revisão. Os cartões duplicados dos módulos foram removidos sem perder conteúdo.
 - Validações concluídas: contrato de apresentação do painel, testes de produção diária de Leite e de indicadores de Corte aprovados; formatação e verificação de diff limpo aprovadas.
-- Validação pendente: checkpoint Git e publicação.
-- Próximo marco: publicar a leitura operacional única dos dados técnicos que precisam de revisão.
+- Checkpoint publicado: `4a77289` — `feat(technical): unify production data quality alerts`.
+- Próximo marco: retomar a inspeção visual da entrada local-primeiro no Windows quando a cadeia MSBuild estiver disponível; os fluxos e contratos Flutter permanecem validados por testes e APK Android atual.
 
 ## Próximo pacote planejado
 
-Publicar os alertas técnicos unificados e, em seguida, retomar a inspeção visual Windows quando a cadeia MSBuild estiver disponível.
+Retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível, sem reinstalar o APK até um conjunto maior de entregas.
 
 ## Como acompanhar
 
