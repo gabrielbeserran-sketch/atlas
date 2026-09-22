@@ -28,6 +28,9 @@ void main() {
       expect(login, isNot(contains('if (!backendReady)')));
       expect(login, contains('isLoading ? null : onLogin'));
       expect(login, contains('Tentar conexão'));
+      expect(login, contains('Entrar offline com PIN'));
+      expect(login, contains('canUnlockOffline: canUnlockOffline'));
+      expect(login, contains('modo offline é liberado após configurar um PIN'));
     },
   );
 }

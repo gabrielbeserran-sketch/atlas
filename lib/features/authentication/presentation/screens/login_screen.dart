@@ -447,7 +447,73 @@ class _AtlasLoginForm extends StatelessWidget {
           if (backendConnection != _BackendConnectionState.ready) ...[
             _BackendConnectionBanner(
               state: backendConnection,
+              canUnlockOffline: canUnlockOffline,
               onRetry: onRetryBackend,
+            ),
+            const SizedBox(height: AtlasSpacing.md),
+          ],
+          if (canUnlockOffline) ...[
+            AtlasButton(
+              label: 'Entrar offline com PIN',
+              icon: Icons.pin_outlined,
+              onPressed: () async {
+                final pin = TextEditingController();
+                final value = await showDialog<String>(
+                  context: context,
+                  builder: (d) => AlertDialog(
+                    title: const Text('PIN offline'),
+                    content: TextField(
+                      controller: pin,
+                      autofocus: true,
+                      obscureText: true,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      decoration: const InputDecoration(
+                        labelText: 'PIN de 6 dígitos',
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(d),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(d, pin.text),
+                        child: const Text('Entrar offline'),
+                      ),
+                    ],
+                  ),
+                );
+                pin.dispose();
+                if (value == null || onUnlockOffline == null) return;
+                final result = await onUnlockOffline!(value);
+                if (!result.unlocked && context.mounted) {
+                  final minutes = result.retryAfter == null
+                      ? null
+                      : (result.retryAfter!.inSeconds / 60).ceil().clamp(1, 5);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        minutes == null
+                            ? 'PIN inválido.'
+                            : 'Muitas tentativas. Tente novamente em $minutes minuto(s).',
+                      ),
+                    ),
+                  );
+                }
+              },
+              expand: true,
+            ),
+            const SizedBox(height: AtlasSpacing.md),
+            const Row(
+              children: [
+                Expanded(child: Divider()),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AtlasSpacing.sm),
+                  child: Text('ou entre com conexão'),
+                ),
+                Expanded(child: Divider()),
+              ],
             ),
             const SizedBox(height: AtlasSpacing.md),
           ],
@@ -498,57 +564,6 @@ class _AtlasLoginForm extends StatelessWidget {
             busy: isLoading,
             expand: true,
           ),
-          if (canUnlockOffline) ...[
-            const SizedBox(height: AtlasSpacing.sm),
-            AtlasButton(
-              label: 'Desbloquear dados offline',
-              icon: Icons.pin_outlined,
-              onPressed: () async {
-                final pin = TextEditingController();
-                final value = await showDialog<String>(
-                  context: context,
-                  builder: (d) => AlertDialog(
-                    title: const Text('PIN offline'),
-                    content: TextField(
-                      controller: pin,
-                      obscureText: true,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(d),
-                        child: const Text('Cancelar'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(d, pin.text),
-                        child: const Text('Desbloquear'),
-                      ),
-                    ],
-                  ),
-                );
-                pin.dispose();
-                if (value == null || onUnlockOffline == null) return;
-                final result = await onUnlockOffline!(value);
-                if (!result.unlocked && context.mounted) {
-                  final minutes = result.retryAfter == null
-                      ? null
-                      : (result.retryAfter!.inSeconds / 60).ceil().clamp(1, 5);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        minutes == null
-                            ? 'PIN inválido.'
-                            : 'Muitas tentativas. Tente novamente em $minutes minuto(s).',
-                      ),
-                    ),
-                  );
-                }
-              },
-              variant: AtlasButtonVariant.secondary,
-              expand: true,
-            ),
-          ],
           const SizedBox(height: AtlasSpacing.sm),
           AtlasButton(
             label: 'Criar uma conta',
@@ -585,9 +600,14 @@ class _AtlasLoginForm extends StatelessWidget {
 }
 
 class _BackendConnectionBanner extends StatelessWidget {
-  const _BackendConnectionBanner({required this.state, required this.onRetry});
+  const _BackendConnectionBanner({
+    required this.state,
+    required this.canUnlockOffline,
+    required this.onRetry,
+  });
 
   final _BackendConnectionState state;
+  final bool canUnlockOffline;
   final VoidCallback onRetry;
 
   @override
@@ -619,8 +639,10 @@ class _BackendConnectionBanner extends StatelessWidget {
           Expanded(
             child: Text(
               checking
-                  ? 'Atualizando a conexão em segundo plano. Você já pode entrar ou desbloquear os dados offline.'
-                  : 'Sem conexão no momento. Os dados offline continuam disponíveis; tente conectar quando quiser.',
+                  ? 'Atualizando a conexão em segundo plano. Você pode continuar preenchendo o acesso.'
+                  : canUnlockOffline
+                  ? 'Sem conexão no momento. Entre offline com seu PIN ou tente conectar quando quiser.'
+                  : 'Sem conexão no momento. Para entrar agora, conecte-se ao servidor; o modo offline é liberado após configurar um PIN neste dispositivo.',
               style: const TextStyle(color: AtlasColors.textSecondary),
             ),
           ),

@@ -5,12 +5,12 @@ Atualizado em 18/09/2026.
 ## Estado
 
 - Situação: em execução.
-- Etapa atual: entrada local imediata e sincronização em segundo plano.
-- Progresso: 90%.
-- Componentes concluídos: formulário liberado durante a verificação de saúde, carteira local filtrada pela empresa, abertura imediata após autenticação quando houver contexto local e sincronização de sessão/fazendas em segundo plano com aviso de modo offline.
-- Validações concluídas: contratos do controlador de sessão, contrato do login, dois testes de cálculo de Corte e análise estática Flutter.
-- Validação em diagnóstico: o build Windows terminou a geração Dart, mas o processo nativo de instalação local não finalizou; a alteração não depende dele para o Android e será revalidada no próximo build limpo.
-- Próximo marco: registrar o checkpoint do pacote acumulado e retomar a validação do artefato Windows sem bloquear a evolução local.
+- Etapa atual: acesso offline explícito e mensagem de conexão honesta.
+- Progresso: 95%.
+- Componentes concluídos: entrada com credenciais online separada do desbloqueio local com PIN; ação “Entrar offline com PIN” em destaque quando houver contexto; mensagem de indisponibilidade condicionada à existência real de acesso offline.
+- Validações concluídas: contrato de interface e contratos do fluxo de sessão aprovados.
+- Validação em diagnóstico: a análise Flutter continua sujeita a lentidão local do processo de compilação, já isolada do código e sem erros de formatação.
+- Próximo marco: checkpoint Git publicado e, na próxima conexão bem-sucedida, configurar o PIN deste dispositivo para habilitar o caminho offline.
 
 ## Próximo pacote planejado
 
