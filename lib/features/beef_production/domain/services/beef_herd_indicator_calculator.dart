@@ -50,7 +50,7 @@ class BeefHerdIndicators {
     final alerts = <String>[];
     if (commercialExitsWithoutDate > 0) {
       alerts.add(
-        '$commercialExitsWithoutDate venda(s) não têm data e ficaram fora dos indicadores de 12 meses.',
+        '$commercialExitsWithoutDate venda(s) não têm data válida e ficaram fora dos indicadores de 12 meses.',
       );
     }
     if (salesWithoutValue > 0) {
@@ -65,7 +65,7 @@ class BeefHerdIndicators {
     }
     if (mortalitiesWithoutDate > 0) {
       alerts.add(
-        '$mortalitiesWithoutDate óbito(s) não têm data e ficaram fora da taxa de mortalidade.',
+        '$mortalitiesWithoutDate óbito(s) não têm data válida e ficaram fora da taxa de mortalidade.',
       );
     }
     if (mortalitiesWithoutCause > 0) {
@@ -167,16 +167,35 @@ class BeefHerdIndicatorCalculator {
   }
 
   DateTime? _date(String value) {
-    final iso = DateTime.tryParse(value);
-    if (iso != null) return iso;
-    final parts = value.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    return day == null || month == null || year == null
-        ? null
-        : DateTime(year, month, day);
+    final normalized = value.trim();
+    final br = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(normalized);
+    if (br != null) {
+      return _strictDate(
+        int.parse(br.group(3)!),
+        int.parse(br.group(2)!),
+        int.parse(br.group(1)!),
+      );
+    }
+
+    final iso = RegExp(
+      r'^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$',
+    ).firstMatch(normalized);
+    if (iso == null) return null;
+    return _strictDate(
+      int.parse(iso.group(1)!),
+      int.parse(iso.group(2)!),
+      int.parse(iso.group(3)!),
+    );
+  }
+
+  DateTime? _strictDate(int year, int month, int day) {
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
+      return null;
+    }
+    final date = DateTime(year, month, day);
+    return date.year == year && date.month == month && date.day == day
+        ? date
+        : null;
   }
 
   bool _isUnknownCause(String value) {

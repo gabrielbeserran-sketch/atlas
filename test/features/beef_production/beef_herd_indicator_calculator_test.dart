@@ -135,4 +135,44 @@ void main() {
     expect(result.mortalitiesWithoutCause, 1);
     expect(result.dataQualityAlerts, hasLength(5));
   });
+
+  test('exclui datas impossíveis sem normalizá-las para outro mês', () {
+    const calculator = BeefHerdIndicatorCalculator();
+    final result = calculator.calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: [
+        AnimalData(
+          id: 'sale-invalid-date',
+          tag: '1',
+          name: '',
+          sex: 'Macho',
+          breed: '',
+          birthDate: '',
+          weight: 450,
+          status: 'Vendido',
+          saleDate: '31/02/2026',
+          saleValue: 4200,
+        ),
+        AnimalData(
+          id: 'death-invalid-date',
+          tag: '2',
+          name: '',
+          sex: 'Fêmea',
+          breed: '',
+          birthDate: '',
+          weight: 0,
+          status: 'Morto',
+          deathDate: '2026-02-30',
+          deathCause: 'Doença',
+        ),
+      ],
+    );
+
+    expect(result.commercialExits, 0);
+    expect(result.commercialRevenue, 0);
+    expect(result.mortalities, 0);
+    expect(result.commercialExitsWithoutDate, 1);
+    expect(result.mortalitiesWithoutDate, 1);
+    expect(result.dataQualityAlerts.join(' '), contains('data válida'));
+  });
 }

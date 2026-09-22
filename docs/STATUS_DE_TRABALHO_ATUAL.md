@@ -4,17 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: concluída e publicada.
-- Etapa concluída: ativação guiada do acesso offline.
-- Progresso: 100%.
-- Componentes concluídos: o controlador expõe o estado real do PIN; a operação mostra um convite dispensável após a entrada autenticada; o convite abre Configurações e se reorganiza em telas estreitas sem sobreposição.
-- Validações concluídas: contratos de sessão/navegação e de disponibilidade do login aprovados; formatação e verificação de diff limpo aprovadas.
-- Checkpoint publicado: `1506a99` — `feat(access): guide offline PIN activation`.
-- Próximo marco: validação visual do fluxo de entrada local-primeiro em build Windows limpo, seguida da retomada da qualidade de dados comerciais e sanitários do rebanho de Corte.
+- Situação: em execução.
+- Etapa atual: reforço da qualidade de dados comerciais e sanitários do rebanho de Corte.
+- Progresso: 90%.
+- Contexto da validação anterior: o contrato de sessão passou, mas a cadeia nativa do build Windows permaneceu parada sem uso de CPU; os processos iniciados para a validação foram encerrados sem alterar código ou dados da fazenda. A validação visual será repetida em ambiente limpo.
+- Componentes concluídos: validação estrita de datas de venda e óbito, alertas claros para data ausente ou inválida e testes que garantem exclusão de registros malformados dos denominadores.
+- Validações concluídas: testes do calculador de Corte e do fluxo de sessão aprovados; formatação e verificação de diff limpo aprovadas.
+- Validação pendente: checkpoint Git e publicação.
+- Próximo marco: publicar a proteção contra datas impossíveis sem alterar os dados existentes da fazenda.
 
 ## Próximo pacote planejado
 
-Validar visualmente o fluxo de entrada local-primeiro em build Windows limpo e, em seguida, concluir a qualidade de dados do rebanho de Corte.
+Concluir a qualidade de dados comerciais e sanitários do rebanho de Corte; em seguida, repetir a validação visual da entrada local-primeiro em ambiente Windows limpo.
 
 ## Como acompanhar
 
