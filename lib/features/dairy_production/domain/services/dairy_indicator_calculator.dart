@@ -11,6 +11,9 @@ class DairyProductionSummary {
     required this.duplicateDays,
     required this.recordsWithoutMilkedCows,
     required this.invalidProductionRecords,
+    required this.windowDays,
+    required this.missingDays,
+    required this.coveragePercent,
   });
   final double? latestLiters;
   final double? averageLitersPerDay;
@@ -21,6 +24,11 @@ class DairyProductionSummary {
   final int duplicateDays;
   final int recordsWithoutMilkedCows;
   final int invalidProductionRecords;
+  final int windowDays;
+  final int missingDays;
+  final double coveragePercent;
+
+  bool get hasRepresentativeSample => recordedDays >= 20;
 
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
@@ -68,6 +76,9 @@ class DairyIndicatorCalculator {
         duplicateDays: 0,
         recordsWithoutMilkedCows: 0,
         invalidProductionRecords: 0,
+        windowDays: 30,
+        missingDays: 30,
+        coveragePercent: 0,
       );
     }
     final now = referenceDate ?? DateTime.now();
@@ -128,6 +139,9 @@ class DairyIndicatorCalculator {
         duplicateDays: duplicateDays,
         recordsWithoutMilkedCows: recordsWithoutMilkedCows,
         invalidProductionRecords: invalidProductionRecords,
+        windowDays: 30,
+        missingDays: 30,
+        coveragePercent: 0,
       );
     }
     final total = source.fold<double>(0, (sum, item) => sum + item.totalLiters);
@@ -144,6 +158,9 @@ class DairyIndicatorCalculator {
       duplicateDays: duplicateDays,
       recordsWithoutMilkedCows: recordsWithoutMilkedCows,
       invalidProductionRecords: invalidProductionRecords,
+      windowDays: 30,
+      missingDays: 30 - source.length,
+      coveragePercent: source.length / 30 * 100,
     );
   }
 }

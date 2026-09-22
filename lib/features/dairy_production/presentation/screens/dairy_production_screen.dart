@@ -111,8 +111,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           : '${currency.format(summary.litersPerLactatingCow)} L/vaca/dia',
                     ),
                     _Metric(
-                      label: 'Dias com registro',
-                      value: '${summary.recordedDays} nos últimos 30 dias',
+                      label: 'Cobertura dos últimos 30 dias',
+                      value:
+                          '${summary.coveragePercent.toStringAsFixed(0)}% · ${summary.recordedDays}/${summary.windowDays} dias',
+                    ),
+                    _Metric(
+                      label: 'Dias ainda sem ordenha válida',
+                      value: '${summary.missingDays} dia(s)',
                     ),
                     _Metric(
                       label: 'Vacas em lactação',

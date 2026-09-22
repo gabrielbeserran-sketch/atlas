@@ -30,6 +30,10 @@ void main() {
       expect(summary.averageLitersPerDay, 140);
       expect(summary.averageLitersPerHectare, 7);
       expect(summary.recordedDays, 2);
+      expect(summary.windowDays, 30);
+      expect(summary.missingDays, 28);
+      expect(summary.coveragePercent, closeTo(6.67, 0.01));
+      expect(summary.hasRepresentativeSample, isFalse);
       expect(summary.litersPerLactatingCow, 14);
     },
   );
@@ -82,5 +86,7 @@ void main() {
     expect(summary.duplicateDays, 1);
     expect(summary.recordsWithoutMilkedCows, 1);
     expect(summary.dataQualityAlerts, hasLength(3));
+    expect(summary.missingDays, 29);
+    expect(summary.coveragePercent, closeTo(3.33, 0.01));
   });
 }

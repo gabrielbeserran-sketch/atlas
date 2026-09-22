@@ -640,7 +640,12 @@ class _SummaryContent extends StatelessWidget {
               ),
               (
                 'Dias de ordenha na base',
-                '${summary.dairyProduction.recordedDays}/30',
+                '${summary.dairyProduction.recordedDays}/${summary.dairyProduction.windowDays}',
+              ),
+              (
+                'Cobertura da produção',
+                '${summary.dairyProduction.coveragePercent.toStringAsFixed(0)}% '
+                    '· ${summary.dairyProduction.missingDays} dia(s) sem ordenha válida',
               ),
               (
                 'DEL médio',

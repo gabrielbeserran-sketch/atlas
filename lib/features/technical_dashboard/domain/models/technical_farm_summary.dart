@@ -95,7 +95,7 @@ class TechnicalFarmSummary {
       );
     } else if (dairyProduction.recordedDays < 20) {
       alerts.add(
-        'Há ${dairyProduction.recordedDays} dia(s) de ordenha nos últimos 30; complete ao menos 20 para uma média mais representativa.',
+        'Cobertura de ${dairyProduction.recordedDays}/30 dias de ordenha; faltam ${20 - dairyProduction.recordedDays} para uma média minimamente representativa.',
       );
     }
     return alerts;
