@@ -558,6 +558,18 @@ class _SummaryContent extends StatelessWidget {
     return (last.averageWeight - first.averageWeight) / days;
   }
 
+  List<String> get _productionDataQualityAlerts => switch (productionFocus) {
+    TechnicalProductionFocus.dairy => summary.dairyOperationalDataAlerts,
+    TechnicalProductionFocus.beef => summary.beefHerd.dataQualityAlerts,
+    null => const [],
+  };
+
+  String get _productionDataQualityTitle => switch (productionFocus) {
+    TechnicalProductionFocus.dairy => 'Dados técnicos para revisar — Leite',
+    TechnicalProductionFocus.beef => 'Dados técnicos para revisar — Corte',
+    null => 'Dados técnicos para revisar',
+  };
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -567,6 +579,22 @@ class _SummaryContent extends StatelessWidget {
         const SizedBox(height: 18),
         _FinancialEvolutionCard(points: analysis.financialSeries),
         const SizedBox(height: 18),
+        if (_productionDataQualityAlerts.isNotEmpty) ...[
+          _ModuleCard(
+            width: double.infinity,
+            title: _productionDataQualityTitle,
+            icon: Icons.fact_check_outlined,
+            metrics: [
+              (
+                'Itens que precisam de revisão',
+                '${_productionDataQualityAlerts.length}',
+              ),
+              for (final alert in _productionDataQualityAlerts)
+                ('Registro necessário', alert),
+            ],
+          ),
+          const SizedBox(height: 18),
+        ],
         if (productionFocus == TechnicalProductionFocus.dairy) ...[
           _ModuleCard(
             width: double.infinity,
@@ -685,22 +713,6 @@ class _SummaryContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          if (summary.dairyOperationalDataAlerts.isNotEmpty) ...[
-            _ModuleCard(
-              width: double.infinity,
-              title: 'Alertas de qualidade da base',
-              icon: Icons.fact_check_outlined,
-              metrics: [
-                (
-                  'Matrizes ativas na base',
-                  '${summary.dairyReproduction.activeFemaleCount}',
-                ),
-                for (final alert in summary.dairyOperationalDataAlerts)
-                  ('Registro necessário', alert),
-              ],
-            ),
-            const SizedBox(height: 18),
-          ],
         ],
         if (productionFocus == TechnicalProductionFocus.beef) ...[
           _ModuleCard(
@@ -776,18 +788,6 @@ class _SummaryContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          if (summary.beefHerd.dataQualityAlerts.isNotEmpty) ...[
-            _ModuleCard(
-              width: double.infinity,
-              title: 'Qualidade da base de Corte',
-              icon: Icons.fact_check_outlined,
-              metrics: [
-                for (final alert in summary.beefHerd.dataQualityAlerts)
-                  ('Registro necessário', alert),
-              ],
-            ),
-            const SizedBox(height: 18),
-          ],
         ],
         Wrap(
           spacing: 14,
