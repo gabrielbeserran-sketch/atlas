@@ -4,18 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: em execução.
-- Etapa atual: precisão do indicador por vaca na produção de Leite.
-- Progresso: 90%.
+- Situação: concluída e publicada.
+- Etapa concluída: precisão do indicador por vaca na produção de Leite.
+- Progresso: 100%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
 - Componentes concluídos: L/vaca ordenhada usa soma de litros e de vacas de cada dia válido; L/vaca em lactação permanece explicitamente calculado a partir do último estado de lote; o módulo e o painel exibem as duas referências e a média diária de vacas ordenhadas.
 - Validações concluídas: testes de média ponderada e contrato de painel aprovados; formatação e verificação de diff limpo aprovadas.
-- Validação pendente: checkpoint Git e publicação.
-- Próximo marco: publicar a precisão por vaca para que mudanças no tamanho do lote não distorçam a eficiência diária.
+- Checkpoint publicado: `a8e84b1` — `feat(dairy): distinguish milked cow efficiency`.
+- Próximo marco: retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível; novas ampliações técnicas seguem independentes dessa pendência.
 
 ## Próximo pacote planejado
 
-Concluir a precisão do indicador por vaca na produção de Leite; depois, retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível.
+Retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível, sem reinstalar o APK até um conjunto maior de entregas.
 
 ## Como acompanhar
 
