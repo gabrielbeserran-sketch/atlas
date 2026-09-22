@@ -4,18 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: em execução.
-- Etapa atual: qualidade da produção diária de Leite.
-- Progresso: 90%.
+- Situação: concluída e publicada.
+- Etapa concluída: qualidade da produção diária de Leite.
+- Progresso: 100%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
 - Componentes concluídos: ordenhas futuras, duplicadas, negativas ou sem vacas ordenhadas ficam fora do cálculo; o módulo de Leite apresenta um cartão de qualidade da base; novos registros exigem ao menos uma vaca ordenhada.
 - Validações concluídas: testes de produção diária, reprodução de Leite e sessão aprovados; formatação e verificação de diff limpo aprovadas.
-- Validação pendente: checkpoint Git e publicação.
-- Próximo marco: publicar a proteção para que litros/dia, L/ha e L/vaca reflitam somente dias operacionais válidos.
+- Checkpoint publicado: `90dd7bc` — `fix(dairy): qualify daily production indicators`.
+- Próximo marco: consolidar a apresentação dos alertas técnicos e retomar a inspeção visual Windows quando a cadeia MSBuild estiver disponível.
 
 ## Próximo pacote planejado
 
-Qualificar a produção diária de Leite, garantindo que dias futuros, duplicados ou sem vacas ordenhadas não alterem litros/dia; em paralelo, retomar a inspeção visual Windows quando a cadeia MSBuild estiver disponível.
+Consolidar a apresentação de alertas técnicos para Leite e Corte; em paralelo, retomar a inspeção visual Windows quando a cadeia MSBuild estiver disponível.
 
 ## Como acompanhar
 
