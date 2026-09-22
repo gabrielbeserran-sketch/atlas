@@ -30,10 +30,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Em produção, a API pode precisar sair do cold start do provedor. O
-  // cliente HTTP já limita cada requisição a 60 segundos; esta margem evita
-  // que a tela interrompa a conexão saudável antes da resposta chegar.
-  static const _backendReadinessTimeout = Duration(seconds: 65);
+  // A checagem é apenas informativa: a entrada e o PIN offline nunca ficam
+  // presos esperando um cold start do servidor.
+  static const _backendReadinessTimeout = Duration(seconds: 4);
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -106,15 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> login() async {
-    if (!backendReady) {
-      _message(
-        backendConnection == _BackendConnectionState.checking
-            ? 'Conectando ao servidor Atlas. Aguarde antes de entrar.'
-            : 'O servidor ainda não está pronto. Use “Tentar conexão”.',
-      );
-      return;
-    }
-
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -504,10 +494,7 @@ class _AtlasLoginForm extends StatelessWidget {
           AtlasButton(
             label: 'Entrar',
             icon: Icons.arrow_forward_rounded,
-            onPressed:
-                isLoading || backendConnection != _BackendConnectionState.ready
-                ? null
-                : onLogin,
+            onPressed: isLoading ? null : onLogin,
             busy: isLoading,
             expand: true,
           ),
@@ -632,8 +619,8 @@ class _BackendConnectionBanner extends StatelessWidget {
           Expanded(
             child: Text(
               checking
-                  ? 'Conectando ao servidor Atlas. Isso pode levar alguns segundos.'
-                  : 'O servidor ainda não respondeu. Verifique a conexão e tente novamente.',
+                  ? 'Atualizando a conexão em segundo plano. Você já pode entrar ou desbloquear os dados offline.'
+                  : 'Sem conexão no momento. Os dados offline continuam disponíveis; tente conectar quando quiser.',
               style: const TextStyle(color: AtlasColors.textSecondary),
             ),
           ),

@@ -9,8 +9,13 @@ class BeefHerdIndicators {
     required this.averageSaleValue,
     required this.commercialExitsWithValue,
     required this.salesWithWeightAndValue,
+    required this.commercialExitsWithoutDate,
+    required this.salesWithoutValue,
+    required this.salesWithoutWeight,
     required this.averageSalePricePerKg,
     required this.mortalities,
+    required this.mortalitiesWithoutDate,
+    required this.mortalitiesWithoutCause,
     required this.mortalityRate,
     required this.mortalityByCause,
   });
@@ -24,8 +29,13 @@ class BeefHerdIndicators {
   final double? averageSaleValue;
   final int commercialExitsWithValue;
   final int salesWithWeightAndValue;
+  final int commercialExitsWithoutDate;
+  final int salesWithoutValue;
+  final int salesWithoutWeight;
   final double? averageSalePricePerKg;
   final int mortalities;
+  final int mortalitiesWithoutDate;
+  final int mortalitiesWithoutCause;
   final double? mortalityRate;
   final Map<String, int> mortalityByCause;
 
@@ -37,12 +47,33 @@ class BeefHerdIndicators {
   }
 
   List<String> get dataQualityAlerts {
-    if (commercialExits == 0 || commercialExitsWithValue == commercialExits) {
-      return const [];
+    final alerts = <String>[];
+    if (commercialExitsWithoutDate > 0) {
+      alerts.add(
+        '$commercialExitsWithoutDate venda(s) não têm data e ficaram fora dos indicadores de 12 meses.',
+      );
     }
-    return [
-      '${commercialExits - commercialExitsWithValue} saída(s) comercial(is) têm data, mas não valor de venda.',
-    ];
+    if (salesWithoutValue > 0) {
+      alerts.add(
+        '$salesWithoutValue venda(s) datada(s) não têm valor de venda.',
+      );
+    }
+    if (salesWithoutWeight > 0) {
+      alerts.add(
+        '$salesWithoutWeight venda(s) datada(s) não têm peso para calcular R\$/kg.',
+      );
+    }
+    if (mortalitiesWithoutDate > 0) {
+      alerts.add(
+        '$mortalitiesWithoutDate óbito(s) não têm data e ficaram fora da taxa de mortalidade.',
+      );
+    }
+    if (mortalitiesWithoutCause > 0) {
+      alerts.add(
+        '$mortalitiesWithoutCause óbito(s) datado(s) não têm causa informada.',
+      );
+    }
+    return alerts;
   }
 }
 
@@ -56,15 +87,19 @@ class BeefHerdIndicatorCalculator {
     final now = referenceDate ?? DateTime.now();
     final start = DateTime(now.year - 1, now.month, now.day);
     final active = animals.where((animal) => animal.status == 'Ativo').length;
-    final sold = animals.where((animal) {
-      if (animal.status != 'Vendido') return false;
+    final allSold = animals
+        .where((animal) => animal.status == 'Vendido')
+        .toList();
+    final sold = allSold.where((animal) {
       final date = _date(animal.saleDate);
       return date != null && !date.isBefore(start) && !date.isAfter(now);
     }).toList();
     final exits = sold.length;
     final exposed = active + exits;
-    final deadAnimals = animals.where((animal) {
-      if (animal.status != 'Morto') return false;
+    final allDead = animals
+        .where((animal) => animal.status == 'Morto')
+        .toList();
+    final deadAnimals = allDead.where((animal) {
       final date = _date(animal.deathDate);
       return date != null && !date.isBefore(start) && !date.isAfter(now);
     }).toList();
@@ -109,10 +144,21 @@ class BeefHerdIndicatorCalculator {
                 salesWithValue.length,
       commercialExitsWithValue: salesWithValue.length,
       salesWithWeightAndValue: salesWithWeightAndValue.length,
+      commercialExitsWithoutDate: allSold
+          .where((animal) => _date(animal.saleDate) == null)
+          .length,
+      salesWithoutValue: sold.where((animal) => animal.saleValue <= 0).length,
+      salesWithoutWeight: sold.where((animal) => animal.weight <= 0).length,
       averageSalePricePerKg: totalSaleWeight == 0
           ? null
           : totalSaleValueWithWeight / totalSaleWeight,
       mortalities: mortalities,
+      mortalitiesWithoutDate: allDead
+          .where((animal) => _date(animal.deathDate) == null)
+          .length,
+      mortalitiesWithoutCause: deadAnimals
+          .where((animal) => _isUnknownCause(animal.deathCause))
+          .length,
       mortalityRate: mortalityExposed == 0
           ? null
           : mortalities / mortalityExposed * 100,
@@ -131,5 +177,10 @@ class BeefHerdIndicatorCalculator {
     return day == null || month == null || year == null
         ? null
         : DateTime(year, month, day);
+  }
+
+  bool _isUnknownCause(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.isEmpty || normalized == 'não informada';
   }
 }

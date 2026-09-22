@@ -25,7 +25,7 @@ void main() {
       'lib/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart',
     );
 
-    expect(controller, contains('_farms = await _store.loadFarmPortfolio();'));
+    expect(controller, contains('_farms = await _loadCachedFarmPortfolio(stored);'));
     expect(controller, contains('_session = stored;'));
     expect(
       controller,
@@ -36,5 +36,17 @@ void main() {
     expect(controller, isNot(contains('await _store.clearSession();')));
     expect(store, contains('saveFarmPortfolio'));
     expect(store, contains('loadFarmPortfolio'));
+  });
+
+  test('abre contexto local após autenticação e sincroniza sem bloquear', () {
+    final controller = read('lib/core/session/atlas_session_controller.dart');
+
+    expect(controller, contains('_loadCachedFarmPortfolio(session)'));
+    expect(
+      controller,
+      contains('_setStatus(AtlasSessionStatus.authenticated);'),
+    );
+    expect(controller, contains('unawaited(_refreshContextAfterStartup());'));
+    expect(controller, contains('farm.companyId == session.companyId'));
   });
 }

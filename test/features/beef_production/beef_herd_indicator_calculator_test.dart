@@ -51,8 +51,88 @@ void main() {
     expect(result.dataQualityAlerts, isEmpty);
     expect(result.salesWithWeightAndValue, 1);
     expect(result.averageSalePricePerKg, 10.4);
+    expect(result.commercialExitsWithoutDate, 0);
+    expect(result.salesWithoutValue, 0);
+    expect(result.salesWithoutWeight, 0);
     expect(result.mortalities, 0);
+    expect(result.mortalitiesWithoutDate, 0);
+    expect(result.mortalitiesWithoutCause, 0);
     expect(result.mortalityRate, 0);
     expect(result.primaryMortalityCause, isNull);
+  });
+
+  test('separa lacunas de dados dos indicadores calculados', () {
+    const calculator = BeefHerdIndicatorCalculator();
+    final result = calculator.calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: [
+        AnimalData(
+          id: 'sold-no-date',
+          tag: '1',
+          name: '',
+          sex: 'Macho',
+          breed: '',
+          birthDate: '',
+          weight: 420,
+          status: 'Vendido',
+          saleValue: 3500,
+        ),
+        AnimalData(
+          id: 'sold-no-value',
+          tag: '2',
+          name: '',
+          sex: 'Macho',
+          breed: '',
+          birthDate: '',
+          weight: 430,
+          status: 'Vendido',
+          saleDate: '10/09/2026',
+        ),
+        AnimalData(
+          id: 'sold-no-weight',
+          tag: '3',
+          name: '',
+          sex: 'Macho',
+          breed: '',
+          birthDate: '',
+          weight: 0,
+          status: 'Vendido',
+          saleDate: '10/09/2026',
+          saleValue: 3600,
+        ),
+        AnimalData(
+          id: 'dead-no-date',
+          tag: '4',
+          name: '',
+          sex: 'Fêmea',
+          breed: '',
+          birthDate: '',
+          weight: 0,
+          status: 'Morto',
+          deathCause: 'Doença',
+        ),
+        AnimalData(
+          id: 'dead-no-cause',
+          tag: '5',
+          name: '',
+          sex: 'Fêmea',
+          breed: '',
+          birthDate: '',
+          weight: 0,
+          status: 'Morto',
+          deathDate: '11/09/2026',
+          deathCause: 'Não informada',
+        ),
+      ],
+    );
+
+    expect(result.commercialExits, 2);
+    expect(result.commercialExitsWithoutDate, 1);
+    expect(result.salesWithoutValue, 1);
+    expect(result.salesWithoutWeight, 1);
+    expect(result.mortalities, 1);
+    expect(result.mortalitiesWithoutDate, 1);
+    expect(result.mortalitiesWithoutCause, 1);
+    expect(result.dataQualityAlerts, hasLength(5));
   });
 }

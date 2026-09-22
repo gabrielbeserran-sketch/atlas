@@ -4,13 +4,13 @@ Atualizado em 18/09/2026.
 
 ## Estado
 
-- Situação: concluído e publicado.
-- Etapa atual: qualidade de dados do rebanho de Corte.
-- Progresso: 0%.
-- Componentes concluídos: perfil de acesso em linguagem operacional, leitura do plano efetivo da empresa, catálogo dos três níveis comerciais, feedback verificável da geração de histórico e abertura externa não bloqueante.
-- Validações concluídas: 4 testes Flutter, 2 contratos de servidor, análise estática Flutter e build Windows de produção.
-- Checkpoint publicado: `0456b06 feat(access): expose plans and reliable history PDF`.
-- Próximo marco: identificar lacunas de valor, peso e causa de mortalidade antes de recomendar decisões técnicas de Corte.
+- Situação: em execução.
+- Etapa atual: entrada local imediata e sincronização em segundo plano.
+- Progresso: 90%.
+- Componentes concluídos: formulário liberado durante a verificação de saúde, carteira local filtrada pela empresa, abertura imediata após autenticação quando houver contexto local e sincronização de sessão/fazendas em segundo plano com aviso de modo offline.
+- Validações concluídas: contratos do controlador de sessão, contrato do login, dois testes de cálculo de Corte e análise estática Flutter.
+- Validação em diagnóstico: o build Windows terminou a geração Dart, mas o processo nativo de instalação local não finalizou; a alteração não depende dele para o Android e será revalidada no próximo build limpo.
+- Próximo marco: registrar o checkpoint do pacote acumulado e retomar a validação do artefato Windows sem bloquear a evolução local.
 
 ## Próximo pacote planejado
 

@@ -79,7 +79,7 @@ class AtlasSessionController extends ChangeNotifier {
     // Mantém o contexto local disponível, mas devolve o usuário à tela de
     // login. A entrada no painel passa a ser uma ação explícita.
     _session = stored;
-    _farms = await _store.loadFarmPortfolio();
+    _farms = await _loadCachedFarmPortfolio(stored);
     await AtlasActiveContext.instance.restore();
     final savedFarmId = await _store.loadActiveFarm();
     _activeFarm =
@@ -148,6 +148,24 @@ class AtlasSessionController extends ChangeNotifier {
       return;
     }
 
+    // A autenticação remota já confirmou a identidade. Quando a carteira da
+    // mesma empresa existe no aparelho, abrimos a operação de imediato e
+    // renovamos sessão/fazendas sem segurar a tela de entrada.
+    _farms = await _loadCachedFarmPortfolio(session);
+    final savedFarmId = await _store.loadActiveFarm();
+    _activeFarm =
+        _findFarm(savedFarmId) ?? (_farms.isNotEmpty ? _farms.first : null);
+
+    if (_activeFarm != null) {
+      await _store.saveActiveFarm(_activeFarm!.id);
+      await AtlasActiveContext.instance.selectFarm(_activeFarm!.id);
+      _setStatus(AtlasSessionStatus.authenticated);
+      unawaited(_refreshContextAfterStartup());
+      return;
+    }
+
+    // No primeiro acesso ainda não há uma fazenda local para abrir com
+    // segurança; nesse único caso, carregamos o contexto remoto normalmente.
     await loadContext();
   }
 
@@ -224,6 +242,16 @@ class AtlasSessionController extends ChangeNotifier {
       await _store.clearActiveFarm();
       await AtlasActiveContext.instance.clearFarm();
     }
+  }
+
+  Future<List<AtlasRemoteFarm>> _loadCachedFarmPortfolio(
+    AtlasRemoteSession session,
+  ) async {
+    final cached = await _store.loadFarmPortfolio();
+    if (session.companyId.isEmpty) return cached;
+    return cached
+        .where((farm) => farm.companyId == session.companyId)
+        .toList(growable: false);
   }
 
   Future<void> selectFarm(AtlasRemoteFarm farm) async {

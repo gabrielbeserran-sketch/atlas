@@ -779,8 +779,8 @@ class _SummaryContent extends StatelessWidget {
           if (summary.beefHerd.dataQualityAlerts.isNotEmpty) ...[
             _ModuleCard(
               width: double.infinity,
-              title: 'Base comercial pendente',
-              icon: Icons.receipt_long_outlined,
+              title: 'Qualidade da base de Corte',
+              icon: Icons.fact_check_outlined,
               metrics: [
                 for (final alert in summary.beefHerd.dataQualityAlerts)
                   ('Registro necessário', alert),

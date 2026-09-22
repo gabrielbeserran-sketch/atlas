@@ -6,7 +6,7 @@ void main() {
   String read(String path) => File(path).readAsStringSync();
 
   test(
-    'o login aquece a API sem enviar credenciais e bloqueia o botão até ela estar pronta',
+    'o login aquece a API sem bloquear a entrada nem o desbloqueio offline',
     () {
       final login = read(
         'lib/features/authentication/presentation/screens/login_screen.dart',
@@ -17,7 +17,7 @@ void main() {
 
       expect(api, contains("'/health/ready'"));
       expect(api, contains('authenticated: false'));
-      expect(login, contains('unawaited(_restoreSessionAfterBackendReady());'));
+      expect(login, contains('unawaited(_warmBackend());'));
       expect(login, contains('const _backendReadinessTimeout'));
       expect(login, contains('return _backendWarmup ??='));
       expect(login, contains('await _warmBackend();'));
@@ -25,10 +25,8 @@ void main() {
         login,
         contains('healthReady().timeout(\n        _backendReadinessTimeout,'),
       );
-      expect(
-        login,
-        contains('backendConnection != _BackendConnectionState.ready'),
-      );
+      expect(login, isNot(contains('if (!backendReady)')));
+      expect(login, contains('isLoading ? null : onLogin'));
       expect(login, contains('Tentar conexão'));
     },
   );
