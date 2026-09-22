@@ -25,7 +25,10 @@ void main() {
       'lib/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart',
     );
 
-    expect(controller, contains('_farms = await _loadCachedFarmPortfolio(stored);'));
+    expect(
+      controller,
+      contains('_farms = await _loadCachedFarmPortfolio(stored);'),
+    );
     expect(controller, contains('_session = stored;'));
     expect(
       controller,
@@ -48,5 +51,16 @@ void main() {
     );
     expect(controller, contains('unawaited(_refreshContextAfterStartup());'));
     expect(controller, contains('farm.companyId == session.companyId'));
+  });
+
+  test('orienta a ativação do PIN sem interromper a operação', () {
+    final controller = read('lib/core/session/atlas_session_controller.dart');
+    final home = read('lib/core/navigation/atlas_home_shell.dart');
+
+    expect(controller, contains('bool get offlinePinConfigured'));
+    expect(home, contains('_OfflineAccessSetupBanner'));
+    expect(home, contains('Proteja o acesso offline neste dispositivo'));
+    expect(home, contains("_navigateToLabel('Configurações')"));
+    expect(home, contains("Text('Agora não')"));
   });
 }

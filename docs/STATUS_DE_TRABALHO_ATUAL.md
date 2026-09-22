@@ -5,12 +5,12 @@ Atualizado em 18/09/2026.
 ## Estado
 
 - Situação: em execução.
-- Etapa atual: acesso offline explícito e mensagem de conexão honesta.
-- Progresso: 95%.
-- Componentes concluídos: entrada com credenciais online separada do desbloqueio local com PIN; ação “Entrar offline com PIN” em destaque quando houver contexto; mensagem de indisponibilidade condicionada à existência real de acesso offline.
-- Validações concluídas: contrato de interface e contratos do fluxo de sessão aprovados.
-- Validação em diagnóstico: a análise Flutter continua sujeita a lentidão local do processo de compilação, já isolada do código e sem erros de formatação.
-- Próximo marco: checkpoint Git publicado e, na próxima conexão bem-sucedida, configurar o PIN deste dispositivo para habilitar o caminho offline.
+- Etapa atual: ativação guiada do acesso offline.
+- Progresso: 90%.
+- Componentes concluídos: o controlador expõe o estado real do PIN; a operação mostra um convite dispensável após a entrada autenticada; o convite abre Configurações e se reorganiza em telas estreitas sem sobreposição.
+- Validações concluídas: contratos de sessão/navegação e de disponibilidade do login aprovados; formatação e verificação de diff limpo aprovadas.
+- Validação pendente: checkpoint Git e publicação.
+- Próximo marco: publicar a ativação guiada para que a entrada offline deixe de depender de o usuário descobrir a configuração por conta própria.
 
 ## Próximo pacote planejado
 

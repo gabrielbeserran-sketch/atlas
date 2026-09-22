@@ -45,6 +45,7 @@ class AtlasSessionController extends ChangeNotifier {
   String? get error => _error;
   bool get offlineMode => _offlineMode;
   bool get refreshingConnection => _refreshingConnection;
+  bool get offlinePinConfigured => _offlinePinConfigured;
   bool get hasOfflineContext =>
       _offlinePinConfigured && _session != null && _farms.isNotEmpty;
 

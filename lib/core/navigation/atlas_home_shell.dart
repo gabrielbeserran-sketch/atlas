@@ -36,6 +36,7 @@ class AtlasHomeShell extends StatefulWidget {
 
 class _AtlasHomeShellState extends State<AtlasHomeShell> {
   int selectedIndex = 0;
+  bool _offlineAccessReminderDismissed = false;
 
   static final List<AtlasRouteDefinition> routes = [
     AtlasRouteDefinition(
@@ -225,6 +226,11 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
 
     if (selectedIndex >= visibleRoutes.length) selectedIndex = 0;
     final selected = visibleRoutes[selectedIndex];
+    final showOfflineAccessSetup =
+        activeFarm != null &&
+        !controller.offlinePinConfigured &&
+        selected.label != 'Configurações' &&
+        !_offlineAccessReminderDismissed;
     final userName = session.userName.isEmpty
         ? session.email
         : session.userName;
@@ -262,6 +268,13 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                         _OfflineModeBanner(
                           refreshing: controller.refreshingConnection,
                           onRetry: controller.retryConnection,
+                        ),
+                      if (showOfflineAccessSetup)
+                        _OfflineAccessSetupBanner(
+                          onConfigure: () => _navigateToLabel('Configurações'),
+                          onDismiss: () => setState(
+                            () => _offlineAccessReminderDismissed = true,
+                          ),
                         ),
                       Expanded(child: _selectedBody(selected, activeFarm?.id)),
                     ],
@@ -327,6 +340,12 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
                 _OfflineModeBanner(
                   refreshing: controller.refreshingConnection,
                   onRetry: controller.retryConnection,
+                ),
+              if (showOfflineAccessSetup)
+                _OfflineAccessSetupBanner(
+                  onConfigure: () => _navigateToLabel('Configurações'),
+                  onDismiss: () =>
+                      setState(() => _offlineAccessReminderDismissed = true),
                 ),
               Expanded(child: _selectedBody(selected, activeFarm?.id)),
             ],
@@ -601,6 +620,81 @@ class _OfflineModeBanner extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+class _OfflineAccessSetupBanner extends StatelessWidget {
+  const _OfflineAccessSetupBanner({
+    required this.onConfigure,
+    required this.onDismiss,
+  });
+
+  final VoidCallback onConfigure;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact = constraints.maxWidth < 640;
+      final message = const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Proteja o acesso offline neste dispositivo',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          SizedBox(height: 2),
+          Text('Configure um PIN para abrir esta fazenda mesmo sem conexão.'),
+        ],
+      );
+      final actions = Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        alignment: WrapAlignment.end,
+        children: [
+          TextButton(onPressed: onDismiss, child: const Text('Agora não')),
+          FilledButton(
+            onPressed: onConfigure,
+            child: const Text('Configurar PIN'),
+          ),
+        ],
+      );
+
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF5EE),
+          border: Border.all(color: const Color(0xFF9CCBAD)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.lock_outline, color: Color(0xFF165C37)),
+                      const SizedBox(width: 12),
+                      Expanded(child: message),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Align(alignment: Alignment.centerRight, child: actions),
+                ],
+              )
+            : Row(
+                children: [
+                  const Icon(Icons.lock_outline, color: Color(0xFF165C37)),
+                  const SizedBox(width: 12),
+                  Expanded(child: message),
+                  const SizedBox(width: 12),
+                  actions,
+                ],
+              ),
+      );
+    },
   );
 }
 
