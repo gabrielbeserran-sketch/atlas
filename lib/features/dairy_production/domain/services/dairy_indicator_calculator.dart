@@ -3,6 +3,8 @@ import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_dail
 class DairyProductionSummary {
   const DairyProductionSummary({
     required this.latestLiters,
+    required this.latestRecordDate,
+    required this.daysSinceLatestRecord,
     required this.averageLitersPerDay,
     required this.averageLitersPerHectare,
     required this.litersPerLactatingCow,
@@ -18,6 +20,8 @@ class DairyProductionSummary {
     required this.coveragePercent,
   });
   final double? latestLiters;
+  final DateTime? latestRecordDate;
+  final int? daysSinceLatestRecord;
   final double? averageLitersPerDay;
   final double? averageLitersPerHectare;
   final double? litersPerLactatingCow;
@@ -33,9 +37,15 @@ class DairyProductionSummary {
   final double coveragePercent;
 
   bool get hasRepresentativeSample => recordedDays >= 20;
+  bool get latestRecordIsStale => (daysSinceLatestRecord ?? 0) > 3;
 
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
+    if (latestRecordIsStale) {
+      alerts.add(
+        'A última ordenha válida foi registrada há $daysSinceLatestRecord dias; atualize a produção antes de usar os indicadores como retrato atual.',
+      );
+    }
     if (futureRecords > 0) {
       alerts.add(
         '$futureRecords ordenha(s) com data futura ficaram fora dos indicadores.',
@@ -72,6 +82,8 @@ class DairyIndicatorCalculator {
     if (records.isEmpty) {
       return const DairyProductionSummary(
         latestLiters: null,
+        latestRecordDate: null,
+        daysSinceLatestRecord: null,
         averageLitersPerDay: null,
         averageLitersPerHectare: null,
         litersPerLactatingCow: null,
@@ -134,9 +146,18 @@ class DairyIndicatorCalculator {
     final latest = valid.isEmpty
         ? null
         : (valid..sort((a, b) => b.date.compareTo(a.date))).first;
+    final daysSinceLatestRecord = latest == null
+        ? null
+        : today
+              .difference(
+                DateTime(latest.date.year, latest.date.month, latest.date.day),
+              )
+              .inDays;
     if (source.isEmpty) {
       return DairyProductionSummary(
         latestLiters: latest?.totalLiters,
+        latestRecordDate: latest?.date,
+        daysSinceLatestRecord: daysSinceLatestRecord,
         averageLitersPerDay: null,
         averageLitersPerHectare: null,
         litersPerLactatingCow: null,
@@ -160,6 +181,8 @@ class DairyIndicatorCalculator {
     final average = total / source.length;
     return DairyProductionSummary(
       latestLiters: latest?.totalLiters,
+      latestRecordDate: latest?.date,
+      daysSinceLatestRecord: daysSinceLatestRecord,
       averageLitersPerDay: average,
       averageLitersPerHectare: hectares > 0 ? average / hectares : null,
       litersPerLactatingCow: lactatingCows == null || lactatingCows <= 0

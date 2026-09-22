@@ -90,7 +90,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                       label: 'Última ordenha',
                       value: summary.latestLiters == null
                           ? 'Sem dado'
-                          : '${currency.format(summary.latestLiters)} L',
+                          : '${currency.format(summary.latestLiters)} L · ${DateFormat('dd/MM').format(summary.latestRecordDate!)}',
                     ),
                     _Metric(
                       label: 'Média diária',

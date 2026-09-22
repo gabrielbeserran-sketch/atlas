@@ -583,8 +583,39 @@ class _SummaryContent extends StatelessWidget {
     return alerts;
   }
 
+  int? get _dairySnapshotAgeDays {
+    final snapshot = summary.latestDairySnapshot;
+    if (snapshot == null) return null;
+    final today = DateTime(
+      analysis.generatedAt.year,
+      analysis.generatedAt.month,
+      analysis.generatedAt.day,
+    );
+    final date = DateTime(
+      snapshot.date.year,
+      snapshot.date.month,
+      snapshot.date.day,
+    );
+    return today.difference(date).inDays;
+  }
+
+  List<String> get _dairyOperationalDataAlerts {
+    final alerts = [...summary.dairyOperationalDataAlerts];
+    final snapshotAge = _dairySnapshotAgeDays;
+    if (snapshotAge == null) {
+      alerts.add(
+        'Registre o estado do lote para atualizar vacas em lactação, vacas secas e perdas gestacionais.',
+      );
+    } else if (snapshotAge > 7) {
+      alerts.add(
+        'O estado do lote foi registrado há $snapshotAge dias; atualize-o antes de interpretar os índices por vaca em lactação.',
+      );
+    }
+    return alerts;
+  }
+
   List<String> get _productionDataQualityAlerts => switch (productionFocus) {
-    TechnicalProductionFocus.dairy => summary.dairyOperationalDataAlerts,
+    TechnicalProductionFocus.dairy => _dairyOperationalDataAlerts,
     TechnicalProductionFocus.beef => _beefOperationalDataAlerts,
     null => const [],
   };
@@ -661,6 +692,14 @@ class _SummaryContent extends StatelessWidget {
                 summary.latestDairySnapshot?.lactatingPercent == null
                     ? 'Registre o estado do lote'
                     : '${summary.latestDairySnapshot!.lactatingPercent!.toStringAsFixed(1)}%',
+              ),
+              (
+                'Atualização do estado do lote',
+                _dairySnapshotAgeDays == null
+                    ? 'Ainda não registrado'
+                    : _dairySnapshotAgeDays == 0
+                    ? 'Atualizado hoje'
+                    : 'Há $_dairySnapshotAgeDays dia(s)',
               ),
               (
                 '% de vacas secas',

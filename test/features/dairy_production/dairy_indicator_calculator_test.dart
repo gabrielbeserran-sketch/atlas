@@ -27,6 +27,8 @@ void main() {
         referenceDate: DateTime(2026, 9, 15),
       );
       expect(summary.latestLiters, 160);
+      expect(summary.latestRecordDate, DateTime(2026, 9, 15));
+      expect(summary.daysSinceLatestRecord, 0);
       expect(summary.averageLitersPerDay, 140);
       expect(summary.averageLitersPerHectare, 7);
       expect(summary.recordedDays, 2);
@@ -92,5 +94,25 @@ void main() {
     expect(summary.dataQualityAlerts, hasLength(3));
     expect(summary.missingDays, 29);
     expect(summary.coveragePercent, closeTo(3.33, 0.01));
+  });
+
+  test('sinaliza quando a última ordenha válida está desatualizada', () {
+    const calculator = DairyIndicatorCalculator();
+    final summary = calculator.summarize(
+      [
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 1),
+          morningLiters: 100,
+          afternoonLiters: 50,
+          cowsMilked: 10,
+        ),
+      ],
+      hectares: 10,
+      referenceDate: DateTime(2026, 9, 8),
+    );
+
+    expect(summary.daysSinceLatestRecord, 7);
+    expect(summary.latestRecordIsStale, isTrue);
+    expect(summary.dataQualityAlerts.join(' '), contains('há 7 dias'));
   });
 }

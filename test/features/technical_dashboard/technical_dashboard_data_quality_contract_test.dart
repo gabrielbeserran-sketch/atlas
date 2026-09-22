@@ -14,6 +14,8 @@ void main() {
     expect(dashboard, contains('_beefOperationalDataAlerts'));
     expect(dashboard, contains('Cobertura da última pesagem'));
     expect(dashboard, contains('Base do ganho médio diário'));
+    expect(dashboard, contains('_dairySnapshotAgeDays'));
+    expect(dashboard, contains('Atualização do estado do lote'));
     expect(dashboard, contains('Dados técnicos para revisar — Leite'));
     expect(dashboard, contains('Dados técnicos para revisar — Corte'));
     expect(dashboard, contains('Itens que precisam de revisão'));
