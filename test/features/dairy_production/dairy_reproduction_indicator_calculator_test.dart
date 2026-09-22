@@ -111,4 +111,65 @@ void main() {
       expect(result.recommendationConfidenceLabel, 'Confiança limitada');
     },
   );
+
+  test('ignora eventos reprodutivos inválidos, futuros ou fora do período', () {
+    const calculator = DairyReproductionIndicatorCalculator();
+    final result = calculator.calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: [
+        AnimalData(
+          id: 'cow',
+          tag: '1',
+          name: 'Matriz',
+          sex: 'Fêmea',
+          breed: 'G',
+          birthDate: '01/01/2020',
+          weight: 480,
+          status: 'Ativo',
+        ),
+      ],
+      records: const [
+        AnimalReproductionData(
+          id: 'invalid',
+          type: 'IATF',
+          date: '31/02/2026',
+          result: '',
+          bullOrSemen: '',
+          responsible: '',
+          notes: '',
+          eventCode: 'iatf',
+          animalId: 'cow',
+        ),
+        AnimalReproductionData(
+          id: 'future',
+          type: 'IATF',
+          date: '20/09/2026',
+          result: '',
+          bullOrSemen: '',
+          responsible: '',
+          notes: '',
+          eventCode: 'iatf',
+          animalId: 'cow',
+        ),
+        AnimalReproductionData(
+          id: 'old',
+          type: 'IATF',
+          date: '01/09/2024',
+          result: '',
+          bullOrSemen: '',
+          responsible: '',
+          notes: '',
+          eventCode: 'iatf',
+          animalId: 'cow',
+        ),
+      ],
+    );
+
+    expect(result.inseminationAttempts, 0);
+    expect(result.conceptionRate, isNull);
+    expect(result.reproductiveEventsWithoutValidDate, 1);
+    expect(result.reproductiveEventsInFuture, 1);
+    expect(result.dataQualityAlerts.join(' '), contains('data válida'));
+    expect(result.dataQualityAlerts.join(' '), contains('data futura'));
+  });
 }

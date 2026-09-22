@@ -18,6 +18,8 @@ class DairyReproductionIndicators {
     required this.femaleExits,
     required this.reproductiveCulls,
     required this.activeFemaleCount,
+    required this.reproductiveEventsWithoutValidDate,
+    required this.reproductiveEventsInFuture,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -36,6 +38,8 @@ class DairyReproductionIndicators {
   final int femaleExits;
   final int reproductiveCulls;
   final int activeFemaleCount;
+  final int reproductiveEventsWithoutValidDate;
+  final int reproductiveEventsInFuture;
 
   int get dataCoveragePercent {
     if (activeFemaleCount == 0) return 0;
@@ -61,6 +65,16 @@ class DairyReproductionIndicators {
     if (activeFemaleCount == 0) {
       alerts.add('Cadastre as matrizes ativas para iniciar os indicadores.');
       return alerts;
+    }
+    if (reproductiveEventsWithoutValidDate > 0) {
+      alerts.add(
+        '$reproductiveEventsWithoutValidDate evento(s) reprodutivo(s) não têm data válida e ficaram fora dos indicadores.',
+      );
+    }
+    if (reproductiveEventsInFuture > 0) {
+      alerts.add(
+        '$reproductiveEventsInFuture evento(s) reprodutivo(s) têm data futura e ficaram fora dos indicadores.',
+      );
     }
     if (lactatingCowsWithKnownCalving == 0) {
       alerts.add(
@@ -101,6 +115,16 @@ class DairyReproductionIndicatorCalculator {
     final periodStart = DateTime(today.year - 1, today.month, today.day);
     final femaleAnimals = animals.where((animal) => animal.sex == 'Fêmea');
     final femaleAnimalIds = femaleAnimals.map((animal) => animal.id).toSet();
+    final femaleRecords = records
+        .where((record) => femaleAnimalIds.contains(record.animalId))
+        .toList(growable: false);
+    final reproductiveEventsWithoutValidDate = femaleRecords
+        .where((event) => _date(event.date) == null)
+        .length;
+    final reproductiveEventsInFuture = femaleRecords.where((event) {
+      final date = _date(event.date);
+      return date != null && date.isAfter(today);
+    }).length;
     final femaleEntries = femaleAnimals.where((animal) {
       final entryDate = _date(animal.acquisitionDate);
       final birthDate = _date(animal.birthDate);
@@ -112,8 +136,12 @@ class DairyReproductionIndicatorCalculator {
       return _inPeriod(_date(animal.saleDate), periodStart, today);
     }).length;
     final recordsByAnimal = <String, List<AnimalReproductionData>>{};
-    for (final record in records) {
-      if (record.animalId.isEmpty || !activeFemales.contains(record.animalId)) {
+    for (final record in femaleRecords) {
+      final date = _date(record.date);
+      if (record.animalId.isEmpty ||
+          !activeFemales.contains(record.animalId) ||
+          date == null ||
+          date.isAfter(today)) {
         continue;
       }
       (recordsByAnimal[record.animalId] ??= []).add(record);
@@ -168,22 +196,24 @@ class DairyReproductionIndicatorCalculator {
         }
       }
     }
-    final inseminations = records
+    final inseminations = femaleRecords
         .where(
           (event) =>
               activeFemales.contains(event.animalId) && event.isInsemination,
         )
+        .where((event) => _inPeriod(_date(event.date), periodStart, today))
         .length;
-    final pregnancies = records
+    final pregnancies = femaleRecords
         .where(
           (event) =>
-              femaleAnimalIds.contains(event.animalId) &&
+              activeFemales.contains(event.animalId) &&
               event.isPositivePregnancyDiagnosis,
         )
+        .where((event) => _inPeriod(_date(event.date), periodStart, today))
         .length;
     var diagnosedCows = 0;
     var currentlyPregnant = 0;
-    final reproductiveCulls = records
+    final reproductiveCulls = femaleRecords
         .where(
           (event) =>
               activeFemales.contains(event.animalId) &&
@@ -238,20 +268,40 @@ class DairyReproductionIndicatorCalculator {
       femaleExits: femaleExits,
       reproductiveCulls: reproductiveCulls,
       activeFemaleCount: activeFemales.length,
+      reproductiveEventsWithoutValidDate: reproductiveEventsWithoutValidDate,
+      reproductiveEventsInFuture: reproductiveEventsInFuture,
     );
   }
 
   DateTime? _date(String value) {
-    final iso = DateTime.tryParse(value);
-    if (iso != null) return iso;
-    final parts = value.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    return day == null || month == null || year == null
-        ? null
-        : DateTime(year, month, day);
+    final normalized = value.trim();
+    final br = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(normalized);
+    if (br != null) {
+      return _strictDate(
+        int.parse(br.group(3)!),
+        int.parse(br.group(2)!),
+        int.parse(br.group(1)!),
+      );
+    }
+    final iso = RegExp(
+      r'^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$',
+    ).firstMatch(normalized);
+    if (iso == null) return null;
+    return _strictDate(
+      int.parse(iso.group(1)!),
+      int.parse(iso.group(2)!),
+      int.parse(iso.group(3)!),
+    );
+  }
+
+  DateTime? _strictDate(int year, int month, int day) {
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
+      return null;
+    }
+    final date = DateTime(year, month, day);
+    return date.year == year && date.month == month && date.day == day
+        ? date
+        : null;
   }
 
   bool _inPeriod(DateTime? date, DateTime start, DateTime end) =>
