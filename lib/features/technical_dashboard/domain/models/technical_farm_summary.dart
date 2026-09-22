@@ -85,7 +85,10 @@ class TechnicalFarmSummary {
   /// Alertas de cobertura: não interpretam desempenho; indicam se a base
   /// registrada sustenta os índices exibidos no painel de Leite.
   List<String> get dairyOperationalDataAlerts {
-    final alerts = [...dairyReproduction.dataQualityAlerts];
+    final alerts = [
+      ...dairyReproduction.dataQualityAlerts,
+      ...dairyProduction.dataQualityAlerts,
+    ];
     if (dairyProduction.recordedDays == 0) {
       alerts.add(
         'Registre ordenhas diárias para iniciar o indicador de produção.',

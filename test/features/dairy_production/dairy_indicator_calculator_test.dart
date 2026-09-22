@@ -26,11 +26,61 @@ void main() {
         lactatingCows: 10,
         referenceDate: DateTime(2026, 9, 15),
       );
-      expect(summary.latestLiters, 120);
+      expect(summary.latestLiters, 160);
       expect(summary.averageLitersPerDay, 140);
       expect(summary.averageLitersPerHectare, 7);
       expect(summary.recordedDays, 2);
       expect(summary.litersPerLactatingCow, 14);
     },
   );
+
+  test('exclui ordenhas futuras, duplicadas ou sem vacas da média', () {
+    const calculator = DairyIndicatorCalculator();
+    final summary = calculator.summarize(
+      [
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 15),
+          morningLiters: 100,
+          afternoonLiters: 50,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 14),
+          morningLiters: 90,
+          afternoonLiters: 40,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 14),
+          morningLiters: 80,
+          afternoonLiters: 30,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 16),
+          morningLiters: 130,
+          afternoonLiters: 70,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 13),
+          morningLiters: 80,
+          afternoonLiters: 40,
+          cowsMilked: 0,
+        ),
+      ],
+      hectares: 10,
+      lactatingCows: 10,
+      referenceDate: DateTime(2026, 9, 15),
+    );
+
+    expect(summary.recordedDays, 1);
+    expect(summary.averageLitersPerDay, 150);
+    expect(summary.averageLitersPerHectare, 15);
+    expect(summary.litersPerLactatingCow, 15);
+    expect(summary.futureRecords, 1);
+    expect(summary.duplicateDays, 1);
+    expect(summary.recordsWithoutMilkedCows, 1);
+    expect(summary.dataQualityAlerts, hasLength(3));
+  });
 }

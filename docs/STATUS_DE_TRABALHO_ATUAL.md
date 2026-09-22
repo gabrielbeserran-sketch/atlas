@@ -4,14 +4,14 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: concluída e publicada.
-- Etapa concluída: qualidade temporal dos índices reprodutivos de Leite.
-- Progresso: 100%.
+- Situação: em execução.
+- Etapa atual: qualidade da produção diária de Leite.
+- Progresso: 90%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
-- Componentes concluídos: datas reprodutivas são validadas estritamente; inseminações e diagnósticos futuros, inválidos ou fora da janela anual ficam fora de concepção e prenhez; alertas de qualidade já existentes no painel técnico exibem a lacuna ao produtor.
-- Validações concluídas: testes de reprodução de Leite e de indicadores de Corte aprovados; formatação e verificação de diff limpo aprovadas.
-- Checkpoint publicado: `2afc75c` — `fix(dairy): validate reproductive indicator dates`.
-- Próximo marco: ampliar a cobertura da qualidade de produção diária de Leite e, em paralelo, retomar a inspeção visual Windows quando a cadeia MSBuild estiver disponível.
+- Componentes concluídos: ordenhas futuras, duplicadas, negativas ou sem vacas ordenhadas ficam fora do cálculo; o módulo de Leite apresenta um cartão de qualidade da base; novos registros exigem ao menos uma vaca ordenhada.
+- Validações concluídas: testes de produção diária, reprodução de Leite e sessão aprovados; formatação e verificação de diff limpo aprovadas.
+- Validação pendente: checkpoint Git e publicação.
+- Próximo marco: publicar a proteção para que litros/dia, L/ha e L/vaca reflitam somente dias operacionais válidos.
 
 ## Próximo pacote planejado
 

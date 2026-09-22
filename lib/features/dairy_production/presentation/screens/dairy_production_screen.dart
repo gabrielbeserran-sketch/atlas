@@ -135,6 +135,30 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                     ),
                   ],
                 ),
+                if (summary.dataQualityAlerts.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  Card(
+                    color: const Color(0xFFFFF4E5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Qualidade dos registros',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          for (final alert in summary.dataQualityAlerts)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Text('• $alert'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 28),
                 Text(
                   'Histórico do lote',
@@ -426,7 +450,7 @@ class _DairyRecordDialogState extends State<_DairyRecordDialog> {
             ),
             _field(_morning, 'Litros na ordenha da manhã', decimal: true),
             _field(_afternoon, 'Litros na ordenha da tarde', decimal: true),
-            _field(_cows, 'Vacas ordenhadas'),
+            _field(_cows, 'Vacas ordenhadas', positiveInteger: true),
             TextFormField(
               controller: _notes,
               decoration: const InputDecoration(
@@ -449,13 +473,18 @@ class _DairyRecordDialogState extends State<_DairyRecordDialog> {
     TextEditingController c,
     String label, {
     bool decimal = false,
+    bool positiveInteger = false,
   }) => TextFormField(
     controller: c,
     keyboardType: TextInputType.numberWithOptions(decimal: decimal),
     decoration: InputDecoration(labelText: label),
     validator: (value) {
       final n = double.tryParse((value ?? '').replaceAll(',', '.'));
-      return n == null || n < 0 ? 'Informe um valor válido' : null;
+      if (n == null || n < 0) return 'Informe um valor válido';
+      if (positiveInteger && (n <= 0 || n != n.roundToDouble())) {
+        return 'Informe ao menos uma vaca ordenhada';
+      }
+      return null;
     },
   );
   void _save() {
