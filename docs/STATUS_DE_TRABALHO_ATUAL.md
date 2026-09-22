@@ -4,18 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: concluída e publicada.
-- Etapa concluída: precisão do indicador por vaca na produção de Leite.
-- Progresso: 100%.
+- Situação: em execução.
+- Etapa atual: rastreabilidade das pesagens nos indicadores de Corte.
+- Progresso: 90%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
-- Componentes concluídos: L/vaca ordenhada usa soma de litros e de vacas de cada dia válido; L/vaca em lactação permanece explicitamente calculado a partir do último estado de lote; o módulo e o painel exibem as duas referências e a média diária de vacas ordenhadas.
-- Validações concluídas: testes de média ponderada e contrato de painel aprovados; formatação e verificação de diff limpo aprovadas.
-- Checkpoint publicado: `a8e84b1` — `feat(dairy): distinguish milked cow efficiency`.
-- Próximo marco: retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível; novas ampliações técnicas seguem independentes dessa pendência.
+- Componentes concluídos: o painel informa a cobertura da última pesagem e o número de animais na primeira e na última medição usadas no GMD; alerta quando faltam duas pesagens ou quando a última amostra cobre menos de 50% dos animais ativos; a orientação aparece na seção unificada de dados a revisar do Corte.
+- Validações concluídas: contrato de painel, testes de indicadores de Corte e de produção diária de Leite aprovados; formatação e verificação de diff limpo aprovadas.
+- Validação pendente: checkpoint Git e publicação.
+- Próximo marco: publicar a rastreabilidade das pesagens para que o produtor interprete o GMD com a cobertura correta.
 
 ## Próximo pacote planejado
 
-Retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível, sem reinstalar o APK até um conjunto maior de entregas.
+Concluir a rastreabilidade das pesagens no Corte; depois, retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível.
 
 ## Como acompanhar
 

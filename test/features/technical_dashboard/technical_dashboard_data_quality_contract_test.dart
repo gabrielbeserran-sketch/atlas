@@ -11,6 +11,9 @@ void main() {
     expect(dashboard, contains('_productionDataQualityAlerts'));
     expect(dashboard, contains('summary.dairyOperationalDataAlerts'));
     expect(dashboard, contains('summary.beefHerd.dataQualityAlerts'));
+    expect(dashboard, contains('_beefOperationalDataAlerts'));
+    expect(dashboard, contains('Cobertura da última pesagem'));
+    expect(dashboard, contains('Base do ganho médio diário'));
     expect(dashboard, contains('Dados técnicos para revisar — Leite'));
     expect(dashboard, contains('Dados técnicos para revisar — Corte'));
     expect(dashboard, contains('Itens que precisam de revisão'));

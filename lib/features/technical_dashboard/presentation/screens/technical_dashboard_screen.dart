@@ -558,9 +558,34 @@ class _SummaryContent extends StatelessWidget {
     return (last.averageWeight - first.averageWeight) / days;
   }
 
+  double? get _beefLatestWeightCoveragePercent {
+    final activeAnimals = summary.activeAnimals;
+    if (activeAnimals <= 0 || analysis.weightSeries.isEmpty) return null;
+    return analysis.weightSeries.last.animalCount / activeAnimals * 100;
+  }
+
+  List<String> get _beefOperationalDataAlerts {
+    final alerts = [...summary.beefHerd.dataQualityAlerts];
+    final points = analysis.weightSeries;
+    if (summary.activeAnimals == 0) return alerts;
+    if (points.length < 2) {
+      alerts.add(
+        'Registre ao menos duas pesagens em meses distintos para calcular o ganho médio diário do rebanho.',
+      );
+      return alerts;
+    }
+    final coverage = _beefLatestWeightCoveragePercent;
+    if (coverage != null && coverage < 50) {
+      alerts.add(
+        'A última pesagem cobre ${coverage.toStringAsFixed(0)}% dos animais ativos; amplie a amostra antes de usar o GMD como referência do rebanho.',
+      );
+    }
+    return alerts;
+  }
+
   List<String> get _productionDataQualityAlerts => switch (productionFocus) {
     TechnicalProductionFocus.dairy => summary.dairyOperationalDataAlerts,
-    TechnicalProductionFocus.beef => summary.beefHerd.dataQualityAlerts,
+    TechnicalProductionFocus.beef => _beefOperationalDataAlerts,
     null => const [],
   };
 
@@ -754,6 +779,20 @@ class _SummaryContent extends StatelessWidget {
                 _beefAverageDailyGain == null
                     ? 'Registre duas pesagens'
                     : '${_beefAverageDailyGain!.toStringAsFixed(3)} kg/dia',
+              ),
+              (
+                'Cobertura da última pesagem',
+                _beefLatestWeightCoveragePercent == null
+                    ? 'Sem pesagens válidas'
+                    : '${analysis.weightSeries.last.animalCount}/${summary.activeAnimals} animais '
+                          '(${_beefLatestWeightCoveragePercent!.toStringAsFixed(0)}%)',
+              ),
+              (
+                'Base do ganho médio diário',
+                analysis.weightSeries.length < 2
+                    ? 'Registre duas pesagens mensais'
+                    : '${analysis.weightSeries.first.label}: ${analysis.weightSeries.first.animalCount} animais '
+                          '→ ${analysis.weightSeries.last.label}: ${analysis.weightSeries.last.animalCount} animais',
               ),
               (
                 'Taxa de desfrute comercial (12 meses)',
