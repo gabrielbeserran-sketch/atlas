@@ -614,10 +614,22 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.dairyProduction.averageLitersPerHectare!.toStringAsFixed(1)} L/ha/dia',
               ),
               (
+                'Litros por vaca ordenhada',
+                summary.dairyProduction.litersPerMilkedCow == null
+                    ? 'Registre ordenhas válidas'
+                    : '${summary.dairyProduction.litersPerMilkedCow!.toStringAsFixed(1)} L/vaca/dia',
+              ),
+              (
                 'Litros por vaca em lactação',
                 summary.dairyProduction.litersPerLactatingCow == null
-                    ? 'Informe ordenhas e lote'
+                    ? 'Informe o estado atual do lote'
                     : '${summary.dairyProduction.litersPerLactatingCow!.toStringAsFixed(1)} L/vaca/dia',
+              ),
+              (
+                'Média de vacas ordenhadas',
+                summary.dairyProduction.averageMilkedCows == null
+                    ? 'Sem ordenhas válidas'
+                    : '${summary.dairyProduction.averageMilkedCows!.toStringAsFixed(1)} vacas/dia',
               ),
               (
                 '% de vacas em lactação',

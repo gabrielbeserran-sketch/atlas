@@ -35,6 +35,8 @@ void main() {
       expect(summary.coveragePercent, closeTo(6.67, 0.01));
       expect(summary.hasRepresentativeSample, isFalse);
       expect(summary.litersPerLactatingCow, 14);
+      expect(summary.litersPerMilkedCow, closeTo(280 / 22, 0.001));
+      expect(summary.averageMilkedCows, 11);
     },
   );
 
@@ -82,6 +84,8 @@ void main() {
     expect(summary.averageLitersPerDay, 150);
     expect(summary.averageLitersPerHectare, 15);
     expect(summary.litersPerLactatingCow, 15);
+    expect(summary.litersPerMilkedCow, 15);
+    expect(summary.averageMilkedCows, 10);
     expect(summary.futureRecords, 1);
     expect(summary.duplicateDays, 1);
     expect(summary.recordsWithoutMilkedCows, 1);

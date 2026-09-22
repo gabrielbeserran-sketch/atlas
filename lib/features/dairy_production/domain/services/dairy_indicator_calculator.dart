@@ -6,6 +6,8 @@ class DairyProductionSummary {
     required this.averageLitersPerDay,
     required this.averageLitersPerHectare,
     required this.litersPerLactatingCow,
+    required this.litersPerMilkedCow,
+    required this.averageMilkedCows,
     required this.recordedDays,
     required this.futureRecords,
     required this.duplicateDays,
@@ -19,6 +21,8 @@ class DairyProductionSummary {
   final double? averageLitersPerDay;
   final double? averageLitersPerHectare;
   final double? litersPerLactatingCow;
+  final double? litersPerMilkedCow;
+  final double? averageMilkedCows;
   final int recordedDays;
   final int futureRecords;
   final int duplicateDays;
@@ -71,6 +75,8 @@ class DairyIndicatorCalculator {
         averageLitersPerDay: null,
         averageLitersPerHectare: null,
         litersPerLactatingCow: null,
+        litersPerMilkedCow: null,
+        averageMilkedCows: null,
         recordedDays: 0,
         futureRecords: 0,
         duplicateDays: 0,
@@ -134,6 +140,8 @@ class DairyIndicatorCalculator {
         averageLitersPerDay: null,
         averageLitersPerHectare: null,
         litersPerLactatingCow: null,
+        litersPerMilkedCow: null,
+        averageMilkedCows: null,
         recordedDays: 0,
         futureRecords: futureRecords,
         duplicateDays: duplicateDays,
@@ -145,6 +153,10 @@ class DairyIndicatorCalculator {
       );
     }
     final total = source.fold<double>(0, (sum, item) => sum + item.totalLiters);
+    final totalMilkedCows = source.fold<int>(
+      0,
+      (sum, item) => sum + item.cowsMilked,
+    );
     final average = total / source.length;
     return DairyProductionSummary(
       latestLiters: latest?.totalLiters,
@@ -153,6 +165,8 @@ class DairyIndicatorCalculator {
       litersPerLactatingCow: lactatingCows == null || lactatingCows <= 0
           ? null
           : average / lactatingCows,
+      litersPerMilkedCow: totalMilkedCows == 0 ? null : total / totalMilkedCows,
+      averageMilkedCows: totalMilkedCows / source.length,
       recordedDays: source.length,
       futureRecords: futureRecords,
       duplicateDays: duplicateDays,

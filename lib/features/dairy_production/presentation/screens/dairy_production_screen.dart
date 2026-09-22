@@ -105,10 +105,16 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           : '${currency.format(summary.averageLitersPerHectare)} L/ha/dia',
                     ),
                     _Metric(
-                      label: 'Litros por vaca em lactação',
-                      value: summary.litersPerLactatingCow == null
-                          ? 'Registre produção e lote'
-                          : '${currency.format(summary.litersPerLactatingCow)} L/vaca/dia',
+                      label: 'Litros por vaca ordenhada',
+                      value: summary.litersPerMilkedCow == null
+                          ? 'Registre ordenhas válidas'
+                          : '${currency.format(summary.litersPerMilkedCow)} L/vaca/dia',
+                    ),
+                    _Metric(
+                      label: 'Média de vacas ordenhadas',
+                      value: summary.averageMilkedCows == null
+                          ? 'Sem ordenhas válidas'
+                          : '${summary.averageMilkedCows!.toStringAsFixed(1)} vacas/dia',
                     ),
                     _Metric(
                       label: 'Cobertura dos últimos 30 dias',
