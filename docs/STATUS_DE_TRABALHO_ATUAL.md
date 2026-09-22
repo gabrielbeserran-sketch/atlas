@@ -4,18 +4,18 @@ Atualizado em 22/09/2026.
 
 ## Estado
 
-- Situação: em execução.
-- Etapa atual: cobertura operacional da produção diária de Leite.
-- Progresso: 90%.
+- Situação: concluída e publicada.
+- Etapa concluída: cobertura operacional da produção diária de Leite.
+- Progresso: 100%.
 - Contexto da validação anterior: o APK Android atual foi gerado e o contrato de sessão passou; a inspeção visual no Windows continua pendente porque o MSBuild local estaciona na etapa nativa, sem afetar código ou dados da fazenda.
 - Componentes concluídos: a cobertura válida dos últimos 30 dias, dias ausentes e percentual de regularidade são calculados; as métricas aparecem no módulo e no painel técnico; o alerta informa quantos dias faltam para a base mínima de 20 dias.
 - Validações concluídas: testes unitários da produção diária e contrato de painel aprovados; formatação e verificação de diff limpo aprovadas.
-- Validação pendente: checkpoint Git e publicação.
-- Próximo marco: publicar a leitura de cobertura para que o produtor identifique imediatamente se a média de leite tem base suficiente.
+- Checkpoint publicado: `d60b561` — `feat(dairy): show daily production coverage`.
+- Próximo marco: retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível; a próxima ampliação técnica pode ser feita sem depender desse ambiente.
 
 ## Próximo pacote planejado
 
-Concluir a cobertura operacional da produção diária de Leite; depois, retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível.
+Retomar a inspeção visual Windows da entrada local-primeiro quando a cadeia MSBuild estiver disponível, sem reinstalar o APK até um conjunto maior de entregas.
 
 ## Como acompanhar
 
