@@ -6,6 +6,7 @@ import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
+import 'package:projeto_atlas/features/beef_production/domain/services/beef_weight_gain_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -155,6 +156,25 @@ class TechnicalDashboardService {
       period: period,
       referenceDate: now,
     );
+    final beefWeightGain = const BeefWeightGainCalculator().calculate(
+      measurements: weightEntries
+          .map((entry) {
+            final date = _parseWeightDate(entry.data.date);
+            if (date == null) return null;
+            return BeefWeightMeasurement(
+              animalId: entry.animalId,
+              date: date,
+              weightKg: entry.data.weight,
+            );
+          })
+          .whereType<BeefWeightMeasurement>()
+          .toList(),
+      activeAnimalIds: animals
+          .where((animal) => animal.status == 'Ativo')
+          .map((animal) => animal.id)
+          .toSet(),
+      referenceDate: now,
+    );
 
     final reproductionSeries = _buildReproductionSeries(
       records: reproductionRecords,
@@ -186,6 +206,7 @@ class TechnicalDashboardService {
       current: current,
       financialSeries: financialSeries,
       weightSeries: weightSeries,
+      beefWeightGain: beefWeightGain,
       reproductionSeries: reproductionSeries,
       healthSeries: healthSeries,
       inventorySeries: inventorySeries,
@@ -760,15 +781,21 @@ class TechnicalDashboardService {
   DateTime? _parseWeightDate(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return null;
-    final iso = DateTime.tryParse(trimmed);
-    if (iso != null) return DateTime(iso.year, iso.month, iso.day);
-    final parts = trimmed.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    if (day == null || month == null || year == null) return null;
-    return DateTime(year, month, day);
+    final br = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(trimmed);
+    final iso = RegExp(
+      r'^(\d{4})-(\d{1,2})-(\d{1,2})(?:T.*)?$',
+    ).firstMatch(trimmed);
+    final match = br ?? iso;
+    if (match == null) return null;
+    final year = int.parse(match.group(br == null ? 1 : 3)!);
+    final month = int.parse(match.group(2)!);
+    final day = int.parse(match.group(br == null ? 3 : 1)!);
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31)
+      return null;
+    final parsed = DateTime(year, month, day);
+    return parsed.year == year && parsed.month == month && parsed.day == day
+        ? parsed
+        : null;
   }
 
   DateTime _firstVisibleHistoryMonth(

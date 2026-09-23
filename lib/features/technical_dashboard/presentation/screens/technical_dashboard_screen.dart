@@ -548,16 +548,6 @@ class _SummaryContent extends StatelessWidget {
 
   TechnicalFarmSummary get summary => analysis.current;
 
-  double? get _beefAverageDailyGain {
-    final points = analysis.weightSeries;
-    if (points.length < 2) return null;
-    final first = points.first;
-    final last = points.last;
-    final days = last.periodStart.difference(first.periodStart).inDays;
-    if (days <= 0) return null;
-    return (last.averageWeight - first.averageWeight) / days;
-  }
-
   double? get _beefLatestWeightCoveragePercent {
     final activeAnimals = summary.activeAnimals;
     if (activeAnimals <= 0 || analysis.weightSeries.isEmpty) return null;
@@ -578,13 +568,16 @@ class _SummaryContent extends StatelessWidget {
 
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
-    final points = analysis.weightSeries;
     if (summary.activeAnimals == 0) return alerts;
-    if (points.length < 2) {
+    if (analysis.beefWeightGain.animalCount == 0) {
       alerts.add(
-        'Registre ao menos duas pesagens em meses distintos para calcular o ganho médio diário do rebanho.',
+        'Registre duas pesagens em datas distintas do mesmo animal nos últimos 12 meses para calcular o ganho médio diário.',
       );
-      return alerts;
+    } else if (analysis.beefWeightGain.animalCount / summary.activeAnimals <
+        0.5) {
+      alerts.add(
+        'O GMD usa pares de pesagens de ${analysis.beefWeightGain.animalCount}/${summary.activeAnimals} animais ativos; amplie a amostra antes de generalizar o resultado.',
+      );
     }
     final coverage = _beefLatestWeightCoveragePercent;
     if (coverage != null && coverage < 50) {
@@ -832,10 +825,10 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.liveWeightPerHectare!.toStringAsFixed(1)} kg/ha',
               ),
               (
-                'Ganho médio diário',
-                _beefAverageDailyGain == null
-                    ? 'Registre duas pesagens'
-                    : '${_beefAverageDailyGain!.toStringAsFixed(3)} kg/dia',
+                'Ganho médio diário dos animais pareados (12 meses)',
+                analysis.beefWeightGain.averageKgPerDay == null
+                    ? 'Sem animais com duas pesagens válidas'
+                    : '${analysis.beefWeightGain.averageKgPerDay!.toStringAsFixed(3)} kg/dia',
               ),
               (
                 'Cobertura da última pesagem',
@@ -853,10 +846,7 @@ class _SummaryContent extends StatelessWidget {
               ),
               (
                 'Base do ganho médio diário',
-                analysis.weightSeries.length < 2
-                    ? 'Registre duas pesagens mensais'
-                    : '${analysis.weightSeries.first.label}: ${analysis.weightSeries.first.animalCount} animais '
-                          '→ ${analysis.weightSeries.last.label}: ${analysis.weightSeries.last.animalCount} animais',
+                '${analysis.beefWeightGain.animalCount}/${summary.activeAnimals} animais ativos com pares válidos',
               ),
               (
                 'Taxa de desfrute comercial (12 meses)',
