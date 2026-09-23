@@ -4,11 +4,15 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de clareza da área nos indicadores de Corte concluído; release Windows anterior permanece aberto para avaliação.
-- Etapa atual: conferir Corte com dados reais e validar entrada offline com o PIN; depois planejar um indicador separado para área efetiva de pastagem, sem misturá-lo com a área total.
-- Progresso: 100% da clareza da área; integridade de peso 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
-- Componentes previstos: concluídos — resumo técnico da fazenda, cartão de Corte, testes de contrato/cálculo e documentação do cronograma.
-- Validações planejadas: concluídas — área ausente/zero, área total válida, cobertura de pesos parcial, análise estática, testes de Corte e build Windows.
+- Situação: pacote operacional de pesagens pendentes concluído; release Windows anterior permanece aberto para avaliação.
+- Etapa atual: validar a lista e os indicadores de Corte com dados reais da fazenda; validar entrada offline com o PIN. A próxima atualização do aplicativo será agrupada.
+- Progresso: 100% da lista operacional de pesagens; clareza da área 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Componentes previstos: concluídos — calculador de cobertura, modelo e serviço do painel, lista de Corte, testes e cronograma.
+- Validações planejadas: concluídas — peso antigo, ausente, futuro, inválido, duplicado e animal inativo; consistência contagem/lista, análise estática, testes e build Windows.
+- Componentes concluídos neste pacote: cartão “Animais para pesar” com lista navegável de animais ativos sem pesagem válida nos últimos 90 dias; cada item apresenta brinco/nome, lote e data da última pesagem válida ou ausência dela. A lista é carregada sob demanda visual em diálogo rolável e usa a mesma base da contagem do painel.
+- Validações concluídas neste pacote: 26 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado; APK não alterado.
+- Checkpoint Git publicado do pacote: `35a75b7` — `feat(beef): list animals overdue for weighing`.
+- Próximo marco: conferir a lista com dados reais no próximo release Windows agrupado e testar desbloqueio offline com o PIN cadastrado.
 - Componentes concluídos neste pacote: rótulos de animais/ha e kg/ha explicitam que o denominador é a área total cadastrada; cartão mostra essa área e informa que não representa lotação do pasto. Quando ela falta, ambos os índices ficam indisponíveis e surge orientação para completar o cadastro. Valores longos do cartão agora quebram linha no Windows e em telas estreitas.
 - Validações concluídas neste pacote: 23 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado.
 - Checkpoint Git publicado do pacote: `c2acc9d` — `fix(beef): clarify total-area density indicators`.
