@@ -4,11 +4,14 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: diagnóstico pontual da disponibilidade da API concluído; release Windows agrupado permanece aberto e responsivo (PID 20340).
-- Etapa atual: conferir Corte com dados reais e testar entrada offline com o PIN cadastrado; continuar observando a primeira conexão após períodos de inatividade.
-- Progresso: 100% do diagnóstico pontual; release agrupado 100%; acesso local-primeiro 98% até teste de PIN sem internet.
-- Componentes previstos: concluídos — URL configurada do backend, sondagens HTTP/DNS/TLS e registro no cronograma; sem alterações de credenciais nem do aplicativo.
-- Validações concluídas: uma chamada anterior a `/health/ready` expirou em 70 segundos; em seguida, duas chamadas limitadas a 25 segundos retornaram HTTP 200 em 0,63 s e 0,97 s. `/health/live` retornou 200 em 0,78 s; referência HTTPS externa retornou 204 em 0,67 s. DNS e TLS responderam em frações de segundo nas sondagens bem-sucedidas. Isto demonstra intermitência, não falha contínua; não há prova suficiente da causa exata.
+- Situação: pacote de ação direta para pesagens pendentes concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
+- Etapa atual: conferir Corte com dados reais e testar entrada offline com o PIN; avaliar persistência offline de novas pesagens antes de prometer registro sem internet.
+- Progresso: 100% da ação direta de pesagem; diagnóstico de API 100%; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes previstos: concluídos — vínculo seguro animal/lote no modelo do painel, navegação da lista para pesagem, retorno/atualização, testes e cronograma.
+- Validações concluídas: identificação do animal e lote corretos, seleção da pendência, abertura automática do formulário da tela existente, retorno com recarga do painel, 26 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09.
+- Componentes concluídos neste pacote: cada animal da lista de pesagens pendentes abre diretamente o formulário de nova pesagem no contexto da fazenda e do lote; ao voltar, o painel é atualizado. O fluxo de gravação da tela existente foi reutilizado; não houve alteração de contrato de sincronização nem promessa de registro offline remoto.
+- Checkpoint Git publicado do pacote: `4335382` — `feat(beef): open weighing directly from pending list`.
+- Próximo marco: incluir o atalho no próximo release agrupado após o usuário avaliar a versão atual; estudar a gravação de pesagens sem rede como pacote separado.
 - Checkpoint Git do diagnóstico: tag `atlas-api-disponibilidade-20260923` publicada com a documentação; não houve mudança funcional.
 - Próximo marco: coletar horário e duração de uma nova lentidão se ocorrer; o login local-primeiro e o PIN devem permanecer disponíveis sem aguardar a API.
 - Componentes concluídos neste pacote: release Windows de produção reúne peso médio do rebanho ativo com cobertura, denominador explícito da área total e relação de animais com pesagem pendente. Aplicativo aberto para avaliação; APK não alterado.
