@@ -5,13 +5,17 @@ class BeefLatestWeightCoverage {
     required this.activeAnimalCount,
     required this.weighedAnimalCount,
     required this.latestMeasurementDate,
+    required this.pendingAnimalIds,
+    required this.lastValidDateByAnimalId,
   });
 
   final int activeAnimalCount;
   final int weighedAnimalCount;
   final DateTime? latestMeasurementDate;
+  final List<String> pendingAnimalIds;
+  final Map<String, DateTime> lastValidDateByAnimalId;
 
-  int get unweighedAnimalCount => activeAnimalCount - weighedAnimalCount;
+  int get unweighedAnimalCount => pendingAnimalIds.length;
 
   double? get percent => activeAnimalCount == 0
       ? null
@@ -47,29 +51,35 @@ class BeefLatestWeightCoverageCalculator {
           measurement.weightKg > 0;
     }).toList();
 
-    if (valid.isEmpty) {
-      return BeefLatestWeightCoverage(
-        activeAnimalCount: activeAnimalIds.length,
-        weighedAnimalCount: 0,
-        latestMeasurementDate: null,
-      );
+    final lastValidDateByAnimalId = <String, DateTime>{};
+    for (final measurement in valid) {
+      final old = lastValidDateByAnimalId[measurement.animalId];
+      if (old == null || measurement.date.isAfter(old)) {
+        lastValidDateByAnimalId[measurement.animalId] = measurement.date;
+      }
     }
-
-    valid.sort((a, b) => a.date.compareTo(b.date));
-    final latest = valid.last.date;
-    final weighed = valid
-        .where((measurement) {
-          final date = measurement.date;
+    final weighed = lastValidDateByAnimalId.entries
+        .where((entry) {
+          final date = entry.value;
           final dayUtc = DateTime.utc(date.year, date.month, date.day);
           return todayUtc.difference(dayUtc).inDays <= 90;
         })
-        .map((measurement) => measurement.animalId)
+        .map((entry) => entry.key)
         .toSet();
+    final pendingAnimalIds = activeAnimalIds.difference(weighed).toList()
+      ..sort();
+    final latest = lastValidDateByAnimalId.values.fold<DateTime?>(
+      null,
+      (current, date) =>
+          current == null || date.isAfter(current) ? date : current,
+    );
 
     return BeefLatestWeightCoverage(
       activeAnimalCount: activeAnimalIds.length,
       weighedAnimalCount: weighed.length,
       latestMeasurementDate: latest,
+      pendingAnimalIds: List.unmodifiable(pendingAnimalIds),
+      lastValidDateByAnimalId: Map.unmodifiable(lastValidDateByAnimalId),
     );
   }
 }

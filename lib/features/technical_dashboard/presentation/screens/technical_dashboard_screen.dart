@@ -565,6 +565,46 @@ class _SummaryContent extends StatelessWidget {
     return reference.difference(date).inDays;
   }
 
+  Future<void> _showPendingWeighings(BuildContext context) async {
+    final pending = analysis.pendingWeighingAnimals;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Pesagens pendentes (${pending.length})'),
+        content: SizedBox(
+          width: 560,
+          height: MediaQuery.sizeOf(dialogContext).height * 0.55,
+          child: ListView.separated(
+            itemCount: pending.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final animal = pending[index];
+              final lastDate = animal.lastValidWeightDate;
+              final dateLabel = lastDate == null
+                  ? 'Sem pesagem válida registrada'
+                  : 'Última pesagem válida: ${DateFormat('dd/MM/yyyy').format(lastDate)}';
+              final groupLabel = animal.groupName.trim();
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.monitor_weight_outlined),
+                title: Text(animal.label),
+                subtitle: Text(
+                  groupLabel.isEmpty ? dateLabel : '$groupLabel · $dateLabel',
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
     if (summary.areaHectares == null) {
@@ -957,6 +997,23 @@ class _SummaryContent extends StatelessWidget {
               ),
             ],
           ),
+          if (analysis.pendingWeighingAnimals.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Card(
+              elevation: 0,
+              child: ListTile(
+                leading: const Icon(Icons.assignment_outlined),
+                title: const Text('Animais para pesar'),
+                subtitle: Text(
+                  analysis.pendingWeighingAnimals.length == 1
+                      ? '1 animal ativo sem pesagem válida nos últimos 90 dias'
+                      : '${analysis.pendingWeighingAnimals.length} animais ativos sem pesagem válida nos últimos 90 dias',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showPendingWeighings(context),
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
         ],
         Wrap(

@@ -29,6 +29,9 @@ void main() {
     expect(result.weighedAnimalCount, 2);
     expect(result.activeAnimalCount, 3);
     expect(result.unweighedAnimalCount, 1);
+    expect(result.pendingAnimalIds, ['ativo-c']);
+    expect(result.lastValidDateByAnimalId['ativo-a'], DateTime(2026, 9, 5));
+    expect(result.lastValidDateByAnimalId.containsKey('vendido'), isFalse);
     expect(result.percent, closeTo(66.67, 0.01));
   });
 
@@ -49,6 +52,7 @@ void main() {
 
       expect(result.latestMeasurementDate, DateTime(2026, 9, 10));
       expect(result.weighedAnimalCount, 1);
+      expect(result.pendingAnimalIds, ['b', 'c']);
       expect(result.percent, closeTo(33.33, 0.01));
     },
   );
@@ -86,6 +90,8 @@ void main() {
     expect(result.weighedAnimalCount, 1);
     expect(result.percent, 50);
     expect(result.latestMeasurementDate, onBoundary);
+    expect(result.pendingAnimalIds, ['b']);
+    expect(result.lastValidDateByAnimalId['b'], beforeBoundary);
   });
 
   test('pesagem antiga preserva data mas não conta como cobertura atual', () {
@@ -109,6 +115,7 @@ void main() {
     expect(missingWeights.latestMeasurementDate, isNull);
     expect(missingWeights.weighedAnimalCount, 0);
     expect(missingWeights.unweighedAnimalCount, 1);
+    expect(missingWeights.pendingAnimalIds, ['ativo']);
     expect(missingWeights.percent, 0);
 
     final noActiveAnimals = calculator.calculate(
@@ -118,5 +125,27 @@ void main() {
     );
     expect(noActiveAnimals.percent, isNull);
     expect(noActiveAnimals.unweighedAnimalCount, 0);
+    expect(noActiveAnimals.pendingAnimalIds, isEmpty);
+  });
+
+  test('a lista pendente usa a última pesagem válida de cada animal', () {
+    final result = calculator.calculate(
+      measurements: [
+        weight('b', 1, 400, month: 1),
+        weight('b', 2, 0),
+        weight('a', 3, double.infinity),
+        weight('c', 10, 430),
+        weight('c', 11, 440),
+      ],
+      activeAnimalIds: {'a', 'b', 'c'},
+      referenceDate: today,
+    );
+
+    expect(result.weighedAnimalCount, 1);
+    expect(result.pendingAnimalIds, ['a', 'b']);
+    expect(result.lastValidDateByAnimalId['a'], isNull);
+    expect(result.lastValidDateByAnimalId['b'], DateTime(2026, 1, 1));
+    expect(result.lastValidDateByAnimalId['c'], DateTime(2026, 9, 11));
+    expect(result.unweighedAnimalCount, result.pendingAnimalIds.length);
   });
 }

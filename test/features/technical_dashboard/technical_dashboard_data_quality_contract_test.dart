@@ -43,5 +43,8 @@ void main() {
       dashboard,
       contains('Não representam a lotação da área de pastagem'),
     );
+    expect(dashboard, contains('Animais para pesar'));
+    expect(dashboard, contains('analysis.pendingWeighingAnimals'));
+    expect(dashboard, contains('Última pesagem válida:'));
   });
 }

@@ -10,6 +10,7 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_weight_series_point.dart';
 import 'package:projeto_atlas/features/beef_production/domain/services/beef_weight_gain_calculator.dart';
 import 'package:projeto_atlas/features/beef_production/domain/services/beef_latest_weight_coverage_calculator.dart';
+import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_pending_weighing_animal.dart';
 
 class TechnicalDashboardAnalysis {
   const TechnicalDashboardAnalysis({
@@ -20,6 +21,7 @@ class TechnicalDashboardAnalysis {
     required this.weightSeries,
     required this.beefWeightGain,
     required this.beefLatestWeightCoverage,
+    required this.pendingWeighingAnimals,
     required this.reproductionSeries,
     required this.healthSeries,
     required this.inventorySeries,
@@ -34,6 +36,7 @@ class TechnicalDashboardAnalysis {
   final List<TechnicalWeightSeriesPoint> weightSeries;
   final BeefWeightGain beefWeightGain;
   final BeefLatestWeightCoverage beefLatestWeightCoverage;
+  final List<TechnicalPendingWeighingAnimal> pendingWeighingAnimals;
   final List<TechnicalReproductionSeriesPoint> reproductionSeries;
   final List<TechnicalHealthSeriesPoint> healthSeries;
   final List<TechnicalInventorySeriesPoint> inventorySeries;

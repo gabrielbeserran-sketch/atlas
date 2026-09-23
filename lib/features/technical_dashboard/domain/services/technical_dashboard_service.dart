@@ -27,6 +27,7 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_nutrition_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_reproduction_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_weight_series_point.dart';
+import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_pending_weighing_animal.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_weight_monthly_point_calculator.dart';
 
 class TechnicalDashboardService {
@@ -74,6 +75,7 @@ class TechnicalDashboardService {
     final now = referenceDate ?? DateTime.now();
     final groups = await _herdStorage.loadGroups(farm.name);
     final animals = <AnimalData>[];
+    final groupNameByAnimalId = <String, String>{};
     final healthRecords = <AnimalHealthData>[];
     final reproductionRecords = <AnimalReproductionData>[];
     final weightEntries = <_WeightEntry>[];
@@ -86,6 +88,7 @@ class TechnicalDashboardService {
       animals.addAll(groupAnimals);
 
       for (final animal in groupAnimals) {
+        groupNameByAnimalId[animal.id] = group.name;
         healthRecords.addAll(
           await _healthStorage.loadRecords(
             farmName: farm.name,
@@ -185,6 +188,25 @@ class TechnicalDashboardService {
           activeAnimalIds: activeAnimalIds,
           referenceDate: now,
         );
+    final activeAnimalById = {
+      for (final animal in animals.where((item) => item.status == 'Ativo'))
+        animal.id: animal,
+    };
+    final pendingWeighingAnimals =
+        beefLatestWeightCoverage.pendingAnimalIds.map((id) {
+          final animal = activeAnimalById[id];
+          return TechnicalPendingWeighingAnimal(
+            id: id,
+            tag: animal?.tag ?? id,
+            name: animal?.name ?? '',
+            groupName: groupNameByAnimalId[id] ?? '',
+            lastValidWeightDate:
+                beefLatestWeightCoverage.lastValidDateByAnimalId[id],
+          );
+        }).toList()..sort((a, b) {
+          final byGroup = a.groupName.compareTo(b.groupName);
+          return byGroup != 0 ? byGroup : a.label.compareTo(b.label);
+        });
 
     final reproductionSeries = _buildReproductionSeries(
       records: reproductionRecords,
@@ -218,6 +240,7 @@ class TechnicalDashboardService {
       weightSeries: weightSeries,
       beefWeightGain: beefWeightGain,
       beefLatestWeightCoverage: beefLatestWeightCoverage,
+      pendingWeighingAnimals: pendingWeighingAnimals,
       reproductionSeries: reproductionSeries,
       healthSeries: healthSeries,
       inventorySeries: inventorySeries,
