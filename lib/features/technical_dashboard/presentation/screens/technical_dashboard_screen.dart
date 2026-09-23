@@ -549,19 +549,17 @@ class _SummaryContent extends StatelessWidget {
   TechnicalFarmSummary get summary => analysis.current;
 
   double? get _beefLatestWeightCoveragePercent {
-    final activeAnimals = summary.activeAnimals;
-    if (activeAnimals <= 0 || analysis.weightSeries.isEmpty) return null;
-    return analysis.weightSeries.last.animalCount / activeAnimals * 100;
+    return analysis.beefLatestWeightCoverage.percent;
   }
 
   int? get _beefLatestWeightAgeDays {
-    if (analysis.weightSeries.isEmpty) return null;
+    final last = analysis.beefLatestWeightCoverage.latestMeasurementDate;
+    if (last == null) return null;
     final reference = DateTime(
       analysis.generatedAt.year,
       analysis.generatedAt.month,
       analysis.generatedAt.day,
     );
-    final last = analysis.weightSeries.last.latestMeasurementDate;
     final date = DateTime(last.year, last.month, last.day);
     return reference.difference(date).inDays;
   }
@@ -833,15 +831,15 @@ class _SummaryContent extends StatelessWidget {
               (
                 'Cobertura da última pesagem',
                 _beefLatestWeightCoveragePercent == null
-                    ? 'Sem pesagens válidas'
-                    : '${analysis.weightSeries.last.animalCount}/${summary.activeAnimals} animais '
+                    ? 'Sem animais ativos'
+                    : '${analysis.beefLatestWeightCoverage.weighedAnimalCount}/${analysis.beefLatestWeightCoverage.activeAnimalCount} animais '
                           '(${_beefLatestWeightCoveragePercent!.toStringAsFixed(0)}%)',
               ),
               (
                 'Atualização da última pesagem',
                 _beefLatestWeightAgeDays == null
-                    ? 'Sem pesagens válidas'
-                    : '${DateFormat('dd/MM/yyyy').format(analysis.weightSeries.last.latestMeasurementDate)} '
+                    ? 'Sem pesagens válidas de animais ativos'
+                    : '${DateFormat('dd/MM/yyyy').format(analysis.beefLatestWeightCoverage.latestMeasurementDate!)} '
                           '· há $_beefLatestWeightAgeDays dia(s)',
               ),
               (

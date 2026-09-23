@@ -7,6 +7,7 @@ import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/features/beef_production/domain/services/beef_weight_gain_calculator.dart';
+import 'package:projeto_atlas/features/beef_production/domain/services/beef_latest_weight_coverage_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -156,25 +157,33 @@ class TechnicalDashboardService {
       period: period,
       referenceDate: now,
     );
+    final validMeasurements = weightEntries
+        .map((entry) {
+          final date = _parseWeightDate(entry.data.date);
+          if (date == null) return null;
+          return BeefWeightMeasurement(
+            animalId: entry.animalId,
+            date: date,
+            weightKg: entry.data.weight,
+          );
+        })
+        .whereType<BeefWeightMeasurement>()
+        .toList();
+    final activeAnimalIds = animals
+        .where((animal) => animal.status == 'Ativo')
+        .map((animal) => animal.id)
+        .toSet();
     final beefWeightGain = const BeefWeightGainCalculator().calculate(
-      measurements: weightEntries
-          .map((entry) {
-            final date = _parseWeightDate(entry.data.date);
-            if (date == null) return null;
-            return BeefWeightMeasurement(
-              animalId: entry.animalId,
-              date: date,
-              weightKg: entry.data.weight,
-            );
-          })
-          .whereType<BeefWeightMeasurement>()
-          .toList(),
-      activeAnimalIds: animals
-          .where((animal) => animal.status == 'Ativo')
-          .map((animal) => animal.id)
-          .toSet(),
+      measurements: validMeasurements,
+      activeAnimalIds: activeAnimalIds,
       referenceDate: now,
     );
+    final beefLatestWeightCoverage = const BeefLatestWeightCoverageCalculator()
+        .calculate(
+          measurements: validMeasurements,
+          activeAnimalIds: activeAnimalIds,
+          referenceDate: now,
+        );
 
     final reproductionSeries = _buildReproductionSeries(
       records: reproductionRecords,
@@ -207,6 +216,7 @@ class TechnicalDashboardService {
       financialSeries: financialSeries,
       weightSeries: weightSeries,
       beefWeightGain: beefWeightGain,
+      beefLatestWeightCoverage: beefLatestWeightCoverage,
       reproductionSeries: reproductionSeries,
       healthSeries: healthSeries,
       inventorySeries: inventorySeries,
@@ -790,8 +800,9 @@ class TechnicalDashboardService {
     final year = int.parse(match.group(br == null ? 1 : 3)!);
     final month = int.parse(match.group(2)!);
     final day = int.parse(match.group(br == null ? 3 : 1)!);
-    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31)
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
       return null;
+    }
     final parsed = DateTime(year, month, day);
     return parsed.year == year && parsed.month == month && parsed.day == day
         ? parsed
