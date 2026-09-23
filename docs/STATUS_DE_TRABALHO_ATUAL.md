@@ -8,7 +8,7 @@ Atualizado em 23/09/2026.
 - Etapa atual: conferência visual do painel de Corte com dados reais e teste de desbloqueio offline com o PIN recém-configurado.
 - Progresso: cobertura da última pesagem 100%; acesso local-primeiro 98% até teste explícito de desbloqueio offline; GMD pareado 99% até conferência visual.
 - Componentes concluídos: calculador de cobertura de pesagens de animais ativos, análise e painel técnico de Corte; série histórica geral preservada.
-- Validações concluídas: 11 testes de Corte/painel passaram; `flutter analyze` dos seis arquivos envolvidos sem problemas; build Windows debug com URL de produção aprovado. Casos de animal vendido mais recente, duplicidade, datas futuras, peso inválido e ausência de rebanho cobertos.
+- Validações concluídas: 11 testes de Corte/painel passaram; `flutter analyze` dos seis arquivos envolvidos sem problemas; builds Windows debug e release com URL de produção aprovados. O release atualizado foi reaberto em 23/09 (PID 4252, janela responsiva). Casos de animal vendido mais recente, duplicidade, datas futuras, peso inválido e ausência de rebanho cobertos.
 - Checkpoint Git: `2c61932` — `fix(beef): scope latest weighing coverage to active animals`.
 - Componentes verificados neste pacote: `scripts/build_atlas_windows_production.ps1`, build Windows release com `ATLAS_ENV=production` e `ATLAS_API_BASE_URL=https://atlas-api-29y2.onrender.com/api/v1`, e janela `projeto_atlas` de produção.
 - Validações concluídas neste pacote: endpoint `/api/v1/health/ready` retornou HTTP 200; `flutter build windows --release` concluiu; processo release PID 3380 aberto e responsivo. A execução debug anterior usava `127.0.0.1:8000` por não receber `dart-define`, o que explica a falha de conexão mostrada pelo usuário.
