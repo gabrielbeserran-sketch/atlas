@@ -16,6 +16,7 @@ class TechnicalFarmSummary {
     required this.groupCount,
     required this.totalAnimals,
     required this.activeAnimals,
+    required this.activeAnimalsWithValidWeight,
     required this.soldAnimals,
     required this.averageWeight,
     required this.reproductionRecords,
@@ -50,6 +51,7 @@ class TechnicalFarmSummary {
   final int groupCount;
   final int totalAnimals;
   final int activeAnimals;
+  final int activeAnimalsWithValidWeight;
   final int soldAnimals;
   final double averageWeight;
   final int reproductionRecords;
@@ -79,6 +81,9 @@ class TechnicalFarmSummary {
   final DairyProductionSummary dairyProduction;
   final BeefHerdIndicators beefHerd;
   final DairyHerdSnapshotData? latestDairySnapshot;
+
+  int get activeAnimalsWithoutValidWeight =>
+      activeAnimals - activeAnimalsWithValidWeight;
 
   double get balance => income - expenses;
 
@@ -165,8 +170,11 @@ class TechnicalFarmSummary {
     final periodFinances = finances
         .where((record) => isInsidePeriod(record.date))
         .toList();
-    final weightedAnimals = animals
-        .where((animal) => animal.weight > 0)
+    final activeAnimals = animals
+        .where((animal) => animal.status == 'Ativo')
+        .toList();
+    final weightedAnimals = activeAnimals
+        .where((animal) => animal.weight.isFinite && animal.weight > 0)
         .toList();
     final averageWeight = weightedAnimals.isEmpty
         ? 0.0
@@ -175,14 +183,13 @@ class TechnicalFarmSummary {
                 (sum, animal) => sum + animal.weight,
               ) /
               weightedAnimals.length;
-    final activeAnimals = animals
-        .where((animal) => animal.status == 'Ativo')
-        .toList();
-    final activeWeight = activeAnimals.fold<double>(
+    final activeWeight = weightedAnimals.fold<double>(
       0,
       (sum, animal) => sum + animal.weight,
     );
-    final validArea = farmArea != null && farmArea > 0 ? farmArea : null;
+    final validArea = farmArea != null && farmArea.isFinite && farmArea > 0
+        ? farmArea
+        : null;
 
     bool isPast(String value) {
       final date = _parseDate(value);
@@ -207,7 +214,7 @@ class TechnicalFarmSummary {
     );
     final dairyProduction = DairyIndicatorCalculator().summarize(
       dairyRecords,
-      hectares: farmArea?.round() ?? 0,
+      hectares: validArea?.round() ?? 0,
       lactatingCows: dairySnapshots.isEmpty
           ? null
           : dairySnapshots.first.lactatingCows,
@@ -222,6 +229,7 @@ class TechnicalFarmSummary {
       groupCount: groups.length,
       totalAnimals: animals.length,
       activeAnimals: activeAnimals.length,
+      activeAnimalsWithValidWeight: weightedAnimals.length,
       soldAnimals: animals.where((animal) => animal.status == 'Vendido').length,
       averageWeight: averageWeight,
       reproductionRecords: periodReproductionRecords.length,
@@ -277,7 +285,12 @@ class TechnicalFarmSummary {
       ),
       dairyReproduction: dairyReproduction,
       stockingRate: validArea == null ? null : activeAnimals.length / validArea,
-      liveWeightPerHectare: validArea == null ? null : activeWeight / validArea,
+      liveWeightPerHectare:
+          validArea == null ||
+              activeAnimals.isEmpty ||
+              weightedAnimals.length != activeAnimals.length
+          ? null
+          : activeWeight / validArea,
       dairyProduction: dairyProduction,
       beefHerd: beefHerd,
       latestDairySnapshot: dairySnapshots.isEmpty ? null : dairySnapshots.first,

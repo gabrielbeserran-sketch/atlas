@@ -31,5 +31,9 @@ void main() {
     expect(dashboard, contains('Dados técnicos para revisar — Leite'));
     expect(dashboard, contains('Dados técnicos para revisar — Corte'));
     expect(dashboard, contains('Itens que precisam de revisão'));
+    expect(dashboard, contains('Base de pesos do rebanho ativo'));
+    expect(dashboard, contains('summary.activeAnimalsWithValidWeight'));
+    expect(dashboard, contains('Complete os pesos'));
+    expect(dashboard, contains('Peso médio dos ativos com peso'));
   });
 }

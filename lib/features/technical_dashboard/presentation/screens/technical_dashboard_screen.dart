@@ -568,6 +568,15 @@ class _SummaryContent extends StatelessWidget {
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
     if (summary.activeAnimals == 0) return alerts;
+    if (summary.activeAnimalsWithoutValidWeight > 0) {
+      final missing = summary.activeAnimalsWithoutValidWeight;
+      final missingLabel = missing == 1
+          ? '1 animal ativo está sem peso válido'
+          : '$missing animais ativos estão sem peso válido';
+      alerts.add(
+        '$missingLabel no cadastro; o peso médio usa apenas os registrados e o peso vivo/ha aguarda a base completa.',
+      );
+    }
     if (analysis.beefWeightGain.animalCount == 0) {
       alerts.add(
         'Registre duas pesagens em datas distintas do mesmo animal nos últimos 12 meses para calcular o ganho médio diário.',
@@ -828,7 +837,11 @@ class _SummaryContent extends StatelessWidget {
               (
                 'Peso vivo por hectare',
                 summary.liveWeightPerHectare == null
-                    ? 'Informe a área'
+                    ? summary.activeAnimals == 0
+                          ? 'Sem animais ativos'
+                          : summary.activeAnimalsWithoutValidWeight > 0
+                          ? 'Complete os pesos (${summary.activeAnimalsWithValidWeight}/${summary.activeAnimals})'
+                          : 'Informe a área'
                     : '${summary.liveWeightPerHectare!.toStringAsFixed(1)} kg/ha',
               ),
               (
@@ -917,7 +930,16 @@ class _SummaryContent extends StatelessWidget {
                 summary.beefHerd.primaryMortalityCause ?? 'Sem óbitos datados',
               ),
               ('Animais ativos', '${summary.activeAnimals}'),
-              ('Peso médio', '${summary.averageWeight.toStringAsFixed(1)} kg'),
+              (
+                'Peso médio dos ativos com peso',
+                summary.activeAnimalsWithValidWeight == 0
+                    ? 'Sem pesos válidos'
+                    : '${summary.averageWeight.toStringAsFixed(1)} kg',
+              ),
+              (
+                'Base de pesos do rebanho ativo',
+                '${summary.activeAnimalsWithValidWeight}/${summary.activeAnimals} animais',
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -971,8 +993,10 @@ class _SummaryContent extends StatelessWidget {
                     ('Animais vendidos', '${summary.soldAnimals}'),
                     ('Lotes', '${summary.groupCount}'),
                     (
-                      'Peso médio',
-                      '${summary.averageWeight.toStringAsFixed(0)} kg',
+                      'Peso médio dos ativos',
+                      summary.activeAnimalsWithValidWeight == 0
+                          ? 'Sem pesos válidos'
+                          : '${summary.averageWeight.toStringAsFixed(0)} kg',
                     ),
                   ],
                 ),
