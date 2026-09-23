@@ -35,5 +35,13 @@ void main() {
     expect(dashboard, contains('summary.activeAnimalsWithValidWeight'));
     expect(dashboard, contains('Complete os pesos'));
     expect(dashboard, contains('Peso médio dos ativos com peso'));
+    expect(dashboard, contains('Animais por hectare de área total'));
+    expect(dashboard, contains('Peso vivo por hectare de área total'));
+    expect(dashboard, contains('Área total usada nestes índices'));
+    expect(dashboard, contains('não substituem a lotação da área de pastagem'));
+    expect(
+      dashboard,
+      contains('Não representam a lotação da área de pastagem'),
+    );
   });
 }

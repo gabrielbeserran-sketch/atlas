@@ -567,6 +567,11 @@ class _SummaryContent extends StatelessWidget {
 
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
+    if (summary.areaHectares == null) {
+      alerts.add(
+        'Cadastre a área total da fazenda para calcular animais/ha e peso vivo/ha. Esses índices não substituem a lotação da área de pastagem.',
+      );
+    }
     if (summary.activeAnimals == 0) return alerts;
     if (summary.activeAnimalsWithoutValidWeight > 0) {
       final missing = summary.activeAnimalsWithoutValidWeight;
@@ -827,22 +832,32 @@ class _SummaryContent extends StatelessWidget {
             width: double.infinity,
             title: 'Indicadores de corte',
             icon: Icons.trending_up_outlined,
+            footnote:
+                'Animais/ha e kg/ha usam a área total cadastrada da fazenda. Não representam a lotação da área de pastagem.',
             metrics: [
               (
-                'Taxa de lotação',
+                'Animais por hectare de área total',
                 summary.stockingRate == null
-                    ? 'Informe a área'
+                    ? 'Informe a área total'
                     : '${summary.stockingRate!.toStringAsFixed(2)} animais/ha',
               ),
               (
-                'Peso vivo por hectare',
+                'Peso vivo por hectare de área total',
                 summary.liveWeightPerHectare == null
-                    ? summary.activeAnimals == 0
+                    ? summary.areaHectares == null
+                          ? 'Informe a área total'
+                          : summary.activeAnimals == 0
                           ? 'Sem animais ativos'
                           : summary.activeAnimalsWithoutValidWeight > 0
                           ? 'Complete os pesos (${summary.activeAnimalsWithValidWeight}/${summary.activeAnimals})'
-                          : 'Informe a área'
+                          : 'Sem base válida'
                     : '${summary.liveWeightPerHectare!.toStringAsFixed(1)} kg/ha',
+              ),
+              (
+                'Área total usada nestes índices',
+                summary.areaHectares == null
+                    ? 'Não cadastrada'
+                    : '${summary.areaHectares!.toStringAsFixed(1)} ha',
               ),
               (
                 'Ganho médio diário dos animais pareados (12 meses)',
@@ -1517,12 +1532,14 @@ class _ModuleCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.metrics,
+    this.footnote,
   });
 
   final double width;
   final String title;
   final IconData icon;
   final List<(String, String)> metrics;
+  final String? footnote;
 
   @override
   Widget build(BuildContext context) {
@@ -1563,14 +1580,21 @@ class _ModuleCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        metric.$2,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      Flexible(
+                        child: Text(
+                          metric.$2,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
+              if (footnote != null) ...[
+                const Divider(height: 20),
+                Text(footnote!, style: const TextStyle(color: Colors.black54)),
+              ],
             ],
           ),
         ),

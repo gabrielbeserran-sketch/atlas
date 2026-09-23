@@ -41,6 +41,7 @@ class TechnicalFarmSummary {
     required this.outOfStockItems,
     required this.inventoryMovements,
     required this.dairyReproduction,
+    required this.areaHectares,
     required this.stockingRate,
     required this.liveWeightPerHectare,
     required this.dairyProduction,
@@ -76,6 +77,9 @@ class TechnicalFarmSummary {
   final int outOfStockItems;
   final int inventoryMovements;
   final DairyReproductionIndicators dairyReproduction;
+
+  /// Área total da fazenda cadastrada; não representa área efetiva de pasto.
+  final double? areaHectares;
   final double? stockingRate;
   final double? liveWeightPerHectare;
   final DairyProductionSummary dairyProduction;
@@ -284,6 +288,7 @@ class TechnicalFarmSummary {
         (sum, item) => sum + item.movements.length,
       ),
       dairyReproduction: dairyReproduction,
+      areaHectares: validArea,
       stockingRate: validArea == null ? null : activeAnimals.length / validArea,
       liveWeightPerHectare:
           validArea == null ||

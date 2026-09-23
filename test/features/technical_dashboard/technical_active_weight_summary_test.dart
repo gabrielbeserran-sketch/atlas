@@ -41,6 +41,7 @@ void main() {
     expect(result.activeAnimalsWithoutValidWeight, 1);
     expect(result.averageWeight, 400);
     expect(result.stockingRate, 0.2);
+    expect(result.areaHectares, 10);
     expect(result.liveWeightPerHectare, isNull);
   });
 
@@ -71,7 +72,18 @@ void main() {
       animal('A', 'Ativo', 400),
     ], area: double.infinity);
     expect(invalidArea.stockingRate, isNull);
+    expect(invalidArea.areaHectares, isNull);
     expect(invalidArea.liveWeightPerHectare, isNull);
+  });
+
+  test('área ausente ou zero não produz indicadores por hectare', () {
+    final animals = [animal('A', 'Ativo', 400)];
+    for (final area in <double?>[null, 0, -10]) {
+      final result = summary(animals, area: area);
+      expect(result.areaHectares, isNull);
+      expect(result.stockingRate, isNull);
+      expect(result.liveWeightPerHectare, isNull);
+    }
   });
 
   test('não mostra peso vivo por área quando não há animais ativos', () {
