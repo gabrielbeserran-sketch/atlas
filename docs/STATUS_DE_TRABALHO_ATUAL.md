@@ -4,11 +4,13 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: release Windows agrupado concluído e aberto para avaliação (PID 20340); janela anterior substituída após confirmação do usuário.
-- Etapa atual: conferir em Corte os indicadores e a lista “Animais para pesar” com dados reais; validar entrada offline com o PIN.
-- Progresso: 100% do release agrupado; lista operacional de pesagens 100%; clareza da área 100%; integridade de peso 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
-- Componentes previstos: concluídos — build Windows release com URL HTTPS de produção, verificação do artefato/processo, documentação e checkpoint Git.
-- Validações planejadas: build release aprovado; `data/app.so` atualizado em 23/09 às 10:15; processo PID 20340 com janela responsiva; banco local preservado. A chamada externa `/health/ready` excedeu 70 segundos e a disponibilidade remota permanece sem confirmação neste pacote.
+- Situação: diagnóstico pontual da disponibilidade da API concluído; release Windows agrupado permanece aberto e responsivo (PID 20340).
+- Etapa atual: conferir Corte com dados reais e testar entrada offline com o PIN cadastrado; continuar observando a primeira conexão após períodos de inatividade.
+- Progresso: 100% do diagnóstico pontual; release agrupado 100%; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes previstos: concluídos — URL configurada do backend, sondagens HTTP/DNS/TLS e registro no cronograma; sem alterações de credenciais nem do aplicativo.
+- Validações concluídas: uma chamada anterior a `/health/ready` expirou em 70 segundos; em seguida, duas chamadas limitadas a 25 segundos retornaram HTTP 200 em 0,63 s e 0,97 s. `/health/live` retornou 200 em 0,78 s; referência HTTPS externa retornou 204 em 0,67 s. DNS e TLS responderam em frações de segundo nas sondagens bem-sucedidas. Isto demonstra intermitência, não falha contínua; não há prova suficiente da causa exata.
+- Checkpoint Git do diagnóstico: tag `atlas-api-disponibilidade-20260923` publicada com a documentação; não houve mudança funcional.
+- Próximo marco: coletar horário e duração de uma nova lentidão se ocorrer; o login local-primeiro e o PIN devem permanecer disponíveis sem aguardar a API.
 - Componentes concluídos neste pacote: release Windows de produção reúne peso médio do rebanho ativo com cobertura, denominador explícito da área total e relação de animais com pesagem pendente. Aplicativo aberto para avaliação; APK não alterado.
 - Próximo marco: obter feedback da janela aberta, testar o PIN sem internet e investigar a disponibilidade remota separadamente caso continue lenta.
 - Componentes concluídos neste pacote: cartão “Animais para pesar” com lista navegável de animais ativos sem pesagem válida nos últimos 90 dias; cada item apresenta brinco/nome, lote e data da última pesagem válida ou ausência dela. A lista é carregada sob demanda visual em diálogo rolável e usa a mesma base da contagem do painel.
