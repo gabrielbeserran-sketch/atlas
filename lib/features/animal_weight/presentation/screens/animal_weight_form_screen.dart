@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_form_actions.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
+import 'package:uuid/uuid.dart';
 
 class AnimalWeightFormScreen extends StatefulWidget {
   const AnimalWeightFormScreen({this.weightRecord, super.key});
@@ -92,10 +93,16 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
   void saveWeight() {
     if (isSaving || !formKey.currentState!.validate()) return;
     setState(() => isSaving = true);
+    final localId = widget.weightRecord?.id ?? const Uuid().v4();
+    final previousOperationId =
+        widget.weightRecord?.clientOperationId.trim() ?? '';
+    final clientOperationId = previousOperationId.length >= 8
+        ? previousOperationId
+        : localId.length >= 8
+        ? localId
+        : const Uuid().v4();
     final record = AnimalWeightData(
-      id:
-          widget.weightRecord?.id ??
-          DateTime.now().microsecondsSinceEpoch.toString(),
+      id: localId,
       date: dateController.text.trim(),
       weight: double.parse(weightController.text.trim().replaceAll(',', '.')),
       bodyConditionScore:
@@ -107,6 +114,7 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
       equipment: equipmentController.text.trim(),
       notes: notesController.text.trim(),
       isRemote: widget.weightRecord?.isRemote ?? false,
+      clientOperationId: clientOperationId,
     );
     Navigator.pop<AnimalWeightData>(context, record);
   }
@@ -233,8 +241,9 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                     const SizedBox(height: 28),
                     AtlasFormActions(
                       onSave: saveWeight,
-                      saveLabel:
-                          isEditing ? 'Salvar alterações' : 'Salvar pesagem',
+                      saveLabel: isEditing
+                          ? 'Salvar alterações'
+                          : 'Salvar pesagem',
                       isSaving: isSaving,
                     ),
                   ],

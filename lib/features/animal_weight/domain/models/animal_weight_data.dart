@@ -8,6 +8,7 @@ class AnimalWeightData {
     this.source = '',
     this.equipment = '',
     this.isRemote = false,
+    this.clientOperationId = '',
   });
 
   final String id;
@@ -18,6 +19,7 @@ class AnimalWeightData {
   final String source;
   final String equipment;
   final bool isRemote;
+  final String clientOperationId;
 
   Map<String, dynamic> toMap() => {
     'id': id,
@@ -28,6 +30,7 @@ class AnimalWeightData {
     'source': source,
     'equipment': equipment,
     'isRemote': isRemote,
+    'clientOperationId': clientOperationId,
   };
 
   Map<String, dynamic> toRemoteBody() => {
@@ -37,6 +40,8 @@ class AnimalWeightData {
     'equipment': equipment.trim(),
     'measured_at': _toIsoDate(date),
     'notes': notes.trim(),
+    if (clientOperationId.trim().isNotEmpty)
+      'client_operation_id': clientOperationId.trim(),
   };
 
   factory AnimalWeightData.fromMap(Map<String, dynamic> map) {
@@ -49,6 +54,7 @@ class AnimalWeightData {
       source: map['source']?.toString() ?? '',
       equipment: map['equipment']?.toString() ?? '',
       isRemote: map['isRemote'] == true,
+      clientOperationId: map['clientOperationId']?.toString() ?? '',
     );
   }
 
@@ -63,6 +69,7 @@ class AnimalWeightData {
       source: map['source']?.toString() ?? '',
       equipment: map['equipment']?.toString() ?? '',
       isRemote: true,
+      clientOperationId: map['client_operation_id']?.toString() ?? '',
     );
   }
 
