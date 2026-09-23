@@ -21,6 +21,8 @@ void main() {
     expect(dashboard, contains('analysis.beefLatestWeightCoverage.percent'));
     expect(dashboard, contains('beefLatestWeightCoverage.weighedAnimalCount'));
     expect(dashboard, contains('Base do ganho médio diário'));
+    expect(dashboard, contains('Idade média na venda (12 meses)'));
+    expect(dashboard, contains('Vendas com idade calculável'));
     expect(dashboard, contains('_beefLatestWeightAgeDays'));
     expect(dashboard, contains('Última pesagem de animal ativo'));
     expect(dashboard, contains('última pesagem foi há'));

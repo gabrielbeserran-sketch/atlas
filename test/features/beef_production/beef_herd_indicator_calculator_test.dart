@@ -24,7 +24,7 @@ void main() {
           name: '',
           sex: 'Macho',
           breed: '',
-          birthDate: '',
+          birthDate: '10/09/2024',
           weight: 500,
           status: 'Vendido',
           saleDate: '10/09/2026',
@@ -47,6 +47,9 @@ void main() {
     expect(result.offtakeRate, 50);
     expect(result.commercialRevenue, 5200);
     expect(result.averageSaleValue, 5200);
+    expect(result.averageSaleAgeMonths, closeTo(24, 0.1));
+    expect(result.salesWithKnownAge, 1);
+    expect(result.salesWithoutKnownAge, 0);
     expect(result.commercialExitsWithValue, 1);
     expect(result.dataQualityAlerts, isEmpty);
     expect(result.salesWithWeightAndValue, 1);
@@ -130,10 +133,12 @@ void main() {
     expect(result.commercialExitsWithoutDate, 1);
     expect(result.salesWithoutValue, 1);
     expect(result.salesWithoutWeight, 1);
+    expect(result.salesWithKnownAge, 0);
+    expect(result.salesWithoutKnownAge, 2);
     expect(result.mortalities, 1);
     expect(result.mortalitiesWithoutDate, 1);
     expect(result.mortalitiesWithoutCause, 1);
-    expect(result.dataQualityAlerts, hasLength(5));
+    expect(result.dataQualityAlerts, hasLength(6));
   });
 
   test('exclui datas impossíveis sem normalizá-las para outro mês', () {
@@ -174,5 +179,73 @@ void main() {
     expect(result.commercialExitsWithoutDate, 1);
     expect(result.mortalitiesWithoutDate, 1);
     expect(result.dataQualityAlerts.join(' '), contains('data válida'));
+  });
+
+  test('idade na venda usa apenas nascimentos válidos anteriores à saída', () {
+    const calculator = BeefHerdIndicatorCalculator();
+    AnimalData sold(String id, String birthDate, String saleDate) => AnimalData(
+      id: id,
+      tag: id,
+      name: '',
+      sex: 'Macho',
+      breed: '',
+      birthDate: birthDate,
+      weight: 400,
+      status: 'Vendido',
+      saleDate: saleDate,
+      saleValue: 4000,
+    );
+    final result = calculator.calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: [
+        sold('a', '01/08/2024', '01/08/2026'),
+        sold('b', '2025-07-01', '2026-07-01'),
+        sold('c', '', '2026-08-02'),
+        sold('d', '31/02/2025', '2026-08-03'),
+        sold('e', '2026-09-01', '2026-08-04'),
+        sold('old', '2020-01-01', '2024-01-01'),
+      ],
+    );
+
+    final expectedDays =
+        (DateTime.utc(2026, 8, 1).difference(DateTime.utc(2024, 8, 1)).inDays +
+            DateTime.utc(
+              2026,
+              7,
+              1,
+            ).difference(DateTime.utc(2025, 7, 1)).inDays) /
+        2;
+    expect(result.commercialExits, 5);
+    expect(result.salesWithKnownAge, 2);
+    expect(result.salesWithoutKnownAge, 3);
+    expect(result.averageSaleAgeMonths, closeTo(expectedDays / 30.4375, 0.001));
+    expect(
+      result.dataQualityAlerts.join(' '),
+      contains('3 venda(s) datada(s)'),
+    );
+  });
+
+  test('sem nascimento válido não inventa idade média', () {
+    const calculator = BeefHerdIndicatorCalculator();
+    final result = calculator.calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: const [
+        AnimalData(
+          id: 's',
+          tag: 's',
+          name: '',
+          sex: 'Fêmea',
+          breed: '',
+          birthDate: '',
+          weight: 400,
+          status: 'Vendido',
+          saleDate: '2026-09-01',
+        ),
+      ],
+    );
+
+    expect(result.averageSaleAgeMonths, isNull);
+    expect(result.salesWithKnownAge, 0);
+    expect(result.salesWithoutKnownAge, 1);
   });
 }

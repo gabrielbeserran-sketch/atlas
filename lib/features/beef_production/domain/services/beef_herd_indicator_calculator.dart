@@ -7,6 +7,9 @@ class BeefHerdIndicators {
     required this.offtakeRate,
     required this.commercialRevenue,
     required this.averageSaleValue,
+    required this.averageSaleAgeMonths,
+    required this.salesWithKnownAge,
+    required this.salesWithoutKnownAge,
     required this.commercialExitsWithValue,
     required this.salesWithWeightAndValue,
     required this.commercialExitsWithoutDate,
@@ -27,6 +30,11 @@ class BeefHerdIndicators {
   final double? offtakeRate;
   final double commercialRevenue;
   final double? averageSaleValue;
+
+  /// Idade média aproximada nas vendas datadas, em meses gregorianos médios.
+  final double? averageSaleAgeMonths;
+  final int salesWithKnownAge;
+  final int salesWithoutKnownAge;
   final int commercialExitsWithValue;
   final int salesWithWeightAndValue;
   final int commercialExitsWithoutDate;
@@ -61,6 +69,11 @@ class BeefHerdIndicators {
     if (salesWithoutWeight > 0) {
       alerts.add(
         '$salesWithoutWeight venda(s) datada(s) não têm peso para calcular R\$/kg.',
+      );
+    }
+    if (salesWithoutKnownAge > 0) {
+      alerts.add(
+        '$salesWithoutKnownAge venda(s) datada(s) não têm nascimento válido anterior à venda para calcular idade.',
       );
     }
     if (mortalitiesWithoutDate > 0) {
@@ -130,6 +143,19 @@ class BeefHerdIndicatorCalculator {
       0,
       (sum, animal) => sum + animal.weight,
     );
+    final saleAgesInDays = <int>[];
+    for (final animal in sold) {
+      final birthDate = _date(animal.birthDate);
+      final saleDate = _date(animal.saleDate)!;
+      if (birthDate == null || birthDate.isAfter(saleDate)) continue;
+      final birthDay = DateTime.utc(
+        birthDate.year,
+        birthDate.month,
+        birthDate.day,
+      );
+      final saleDay = DateTime.utc(saleDate.year, saleDate.month, saleDate.day);
+      saleAgesInDays.add(saleDay.difference(birthDay).inDays);
+    }
     return BeefHerdIndicators(
       activeAnimals: active,
       commercialExits: exits,
@@ -142,6 +168,13 @@ class BeefHerdIndicatorCalculator {
                   (sum, animal) => sum + animal.saleValue,
                 ) /
                 salesWithValue.length,
+      averageSaleAgeMonths: saleAgesInDays.isEmpty
+          ? null
+          : saleAgesInDays.reduce((a, b) => a + b) /
+                saleAgesInDays.length /
+                30.4375,
+      salesWithKnownAge: saleAgesInDays.length,
+      salesWithoutKnownAge: exits - saleAgesInDays.length,
       commercialExitsWithValue: salesWithValue.length,
       salesWithWeightAndValue: salesWithWeightAndValue.length,
       commercialExitsWithoutDate: allSold

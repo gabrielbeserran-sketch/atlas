@@ -882,6 +882,16 @@ class _SummaryContent extends StatelessWidget {
                     : 'R\$ ${summary.beefHerd.averageSaleValue!.toStringAsFixed(2)}',
               ),
               (
+                'Idade média na venda (12 meses)',
+                summary.beefHerd.averageSaleAgeMonths == null
+                    ? 'Sem nascimento e venda válidos'
+                    : '${summary.beefHerd.averageSaleAgeMonths!.toStringAsFixed(1)} meses (aprox.)',
+              ),
+              (
+                'Vendas com idade calculável',
+                '${summary.beefHerd.salesWithKnownAge}/${summary.beefHerd.commercialExits}',
+              ),
+              (
                 'Vendas com valor registrado',
                 '${summary.beefHerd.commercialExitsWithValue}/${summary.beefHerd.commercialExits}',
               ),
