@@ -46,5 +46,10 @@ void main() {
     expect(dashboard, contains('Animais para pesar'));
     expect(dashboard, contains('analysis.pendingWeighingAnimals'));
     expect(dashboard, contains('Última pesagem válida:'));
+    expect(dashboard, contains('Toque para registrar pesagem'));
+    expect(dashboard, contains('AnimalWeightListScreen('));
+    expect(dashboard, contains('autoOpenCreate: true'));
+    expect(dashboard, contains('group: pending.group'));
+    expect(dashboard, contains('await onRefresh()'));
   });
 }

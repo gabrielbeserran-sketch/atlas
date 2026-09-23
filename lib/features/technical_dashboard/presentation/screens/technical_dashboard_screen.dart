@@ -8,11 +8,13 @@ import 'package:projeto_atlas/core/reactivity/atlas_reactive_runtime.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/dairy_production/presentation/screens/dairy_production_screen.dart';
+import 'package:projeto_atlas/features/animal_weight/presentation/screens/animal_weight_list_screen.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_analysis.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_period.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_financial_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_farm_summary.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_weight_series_point.dart';
+import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_pending_weighing_animal.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_dashboard_service.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -270,6 +272,8 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                       else
                         _SummaryContent(
                           analysis: analysis!,
+                          farm: selectedFarm!,
+                          onRefresh: () => loadSummary(showLoading: false),
                           productionFocus: widget.productionFocus,
                         ),
                     ],
@@ -542,9 +546,16 @@ class _VariationBadge extends StatelessWidget {
 }
 
 class _SummaryContent extends StatelessWidget {
-  const _SummaryContent({required this.analysis, this.productionFocus});
+  const _SummaryContent({
+    required this.analysis,
+    required this.farm,
+    required this.onRefresh,
+    this.productionFocus,
+  });
 
   final TechnicalDashboardAnalysis analysis;
+  final FarmData farm;
+  final Future<void> Function() onRefresh;
   final TechnicalProductionFocus? productionFocus;
 
   TechnicalFarmSummary get summary => analysis.current;
@@ -565,9 +576,26 @@ class _SummaryContent extends StatelessWidget {
     return reference.difference(date).inDays;
   }
 
+  Future<void> _openPendingWeighing(
+    BuildContext context,
+    TechnicalPendingWeighingAnimal pending,
+  ) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => AnimalWeightListScreen(
+          animal: pending.animal,
+          farm: farm,
+          group: pending.group,
+          autoOpenCreate: true,
+        ),
+      ),
+    );
+    if (context.mounted) await onRefresh();
+  }
+
   Future<void> _showPendingWeighings(BuildContext context) async {
     final pending = analysis.pendingWeighingAnimals;
-    await showDialog<void>(
+    final selected = await showDialog<TechnicalPendingWeighingAnimal>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Pesagens pendentes (${pending.length})'),
@@ -577,7 +605,7 @@ class _SummaryContent extends StatelessWidget {
           child: ListView.separated(
             itemCount: pending.length,
             separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) {
+            itemBuilder: (_, index) {
               final animal = pending[index];
               final lastDate = animal.lastValidWeightDate;
               final dateLabel = lastDate == null
@@ -589,8 +617,10 @@ class _SummaryContent extends StatelessWidget {
                 leading: const Icon(Icons.monitor_weight_outlined),
                 title: Text(animal.label),
                 subtitle: Text(
-                  groupLabel.isEmpty ? dateLabel : '$groupLabel · $dateLabel',
+                  '${groupLabel.isEmpty ? dateLabel : '$groupLabel · $dateLabel'}\nToque para registrar pesagem',
                 ),
+                trailing: const Icon(Icons.add_circle_outline),
+                onTap: () => Navigator.of(dialogContext).pop(animal),
               );
             },
           ),
@@ -603,6 +633,9 @@ class _SummaryContent extends StatelessWidget {
         ],
       ),
     );
+    if (selected != null && context.mounted) {
+      await _openPendingWeighing(context, selected);
+    }
   }
 
   List<String> get _beefOperationalDataAlerts {

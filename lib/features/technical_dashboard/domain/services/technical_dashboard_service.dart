@@ -16,6 +16,7 @@ import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_d
 import 'package:projeto_atlas/features/farm_inventory/data/services/farm_inventory_storage_service.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
+import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/features/nutrition/data/services/nutrition_storage_service.dart';
 import 'package:projeto_atlas/features/nutrition/domain/models/nutrition_plan_data.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_analysis.dart';
@@ -75,7 +76,7 @@ class TechnicalDashboardService {
     final now = referenceDate ?? DateTime.now();
     final groups = await _herdStorage.loadGroups(farm.name);
     final animals = <AnimalData>[];
-    final groupNameByAnimalId = <String, String>{};
+    final groupByAnimalId = <String, HerdGroupData>{};
     final healthRecords = <AnimalHealthData>[];
     final reproductionRecords = <AnimalReproductionData>[];
     final weightEntries = <_WeightEntry>[];
@@ -88,7 +89,7 @@ class TechnicalDashboardService {
       animals.addAll(groupAnimals);
 
       for (final animal in groupAnimals) {
-        groupNameByAnimalId[animal.id] = group.name;
+        groupByAnimalId[animal.id] = group;
         healthRecords.addAll(
           await _healthStorage.loadRecords(
             farmName: farm.name,
@@ -194,12 +195,11 @@ class TechnicalDashboardService {
     };
     final pendingWeighingAnimals =
         beefLatestWeightCoverage.pendingAnimalIds.map((id) {
-          final animal = activeAnimalById[id];
+          final animal = activeAnimalById[id]!;
+          final group = groupByAnimalId[id]!;
           return TechnicalPendingWeighingAnimal(
-            id: id,
-            tag: animal?.tag ?? id,
-            name: animal?.name ?? '',
-            groupName: groupNameByAnimalId[id] ?? '',
+            animal: animal,
+            group: group,
             lastValidWeightDate:
                 beefLatestWeightCoverage.lastValidDateByAnimalId[id],
           );
