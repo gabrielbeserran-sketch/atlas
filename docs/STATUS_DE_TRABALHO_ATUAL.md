@@ -4,11 +4,14 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de idempotência para pesagens concluído localmente; release Windows anterior permanece aberto para avaliação (PID 20340).
-- Etapa atual: verificar a publicação da migração/API e, depois, conectar uma futura fila local persistente ao identificador de operação; validar Corte e o PIN com dados reais.
-- Progresso: 100% da idempotência local de pesagens; publicação de produção ainda não confirmada; abertura local-primeiro do formulário 100%; acesso local-primeiro 98% até teste de PIN sem internet.
-- Componentes previstos: concluídos — modelo/índice único, migração Alembic, schema da API, rota POST, testes de reenvio e cronograma.
-- Validações concluídas: 5 testes novos (reenvio igual, conflito de payload/animal, legado sem chave, chave inválida e migração/índice), 6 testes de regressão pecuária, `alembic heads` em `20260923_0056` e compilação Python. Testes executados em banco temporário separado; `backend/atlas_test.db` do usuário preservado.
+- Situação: pacote de identificador estável no cliente concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
+- Etapa atual: confirmar a migração no ambiente de produção sem credenciais e desenhar a fila local de pesagens, com conciliação e erros explícitos; validar Corte e PIN com dados reais.
+- Progresso: 100% do identificador de cliente; idempotência da API 100% localmente, produção ainda não confirmada; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes previstos: concluídos — formulário, modelo de pesagem/serialização, payload do serviço de envio, testes Flutter e cronograma.
+- Validações concluídas: nova pesagem recebe UUID, mantém o mesmo identificador no mapa local e no POST, resposta remota o preserva; registro legado sem chave continua compatível. Quatro testes Flutter, análise estática e build Windows debug com URL HTTPS de produção aprovados em 23/09.
+- Componentes concluídos neste pacote: chave `client_operation_id` é gerada uma vez, persistida no objeto local e transmitida ao servidor; novos IDs locais usam UUID v4 em lugar de microssegundos. Nenhuma falha remota é marcada como pesagem salva offline.
+- Checkpoint Git publicado do pacote: `2dba4ee` — `feat(beef): attach stable operation ID to new weighings`.
+- Próximo marco: confirmar API 0056 em produção e só então implementar fila persistente com estado de envio; próximo release Windows agrupado não interrompe a avaliação atual.
 - Limitação de validação: `alembic upgrade head` partindo de SQLite vazio falhou na revisão histórica `20260804_0001` por referência não carregada a `atlas_iot_devices_v2`; a migração nova foi testada isoladamente. Essa falha de bootstrap é anterior ao pacote e terá auditoria própria.
 - Componentes concluídos neste pacote: POST de pesagem aceita `client_operation_id` opcional, devolve o mesmo registro em reenvio idêntico, recusa dados divergentes com HTTP 409 e mantém o comportamento dos clientes anteriores. Unicidade por empresa impede duplicação concorrente; a resposta expõe o identificador para conciliação futura.
 - Checkpoint Git publicado do pacote: `12f4562` — `feat(beef): make weight creation retry-safe`.
