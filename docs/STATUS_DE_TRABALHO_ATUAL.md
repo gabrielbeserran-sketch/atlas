@@ -4,9 +4,12 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: precisão temporal da cobertura de pesagens de Corte concluída e validada; usuário confirmou login online mais rápido e cadastrou o PIN offline.
-- Etapa atual: conferir o painel com dados reais e testar desbloqueio com PIN sem internet.
-- Progresso: janela móvel de 90 dias 100%; acesso local-primeiro 98% até teste explícito de desbloqueio offline; GMD pareado 99% até conferência visual.
+- Situação: ação operacional de pesagens de Corte concluída e validada; janela móvel de 90 dias já publicada.
+- Etapa atual: conferência de GMD/cobertura com dados reais e teste de desbloqueio offline com o PIN recém-configurado.
+- Progresso: ação de pesagem 100%; acesso local-primeiro 98% até teste explícito de desbloqueio offline; GMD pareado 99% até conferência visual.
+- Componentes concluídos: modelo de cobertura, cartão do número de animais ativos sem pesagem recente e alerta de baixa cobertura com o déficit da amostra.
+- Validações concluídas: 13 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL de produção; contagens verificadas para cobertura parcial, total e sem ativos.
+- Checkpoint Git: `0d2ea0e` — `feat(beef): show animals missing recent weights`.
 - Componentes concluídos: calculador de cobertura, rótulos e alertas do painel de Corte; a data da última pesagem válida permanece independente da janela de cobertura.
 - Validações concluídas: 13 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL de produção. A pesagem no 90º dia conta, a de 91 dias não; a virada do mês não zera a cobertura.
 - Checkpoint Git: `f1f6c7c` — `fix(beef): use rolling 90-day weighing coverage`.
