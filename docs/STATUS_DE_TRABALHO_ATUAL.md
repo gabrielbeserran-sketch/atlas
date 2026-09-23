@@ -4,9 +4,12 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: idade média na venda em Corte concluída e validada; o PIN offline está cadastrado, mas o desbloqueio sem internet ainda não foi testado.
-- Etapa atual: avaliação visual dos indicadores comerciais, da evolução mensal e do GMD com dados reais.
-- Progresso: idade na venda 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Situação: release Windows consolidado de Corte concluído e aberto; a idade média na venda está concluída e o PIN offline cadastrado.
+- Etapa atual: avaliação pelo usuário do módulo Produção de corte e teste do desbloqueio por PIN sem internet.
+- Progresso: release consolidado 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Componentes concluídos: build Windows release com URL HTTPS de produção, executável atualizado e janela do Atlas.
+- Validações concluídas: `scripts/build_atlas_windows_production.ps1` aprovado em 23/09; processo release PID 6704 aberto e responsivo. Banco local do usuário preservado.
+- Checkpoint Git do código incluído: `a2d1f5b` (idade na venda), `c400d57` (evolução mensal) e os pacotes de cobertura `f1f6c7c`/`0d2ea0e`.
 - Componentes concluídos: indicador de idade média aproximada na venda, tamanho da amostra e alerta de nascimento inválido/ausente.
 - Validações concluídas: 18 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL de produção; casos de nascimento válido, data impossível, venda anterior ao nascimento e janela anual cobertos.
 - Checkpoint Git: `a2d1f5b` — `feat(beef): report verified age at sale`.
@@ -30,11 +33,11 @@ Atualizado em 23/09/2026.
 - Validações concluídas: testes de pareamento, exclusão de dados inválidos, contrato do painel e APK Android debug aprovado (SHA-256 `01E0CA243AA48DE987C7486B9894A99AF31956B653439B8D19AD72D8A7C93226`).
 - Checkpoint Git publicado: `d24dc6f` — `fix(beef): calculate gain from paired animal weights`.
 - Validação restante: conferir no painel de Corte, com sessão da fazenda, os números e alertas apresentados para pesagens reais.
-- Próximo marco: compilar release Windows de avaliação com as novas funções de Corte, validar desbloqueio offline pelo usuário e conferir os indicadores com dados reais.
+- Próximo marco: validar desbloqueio offline pelo usuário e conferir os indicadores de Corte com dados reais na janela aberta; após feedback, definir a próxima lacuna operacional.
 
 ## Próximo pacote planejado
 
-Gerar um release Windows com a evolução mensal, a idade na venda, o GMD e a cobertura de pesagens para avaliação na fazenda. Validar uma abertura offline com o PIN cadastrado. O OCR local depende de teste com nota real no aparelho.
+Conferir, em Produção de corte, a evolução mensal, a idade na venda, o GMD e a cobertura de pesagens com dados reais. Validar uma abertura offline com o PIN cadastrado. O OCR local depende de teste com nota real no aparelho.
 
 ## Como acompanhar
 
