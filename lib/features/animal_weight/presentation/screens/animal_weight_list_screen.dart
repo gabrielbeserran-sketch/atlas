@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_enterprise_service.dart';
@@ -14,6 +16,8 @@ class AnimalWeightListScreen extends StatefulWidget {
     required this.farm,
     required this.group,
     this.autoOpenCreate = false,
+    this.weightStorage,
+    this.weightEnterprise,
     super.key,
   });
 
@@ -21,15 +25,16 @@ class AnimalWeightListScreen extends StatefulWidget {
   final FarmData farm;
   final HerdGroupData group;
   final bool autoOpenCreate;
+  final AnimalWeightStorageService? weightStorage;
+  final AnimalWeightEnterpriseService? weightEnterprise;
 
   @override
   State<AnimalWeightListScreen> createState() => _AnimalWeightListScreenState();
 }
 
 class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
-  final AnimalWeightStorageService storage = AnimalWeightStorageService();
-  final AnimalWeightEnterpriseService enterprise =
-      AnimalWeightEnterpriseService();
+  late final AnimalWeightStorageService storage;
+  late final AnimalWeightEnterpriseService enterprise;
 
   final AnimalWeightEventService eventService =
       const AnimalWeightEventService();
@@ -40,14 +45,20 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   @override
   void initState() {
     super.initState();
+    storage = widget.weightStorage ?? AnimalWeightStorageService();
+    enterprise = widget.weightEnterprise ?? AnimalWeightEnterpriseService();
     _loadInitial();
   }
 
   Future<void> _loadInitial() async {
-    await loadWeights();
-    if (widget.autoOpenCreate && mounted) {
-      await openWeightForm();
+    if (!widget.autoOpenCreate) {
+      await loadWeights();
+      return;
     }
+    await loadWeights(preferRemote: false);
+    if (!mounted) return;
+    await openWeightForm();
+    if (mounted) unawaited(loadWeights());
   }
 
   double get currentWeight {
@@ -86,9 +97,10 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     return weights[0].weight - weights[1].weight;
   }
 
-  Future<void> loadWeights() async {
+  Future<void> loadWeights({bool preferRemote = true}) async {
     List<AnimalWeightData> loaded = [];
-    if (widget.animal.id.trim().isNotEmpty &&
+    if (preferRemote &&
+        widget.animal.id.trim().isNotEmpty &&
         widget.farm.id?.trim().isNotEmpty == true) {
       try {
         loaded = await enterprise.listWeights(animalId: widget.animal.id);
@@ -111,6 +123,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
         farmName: widget.farm.name,
         groupName: widget.group.name,
         animalId: widget.animal.id,
+        preferRemote: false,
       );
     }
 
