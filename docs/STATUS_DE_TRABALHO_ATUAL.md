@@ -4,11 +4,13 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote operacional de pesagens pendentes concluído; release Windows anterior permanece aberto para avaliação.
-- Etapa atual: validar a lista e os indicadores de Corte com dados reais da fazenda; validar entrada offline com o PIN. A próxima atualização do aplicativo será agrupada.
-- Progresso: 100% da lista operacional de pesagens; clareza da área 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
-- Componentes previstos: concluídos — calculador de cobertura, modelo e serviço do painel, lista de Corte, testes e cronograma.
-- Validações planejadas: concluídas — peso antigo, ausente, futuro, inválido, duplicado e animal inativo; consistência contagem/lista, análise estática, testes e build Windows.
+- Situação: release Windows agrupado concluído e aberto para avaliação (PID 20340); janela anterior substituída após confirmação do usuário.
+- Etapa atual: conferir em Corte os indicadores e a lista “Animais para pesar” com dados reais; validar entrada offline com o PIN.
+- Progresso: 100% do release agrupado; lista operacional de pesagens 100%; clareza da área 100%; integridade de peso 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Componentes previstos: concluídos — build Windows release com URL HTTPS de produção, verificação do artefato/processo, documentação e checkpoint Git.
+- Validações planejadas: build release aprovado; `data/app.so` atualizado em 23/09 às 10:15; processo PID 20340 com janela responsiva; banco local preservado. A chamada externa `/health/ready` excedeu 70 segundos e a disponibilidade remota permanece sem confirmação neste pacote.
+- Componentes concluídos neste pacote: release Windows de produção reúne peso médio do rebanho ativo com cobertura, denominador explícito da área total e relação de animais com pesagem pendente. Aplicativo aberto para avaliação; APK não alterado.
+- Próximo marco: obter feedback da janela aberta, testar o PIN sem internet e investigar a disponibilidade remota separadamente caso continue lenta.
 - Componentes concluídos neste pacote: cartão “Animais para pesar” com lista navegável de animais ativos sem pesagem válida nos últimos 90 dias; cada item apresenta brinco/nome, lote e data da última pesagem válida ou ausência dela. A lista é carregada sob demanda visual em diálogo rolável e usa a mesma base da contagem do painel.
 - Validações concluídas neste pacote: 26 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado; APK não alterado.
 - Checkpoint Git publicado do pacote: `35a75b7` — `feat(beef): list animals overdue for weighing`.
