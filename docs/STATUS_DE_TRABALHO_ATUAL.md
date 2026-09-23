@@ -4,11 +4,15 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de abertura local-primeiro do formulário de pesagem concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
-- Etapa atual: conferir Corte com dados reais e testar entrada offline com PIN; analisar contrato idempotente antes de implementar gravação de pesagem sem rede.
-- Progresso: 100% da abertura local-primeiro da pesagem; ação direta de pesagem 100%; acesso local-primeiro 98% até teste de PIN sem internet.
-- Componentes previstos: concluídos — tela de lista de pesagens, caminho de leitura local, atualização remota após o formulário, teste de interface e cronograma.
-- Validações concluídas: teste de interface confirmou abertura sem chamada remota prévia, leitura local e busca remota após fechar o formulário; regressão de Corte/painel aprovada, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09.
+- Situação: pacote de idempotência para pesagens concluído localmente; release Windows anterior permanece aberto para avaliação (PID 20340).
+- Etapa atual: verificar a publicação da migração/API e, depois, conectar uma futura fila local persistente ao identificador de operação; validar Corte e o PIN com dados reais.
+- Progresso: 100% da idempotência local de pesagens; publicação de produção ainda não confirmada; abertura local-primeiro do formulário 100%; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes previstos: concluídos — modelo/índice único, migração Alembic, schema da API, rota POST, testes de reenvio e cronograma.
+- Validações concluídas: 5 testes novos (reenvio igual, conflito de payload/animal, legado sem chave, chave inválida e migração/índice), 6 testes de regressão pecuária, `alembic heads` em `20260923_0056` e compilação Python. Testes executados em banco temporário separado; `backend/atlas_test.db` do usuário preservado.
+- Limitação de validação: `alembic upgrade head` partindo de SQLite vazio falhou na revisão histórica `20260804_0001` por referência não carregada a `atlas_iot_devices_v2`; a migração nova foi testada isoladamente. Essa falha de bootstrap é anterior ao pacote e terá auditoria própria.
+- Componentes concluídos neste pacote: POST de pesagem aceita `client_operation_id` opcional, devolve o mesmo registro em reenvio idêntico, recusa dados divergentes com HTTP 409 e mantém o comportamento dos clientes anteriores. Unicidade por empresa impede duplicação concorrente; a resposta expõe o identificador para conciliação futura.
+- Checkpoint Git publicado do pacote: `12f4562` — `feat(beef): make weight creation retry-safe`.
+- Próximo marco: confirmar a migração no ambiente de produção sem acessar segredos e implementar persistência local/fila de pesagens somente após o contrato estar ativo.
 - Componentes concluídos neste pacote: atalho vindo do painel abre o formulário sobre o histórico local; depois de fechá-lo, atualiza o histórico remoto em segundo plano. A regra de gravação não foi alterada: uma falha no POST remoto não é apresentada como pesagem salva offline.
 - Checkpoint Git publicado do pacote: `8b6d14b` — `perf(beef): open weighing form from local history`.
 - Próximo marco: incluir o fluxo no próximo release agrupado após avaliação do atual; projetar idempotência e fila segura para gravação sem rede em pacote separado.
