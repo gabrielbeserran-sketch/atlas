@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_enterprise_service.dart';
+import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_outbox_service.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/services/animal_weight_event_service.dart';
 import 'package:projeto_atlas/features/animal_weight/presentation/screens/animal_weight_form_screen.dart';
+import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 
@@ -18,6 +21,8 @@ class AnimalWeightListScreen extends StatefulWidget {
     this.autoOpenCreate = false,
     this.weightStorage,
     this.weightEnterprise,
+    this.weightOutbox,
+    this.companyId,
     super.key,
   });
 
@@ -27,6 +32,8 @@ class AnimalWeightListScreen extends StatefulWidget {
   final bool autoOpenCreate;
   final AnimalWeightStorageService? weightStorage;
   final AnimalWeightEnterpriseService? weightEnterprise;
+  final AnimalWeightOutboxService? weightOutbox;
+  final String? companyId;
 
   @override
   State<AnimalWeightListScreen> createState() => _AnimalWeightListScreenState();
@@ -35,18 +42,30 @@ class AnimalWeightListScreen extends StatefulWidget {
 class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   late final AnimalWeightStorageService storage;
   late final AnimalWeightEnterpriseService enterprise;
+  late final AnimalWeightOutboxService outbox;
 
   final AnimalWeightEventService eventService =
       const AnimalWeightEventService();
 
   List<AnimalWeightData> weights = [];
+  List<PendingAnimalWeight> pendingWeights = [];
   bool isLoading = true;
+  bool isSyncing = false;
+  String syncNotice = '';
+
+  String get companyId =>
+      widget.companyId ?? AtlasActiveContext.instance.companyId ?? '';
+  String get farmId => widget.farm.id?.trim() ?? '';
+  String get animalId => widget.animal.id.trim();
+  bool get hasSyncScope =>
+      companyId.trim().isNotEmpty && farmId.isNotEmpty && animalId.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
     storage = widget.weightStorage ?? AnimalWeightStorageService();
     enterprise = widget.weightEnterprise ?? AnimalWeightEnterpriseService();
+    outbox = widget.weightOutbox ?? AnimalWeightOutboxService();
     _loadInitial();
   }
 
@@ -58,7 +77,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     await loadWeights(preferRemote: false);
     if (!mounted) return;
     await openWeightForm();
-    if (mounted) unawaited(loadWeights());
+    if (mounted && pendingWeights.isEmpty) unawaited(loadWeights());
   }
 
   double get currentWeight {
@@ -98,41 +117,157 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   }
 
   Future<void> loadWeights({bool preferRemote = true}) async {
-    List<AnimalWeightData> loaded = [];
-    if (preferRemote &&
-        widget.animal.id.trim().isNotEmpty &&
-        widget.farm.id?.trim().isNotEmpty == true) {
-      try {
-        loaded = await enterprise.listWeights(animalId: widget.animal.id);
-        await storage.saveWeights(
-          farmName: widget.farm.name,
-          groupName: widget.group.name,
-          animalId: widget.animal.id,
-          weights: loaded,
-        );
-      } catch (_) {
+    if (isSyncing) return;
+    isSyncing = true;
+    try {
+      var queued = hasSyncScope
+          ? await outbox.load(
+              companyId: companyId,
+              farmId: farmId,
+              animalId: animalId,
+            )
+          : <PendingAnimalWeight>[];
+      List<AnimalWeightData> loaded;
+      var nextNotice = '';
+      if (preferRemote && hasSyncScope) {
+        try {
+          loaded = (await enterprise.listWeights(animalId: animalId)).toList();
+          // A API antiga pode aceitar o POST e ignorar a chave. Só repetimos
+          // operações quando o servidor afirma oferecer idempotência.
+          bool supportsSafeRetry = false;
+          try {
+            supportsSafeRetry = await enterprise.supportsIdempotentSync();
+          } catch (_) {
+            // Sem confirmação, conserva a fila sem tentar POST.
+          }
+          if (supportsSafeRetry) {
+            for (final item in queued.toList()) {
+              final operationId = item.record.clientOperationId;
+              if (loaded.any(
+                (record) =>
+                    record.clientOperationId.isNotEmpty &&
+                    record.clientOperationId == operationId,
+              )) {
+                await outbox.remove(
+                  companyId: companyId,
+                  farmId: farmId,
+                  animalId: animalId,
+                  operationId: operationId,
+                );
+                continue;
+              }
+              if (item.needsReview) continue;
+              try {
+                final created = await enterprise.createWeight(
+                  animalId: animalId,
+                  weight: item.record,
+                );
+                if (created.clientOperationId == operationId) {
+                  loaded.add(created);
+                  await outbox.remove(
+                    companyId: companyId,
+                    farmId: farmId,
+                    animalId: animalId,
+                    operationId: operationId,
+                  );
+                } else {
+                  await outbox.upsert(
+                    companyId: companyId,
+                    farmId: farmId,
+                    animalId: animalId,
+                    entry: PendingAnimalWeight(
+                      record: item.record,
+                      needsReview: true,
+                    ),
+                  );
+                }
+              } on AtlasEnterpriseApiException catch (error) {
+                if (error.statusCode == 409 ||
+                    (error.statusCode != null &&
+                        error.statusCode! >= 400 &&
+                        error.statusCode! < 500 &&
+                        error.statusCode != 401 &&
+                        error.statusCode != 408 &&
+                        error.statusCode != 429)) {
+                  await outbox.upsert(
+                    companyId: companyId,
+                    farmId: farmId,
+                    animalId: animalId,
+                    entry: PendingAnimalWeight(
+                      record: item.record,
+                      needsReview: true,
+                    ),
+                  );
+                }
+              } catch (_) {
+                // Falha incerta: mantém o mesmo ID para conciliar no GET.
+              }
+            }
+            queued = await outbox.load(
+              companyId: companyId,
+              farmId: farmId,
+              animalId: animalId,
+            );
+          } else {
+            nextNotice =
+                'O servidor ainda não confirmou envio seguro. Os dados permanecem no dispositivo.';
+          }
+          await storage.saveWeights(
+            farmName: widget.farm.name,
+            groupName: widget.group.name,
+            animalId: animalId,
+            weights: loaded,
+          );
+        } catch (_) {
+          nextNotice = 'Sem conexão no momento. Tente sincronizar mais tarde.';
+          loaded = await storage.loadWeights(
+            farmName: widget.farm.name,
+            groupName: widget.group.name,
+            animalId: animalId,
+            preferRemote: false,
+          );
+        }
+      } else {
         loaded = await storage.loadWeights(
           farmName: widget.farm.name,
           groupName: widget.group.name,
-          animalId: widget.animal.id,
+          animalId: animalId,
           preferRemote: false,
         );
       }
-    } else {
-      loaded = await storage.loadWeights(
-        farmName: widget.farm.name,
-        groupName: widget.group.name,
-        animalId: widget.animal.id,
-        preferRemote: false,
+      final knownOperations = loaded
+          .map((item) => item.clientOperationId)
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      loaded.addAll(
+        queued
+            .where(
+              (item) =>
+                  !knownOperations.contains(item.record.clientOperationId),
+            )
+            .map((item) => item.record),
       );
+      if (!mounted) return;
+      setState(() {
+        weights = loaded;
+        pendingWeights = queued;
+        syncNotice = nextNotice;
+        sortWeights();
+        isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível ler as pesagens salvas neste dispositivo. Nenhum dado foi apagado.',
+          ),
+        ),
+      );
+    } finally {
+      isSyncing = false;
     }
-
-    if (!mounted) return;
-    setState(() {
-      weights = loaded;
-      sortWeights();
-      isLoading = false;
-    });
   }
 
   Future<void> saveWeights() async {
@@ -168,6 +303,16 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   }
 
   Future<void> openWeightForm() async {
+    if (!hasSyncScope) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Selecione uma empresa, fazenda e animal antes de registrar a pesagem.',
+          ),
+        ),
+      );
+      return;
+    }
     final newWeight = await Navigator.push<AnimalWeightData>(
       context,
       MaterialPageRoute<AnimalWeightData>(
@@ -181,28 +326,30 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
       return;
     }
 
-    AnimalWeightData savedWeight = newWeight;
-    if (widget.animal.id.trim().isNotEmpty &&
-        widget.farm.id?.trim().isNotEmpty == true) {
-      try {
-        savedWeight = await enterprise.createWeight(
-          animalId: widget.animal.id,
-          weight: savedWeight,
-        );
-      } catch (error) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Não foi possível sincronizar: $error')),
-        );
-        return;
-      }
+    try {
+      await outbox.upsert(
+        companyId: companyId,
+        farmId: farmId,
+        animalId: animalId,
+        entry: PendingAnimalWeight(record: newWeight),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'A pesagem não pôde ser salva neste dispositivo. Tente novamente.',
+          ),
+        ),
+      );
+      return;
     }
-
     setState(() {
-      weights.add(savedWeight);
+      pendingWeights.add(PendingAnimalWeight(record: newWeight));
+      weights.add(newWeight);
       sortWeights();
     });
-    await saveWeights();
+    await loadWeights(preferRemote: false);
 
     await eventService.publishWeightRecorded(
       farmName: widget.farm.name,
@@ -216,11 +363,28 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pesagem registrada com sucesso.')),
+      const SnackBar(
+        content: Text(
+          'Pesagem salva neste dispositivo. O envio ao servidor está pendente.',
+        ),
+      ),
     );
+    unawaited(loadWeights());
   }
 
   Future<void> editWeight(AnimalWeightData weightRecord) async {
+    if (pendingWeights.any(
+      (item) => item.record.clientOperationId == weightRecord.clientOperationId,
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Aguarde a confirmação do envio antes de alterar esta pesagem.',
+          ),
+        ),
+      );
+      return;
+    }
     if (weightRecord.isRemote) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -269,6 +433,18 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   }
 
   Future<void> deleteWeight(AnimalWeightData weightRecord) async {
+    if (pendingWeights.any(
+      (item) => item.record.clientOperationId == weightRecord.clientOperationId,
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Esta pesagem pode já ter sido recebida pelo servidor. Aguarde a conciliação antes de excluí-la.',
+          ),
+        ),
+      );
+      return;
+    }
     if (weightRecord.isRemote) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -370,6 +546,34 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                         style: const TextStyle(color: Colors.black54),
                       ),
                       const SizedBox(height: 24),
+                      if (pendingWeights.isNotEmpty) ...[
+                        Card(
+                          color: const Color(0xFFFFF5E8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12,
+                              runSpacing: 8,
+                              children: [
+                                Text(
+                                  '${pendingWeights.length} pesagem(ns) salva(s) neste dispositivo, aguardando confirmação. '
+                                  '${pendingWeights.where((item) => item.needsReview).length} requer(em) revisão.'
+                                  '${syncNotice.isEmpty ? '' : '\n$syncNotice'}'
+                                  '${pendingWeights.any((item) => item.needsReview) ? '\nConfira o histórico antes de registrar novamente uma pesagem em revisão.' : ''}',
+                                ),
+                                TextButton.icon(
+                                  onPressed: isSyncing ? null : loadWeights,
+                                  icon: const Icon(Icons.sync),
+                                  label: const Text('Tentar sincronizar'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       Wrap(
                         spacing: 16,
                         runSpacing: 16,
@@ -422,12 +626,22 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                         ...List.generate(weights.length, (index) {
                           final record = weights[index];
                           final variation = calculateVariation(index);
+                          final pending = pendingWeights.where(
+                            (item) =>
+                                item.record.clientOperationId.isNotEmpty &&
+                                item.record.clientOperationId ==
+                                    record.clientOperationId,
+                          );
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: WeightRecordCard(
                               record: record,
                               variation: variation,
+                              isPending: pending.isNotEmpty,
+                              needsReview:
+                                  pending.isNotEmpty &&
+                                  pending.first.needsReview,
                               onEdit: () {
                                 editWeight(record);
                               },
@@ -508,6 +722,8 @@ class WeightRecordCard extends StatelessWidget {
   const WeightRecordCard({
     required this.record,
     required this.variation,
+    this.isPending = false,
+    this.needsReview = false,
     required this.onEdit,
     required this.onDelete,
     super.key,
@@ -515,6 +731,8 @@ class WeightRecordCard extends StatelessWidget {
 
   final AnimalWeightData record;
   final double? variation;
+  final bool isPending;
+  final bool needsReview;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -525,7 +743,7 @@ class WeightRecordCard extends StatelessWidget {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onEdit,
+        onTap: isPending ? null : onEdit,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
@@ -555,6 +773,20 @@ class WeightRecordCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (isPending) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        needsReview
+                            ? 'Envio requer revisão'
+                            : 'Salva no dispositivo · envio pendente',
+                        style: TextStyle(
+                          color: needsReview
+                              ? Colors.red.shade700
+                              : const Color(0xFF8A5900),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 5),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -627,42 +859,43 @@ class WeightRecordCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              PopupMenuButton<String>(
-                tooltip: 'Opções',
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  }
+              if (!isPending)
+                PopupMenuButton<String>(
+                  tooltip: 'Opções',
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      onEdit();
+                    }
 
-                  if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (context) {
-                  return const [
-                    PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
-                          SizedBox(width: 10),
-                          Text('Editar pesagem'),
-                        ],
+                    if (value == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) {
+                    return const [
+                      PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
+                            SizedBox(width: 10),
+                            Text('Editar pesagem'),
+                          ],
+                        ),
                       ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: Colors.red),
-                          SizedBox(width: 10),
-                          Text('Excluir pesagem'),
-                        ],
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, color: Colors.red),
+                            SizedBox(width: 10),
+                            Text('Excluir pesagem'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ];
-                },
-              ),
+                    ];
+                  },
+                ),
             ],
           ),
         ),

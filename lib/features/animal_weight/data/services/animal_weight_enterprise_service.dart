@@ -7,6 +7,14 @@ class AnimalWeightEnterpriseService {
 
   final AtlasEnterpriseApiClient _api;
 
+  Future<bool> supportsIdempotentSync() async {
+    final response = await _api.request(
+      'GET',
+      '/livestock/weight-sync-capabilities',
+    );
+    return response['client_operation_id_idempotency'] == true;
+  }
+
   Future<List<AnimalWeightData>> listWeights({required String animalId}) async {
     final response = await _api.requestList(
       'GET',

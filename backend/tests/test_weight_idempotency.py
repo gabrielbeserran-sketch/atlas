@@ -58,6 +58,14 @@ def _path(animal_id):
     return f"/api/v1/livestock/animals/{animal_id}/weights"
 
 
+def test_weight_sync_capability_requires_login_and_confirms_idempotency(client):
+    path = "/api/v1/livestock/weight-sync-capabilities"
+    assert client.get(path).status_code == 403
+    response = client.get(path, headers=_headers(client))
+    assert response.status_code == 200
+    assert response.json() == {"client_operation_id_idempotency": True}
+
+
 def test_weight_retry_reuses_record_without_duplicate(client):
     headers, (first_animal, _) = _setup(client)
     payload = {

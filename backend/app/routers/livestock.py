@@ -1736,6 +1736,14 @@ def _replayed_weight_or_conflict(
     return item
 
 
+@router.get("/weight-sync-capabilities")
+def weight_sync_capabilities(
+    principal: Principal = Depends(require_permission("herd.read")),
+) -> dict[str, bool]:
+    """O cliente só reenvia pesagens incertas quando a API conhece a chave."""
+    return {"client_operation_id_idempotency": True}
+
+
 @router.post("/animals/{animal_id}/weights", response_model=WeightResponse, status_code=201)
 def add_weight(
     animal_id: str,

@@ -41,6 +41,9 @@ class _RecordingEnterprise extends AnimalWeightEnterpriseService {
     listCalls++;
     return [];
   }
+
+  @override
+  Future<bool> supportsIdempotentSync() async => false;
 }
 
 void main() {
@@ -83,6 +86,7 @@ void main() {
           autoOpenCreate: true,
           weightStorage: storage,
           weightEnterprise: enterprise,
+          companyId: 'company-1',
         ),
       ),
     );
