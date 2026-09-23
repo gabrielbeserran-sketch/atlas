@@ -4,11 +4,14 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de ação direta para pesagens pendentes concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
-- Etapa atual: conferir Corte com dados reais e testar entrada offline com o PIN; avaliar persistência offline de novas pesagens antes de prometer registro sem internet.
-- Progresso: 100% da ação direta de pesagem; diagnóstico de API 100%; acesso local-primeiro 98% até teste de PIN sem internet.
-- Componentes previstos: concluídos — vínculo seguro animal/lote no modelo do painel, navegação da lista para pesagem, retorno/atualização, testes e cronograma.
-- Validações concluídas: identificação do animal e lote corretos, seleção da pendência, abertura automática do formulário da tela existente, retorno com recarga do painel, 26 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09.
+- Situação: pacote de abertura local-primeiro do formulário de pesagem concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
+- Etapa atual: conferir Corte com dados reais e testar entrada offline com PIN; analisar contrato idempotente antes de implementar gravação de pesagem sem rede.
+- Progresso: 100% da abertura local-primeiro da pesagem; ação direta de pesagem 100%; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes previstos: concluídos — tela de lista de pesagens, caminho de leitura local, atualização remota após o formulário, teste de interface e cronograma.
+- Validações concluídas: teste de interface confirmou abertura sem chamada remota prévia, leitura local e busca remota após fechar o formulário; regressão de Corte/painel aprovada, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09.
+- Componentes concluídos neste pacote: atalho vindo do painel abre o formulário sobre o histórico local; depois de fechá-lo, atualiza o histórico remoto em segundo plano. A regra de gravação não foi alterada: uma falha no POST remoto não é apresentada como pesagem salva offline.
+- Checkpoint Git publicado do pacote: `8b6d14b` — `perf(beef): open weighing form from local history`.
+- Próximo marco: incluir o fluxo no próximo release agrupado após avaliação do atual; projetar idempotência e fila segura para gravação sem rede em pacote separado.
 - Componentes concluídos neste pacote: cada animal da lista de pesagens pendentes abre diretamente o formulário de nova pesagem no contexto da fazenda e do lote; ao voltar, o painel é atualizado. O fluxo de gravação da tela existente foi reutilizado; não houve alteração de contrato de sincronização nem promessa de registro offline remoto.
 - Checkpoint Git publicado do pacote: `4335382` — `feat(beef): open weighing directly from pending list`.
 - Próximo marco: incluir o atalho no próximo release agrupado após o usuário avaliar a versão atual; estudar a gravação de pesagens sem rede como pacote separado.
