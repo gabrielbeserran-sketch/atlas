@@ -4,9 +4,14 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: release Windows consolidado de Corte concluído e aberto; a idade média na venda está concluída e o PIN offline cadastrado.
-- Etapa atual: avaliação pelo usuário do módulo Produção de corte e teste do desbloqueio por PIN sem internet.
-- Progresso: release consolidado 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Situação: pacote de integridade do peso do rebanho ativo concluído; release Windows anterior permanece aberto para avaliação.
+- Etapa atual: validar os indicadores de Corte com dados reais da fazenda e o desbloqueio offline com PIN; agrupar a próxima atualização do aplicativo após esse retorno.
+- Progresso: 100% da integridade de peso; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Componentes previstos: resumo técnico da fazenda, cartão/alerta de Corte, testes do cálculo e documentação do cronograma.
+- Validações planejadas: concluídas — animal vendido ou morto pesado, ativo sem peso, valores não finitos, cobertura parcial/total, análise estática, testes e build Windows.
+- Componentes concluídos neste pacote: peso médio calculado somente com animais ativos de peso válido; base X/Y visível; peso vivo/ha indisponível quando faltar peso de algum ativo; área não finita rejeitada também no cálculo de Leite. A tela informa o dado que falta sem exibir zero enganoso.
+- Validações concluídas neste pacote: 22 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado.
+- Checkpoint Git publicado do pacote: `e605f33` — `fix(beef): validate active herd weight coverage`.
 - Componentes concluídos: build Windows release com URL HTTPS de produção, executável atualizado e janela do Atlas.
 - Validações concluídas: `scripts/build_atlas_windows_production.ps1` aprovado em 23/09; processo release PID 6704 aberto e responsivo. Banco local do usuário preservado.
 - Checkpoint Git do código incluído: `a2d1f5b` (idade na venda), `c400d57` (evolução mensal) e os pacotes de cobertura `f1f6c7c`/`0d2ea0e`.
