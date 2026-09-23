@@ -12,6 +12,7 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_dashboard_period.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_financial_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_farm_summary.dart';
+import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_weight_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_dashboard_service.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -648,6 +649,10 @@ class _SummaryContent extends StatelessWidget {
         const SizedBox(height: 18),
         _FinancialEvolutionCard(points: analysis.financialSeries),
         const SizedBox(height: 18),
+        if (productionFocus == TechnicalProductionFocus.beef) ...[
+          _WeightEvolutionCard(points: analysis.weightSeries),
+          const SizedBox(height: 18),
+        ],
         if (_productionDataQualityAlerts.isNotEmpty) ...[
           _ModuleCard(
             width: double.infinity,
@@ -1033,6 +1038,125 @@ class _SummaryContent extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _WeightEvolutionCard extends StatelessWidget {
+  const _WeightEvolutionCard({required this.points});
+
+  final List<TechnicalWeightSeriesPoint> points;
+
+  @override
+  Widget build(BuildContext context) {
+    final recent = points.length > 6
+        ? points.sublist(points.length - 6)
+        : points;
+    final maximum = recent.fold<double>(
+      1,
+      (current, point) =>
+          point.averageWeight > current ? point.averageWeight : current,
+    );
+
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.monitor_weight_outlined, color: Color(0xFF1B5E20)),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Evolução do peso por animal',
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Média da última pesagem válida de cada animal no mês. O número abaixo indica quantos animais compõem a média.',
+              style: TextStyle(color: Colors.black54),
+            ),
+            const SizedBox(height: 20),
+            if (recent.isEmpty)
+              const SizedBox(
+                height: 160,
+                child: Center(
+                  child: Text(
+                    'Registre pesagens válidas para acompanhar a evolução.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ),
+              )
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final chartWidth = constraints.maxWidth < 520
+                      ? 520.0
+                      : constraints.maxWidth;
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: chartWidth,
+                      height: 205,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          for (final point in recent)
+                            Expanded(
+                              child: Semantics(
+                                label:
+                                    '${point.label}: ${point.averageWeight.toStringAsFixed(1)} quilos, ${point.animalCount} animais',
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${point.averageWeight.toStringAsFixed(0)} kg',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      width: 36,
+                                      height:
+                                          (point.averageWeight / maximum * 116)
+                                              .clamp(12.0, 116.0)
+                                              .toDouble(),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2E7D32),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(point.label),
+                                    Text(
+                                      '${point.animalCount} animais',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -27,6 +27,7 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_nutrition_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_reproduction_series_point.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_weight_series_point.dart';
+import 'package:projeto_atlas/features/technical_dashboard/domain/services/technical_weight_monthly_point_calculator.dart';
 
 class TechnicalDashboardService {
   TechnicalDashboardService({
@@ -152,11 +153,6 @@ class TechnicalDashboardService {
       referenceDate: now,
     );
 
-    final weightSeries = _buildWeightSeries(
-      entries: weightEntries,
-      period: period,
-      referenceDate: now,
-    );
     final validMeasurements = weightEntries
         .map((entry) {
           final date = _parseWeightDate(entry.data.date);
@@ -169,6 +165,11 @@ class TechnicalDashboardService {
         })
         .whereType<BeefWeightMeasurement>()
         .toList();
+    final weightSeries = _buildWeightSeries(
+      measurements: validMeasurements,
+      period: period,
+      referenceDate: now,
+    );
     final activeAnimalIds = animals
         .where((animal) => animal.status == 'Ativo')
         .map((animal) => animal.id)
@@ -294,19 +295,24 @@ class TechnicalDashboardService {
   }
 
   List<TechnicalWeightSeriesPoint> _buildWeightSeries({
-    required List<_WeightEntry> entries,
+    required List<BeefWeightMeasurement> measurements,
     required TechnicalDashboardPeriod period,
     required DateTime referenceDate,
   }) {
+    final today = DateTime(
+      referenceDate.year,
+      referenceDate.month,
+      referenceDate.day,
+    );
     final validEntries =
-        entries
-            .map(
-              (entry) =>
-                  (entry: entry, date: _parseWeightDate(entry.data.date)),
+        measurements
+            .where(
+              (measurement) =>
+                  measurement.animalId.isNotEmpty &&
+                  measurement.weightKg.isFinite &&
+                  measurement.weightKg > 0 &&
+                  !measurement.date.isAfter(today),
             )
-            .where((item) => item.date != null)
-            .map((item) => (entry: item.entry, date: item.date!))
-            .where((item) => !item.date.isAfter(referenceDate))
             .toList()
           ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -334,34 +340,14 @@ class TechnicalDashboardService {
     final points = <TechnicalWeightSeriesPoint>[];
     var cursor = firstMonth;
     while (!cursor.isAfter(currentMonth)) {
-      final nextMonth = DateTime(cursor.year, cursor.month + 1, 1);
-      final monthEntries = validEntries
-          .where(
-            (item) =>
-                !item.date.isBefore(cursor) && item.date.isBefore(nextMonth),
-          )
-          .toList();
-
-      if (monthEntries.isNotEmpty) {
-        final total = monthEntries.fold<double>(
-          0,
-          (sum, item) => sum + item.entry.data.weight,
-        );
-        final animalIds = monthEntries
-            .map((item) => item.entry.animalId)
-            .toSet();
-        points.add(
-          TechnicalWeightSeriesPoint(
-            periodStart: cursor,
-            label: _monthLabel(cursor),
-            averageWeight: total / monthEntries.length,
-            measurementCount: monthEntries.length,
-            animalCount: animalIds.length,
-            latestMeasurementDate: monthEntries.last.date,
-          ),
-        );
-      }
-      cursor = nextMonth;
+      final point = const TechnicalWeightMonthlyPointCalculator().calculate(
+        periodStart: cursor,
+        label: _monthLabel(cursor),
+        measurements: validEntries,
+        referenceDate: referenceDate,
+      );
+      if (point != null) points.add(point);
+      cursor = DateTime(cursor.year, cursor.month + 1, 1);
     }
 
     return points;
