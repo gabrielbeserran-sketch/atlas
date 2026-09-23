@@ -28,6 +28,7 @@ void main() {
     expect(result.latestMeasurementDate, DateTime(2026, 9, 7));
     expect(result.weighedAnimalCount, 2);
     expect(result.activeAnimalCount, 3);
+    expect(result.unweighedAnimalCount, 1);
     expect(result.percent, closeTo(66.67, 0.01));
   });
 
@@ -62,6 +63,7 @@ void main() {
     expect(result.latestMeasurementDate, DateTime(2026, 9, 1));
     expect(result.weighedAnimalCount, 2);
     expect(result.percent, 100);
+    expect(result.unweighedAnimalCount, 0);
   });
 
   test('inclui o 90º dia e exclui o 91º sem apagar a última data', () {
@@ -106,6 +108,7 @@ void main() {
     );
     expect(missingWeights.latestMeasurementDate, isNull);
     expect(missingWeights.weighedAnimalCount, 0);
+    expect(missingWeights.unweighedAnimalCount, 1);
     expect(missingWeights.percent, 0);
 
     final noActiveAnimals = calculator.calculate(
@@ -114,5 +117,6 @@ void main() {
       referenceDate: today,
     );
     expect(noActiveAnimals.percent, isNull);
+    expect(noActiveAnimals.unweighedAnimalCount, 0);
   });
 }

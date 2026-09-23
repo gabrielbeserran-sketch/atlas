@@ -13,6 +13,11 @@ void main() {
     expect(dashboard, contains('summary.beefHerd.dataQualityAlerts'));
     expect(dashboard, contains('_beefOperationalDataAlerts'));
     expect(dashboard, contains('Cobertura de pesagens (90 dias)'));
+    expect(dashboard, contains('Animais ativos sem pesagem recente'));
+    expect(
+      dashboard,
+      contains('beefLatestWeightCoverage.unweighedAnimalCount'),
+    );
     expect(dashboard, contains('analysis.beefLatestWeightCoverage.percent'));
     expect(dashboard, contains('beefLatestWeightCoverage.weighedAnimalCount'));
     expect(dashboard, contains('Base do ganho médio diário'));

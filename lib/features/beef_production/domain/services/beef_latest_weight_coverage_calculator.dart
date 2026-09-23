@@ -11,6 +11,8 @@ class BeefLatestWeightCoverage {
   final int weighedAnimalCount;
   final DateTime? latestMeasurementDate;
 
+  int get unweighedAnimalCount => activeAnimalCount - weighedAnimalCount;
+
   double? get percent => activeAnimalCount == 0
       ? null
       : weighedAnimalCount / activeAnimalCount * 100;

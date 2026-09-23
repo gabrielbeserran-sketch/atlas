@@ -579,8 +579,12 @@ class _SummaryContent extends StatelessWidget {
     }
     final coverage = _beefLatestWeightCoveragePercent;
     if (coverage != null && coverage < 50) {
+      final missing = analysis.beefLatestWeightCoverage.unweighedAnimalCount;
+      final missingLabel = missing == 1
+          ? '1 animal ainda precisa de pesagem'
+          : '$missing animais ainda precisam de pesagem';
       alerts.add(
-        'Pesagens válidas nos últimos 90 dias cobrem ${coverage.toStringAsFixed(0)}% dos animais ativos; amplie a amostra antes de usar o GMD como referência do rebanho.',
+        'Pesagens válidas nos últimos 90 dias cobrem ${coverage.toStringAsFixed(0)}% dos animais ativos; $missingLabel para cobrir o rebanho antes de usar o GMD como referência.',
       );
     }
     final age = _beefLatestWeightAgeDays;
@@ -834,6 +838,12 @@ class _SummaryContent extends StatelessWidget {
                     ? 'Sem animais ativos'
                     : '${analysis.beefLatestWeightCoverage.weighedAnimalCount}/${analysis.beefLatestWeightCoverage.activeAnimalCount} animais '
                           '(${_beefLatestWeightCoveragePercent!.toStringAsFixed(0)}%)',
+              ),
+              (
+                'Animais ativos sem pesagem recente',
+                _beefLatestWeightCoveragePercent == null
+                    ? 'Sem animais ativos'
+                    : '${analysis.beefLatestWeightCoverage.unweighedAnimalCount}',
               ),
               (
                 'Última pesagem de animal ativo',
