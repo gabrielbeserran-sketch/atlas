@@ -450,6 +450,11 @@ class AnimalMovement(Base):
 
 class WeightRecord(Base):
     __tablename__ = "weight_records"
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id", "client_operation_id", name="uq_weight_company_operation"
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(80), primary_key=True, default=lambda: new_id("weight"))
     tenant_id: Mapped[str] = mapped_column(String(80), index=True)
@@ -463,6 +468,7 @@ class WeightRecord(Base):
     measured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     notes: Mapped[str] = mapped_column(Text, default="")
     created_by: Mapped[str] = mapped_column(String(80))
+    client_operation_id: Mapped[str | None] = mapped_column(String(180), nullable=True)
 
 
 class ReproductionEvent(Base):

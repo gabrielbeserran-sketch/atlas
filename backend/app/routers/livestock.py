@@ -1710,6 +1710,32 @@ def execute_farm_handling_batch(
     return _handling_response_from_operation(operation, repeated=False)
 
 
+def _replayed_weight_or_conflict(
+    item: WeightRecord, payload: WeightCreateRequest, animal_id: str
+) -> WeightRecord:
+    def utc(value: datetime) -> datetime:
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
+
+    same_measurement_date = (
+        payload.measured_at is None
+        or utc(item.measured_at) == utc(payload.measured_at)
+    )
+    if not (
+        item.animal_id == animal_id
+        and abs(item.weight - payload.weight) < 1e-9
+        and abs(item.body_condition_score - payload.body_condition_score) < 1e-9
+        and item.source == payload.source
+        and item.equipment == payload.equipment
+        and item.notes == payload.notes
+        and same_measurement_date
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Identificador de pesagem já utilizado com dados diferentes.",
+        )
+    return item
+
+
 @router.post("/animals/{animal_id}/weights", response_model=WeightResponse, status_code=201)
 def add_weight(
     animal_id: str,
@@ -1718,6 +1744,23 @@ def add_weight(
     db: Session = Depends(get_db),
 ) -> WeightRecord:
     animal = _animal(db, principal, animal_id)
+    operation_id = payload.client_operation_id
+    if operation_id is not None:
+        operation_id = operation_id.strip()
+        if not operation_id:
+            raise HTTPException(status_code=422, detail="Identificador de pesagem inválido.")
+        advisory_transaction_lock(
+            db, f"animal-weight:{principal.company.id}:{operation_id}"
+        )
+        existing = db.scalar(
+            select(WeightRecord).where(
+                WeightRecord.company_id == principal.company.id,
+                WeightRecord.client_operation_id == operation_id,
+            )
+        )
+        if existing is not None:
+            return _replayed_weight_or_conflict(existing, payload, animal.id)
+
     item = WeightRecord(
         id=new_id("weight"),
         tenant_id=principal.company.tenant_id,
@@ -1731,9 +1774,24 @@ def add_weight(
         measured_at=payload.measured_at or datetime.now(timezone.utc),
         notes=payload.notes,
         created_by=principal.user.id,
+        client_operation_id=operation_id,
     )
     db.add(item)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        if operation_id is None:
+            raise
+        existing = db.scalar(
+            select(WeightRecord).where(
+                WeightRecord.company_id == principal.company.id,
+                WeightRecord.client_operation_id == operation_id,
+            )
+        )
+        if existing is None:
+            raise
+        return _replayed_weight_or_conflict(existing, payload, animal.id)
 
     latest_weight = db.scalar(
         select(WeightRecord)

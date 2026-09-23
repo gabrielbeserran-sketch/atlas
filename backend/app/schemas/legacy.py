@@ -597,6 +597,7 @@ class FarmHandlingOperationHistoryResponse(BaseModel):
 
 class WeightCreateRequest(BaseModel):
     weight: float = Field(gt=0)
+    client_operation_id: str | None = Field(default=None, min_length=8, max_length=180)
     body_condition_score: float = Field(default=0, ge=0, le=5)
     source: str = ""
     equipment: str = ""
@@ -623,6 +624,7 @@ class WeightResponse(BaseModel):
     equipment: str
     measured_at: datetime
     notes: str
+    client_operation_id: str | None = None
 
 
 class ReproductionEventCreateRequest(BaseModel):
