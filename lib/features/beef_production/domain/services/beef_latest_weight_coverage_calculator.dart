@@ -19,8 +19,9 @@ class BeefLatestWeightCoverage {
 class BeefLatestWeightCoverageCalculator {
   const BeefLatestWeightCoverageCalculator();
 
-  /// Conta animais ativos com pesagem válida no mês da última pesagem de um
-  /// animal ainda ativo. Saídas e óbitos não deslocam a data da amostra.
+  /// Conta animais ativos com pesagem válida nos últimos 90 dias corridos.
+  /// A última data é independente da cobertura: mesmo uma pesagem antiga
+  /// permanece visível para sinalizar dados desatualizados.
   BeefLatestWeightCoverage calculate({
     required List<BeefWeightMeasurement> measurements,
     required Set<String> activeAnimalIds,
@@ -31,6 +32,7 @@ class BeefLatestWeightCoverageCalculator {
       referenceDate.month,
       referenceDate.day,
     );
+    final todayUtc = DateTime.utc(today.year, today.month, today.day);
     final valid = measurements.where((measurement) {
       final date = DateTime(
         measurement.date.year,
@@ -54,11 +56,11 @@ class BeefLatestWeightCoverageCalculator {
     valid.sort((a, b) => a.date.compareTo(b.date));
     final latest = valid.last.date;
     final weighed = valid
-        .where(
-          (measurement) =>
-              measurement.date.year == latest.year &&
-              measurement.date.month == latest.month,
-        )
+        .where((measurement) {
+          final date = measurement.date;
+          final dayUtc = DateTime.utc(date.year, date.month, date.day);
+          return todayUtc.difference(dayUtc).inDays <= 90;
+        })
         .map((measurement) => measurement.animalId)
         .toSet();
 

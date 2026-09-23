@@ -580,7 +580,7 @@ class _SummaryContent extends StatelessWidget {
     final coverage = _beefLatestWeightCoveragePercent;
     if (coverage != null && coverage < 50) {
       alerts.add(
-        'A última pesagem cobre ${coverage.toStringAsFixed(0)}% dos animais ativos; amplie a amostra antes de usar o GMD como referência do rebanho.',
+        'Pesagens válidas nos últimos 90 dias cobrem ${coverage.toStringAsFixed(0)}% dos animais ativos; amplie a amostra antes de usar o GMD como referência do rebanho.',
       );
     }
     final age = _beefLatestWeightAgeDays;
@@ -829,14 +829,14 @@ class _SummaryContent extends StatelessWidget {
                     : '${analysis.beefWeightGain.averageKgPerDay!.toStringAsFixed(3)} kg/dia',
               ),
               (
-                'Cobertura da última pesagem',
+                'Cobertura de pesagens (90 dias)',
                 _beefLatestWeightCoveragePercent == null
                     ? 'Sem animais ativos'
                     : '${analysis.beefLatestWeightCoverage.weighedAnimalCount}/${analysis.beefLatestWeightCoverage.activeAnimalCount} animais '
                           '(${_beefLatestWeightCoveragePercent!.toStringAsFixed(0)}%)',
               ),
               (
-                'Atualização da última pesagem',
+                'Última pesagem de animal ativo',
                 _beefLatestWeightAgeDays == null
                     ? 'Sem pesagens válidas de animais ativos'
                     : '${DateFormat('dd/MM/yyyy').format(analysis.beefLatestWeightCoverage.latestMeasurementDate!)} '
