@@ -4,11 +4,14 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de integridade do peso do rebanho ativo concluído; release Windows anterior permanece aberto para avaliação.
-- Etapa atual: validar os indicadores de Corte com dados reais da fazenda e o desbloqueio offline com PIN; agrupar a próxima atualização do aplicativo após esse retorno.
-- Progresso: 100% da integridade de peso; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
-- Componentes previstos: resumo técnico da fazenda, cartão/alerta de Corte, testes do cálculo e documentação do cronograma.
-- Validações planejadas: concluídas — animal vendido ou morto pesado, ativo sem peso, valores não finitos, cobertura parcial/total, análise estática, testes e build Windows.
+- Situação: pacote de clareza da área nos indicadores de Corte concluído; release Windows anterior permanece aberto para avaliação.
+- Etapa atual: conferir Corte com dados reais e validar entrada offline com o PIN; depois planejar um indicador separado para área efetiva de pastagem, sem misturá-lo com a área total.
+- Progresso: 100% da clareza da área; integridade de peso 100%; acesso local-primeiro 98%; GMD pareado 99% até conferência visual.
+- Componentes previstos: concluídos — resumo técnico da fazenda, cartão de Corte, testes de contrato/cálculo e documentação do cronograma.
+- Validações planejadas: concluídas — área ausente/zero, área total válida, cobertura de pesos parcial, análise estática, testes de Corte e build Windows.
+- Componentes concluídos neste pacote: rótulos de animais/ha e kg/ha explicitam que o denominador é a área total cadastrada; cartão mostra essa área e informa que não representa lotação do pasto. Quando ela falta, ambos os índices ficam indisponíveis e surge orientação para completar o cadastro. Valores longos do cartão agora quebram linha no Windows e em telas estreitas.
+- Validações concluídas neste pacote: 23 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado.
+- Checkpoint Git publicado do pacote: `c2acc9d` — `fix(beef): clarify total-area density indicators`.
 - Componentes concluídos neste pacote: peso médio calculado somente com animais ativos de peso válido; base X/Y visível; peso vivo/ha indisponível quando faltar peso de algum ativo; área não finita rejeitada também no cálculo de Leite. A tela informa o dado que falta sem exibir zero enganoso.
 - Validações concluídas neste pacote: 22 testes de Corte/painel, análise estática sem problemas e build Windows debug com URL HTTPS de produção em 23/09. Banco local do usuário preservado.
 - Checkpoint Git publicado do pacote: `e605f33` — `fix(beef): validate active herd weight coverage`.
