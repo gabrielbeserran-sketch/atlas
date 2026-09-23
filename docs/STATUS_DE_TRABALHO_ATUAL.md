@@ -4,12 +4,17 @@ Atualizado em 23/09/2026.
 
 ## Estado
 
-- Situação: pacote de identificador estável no cliente concluído; release Windows anterior permanece aberto para avaliação (PID 20340).
-- Etapa atual: confirmar a migração no ambiente de produção sem credenciais e desenhar a fila local de pesagens, com conciliação e erros explícitos; validar Corte e PIN com dados reais.
-- Progresso: 100% do identificador de cliente; idempotência da API 100% localmente, produção ainda não confirmada; acesso local-primeiro 98% até teste de PIN sem internet.
+- Situação: pacote de fila local de pesagens concluído e checkpoint `37e6923` publicado; release Windows anterior permanece aberto para avaliação (PID 20340).
+- Etapa atual: confirmar o novo contrato e a migração da API em produção; depois, revisar o isolamento do cache legado de pesagens e o fluxo de resolução de conflitos, sem mexer na fila fiscal. Validar Corte e PIN com dados reais.
+- Progresso: fila de pesagens 100% localmente; contrato de servidor em produção ainda não confirmado; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes concluídos neste pacote: gravação da pesagem na fila local por empresa/fazenda/animal antes do POST, indicação visível de pendência, tentativa após abrir a tela ou registrar, confirmação explícita de capacidade idempotente da API antes de repetir, conciliação pelo `client_operation_id` e bloqueio de repetição após conflito. Falha ou resposta ambígua não apaga a fila; cache remoto não substitui as pendências.
+- Validações concluídas: nove testes Flutter (offline, persistência, isolamento da fila, resposta perdida, API antiga, conflito), cinco testes da API em banco temporário, análise estática sem apontamentos, compilação Python e build Windows debug com URL HTTPS de produção em 23/09.
+- Checkpoint Git publicado: `37e6923` — `feat(beef): persist and reconcile offline weighings`.
+- Próximo marco: verificar o endpoint `/livestock/weight-sync-capabilities` e a migração 0056 em produção, auditar o cache legado entre empresas e desenhar uma ação supervisionada para conflitos; depois consolidar um release Windows para avaliação. O aplicativo aberto e o celular não foram atualizados neste pacote.
+- Limite: o endpoint público de saúde 200 não comprova a migração; a fila aguarda confirmação da API antes de qualquer reenvio. A sincronização automática ocorre ao abrir a tela ou após salvar, e há botão manual; ainda não existe um serviço global de sincronização em segundo plano.
 - Componentes previstos: concluídos — formulário, modelo de pesagem/serialização, payload do serviço de envio, testes Flutter e cronograma.
 - Validações concluídas: nova pesagem recebe UUID, mantém o mesmo identificador no mapa local e no POST, resposta remota o preserva; registro legado sem chave continua compatível. Quatro testes Flutter, análise estática e build Windows debug com URL HTTPS de produção aprovados em 23/09.
-- Componentes concluídos neste pacote: chave `client_operation_id` é gerada uma vez, persistida no objeto local e transmitida ao servidor; novos IDs locais usam UUID v4 em lugar de microssegundos. Nenhuma falha remota é marcada como pesagem salva offline.
+- Componentes concluídos no pacote anterior: chave `client_operation_id` é gerada uma vez, persistida no objeto local e transmitida ao servidor; novos IDs locais usam UUID v4 em lugar de microssegundos. Naquele checkpoint, nenhuma falha remota era marcada como pesagem salva offline.
 - Checkpoint Git publicado do pacote: `2dba4ee` — `feat(beef): attach stable operation ID to new weighings`.
 - Próximo marco: confirmar API 0056 em produção e só então implementar fila persistente com estado de envio; próximo release Windows agrupado não interrompe a avaliação atual.
 - Limitação de validação: `alembic upgrade head` partindo de SQLite vazio falhou na revisão histórica `20260804_0001` por referência não carregada a `atlas_iot_devices_v2`; a migração nova foi testada isoladamente. Essa falha de bootstrap é anterior ao pacote e terá auditoria própria.
