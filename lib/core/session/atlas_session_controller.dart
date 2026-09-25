@@ -46,8 +46,20 @@ class AtlasSessionController extends ChangeNotifier {
   bool get offlineMode => _offlineMode;
   bool get refreshingConnection => _refreshingConnection;
   bool get offlinePinConfigured => _offlinePinConfigured;
-  bool get hasOfflineContext =>
-      _offlinePinConfigured && _session != null && _farms.isNotEmpty;
+  bool get hasOfflineContext {
+    final session = _session;
+    final farm = _activeFarm;
+    return _offlinePinConfigured &&
+        session != null &&
+        session.userId.isNotEmpty &&
+        session.companyId.isNotEmpty &&
+        session.tenantId.isNotEmpty &&
+        farm != null &&
+        farm.companyId == session.companyId &&
+        farm.tenantId == session.tenantId &&
+        (session.hasUnrestrictedFarmAccess ||
+            session.farmIds.contains(farm.id));
+  }
 
   bool get isAuthenticated =>
       _status == AtlasSessionStatus.authenticated && _session != null;
@@ -85,6 +97,13 @@ class AtlasSessionController extends ChangeNotifier {
     final savedFarmId = await _store.loadActiveFarm();
     _activeFarm =
         _findFarm(savedFarmId) ?? (_farms.isNotEmpty ? _farms.first : null);
+    if (_activeFarm != null && savedFarmId != _activeFarm!.id) {
+      // A fazenda salva pode pertencer a outra empresa ou ter perdido acesso.
+      // Atualize também o contexto usado pelos módulos, não só o cabeçalho.
+      await AtlasActiveContext.instance.selectFarm(_activeFarm!.id);
+    } else if (_activeFarm == null && savedFarmId != null) {
+      await AtlasActiveContext.instance.clearFarm();
+    }
     _offlinePinConfigured = await AtlasOfflinePinService.instance.isConfigured;
     _offlineMode = false;
     _error = null;
@@ -249,9 +268,15 @@ class AtlasSessionController extends ChangeNotifier {
     AtlasRemoteSession session,
   ) async {
     final cached = await _store.loadFarmPortfolio();
-    if (session.companyId.isEmpty) return cached;
+    if (session.companyId.isEmpty) return const [];
     return cached
-        .where((farm) => farm.companyId == session.companyId)
+        .where(
+          (farm) =>
+              farm.companyId == session.companyId &&
+              farm.tenantId == session.tenantId &&
+              (session.hasUnrestrictedFarmAccess ||
+                  session.farmIds.contains(farm.id)),
+        )
         .toList(growable: false);
   }
 
