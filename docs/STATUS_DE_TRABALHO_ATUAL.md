@@ -4,6 +4,7 @@ Atualizado em 25/09/2026.
 
 ## Estado
 
+- Pacote concluído (100%): revisão supervisionada de pesagens com conflito. A mesma chave de operação só é conciliada automaticamente quando todos os dados da medição conferem; uma divergência conserva as versões local e remota e exige duas confirmações para remover apenas a pendência local. Validações: 27 testes Flutter de pesagens/painel, análise estática sem apontamentos, build Windows debug com URL de produção e `git diff --check` aprovados em 25/09. Checkpoint de código `4a4b440`; documentação publicada no checkpoint seguinte. Próxima etapa: confirmar no Render o deploy do backend e a migração 0056, executar pesagem real offline→online e agrupar release Windows/Android. Até a rota de capacidade estar disponível, a fila não reenviará automaticamente. Banco de teste local do usuário preservado; aplicativo aberto e celular não atualizados neste pacote.
 - Situação: isolamento do cache de pesagens concluído e checkpoint `9e29a25` publicado; nenhum release Windows foi reaberto neste pacote (o processo anterior PID 20340 não estava mais ativo na última verificação).
 - Etapa atual: diagnosticar por que o Render ainda serve a API sem a rota de capacidade; preparar revisão supervisionada de conflitos da fila e validar Corte/PIN com dados reais. A fila de fotos fiscais não será refeita.
 - Progresso: isolamento de cache 100% localmente, fila de pesagens 100% localmente; contrato de servidor em produção não confirmado; acesso local-primeiro 98% até teste de PIN sem internet.
