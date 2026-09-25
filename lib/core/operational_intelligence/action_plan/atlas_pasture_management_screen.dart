@@ -3,7 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_models.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_area_overview.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
+import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
+import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
 
 class AtlasPastureManagementScreen extends StatefulWidget {
   const AtlasPastureManagementScreen({
@@ -21,9 +25,12 @@ class AtlasPastureManagementScreen extends StatefulWidget {
 class _AtlasPastureManagementScreenState
     extends State<AtlasPastureManagementScreen> {
   final service = AtlasPastureService.instance;
+  final grazingBasisService = AtlasPastureGrazingBasisService();
   List<AtlasPaddock> paddocks = [];
   List<AtlasGrazingRotation> rotations = [];
   List<AtlasPastureOperation> operations = [];
+  AtlasRemoteFarm? authorizedFarm;
+  AtlasPastureGrazingBasis? grazingBasis;
   bool loading = false;
 
   @override
@@ -43,7 +50,145 @@ class _AtlasPastureManagementScreenState
     operations = await service.loadOperations(
       farmName: widget.actionController.farmName,
     );
+    authorizedFarm = await _resolveAuthorizedFarm();
+    final farm = authorizedFarm;
+    grazingBasis = farm == null
+        ? null
+        : await grazingBasisService.loadLatest(
+            tenantId: farm.tenantId,
+            companyId: farm.companyId,
+            farmId: farm.id,
+          );
     if (mounted) setState(() => loading = false);
+  }
+
+  Future<AtlasRemoteFarm?> _resolveAuthorizedFarm() async {
+    final store = AtlasEnterpriseRemoteAuthStore.instance;
+    final session = await store.loadSession();
+    final farmId = await store.loadActiveFarm();
+    final portfolio = await store.loadFarmPortfolio();
+    return AtlasPastureGrazingScope.resolve(
+      session: session,
+      activeFarmId: farmId,
+      portfolio: portfolio,
+      expectedFarmName: widget.actionController.farmName,
+    );
+  }
+
+  Future<void> _editGrazingBasis() async {
+    final farm = authorizedFarm;
+    if (farm == null) return;
+    final area = TextEditingController(
+      text: grazingBasis?.effectiveAreaHa.toString().replaceAll('.', ',') ?? '',
+    );
+    final animals = TextEditingController(
+      text: grazingBasis?.grazingAnimals.toString() ?? '',
+    );
+    var confirmed = false;
+    String? error;
+    final result = await showDialog<AtlasPastureGrazingBasis>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Base efetiva de pastejo'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Fazenda: ${farm.name}'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Informe apenas hectares únicos disponíveis para pastejo '
+                    'e animais que estão realmente nessa área. Não some '
+                    'piquetes sobrepostos nem conte todo o rebanho automaticamente.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: area,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Área efetiva de pasto (ha)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: animals,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Animais atualmente em pastejo',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    value: confirmed,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      'Confirmei que a área informada é única, sem sobreposição.',
+                    ),
+                    onChanged: (value) =>
+                        setDialogState(() => confirmed = value == true),
+                  ),
+                  if (error != null)
+                    Text(error!, style: const TextStyle(color: Colors.red)),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final candidate = AtlasPastureGrazingBasis(
+                  tenantId: farm.tenantId,
+                  companyId: farm.companyId,
+                  farmId: farm.id,
+                  effectiveAreaHa:
+                      double.tryParse(area.text.trim().replaceAll(',', '.')) ??
+                      0,
+                  grazingAnimals: int.tryParse(animals.text.trim()) ?? 0,
+                  uniqueAreaConfirmed: confirmed,
+                  recordedAt: DateTime.now(),
+                );
+                try {
+                  candidate.validate(farmTotalAreaHa: farm.area);
+                  Navigator.pop(dialogContext, candidate);
+                } on ArgumentError catch (failure) {
+                  setDialogState(() => error = failure.message.toString());
+                }
+              },
+              child: const Text('Salvar base'),
+            ),
+          ],
+        ),
+      ),
+    );
+    area.dispose();
+    animals.dispose();
+    if (result == null) return;
+    try {
+      await grazingBasisService.save(result, farmTotalAreaHa: farm.area);
+      await _load();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível salvar a base de pastejo neste dispositivo.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _addPaddock() async {
@@ -299,23 +444,28 @@ class _AtlasPastureManagementScreenState
                     ),
                     'Nenhuma rotação registrada.',
                   ),
-                  _metrics([
-                    (
-                      'Soma nominal dos piquetes',
-                      areaOverview.nominalAreaHa,
-                      'ha',
-                    ),
-                    (
-                      'Suporte médio ponderado pela área',
-                      areaOverview.weightedSupportAuHa,
-                      'UA/ha',
-                    ),
-                    (
-                      'Matéria seca registrada',
-                      areaOverview.totalDryMatterKg,
-                      'kg',
-                    ),
-                  ], invalidPaddockCount: areaOverview.invalidPaddockCount),
+                  _metrics(
+                    [
+                      (
+                        'Soma nominal dos piquetes',
+                        areaOverview.nominalAreaHa,
+                        'ha',
+                      ),
+                      (
+                        'Suporte médio ponderado pela área',
+                        areaOverview.weightedSupportAuHa,
+                        'UA/ha',
+                      ),
+                      (
+                        'Matéria seca registrada',
+                        areaOverview.totalDryMatterKg,
+                        'kg',
+                      ),
+                    ],
+                    invalidPaddockCount: areaOverview.invalidPaddockCount,
+                    grazingBasis: grazingBasis,
+                    canEditGrazingBasis: authorizedFarm != null,
+                  ),
                   _list([
                     ...paddocks.map(
                       (e) => ListTile(
@@ -405,7 +555,18 @@ class _AtlasPastureManagementScreenState
   Widget _metrics(
     List<(String, double?, String)> values, {
     required int invalidPaddockCount,
+    required AtlasPastureGrazingBasis? grazingBasis,
+    required bool canEditGrazingBasis,
   }) {
+    final registeredArea = authorizedFarm?.area;
+    final exceedsRegisteredArea =
+        grazingBasis != null &&
+        registeredArea != null &&
+        registeredArea > 0 &&
+        grazingBasis.effectiveAreaHa > registeredArea;
+    final currentBasis =
+        grazingBasis?.isCurrentAt(DateTime.now()) == true &&
+        !exceedsRegisteredArea;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -417,6 +578,63 @@ class _AtlasPastureManagementScreenState
               'pode haver sobreposição ou área fora de uso. A lotação por hectare '
               'de pasto só será calculada com uma base validada.'
               '${invalidPaddockCount > 0 ? ' $invalidPaddockCount piquete(s) com área inválida ficaram fora da soma.' : ''}',
+            ),
+          ),
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Lotação da área efetiva de pasto',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (currentBasis)
+                  Text(
+                    '${grazingBasis!.animalsPerHectare.toStringAsFixed(2)} animais/ha',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  )
+                else
+                  const Text('Sem índice atual'),
+                const SizedBox(height: 6),
+                Text(
+                  grazingBasis == null
+                      ? 'Informe a área única e os animais em pastejo para calcular.'
+                      : '${grazingBasis.grazingAnimals} animais / '
+                            '${grazingBasis.effectiveAreaHa.toStringAsFixed(2)} ha '
+                            'confirmados em '
+                            '${DateFormat('dd/MM/yyyy').format(grazingBasis.recordedAt)}.'
+                            '${exceedsRegisteredArea
+                                ? ' A área efetiva supera a área total cadastrada; revise a base.'
+                                : currentBasis
+                                ? ''
+                                : ' Atualize o número de animais: a confirmação tem mais de sete dias.'}',
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Base informada pelo produtor; não equivale a UA/ha nem à lotação da área total da fazenda.',
+                ),
+                if (canEditGrazingBasis) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _editGrazingBasis,
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(
+                      grazingBasis == null
+                          ? 'Informar base efetiva'
+                          : 'Atualizar base efetiva',
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Selecione e sincronize uma fazenda autorizada para registrar esta base.',
+                  ),
+                ],
+              ],
             ),
           ),
         ),

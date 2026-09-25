@@ -39,10 +39,7 @@ void main() {
     expect(dashboard, contains('Peso vivo por hectare de área total'));
     expect(dashboard, contains('Área total usada nestes índices'));
     expect(dashboard, contains('não substituem a lotação da área de pastagem'));
-    expect(
-      dashboard,
-      contains('Não representam a lotação da área de pastagem'),
-    );
+    expect(dashboard, contains('A lotação do pasto usa base manual separada'));
     expect(dashboard, contains('Animais para pesar'));
     expect(dashboard, contains('analysis.pendingWeighingAnimals'));
     expect(dashboard, contains('Última pesagem válida:'));

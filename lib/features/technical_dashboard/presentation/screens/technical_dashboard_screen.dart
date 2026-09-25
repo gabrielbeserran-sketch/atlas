@@ -3,6 +3,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/core/operational_intelligence/widgets/atlas_command_center_module_card.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
+import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_intelligence.dart';
 import 'package:projeto_atlas/core/reactivity/atlas_reactive_runtime.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
@@ -43,6 +46,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
   List<FarmData> farms = const [];
   FarmData? selectedFarm;
   TechnicalDashboardAnalysis? analysis;
+  AtlasPastureGrazingBasis? grazingBasis;
   TechnicalDashboardPeriod selectedPeriod = TechnicalDashboardPeriod.last30Days;
   bool isLoading = true;
   bool isRefreshingAnalysis = false;
@@ -137,6 +141,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       if (!mounted) return;
       setState(() {
         analysis = null;
+        grazingBasis = null;
         isLoading = false;
       });
       return;
@@ -154,13 +159,21 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
     }
 
     try {
-      final loadedAnalysis = await dashboardService.loadAnalysis(
+      final analysisFuture = dashboardService.loadAnalysis(
         farm,
         period: selectedPeriod,
       );
-      if (!mounted) return;
+      final grazingBasisFuture = _loadGrazingBasis(farm);
+      final loadedAnalysis = await analysisFuture;
+      final loadedGrazingBasis = await grazingBasisFuture;
+      if (!mounted ||
+          selectedFarm?.id != farm.id ||
+          selectedFarm?.name != farm.name) {
+        return;
+      }
       setState(() {
         analysis = loadedAnalysis;
+        grazingBasis = loadedGrazingBasis;
         isLoading = false;
       });
     } catch (error) {
@@ -180,6 +193,28 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
         analysisReloadRequested = false;
         unawaited(loadSummary(showLoading: false));
       }
+    }
+  }
+
+  Future<AtlasPastureGrazingBasis?> _loadGrazingBasis(FarmData farm) async {
+    if (farm.id == null || farm.id!.isEmpty) return null;
+    try {
+      final store = AtlasEnterpriseRemoteAuthStore.instance;
+      final scope = AtlasPastureGrazingScope.resolve(
+        session: await store.loadSession(),
+        activeFarmId: await store.loadActiveFarm(),
+        portfolio: await store.loadFarmPortfolio(),
+        expectedFarmName: farm.name,
+      );
+      if (scope == null || scope.id != farm.id) return null;
+      return AtlasPastureGrazingBasisService().loadLatest(
+        tenantId: scope.tenantId,
+        companyId: scope.companyId,
+        farmId: scope.id,
+      );
+    } catch (_) {
+      // O índice de pasto é complementar: não bloqueia o restante do painel.
+      return null;
     }
   }
 
@@ -273,6 +308,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                         _SummaryContent(
                           analysis: analysis!,
                           farm: selectedFarm!,
+                          grazingBasis: grazingBasis,
                           onRefresh: () => loadSummary(showLoading: false),
                           productionFocus: widget.productionFocus,
                         ),
@@ -549,16 +585,24 @@ class _SummaryContent extends StatelessWidget {
   const _SummaryContent({
     required this.analysis,
     required this.farm,
+    required this.grazingBasis,
     required this.onRefresh,
     this.productionFocus,
   });
 
   final TechnicalDashboardAnalysis analysis;
   final FarmData farm;
+  final AtlasPastureGrazingBasis? grazingBasis;
   final Future<void> Function() onRefresh;
   final TechnicalProductionFocus? productionFocus;
 
   TechnicalFarmSummary get summary => analysis.current;
+
+  bool get _pastureBasisIsCurrent {
+    final basis = grazingBasis;
+    if (basis == null || !basis.isCurrentAt(DateTime.now())) return false;
+    return farm.area <= 0 || basis.effectiveAreaHa <= farm.area;
+  }
 
   double? get _beefLatestWeightCoveragePercent {
     return analysis.beefLatestWeightCoverage.percent;
@@ -906,7 +950,7 @@ class _SummaryContent extends StatelessWidget {
             title: 'Indicadores de corte',
             icon: Icons.trending_up_outlined,
             footnote:
-                'Animais/ha e kg/ha usam a área total cadastrada da fazenda. Não representam a lotação da área de pastagem.',
+                'Animais/ha e kg/ha de área total usam o cadastro da fazenda. A lotação do pasto usa base manual separada neste dispositivo e não equivale a UA/ha.',
             metrics: [
               (
                 'Animais por hectare de área total',
@@ -931,6 +975,22 @@ class _SummaryContent extends StatelessWidget {
                 summary.areaHectares == null
                     ? 'Não cadastrada'
                     : '${summary.areaHectares!.toStringAsFixed(1)} ha',
+              ),
+              (
+                'Animais por hectare de pasto efetivo',
+                _pastureBasisIsCurrent
+                    ? '${grazingBasis!.animalsPerHectare.toStringAsFixed(2)} animais/ha'
+                    : grazingBasis == null
+                    ? 'Informe em Gestão de pastagens'
+                    : 'Base desatualizada ou inconsistente',
+              ),
+              (
+                'Base confirmada de pastejo',
+                grazingBasis == null
+                    ? 'Não informada neste dispositivo'
+                    : '${grazingBasis!.effectiveAreaHa.toStringAsFixed(1)} ha · '
+                          '${grazingBasis!.grazingAnimals} animais · '
+                          '${DateFormat('dd/MM/yyyy').format(grazingBasis!.recordedAt)}',
               ),
               (
                 'Ganho médio diário dos animais pareados (12 meses)',
