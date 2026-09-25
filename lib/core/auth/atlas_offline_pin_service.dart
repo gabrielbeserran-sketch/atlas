@@ -26,7 +26,12 @@ class AtlasOfflinePinService {
   static const _lockedUntilKey = 'atlas_offline_unlock_locked_until';
   static const _maxFailedAttempts = 5;
   static const _lockDuration = Duration(minutes: 5);
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  // Use a mesma opção Android da sessão: o plugin migra todas as chaves do
+  // arquivo compartilhado para EncryptedSharedPreferences ao ler a sessão.
+  // Com a opção padrão, o PIN migrado deixa de ser encontrado no reinício.
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   Future<void> save(String pin) async {
     if (!RegExp(r'^\d{6}$').hasMatch(pin)) {

@@ -22,7 +22,6 @@ class AtlasEnterpriseRemoteAuthStore {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
   final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
-  bool _secureStorageRecovered = false;
 
   Future<String> baseUrl() async {
     const definedUrl = String.fromEnvironment(
@@ -72,10 +71,8 @@ class AtlasEnterpriseRemoteAuthStore {
     try {
       raw = await _secureStorage.read(key: _sessionKey);
     } catch (_) {
-      // Windows/DPAPI pode deixar um arquivo criptografado ilegível após
-      // restauração de backup, troca de perfil ou corrupção local.
-      // Recuperamos apenas o segredo local; o backend continua sendo a fonte
-      // de verdade e o usuário volta para o login.
+      // Uma sessão ilegível não autoriza apagar outras chaves do cofre,
+      // especialmente o PIN offline deste dispositivo.
       await _recoverSecureStorage();
       return null;
     }
@@ -114,24 +111,11 @@ class AtlasEnterpriseRemoteAuthStore {
   }
 
   Future<void> _recoverSecureStorage() async {
-    if (_secureStorageRecovered) {
-      try {
-        await _secureStorage.deleteAll();
-      } catch (_) {
-        // A sessão será tratada como ausente; nunca mantemos token em fallback
-        // inseguro como SharedPreferences.
-      }
-      await _preferences.remove(_activeFarmKey);
-      return;
-    }
-
-    _secureStorageRecovered = true;
-
     try {
-      await _secureStorage.deleteAll();
+      await _secureStorage.delete(key: _sessionKey);
     } catch (_) {
       // Em caso de corrupção nativa persistente, nenhuma credencial é copiada
-      // para armazenamento não seguro. O login deverá ser refeito.
+      // para armazenamento não seguro, e o PIN não é apagado em massa.
     }
 
     await _preferences.remove(_activeFarmKey);
