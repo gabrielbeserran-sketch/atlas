@@ -10,6 +10,7 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('AtlasPastureGrazingScope.resolve('));
+    expect(source, contains('return (basis, scope.area);'));
     expect(source, contains('basis.isCurrentAt(DateTime.now())'));
     expect(source, contains('Animais por hectare de pasto efetivo'));
     expect(source, contains('Base confirmada de pastejo'));

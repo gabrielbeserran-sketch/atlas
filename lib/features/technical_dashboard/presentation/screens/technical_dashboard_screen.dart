@@ -47,6 +47,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
   FarmData? selectedFarm;
   TechnicalDashboardAnalysis? analysis;
   AtlasPastureGrazingBasis? grazingBasis;
+  double? grazingFarmTotalAreaHa;
   TechnicalDashboardPeriod selectedPeriod = TechnicalDashboardPeriod.last30Days;
   bool isLoading = true;
   bool isRefreshingAnalysis = false;
@@ -142,6 +143,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       setState(() {
         analysis = null;
         grazingBasis = null;
+        grazingFarmTotalAreaHa = null;
         isLoading = false;
       });
       return;
@@ -165,7 +167,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       );
       final grazingBasisFuture = _loadGrazingBasis(farm);
       final loadedAnalysis = await analysisFuture;
-      final loadedGrazingBasis = await grazingBasisFuture;
+      final loadedGrazingScope = await grazingBasisFuture;
       if (!mounted ||
           selectedFarm?.id != farm.id ||
           selectedFarm?.name != farm.name) {
@@ -173,7 +175,8 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
       }
       setState(() {
         analysis = loadedAnalysis;
-        grazingBasis = loadedGrazingBasis;
+        grazingBasis = loadedGrazingScope.$1;
+        grazingFarmTotalAreaHa = loadedGrazingScope.$2;
         isLoading = false;
       });
     } catch (error) {
@@ -196,8 +199,10 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
     }
   }
 
-  Future<AtlasPastureGrazingBasis?> _loadGrazingBasis(FarmData farm) async {
-    if (farm.id == null || farm.id!.isEmpty) return null;
+  Future<(AtlasPastureGrazingBasis?, double?)> _loadGrazingBasis(
+    FarmData farm,
+  ) async {
+    if (farm.id == null || farm.id!.isEmpty) return (null, null);
     try {
       final store = AtlasEnterpriseRemoteAuthStore.instance;
       final scope = AtlasPastureGrazingScope.resolve(
@@ -206,15 +211,16 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
         portfolio: await store.loadFarmPortfolio(),
         expectedFarmName: farm.name,
       );
-      if (scope == null || scope.id != farm.id) return null;
-      return AtlasPastureGrazingBasisService().loadLatest(
+      if (scope == null || scope.id != farm.id) return (null, null);
+      final basis = await AtlasPastureGrazingBasisService().loadLatest(
         tenantId: scope.tenantId,
         companyId: scope.companyId,
         farmId: scope.id,
       );
+      return (basis, scope.area);
     } catch (_) {
       // O índice de pasto é complementar: não bloqueia o restante do painel.
-      return null;
+      return (null, null);
     }
   }
 
@@ -309,6 +315,7 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                           analysis: analysis!,
                           farm: selectedFarm!,
                           grazingBasis: grazingBasis,
+                          grazingFarmTotalAreaHa: grazingFarmTotalAreaHa,
                           onRefresh: () => loadSummary(showLoading: false),
                           productionFocus: widget.productionFocus,
                         ),
@@ -586,6 +593,7 @@ class _SummaryContent extends StatelessWidget {
     required this.analysis,
     required this.farm,
     required this.grazingBasis,
+    required this.grazingFarmTotalAreaHa,
     required this.onRefresh,
     this.productionFocus,
   });
@@ -593,6 +601,7 @@ class _SummaryContent extends StatelessWidget {
   final TechnicalDashboardAnalysis analysis;
   final FarmData farm;
   final AtlasPastureGrazingBasis? grazingBasis;
+  final double? grazingFarmTotalAreaHa;
   final Future<void> Function() onRefresh;
   final TechnicalProductionFocus? productionFocus;
 
@@ -601,7 +610,10 @@ class _SummaryContent extends StatelessWidget {
   bool get _pastureBasisIsCurrent {
     final basis = grazingBasis;
     if (basis == null || !basis.isCurrentAt(DateTime.now())) return false;
-    return farm.area <= 0 || basis.effectiveAreaHa <= farm.area;
+    final registeredArea = grazingFarmTotalAreaHa;
+    return registeredArea == null ||
+        registeredArea <= 0 ||
+        basis.effectiveAreaHa <= registeredArea;
   }
 
   double? get _beefLatestWeightCoveragePercent {
