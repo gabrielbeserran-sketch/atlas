@@ -181,6 +181,15 @@ class AtlasSessionController extends ChangeNotifier {
     _offlineMode = false;
     await _store.saveSession(session);
     await AtlasActiveContext.instance.restore();
+    // O app pode ter iniciado sem sessão local e o usuário pode ter entrado
+    // novamente depois de configurar o PIN. Releia o segredo neste login;
+    // não deixe o lembrete de configuração preso ao estado do início do app.
+    try {
+      _offlinePinConfigured =
+          await AtlasOfflinePinService.instance.isConfigured;
+    } catch (_) {
+      _offlinePinConfigured = false;
+    }
 
     if (session.companyId.isEmpty && session.companies.length > 1) {
       _setStatus(AtlasSessionStatus.selectingCompany);

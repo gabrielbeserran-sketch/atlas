@@ -340,6 +340,23 @@ void main() {
     expect(controller.hasOfflineContext, isTrue);
   });
 
+  test('novo login relê PIN salvo mesmo sem sessão no início', () async {
+    await AtlasOfflinePinService.instance.save('123456');
+    final api = _DelayedApi();
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    expect(controller.offlinePinConfigured, isFalse);
+    await AtlasEnterpriseRemoteAuthStore.instance.saveFarmPortfolio([_farm]);
+    await controller.acceptSession(_session());
+
+    expect(controller.offlinePinConfigured, isTrue);
+    expect(controller.hasOfflineContext, isTrue);
+    expect(controller.activeFarm?.id, _farm.id);
+    expect(api.persistFlags, [false]);
+  });
+
   test('resposta tardia após sair não restaura sessão encerrada', () async {
     await _saveOfflineContext(_session());
     final api = _DelayedApi();

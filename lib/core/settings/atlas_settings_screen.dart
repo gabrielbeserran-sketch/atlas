@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/core/subscription/atlas_subscription_profile.dart';
 import 'package:projeto_atlas/core/subscription/atlas_subscription_service.dart';
 
 class AtlasSettingsScreen extends StatefulWidget {
-  const AtlasSettingsScreen({super.key});
+  const AtlasSettingsScreen({super.key, this.subscriptionService});
+
+  final AtlasSubscriptionService? subscriptionService;
 
   @override
   State<AtlasSettingsScreen> createState() => _AtlasSettingsScreenState();
@@ -13,7 +16,8 @@ class AtlasSettingsScreen extends StatefulWidget {
 
 class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
   final _pin = AtlasOfflinePinService.instance;
-  final _subscription = AtlasSubscriptionService.instance;
+  late final _subscription =
+      widget.subscriptionService ?? AtlasSubscriptionService.instance;
   bool? configured;
   late Future<AtlasSubscriptionProfile> _subscriptionFuture;
 
@@ -30,56 +34,24 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
   }
 
   Future<String?> _ask(String title, {bool confirm = false}) async {
-    final first = TextEditingController();
-    final second = TextEditingController();
-    final result = await showDialog<String>(
+    return showDialog<String>(
       context: context,
-      builder: (d) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: first,
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: const InputDecoration(labelText: 'PIN de 6 dígitos'),
-            ),
-            if (confirm)
-              TextField(
-                controller: second,
-                obscureText: true,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: const InputDecoration(labelText: 'Confirmar PIN'),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(d),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(
-              d,
-              !confirm || first.text == second.text ? first.text : '',
-            ),
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
+      builder: (_) => _OfflinePinDialog(title: title, confirm: confirm),
     );
-    first.dispose();
-    second.dispose();
-    return result;
   }
 
   Future<void> _setPin({required bool changing}) async {
     if (changing) {
       final current = await _ask('Informe o PIN atual');
-      if (current == null || !await _pin.verify(current)) return;
+      if (current == null) return;
+      if (!await _pin.verify(current)) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('PIN atual incorreto.')));
+        }
+        return;
+      }
     }
     final next = await _ask(
       changing ? 'Novo PIN offline' : 'Configurar PIN offline',
@@ -88,13 +60,29 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
     if (next == null || next.isEmpty) return;
     try {
       await _pin.save(next);
+      if (!await _pin.verify(next)) {
+        throw StateError('O PIN não pôde ser confirmado no dispositivo.');
+      }
       await _load();
       if (!mounted) return;
       await AtlasSessionScope.read(context).refreshOfflineAccess();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('PIN offline salvo neste dispositivo.')),
+        );
+      }
     } on ArgumentError {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Use um PIN numérico de 6 dígitos.')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível salvar o PIN. Tente novamente.'),
+          ),
         );
       }
     }
@@ -272,7 +260,7 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
                         : 'Configurar PIN offline',
                   ),
                   subtitle: const Text(
-                    'Protege o acesso aos dados salvos sem internet.',
+                    'Protege o acesso aos dados salvos sem internet. Para testar, feche e reabra o app sem rede; “Sair” remove a sessão local.',
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _setPin(changing: configured == true),
@@ -336,4 +324,80 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
     'gestao_de_equipes' => 'Gestão de equipes',
     _ => 'Função liberada',
   };
+}
+
+class _OfflinePinDialog extends StatefulWidget {
+  const _OfflinePinDialog({required this.title, required this.confirm});
+
+  final String title;
+  final bool confirm;
+
+  @override
+  State<_OfflinePinDialog> createState() => _OfflinePinDialogState();
+}
+
+class _OfflinePinDialogState extends State<_OfflinePinDialog> {
+  final _first = TextEditingController();
+  final _second = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _first.dispose();
+    _second.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    if (!RegExp(r'^\d{6}$').hasMatch(_first.text)) {
+      setState(() => _error = 'Use um PIN numérico de 6 dígitos.');
+    } else if (widget.confirm && _first.text != _second.text) {
+      setState(() => _error = 'Os dois PINs não coincidem. Tente novamente.');
+    } else {
+      Navigator.pop(context, _first.text);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _first,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: 6,
+              decoration: const InputDecoration(labelText: 'PIN de 6 dígitos'),
+            ),
+            if (widget.confirm)
+              TextField(
+                controller: _second,
+                obscureText: true,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                maxLength: 6,
+                decoration: const InputDecoration(labelText: 'Confirmar PIN'),
+              ),
+            if (_error != null)
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(onPressed: _confirm, child: const Text('Confirmar')),
+      ],
+    );
+  }
 }
