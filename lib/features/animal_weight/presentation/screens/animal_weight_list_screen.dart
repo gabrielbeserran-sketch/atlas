@@ -145,17 +145,30 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
           if (supportsSafeRetry) {
             for (final item in queued.toList()) {
               final operationId = item.record.clientOperationId;
-              if (loaded.any(
+              final matchingRemote = loaded.where(
                 (record) =>
                     record.clientOperationId.isNotEmpty &&
                     record.clientOperationId == operationId,
-              )) {
-                await outbox.remove(
-                  companyId: companyId,
-                  farmId: farmId,
-                  animalId: animalId,
-                  operationId: operationId,
-                );
+              );
+              if (matchingRemote.isNotEmpty) {
+                if (item.record.sameMeasurementAs(matchingRemote.first)) {
+                  await outbox.remove(
+                    companyId: companyId,
+                    farmId: farmId,
+                    animalId: animalId,
+                    operationId: operationId,
+                  );
+                } else {
+                  await outbox.upsert(
+                    companyId: companyId,
+                    farmId: farmId,
+                    animalId: animalId,
+                    entry: PendingAnimalWeight(
+                      record: item.record,
+                      needsReview: true,
+                    ),
+                  );
+                }
                 continue;
               }
               if (item.needsReview) continue;
@@ -248,6 +261,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
         queued
             .where(
               (item) =>
+                  item.needsReview ||
                   !knownOperations.contains(item.record.clientOperationId),
             )
             .map((item) => item.record),
@@ -510,6 +524,128 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     );
   }
 
+  Future<void> reviewPendingWeight(AnimalWeightData record) async {
+    if (isSyncing || !hasSyncScope) return;
+    final pending = pendingWeights.where(
+      (item) => item.record.id == record.id && item.needsReview,
+    );
+    if (pending.isEmpty) return;
+    final remote = weights.where(
+      (item) =>
+          item.isRemote && item.clientOperationId == record.clientOperationId,
+    );
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Revisar pesagem pendente'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'O envio foi recusado ou o servidor retornou dados diferentes. '
+                'O Atlas não repetirá esta operação automaticamente.',
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Neste dispositivo: ${formatWeight(record.weight)} kg em ${record.date}',
+              ),
+              if (record.notes.isNotEmpty) Text('Observação: ${record.notes}'),
+              if (remote.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'No servidor: ${formatWeight(remote.first.weight)} kg em ${remote.first.date}',
+                ),
+              ],
+              const SizedBox(height: 12),
+              const Text(
+                'Confira o histórico e os dados da fazenda antes de decidir. '
+                'Remover a pendência apaga apenas a cópia deste dispositivo; '
+                'não altera o servidor.',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Manter pendente'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Remover cópia local'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final remove = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Confirmar remoção local'),
+        content: const Text(
+          'Esta pesagem pode existir somente neste dispositivo. '
+          'Se remover a pendência, os dados locais não poderão ser recuperados pelo Atlas. '
+          'Confirme apenas após conferir o histórico.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Confirmar remoção local'),
+          ),
+        ],
+      ),
+    );
+    if (remove != true || !mounted) return;
+    final remaining = weights
+        .where((item) => item.isRemote || item.id != record.id)
+        .toList();
+    try {
+      await storage.saveWeights(
+        farmName: widget.farm.name,
+        farmId: farmId,
+        groupName: widget.group.name,
+        animalId: animalId,
+        weights: remaining,
+      );
+      await outbox.remove(
+        companyId: companyId,
+        farmId: farmId,
+        animalId: animalId,
+        operationId: record.clientOperationId,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível remover a pendência local. Nenhum envio foi repetido.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      weights = remaining;
+      pendingWeights.removeWhere(
+        (item) => item.record.clientOperationId == record.clientOperationId,
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Pendência local removida. O histórico do servidor não foi alterado.',
+        ),
+      ),
+    );
+  }
+
   double? calculateVariation(int index) {
     if (index >= weights.length - 1) {
       return null;
@@ -632,12 +768,19 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                         ...List.generate(weights.length, (index) {
                           final record = weights[index];
                           final variation = calculateVariation(index);
-                          final pending = pendingWeights.where(
-                            (item) =>
-                                item.record.clientOperationId.isNotEmpty &&
-                                item.record.clientOperationId ==
-                                    record.clientOperationId,
-                          );
+                          final pending = record.isRemote
+                              ? <PendingAnimalWeight>[]
+                              : pendingWeights
+                                    .where(
+                                      (item) =>
+                                          item
+                                              .record
+                                              .clientOperationId
+                                              .isNotEmpty &&
+                                          item.record.clientOperationId ==
+                                              record.clientOperationId,
+                                    )
+                                    .toList();
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
@@ -654,6 +797,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                               onDelete: () {
                                 deleteWeight(record);
                               },
+                              onReview: () => reviewPendingWeight(record),
                             ),
                           );
                         }),
@@ -732,6 +876,7 @@ class WeightRecordCard extends StatelessWidget {
     this.needsReview = false,
     required this.onEdit,
     required this.onDelete,
+    this.onReview,
     super.key,
   });
 
@@ -741,6 +886,7 @@ class WeightRecordCard extends StatelessWidget {
   final bool needsReview;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onReview;
 
   @override
   Widget build(BuildContext context) {
@@ -749,7 +895,11 @@ class WeightRecordCard extends StatelessWidget {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: isPending ? null : onEdit,
+        onTap: needsReview
+            ? onReview
+            : isPending
+            ? null
+            : onEdit,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
@@ -792,6 +942,12 @@ class WeightRecordCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      if (needsReview && onReview != null)
+                        TextButton.icon(
+                          onPressed: onReview,
+                          icon: const Icon(Icons.rule),
+                          label: const Text('Revisar pesagem'),
+                        ),
                     ],
                     const SizedBox(height: 5),
                     Row(

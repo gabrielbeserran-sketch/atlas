@@ -257,6 +257,144 @@ void main() {
     expect(find.textContaining('aguardando confirmação'), findsNothing);
   });
 
+  test('a conciliação exige igualdade dos dados da medição', () {
+    const local = AnimalWeightData(
+      id: 'local',
+      date: '23/09/2026',
+      weight: 450,
+      notes: 'Balança conferida',
+      bodyConditionScore: 3,
+      source: 'curral',
+      equipment: 'balança 1',
+    );
+    const equal = AnimalWeightData(
+      id: 'remote',
+      date: '23/09/2026',
+      weight: 450,
+      notes: 'Balança conferida',
+      bodyConditionScore: 3,
+      source: 'curral',
+      equipment: 'balança 1',
+    );
+    expect(local.sameMeasurementAs(equal), isTrue);
+    expect(
+      local.sameMeasurementAs(
+        const AnimalWeightData(
+          id: 'remote',
+          date: '23/09/2026',
+          weight: 449,
+          notes: 'Balança conferida',
+          bodyConditionScore: 3,
+          source: 'curral',
+          equipment: 'balança 1',
+        ),
+      ),
+      isFalse,
+    );
+    expect(
+      local.sameMeasurementAs(
+        const AnimalWeightData(
+          id: 'remote',
+          date: '23/09/2026',
+          weight: 450,
+          notes: 'Outra observação',
+          bodyConditionScore: 3,
+          source: 'curral',
+          equipment: 'balança 1',
+        ),
+      ),
+      isFalse,
+    );
+  });
+
+  testWidgets('GET divergente preserva a fila até revisão explícita', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final api = _FakeWeightsApi()..online = true;
+    final outbox = AnimalWeightOutboxService();
+    await outbox.upsert(
+      companyId: 'company-a',
+      farmId: 'farm-1',
+      animalId: 'animal-1',
+      entry: const PendingAnimalWeight(
+        record: AnimalWeightData(
+          id: 'local-conflict',
+          date: '23/09/2026',
+          weight: 450,
+          notes: 'Leitura local',
+          clientOperationId: 'operation-conflict',
+        ),
+      ),
+    );
+    api.remote.add(
+      AnimalWeightData.fromRemoteMap({
+        'id': 'remote-conflict',
+        'measured_at': '2026-09-23T12:00:00Z',
+        'weight': 440,
+        'notes': 'Leitura remota',
+        'client_operation_id': 'operation-conflict',
+      }),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalWeightListScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+          companyId: 'company-a',
+          weightEnterprise: api,
+          weightOutbox: outbox,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(api.createCalls, 0);
+    expect(
+      (await outbox.load(
+        companyId: 'company-a',
+        farmId: 'farm-1',
+        animalId: 'animal-1',
+      )).single.needsReview,
+      isTrue,
+    );
+    expect(find.text('450 kg'), findsWidgets);
+    expect(find.text('440 kg'), findsWidgets);
+    await tester.tap(find.text('Revisar pesagem'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Neste dispositivo: 450 kg'), findsOneWidget);
+    expect(find.textContaining('No servidor: 440 kg'), findsOneWidget);
+    await tester.tap(find.text('Manter pendente'));
+    await tester.pumpAndSettle();
+    expect(
+      await outbox.load(
+        companyId: 'company-a',
+        farmId: 'farm-1',
+        animalId: 'animal-1',
+      ),
+      hasLength(1),
+    );
+    await tester.tap(find.text('Revisar pesagem'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remover cópia local'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar remoção local'));
+    await tester.pumpAndSettle();
+    expect(
+      await outbox.load(
+        companyId: 'company-a',
+        farmId: 'farm-1',
+        animalId: 'animal-1',
+      ),
+      isEmpty,
+    );
+    expect(find.text('440 kg'), findsWidgets);
+    expect(find.text('450 kg'), findsNothing);
+    expect(api.createCalls, 0);
+  });
+
   testWidgets('conflito bloqueia reenvio automático e mantém registro', (
     tester,
   ) async {

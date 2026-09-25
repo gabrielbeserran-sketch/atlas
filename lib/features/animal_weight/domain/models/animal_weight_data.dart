@@ -21,6 +21,14 @@ class AnimalWeightData {
   final bool isRemote;
   final String clientOperationId;
 
+  bool sameMeasurementAs(AnimalWeightData other) =>
+      date == other.date &&
+      (weight - other.weight).abs() < 1e-9 &&
+      (bodyConditionScore - other.bodyConditionScore).abs() < 1e-9 &&
+      notes.trim() == other.notes.trim() &&
+      source.trim() == other.source.trim() &&
+      equipment.trim() == other.equipment.trim();
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'date': date,
