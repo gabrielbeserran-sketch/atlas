@@ -1,12 +1,18 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 23/09/2026.
+Atualizado em 25/09/2026.
 
 ## Estado
 
-- Situação: pacote de fila local de pesagens concluído e checkpoint `37e6923` publicado; release Windows anterior permanece aberto para avaliação (PID 20340).
-- Etapa atual: confirmar o novo contrato e a migração da API em produção; depois, revisar o isolamento do cache legado de pesagens e o fluxo de resolução de conflitos, sem mexer na fila fiscal. Validar Corte e PIN com dados reais.
-- Progresso: fila de pesagens 100% localmente; contrato de servidor em produção ainda não confirmado; acesso local-primeiro 98% até teste de PIN sem internet.
+- Situação: isolamento do cache de pesagens concluído e checkpoint `9e29a25` publicado; nenhum release Windows foi reaberto neste pacote (o processo anterior PID 20340 não estava mais ativo na última verificação).
+- Etapa atual: diagnosticar por que o Render ainda serve a API sem a rota de capacidade; preparar revisão supervisionada de conflitos da fila e validar Corte/PIN com dados reais. A fila de fotos fiscais não será refeita.
+- Progresso: isolamento de cache 100% localmente, fila de pesagens 100% localmente; contrato de servidor em produção não confirmado; acesso local-primeiro 98% até teste de PIN sem internet.
+- Componentes concluídos neste pacote: cache v2 indexado por IDs de empresa, fazenda e animal; os consumidores informam a fazenda explicitamente. Dados antigos por nome ficam preservados, sem migração automática para outra empresa; leitura confirmada do servidor repovoa o cache isolado. Sem ID de empresa/fazenda, o cache compartilhado não é escrito.
+- Validações concluídas: 25 testes Flutter de pesagens e painel técnico, análise estática sem apontamentos, build Windows debug com URL HTTPS de produção e `git diff --check` em 25/09.
+- Checkpoint Git publicado: `9e29a25` — `fix(beef): isolate cached weighings by company and farm`.
+- Verificação externa: `/health/ready` respondeu HTTP 200 em 0,74 s, mas `/livestock/weight-sync-capabilities` e rota inexistente responderam 404. A API publicada ainda não apresenta o novo contrato. Painel do Render exigiu login no navegador disponível; nenhum segredo ou log privado foi acessado e nenhum deploy foi acionado.
+- Próximo marco: quando houver acesso ao painel do Render, verificar o último deploy/migração 0056; até lá, a fila retém pesagens sem reenvio inseguro. Em paralelo, implementar resolução supervisionada dos registros com conflito. O aplicativo e o celular não foram atualizados neste pacote.
+- Limitação: o histórico offline antigo sem vínculo verificável à empresa não aparece no cache v2 até ser obtido novamente do servidor. O dado legado não foi apagado; essa escolha impede atribuí-lo silenciosamente a outra conta.
 - Componentes concluídos neste pacote: gravação da pesagem na fila local por empresa/fazenda/animal antes do POST, indicação visível de pendência, tentativa após abrir a tela ou registrar, confirmação explícita de capacidade idempotente da API antes de repetir, conciliação pelo `client_operation_id` e bloqueio de repetição após conflito. Falha ou resposta ambígua não apaga a fila; cache remoto não substitui as pendências.
 - Validações concluídas: nove testes Flutter (offline, persistência, isolamento da fila, resposta perdida, API antiga, conflito), cinco testes da API em banco temporário, análise estática sem apontamentos, compilação Python e build Windows debug com URL HTTPS de produção em 23/09.
 - Checkpoint Git publicado: `37e6923` — `feat(beef): persist and reconcile offline weighings`.
