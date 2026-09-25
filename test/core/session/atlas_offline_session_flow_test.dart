@@ -15,15 +15,21 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 class _DelayedApi implements AtlasEnterpriseApiClient {
   final refresh = Completer<AtlasRemoteSession>();
   int meCalls = 0;
+  final persistFlags = <bool>[];
   List<Map<String, dynamic>> farmResponse = const [];
   Map<String, dynamic> farmDetail = const {};
   bool failFarmList = false;
 
   @override
-  Future<AtlasRemoteSession> me() {
+  Future<AtlasRemoteSession> me({bool persist = true}) {
     meCalls++;
+    persistFlags.add(persist);
     return refresh.future;
   }
+
+  @override
+  Future<void> logout() =>
+      AtlasEnterpriseRemoteAuthStore.instance.clearSession();
 
   @override
   Future<List<Map<String, dynamic>>> requestList(
@@ -99,18 +105,20 @@ const _unauthorizedFarm = AtlasRemoteFarm(
 );
 
 AtlasRemoteSession _session({
+  String userId = 'user-a',
   String companyId = 'company-a',
+  String tenantId = 'tenant-a',
   String role = 'owner',
   List<String> farmIds = const ['farm-a'],
 }) => AtlasRemoteSession.fromMap({
   'access_token': 'token-de-teste',
   'refresh_token': 'refresh-de-teste',
   'expires_in_seconds': 3600,
-  'user_id': 'user-a',
+  'user_id': userId,
   'user_name': 'Pessoa de teste',
   'email': 'teste@atlas.local',
   'company_id': companyId,
-  'tenant_id': 'tenant-a',
+  'tenant_id': tenantId,
   'role': role,
   'companies': <Map<String, dynamic>>[],
   'effective_permissions': <String>[],
@@ -166,6 +174,7 @@ void main() {
     expect(controller.status, AtlasSessionStatus.authenticated);
     expect(controller.offlineMode, isTrue);
     expect(api.meCalls, 1);
+    expect(api.persistFlags, [false]);
 
     api.refresh.completeError(StateError('sem conexão'));
     await Future<void>.delayed(Duration.zero);
@@ -329,5 +338,54 @@ void main() {
     expect(controller.activeFarm?.id, _farm.id);
     expect(controller.farms.map((farm) => farm.id), [_farm.id]);
     expect(controller.hasOfflineContext, isTrue);
+  });
+
+  test('resposta tardia após sair não restaura sessão encerrada', () async {
+    await _saveOfflineContext(_session());
+    final api = _DelayedApi();
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    expect((await controller.unlockOffline('123456')).unlocked, isTrue);
+    await controller.logout();
+    api.refresh.complete(_session());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.status, AtlasSessionStatus.unauthenticated);
+    expect(controller.session, isNull);
+    expect(await AtlasEnterpriseRemoteAuthStore.instance.loadSession(), isNull);
+    expect(api.persistFlags, [false]);
+  });
+
+  test('resposta antiga não substitui nova conta autenticada', () async {
+    await _saveOfflineContext(_session());
+    final api = _DelayedApi();
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    expect((await controller.unlockOffline('123456')).unlocked, isTrue);
+    await AtlasEnterpriseRemoteAuthStore.instance.saveFarmPortfolio([
+      _otherCompanyFarm,
+    ]);
+    final newer = _session(
+      userId: 'user-b',
+      companyId: 'company-b',
+      tenantId: 'tenant-b',
+      farmIds: ['farm-b'],
+    );
+    await controller.acceptSession(newer);
+    api.refresh.complete(_session());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.status, AtlasSessionStatus.authenticated);
+    expect(controller.session?.userId, 'user-b');
+    expect(controller.activeFarm?.id, 'farm-b');
+    expect(
+      (await AtlasEnterpriseRemoteAuthStore.instance.loadSession())?.userId,
+      'user-b',
+    );
+    expect(api.persistFlags, [false, false]);
   });
 }

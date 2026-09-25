@@ -12,10 +12,7 @@ void main() {
     expect(gate, contains('await controller.restore();'));
     expect(gate, isNot(contains('controller.restore().timeout')));
     expect(controller, contains('const _sessionValidationTimeout'));
-    expect(
-      controller,
-      contains('_api.me().timeout(_sessionValidationTimeout)'),
-    );
+    expect(controller, contains('.me(persist: false)'));
   });
 
   test('preserva contexto local e mantém a entrada como ação explícita', () {

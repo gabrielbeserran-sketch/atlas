@@ -37,6 +37,7 @@ class AtlasSessionController extends ChangeNotifier {
   bool _offlineMode = false;
   bool _refreshingConnection = false;
   bool _offlinePinConfigured = false;
+  int _sessionEpoch = 0;
 
   AtlasSessionStatus get status => _status;
   AtlasRemoteSession? get session => _session;
@@ -80,6 +81,7 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   Future<void> restore() async {
+    _sessionEpoch++;
     _setStatus(AtlasSessionStatus.restoring);
     final stored = await _store.loadSession();
     if (stored == null) {
@@ -111,8 +113,23 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   Future<void> _refreshContextAfterStartup() async {
+    final epoch = _sessionEpoch;
+    final expectedSession = _session;
+    if (expectedSession == null) return;
     try {
-      final restored = await _api.me().timeout(_sessionValidationTimeout);
+      // A consulta não deve gravar um login antigo antes de verificarmos se
+      // o usuário ainda está nesta sessão.
+      final restored = await _api
+          .me(persist: false)
+          .timeout(_sessionValidationTimeout);
+      if (epoch != _sessionEpoch) return;
+      if (restored.userId != expectedSession.userId ||
+          restored.companyId != expectedSession.companyId ||
+          restored.tenantId != expectedSession.tenantId) {
+        _offlineMode = true;
+        notifyListeners();
+        return;
+      }
       _session = restored;
       await _store.saveSession(restored);
       await _reloadFarmPortfolio();
@@ -120,6 +137,7 @@ class AtlasSessionController extends ChangeNotifier {
       _error = null;
       notifyListeners();
     } catch (_) {
+      if (epoch != _sessionEpoch) return;
       // Dados locais continuam disponíveis. O aviso visual é discreto e não
       // troca de tela nem bloqueia ações locais.
       _offlineMode = true;
@@ -157,6 +175,7 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   Future<void> acceptSession(AtlasRemoteSession session) async {
+    _sessionEpoch++;
     _session = session;
     _error = null;
     _offlineMode = false;
@@ -190,6 +209,7 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   Future<void> switchCompany(String companyId) async {
+    _sessionEpoch++;
     _setStatus(AtlasSessionStatus.loadingContext);
     try {
       final switched = await _api.switchCompany(companyId);
@@ -321,6 +341,7 @@ class AtlasSessionController extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _sessionEpoch++;
     try {
       await _api.logout();
     } finally {

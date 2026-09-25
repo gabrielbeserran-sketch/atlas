@@ -138,7 +138,7 @@ class AtlasEnterpriseApiClient {
     );
   }
 
-  Future<AtlasRemoteSession> me() async {
+  Future<AtlasRemoteSession> me({bool persist = true}) async {
     final response = await request('GET', '/auth/me');
     final current = await _store.loadSession();
 
@@ -150,7 +150,7 @@ class AtlasEnterpriseApiClient {
       'savedAt': current?.savedAt.toIso8601String(),
     });
 
-    await _store.saveSession(session);
+    if (persist) await _store.saveSession(session);
     return session;
   }
 
@@ -239,7 +239,6 @@ class AtlasEnterpriseApiClient {
       );
     }
   }
-
 
   Future<Map<String, dynamic>> uploadFile(
     String method,
