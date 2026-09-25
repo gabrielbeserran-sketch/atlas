@@ -343,7 +343,7 @@ class AtlasHttpClient {
     final session = await _authStore.loadSession();
 
     if (session == null || session.refreshToken.isEmpty) {
-      await _authStore.clearSession();
+      // Ausência de token de renovação não revoga o contexto local/PIN.
       return false;
     }
 
@@ -363,9 +363,17 @@ class AtlasHttpClient {
       final refreshed = AtlasRemoteSession.fromMap(response.asMap());
       await _authStore.saveSession(refreshed);
       return refreshed.accessToken.isNotEmpty;
-    } catch (_) {
-      await _authStore.clearSession();
-      return false;
+    } on AtlasHttpException catch (error) {
+      // Só uma rejeição explícita da credencial invalida a sessão local.
+      // Timeout, indisponibilidade e respostas 5xx devem preservar o acesso
+      // offline, inclusive depois de reiniciar o aplicativo.
+      if (error.statusCode == 400 ||
+          error.statusCode == 401 ||
+          error.statusCode == 403) {
+        await _authStore.clearSession();
+        return false;
+      }
+      rethrow;
     }
   }
 

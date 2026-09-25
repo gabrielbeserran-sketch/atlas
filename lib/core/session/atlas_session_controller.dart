@@ -19,6 +19,8 @@ enum AtlasSessionStatus {
   failure,
 }
 
+enum AtlasOfflineAccessState { ready, pinMissing, sessionMissing, farmMissing }
+
 class AtlasSessionController extends ChangeNotifier {
   AtlasSessionController({
     AtlasEnterpriseApiClient? api,
@@ -47,19 +49,28 @@ class AtlasSessionController extends ChangeNotifier {
   bool get offlineMode => _offlineMode;
   bool get refreshingConnection => _refreshingConnection;
   bool get offlinePinConfigured => _offlinePinConfigured;
-  bool get hasOfflineContext {
+  AtlasOfflineAccessState get offlineAccessState {
+    if (!_offlinePinConfigured) return AtlasOfflineAccessState.pinMissing;
     final session = _session;
+    if (session == null ||
+        session.userId.isEmpty ||
+        session.companyId.isEmpty ||
+        session.tenantId.isEmpty) {
+      return AtlasOfflineAccessState.sessionMissing;
+    }
     final farm = _activeFarm;
-    return _offlinePinConfigured &&
-        session != null &&
-        session.userId.isNotEmpty &&
-        session.companyId.isNotEmpty &&
-        session.tenantId.isNotEmpty &&
-        farm != null &&
-        farm.companyId == session.companyId &&
-        farm.tenantId == session.tenantId &&
-        (session.hasUnrestrictedFarmAccess ||
-            session.farmIds.contains(farm.id));
+    if (farm == null ||
+        farm.companyId != session.companyId ||
+        farm.tenantId != session.tenantId ||
+        (!session.hasUnrestrictedFarmAccess &&
+            !session.farmIds.contains(farm.id))) {
+      return AtlasOfflineAccessState.farmMissing;
+    }
+    return AtlasOfflineAccessState.ready;
+  }
+
+  bool get hasOfflineContext {
+    return offlineAccessState == AtlasOfflineAccessState.ready;
   }
 
   bool get isAuthenticated =>
@@ -83,10 +94,12 @@ class AtlasSessionController extends ChangeNotifier {
   Future<void> restore() async {
     _sessionEpoch++;
     _setStatus(AtlasSessionStatus.restoring);
+    _offlinePinConfigured = await AtlasOfflinePinService.instance.isConfigured;
     final stored = await _store.loadSession();
     if (stored == null) {
       _session = null;
-      _offlinePinConfigured = false;
+      _farms = const [];
+      _activeFarm = null;
       _setStatus(AtlasSessionStatus.unauthenticated);
       return;
     }
@@ -106,7 +119,6 @@ class AtlasSessionController extends ChangeNotifier {
     } else if (_activeFarm == null && savedFarmId != null) {
       await AtlasActiveContext.instance.clearFarm();
     }
-    _offlinePinConfigured = await AtlasOfflinePinService.instance.isConfigured;
     _offlineMode = false;
     _error = null;
     _setStatus(AtlasSessionStatus.unauthenticated);
@@ -361,7 +373,6 @@ class AtlasSessionController extends ChangeNotifier {
       _activeFarm = null;
       _error = null;
       _offlineMode = false;
-      _offlinePinConfigured = false;
       _setStatus(AtlasSessionStatus.unauthenticated);
     }
   }

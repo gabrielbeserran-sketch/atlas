@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/auth/atlas_offline_pin_service.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
+import 'package:projeto_atlas/core/session/atlas_session_controller.dart';
 import 'package:projeto_atlas/features/authentication/presentation/screens/company_selection_screen.dart';
 import 'package:projeto_atlas/features/authentication/presentation/screens/password_recovery_screen.dart';
 import 'package:projeto_atlas/features/authentication/presentation/screens/register_screen.dart';
@@ -16,6 +17,7 @@ class LoginScreen extends StatefulWidget {
     this.onAuthenticated,
     this.autoRestoreSession = true,
     this.canUnlockOffline = false,
+    this.offlineAccessState = AtlasOfflineAccessState.pinMissing,
     this.onUnlockOffline,
     super.key,
   });
@@ -23,6 +25,7 @@ class LoginScreen extends StatefulWidget {
   final Future<void> Function(AtlasRemoteSession session)? onAuthenticated;
   final bool autoRestoreSession;
   final bool canUnlockOffline;
+  final AtlasOfflineAccessState offlineAccessState;
   final Future<AtlasOfflineUnlockAttempt> Function(String pin)? onUnlockOffline;
 
   @override
@@ -242,6 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
                                 canUnlockOffline: widget.canUnlockOffline,
+                                offlineAccessState: widget.offlineAccessState,
                                 onUnlockOffline: widget.onUnlockOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
@@ -267,6 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onLogin: login,
                                 onRetryBackend: _warmBackend,
                                 canUnlockOffline: widget.canUnlockOffline,
+                                offlineAccessState: widget.offlineAccessState,
                                 onUnlockOffline: widget.onUnlockOffline,
                                 onForgotPassword: _openPasswordRecovery,
                                 onRegister: _openRegister,
@@ -405,6 +410,7 @@ class _AtlasLoginForm extends StatelessWidget {
     required this.onLogin,
     required this.onRetryBackend,
     required this.canUnlockOffline,
+    required this.offlineAccessState,
     required this.onUnlockOffline,
     required this.onForgotPassword,
     required this.onRegister,
@@ -419,6 +425,7 @@ class _AtlasLoginForm extends StatelessWidget {
   final VoidCallback onLogin;
   final VoidCallback onRetryBackend;
   final bool canUnlockOffline;
+  final AtlasOfflineAccessState offlineAccessState;
   final Future<AtlasOfflineUnlockAttempt> Function(String pin)? onUnlockOffline;
   final VoidCallback onForgotPassword;
   final VoidCallback onRegister;
@@ -447,7 +454,7 @@ class _AtlasLoginForm extends StatelessWidget {
           if (backendConnection != _BackendConnectionState.ready) ...[
             _BackendConnectionBanner(
               state: backendConnection,
-              canUnlockOffline: canUnlockOffline,
+              offlineAccessState: offlineAccessState,
               onRetry: onRetryBackend,
             ),
             const SizedBox(height: AtlasSpacing.md),
@@ -602,12 +609,12 @@ class _AtlasLoginForm extends StatelessWidget {
 class _BackendConnectionBanner extends StatelessWidget {
   const _BackendConnectionBanner({
     required this.state,
-    required this.canUnlockOffline,
+    required this.offlineAccessState,
     required this.onRetry,
   });
 
   final _BackendConnectionState state;
-  final bool canUnlockOffline;
+  final AtlasOfflineAccessState offlineAccessState;
   final VoidCallback onRetry;
 
   @override
@@ -626,28 +633,52 @@ class _BackendConnectionBanner extends StatelessWidget {
           color: checking ? const Color(0xFFB7CDBB) : const Color(0xFFE9C892),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          checking
-              ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.cloud_off_outlined, color: Color(0xFF9A5B00)),
-          const SizedBox(width: AtlasSpacing.sm),
-          Expanded(
-            child: Text(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               checking
-                  ? 'Atualizando a conexão em segundo plano. Você pode continuar preenchendo o acesso.'
-                  : canUnlockOffline
-                  ? 'Sem conexão no momento. Entre offline com seu PIN ou tente conectar quando quiser.'
-                  : 'Sem conexão no momento. Para entrar agora, conecte-se ao servidor; o modo offline é liberado após configurar um PIN neste dispositivo.',
-              style: const TextStyle(color: AtlasColors.textSecondary),
-            ),
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(
+                      Icons.cloud_off_outlined,
+                      color: Color(0xFF9A5B00),
+                    ),
+              const SizedBox(width: AtlasSpacing.sm),
+              Expanded(
+                child: Text(
+                  checking
+                      ? 'Atualizando a conexão em segundo plano. Você pode continuar preenchendo o acesso.'
+                      : switch (offlineAccessState) {
+                          AtlasOfflineAccessState.ready =>
+                            'Sem conexão. Entre com seu PIN ou tente conectar.',
+                          AtlasOfflineAccessState.pinMissing =>
+                            'Sem conexão. Para entrar offline, configure um PIN neste dispositivo após conectar-se.',
+                          AtlasOfflineAccessState.sessionMissing =>
+                            'PIN salvo, mas sem sessão local. Conecte-se uma vez para reativar o acesso offline. “Sair” encerra a sessão.',
+                          AtlasOfflineAccessState.farmMissing =>
+                            'PIN salvo, mas sem fazenda autorizada neste dispositivo. Conecte-se uma vez para atualizar o acesso offline.',
+                        },
+                  style: const TextStyle(color: AtlasColors.textSecondary),
+                ),
+              ),
+            ],
           ),
-          if (!checking)
-            TextButton(onPressed: onRetry, child: const Text('Tentar conexão')),
+          if (!checking) ...[
+            const SizedBox(height: AtlasSpacing.xs),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onRetry,
+                child: const Text('Tentar conexão'),
+              ),
+            ),
+          ],
         ],
       ),
     );

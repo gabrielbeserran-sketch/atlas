@@ -145,6 +145,7 @@ class _AtlasSessionGateState extends State<AtlasSessionGate> {
                 onAuthenticated: controller.acceptSession,
                 autoRestoreSession: false,
                 canUnlockOffline: controller.hasOfflineContext,
+                offlineAccessState: controller.offlineAccessState,
                 onUnlockOffline: controller.unlockOffline,
               );
 

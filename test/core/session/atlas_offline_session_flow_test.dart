@@ -182,6 +182,24 @@ void main() {
     expect(controller.offlineMode, isTrue);
   });
 
+  test(
+    'PIN salvo sem sessão é reconhecido mas não desbloqueia dados',
+    () async {
+      await AtlasOfflinePinService.instance.save('123456');
+      final controller = AtlasSessionController(api: _DelayedApi());
+      addTearDown(controller.dispose);
+
+      await controller.restore();
+      expect(controller.offlinePinConfigured, isTrue);
+      expect(
+        controller.offlineAccessState,
+        AtlasOfflineAccessState.sessionMissing,
+      );
+      expect(controller.hasOfflineContext, isFalse);
+      expect((await controller.unlockOffline('123456')).unlocked, isFalse);
+    },
+  );
+
   test('PIN não abre fazenda fora da carteira autorizada', () async {
     await _saveOfflineContext(_session(role: 'worker', farmIds: ['farm-b']));
     final api = _DelayedApi();
@@ -347,7 +365,11 @@ void main() {
     addTearDown(controller.dispose);
 
     await controller.restore();
-    expect(controller.offlinePinConfigured, isFalse);
+    expect(controller.offlinePinConfigured, isTrue);
+    expect(
+      controller.offlineAccessState,
+      AtlasOfflineAccessState.sessionMissing,
+    );
     await AtlasEnterpriseRemoteAuthStore.instance.saveFarmPortfolio([_farm]);
     await controller.acceptSession(_session());
 
