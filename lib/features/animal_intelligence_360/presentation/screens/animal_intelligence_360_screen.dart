@@ -105,6 +105,7 @@ class _AnimalIntelligence360ScreenState
     final local = await Future.wait<dynamic>([
       weightStorage.loadWeights(
         farmName: widget.farm.name,
+        farmId: widget.farm.id ?? '',
         groupName: widget.group.name,
         animalId: widget.animal.id,
       ),

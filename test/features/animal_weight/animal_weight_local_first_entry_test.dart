@@ -16,6 +16,7 @@ class _RecordingStorage extends AnimalWeightStorageService {
   @override
   Future<List<AnimalWeightData>> loadWeights({
     required String farmName,
+    String? farmId,
     required String groupName,
     required String animalId,
     bool preferRemote = true,
@@ -27,6 +28,7 @@ class _RecordingStorage extends AnimalWeightStorageService {
   @override
   Future<void> saveWeights({
     required String farmName,
+    String? farmId,
     required String groupName,
     required String animalId,
     required List<AnimalWeightData> weights,

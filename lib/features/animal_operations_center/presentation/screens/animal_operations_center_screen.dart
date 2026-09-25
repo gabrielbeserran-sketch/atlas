@@ -110,6 +110,7 @@ class _AnimalOperationsCenterScreenState
       ),
       weightStorage.loadWeights(
         farmName: widget.farm.name,
+        farmId: widget.farm.id ?? '',
         groupName: widget.group.name,
         animalId: widget.animal.id,
       ),

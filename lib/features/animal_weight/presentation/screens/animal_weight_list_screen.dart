@@ -63,7 +63,9 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   @override
   void initState() {
     super.initState();
-    storage = widget.weightStorage ?? AnimalWeightStorageService();
+    storage =
+        widget.weightStorage ??
+        AnimalWeightStorageService(companyId: companyId, farmId: farmId);
     enterprise = widget.weightEnterprise ?? AnimalWeightEnterpriseService();
     outbox = widget.weightOutbox ?? AnimalWeightOutboxService();
     _loadInitial();
@@ -214,6 +216,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
           }
           await storage.saveWeights(
             farmName: widget.farm.name,
+            farmId: farmId,
             groupName: widget.group.name,
             animalId: animalId,
             weights: loaded,
@@ -222,6 +225,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
           nextNotice = 'Sem conexão no momento. Tente sincronizar mais tarde.';
           loaded = await storage.loadWeights(
             farmName: widget.farm.name,
+            farmId: farmId,
             groupName: widget.group.name,
             animalId: animalId,
             preferRemote: false,
@@ -230,6 +234,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
       } else {
         loaded = await storage.loadWeights(
           farmName: widget.farm.name,
+          farmId: farmId,
           groupName: widget.group.name,
           animalId: animalId,
           preferRemote: false,
@@ -273,6 +278,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   Future<void> saveWeights() async {
     await storage.saveWeights(
       farmName: widget.farm.name,
+      farmId: farmId,
       groupName: widget.group.name,
       animalId: widget.animal.id,
       weights: weights,

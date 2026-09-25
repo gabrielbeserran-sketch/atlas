@@ -158,6 +158,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
       loadedAnimalContexts.map((context) {
         return weightStorage.loadWeights(
           farmName: context.farm.name,
+          farmId: context.farm.id ?? '',
           groupName: context.group.name,
           animalId: context.animal.id,
         );

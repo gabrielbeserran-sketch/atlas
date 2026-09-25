@@ -25,6 +25,7 @@ class AnimalZootechnicalDashboardService {
   }) async {
     final weights = await _weightStorage.loadWeights(
       farmName: farm.name,
+      farmId: farm.id ?? '',
       groupName: group.name,
       animalId: animal.id,
     );

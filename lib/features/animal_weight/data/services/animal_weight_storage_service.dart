@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_enterprise_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
@@ -9,35 +10,38 @@ class AnimalWeightStorageService {
   AnimalWeightStorageService({
     SharedPreferencesAsync? preferences,
     AnimalWeightEnterpriseService? enterprise,
+    String? companyId,
+    String? farmId,
   }) : _preferences = preferences ?? SharedPreferencesAsync(),
-       _enterprise = enterprise ?? AnimalWeightEnterpriseService();
+       _enterprise = enterprise ?? AnimalWeightEnterpriseService(),
+       _companyId = companyId,
+       _farmId = farmId;
 
   final SharedPreferencesAsync _preferences;
   final AnimalWeightEnterpriseService _enterprise;
+  final String? _companyId;
+  final String? _farmId;
 
-  String _normalize(String value) {
-    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
-  }
-
-  String _createStorageKey({
-    required String farmName,
-    required String groupName,
-    required String animalId,
-  }) {
-    final normalizedFarm = _normalize(farmName);
-    final normalizedGroup = _normalize(groupName);
-    final normalizedAnimal = _normalize(animalId);
-
-    return 'atlas_animal_weights_'
-        '${normalizedFarm}_'
-        '${normalizedGroup}_'
-        '$normalizedAnimal';
+  String? _createStorageKey(String animalId, {String? farmId}) {
+    final company = (_companyId ?? AtlasActiveContext.instance.companyId ?? '')
+        .trim();
+    final farm = (farmId ?? _farmId ?? AtlasActiveContext.instance.farmId ?? '')
+        .trim();
+    final animal = animalId.trim();
+    if (company.isEmpty || farm.isEmpty || animal.isEmpty) return null;
+    final scope = [
+      company,
+      farm,
+      animal,
+    ].map((value) => base64Url.encode(utf8.encode(value))).join('_');
+    return 'atlas_animal_weights_v2_$scope';
   }
 
   Future<List<AnimalWeightData>> loadWeights({
     required String farmName,
     required String groupName,
     required String animalId,
+    String? farmId,
     bool preferRemote = true,
   }) async {
     final normalizedAnimalId = animalId.trim();
@@ -52,6 +56,7 @@ class AnimalWeightStorageService {
           farmName: farmName,
           groupName: groupName,
           animalId: normalizedAnimalId,
+          farmId: farmId,
           weights: remoteWeights,
         );
 
@@ -65,6 +70,7 @@ class AnimalWeightStorageService {
       farmName: farmName,
       groupName: groupName,
       animalId: normalizedAnimalId,
+      farmId: farmId,
     );
   }
 
@@ -72,12 +78,10 @@ class AnimalWeightStorageService {
     required String farmName,
     required String groupName,
     required String animalId,
+    String? farmId,
   }) async {
-    final storageKey = _createStorageKey(
-      farmName: farmName,
-      groupName: groupName,
-      animalId: animalId,
-    );
+    final storageKey = _createStorageKey(animalId, farmId: farmId);
+    if (storageKey == null) return <AnimalWeightData>[];
 
     final savedData = await _preferences.getString(storageKey);
 
@@ -105,13 +109,11 @@ class AnimalWeightStorageService {
     required String farmName,
     required String groupName,
     required String animalId,
+    String? farmId,
     required List<AnimalWeightData> weights,
   }) async {
-    final storageKey = _createStorageKey(
-      farmName: farmName,
-      groupName: groupName,
-      animalId: animalId,
-    );
+    final storageKey = _createStorageKey(animalId, farmId: farmId);
+    if (storageKey == null) return;
 
     final encodedData = jsonEncode(
       weights.map((weight) => weight.toMap()).toList(),
