@@ -240,11 +240,18 @@ class AtlasSessionController extends ChangeNotifier {
     final previousActiveId = _activeFarm?.id;
     final savedFarmId = await _store.loadActiveFarm();
     final items = await _api.requestList('GET', '/farms');
+    final session = _session;
 
     _farms =
         items
             .map(AtlasRemoteFarm.fromMap)
-            .where((farm) => farm.id.isNotEmpty && farm.active)
+            .where(
+              (farm) =>
+                  farm.id.isNotEmpty &&
+                  farm.active &&
+                  session != null &&
+                  _isAuthorizedFarm(session, farm),
+            )
             .toList(growable: false)
           ..sort((a, b) => a.name.compareTo(b.name));
     await _store.saveFarmPortfolio(_farms);
@@ -270,15 +277,16 @@ class AtlasSessionController extends ChangeNotifier {
     final cached = await _store.loadFarmPortfolio();
     if (session.companyId.isEmpty) return const [];
     return cached
-        .where(
-          (farm) =>
-              farm.companyId == session.companyId &&
-              farm.tenantId == session.tenantId &&
-              (session.hasUnrestrictedFarmAccess ||
-                  session.farmIds.contains(farm.id)),
-        )
+        .where((farm) => _isAuthorizedFarm(session, farm))
         .toList(growable: false);
   }
+
+  bool _isAuthorizedFarm(AtlasRemoteSession session, AtlasRemoteFarm farm) =>
+      session.companyId.isNotEmpty &&
+      session.tenantId.isNotEmpty &&
+      farm.companyId == session.companyId &&
+      farm.tenantId == session.tenantId &&
+      (session.hasUnrestrictedFarmAccess || session.farmIds.contains(farm.id));
 
   Future<void> selectFarm(AtlasRemoteFarm farm) async {
     await selectFarmById(farm.id);
@@ -291,7 +299,11 @@ class AtlasSessionController extends ChangeNotifier {
     if (target == null) {
       final remote = await _api.request('GET', '/farms/$farmId');
       target = AtlasRemoteFarm.fromMap(remote);
-      if (target.id.isEmpty || !target.active) {
+      final session = _session;
+      if (target.id.isEmpty ||
+          !target.active ||
+          session == null ||
+          !_isAuthorizedFarm(session, target)) {
         throw StateError('Fazenda indispon├¡vel para a sess├úo atual.');
       }
       _farms = [..._farms.where((item) => item.id != target!.id), target]

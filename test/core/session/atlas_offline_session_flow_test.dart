@@ -15,12 +15,36 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 class _DelayedApi implements AtlasEnterpriseApiClient {
   final refresh = Completer<AtlasRemoteSession>();
   int meCalls = 0;
+  List<Map<String, dynamic>> farmResponse = const [];
+  Map<String, dynamic> farmDetail = const {};
+  bool failFarmList = false;
 
   @override
   Future<AtlasRemoteSession> me() {
     meCalls++;
     return refresh.future;
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> requestList(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+  }) async {
+    if (failFarmList) throw StateError('sem conexão');
+    return farmResponse;
+  }
+
+  @override
+  Future<Map<String, dynamic>> request(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+  }) async => farmDetail;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -62,6 +86,18 @@ const _otherTenantFarm = AtlasRemoteFarm(
   active: true,
 );
 
+const _unauthorizedFarm = AtlasRemoteFarm(
+  id: 'farm-c',
+  tenantId: 'tenant-a',
+  companyId: 'company-a',
+  name: 'Fazenda sem permissão',
+  city: 'Goiânia',
+  state: 'GO',
+  animals: 2,
+  area: 3,
+  active: true,
+);
+
 AtlasRemoteSession _session({
   String companyId = 'company-a',
   String role = 'owner',
@@ -88,6 +124,18 @@ Future<void> _saveOfflineContext(AtlasRemoteSession session) async {
   await store.saveActiveFarm(_farm.id);
   await AtlasOfflinePinService.instance.save('123456');
 }
+
+Map<String, dynamic> _farmMap(AtlasRemoteFarm farm) => {
+  'id': farm.id,
+  'tenant_id': farm.tenantId,
+  'company_id': farm.companyId,
+  'name': farm.name,
+  'city': farm.city,
+  'state': farm.state,
+  'animals': farm.animals,
+  'area': farm.area,
+  'active': farm.active,
+};
 
 void main() {
   setUp(() {
@@ -216,4 +264,70 @@ void main() {
       expect(correctWhileBlocked.blocked, isTrue);
     },
   );
+
+  test(
+    'releitura remota só conserva fazendas da carteira autorizada',
+    () async {
+      await _saveOfflineContext(_session(role: 'worker'));
+      final api = _DelayedApi()
+        ..farmResponse = [
+          _farmMap(_otherCompanyFarm),
+          _farmMap(_otherTenantFarm),
+          _farmMap(_unauthorizedFarm),
+          _farmMap(_farm),
+        ];
+      final controller = AtlasSessionController(api: api);
+      addTearDown(controller.dispose);
+
+      await controller.restore();
+      await controller.refreshFarms();
+
+      expect(controller.farms.map((farm) => farm.id), [_farm.id]);
+      expect(controller.activeFarm?.id, _farm.id);
+      expect(
+        (await AtlasEnterpriseRemoteAuthStore.instance.loadFarmPortfolio()).map(
+          (farm) => farm.id,
+        ),
+        [_farm.id],
+      );
+    },
+  );
+
+  test('busca direta recusa fazenda fora da empresa', () async {
+    await _saveOfflineContext(_session());
+    final api = _DelayedApi()..farmDetail = _farmMap(_otherCompanyFarm);
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    await expectLater(controller.selectFarmById('farm-b'), throwsStateError);
+    expect(controller.activeFarm?.id, _farm.id);
+    expect(AtlasActiveContext.instance.farmId, _farm.id);
+    expect(controller.farms.map((farm) => farm.id), [_farm.id]);
+  });
+
+  test('busca direta recusa fazenda sem permissão do colaborador', () async {
+    await _saveOfflineContext(_session(role: 'worker'));
+    final api = _DelayedApi()..farmDetail = _farmMap(_unauthorizedFarm);
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    await expectLater(controller.selectFarmById('farm-c'), throwsStateError);
+    expect(controller.activeFarm?.id, _farm.id);
+    expect(controller.farms.map((farm) => farm.id), [_farm.id]);
+  });
+
+  test('falha na releitura remota mantém carteira local intacta', () async {
+    await _saveOfflineContext(_session());
+    final api = _DelayedApi()..failFarmList = true;
+    final controller = AtlasSessionController(api: api);
+    addTearDown(controller.dispose);
+
+    await controller.restore();
+    await expectLater(controller.refreshFarms(), throwsStateError);
+    expect(controller.activeFarm?.id, _farm.id);
+    expect(controller.farms.map((farm) => farm.id), [_farm.id]);
+    expect(controller.hasOfflineContext, isTrue);
+  });
 }
