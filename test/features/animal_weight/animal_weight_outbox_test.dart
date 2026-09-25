@@ -337,6 +337,15 @@ void main() {
         'client_operation_id': 'operation-conflict',
       }),
     );
+    api.remote.add(
+      AnimalWeightData.fromRemoteMap({
+        'id': 'remote-older',
+        'measured_at': '2026-09-22T12:00:00Z',
+        'weight': 430,
+        'notes': '',
+        'client_operation_id': 'operation-older',
+      }),
+    );
     await tester.pumpWidget(
       MaterialApp(
         home: AnimalWeightListScreen(
@@ -362,6 +371,17 @@ void main() {
     );
     expect(find.text('450 kg'), findsWidgets);
     expect(find.text('440 kg'), findsWidgets);
+    final summaryBeforeReview = {
+      for (final card in tester.widgetList<WeightSummaryCard>(
+        find.byType(WeightSummaryCard),
+      ))
+        card.title: card.value,
+    };
+    expect(summaryBeforeReview['Peso atual'], '440 kg');
+    expect(summaryBeforeReview['Menor peso'], '430 kg');
+    expect(summaryBeforeReview['Maior peso'], '440 kg');
+    expect(summaryBeforeReview['Última variação'], '+10 kg');
+    expect(find.textContaining('não são contadas novamente'), findsOneWidget);
     await tester.tap(find.text('Revisar pesagem'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Neste dispositivo: 450 kg'), findsOneWidget);
@@ -380,7 +400,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Remover cópia local'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar remoção local'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Confirmar remoção local'),
+    );
     await tester.pumpAndSettle();
     expect(
       await outbox.load(
@@ -392,6 +414,14 @@ void main() {
     );
     expect(find.text('440 kg'), findsWidgets);
     expect(find.text('450 kg'), findsNothing);
+    expect(find.textContaining('não são contadas novamente'), findsNothing);
+    final summaryAfterReview = {
+      for (final card in tester.widgetList<WeightSummaryCard>(
+        find.byType(WeightSummaryCard),
+      ))
+        card.title: card.value,
+    };
+    expect(summaryAfterReview, summaryBeforeReview);
     expect(api.createCalls, 0);
   });
 

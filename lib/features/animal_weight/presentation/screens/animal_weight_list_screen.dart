@@ -82,40 +82,62 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     if (mounted && pendingWeights.isEmpty) unawaited(loadWeights());
   }
 
+  /// Mantém as duas versões no histórico para auditoria, mas usa somente a
+  /// confirmação remota nos indicadores quando a chave da operação coincide.
+  List<AnimalWeightData> get indicatorWeights {
+    final remoteOperationIds = weights
+        .where((record) => record.isRemote)
+        .map((record) => record.clientOperationId)
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    return weights
+        .where(
+          (record) =>
+              record.isRemote ||
+              record.clientOperationId.isEmpty ||
+              !remoteOperationIds.contains(record.clientOperationId),
+        )
+        .toList();
+  }
+
   double get currentWeight {
-    if (weights.isEmpty) {
+    final records = indicatorWeights;
+    if (records.isEmpty) {
       return widget.animal.weight;
     }
 
-    return weights.first.weight;
+    return records.first.weight;
   }
 
   double get minimumWeight {
-    if (weights.isEmpty) {
+    final records = indicatorWeights;
+    if (records.isEmpty) {
       return widget.animal.weight;
     }
 
-    return weights.map((record) => record.weight).reduce((first, second) {
+    return records.map((record) => record.weight).reduce((first, second) {
       return first < second ? first : second;
     });
   }
 
   double get maximumWeight {
-    if (weights.isEmpty) {
+    final records = indicatorWeights;
+    if (records.isEmpty) {
       return widget.animal.weight;
     }
 
-    return weights.map((record) => record.weight).reduce((first, second) {
+    return records.map((record) => record.weight).reduce((first, second) {
       return first > second ? first : second;
     });
   }
 
   double? get latestVariation {
-    if (weights.length < 2) {
+    final records = indicatorWeights;
+    if (records.length < 2) {
       return null;
     }
 
-    return weights[0].weight - weights[1].weight;
+    return records[0].weight - records[1].weight;
   }
 
   Future<void> loadWeights({bool preferRemote = true}) async {
@@ -646,16 +668,14 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     );
   }
 
-  double? calculateVariation(int index) {
-    if (index >= weights.length - 1) {
-      return null;
-    }
-
-    return weights[index].weight - weights[index + 1].weight;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final metricRecords = indicatorWeights;
+    final variationByRecord = <AnimalWeightData, double>{};
+    for (var index = 0; index < metricRecords.length - 1; index++) {
+      variationByRecord[metricRecords[index]] =
+          metricRecords[index].weight - metricRecords[index + 1].weight;
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Pesagens')),
       floatingActionButton: FloatingActionButton.extended(
@@ -716,6 +736,14 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
+                      if (weights.length > metricRecords.length) ...[
+                        const Text(
+                          'Cópias locais em conflito continuam no histórico para revisão, '
+                          'mas não são contadas novamente nos indicadores.',
+                          style: TextStyle(color: Color(0xFF8A5900)),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       Wrap(
                         spacing: 16,
                         runSpacing: 16,
@@ -767,7 +795,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                       else
                         ...List.generate(weights.length, (index) {
                           final record = weights[index];
-                          final variation = calculateVariation(index);
+                          final variation = variationByRecord[record];
                           final pending = record.isRemote
                               ? <PendingAnimalWeight>[]
                               : pendingWeights
