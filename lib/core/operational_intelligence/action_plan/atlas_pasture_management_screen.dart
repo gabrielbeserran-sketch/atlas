@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_models.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_area_overview.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
 
 class AtlasPastureManagementScreen extends StatefulWidget {
@@ -234,18 +235,7 @@ class _AtlasPastureManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    final totalArea = paddocks.fold<double>(
-      0,
-      (sum, e) => sum + e.areaHectares,
-    );
-    final totalDryMatter = paddocks.fold<double>(
-      0,
-      (sum, e) => sum + e.dryMatterKgHa * e.areaHectares,
-    );
-    final avgSupport = paddocks.isEmpty
-        ? 0.0
-        : paddocks.map((e) => e.supportCapacityAuHa).reduce((a, b) => a + b) /
-              paddocks.length;
+    final areaOverview = AtlasPastureAreaOverview.fromPaddocks(paddocks);
     final alerts = service.alerts(paddocks, operations);
 
     return DefaultTabController(
@@ -310,10 +300,22 @@ class _AtlasPastureManagementScreenState
                     'Nenhuma rotação registrada.',
                   ),
                   _metrics([
-                    ('Área total', totalArea, 'ha'),
-                    ('Capacidade média', avgSupport, 'UA/ha'),
-                    ('Matéria seca total', totalDryMatter, 'kg'),
-                  ]),
+                    (
+                      'Soma nominal dos piquetes',
+                      areaOverview.nominalAreaHa,
+                      'ha',
+                    ),
+                    (
+                      'Suporte médio ponderado pela área',
+                      areaOverview.weightedSupportAuHa,
+                      'UA/ha',
+                    ),
+                    (
+                      'Matéria seca registrada',
+                      areaOverview.totalDryMatterKg,
+                      'kg',
+                    ),
+                  ], invalidPaddockCount: areaOverview.invalidPaddockCount),
                   _list([
                     ...paddocks.map(
                       (e) => ListTile(
@@ -400,25 +402,41 @@ class _AtlasPastureManagementScreenState
     );
   }
 
-  Widget _metrics(List<(String, double, String)> values) {
+  Widget _metrics(
+    List<(String, double?, String)> values, {
+    required int invalidPaddockCount,
+  }) {
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: values
-          .map(
-            (e) => Card(
-              child: ListTile(
-                title: Text(e.$1),
-                trailing: Text(
-                  '${e.$2.toStringAsFixed(2)} ${e.$3}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'A soma dos piquetes não confirma a área efetiva de pastagem: '
+              'pode haver sobreposição ou área fora de uso. A lotação por hectare '
+              'de pasto só será calculada com uma base validada.'
+              '${invalidPaddockCount > 0 ? ' $invalidPaddockCount piquete(s) com área inválida ficaram fora da soma.' : ''}',
+            ),
+          ),
+        ),
+        ...values.map(
+          (e) => Card(
+            child: ListTile(
+              title: Text(e.$1),
+              trailing: Text(
+                e.$2 == null
+                    ? 'Sem dados'
+                    : '${e.$2!.toStringAsFixed(2)} ${e.$3}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-          )
-          .toList(),
+          ),
+        ),
+      ],
     );
   }
 }
