@@ -12,10 +12,11 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
+    json_default = sa.text("'{}'") if op.get_bind().dialect.name == "sqlite" else sa.text("'{}'::json")
     op.add_column("atlas_action_plan_items", sa.Column("source_entity_type", sa.String(length=80), nullable=False, server_default=""))
     op.add_column("atlas_action_plan_items", sa.Column("source_entity_id", sa.String(length=120), nullable=False, server_default=""))
-    op.add_column("atlas_action_plan_items", sa.Column("baseline_metrics_json", sa.JSON(), nullable=False, server_default=sa.text("'{}'::json")))
-    op.add_column("atlas_action_plan_items", sa.Column("outcome_metrics_json", sa.JSON(), nullable=False, server_default=sa.text("'{}'::json")))
+    op.add_column("atlas_action_plan_items", sa.Column("baseline_metrics_json", sa.JSON(), nullable=False, server_default=json_default))
+    op.add_column("atlas_action_plan_items", sa.Column("outcome_metrics_json", sa.JSON(), nullable=False, server_default=json_default))
     op.add_column("atlas_action_plan_items", sa.Column("outcome_status", sa.String(length=30), nullable=False, server_default="pending"))
     op.add_column("atlas_action_plan_items", sa.Column("outcome_measured_at", sa.DateTime(timezone=True), nullable=True))
     op.create_index("ix_atlas_action_plan_items_source_entity_type", "atlas_action_plan_items", ["source_entity_type"], unique=False)

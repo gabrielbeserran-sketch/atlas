@@ -18,7 +18,9 @@ def upgrade() -> None:
         "herd_lots",
         sa.Column("paddock", sa.String(length=180), nullable=False, server_default=""),
     )
-    op.alter_column("herd_lots", "paddock", server_default=None)
+    # SQLite não implementa ALTER COLUMN diretamente; batch recria a tabela.
+    with op.batch_alter_table("herd_lots") as batch:
+        batch.alter_column("paddock", server_default=None)
 
 
 def downgrade() -> None:

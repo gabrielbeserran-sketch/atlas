@@ -18,24 +18,27 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "farms",
-        sa.Column(
-            "production_profile",
-            sa.String(length=20),
-            nullable=False,
-            server_default="mixed",
-        ),
-    )
-    op.add_column(
-        "farms",
-        sa.Column(
-            "production_system",
-            sa.String(length=60),
-            nullable=False,
-            server_default="",
-        ),
-    )
+    columns = {item["name"] for item in sa.inspect(op.get_bind()).get_columns("farms")}
+    if "production_profile" not in columns:
+        op.add_column(
+            "farms",
+            sa.Column(
+                "production_profile",
+                sa.String(length=20),
+                nullable=False,
+                server_default="mixed",
+            ),
+        )
+    if "production_system" not in columns:
+        op.add_column(
+            "farms",
+            sa.Column(
+                "production_system",
+                sa.String(length=60),
+                nullable=False,
+                server_default="",
+            ),
+        )
 
 
 def downgrade() -> None:

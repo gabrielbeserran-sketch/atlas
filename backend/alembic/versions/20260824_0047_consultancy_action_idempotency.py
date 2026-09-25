@@ -24,19 +24,33 @@ def upgrade() -> None:
         ["idempotency_key"],
         unique=False,
     )
-    op.create_unique_constraint(
-        "uq_atlas_action_company_farm_idempotency",
-        "atlas_action_plan_items",
-        ["company_id", "farm_id", "idempotency_key"],
-    )
+    if op.get_bind().dialect.name == "sqlite":
+        op.create_index(
+            "uq_atlas_action_company_farm_idempotency",
+            "atlas_action_plan_items",
+            ["company_id", "farm_id", "idempotency_key"],
+            unique=True,
+        )
+    else:
+        op.create_unique_constraint(
+            "uq_atlas_action_company_farm_idempotency",
+            "atlas_action_plan_items",
+            ["company_id", "farm_id", "idempotency_key"],
+        )
 
 
 def downgrade() -> None:
-    op.drop_constraint(
-        "uq_atlas_action_company_farm_idempotency",
-        "atlas_action_plan_items",
-        type_="unique",
-    )
+    if op.get_bind().dialect.name == "sqlite":
+        op.drop_index(
+            "uq_atlas_action_company_farm_idempotency",
+            table_name="atlas_action_plan_items",
+        )
+    else:
+        op.drop_constraint(
+            "uq_atlas_action_company_farm_idempotency",
+            "atlas_action_plan_items",
+            type_="unique",
+        )
     op.drop_index(
         "ix_atlas_action_idempotency_key",
         table_name="atlas_action_plan_items",

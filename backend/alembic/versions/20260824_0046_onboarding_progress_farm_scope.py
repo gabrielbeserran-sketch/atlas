@@ -5,6 +5,7 @@ Revises: 20260824_0045
 """
 from alembic import op
 import sqlalchemy as sa
+import hashlib
 
 
 revision = "20260824_0046"
@@ -14,6 +15,10 @@ depends_on = None
 
 
 def upgrade() -> None:
+    if op.get_bind().dialect.name == "sqlite":
+        _upgrade_sqlite()
+        return
+
     op.add_column(
         "onboarding_progress",
         sa.Column("farm_id", sa.String(length=80), nullable=True),
@@ -95,6 +100,60 @@ def upgrade() -> None:
             """
         )
     )
+
+
+def _upgrade_sqlite() -> None:
+    """Recria a tabela no SQLite, que não suporta ALTER de constraints.
+
+    Preserva o estado legado e replica-o para as fazendas já cadastradas.
+    O ramo PostgreSQL permanece inalterado para produção.
+    """
+    bind = op.get_bind()
+    old_rows = bind.execute(sa.text("SELECT * FROM onboarding_progress")).mappings().all()
+    farms = bind.execute(sa.text("SELECT id, company_id FROM farms")).mappings().all()
+    farms_by_company: dict[str, list[str]] = {}
+    for farm in farms:
+        farms_by_company.setdefault(str(farm["company_id"]), []).append(str(farm["id"]))
+
+    op.create_table(
+        "onboarding_progress_migrated",
+        sa.Column("id", sa.String(80), primary_key=True),
+        sa.Column("tenant_id", sa.String(80)),
+        sa.Column("company_id", sa.String(80), sa.ForeignKey("companies.id", ondelete="CASCADE")),
+        sa.Column("farm_id", sa.String(80), sa.ForeignKey("farms.id", ondelete="CASCADE")),
+        sa.Column("steps_json", sa.JSON()),
+        sa.Column("completion_percent", sa.Float()),
+        sa.Column("completed_at", sa.DateTime(timezone=True)),
+        sa.UniqueConstraint("company_id", "farm_id", name="uq_onboarding_progress_company_farm"),
+    )
+    for row in old_rows:
+        company_id = str(row["company_id"])
+        targets = farms_by_company.get(company_id) or [None]
+        for farm_id in targets:
+            suffix = hashlib.md5(f"{company_id}:{farm_id}".encode()).hexdigest()
+            bind.execute(
+                sa.text(
+                    "INSERT INTO onboarding_progress_migrated "
+                    "(id, tenant_id, company_id, farm_id, steps_json, completion_percent, completed_at) "
+                    "VALUES (:id, :tenant_id, :company_id, :farm_id, :steps_json, :completion_percent, :completed_at)"
+                ),
+                {
+                    "id": f"onboarding_{suffix}" if farm_id else row["id"],
+                    "tenant_id": row["tenant_id"],
+                    "company_id": company_id,
+                    "farm_id": farm_id,
+                    "steps_json": row["steps_json"],
+                    "completion_percent": row["completion_percent"],
+                    "completed_at": row["completed_at"],
+                },
+            )
+    op.drop_table("onboarding_progress")
+    op.rename_table("onboarding_progress_migrated", "onboarding_progress")
+    op.create_index("ix_onboarding_progress_farm_id", "onboarding_progress", ["farm_id"])
+    op.execute(sa.text(
+        "CREATE UNIQUE INDEX uq_onboarding_progress_company_legacy "
+        "ON onboarding_progress (company_id) WHERE farm_id IS NULL"
+    ))
 
 
 def downgrade() -> None:

@@ -239,6 +239,21 @@ def _relation_owner(
     Portanto, consultar apenas os índices da tabela alvo não detecta colisões
     globais de nome — exatamente o caso observado no Render.
     """
+    if _bind().dialect.name == "sqlite":
+        target_schema = schema or "main"
+        quoted_schema = _bind().dialect.identifier_preparer.quote_schema(target_schema)
+        row = _bind().execute(
+            sa.text(
+                f"SELECT name, type FROM {quoted_schema}.sqlite_master "
+                "WHERE name = :name AND type IN ('table', 'index', 'view') LIMIT 1"
+            ),
+            {"name": relation_name},
+        ).first()
+        if row is None:
+            return None
+        kind = {"table": "r", "index": "i", "view": "v"}[str(row[1])]
+        return target_schema, str(row[0]), kind
+
     target_schema = schema or "public"
     row = _bind().execute(
         sa.text(
@@ -266,6 +281,18 @@ def _index_table_for_name(
     *,
     schema: str | None = None,
 ) -> str | None:
+    if _bind().dialect.name == "sqlite":
+        target_schema = schema or "main"
+        quoted_schema = _bind().dialect.identifier_preparer.quote_schema(target_schema)
+        row = _bind().execute(
+            sa.text(
+                f"SELECT tbl_name FROM {quoted_schema}.sqlite_master "
+                "WHERE name = :name AND type = 'index' LIMIT 1"
+            ),
+            {"name": index_name},
+        ).scalar_one_or_none()
+        return str(row) if row is not None else None
+
     target_schema = schema or "public"
     row = _bind().execute(
         sa.text(
@@ -620,6 +647,20 @@ class _SafeBatchOperations:
         self._ops = batch_ops
         self._table_name = table_name
         self._schema = schema
+        self._pending_columns: set[str] = set()
+
+    def _assert_local_columns_exist(
+        self, columns: Sequence[str], *, operation: str
+    ) -> None:
+        existing = set(_table_columns(self._table_name, schema=self._schema))
+        missing = set(columns) - existing - self._pending_columns
+        if missing:
+            raise UnsafeSchemaReconciliation(
+                "ATLAS ALEMBIC RECONCILE: operacao bloqueada porque depende "
+                f"de coluna(s) ausente(s): operation={operation}, "
+                f"table={_qualified(self._table_name, self._schema)}, "
+                f"missing={sorted(missing)}."
+            )
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._ops, name)
@@ -630,7 +671,7 @@ class _SafeBatchOperations:
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        if _column_exists(
+        if column.name in self._pending_columns or _column_exists(
             self._table_name,
             column.name,
             schema=self._schema,
@@ -646,7 +687,15 @@ class _SafeBatchOperations:
             column,
             schema=self._schema,
         )
-        _apply_missing_column(plan, self._ops.add_column)
+        # BatchOperations.add_column recebe apenas Column; op.add_column
+        # recebe (table_name, Column). Não são intercambiáveis.
+        self._ops.add_column(_copy_column_for_add(plan.column))
+        self._pending_columns.add(plan.column.name)
+        print(
+            "ATLAS ALEMBIC RECONCILE: batch coluna ausente criada: "
+            f"{_qualified(plan.table_name, plan.schema)}.{plan.column.name} "
+            f"(rows_before={plan.existing_rows})"
+        )
         return None
 
     def create_index(
@@ -659,11 +708,8 @@ class _SafeBatchOperations:
         names = _column_names_from_index_spec(columns)
 
         if names is not None:
-            _assert_columns_exist(
-                self._table_name,
-                names,
-                schema=self._schema,
-                operation=f"batch_create_index:{index_name}",
+            self._assert_local_columns_exist(
+                names, operation=f"batch_create_index:{index_name}"
             )
 
         resolved_name, already_exists = _resolve_index_name(
@@ -713,11 +759,8 @@ class _SafeBatchOperations:
             )
             return None
 
-        _assert_columns_exist(
-            self._table_name,
-            list(local_cols),
-            schema=self._schema,
-            operation=f"batch_create_foreign_key:{constraint_name}",
+        self._assert_local_columns_exist(
+            list(local_cols), operation=f"batch_create_foreign_key:{constraint_name}"
         )
         _assert_columns_exist(
             referent_table,

@@ -48,14 +48,22 @@ def upgrade() -> None:
         "operational_notes",
         sa.Column("folder_id", sa.String(length=80), nullable=True),
     )
-    op.create_foreign_key(
-        "fk_operational_notes_folder_id",
-        "operational_notes",
-        "operational_note_folders",
-        ["folder_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
+    if op.get_bind().dialect.name == "sqlite":
+        with op.batch_alter_table("operational_notes") as batch:
+            batch.create_foreign_key(
+                "fk_operational_notes_folder_id",
+                "operational_note_folders", ["folder_id"], ["id"],
+                ondelete="SET NULL",
+            )
+    else:
+        op.create_foreign_key(
+            "fk_operational_notes_folder_id",
+            "operational_notes",
+            "operational_note_folders",
+            ["folder_id"],
+            ["id"],
+            ondelete="SET NULL",
+        )
     op.create_index("ix_operational_notes_folder_id", "operational_notes", ["folder_id"])
 
 
