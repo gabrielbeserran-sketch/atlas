@@ -30,7 +30,13 @@ class PaddockPanelReader {
         'Fazenda não autorizada no contexto atual.',
       );
     }
-    final cached = await cache.load(farm, DateTime.now());
+    AtlasFieldPaddockSnapshot? cached;
+    var cacheFailed = false;
+    try {
+      cached = await cache.load(farm, DateTime.now());
+    } catch (_) {
+      cacheFailed = true;
+    }
     if (!_same(await resolveFarm(), farm)) {
       return const PaddockPanelRead(
         null,
@@ -40,7 +46,9 @@ class PaddockPanelReader {
     if (!refresh) {
       return PaddockPanelRead(
         cached,
-        cached == null
+        cacheFailed
+            ? 'Cópia local de piquetes indisponível nesta leitura. Use Atualizar com conexão; os dados salvos não foram apagados.'
+            : cached == null
             ? 'Piquetes ainda não consultados neste dispositivo. Use Atualizar com conexão.'
             : 'Piquetes salvos no dispositivo; atualização do servidor é manual.',
       );
@@ -90,7 +98,11 @@ class PaddockPanelReader {
       }
       return PaddockPanelRead(
         cached,
-        'Consulta remota não concluída. ${cached == null ? 'Sem cópia confirmada disponível.' : 'Cópia local e data preservadas.'}',
+        'Consulta remota não concluída. ${cacheFailed
+            ? 'A cópia local também não pôde ser lida; dados salvos não foram apagados.'
+            : cached == null
+            ? 'Sem cópia confirmada disponível.'
+            : 'Cópia local e data preservadas.'}',
       );
     }
   }

@@ -14,6 +14,10 @@ SHA-256 de data/app.so: 559B471FC438EA4E9082CEFE453FC7862DFE8E6EAEA8C0B8377FD0D2
 
 ## Resultado a informar
 
+### Leitura de Campo em armazenamento indisponível
+
+O checkpoint `atlas-field-reader-resilience-20260926` acrescenta tratamento de erro na leitura local de piquetes. Não simular falhas apagando ou corrompendo dados reais: os cenários foram reproduzidos por serviços mockados. A abertura não consulta servidor automaticamente; mostra cópia indisponível quando a leitura local falha. Atualizar pode buscar dados remotos mesmo nessa condição. Se a cópia offline não salvar, a consulta autorizada aparece com aviso explícito; falhas local e remota não viram lista vazia confirmada. Troca de empresa/fazenda impede exibir a resposta anterior. Este checkpoint aguarda compilação agrupada e não consta da janela c951e05 ou do build 9f8d671.
+
 ### Correção posterior de formulário
 
 O checkpoint `atlas-operations-form-flow-20260926` corrige o carregamento quando ainda não há tarefas, o descarte dos controladores durante o fechamento do diálogo e a leitura de custos. Esta correção não está na janela c951e05 descrita acima; avaliar somente após abrir a compilação atualizada, sem duas versões simultâneas.
