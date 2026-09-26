@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_sync.dart';
 import 'package:projeto_atlas/features/enterprise_platform/domain/services/atlas_enterprise_api_client.dart';
@@ -30,6 +31,18 @@ Map<String, dynamic> remoteMap(AtlasPastureGrazingBasis b) => {
   'unique_area_confirmed': true,
   'recorded_at': b.recordedAt.toUtc().toIso8601String(),
 };
+
+class FailingPreferences extends SharedPreferencesAsync {
+  FailingPreferences(this.shouldFail);
+  final bool Function() shouldFail;
+  @override
+  Future<void> setString(String key, String value) async {
+    if (shouldFail() && !key.endsWith('_reviews')) {
+      throw StateError('Falha simulada de escrita.');
+    }
+    await super.setString(key, value);
+  }
+}
 
 class FakeRemote implements AtlasGrazingRemote {
   bool enabled = true;
@@ -147,6 +160,156 @@ void main() {
       await run();
       expect(await history(), hasLength(1));
       expect(remote.uploads, 0);
+    },
+  );
+
+  test(
+    'revisão aceita versão remota, arquiva originais e não escreve na API',
+    () async {
+      final original = basis('operation-review');
+      final confirmed = basis('operation-review', animals: 99);
+      await local.save(original);
+      remote.records = [remoteMap(confirmed)];
+      await run();
+      await sync.acceptRemoteConflict(
+        expectedRemote: confirmed,
+        reviewedBy: 'user-1',
+        isAuthorized: () async => true,
+      );
+      expect((await history()).single.grazingAnimals, 99);
+      expect(remote.uploads, 0);
+      expect(await sync.conflicts('t', 'c', 'f'), isEmpty);
+      final restarted = AtlasPastureGrazingBasisService();
+      final reviews = await restarted.reviewedHistory(
+        tenantId: 't',
+        companyId: 'c',
+        farmId: 'f',
+      );
+      expect((reviews.single['local'] as Map)['grazingAnimals'], 30);
+      expect((reviews.single['remote'] as Map)['grazingAnimals'], 99);
+      expect(reviews.single['reviewedBy'], 'user-1');
+      await restarted.acceptReviewedRemote(
+        expectedLocal: original,
+        remote: confirmed,
+        reviewedBy: 'user-1',
+      );
+      expect(
+        await restarted.reviewedHistory(
+          tenantId: 't',
+          companyId: 'c',
+          farmId: 'f',
+        ),
+        hasLength(1),
+      );
+      await run();
+      expect(remote.uploads, 0);
+    },
+  );
+
+  test('revisão obsoleta ou sem autorização não altera versões', () async {
+    await local.save(basis('operation-review'));
+    remote.records = [remoteMap(basis('operation-review', animals: 99))];
+    await run();
+    await expectLater(
+      sync.acceptRemoteConflict(
+        expectedRemote: basis('operation-review', animals: 88),
+        reviewedBy: 'user-1',
+        isAuthorized: () async => true,
+      ),
+      throwsStateError,
+    );
+    await expectLater(
+      sync.acceptRemoteConflict(
+        expectedRemote: basis('operation-review', animals: 99),
+        reviewedBy: 'user-1',
+        isAuthorized: () async => false,
+      ),
+      throwsStateError,
+    );
+    expect((await history()).single.grazingAnimals, 30);
+    expect(await sync.conflicts('t', 'c', 'f'), hasLength(1));
+    expect(
+      await local.reviewedHistory(tenantId: 't', companyId: 'c', farmId: 'f'),
+      isEmpty,
+    );
+  });
+
+  test(
+    'revisão fora do escopo ou com versão local incorreta não cria auditoria',
+    () async {
+      final original = basis('operation-review');
+      await local.save(original);
+      for (final remoteVersion in [
+        basis('operation-review', farm: 'other'),
+        basis('other-operation'),
+      ]) {
+        await expectLater(
+          local.acceptReviewedRemote(
+            expectedLocal: original,
+            remote: remoteVersion,
+            reviewedBy: 'user-1',
+          ),
+          throwsArgumentError,
+        );
+      }
+      await expectLater(
+        local.acceptReviewedRemote(
+          expectedLocal: basis('operation-review', animals: 88),
+          remote: basis('operation-review', animals: 99),
+          reviewedBy: 'user-1',
+        ),
+        throwsStateError,
+      );
+      await expectLater(
+        local.acceptReviewedRemote(
+          expectedLocal: original,
+          remote: basis('operation-review', animals: 99),
+          reviewedBy: '',
+        ),
+        throwsArgumentError,
+      );
+      expect((await history()).single.grazingAnimals, 30);
+      expect(
+        await local.reviewedHistory(tenantId: 't', companyId: 'c', farmId: 'f'),
+        isEmpty,
+      );
+    },
+  );
+
+  test(
+    'falha após arquivar mantém original e repetição não duplica auditoria',
+    () async {
+      var failHistory = false;
+      final preferences = FailingPreferences(() => failHistory);
+      local = AtlasPastureGrazingBasisService(preferences: preferences);
+      final original = basis('operation-review');
+      final confirmed = basis('operation-review', animals: 99);
+      await local.save(original);
+      failHistory = true;
+      await expectLater(
+        local.acceptReviewedRemote(
+          expectedLocal: original,
+          remote: confirmed,
+          reviewedBy: 'user-1',
+        ),
+        throwsStateError,
+      );
+      expect((await history()).single.grazingAnimals, 30);
+      expect(
+        await local.reviewedHistory(tenantId: 't', companyId: 'c', farmId: 'f'),
+        hasLength(1),
+      );
+      failHistory = false;
+      await local.acceptReviewedRemote(
+        expectedLocal: original,
+        remote: confirmed,
+        reviewedBy: 'user-1',
+      );
+      expect((await history()).single.grazingAnimals, 99);
+      expect(
+        await local.reviewedHistory(tenantId: 't', companyId: 'c', farmId: 'f'),
+        hasLength(1),
+      );
     },
   );
 

@@ -191,8 +191,7 @@ class AtlasPastureGrazingBasisService {
   }) async {
     basis.validate(farmTotalAreaHa: farmTotalAreaHa);
     final key = _key(basis.tenantId, basis.companyId, basis.farmId);
-    final previous = _writes[key] ?? Future<void>.value();
-    final write = previous.then((_) async {
+    await _serialize(key, () async {
       final history = await loadHistory(
         tenantId: basis.tenantId,
         companyId: basis.companyId,
@@ -213,6 +212,102 @@ class AtlasPastureGrazingBasisService {
         jsonEncode([basis.toMap(), ...history.map((item) => item.toMap())]),
       );
     });
+  }
+
+  Future<List<Map<String, dynamic>>> reviewedHistory({
+    required String tenantId,
+    required String companyId,
+    required String farmId,
+  }) async {
+    final raw = await _preferences.getString(
+      '${_key(tenantId, companyId, farmId)}_reviews',
+    );
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  /// Arquiva ambas as versões antes de substituir o retrato usado no indicador.
+  Future<void> acceptReviewedRemote({
+    required AtlasPastureGrazingBasis expectedLocal,
+    required AtlasPastureGrazingBasis remote,
+    required String reviewedBy,
+  }) async {
+    expectedLocal.validate();
+    remote.validate();
+    if (reviewedBy.trim().isEmpty ||
+        expectedLocal.operationId != remote.operationId ||
+        expectedLocal.tenantId != remote.tenantId ||
+        expectedLocal.companyId != remote.companyId ||
+        expectedLocal.farmId != remote.farmId) {
+      throw ArgumentError('Revisão fora do contexto da operação.');
+    }
+    final key = _key(remote.tenantId, remote.companyId, remote.farmId);
+    await _serialize(key, () async {
+      final history = await loadHistory(
+        tenantId: remote.tenantId,
+        companyId: remote.companyId,
+        farmId: remote.farmId,
+        strict: true,
+      );
+      final matches = history
+          .where((e) => e.operationId == remote.operationId)
+          .toList();
+      if (matches.length != 1) {
+        throw StateError('Operação local ausente ou duplicada.');
+      }
+      final reviews = await reviewedHistory(
+        tenantId: remote.tenantId,
+        companyId: remote.companyId,
+        farmId: remote.farmId,
+      );
+      final alreadyReviewed = reviews.any(
+        (e) =>
+            AtlasPastureGrazingBasis.fromMap(
+              Map<String, dynamic>.from(e['local'] as Map),
+            ).hasSameData(expectedLocal) &&
+            AtlasPastureGrazingBasis.fromMap(
+              Map<String, dynamic>.from(e['remote'] as Map),
+            ).hasSameData(remote),
+      );
+      if (matches.single.hasSameData(remote) && alreadyReviewed) return;
+      if (!matches.single.hasSameData(expectedLocal)) {
+        throw StateError('A versão local mudou; reabra a revisão.');
+      }
+      if (!alreadyReviewed) {
+        await _preferences.setString(
+          '${key}_reviews',
+          jsonEncode([
+            ...reviews,
+            {
+              'local': expectedLocal.toMap(),
+              'remote': remote.toMap(),
+              'reviewedBy': reviewedBy,
+              'reviewedAt': DateTime.now().toUtc().toIso8601String(),
+              'decision': 'accept_remote',
+            },
+          ]),
+        );
+      }
+      await _preferences.setString(
+        key,
+        jsonEncode(
+          history
+              .map(
+                (e) => e.operationId == remote.operationId
+                    ? remote.toMap()
+                    : e.toMap(),
+              )
+              .toList(),
+        ),
+      );
+    });
+  }
+
+  Future<void> _serialize(String key, Future<void> Function() action) async {
+    final previous = _writes[key] ?? Future<void>.value();
+    final write = previous.then((_) => action());
     final tail = write.then<void>(
       (_) {},
       onError: (Object _, StackTrace __) {},

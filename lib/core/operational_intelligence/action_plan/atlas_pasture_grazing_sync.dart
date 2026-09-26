@@ -128,6 +128,61 @@ class AtlasPastureGrazingSync {
     return basis;
   }
 
+  Future<void> acceptRemoteConflict({
+    required AtlasPastureGrazingBasis expectedRemote,
+    required String reviewedBy,
+    required Future<bool> Function() isAuthorized,
+  }) async {
+    if (_running) throw StateError('Aguarde a operação em andamento.');
+    _running = true;
+    try {
+      expectedRemote.validate();
+      if (!await isAuthorized()) throw StateError('Contexto da revisão mudou.');
+      final items = await conflicts(
+        expectedRemote.tenantId,
+        expectedRemote.companyId,
+        expectedRemote.farmId,
+      );
+      final matching = items
+          .where(
+            (item) =>
+                (item['local'] as Map)['operationId'] ==
+                expectedRemote.operationId,
+          )
+          .toList();
+      if (matching.length != 1) {
+        throw StateError('Conflito ausente ou duplicado; atualize a tela.');
+      }
+      final item = matching.single;
+      final remoteVersion = AtlasPastureGrazingBasis.fromMap(
+        Map<String, dynamic>.from(item['remote'] as Map),
+      );
+      final localVersion = AtlasPastureGrazingBasis.fromMap(
+        Map<String, dynamic>.from(item['local'] as Map),
+      );
+      if (!remoteVersion.hasSameData(expectedRemote)) {
+        throw StateError('A versão remota mudou; reabra a revisão.');
+      }
+      if (!await isAuthorized()) throw StateError('Contexto da revisão mudou.');
+      await local.acceptReviewedRemote(
+        expectedLocal: localVersion,
+        remote: remoteVersion,
+        reviewedBy: reviewedBy,
+      );
+      // Uma falha nesta última escrita mantém o conflito revisável; repetir é seguro.
+      await preferences.setString(
+        _conflictKey(
+          expectedRemote.tenantId,
+          expectedRemote.companyId,
+          expectedRemote.farmId,
+        ),
+        jsonEncode(items.where((e) => !identical(e, item)).toList()),
+      );
+    } finally {
+      _running = false;
+    }
+  }
+
   Future<AtlasGrazingSyncResult> synchronize({
     required String tenantId,
     required String companyId,

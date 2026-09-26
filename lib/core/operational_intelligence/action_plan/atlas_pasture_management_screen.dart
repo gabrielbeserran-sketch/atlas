@@ -32,6 +32,7 @@ class _AtlasPastureManagementScreenState
   String syncMessage =
       'A base é salva neste dispositivo. Sincronize quando houver conexão.';
   List<Map<String, dynamic>> grazingConflicts = [];
+  List<Map<String, dynamic>> grazingReviews = [];
   List<AtlasPaddock> paddocks = [];
   List<AtlasGrazingRotation> rotations = [];
   List<AtlasPastureOperation> operations = [];
@@ -65,6 +66,8 @@ class _AtlasPastureManagementScreenState
             companyId: farm.companyId,
             farmId: farm.id,
           );
+    grazingConflicts = [];
+    grazingReviews = [];
     if (farm != null) {
       try {
         grazingConflicts = await grazingSync.conflicts(
@@ -72,12 +75,18 @@ class _AtlasPastureManagementScreenState
           farm.companyId,
           farm.id,
         );
+        grazingReviews = await grazingBasisService.reviewedHistory(
+          tenantId: farm.tenantId,
+          companyId: farm.companyId,
+          farmId: farm.id,
+        );
       } catch (_) {
         syncMessage =
             'Não foi possível ler a revisão de conflitos; dados preservados.';
       }
     } else {
       grazingConflicts = [];
+      grazingReviews = [];
     }
     if (mounted) setState(() => loading = false);
   }
@@ -116,6 +125,71 @@ class _AtlasPastureManagementScreenState
       syncMessage = result.message;
     });
     await _load();
+  }
+
+  Future<void> _reviewGrazingConflict(Map<String, dynamic> item) async {
+    if (syncingBasis) return;
+    final farm = authorizedFarm;
+    final session = await AtlasEnterpriseRemoteAuthStore.instance.loadSession();
+    if (farm == null || session == null || !mounted) return;
+    final remote = AtlasPastureGrazingBasis.fromMap(
+      Map<String, dynamic>.from(item['remote'] as Map),
+    );
+    final local = AtlasPastureGrazingBasis.fromMap(
+      Map<String, dynamic>.from(item['local'] as Map),
+    );
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Revisar conflito de pastejo'),
+        content: Text(
+          'Fazenda: ${farm.name}\n'
+          'Neste dispositivo: ${local.grazingAnimals} animais / ${local.effectiveAreaHa} ha\n'
+          'Servidor: ${remote.grazingAnimals} animais / ${remote.effectiveAreaHa} ha\n\n'
+          'Ao aceitar, o indicador local usará a versão confirmada pelo servidor. '
+          'As duas versões, o autor e a data da revisão serão arquivados. '
+          'Nenhum dado será alterado no servidor. Se os dados do servidor estiverem errados, '
+          'cancele e registre uma nova base após conferir a operação.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Aceitar versão do servidor'),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true || !mounted) return;
+    setState(() => syncingBasis = true);
+    try {
+      await grazingSync.acceptRemoteConflict(
+        expectedRemote: remote,
+        reviewedBy: session.userId,
+        isAuthorized: () async {
+          final currentFarm = await _resolveAuthorizedFarm();
+          final currentSession = await AtlasEnterpriseRemoteAuthStore.instance
+              .loadSession();
+          return currentSession?.userId == session.userId &&
+              currentFarm?.id == farm.id &&
+              currentFarm?.companyId == remote.companyId &&
+              currentFarm?.tenantId == remote.tenantId;
+        },
+      );
+      syncMessage =
+          'Versão do servidor aceita. As duas versões foram arquivadas neste dispositivo.';
+    } catch (_) {
+      syncMessage =
+          'Revisão não concluída. Nenhuma versão foi descartada; atualize a tela.';
+    } finally {
+      if (mounted) {
+        setState(() => syncingBasis = false);
+        await _load();
+      }
+    }
   }
 
   Future<void> _editGrazingBasis() async {
@@ -695,12 +769,39 @@ class _AtlasPastureManagementScreenState
                         final local = item['local'] as Map?;
                         final remote = item['remote'] as Map?;
                         return ListTile(
+                          onTap: syncingBasis
+                              ? null
+                              : () => _reviewGrazingConflict(item),
+                          trailing: const Icon(Icons.fact_check_outlined),
                           title: Text(
                             'Operação ${local?['operationId'] ?? ''}',
                           ),
                           subtitle: Text(
                             'Neste dispositivo: ${local?['grazingAnimals']} animais / ${local?['effectiveAreaHa']} ha\n'
                             'Servidor: ${remote?['grazingAnimals']} animais / ${remote?['effectiveAreaHa']} ha',
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  if (grazingReviews.isNotEmpty)
+                    ExpansionTile(
+                      title: Text(
+                        '${grazingReviews.length} revisão(ões) arquivada(s)',
+                      ),
+                      subtitle: const Text(
+                        'Auditoria local: versões originais preservadas.',
+                      ),
+                      children: grazingReviews.reversed.map((item) {
+                        final local = item['local'] as Map;
+                        final remote = item['remote'] as Map;
+                        return ListTile(
+                          title: Text(
+                            'Versão do servidor aceita • ${item['reviewedAt']}',
+                          ),
+                          subtitle: Text(
+                            'Autor: ${item['reviewedBy']}\n'
+                            'Original: ${local['grazingAnimals']} animais / ${local['effectiveAreaHa']} ha\n'
+                            'Aceita: ${remote['grazingAnimals']} animais / ${remote['effectiveAreaHa']} ha',
                           ),
                         );
                       }).toList(),
