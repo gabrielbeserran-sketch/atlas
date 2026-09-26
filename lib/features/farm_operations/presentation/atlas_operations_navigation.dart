@@ -51,9 +51,78 @@ Future<void> openAuthorizedFarmOperations(
     );
     return;
   }
+  final origin = controller!.session!;
+  bool stillAuthorized() {
+    final current = controller.session;
+    return current?.userId == origin.userId &&
+        current?.companyId == origin.companyId &&
+        current?.tenantId == origin.tenantId &&
+        authorizedOperationsFarm(
+              authenticated: controller.isAuthenticated,
+              session: current,
+              farm: controller.activeFarm,
+              expectedFarmId: farmId,
+            ) ==
+            farmId;
+  }
+
   await Navigator.of(context).push(
     MaterialPageRoute<void>(
-      builder: (_) => AtlasOperationsCenterScreen(farmId: farmId),
+      builder: (_) => OperationsAccessGuard(
+        changes: controller,
+        isAuthorized: stillAuthorized,
+        builder: (check) =>
+            AtlasOperationsCenterScreen(farmId: farmId, isAuthorized: check),
+      ),
     ),
   );
+}
+
+/// Após perder contexto, esta rota não é reativada por um login posterior.
+class OperationsAccessGuard extends StatefulWidget {
+  const OperationsAccessGuard({
+    super.key,
+    required this.changes,
+    required this.isAuthorized,
+    required this.builder,
+  });
+  final Listenable changes;
+  final bool Function() isAuthorized;
+  final Widget Function(bool Function()) builder;
+  @override
+  State<OperationsAccessGuard> createState() => _OperationsAccessGuardState();
+}
+
+class _OperationsAccessGuardState extends State<OperationsAccessGuard> {
+  bool enabled = true;
+  bool check() => enabled && mounted && widget.isAuthorized();
+  @override
+  void initState() {
+    super.initState();
+    enabled = widget.isAuthorized();
+    widget.changes.addListener(onContextChanged);
+  }
+
+  void onContextChanged() {
+    if (!mounted || !enabled || widget.isAuthorized()) return;
+    setState(() => enabled = false);
+  }
+
+  @override
+  void dispose() {
+    widget.changes.removeListener(onContextChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => check()
+      ? widget.builder(check)
+      : Scaffold(
+          appBar: AppBar(title: const Text('Operações')),
+          body: const Center(
+            child: Text(
+              'O contexto de acesso mudou. Volte e abra Operações novamente na fazenda autorizada.',
+            ),
+          ),
+        );
 }

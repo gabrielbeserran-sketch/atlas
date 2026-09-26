@@ -45,9 +45,16 @@ class AtlasOperationsRepository {
       ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
   }
 
-  Future<void> save(List<AtlasFarmOperation> items, {String? farmId}) {
+  Future<void> save(
+    List<AtlasFarmOperation> items, {
+    String? farmId,
+    bool Function()? isAuthorized,
+  }) {
     final records = items.map((e) => e.toJson()).toList();
     final write = _writes.then((_) async {
+      if (isAuthorized != null && !isAuthorized()) {
+        throw StateError('Contexto de operações alterado.');
+      }
       if (farmId != null &&
           (farmId.trim().isEmpty || items.any((e) => e.farmId != farmId))) {
         throw ArgumentError('Operações devem pertencer à fazenda informada.');
@@ -77,6 +84,9 @@ class AtlasOperationsRepository {
         }
       }
       merged.addAll(records);
+      if (isAuthorized != null && !isAuthorized()) {
+        throw StateError('Contexto de operações alterado.');
+      }
       final saved = await preferences.setString(_key, jsonEncode(merged));
       if (!saved) throw StateError('Não foi possível persistir as operações.');
     });

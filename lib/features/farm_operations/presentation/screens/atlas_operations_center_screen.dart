@@ -5,9 +5,14 @@ import '../../domain/models/atlas_farm_operation.dart';
 import '../../domain/services/atlas_operations_engine.dart';
 
 class AtlasOperationsCenterScreen extends StatefulWidget {
-  const AtlasOperationsCenterScreen({super.key, required this.farmId});
+  const AtlasOperationsCenterScreen({
+    super.key,
+    required this.farmId,
+    required this.isAuthorized,
+  });
 
   final String farmId;
+  final bool Function() isAuthorized;
 
   @override
   State<AtlasOperationsCenterScreen> createState() =>
@@ -31,6 +36,7 @@ class _AtlasOperationsCenterScreenState
   }
 
   Future<void> _load() async {
+    if (!mounted || !widget.isAuthorized()) return;
     if (mounted) {
       setState(() {
         _loading = true;
@@ -45,7 +51,7 @@ class _AtlasOperationsCenterScreenState
       return a.scheduledAt.compareTo(b.scheduledAt);
     });
 
-    if (!mounted) {
+    if (!mounted || !widget.isAuthorized()) {
       return;
     }
 
@@ -56,7 +62,23 @@ class _AtlasOperationsCenterScreenState
   }
 
   Future<void> _save() async {
-    await _repository.save(_items, farmId: widget.farmId);
+    try {
+      await _repository.save(
+        _items,
+        farmId: widget.farmId,
+        isAuthorized: () => mounted && widget.isAuthorized(),
+      );
+    } catch (_) {
+      if (!mounted || !widget.isAuthorized()) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível salvar a operação. Os dados anteriores foram preservados.',
+          ),
+        ),
+      );
+      await _load();
+    }
   }
 
   String _money(double value) {

@@ -18,7 +18,9 @@ Versão Windows profile de avaliação 3, código dd47b57. Não é release de di
 4. Registros legados sem fazenda permanecem armazenados, mas não são atribuídos implicitamente à fazenda selecionada. Não os apagar ou reassociar por nome para passar no teste.
 5. Faça o ensaio no aplicativo atualizado; testes automatizados não comprovam a versão que está aberta. A fila de escrita só serializa chamadas no mesmo processo, não duas janelas independentes.
 
-O isolamento de armazenamento legado por tenant/empresa e a revogação durante uma tela já aberta são etapas separadas; a proteção desta entrega confere o contexto ao abrir a rota.
+6. Na versão com proteção contínua, altere a fazenda/conta por um fluxo permitido da sessão enquanto a rota antiga existir. A Central antiga deve sair da exibição e exigir reabertura; um novo login não reativa a mesma rota. Uma ação ainda pendente antes da chamada ao plugin não pode gravar no contexto anterior.
+
+O isolamento de armazenamento legado por tenant/empresa continua separado. A guarda confere notificações de contexto local e não detecta revogação remota sem atualização de sessão. Não cancela uma escrita já entregue ao plugin e não serializa processos independentes.
 
 1. Desconecte a rede por conta própria e volte a Campo: a referência datada deve continuar disponível sem aguardar a API.
 2. Abra Piquetes e pastagens e Suporte. A referência oficial deve manter sua data; ela não substitui medições de pasto nem confirma área efetiva.
