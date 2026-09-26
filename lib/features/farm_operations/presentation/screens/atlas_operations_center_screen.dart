@@ -56,7 +56,7 @@ class _AtlasOperationsCenterScreenState
   }
 
   Future<void> _save() async {
-    await _repository.save(_items);
+    await _repository.save(_items, farmId: widget.farmId);
   }
 
   String _money(double value) {
