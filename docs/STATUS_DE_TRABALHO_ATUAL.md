@@ -1,8 +1,10 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 25/09/2026.
+Atualizado em 26/09/2026.
 
 ## Estado
+
+- Pacote concluído (26/09, 100%): versão Windows profile 2 otimizada de avaliação compilada com URL oficial, reunindo guia, motivos e referência de Campo; não é release de distribuição. Usuário confirmou salvar/fechar a anterior; processo ausente conferido antes da abertura. Nova janela PID 17076 responsiva; captura encontrou o usuário já dentro da operação com aviso offline e painel inicial preparando dados, sem autenticação automatizada. Não é prova de carregamento final de todos os módulos. SHA-256 Profile/data/app.so: 30277E5D0C679FD0A52598802803BE1BA8C1FD458EFB4A7CE34395C2EB80AB95. Os 54 testes/análise do checkpoint 0cfcae7 são referência, não repetidos por ausência de mudança de código. Checkpoint publicado identificado pela tag atlas-grazing-grouped-preview2-20260926. Próximo marco: conferir Campo → Piquetes e pastagens → Suporte com dados reais e ensaio offline; Docker/produção continuam sem homologação. Celular e banco existente preservados.
 
 - Pacote concluído localmente (26/09, 100%): snapshot imutável do cadastro oficial de Campo passado pelo atalho e exibido no Suporte com consulta datada, lista e soma nominal válida. Exige ID da fazenda autorizada; IDs vazios/duplicados, áreas inválidas e overflow não viram soma. Sem consulta nova, persistência duplicada ou preenchimento de altura/MS/capacidade. Cinquenta e quatro testes aprovados (cinco novos de snapshot e 49 regressão), análise de cinco arquivos sem problemas, build Windows debug com URL oficial e diff aprovados. Checkpoint publicado identificado pela tag atlas-field-paddock-reference-20260926. Próximo marco: incluir referência e fluxo guiado no release agrupado, depois ensaio operacional. Os dois cadastros não foram migrados/unificados; snapshot é referência datada, não cache persistente ou área efetiva. Aplicativo aberto, celular e banco existente preservados. Homologação PostgreSQL permanece 0% pelo Docker; UA/ha 90%, sincronização da base 85% até testes reais.
 
