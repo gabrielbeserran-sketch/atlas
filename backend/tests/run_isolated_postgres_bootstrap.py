@@ -21,13 +21,20 @@ LOCAL_DOCKER_PIPE = "npipe:////./pipe/dockerDesktopLinuxEngine"
 
 
 def command(args: list[str], *, env: dict[str, str] | None = None) -> str:
+    timeout = 180
     if args[0] == "docker":
+        if args[1] in {"info", "inspect"}:
+            timeout = 10
+        elif args[1] == "exec":
+            timeout = 10
+        elif args[1] == "stop":
+            timeout = 30
         args = ["docker", "--host", LOCAL_DOCKER_PIPE, *args[1:]]
         env = os.environ.copy()
         env.pop("DOCKER_CONTEXT", None)
         env.pop("DOCKER_HOST", None)
     result = subprocess.run(args, cwd=BACKEND, env=env, capture_output=True,
-                            text=True, timeout=180, check=False)
+                            text=True, timeout=timeout, check=False)
     if result.returncode:
         # Do not echo environment, connection strings or external diagnostics.
         raise RuntimeError(f"Falha em {args[0]} (código {result.returncode}).")
@@ -109,8 +116,9 @@ engine.dispose()
         command([sys.executable, "-c", verify], env=env)
     finally:
         description = json.loads(command(["docker", "inspect", container]))[0]
-        if description.get("Config", {}).get("Labels", {}).get(LABEL) == identity:
-            command(["docker", "stop", container])
+        if description.get("Config", {}).get("Labels", {}).get(LABEL) != identity:
+            raise RuntimeError("Identidade divergente na limpeza; ensaio não aprovado.")
+        command(["docker", "stop", container])
     print("PostgreSQL: upgrade até 0057, repetição e unicidades aprovados.")
 
 

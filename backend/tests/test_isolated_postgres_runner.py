@@ -27,6 +27,55 @@ class IsolatedPostgresRunnerTest(unittest.TestCase):
             self.assertEqual(call.call_args.args[0], ["docker", "--host", runner.LOCAL_DOCKER_PIPE, "info"])
             self.assertNotIn("DOCKER_HOST", call.call_args.kwargs["env"])
             self.assertNotIn("DOCKER_CONTEXT", call.call_args.kwargs["env"])
+            self.assertEqual(call.call_args.kwargs['timeout'], 10)
+
+    def test_hung_daemon_has_bounded_wait(self):
+        with patch.object(runner.subprocess, "run", side_effect=runner.subprocess.TimeoutExpired("docker", 10)) as call:
+            with self.assertRaises(runner.subprocess.TimeoutExpired):
+                runner.command(["docker", "info"])
+            self.assertEqual(call.call_args.kwargs['timeout'], 10)
+
+    def test_success_repeats_upgrade_and_confirms_cleanup_identity(self):
+        import json
+        commands = []
+        def invoke(args, **kwargs):
+            commands.append(args)
+            if args[1] == 'run':
+                return CONTAINER
+            if args[1] == 'inspect':
+                return json.dumps([description()])
+            return 'ok'
+        with patch.object(runner, 'command', side_effect=invoke), patch.object(runner.uuid, 'uuid4') as identity, patch('builtins.print') as output:
+            identity.return_value.hex = IDENTITY
+            runner.run()
+        self.assertEqual(sum('alembic' in args for args in commands), 2)
+        self.assertEqual(commands[-1], ['docker', 'stop', CONTAINER])
+        verification = next(args[-1] for args in commands if '-c' in args)
+        self.assertIn("('pasture_grazing_bases', ['company_id', 'client_operation_id'])", verification)
+        output.assert_called_once()
+
+    def test_changed_cleanup_identity_never_stops_or_reports_success(self):
+        import json
+        inspections = 0
+        commands = []
+        def invoke(args, **kwargs):
+            nonlocal inspections
+            commands.append(args)
+            if args[1] == 'run':
+                return CONTAINER
+            if args[1] == 'inspect':
+                inspections += 1
+                item = description()
+                if inspections > 1:
+                    item['Config']['Labels'][runner.LABEL] = 'other'
+                return json.dumps([item])
+            return 'ok'
+        with patch.object(runner, 'command', side_effect=invoke), patch.object(runner.uuid, 'uuid4') as identity, patch('builtins.print') as output:
+            identity.return_value.hex = IDENTITY
+            with self.assertRaises(RuntimeError):
+                runner.run()
+            output.assert_not_called()
+        self.assertFalse(any(args[1] == 'stop' for args in commands))
 
     def test_accepts_only_owned_loopback_container(self):
         self.assertEqual(runner.isolated_port(description(), IDENTITY), 55432)
