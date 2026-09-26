@@ -147,6 +147,7 @@ data/attachments/
 *.sql.gz
 
 # Artefatos locais de release
+/release/windows/operacoes-c951e05/
 dist/
 *.apk
 *.aab
