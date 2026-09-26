@@ -28,6 +28,16 @@ class AtlasPastureGrazingBasis {
 
   double get animalsPerHectare => grazingAnimals / effectiveAreaHa;
 
+  bool hasSameData(AtlasPastureGrazingBasis other) =>
+      operationId == other.operationId &&
+      tenantId == other.tenantId &&
+      companyId == other.companyId &&
+      farmId == other.farmId &&
+      effectiveAreaHa == other.effectiveAreaHa &&
+      grazingAnimals == other.grazingAnimals &&
+      uniqueAreaConfirmed == other.uniqueAreaConfirmed &&
+      recordedAt.isAtSameMomentAs(other.recordedAt);
+
   bool isCurrentAt(DateTime now) {
     final age = now.difference(recordedAt);
     return !age.isNegative && age <= const Duration(days: 7);
@@ -193,7 +203,7 @@ class AtlasPastureGrazingBasisService {
         (item) => item.operationId == basis.operationId,
       );
       if (existing.isNotEmpty) {
-        if (jsonEncode(existing.first.toMap()) != jsonEncode(basis.toMap())) {
+        if (!existing.first.hasSameData(basis)) {
           throw StateError('A mesma operação contém dados diferentes.');
         }
         return;

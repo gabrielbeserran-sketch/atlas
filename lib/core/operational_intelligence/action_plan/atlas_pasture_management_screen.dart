@@ -5,6 +5,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_area_overview.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_sync.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
@@ -26,6 +27,11 @@ class _AtlasPastureManagementScreenState
     extends State<AtlasPastureManagementScreen> {
   final service = AtlasPastureService.instance;
   final grazingBasisService = AtlasPastureGrazingBasisService();
+  final grazingSync = AtlasPastureGrazingSync();
+  bool syncingBasis = false;
+  String syncMessage =
+      'A base é salva neste dispositivo. Sincronize quando houver conexão.';
+  List<Map<String, dynamic>> grazingConflicts = [];
   List<AtlasPaddock> paddocks = [];
   List<AtlasGrazingRotation> rotations = [];
   List<AtlasPastureOperation> operations = [];
@@ -59,6 +65,20 @@ class _AtlasPastureManagementScreenState
             companyId: farm.companyId,
             farmId: farm.id,
           );
+    if (farm != null) {
+      try {
+        grazingConflicts = await grazingSync.conflicts(
+          farm.tenantId,
+          farm.companyId,
+          farm.id,
+        );
+      } catch (_) {
+        syncMessage =
+            'Não foi possível ler a revisão de conflitos; dados preservados.';
+      }
+    } else {
+      grazingConflicts = [];
+    }
     if (mounted) setState(() => loading = false);
   }
 
@@ -73,6 +93,29 @@ class _AtlasPastureManagementScreenState
       portfolio: portfolio,
       expectedFarmName: widget.actionController.farmName,
     );
+  }
+
+  Future<void> _syncGrazingBasis() async {
+    final farm = authorizedFarm;
+    if (farm == null || syncingBasis) return;
+    setState(() => syncingBasis = true);
+    final result = await grazingSync.synchronize(
+      tenantId: farm.tenantId,
+      companyId: farm.companyId,
+      farmId: farm.id,
+      isAuthorized: () async {
+        final current = await _resolveAuthorizedFarm();
+        return current?.id == farm.id &&
+            current?.companyId == farm.companyId &&
+            current?.tenantId == farm.tenantId;
+      },
+    );
+    if (!mounted) return;
+    setState(() {
+      syncingBasis = false;
+      syncMessage = result.message;
+    });
+    await _load();
   }
 
   Future<void> _editGrazingBasis() async {
@@ -620,7 +663,7 @@ class _AtlasPastureManagementScreenState
                 if (canEditGrazingBasis) ...[
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
-                    onPressed: _editGrazingBasis,
+                    onPressed: syncingBasis ? null : _editGrazingBasis,
                     icon: const Icon(Icons.edit_outlined),
                     label: Text(
                       grazingBasis == null
@@ -628,6 +671,40 @@ class _AtlasPastureManagementScreenState
                           : 'Atualizar base efetiva',
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: syncingBasis ? null : _syncGrazingBasis,
+                    icon: const Icon(Icons.sync),
+                    label: Text(
+                      syncingBasis
+                          ? 'Sincronizando base…'
+                          : 'Sincronizar base de pastejo',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(syncMessage),
+                  if (grazingConflicts.isNotEmpty)
+                    ExpansionTile(
+                      title: Text(
+                        '${grazingConflicts.length} conflito(s) preservado(s)',
+                      ),
+                      subtitle: const Text(
+                        'Nenhuma versão foi substituída. Revise antes de reenviar.',
+                      ),
+                      children: grazingConflicts.map((item) {
+                        final local = item['local'] as Map?;
+                        final remote = item['remote'] as Map?;
+                        return ListTile(
+                          title: Text(
+                            'Operação ${local?['operationId'] ?? ''}',
+                          ),
+                          subtitle: Text(
+                            'Neste dispositivo: ${local?['grazingAnimals']} animais / ${local?['effectiveAreaHa']} ha\n'
+                            'Servidor: ${remote?['grazingAnimals']} animais / ${remote?['effectiveAreaHa']} ha',
+                          ),
+                        );
+                      }).toList(),
+                    ),
                 ] else ...[
                   const SizedBox(height: 8),
                   const Text(
