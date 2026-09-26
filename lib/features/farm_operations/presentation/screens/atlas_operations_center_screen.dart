@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../data/services/atlas_operations_repository.dart';
 import '../../domain/models/atlas_farm_operation.dart';
 import '../../domain/services/atlas_operations_engine.dart';
+import '../atlas_operations_navigation.dart';
+import 'operations_legacy_recovery_screen.dart';
 
 class AtlasOperationsCenterScreen extends StatefulWidget {
   const AtlasOperationsCenterScreen({
@@ -11,12 +13,18 @@ class AtlasOperationsCenterScreen extends StatefulWidget {
     required this.tenantId,
     required this.companyId,
     required this.isAuthorized,
+    required this.canRecover,
+    required this.actorId,
+    required this.accessChanges,
   });
 
   final String farmId;
   final String tenantId;
   final String companyId;
   final bool Function() isAuthorized;
+  final bool Function() canRecover;
+  final String actorId;
+  final Listenable accessChanges;
 
   @override
   State<AtlasOperationsCenterScreen> createState() =>
@@ -91,6 +99,25 @@ class _AtlasOperationsCenterScreenState
       );
       await _load();
     }
+  }
+
+  Future<void> _recoverLegacy() async {
+    if (!widget.isAuthorized() || !widget.canRecover()) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => OperationsAccessGuard(
+          changes: widget.accessChanges,
+          isAuthorized: () => widget.isAuthorized() && widget.canRecover(),
+          builder: (check) => OperationsLegacyRecoveryScreen(
+            repository: _repository,
+            actorId: widget.actorId,
+            farmId: widget.farmId,
+            isAuthorized: check,
+          ),
+        ),
+      ),
+    );
+    if (mounted && widget.isAuthorized()) await _load();
   }
 
   String _money(double value) {
@@ -769,6 +796,14 @@ class _AtlasOperationsCenterScreenState
                       ),
                     ],
                   ),
+                  if (_legacyAvailable && widget.canRecover())
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton(
+                        onPressed: _recoverLegacy,
+                        child: const Text('Revisar operações antigas'),
+                      ),
+                    ),
                   const SizedBox(height: 24),
                   const Text(
                     'Agenda operacional',

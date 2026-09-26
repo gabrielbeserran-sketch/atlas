@@ -76,6 +76,16 @@ Future<void> openAuthorizedFarmOperations(
           tenantId: origin.tenantId,
           companyId: origin.companyId,
           isAuthorized: check,
+          canRecover: () =>
+              check() &&
+              const {
+                'owner',
+                'admin',
+                'companyAdministrator',
+                'superAdministrator',
+              }.contains(controller.session?.role),
+          actorId: origin.userId,
+          accessChanges: controller,
         ),
       ),
     ),

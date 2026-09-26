@@ -26,8 +26,19 @@ A reassociação do armazenamento legado continua separada. A guarda confere not
 
 - A compilação com isolamento v2 guarda novas tarefas por tenant, empresa e fazenda; Central e painel Campo consultam a mesma chave. Trocar de empresa mesmo com o mesmo nome/ID de fazenda não deve revelar tarefas anteriores.
 - A lista v1 permanece intacta. Como não contém proprietário empresarial verificável, não é copiada automaticamente para v2. A Central avisa sobre o legado sem revelar títulos ou valores.
-- Esse aviso não significa exclusão: a recuperação/reassociação assistida ainda não está entregue. Não recriar custos reais ou excluir a lista antiga para contornar a validação.
+- Esse aviso não significa exclusão. A versão com recuperação assistida oferece ao administrador Revisar operações antigas, com declaração de autorização, seleção individual e confirmação do destino. Não recriar custos reais ou excluir a lista antiga para contornar a validação.
 - Fechar/reabrir sem “Sair” e com PIN permite conferir a persistência de uma tarefa v2 autorizada. Não considerar esse ensaio aprovado apenas pela reconstrução do repositório nos testes.
+
+### Recuperação assistida do legado
+
+1. Administrador abre Operações na fazenda correta e toca Revisar operações antigas. Operadores comuns não recebem esse comando.
+2. Antes de carregar títulos/valores, declara autorização para revisar o legado deste dispositivo. Isso é declaração humana, não prova técnica de propriedade.
+3. Seleciona apenas registros comprovadamente pertencentes à empresa/fazenda escolhida e confere ID, vínculo antigo, data e custo. A origem pode não ter fazenda ou ter vínculo diferente; somente o administrador confirma atribuição explícita.
+4. Confirma o destino no diálogo. Cancelamento não grava; registros alterados desde a revisão, IDs ambíguos ou conflitos no destino impedem importação. O lote é validado antes da escrita.
+5. Confere tarefas na Central e painel Campo. Repetir a mesma cópia no mesmo destino não duplica nem desfaz edições da cópia. A lista v1 permanece intacta.
+6. Proveniência de recuperação está incorporada à tarefa v2 com autor/data/origem/destino e confirmação, preservada na edição. Não é trilha imutável, exportação de auditoria ou sincronização entre dispositivos; excluir a cópia também remove essa proveniência do v2. A origem v1 não é apagada.
+
+Não executar este roteiro com dados de outro cliente ou dispositivo compartilhado sem autorização. O recurso não consulta servidor para comprovar propriedade empresarial de registros legados.
 
 1. Desconecte a rede por conta própria e volte a Campo: a referência datada deve continuar disponível sem aguardar a API.
 2. Abra Piquetes e pastagens e Suporte. A referência oficial deve manter sua data; ela não substitui medições de pasto nem confirma área efetiva.
