@@ -18,6 +18,12 @@ Use uma fazenda autorizada e dados reais conferidos. Não use o banco de produç
 
 ## Proteções esperadas
 
+### Fluxo guiado (próxima atualização agrupada)
+
+O cartão Configuração da lotação informa quantas das três etapas de dados foram concluídas, não o percentual de desenvolvimento do produto. Use Iniciar ou atualizar base de pastejo para salvar a área/quantidade e continuar à identificação. Cancelar não avança; uma base não salva ou substituída durante a releitura não abre a seleção. Na etapa de pesagens, Conferir dados disponíveis relê somente o cache local; consulte as pesagens no Rebanho quando precisar repovoar registros confirmados. Uma carteira antiga, seleção de outra base ou conflito impede marcar tudo como concluído.
+
+### Validade dos dados
+
 - Base, carteira e seleção precisam estar atuais: até sete dias.
 - Pesagens precisam ter data válida, não futura, até 90 dias e confirmação remota. O prazo de 90 dias é política do Atlas.
 - Pesos diferentes no mesmo dia não permitem escolher silenciosamente uma versão, pois este modelo não preserva horário.

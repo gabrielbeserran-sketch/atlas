@@ -8,6 +8,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_sync.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_animals_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_stocking_calculator.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_setup_progress.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
@@ -280,7 +281,7 @@ class _AtlasPastureManagementScreenState
                     'Fazenda: ${farm.name} • ${selected.length}/${basis.grazingAnimals} selecionados',
                   ),
                   const Text(
-                    'Selecione por brinco/identificação. Este vínculo é local; ainda não calcula UA/ha.',
+                    'Selecione por brinco/identificação. O vínculo é local; UA/ha exige pesagens confirmadas de todos os animais.',
                   ),
                   Text(
                     roster == null
@@ -468,7 +469,7 @@ class _AtlasPastureManagementScreenState
     }
   }
 
-  Future<void> _editGrazingBasis() async {
+  Future<void> _editGrazingBasis({bool continueToAnimals = false}) async {
     final farm = authorizedFarm;
     if (farm == null) return;
     final area = TextEditingController(
@@ -560,7 +561,11 @@ class _AtlasPastureManagementScreenState
                   setDialogState(() => error = failure.message.toString());
                 }
               },
-              child: const Text('Salvar base'),
+              child: Text(
+                continueToAnimals
+                    ? 'Salvar e identificar animais'
+                    : 'Salvar base',
+              ),
             ),
           ],
         ),
@@ -572,6 +577,11 @@ class _AtlasPastureManagementScreenState
     try {
       await grazingBasisService.save(result, farmTotalAreaHa: farm.area);
       await _load();
+      if (continueToAnimals &&
+          mounted &&
+          grazingBasis?.hasSameData(result) == true) {
+        await _selectGrazingAnimals();
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1011,6 +1021,97 @@ class _AtlasPastureManagementScreenState
     ),
   );
 
+  Widget _setupCard(bool currentBasis, bool canEdit) {
+    final now = DateTime.now();
+    final selected = grazingSelection;
+    final selectionValid =
+        selected != null &&
+        grazingBasis != null &&
+        selected.basis.hasSameData(grazingBasis!) &&
+        selected.animalIds.length == grazingBasis!.grazingAnimals &&
+        selected.animalIds.toSet().length == selected.animalIds.length &&
+        !now.isBefore(selected.recordedAt) &&
+        now.difference(selected.recordedAt) <= const Duration(days: 7) &&
+        stockingRoster?.isCurrent(now) == true;
+    final progress = AtlasGrazingSetupProgress(
+      basisValid:
+          currentBasis &&
+          !grazingConflicts.any(
+            (e) =>
+                (e['local'] as Map?)?['operationId'] ==
+                grazingBasis?.operationId,
+          ),
+      selectionValid: selectionValid,
+      weightsComplete: stockingResult?.uaPerHa != null && stockingError == null,
+    );
+    final label = switch (progress.step) {
+      AtlasGrazingSetupStep.basis => 'Iniciar ou atualizar base de pastejo',
+      AtlasGrazingSetupStep.animals => 'Identificar animais desta base',
+      AtlasGrazingSetupStep.weights => 'Conferir dados disponíveis',
+      AtlasGrazingSetupStep.ready => 'Atualizar conferência',
+    };
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Configuração da lotação • ${progress.completedSteps}/3 etapas',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(value: progress.completedSteps / 3),
+            const SizedBox(height: 8),
+            const Text(
+              '1. Confirmar área e quantidade\n2. Identificar os animais\n3. Conferir pesos e UA/ha',
+            ),
+            const SizedBox(height: 8),
+            Text(switch (progress.step) {
+              AtlasGrazingSetupStep.basis =>
+                'Informe hectares únicos e quantidade real. Se houver conflito, revise as versões antes de continuar.',
+              AtlasGrazingSetupStep.animals =>
+                'Selecione os animais ativos e atualize a carteira se necessário.',
+              AtlasGrazingSetupStep.weights =>
+                stockingError ??
+                    stockingResult?.reason ??
+                    'Consulte as pesagens no Rebanho e retorne para conferir. Nenhum peso será estimado.',
+              AtlasGrazingSetupStep.ready =>
+                'Base, vínculos e pesos permitem calcular. Confira as datas e os valores no cartão abaixo.',
+            }),
+            const SizedBox(height: 8),
+            if (canEdit)
+              FilledButton.icon(
+                onPressed: loading || syncingBasis
+                    ? null
+                    : () async {
+                        switch (progress.step) {
+                          case AtlasGrazingSetupStep.basis:
+                            await _editGrazingBasis(continueToAnimals: true);
+                          case AtlasGrazingSetupStep.animals:
+                            await _selectGrazingAnimals();
+                          case AtlasGrazingSetupStep.weights:
+                          case AtlasGrazingSetupStep.ready:
+                            await _load();
+                        }
+                      },
+                icon: const Icon(Icons.checklist),
+                label: Text(label),
+              )
+            else
+              const Text(
+                'Selecione uma fazenda autorizada para configurar a base.',
+              ),
+            const SizedBox(height: 4),
+            const Text(
+              'Este progresso é da configuração dos dados, não da homologação da sincronização. Conferir usa o cache local, sem chamada automática ao servidor.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _metrics(
     List<(String, double?, String)> values, {
     required int invalidPaddockCount,
@@ -1029,6 +1130,7 @@ class _AtlasPastureManagementScreenState
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        _setupCard(currentBasis, canEditGrazingBasis),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
