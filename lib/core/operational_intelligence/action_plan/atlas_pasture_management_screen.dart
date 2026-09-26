@@ -6,6 +6,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_sync.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_animals_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
@@ -28,6 +29,8 @@ class _AtlasPastureManagementScreenState
   final service = AtlasPastureService.instance;
   final grazingBasisService = AtlasPastureGrazingBasisService();
   final grazingSync = AtlasPastureGrazingSync();
+  final grazingAnimalsService = AtlasGrazingAnimalsService();
+  AtlasGrazingSelection? grazingSelection;
   bool syncingBasis = false;
   String syncMessage =
       'A base é salva neste dispositivo. Sincronize quando houver conexão.';
@@ -68,6 +71,7 @@ class _AtlasPastureManagementScreenState
           );
     grazingConflicts = [];
     grazingReviews = [];
+    grazingSelection = null;
     if (farm != null) {
       try {
         grazingConflicts = await grazingSync.conflicts(
@@ -80,6 +84,11 @@ class _AtlasPastureManagementScreenState
           companyId: farm.companyId,
           farmId: farm.id,
         );
+        if (grazingBasis != null) {
+          grazingSelection = await grazingAnimalsService.loadCurrent(
+            grazingBasis!,
+          );
+        }
       } catch (_) {
         syncMessage =
             'Não foi possível ler a revisão de conflitos; dados preservados.';
@@ -125,6 +134,185 @@ class _AtlasPastureManagementScreenState
       syncMessage = result.message;
     });
     await _load();
+  }
+
+  Future<void> _selectGrazingAnimals() async {
+    final basis = grazingBasis;
+    final farm = authorizedFarm;
+    if (basis == null || farm == null || syncingBasis) return;
+    Future<bool> authorized() async {
+      final currentFarm = await _resolveAuthorizedFarm();
+      final currentBasis = await grazingBasisService.loadLatest(
+        tenantId: basis.tenantId,
+        companyId: basis.companyId,
+        farmId: basis.farmId,
+      );
+      return currentFarm?.id == basis.farmId &&
+          currentFarm?.companyId == basis.companyId &&
+          currentFarm?.tenantId == basis.tenantId &&
+          currentBasis?.hasSameData(basis) == true;
+    }
+
+    AtlasGrazingRoster? roster;
+    try {
+      roster = await grazingAnimalsService.loadRoster(basis);
+    } catch (_) {
+      /* não reutiliza cache ilegível */
+    }
+    if (!mounted) return;
+    final selected = {...?grazingSelection?.animalIds};
+    var search = '';
+    var busy = false;
+    String? error;
+    final saved = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, update) {
+          final candidates =
+              roster?.animals
+                  .where(
+                    (e) =>
+                        e.active &&
+                        '${e.tag} ${e.name}'.toLowerCase().contains(
+                          search.toLowerCase(),
+                        ),
+                  )
+                  .toList() ??
+              <AtlasGrazingCandidate>[];
+          return AlertDialog(
+            title: const Text('Animais realmente em pastejo'),
+            content: SizedBox(
+              width: 560,
+              height: 400,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Fazenda: ${farm.name} • ${selected.length}/${basis.grazingAnimals} selecionados',
+                  ),
+                  const Text(
+                    'Selecione por brinco/identificação. Este vínculo é local; ainda não calcula UA/ha.',
+                  ),
+                  Text(
+                    roster == null
+                        ? 'Consulte a carteira uma vez com internet para selecionar offline.'
+                        : 'Carteira de ${DateFormat('dd/MM/yyyy HH:mm').format(roster!.recordedAt.toLocal())}'
+                              '${roster!.isCurrent(DateTime.now()) ? '' : ' — atualize para salvar.'}',
+                  ),
+                  TextField(
+                    onChanged: (value) => update(() => search = value),
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar por brinco ou nome',
+                    ),
+                  ),
+                  if (busy) const LinearProgressIndicator(),
+                  if (error != null)
+                    Text(error!, style: const TextStyle(color: Colors.red)),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: candidates.length,
+                      itemBuilder: (_, index) {
+                        final animal = candidates[index];
+                        return CheckboxListTile(
+                          value: selected.contains(animal.id),
+                          title: Text('${animal.tag} • ${animal.name}'),
+                          onChanged: busy
+                              ? null
+                              : (value) => update(() {
+                                  if (value == true) {
+                                    selected.add(animal.id);
+                                  } else {
+                                    selected.remove(animal.id);
+                                  }
+                                }),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: busy
+                    ? null
+                    : () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: busy
+                    ? null
+                    : () async {
+                        update(() {
+                          busy = true;
+                          error = null;
+                        });
+                        try {
+                          final refreshed = await grazingAnimalsService
+                              .refreshRoster(basis, authorized);
+                          if (!dialogContext.mounted) return;
+                          update(() {
+                            roster = refreshed;
+                            final eligible = refreshed.animals
+                                .where((e) => e.active)
+                                .map((e) => e.id)
+                                .toSet();
+                            selected.removeWhere(
+                              (id) => !eligible.contains(id),
+                            );
+                          });
+                        } catch (_) {
+                          if (dialogContext.mounted) {
+                            update(
+                              () => error =
+                                  'Consulta não concluída. Carteira local preservada.',
+                            );
+                          }
+                        } finally {
+                          if (dialogContext.mounted) update(() => busy = false);
+                        }
+                      },
+                child: const Text('Atualizar carteira'),
+              ),
+              FilledButton(
+                onPressed:
+                    busy ||
+                        selected.length != basis.grazingAnimals ||
+                        roster?.isCurrent(DateTime.now()) != true
+                    ? null
+                    : () async {
+                        update(() {
+                          busy = true;
+                          error = null;
+                        });
+                        try {
+                          await grazingAnimalsService.saveSelection(
+                            basis,
+                            selected.toList(),
+                            authorized,
+                          );
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext, true);
+                          }
+                        } catch (_) {
+                          if (dialogContext.mounted) {
+                            update(() {
+                              busy = false;
+                              error =
+                                  'Confira a base, a quantidade e os animais ativos antes de salvar.';
+                            });
+                          }
+                        }
+                      },
+                child: const Text('Vincular animais'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (saved == true && mounted) await _load();
   }
 
   Future<void> _reviewGrazingConflict(Map<String, dynamic> item) async {
@@ -757,6 +945,20 @@ class _AtlasPastureManagementScreenState
                   ),
                   const SizedBox(height: 8),
                   Text(syncMessage),
+                  if (grazingBasis != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      grazingSelection == null
+                          ? 'Animais desta base ainda não identificados.'
+                          : '${grazingSelection!.animalIds.length} animais vinculados a esta confirmação. '
+                                'Seleção de ${DateFormat('dd/MM/yyyy').format(grazingSelection!.recordedAt.toLocal())}; vínculo local.',
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: syncingBasis ? null : _selectGrazingAnimals,
+                      icon: const Icon(Icons.checklist),
+                      label: const Text('Identificar animais em pastejo'),
+                    ),
+                  ],
                   if (grazingConflicts.isNotEmpty)
                     ExpansionTile(
                       title: Text(
