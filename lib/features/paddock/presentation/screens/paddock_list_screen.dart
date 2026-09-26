@@ -4,6 +4,8 @@ import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_ser
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_form_screen.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_management_screen.dart';
 
 class PaddockListScreen extends StatefulWidget {
   const PaddockListScreen({required this.farm, super.key});
@@ -19,6 +21,25 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
 
   List<PaddockData> paddocks = [];
   bool isLoading = true;
+
+  Future<void> openGrazingSupport() async {
+    final controller = AtlasCommandCenterActionController(
+      farmName: widget.farm.name,
+    );
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => AtlasPastureManagementScreen(
+            actionController: controller,
+            initialTabIndex: 2,
+            expectedFarmId: widget.farm.id ?? '',
+          ),
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
 
   @override
   void initState() {
@@ -184,7 +205,16 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Piquetes')),
+      appBar: AppBar(
+        title: const Text('Piquetes e pastagens'),
+        actions: [
+          TextButton.icon(
+            onPressed: openGrazingSupport,
+            icon: const Icon(Icons.grass_outlined),
+            label: const Text('Suporte'),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: isLoading ? null : openPaddockForm,
         backgroundColor: const Color(0xFF1B5E20),
@@ -222,6 +252,18 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
                         style: TextStyle(color: Colors.black54),
                       ),
                       const SizedBox(height: 24),
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.grass_outlined),
+                          title: const Text('Suporte e lotação da pastagem'),
+                          subtitle: const Text(
+                            'Área efetiva, animais em pastejo, UA/ha e sincronização. O cadastro de piquetes abaixo é preservado.',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: openGrazingSupport,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       if (paddocks.isEmpty)
                         const EmptyPaddocksMessage()
                       else

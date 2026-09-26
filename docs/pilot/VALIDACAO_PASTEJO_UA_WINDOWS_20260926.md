@@ -10,10 +10,10 @@ Use uma fazenda autorizada e dados reais conferidos. Não use o banco de produç
 
 ## Base e seleção
 
-1. Em Pastagens → Suporte, confirme a área única efetivamente usada e a quantidade real de animais. Não some piquetes sobrepostos.
+1. Em Campo → Piquetes e pastagens, toque no botão Suporte ou no cartão Suporte e lotação da pastagem. Ambos abrem Gestão de pastagens diretamente na aba Suporte. Confirme a área única efetivamente usada e a quantidade real de animais. Não some piquetes sobrepostos. O cadastro de piquetes original permanece na tela anterior; esta entrega conecta a navegação, não migra fontes legadas de piquetes.
 2. Atualize a carteira de animais e escolha os animais ativos por brinco/nome. A quantidade selecionada deve coincidir com a base.
 3. Confira UA/ha, cobertura e datas. Com cobertura completa, verifique manualmente: soma do último peso confirmado de cada animal ÷ 450 ÷ área efetiva.
-4. Se faltarem pesos, confira a lista de pendências. O sistema deve omitir o índice completo, sem extrapolar os animais restantes. Na próxima atualização agrupada, cada animal informa o motivo: ausência de peso confirmado no dispositivo, confirmação pendente, peso antigo, dados inválidos/futuros, inatividade ou pesos divergentes no último dia. Se houver mais de um tipo de pesagem inutilizável, os motivos aparecem juntos. Consulte o histórico para corrigir ou confirmar, sem substituir valores por estimativa.
+4. Se faltarem pesos, confira a lista de pendências. O sistema deve omitir o índice completo, sem extrapolar os animais restantes. Cada animal informa o motivo: ausência de peso confirmado no dispositivo, confirmação pendente, peso antigo, dados inválidos/futuros, inatividade ou pesos divergentes no último dia. Se houver mais de um tipo de pesagem inutilizável, os motivos aparecem juntos. Consulte o histórico para corrigir ou confirmar, sem substituir valores por estimativa.
 5. Feche e reabra o aplicativo sem rede, sem tocar em Sair. Entre com o PIN e verifique a persistência da base e da seleção. Não compartilhe o PIN.
 
 ## Proteções esperadas

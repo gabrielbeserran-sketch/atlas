@@ -31,6 +31,30 @@ const farm = AtlasRemoteFarm(
 );
 
 void main() {
+  test('atalho exige o ID exato mesmo quando o nome coincide', () {
+    for (final id in ['farm-b', '']) {
+      expect(
+        AtlasPastureGrazingScope.resolve(
+          session: session(),
+          activeFarmId: 'farm-a',
+          portfolio: const [farm],
+          expectedFarmName: farm.name,
+          expectedFarmId: id,
+        ),
+        isNull,
+      );
+    }
+    expect(
+      AtlasPastureGrazingScope.resolve(
+        session: session(),
+        activeFarmId: 'farm-a',
+        portfolio: const [farm],
+        expectedFarmName: farm.name,
+        expectedFarmId: farm.id,
+      )?.id,
+      farm.id,
+    );
+  });
   test('aceita só fazenda ativa da sessão e do contexto exibido', () {
     expect(
       AtlasPastureGrazingScope.resolve(

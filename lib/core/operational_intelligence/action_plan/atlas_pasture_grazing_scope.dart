@@ -9,6 +9,7 @@ class AtlasPastureGrazingScope {
     required String? activeFarmId,
     required List<AtlasRemoteFarm> portfolio,
     String? expectedFarmName,
+    String? expectedFarmId,
   }) {
     if (session == null ||
         session.userId.isEmpty ||
@@ -22,6 +23,7 @@ class AtlasPastureGrazingScope {
     for (final farm in portfolio) {
       if (!farm.active ||
           farm.id != activeFarmId ||
+          (expectedFarmId != null && farm.id != expectedFarmId) ||
           farm.companyId != session.companyId ||
           farm.tenantId != session.tenantId ||
           (!session.hasUnrestrictedFarmAccess &&

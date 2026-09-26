@@ -17,10 +17,14 @@ import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart
 class AtlasPastureManagementScreen extends StatefulWidget {
   const AtlasPastureManagementScreen({
     required this.actionController,
+    this.initialTabIndex = 0,
+    this.expectedFarmId,
     super.key,
-  });
+  }) : assert(initialTabIndex >= 0 && initialTabIndex < 7);
 
   final AtlasCommandCenterActionController actionController;
+  final int initialTabIndex;
+  final String? expectedFarmId;
 
   @override
   State<AtlasPastureManagementScreen> createState() =>
@@ -193,6 +197,7 @@ class _AtlasPastureManagementScreenState
       activeFarmId: farmId,
       portfolio: portfolio,
       expectedFarmName: widget.actionController.farmName,
+      expectedFarmId: widget.expectedFarmId,
     );
   }
 
@@ -773,6 +778,7 @@ class _AtlasPastureManagementScreenState
 
     return DefaultTabController(
       length: 7,
+      initialIndex: widget.initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Gestão de pastagens'),
