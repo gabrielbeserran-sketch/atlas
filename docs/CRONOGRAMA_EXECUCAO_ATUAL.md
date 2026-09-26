@@ -1,9 +1,30 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 25/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 26/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+
+## Caminho de fechamento da versão comercial atual
+
+Demonstração separada adiada por solicitação do usuário. Não é requisito para concluir a versão operacional. Não existe percentual global confiável: os percentuais abaixo da tabela medem entregas específicas, não o aplicativo inteiro.
+
+| Ordem | Pacote restante | Como considerar concluído | Dependência |
+|---|---|---|---|
+| 1 | Campo e entrada offline | Abrir com PIN sem rede, consultar cópia datada dos piquetes, conferir tarefas, área efetiva e UA/ha com dados autorizados; nenhuma leitura deve criar exemplos | Ensaio Windows/Android com usuário; implementação principal disponível |
+| 2 | Banco e sincronização | PostgreSQL descartável migra até 0057, revisão de produção confirmada e capacidades autenticadas aprovadas | Ambiente PostgreSQL funcional e acesso autorizado; não repetir sondagens sem nova hipótese |
+| 3 | Pesagens e pastejo entre dispositivos | Registrar offline, reconectar, confirmar envio único, troca de fazenda isolada e conflito preservando versões; testar dois dispositivos | Pacote 2 e aparelhos disponíveis; vínculos individuais/auditoria de pastejo ainda locais |
+| 4 | Validação técnica Corte/Leite | Conferir indicadores, datas, denominadores, cobertura e ausência de base com registros da operação; revisar índices ambíguos com responsável técnico | Dados autorizados e aceite operacional; não inventar números para fechar etapa |
+| 5 | Financeiro e documentos | Nota no Android → extração local → revisão → lançamento/anexo; conferir cotação, importação, totais e PDF animal nos aparelhos | Aparelho/documento de teste; nuvem OCR separada, limitada por cota |
+| 6 | Planos e equipe | Testar dono/gestor/operador e limites dos três planos no servidor e no menu; conferir contratação, cobrança, alteração/cancelamento e recuperação de acesso | Contrato de planos já existe; integração comercial/cobrança deve ser auditada antes de declarar pronta |
+| 7 | Segurança e recuperação | Testar isolamento entre clientes, permissões na API, backup/restauração em base descartável e ausência de segredos nos artefatos | Ambiente de homologação; backup existente não equivale a restauração testada |
+| 8 | Release e piloto | Regressão integrada, compilação agrupada Windows/Android, instalação preservando dados, piloto real e resolução de falhas críticas | Pacotes anteriores aprovados; produzir uma versão agrupada, não compilar a cada ajuste |
+| 9 | Entrega comercial | Roteiro de uso, suporte, política de atualização, termos/privacidade e aceite final registrados | Decisões comerciais/legais do responsável; não presumir aprovação |
+
+Próximo trabalho local: fechar pendências de Operações/Campo e preparar ensaios reproduzíveis. Avançar em testes locais enquanto dependências externas estiverem indisponíveis; não marcar ensaios como concluídos por terem passado mocks.
+
+Genética/ANCP, integração WhatsApp e demais expansões devem ter escopo e aceite próprios antes de entrar no fechamento comercial. A pesquisa/recomendação anterior não comprova implementação nem integração oficial; não apresentar essas expansões como funções prontas. OCR em nuvem também não será requisito oculto para uso offline: a disponibilidade/custo precisa de decisão explícita antes da oferta comercial.
 
 | Etapa | Situação | Progresso | Critério de aceite |
 |---|---:|---:|---|
+| Operações: sem criação automática de exemplos | Concluído localmente | 100% | Consultar armazenamento vazio não cria tarefas/custos; registros existentes preservados. 13 testes aprovados, análise sem apontamentos e diff aprovado. Checkpoint atlas-operations-no-auto-examples-20260926; próxima atualização agrupada, ainda não instalada no app aberto/celular. |
 | Campo: avaliação Windows agrupada 3 | Disponível para avaliação | 100% da entrega | Profile oficial do código dd47b57 compilado uma vez, hash registrado, aberto após fechamento confirmado; PID 6556 responsivo, login com PIN offline disponível conferido. Testes/análise anteriores reutilizados. Tag atlas-field-grouped-preview3-20260926 e roteiro docs/pilot/AVALIACAO_CAMPO_OFFLINE.md. Ensaio real de consulta/reabertura offline ainda pendente; celular/banco preservados. Não é release de distribuição. |
 | Campo: painel local-primeiro e operações sem novas sementes | Concluído localmente | 100% | Abertura sem consulta remota de piquetes, cache autorizado e datado, atualização explícita; dados ausentes não viram zero. Painel lê apenas operações da fazenda sem criar exemplos. Rejeição 401/403 separada de indisponibilidade e contexto alterado descartado. 25 testes aprovados, análise corrigida/conferida, um build Windows debug oficial e diff aprovados. Tag publicada atlas-field-panel-offline-20260926. Próximo: versão agrupada e ensaio real offline; não instalado no aplicativo aberto/celular. Outros fluxos legados de operações permanecem fora deste pacote. |
 | Acesso: persistência do PIN no Android | Concluído | 100% | PIN e sessão usam o mesmo `EncryptedSharedPreferences`; recuperação da sessão não apaga todas as chaves do cofre. 19 testes, análise estática e APK release aprovados em 25/09; atualização por cima no moto g75 5G preservou a instalação e dados; checkpoint `8b32bd6` publicado. O usuário confirmou que o PIN passou a persistir em 25/09. O ensaio completo sem internet permanece nas etapas específicas de entrada offline. |
