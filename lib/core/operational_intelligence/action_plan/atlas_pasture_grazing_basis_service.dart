@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 /// Retrato confirmado pelo produtor; não é inferido dos piquetes cadastrados.
 class AtlasPastureGrazingBasis {
-  const AtlasPastureGrazingBasis({
+  AtlasPastureGrazingBasis({
+    String? operationId,
     required this.tenantId,
     required this.companyId,
     required this.farmId,
@@ -12,7 +14,9 @@ class AtlasPastureGrazingBasis {
     required this.grazingAnimals,
     required this.uniqueAreaConfirmed,
     required this.recordedAt,
-  });
+  }) : operationId = operationId ?? const Uuid().v4();
+
+  final String operationId;
 
   final String tenantId;
   final String companyId;
@@ -30,6 +34,7 @@ class AtlasPastureGrazingBasis {
   }
 
   Map<String, dynamic> toMap() => {
+    'operationId': operationId,
     'tenantId': tenantId,
     'companyId': companyId,
     'farmId': farmId,
@@ -43,6 +48,19 @@ class AtlasPastureGrazingBasis {
     final recordedAt = DateTime.tryParse(map['recordedAt']?.toString() ?? '');
     if (recordedAt == null) throw const FormatException('Data ausente.');
     return AtlasPastureGrazingBasis(
+      operationId:
+          map['operationId']?.toString() ??
+          const Uuid().v5(
+            Uuid.NAMESPACE_URL,
+            jsonEncode([
+              map['tenantId'],
+              map['companyId'],
+              map['farmId'],
+              map['recordedAt'],
+              map['effectiveAreaHa'],
+              map['grazingAnimals'],
+            ]),
+          ),
       tenantId: map['tenantId']?.toString() ?? '',
       companyId: map['companyId']?.toString() ?? '',
       farmId: map['farmId']?.toString() ?? '',
@@ -54,6 +72,9 @@ class AtlasPastureGrazingBasis {
   }
 
   void validate({double? farmTotalAreaHa}) {
+    if (operationId.trim().isEmpty) {
+      throw ArgumentError('Identificador do registro ausente.');
+    }
     if (tenantId.trim().isEmpty ||
         companyId.trim().isEmpty ||
         farmId.trim().isEmpty) {
@@ -86,6 +107,7 @@ class AtlasPastureGrazingBasisService {
 
   final SharedPreferencesAsync _preferences;
   static const _keyPrefix = 'atlas_pasture_grazing_basis_v1_';
+  static final Map<String, Future<void>> _writes = {};
 
   String _key(String tenantId, String companyId, String farmId) {
     if (tenantId.trim().isEmpty ||
@@ -103,6 +125,7 @@ class AtlasPastureGrazingBasisService {
     required String tenantId,
     required String companyId,
     required String farmId,
+    bool strict = false,
   }) async {
     final raw = await _preferences.getString(_key(tenantId, companyId, farmId));
     if (raw == null || raw.isEmpty) return const [];
@@ -110,7 +133,10 @@ class AtlasPastureGrazingBasisService {
       final decoded = jsonDecode(raw) as List<dynamic>;
       final records = <AtlasPastureGrazingBasis>[];
       for (final item in decoded) {
-        if (item is! Map) continue;
+        if (item is! Map) {
+          if (strict) throw const FormatException('Registro ilegível.');
+          continue;
+        }
         try {
           final basis = AtlasPastureGrazingBasis.fromMap(
             Map<String, dynamic>.from(item),
@@ -120,14 +146,18 @@ class AtlasPastureGrazingBasisService {
               basis.companyId == companyId &&
               basis.farmId == farmId) {
             records.add(basis);
+          } else if (strict) {
+            throw const FormatException('Registro de outra fazenda.');
           }
         } catch (_) {
+          if (strict) rethrow;
           // Registro ilegível ou de outro escopo nunca vira indicador.
         }
       }
       records.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
       return records;
     } catch (_) {
+      if (strict) rethrow;
       return const [];
     }
   }
@@ -150,14 +180,38 @@ class AtlasPastureGrazingBasisService {
     double? farmTotalAreaHa,
   }) async {
     basis.validate(farmTotalAreaHa: farmTotalAreaHa);
-    final history = await loadHistory(
-      tenantId: basis.tenantId,
-      companyId: basis.companyId,
-      farmId: basis.farmId,
+    final key = _key(basis.tenantId, basis.companyId, basis.farmId);
+    final previous = _writes[key] ?? Future<void>.value();
+    final write = previous.then((_) async {
+      final history = await loadHistory(
+        tenantId: basis.tenantId,
+        companyId: basis.companyId,
+        farmId: basis.farmId,
+        strict: true,
+      );
+      final existing = history.where(
+        (item) => item.operationId == basis.operationId,
+      );
+      if (existing.isNotEmpty) {
+        if (jsonEncode(existing.first.toMap()) != jsonEncode(basis.toMap())) {
+          throw StateError('A mesma operação contém dados diferentes.');
+        }
+        return;
+      }
+      await _preferences.setString(
+        key,
+        jsonEncode([basis.toMap(), ...history.map((item) => item.toMap())]),
+      );
+    });
+    final tail = write.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
     );
-    await _preferences.setString(
-      _key(basis.tenantId, basis.companyId, basis.farmId),
-      jsonEncode([basis.toMap(), ...history.map((item) => item.toMap())]),
-    );
+    _writes[key] = tail;
+    try {
+      await write;
+    } finally {
+      if (identical(_writes[key], tail)) _writes.remove(key);
+    }
   }
 }

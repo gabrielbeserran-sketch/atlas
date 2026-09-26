@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -25,6 +28,22 @@ void main() {
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
+  });
+
+  test('armazenamento ilegível não é apagado por nova gravação', () async {
+    final key =
+        'atlas_pasture_grazing_basis_v1_${base64Url.encode(utf8.encode(jsonEncode(['tenant-a', 'company-a', 'farm-a'])))}';
+    final preferences = SharedPreferencesAsync();
+    for (final raw in [
+      '{incompleto',
+      '[42]',
+      jsonEncode([basis(farm: 'outra').toMap()]),
+    ]) {
+      await preferences.setString(key, raw);
+      final service = AtlasPastureGrazingBasisService();
+      await expectLater(service.save(basis()), throwsFormatException);
+      expect(await preferences.getString(key), raw);
+    }
   });
 
   test(
@@ -106,4 +125,64 @@ void main() {
     expect(current.isCurrentAt(DateTime(2026, 9, 28)), isFalse);
     expect(current.isCurrentAt(DateTime(2026, 9, 19)), isFalse);
   });
+
+  test(
+    'gravações simultâneas por duas instâncias preservam todo histórico',
+    () async {
+      final records = List.generate(20, (i) => basis(animals: i + 1));
+      await Future.wait(
+        records.map((item) => AtlasPastureGrazingBasisService().save(item)),
+      );
+      final history = await AtlasPastureGrazingBasisService().loadHistory(
+        tenantId: 'tenant-a',
+        companyId: 'company-a',
+        farmId: 'farm-a',
+      );
+      expect(history, hasLength(20));
+      expect(history.map((item) => item.operationId).toSet(), hasLength(20));
+    },
+  );
+
+  test('repetir operação não duplica e divergência não sobrescreve', () async {
+    final service = AtlasPastureGrazingBasisService();
+    final record = basis();
+    await service.save(record);
+    await service.save(record);
+    final changed = AtlasPastureGrazingBasis.fromMap({
+      ...record.toMap(),
+      'grazingAnimals': 99,
+    });
+    await expectLater(service.save(changed), throwsStateError);
+    final history = await service.loadHistory(
+      tenantId: 'tenant-a',
+      companyId: 'company-a',
+      farmId: 'farm-a',
+    );
+    expect(history, hasLength(1));
+    expect(history.single.grazingAnimals, 30);
+    await service.save(basis(animals: 40));
+    expect(
+      await service.loadHistory(
+        tenantId: 'tenant-a',
+        companyId: 'company-a',
+        farmId: 'farm-a',
+      ),
+      hasLength(2),
+    );
+  });
+
+  test(
+    'registro legado ganha identidade determinística sem perder valores',
+    () {
+      final map = basis().toMap()..remove('operationId');
+      final first = AtlasPastureGrazingBasis.fromMap(map);
+      final second = AtlasPastureGrazingBasis.fromMap(map);
+      expect(first.operationId, second.operationId);
+      expect(first.animalsPerHectare, 1.5);
+      expect(
+        AtlasPastureGrazingBasis.fromMap(first.toMap()).operationId,
+        first.operationId,
+      );
+    },
+  );
 }
