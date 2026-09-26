@@ -7,6 +7,10 @@ import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_management_screen.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_field_paddock_snapshot.dart';
+import 'package:projeto_atlas/features/paddock/data/services/paddock_read_cache.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
+import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
+import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
 
 class PaddockListScreen extends StatefulWidget {
   const PaddockListScreen({required this.farm, super.key});
@@ -23,6 +27,32 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
   List<PaddockData> paddocks = [];
   bool isLoading = true;
   DateTime? paddocksLoadedAt;
+  final readCache = PaddockReadCache();
+  bool fromCache = false;
+  String? cacheNotice;
+
+  Future<AtlasRemoteFarm?> resolveFarm() async {
+    final store = AtlasEnterpriseRemoteAuthStore.instance;
+    return AtlasPastureGrazingScope.resolve(
+      session: await store.loadSession(),
+      activeFarmId: await store.loadActiveFarm(),
+      portfolio: await store.loadFarmPortfolio(),
+      expectedFarmId: widget.farm.id ?? '',
+      expectedFarmName: widget.farm.name,
+    );
+  }
+
+  Future<void> refreshAfterChange() async {
+    final farm = await resolveFarm();
+    if (farm == null) return;
+    try {
+      await readCache.invalidate(farm);
+    } catch (_) {
+      cacheNotice =
+          'Alteração confirmada no servidor; cópia offline precisa de atualização.';
+    }
+    if (mounted) await loadPaddocks(refresh: true);
+  }
 
   Future<void> openGrazingSupport() async {
     final controller = AtlasCommandCenterActionController(
@@ -56,20 +86,65 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
     loadPaddocks();
   }
 
-  Future<void> loadPaddocks() async {
+  Future<void> loadPaddocks({bool refresh = false}) async {
     if (mounted) {
       setState(() => isLoading = true);
     }
     try {
+      final farm = await resolveFarm();
+      if (farm == null) {
+        paddocks = [];
+        paddocksLoadedAt = null;
+        throw StateError('Selecione uma fazenda autorizada.');
+      }
+      if (!refresh) {
+        final cached = await readCache.load(farm, DateTime.now());
+        final current = await resolveFarm();
+        if (!mounted) return;
+        if (current?.id != farm.id ||
+            current?.companyId != farm.companyId ||
+            current?.tenantId != farm.tenantId) {
+          paddocks = [];
+          paddocksLoadedAt = null;
+          throw StateError('Contexto alterado.');
+        }
+        if (cached != null) {
+          setState(() {
+            paddocks = cached.paddocks.toList();
+            paddocksLoadedAt = cached.loadedAt;
+            fromCache = true;
+            cacheNotice = null;
+          });
+          return;
+        }
+      }
       final savedPaddocks = await storage
           .loadPaddocks(widget.farm.id ?? '')
           .timeout(const Duration(seconds: 8));
       if (!mounted) {
         return;
       }
+      final current = await resolveFarm();
+      if (!mounted) return;
+      if (current?.id != farm.id ||
+          current?.companyId != farm.companyId ||
+          current?.tenantId != farm.tenantId) {
+        paddocks = [];
+        paddocksLoadedAt = null;
+        throw StateError('Contexto alterado.');
+      }
+      final receivedAt = DateTime.now();
+      cacheNotice = null;
+      try {
+        await readCache.save(farm, savedPaddocks, receivedAt);
+      } catch (_) {
+        cacheNotice = 'Consulta concluída, mas a cópia offline não foi salva.';
+      }
+      if (!mounted) return;
       setState(() {
         paddocks = savedPaddocks;
-        paddocksLoadedAt = DateTime.now();
+        paddocksLoadedAt = receivedAt;
+        fromCache = false;
       });
     } catch (error) {
       if (mounted) {
@@ -108,6 +183,7 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
     setState(() {
       paddocks.add(created);
     });
+    await refreshAfterChange();
 
     if (!mounted) {
       return;
@@ -153,6 +229,7 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
     setState(() {
       paddocks[paddockIndex] = updated;
     });
+    await refreshAfterChange();
 
     if (!mounted) {
       return;
@@ -204,6 +281,7 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
     setState(() {
       paddocks.remove(paddock);
     });
+    await refreshAfterChange();
 
     if (!mounted) {
       return;
@@ -220,6 +298,11 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
       appBar: AppBar(
         title: const Text('Piquetes e pastagens'),
         actions: [
+          IconButton(
+            tooltip: 'Atualizar cadastro do servidor',
+            onPressed: isLoading ? null : () => loadPaddocks(refresh: true),
+            icon: const Icon(Icons.refresh),
+          ),
           TextButton.icon(
             onPressed: openGrazingSupport,
             icon: const Icon(Icons.grass_outlined),
@@ -243,6 +326,16 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
+                      if (paddocksLoadedAt != null)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              '${fromCache ? 'Dados salvos no dispositivo' : 'Cadastro consultado no servidor'} • ${paddocksLoadedAt!.toLocal()}\nUse Atualizar para consultar mudanças. Cadastro, edição e exclusão continuam exigindo confirmação do servidor.',
+                            ),
+                          ),
+                        ),
+                      if (cacheNotice != null) Text(cacheNotice!),
                       Text(
                         widget.farm.name,
                         style: const TextStyle(

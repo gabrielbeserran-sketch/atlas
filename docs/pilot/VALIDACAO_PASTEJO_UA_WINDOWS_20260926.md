@@ -41,4 +41,8 @@ Use Sincronizar somente se o servidor confirmar a capacidade da base de pastejo.
 
 ## Registro do ensaio
 
+### Consulta offline de piquetes (próxima versão agrupada)
+
+Consulte os piquetes com internet nesta nova versão uma vez. Feche e reabra offline com PIN: Piquetes e pastagens deve carregar a cópia da mesma empresa/tenant/fazenda sem aguardar a API, exibindo a data e o aviso Dados salvos no dispositivo. Abra Suporte para conferir a referência. Atualizar consulta a API explicitamente; uma falha deve manter a cópia disponível sem alterar sua data. Sem cache confirmado, a primeira consulta precisa de rede. Cadastro, edição e exclusão continuam remotos e não são confirmados pelo cache. Após alteração confirmada, a cópia é invalidada e refeita por consulta oficial; se falhar, é necessário reconectar para repovoá-la. Não confundir esta leitura offline com uma fila de gravações de piquetes.
+
 Anote versão utilizada, fazenda, área, quantidade selecionada, cobertura, datas, UA/ha esperado e observado e resultado da reabertura offline. Não registre senha, PIN ou token. A aprovação automática não substitui este ensaio nem a homologação PostgreSQL/produção e entre dois dispositivos.
