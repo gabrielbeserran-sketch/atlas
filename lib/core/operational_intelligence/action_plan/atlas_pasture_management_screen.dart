@@ -996,9 +996,7 @@ class _AtlasPastureManagementScreenState
                         ? id
                         : '${matches.first.tag} • ${matches.first.name}',
                   ),
-                  subtitle: const Text(
-                    'Sem peso recente confirmado, identificação ativa ou ordem verificável de pesagens.',
-                  ),
+                  subtitle: Text(result.pendingReasons[id] ?? result.reason),
                 );
               }).toList(),
             ),

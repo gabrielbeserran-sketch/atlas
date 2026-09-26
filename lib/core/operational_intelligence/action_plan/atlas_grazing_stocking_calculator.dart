@@ -9,6 +9,7 @@ class AtlasGrazingStockingResult {
     required this.pendingAnimalIds,
     required this.ignoredLocalWeights,
     required this.reason,
+    this.pendingReasons = const {},
     this.uaPerHa,
     this.totalWeightKg,
     this.oldestWeightDate,
@@ -19,6 +20,7 @@ class AtlasGrazingStockingResult {
   final List<String> pendingAnimalIds;
   final int ignoredLocalWeights;
   final String reason;
+  final Map<String, String> pendingReasons;
   final double? uaPerHa;
   final double? totalWeightKg;
   final DateTime? oldestWeightDate;
@@ -91,6 +93,7 @@ class AtlasGrazingStockingCalculator {
         .toSet();
     final today = DateTime.utc(now.year, now.month, now.day);
     final pending = <String>[];
+    final pendingReasons = <String, String>{};
     var ignoredLocal = 0;
     var total = 0.0;
     DateTime? oldest;
@@ -98,26 +101,44 @@ class AtlasGrazingStockingCalculator {
     for (final id in selection.animalIds) {
       if (!activeIds.contains(id)) {
         pending.add(id);
+        pendingReasons[id] = 'Animal ausente ou inativo na carteira atual.';
         continue;
       }
       final candidates = <(DateTime, double)>[];
+      var localCount = 0;
+      var invalidCount = 0;
+      var oldCount = 0;
       for (final measurement in weightsByAnimalId[id] ?? <AnimalWeightData>[]) {
         if (!measurement.isRemote) {
           ignoredLocal++;
+          localCount++;
           continue;
         }
         final date = _date(measurement.date);
         if (date == null ||
             date.isAfter(today) ||
             !measurement.weight.isFinite ||
-            measurement.weight <= 0 ||
-            today.difference(date).inDays > maximumWeightAgeDays) {
+            measurement.weight <= 0) {
+          invalidCount++;
+          continue;
+        }
+        if (today.difference(date).inDays > maximumWeightAgeDays) {
+          oldCount++;
           continue;
         }
         candidates.add((date, measurement.weight));
       }
       if (candidates.isEmpty) {
         pending.add(id);
+        final details = <String>[
+          if (localCount > 0) '$localCount pesagem(ns) aguardando confirmação',
+          if (oldCount > 0) '$oldCount pesagem(ns) com mais de 90 dias',
+          if (invalidCount > 0)
+            '$invalidCount pesagem(ns) com peso ou data inválidos/futuros',
+        ];
+        pendingReasons[id] = details.isEmpty
+            ? 'Nenhuma pesagem confirmada disponível neste dispositivo.'
+            : '${details.join('; ')}.';
         continue;
       }
       candidates.sort((a, b) => b.$1.compareTo(a.$1));
@@ -125,6 +146,8 @@ class AtlasGrazingStockingCalculator {
       // O modelo legado só tem dia: duas medições diferentes no mesmo dia não têm ordem verificável.
       if (candidates.any((e) => e.$1 == chosen.$1 && e.$2 != chosen.$2)) {
         pending.add(id);
+        pendingReasons[id] =
+            'Pesos divergentes na última data; confira o histórico antes de calcular.';
         continue;
       }
       total += chosen.$2;
@@ -137,6 +160,7 @@ class AtlasGrazingStockingCalculator {
       selectedCount: selection.animalIds.length,
       coveredCount: selection.animalIds.length - pending.length,
       pendingAnimalIds: List.unmodifiable(pending),
+      pendingReasons: Map.unmodifiable(pendingReasons),
       ignoredLocalWeights: ignoredLocal,
       uaPerHa: complete ? candidateUa : null,
       totalWeightKg: complete ? total : null,

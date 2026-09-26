@@ -72,6 +72,45 @@ void main() {
     );
   }
 
+  test(
+    'pendências distinguem ausência, confirmação, idade e dados inválidos',
+    () {
+      final missing = calculate({});
+      expect(missing.pendingReasons['a'], contains('Nenhuma pesagem'));
+      final mixed = calculate({
+        'a': [
+          weight(450, confirmed: false),
+          weight(450, date: '01/01/2026'),
+          weight(-1),
+        ],
+        'b': [weight(450)],
+      });
+      expect(mixed.pendingReasons['a'], contains('aguardando confirmação'));
+      expect(mixed.pendingReasons['a'], contains('mais de 90 dias'));
+      expect(mixed.pendingReasons['a'], contains('inválidos'));
+      expect(mixed.pendingReasons.containsKey('b'), isFalse);
+      expect(mixed.uaPerHa, isNull);
+      expect(
+        () => mixed.pendingReasons['x'] = 'alterado',
+        throwsUnsupportedError,
+      );
+    },
+  );
+
+  test('pendências distinguem inatividade e divergência na última data', () {
+    final inactive = calculate({
+      'b': [weight(450)],
+    }, r: roster(activeB: false));
+    expect(inactive.pendingReasons['b'], contains('inativo'));
+    final conflict = calculate({
+      'a': [weight(450), weight(460)],
+      'b': [weight(450)],
+    });
+    expect(conflict.pendingReasons['a'], contains('divergentes'));
+    expect(conflict.coveredCount, 1);
+    expect(conflict.uaPerHa, isNull);
+  });
+
   test('UA por hectare usa soma de pesos individuais e área efetiva', () {
     final result = calculate({
       'a': [weight(450)],
