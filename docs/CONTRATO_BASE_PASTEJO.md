@@ -1,6 +1,6 @@
 # Contrato de base de pastejo
 
-Checkpoint de API: `9d744cb`; integração do cliente: `f8f0172`. Validados localmente; não representam confirmação de migração em produção.
+Checkpoint de API: `9d744cb`; integração do cliente: `f8f0172`; revisão assistida: `0bdbe96`. Validados localmente; não representam confirmação de migração em produção.
 
 ## Rotas
 
@@ -24,6 +24,8 @@ Sem a migração, GET/POST retornam 503. Não há rota de edição/exclusão de 
 
 ## Limites da entrega
 
-O comando está em Pastagens → Suporte → Sincronizar base de pastejo. Abertura e salvamento continuam locais; somente o comando explícito usa estas rotas. Cada execução envia no máximo 20 operações e lê até 20 páginas de 100; se o histórico remoto não terminar nesse limite, não envia. Conflitos são persistidos com as duas versões e apresentados na tela, mas sua resolução assistida ainda é a próxima etapa.
+O comando está em Pastagens → Suporte → Sincronizar base de pastejo. Abertura e salvamento continuam locais; somente o comando explícito usa estas rotas. Cada execução envia no máximo 20 operações e lê até 20 páginas de 100; se o histórico remoto não terminar nesse limite, não envia.
 
-Homologação PostgreSQL, confirmação autenticada em produção e ensaio em dois dispositivos permanecem pendentes. Nenhuma credencial nem banco existente foi utilizado nos testes. A versão Windows foi compilada e aberta no login; celular não atualizado neste pacote.
+Conflitos são persistidos com as duas versões. Ao tocar um conflito, a tela compara os valores e pede confirmação para aceitar a versão do servidor. O contexto de usuário/fazenda e as versões são revalidados. A auditoria é gravada antes de substituir o retrato local; falha intermediária mantém os originais e permite repetir sem duplicar a revisão. O comando não escreve na API. As revisões arquivadas aparecem em seção própria com autor/data, mas continuam locais ao dispositivo. Cancelar mantém o conflito; não há sobrescrita automática nem comando para forçar a versão local contra a mesma chave remota.
+
+Homologação PostgreSQL, confirmação autenticada em produção e ensaio em dois dispositivos permanecem pendentes. Nenhuma credencial nem banco existente foi utilizado nos testes. O release de integração foi aberto no login no pacote anterior; a revisão assistida teve build debug de validação, preservando o aplicativo em uso. Entrará no próximo release agrupado; celular não atualizado neste pacote.
