@@ -7,6 +7,9 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_sync.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_animals_service.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_stocking_calculator.dart';
+import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
+import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
@@ -31,6 +34,9 @@ class _AtlasPastureManagementScreenState
   final grazingSync = AtlasPastureGrazingSync();
   final grazingAnimalsService = AtlasGrazingAnimalsService();
   AtlasGrazingSelection? grazingSelection;
+  AtlasGrazingStockingResult? stockingResult;
+  AtlasGrazingRoster? stockingRoster;
+  String? stockingError;
   bool syncingBasis = false;
   String syncMessage =
       'A base é salva neste dispositivo. Sincronize quando houver conexão.';
@@ -50,7 +56,12 @@ class _AtlasPastureManagementScreenState
   }
 
   Future<void> _load() async {
-    setState(() => loading = true);
+    setState(() {
+      loading = true;
+      stockingResult = null;
+      stockingRoster = null;
+      stockingError = null;
+    });
     paddocks = await service.loadPaddocks(
       farmName: widget.actionController.farmName,
     );
@@ -92,10 +103,82 @@ class _AtlasPastureManagementScreenState
       } catch (_) {
         syncMessage =
             'Não foi possível ler a revisão de conflitos; dados preservados.';
+        stockingError =
+            'Não foi possível validar o contexto da base para UA/ha.';
       }
     } else {
       grazingConflicts = [];
       grazingReviews = [];
+    }
+    if (farm != null && grazingBasis != null && stockingError == null) {
+      try {
+        final basis = grazingBasis!;
+        final selection = grazingSelection;
+        final roster = await grazingAnimalsService.loadRoster(basis);
+        final storage = AnimalWeightStorageService(
+          companyId: basis.companyId,
+          farmId: basis.farmId,
+        );
+        final weights = <String, List<AnimalWeightData>>{};
+        final ids = selection?.animalIds ?? <String>[];
+        for (var offset = 0; offset < ids.length; offset += 20) {
+          final batch = ids.skip(offset).take(20);
+          await Future.wait(
+            batch.map((id) async {
+              weights[id] = await storage.loadWeights(
+                farmName: farm.name,
+                groupName: '',
+                animalId: id,
+                farmId: basis.farmId,
+                preferRemote: false,
+              );
+            }),
+          );
+        }
+        final active = await _resolveAuthorizedFarm();
+        final latestBasis = await grazingBasisService.loadLatest(
+          tenantId: basis.tenantId,
+          companyId: basis.companyId,
+          farmId: basis.farmId,
+        );
+        final latestSelection = await grazingAnimalsService.loadCurrent(basis);
+        final selectionUnchanged = selection == null
+            ? latestSelection == null
+            : latestSelection != null &&
+                  latestSelection.recordedAt.isAtSameMomentAs(
+                    selection.recordedAt,
+                  ) &&
+                  latestSelection.animalIds.length ==
+                      selection.animalIds.length &&
+                  latestSelection.animalIds
+                      .toSet()
+                      .difference(selection.animalIds.toSet())
+                      .isEmpty;
+        if (active?.id == basis.farmId &&
+            active?.companyId == basis.companyId &&
+            active?.tenantId == basis.tenantId &&
+            latestBasis?.hasSameData(basis) == true &&
+            selectionUnchanged) {
+          stockingRoster = roster;
+          stockingResult = const AtlasGrazingStockingCalculator().calculate(
+            basis: basis,
+            selection: selection,
+            roster: roster,
+            weightsByAnimalId: weights,
+            now: DateTime.now(),
+            farmTotalAreaHa: farm.area,
+            hasUnresolvedBasisConflict: grazingConflicts.any(
+              (e) => (e['local'] as Map)['operationId'] == basis.operationId,
+            ),
+          );
+        } else {
+          stockingError =
+              'A base ou os animais mudaram durante a leitura; recarregue para calcular.';
+        }
+      } catch (_) {
+        stockingError =
+            'Não foi possível validar os pesos locais. Nenhum dado foi alterado.';
+      }
     }
     if (mounted) setState(() => loading = false);
   }
@@ -857,6 +940,73 @@ class _AtlasPastureManagementScreenState
     );
   }
 
+  Widget _stockingCard(AtlasGrazingStockingResult result) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Lotação por peso registrado',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Text(
+            result.uaPerHa == null
+                ? 'UA/ha indisponível'
+                : '${result.uaPerHa!.toStringAsFixed(2)} UA/ha',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          Text(
+            'Cobertura: ${result.coveredCount}/${result.selectedCount} animais com peso confirmado válido.',
+          ),
+          Text(result.reason),
+          if (result.totalWeightKg != null)
+            Text(
+              'Peso total confirmado: ${result.totalWeightKg!.toStringAsFixed(1)} kg',
+            ),
+          if (result.oldestWeightDate != null &&
+              result.latestWeightDate != null)
+            Text(
+              'Datas usadas: ${DateFormat('dd/MM/yyyy').format(result.oldestWeightDate!)} a '
+              '${DateFormat('dd/MM/yyyy').format(result.latestWeightDate!)}.',
+            ),
+          const Text(
+            '1 UA = 450 kg (Embrapa). Janela operacional do Atlas: 90 dias. '
+            'Usa o cache confirmado; não estima pesos nem recomenda capacidade de suporte.',
+          ),
+          const Text(
+            'Para completar o cache, consulte as pesagens dos animais no módulo Rebanho e retorne.',
+          ),
+          if (result.ignoredLocalWeights > 0)
+            Text(
+              '${result.ignoredLocalWeights} registro(s) local(is) sem confirmação remota ficaram fora.',
+            ),
+          if (result.pendingAnimalIds.isNotEmpty)
+            ExpansionTile(
+              title: Text(
+                '${result.pendingAnimalIds.length} animal(is) para conferir',
+              ),
+              children: result.pendingAnimalIds.map((id) {
+                final matches =
+                    stockingRoster?.animals.where((e) => e.id == id).toList() ??
+                    <AtlasGrazingCandidate>[];
+                return ListTile(
+                  title: Text(
+                    matches.isEmpty
+                        ? id
+                        : '${matches.first.tag} • ${matches.first.name}',
+                  ),
+                  subtitle: const Text(
+                    'Sem peso recente confirmado, identificação ativa ou ordem verificável de pesagens.',
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      ),
+    ),
+  );
+
   Widget _metrics(
     List<(String, double?, String)> values, {
     required int invalidPaddockCount,
@@ -959,6 +1109,8 @@ class _AtlasPastureManagementScreenState
                       label: const Text('Identificar animais em pastejo'),
                     ),
                   ],
+                  if (stockingResult != null) _stockingCard(stockingResult!),
+                  if (stockingError != null) Text(stockingError!),
                   if (grazingConflicts.isNotEmpty)
                     ExpansionTile(
                       title: Text(
