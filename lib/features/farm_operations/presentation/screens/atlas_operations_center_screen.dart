@@ -66,10 +66,6 @@ class _AtlasOperationsCenterScreenState
     );
     final legacyAvailable = await _repository.hasLegacyData();
 
-    items.sort((AtlasFarmOperation a, AtlasFarmOperation b) {
-      return a.scheduledAt.compareTo(b.scheduledAt);
-    });
-
     if (!mounted || !widget.isAuthorized()) {
       return;
     }
@@ -246,7 +242,7 @@ class _AtlasOperationsCenterScreenState
     );
 
     final TextEditingController costController = TextEditingController(
-      text: (current?.plannedCost ?? 0).toStringAsFixed(2),
+      text: (current?.plannedCost ?? 0).toStringAsFixed(2).replaceAll('.', ','),
     );
 
     AtlasOperationType selectedType =
@@ -258,7 +254,7 @@ class _AtlasOperationsCenterScreenState
     DateTime selectedDate =
         current?.scheduledAt ?? DateTime.now().add(const Duration(days: 1));
 
-    final AtlasFarmOperation? result = await showDialog<AtlasFarmOperation>(
+    final dialogRoute = DialogRoute<AtlasFarmOperation>(
       context: context,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(
@@ -403,14 +399,25 @@ class _AtlasOperationsCenterScreenState
                       return;
                     }
 
-                    final double plannedCost =
-                        double.tryParse(
-                          costController.text
-                              .trim()
-                              .replaceAll('.', '')
-                              .replaceAll(',', '.'),
-                        ) ??
-                        0;
+                    final rawCost = costController.text.trim();
+                    final normalizedCost = rawCost.contains(',')
+                        ? rawCost.replaceAll('.', '').replaceAll(',', '.')
+                        : rawCost;
+                    final plannedCost = rawCost.isEmpty
+                        ? 0.0
+                        : double.tryParse(normalizedCost);
+                    if (plannedCost == null ||
+                        !plannedCost.isFinite ||
+                        plannedCost < 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Informe um custo válido, maior ou igual a zero.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
 
                     final AtlasFarmOperation operation = AtlasFarmOperation(
                       id:
@@ -446,6 +453,8 @@ class _AtlasOperationsCenterScreenState
       },
     );
 
+    final result = await Navigator.of(context).push(dialogRoute);
+    await dialogRoute.completed;
     titleController.dispose();
     responsibleController.dispose();
     costController.dispose();

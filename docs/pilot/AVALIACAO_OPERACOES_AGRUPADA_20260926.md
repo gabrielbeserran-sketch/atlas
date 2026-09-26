@@ -14,6 +14,17 @@ SHA-256 de data/app.so: 559B471FC438EA4E9082CEFE453FC7862DFE8E6EAEA8C0B8377FD0D2
 
 ## Resultado a informar
 
+### Correção posterior de formulário
+
+O checkpoint `atlas-operations-form-flow-20260926` corrige o carregamento quando ainda não há tarefas, o descarte dos controladores durante o fechamento do diálogo e a leitura de custos. Esta correção não está na janela c951e05 descrita acima; avaliar somente após abrir a compilação atualizada, sem duas versões simultâneas.
+
+1. Na Central sem tarefas, conferir que o carregamento termina e permite Nova operação.
+2. Criar uma operação de teste com custo `150,25`; editar apenas o título e conferir que permanece R$ 150,25. Também são aceitos `150.25` e `1.250,75`.
+3. Informar custo negativo ou texto inválido: o formulário deve permanecer aberto para correção, sem salvar zero silenciosamente.
+4. Cancelar a exclusão e conferir que a tarefa permanece; confirmar a exclusão e conferir que outra fazenda não é afetada.
+
+Esses cenários passaram em teste widget com preferências mockadas. Não equivalem a homologação no celular, sincronização remota ou teste com os dados reais do usuário.
+
 Informe a etapa, o que esperava e o que apareceu, sem enviar senha/PIN. A abertura da tela de login não comprova navegação autenticada, recuperação real ou funcionamento completo offline.
 
 Sem reinstalação Android, nova compilação ou sondagem externa neste pacote de abertura. Referência: 46 testes de regressão e nove focalizados finais do pacote funcional (47 casos distintos), análise e build anteriores aprovados; não repetidos sem mudança de código.
