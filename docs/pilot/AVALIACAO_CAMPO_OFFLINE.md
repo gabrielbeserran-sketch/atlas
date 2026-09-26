@@ -10,6 +10,16 @@ Versão Windows profile de avaliação 3, código dd47b57. Não é release de di
 
 ## Ensaio manual
 
+### Operações por fazenda (próxima compilação agrupada)
+
+1. Com duas fazendas autorizadas, registre uma tarefa diferente em cada uma. Não use dados pessoais ou custos reais para ensaio descartável.
+2. Pela Central acessada de Campo, edite a tarefa da fazenda A; volte à B e confirme que a tarefa dela permanece intacta. Exclua apenas a tarefa de teste de A e reconfira B.
+3. Pelo dashboard, abra Operações: devem aparecer somente registros da fazenda ativa, nunca uma lista global. Sem sessão/fazenda autorizada, deve haver aviso, sem navegação nem tentativa de conexão.
+4. Registros legados sem fazenda permanecem armazenados, mas não são atribuídos implicitamente à fazenda selecionada. Não os apagar ou reassociar por nome para passar no teste.
+5. Faça o ensaio no aplicativo atualizado; testes automatizados não comprovam a versão que está aberta. A fila de escrita só serializa chamadas no mesmo processo, não duas janelas independentes.
+
+O isolamento de armazenamento legado por tenant/empresa e a revogação durante uma tela já aberta são etapas separadas; a proteção desta entrega confere o contexto ao abrir a rota.
+
 1. Desconecte a rede por conta própria e volte a Campo: a referência datada deve continuar disponível sem aguardar a API.
 2. Abra Piquetes e pastagens e Suporte. A referência oficial deve manter sua data; ela não substitui medições de pasto nem confirma área efetiva.
 3. Toque Atualizar sem conexão: a tentativa remota é limitada a oito segundos, sem apagar a cópia nem alterar sua data. A tela continua navegável.

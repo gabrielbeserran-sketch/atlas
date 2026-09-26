@@ -7,7 +7,7 @@ import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_operations/data/services/atlas_operations_repository.dart';
 import 'package:projeto_atlas/features/farm_operations/domain/models/atlas_farm_operation.dart';
-import 'package:projeto_atlas/features/farm_operations/presentation/screens/atlas_operations_center_screen.dart';
+import 'package:projeto_atlas/features/farm_operations/presentation/atlas_operations_navigation.dart';
 import 'package:projeto_atlas/features/field_operations/presentation/screens/atlas_field_operations_screen.dart';
 import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_service.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
@@ -265,12 +265,10 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
   }
 
   Future<void> openOperations() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AtlasOperationsCenterScreen(farmId: widget.farm.id),
-      ),
-    );
-    await loadData();
+    await openAuthorizedFarmOperations(context, expectedFarmId: widget.farm.id);
+    if (mounted) {
+      await loadData();
+    }
   }
 
   Future<void> openFieldTools() async {

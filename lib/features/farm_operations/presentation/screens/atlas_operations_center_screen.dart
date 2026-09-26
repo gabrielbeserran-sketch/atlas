@@ -5,9 +5,9 @@ import '../../domain/models/atlas_farm_operation.dart';
 import '../../domain/services/atlas_operations_engine.dart';
 
 class AtlasOperationsCenterScreen extends StatefulWidget {
-  const AtlasOperationsCenterScreen({super.key, this.farmId});
+  const AtlasOperationsCenterScreen({super.key, required this.farmId});
 
-  final String? farmId;
+  final String farmId;
 
   @override
   State<AtlasOperationsCenterScreen> createState() =>

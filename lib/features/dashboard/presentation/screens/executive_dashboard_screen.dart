@@ -17,7 +17,7 @@ import 'package:projeto_atlas/features/offline_field/presentation/screens/atlas_
 import 'package:projeto_atlas/features/consultancy_hub/presentation/screens/atlas_consultancy_dashboard.dart';
 import 'package:projeto_atlas/features/integration_hub/presentation/screens/atlas_integration_center_screen.dart';
 import 'package:projeto_atlas/features/unified_workflow/presentation/screens/atlas_unified_workflow_screen.dart';
-import 'package:projeto_atlas/features/farm_operations/presentation/screens/atlas_operations_center_screen.dart';
+import 'package:projeto_atlas/features/farm_operations/presentation/atlas_operations_navigation.dart';
 import 'package:projeto_atlas/features/performance_intelligence/presentation/screens/atlas_performance_dashboard_screen.dart';
 import 'package:projeto_atlas/features/predictive_ai/presentation/screens/atlas_predictive_ai_screen.dart';
 import 'package:projeto_atlas/features/strategic_execution_engine/presentation/screens/atlas_execution_engine_screen.dart';
@@ -849,11 +849,7 @@ class _ExecutiveDashboardScreenState extends State<ExecutiveDashboardScreen> {
   }
 
   Future<void> openFarmOperationsCenter() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const AtlasOperationsCenterScreen(),
-      ),
-    );
+    await openAuthorizedFarmOperations(context);
   }
 
   Future<void> openPredictiveAi() async {
