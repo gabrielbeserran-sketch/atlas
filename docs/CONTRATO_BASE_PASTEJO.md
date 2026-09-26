@@ -1,6 +1,6 @@
 # Contrato de base de pastejo
 
-Checkpoint de implementação: `9d744cb`. Validado localmente em SQLite; não representa confirmação de migração em produção.
+Checkpoint de API: `9d744cb`; integração do cliente: `f8f0172`. Validados localmente; não representam confirmação de migração em produção.
 
 ## Rotas
 
@@ -12,7 +12,7 @@ Prefixo: `/api/v1/livestock/farms/{farm_id}/grazing-basis`.
 
 O servidor determina tenant, empresa, fazenda e autor a partir da autenticação e da rota; esses campos não são aceitos no corpo. Resposta inclui identificação, dados e datas UTC. Permissões e escopo são verificados também nas repetições.
 
-## Conciliação prevista para o cliente
+## Conciliação implementada no cliente
 
 1. Salvar localmente antes da rede, mantendo o mesmo identificador da operação.
 2. Consultar capacidade; 404, 503 ou falha de rede não autorizam reenvio.
@@ -24,4 +24,6 @@ Sem a migração, GET/POST retornam 503. Não há rota de edição/exclusão de 
 
 ## Limites da entrega
 
-API e migração implementadas; o aplicativo ainda não chama estas rotas. Homologação PostgreSQL, confirmação autenticada em produção e ensaio em dois dispositivos permanecem pendentes. Nenhuma credencial nem banco existente foi utilizado nos testes.
+O comando está em Pastagens → Suporte → Sincronizar base de pastejo. Abertura e salvamento continuam locais; somente o comando explícito usa estas rotas. Cada execução envia no máximo 20 operações e lê até 20 páginas de 100; se o histórico remoto não terminar nesse limite, não envia. Conflitos são persistidos com as duas versões e apresentados na tela, mas sua resolução assistida ainda é a próxima etapa.
+
+Homologação PostgreSQL, confirmação autenticada em produção e ensaio em dois dispositivos permanecem pendentes. Nenhuma credencial nem banco existente foi utilizado nos testes. A versão Windows foi compilada e aberta no login; celular não atualizado neste pacote.
