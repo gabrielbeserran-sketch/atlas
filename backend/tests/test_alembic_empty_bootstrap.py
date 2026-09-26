@@ -102,7 +102,7 @@ class EmptyDatabaseBootstrapTest(unittest.TestCase):
                 version = connection.execute(
                     "SELECT version_num FROM alembic_version"
                 ).fetchone()
-                self.assertEqual(version, ("20260923_0056",))
+                self.assertEqual(version, ("20260926_0057",))
 
                 tables = {
                     row[0]

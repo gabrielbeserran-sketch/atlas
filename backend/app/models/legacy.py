@@ -128,6 +128,25 @@ class Farm(Base):
     )
 
 
+class PastureGrazingBasis(Base):
+    __tablename__ = "pasture_grazing_bases"
+    __table_args__ = (
+        UniqueConstraint("company_id", "client_operation_id", name="uq_grazing_company_operation"),
+    )
+
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(80), index=True)
+    company_id: Mapped[str] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"), index=True)
+    farm_id: Mapped[str] = mapped_column(ForeignKey("farms.id", ondelete="CASCADE"), index=True)
+    client_operation_id: Mapped[str] = mapped_column(String(180))
+    effective_area_ha: Mapped[float] = mapped_column(Float)
+    grazing_animals: Mapped[int] = mapped_column(Integer)
+    unique_area_confirmed: Mapped[bool] = mapped_column(Boolean)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"))
+
+
 class EntityState(Base):
     __tablename__ = "entity_states"
     __table_args__ = (

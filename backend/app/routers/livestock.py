@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import func, or_, select, text
+from sqlalchemy import func, inspect, or_, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,9 @@ from app.services.concurrency import advisory_transaction_lock
 
 from ..authz import Principal, get_principal, require_permission
 from ..database import get_db
+from ..models import PastureGrazingBasis
+from ..schemas.pasture_grazing import GrazingBasisCreate, GrazingBasisResponse
+from .farms import _farm_for_principal
 from ..models import (
     AnimalMovement,
     FinancialEntry,
@@ -88,6 +91,101 @@ from ..schemas import (
 )
 
 router = APIRouter(prefix="/livestock", tags=["livestock"])
+
+
+def _grazing_storage_ready(db: Session) -> bool:
+    inspector = inspect(db.connection())
+    if not inspector.has_table("pasture_grazing_bases"):
+        return False
+    return any(set(item["column_names"]) == {"company_id", "client_operation_id"}
+               for item in inspector.get_unique_constraints("pasture_grazing_bases"))
+
+
+def _require_grazing_storage(db: Session) -> None:
+    if not _grazing_storage_ready(db):
+        raise HTTPException(status_code=503, detail="Histórico de pastagens ainda não habilitado no servidor.")
+
+
+@router.get("/farms/{farm_id}/grazing-basis/capabilities")
+def grazing_basis_capabilities(
+    farm_id: str,
+    principal: Principal = Depends(require_permission("nutrition.read")),
+    db: Session = Depends(get_db),
+) -> dict[str, bool]:
+    _farm_for_principal(db, principal, farm_id)
+    ready = _grazing_storage_ready(db)
+    return {"client_operation_id_idempotency": ready, "append_only": ready}
+
+
+@router.get("/farms/{farm_id}/grazing-basis", response_model=list[GrazingBasisResponse])
+def list_grazing_basis(
+    farm_id: str,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    principal: Principal = Depends(require_permission("nutrition.read")),
+    db: Session = Depends(get_db),
+) -> list[PastureGrazingBasis]:
+    _farm_for_principal(db, principal, farm_id)
+    _require_grazing_storage(db)
+    return list(db.scalars(select(PastureGrazingBasis).where(
+        PastureGrazingBasis.company_id == principal.company.id,
+        PastureGrazingBasis.tenant_id == principal.company.tenant_id,
+        PastureGrazingBasis.farm_id == farm_id,
+    ).order_by(PastureGrazingBasis.recorded_at.desc(), PastureGrazingBasis.id.desc())
+      .offset(offset).limit(limit)).all())
+
+
+def _replayed_grazing_basis(
+    existing: PastureGrazingBasis, payload: GrazingBasisCreate, farm_id: str,
+) -> PastureGrazingBasis:
+    recorded_at = existing.recorded_at
+    if recorded_at.tzinfo is None:
+        recorded_at = recorded_at.replace(tzinfo=timezone.utc)
+    if (existing.farm_id != farm_id
+        or existing.effective_area_ha != payload.effective_area_ha
+        or existing.grazing_animals != payload.grazing_animals
+        or existing.unique_area_confirmed != payload.unique_area_confirmed
+        or recorded_at != payload.recorded_at):
+        raise HTTPException(status_code=409, detail="A operação já existe com dados diferentes.")
+    return existing
+
+
+@router.post("/farms/{farm_id}/grazing-basis", response_model=GrazingBasisResponse, status_code=201)
+def add_grazing_basis(
+    farm_id: str,
+    payload: GrazingBasisCreate,
+    principal: Principal = Depends(require_permission("nutrition.write")),
+    db: Session = Depends(get_db),
+) -> PastureGrazingBasis:
+    farm = _farm_for_principal(db, principal, farm_id)
+    _require_grazing_storage(db)
+    advisory_transaction_lock(db, f"grazing-basis:{principal.company.id}:{payload.client_operation_id}")
+    query = select(PastureGrazingBasis).where(
+        PastureGrazingBasis.company_id == principal.company.id,
+        PastureGrazingBasis.client_operation_id == payload.client_operation_id,
+    )
+    existing = db.scalar(query)
+    if existing is not None:
+        return _replayed_grazing_basis(existing, payload, farm_id)
+    if farm.area and farm.area > 0 and payload.effective_area_ha > farm.area:
+        raise HTTPException(status_code=422, detail="A área de pasto supera a área da fazenda.")
+    item = PastureGrazingBasis(
+        id=new_id("grazing"), tenant_id=principal.company.tenant_id,
+        company_id=principal.company.id, farm_id=farm_id,
+        created_by=principal.user.id, **payload.model_dump(),
+    )
+    db.add(item)
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        existing = db.scalar(query)
+        if existing is None:
+            raise
+        return _replayed_grazing_basis(existing, payload, farm_id)
+    db.commit()
+    db.refresh(item)
+    return item
 
 
 def _farm_allowed(
