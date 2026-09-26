@@ -20,7 +20,14 @@ Versão Windows profile de avaliação 3, código dd47b57. Não é release de di
 
 6. Na versão com proteção contínua, altere a fazenda/conta por um fluxo permitido da sessão enquanto a rota antiga existir. A Central antiga deve sair da exibição e exigir reabertura; um novo login não reativa a mesma rota. Uma ação ainda pendente antes da chamada ao plugin não pode gravar no contexto anterior.
 
-O isolamento de armazenamento legado por tenant/empresa continua separado. A guarda confere notificações de contexto local e não detecta revogação remota sem atualização de sessão. Não cancela uma escrita já entregue ao plugin e não serializa processos independentes.
+A reassociação do armazenamento legado continua separada. A guarda confere notificações de contexto local e não detecta revogação remota sem atualização de sessão. Não cancela uma escrita já entregue ao plugin e não serializa processos independentes.
+
+### Armazenamento v2 de Operações
+
+- A compilação com isolamento v2 guarda novas tarefas por tenant, empresa e fazenda; Central e painel Campo consultam a mesma chave. Trocar de empresa mesmo com o mesmo nome/ID de fazenda não deve revelar tarefas anteriores.
+- A lista v1 permanece intacta. Como não contém proprietário empresarial verificável, não é copiada automaticamente para v2. A Central avisa sobre o legado sem revelar títulos ou valores.
+- Esse aviso não significa exclusão: a recuperação/reassociação assistida ainda não está entregue. Não recriar custos reais ou excluir a lista antiga para contornar a validação.
+- Fechar/reabrir sem “Sair” e com PIN permite conferir a persistência de uma tarefa v2 autorizada. Não considerar esse ensaio aprovado apenas pela reconstrução do repositório nos testes.
 
 1. Desconecte a rede por conta própria e volte a Campo: a referência datada deve continuar disponível sem aguardar a API.
 2. Abra Piquetes e pastagens e Suporte. A referência oficial deve manter sua data; ela não substitui medições de pasto nem confirma área efetiva.

@@ -71,8 +71,12 @@ Future<void> openAuthorizedFarmOperations(
       builder: (_) => OperationsAccessGuard(
         changes: controller,
         isAuthorized: stillAuthorized,
-        builder: (check) =>
-            AtlasOperationsCenterScreen(farmId: farmId, isAuthorized: check),
+        builder: (check) => AtlasOperationsCenterScreen(
+          farmId: farmId,
+          tenantId: origin.tenantId,
+          companyId: origin.companyId,
+          isAuthorized: check,
+        ),
       ),
     ),
   );

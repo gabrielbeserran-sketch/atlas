@@ -8,10 +8,14 @@ class AtlasOperationsCenterScreen extends StatefulWidget {
   const AtlasOperationsCenterScreen({
     super.key,
     required this.farmId,
+    required this.tenantId,
+    required this.companyId,
     required this.isAuthorized,
   });
 
   final String farmId;
+  final String tenantId;
+  final String companyId;
   final bool Function() isAuthorized;
 
   @override
@@ -21,7 +25,8 @@ class AtlasOperationsCenterScreen extends StatefulWidget {
 
 class _AtlasOperationsCenterScreenState
     extends State<AtlasOperationsCenterScreen> {
-  final AtlasOperationsRepository _repository = AtlasOperationsRepository();
+  late final AtlasOperationsRepository _repository;
+  bool _legacyAvailable = false;
 
   final AtlasOperationsEngine _engine = const AtlasOperationsEngine();
 
@@ -32,6 +37,11 @@ class _AtlasOperationsCenterScreenState
   @override
   void initState() {
     super.initState();
+    _repository = AtlasOperationsRepository.scoped(
+      tenantId: widget.tenantId,
+      companyId: widget.companyId,
+      farmId: widget.farmId,
+    );
     _load();
   }
 
@@ -46,6 +56,7 @@ class _AtlasOperationsCenterScreenState
     final List<AtlasFarmOperation> items = await _repository.load(
       farmId: widget.farmId,
     );
+    final legacyAvailable = await _repository.hasLegacyData();
 
     items.sort((AtlasFarmOperation a, AtlasFarmOperation b) {
       return a.scheduledAt.compareTo(b.scheduledAt);
@@ -57,6 +68,7 @@ class _AtlasOperationsCenterScreenState
 
     setState(() {
       _items = items;
+      _legacyAvailable = legacyAvailable;
       _loading = false;
     });
   }
@@ -718,6 +730,13 @@ class _AtlasOperationsCenterScreenState
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(20),
                 children: <Widget>[
+                  if (_legacyAvailable)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Registros antigos foram preservados no dispositivo, mas não foram atribuídos automaticamente a esta empresa/fazenda. Novas operações usam armazenamento separado.',
+                      ),
+                    ),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,

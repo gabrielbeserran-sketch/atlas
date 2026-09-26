@@ -5,14 +5,44 @@ import '../../domain/models/atlas_farm_operation.dart';
 class AtlasOperationsRepository {
   static const _key = 'atlas_farm_operations_v1';
   static Future<void> _writes = Future<void>.value();
+  AtlasOperationsRepository() : _storageKey = _key, _scopedFarmId = null;
+  AtlasOperationsRepository.scoped({
+    required String tenantId,
+    required String companyId,
+    required String farmId,
+  }) : _storageKey = scopedKey(tenantId, companyId, farmId),
+       _scopedFarmId = farmId;
+  final String _storageKey;
+  final String? _scopedFarmId;
+
+  static String scopedKey(String tenantId, String companyId, String farmId) {
+    if ([tenantId, companyId, farmId].any((id) => id.trim().isEmpty)) {
+      throw ArgumentError('Contexto de operações incompleto.');
+    }
+    return 'atlas_farm_operations_v2_${base64Url.encode(utf8.encode(jsonEncode([tenantId, companyId, farmId])))}';
+  }
+
+  String? _resolveFarm(String? farmId) {
+    if (_scopedFarmId != null && farmId != null && farmId != _scopedFarmId) {
+      throw ArgumentError('Fazenda divergente do armazenamento.');
+    }
+    return _scopedFarmId ?? farmId;
+  }
+
+  Future<bool> hasLegacyData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key)?.trim();
+    return raw != null && raw.isNotEmpty && raw != '[]';
+  }
 
   /// Painéis não criam operações demonstrativas nem atribuem registros sem fazenda.
   Future<List<AtlasFarmOperation>> loadReadOnly({
     required String farmId,
   }) async {
+    farmId = _resolveFarm(farmId)!;
     if (farmId.trim().isEmpty) return const [];
     final preferences = await SharedPreferences.getInstance();
-    final raw = preferences.getString(_key);
+    final raw = preferences.getString(_storageKey);
     if (raw == null || raw.isEmpty) return const [];
     return (jsonDecode(raw) as List)
         .map(
@@ -25,8 +55,9 @@ class AtlasOperationsRepository {
   }
 
   Future<List<AtlasFarmOperation>> load({String? farmId}) async {
+    farmId = _resolveFarm(farmId);
     final preferences = await SharedPreferences.getInstance();
-    final raw = preferences.getString(_key);
+    final raw = preferences.getString(_storageKey);
     List<AtlasFarmOperation> items;
     if (raw == null || raw.isEmpty) {
       // Consultar uma fazenda não deve criar tarefas ou custos fictícios.
@@ -50,6 +81,7 @@ class AtlasOperationsRepository {
     String? farmId,
     bool Function()? isAuthorized,
   }) {
+    farmId = _resolveFarm(farmId);
     final records = items.map((e) => e.toJson()).toList();
     final write = _writes.then((_) async {
       if (isAuthorized != null && !isAuthorized()) {
@@ -69,7 +101,7 @@ class AtlasOperationsRepository {
       await preferences.reload();
       final merged = <Map<String, dynamic>>[];
       if (farmId != null) {
-        final raw = preferences.getString(_key);
+        final raw = preferences.getString(_storageKey);
         final existing = raw == null || raw.isEmpty
             ? <dynamic>[]
             : jsonDecode(raw) as List;
@@ -87,7 +119,10 @@ class AtlasOperationsRepository {
       if (isAuthorized != null && !isAuthorized()) {
         throw StateError('Contexto de operações alterado.');
       }
-      final saved = await preferences.setString(_key, jsonEncode(merged));
+      final saved = await preferences.setString(
+        _storageKey,
+        jsonEncode(merged),
+      );
       if (!saved) throw StateError('Não foi possível persistir as operações.');
     });
     // Uma gravação recusada não bloqueia as próximas gravações.

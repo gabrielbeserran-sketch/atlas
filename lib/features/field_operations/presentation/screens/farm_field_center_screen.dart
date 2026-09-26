@@ -33,8 +33,6 @@ class FarmFieldCenterScreen extends StatefulWidget {
 
 class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
   final PaddockStorageService paddockStorage = PaddockStorageService();
-  final AtlasOperationsRepository operationsRepository =
-      AtlasOperationsRepository();
 
   List<PaddockData> paddocks = const [];
   List<AtlasFarmOperation> operations = const [];
@@ -197,9 +195,11 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
       try {
         final scope = await resolveFarm();
         if (scope != null) {
-          localOperations = await operationsRepository.loadReadOnly(
+          localOperations = await AtlasOperationsRepository.scoped(
+            tenantId: scope.tenantId,
+            companyId: scope.companyId,
             farmId: scope.id,
-          );
+          ).loadReadOnly(farmId: scope.id);
           final current = await resolveFarm();
           operationsAvailable =
               current?.id == scope.id &&
