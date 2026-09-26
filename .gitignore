@@ -148,6 +148,7 @@ data/attachments/
 
 # Artefatos locais de release
 /release/windows/operacoes-c951e05/
+/release/windows/campo-precisao-20260926/
 dist/
 *.apk
 *.aab

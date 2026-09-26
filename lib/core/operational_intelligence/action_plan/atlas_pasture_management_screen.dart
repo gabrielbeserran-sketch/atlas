@@ -859,17 +859,26 @@ class _AtlasPastureManagementScreenState
                         'ha',
                       ),
                       (
-                        'Suporte médio ponderado pela área',
+                        areaOverview.hasPartialSupport
+                            ? 'Suporte ponderado (base parcial)'
+                            : 'Suporte médio ponderado pela área',
                         areaOverview.weightedSupportAuHa,
                         'UA/ha',
                       ),
                       (
-                        'Matéria seca registrada',
+                        areaOverview.hasPartialDryMatter
+                            ? 'Matéria seca registrada (base parcial)'
+                            : 'Matéria seca registrada',
                         areaOverview.totalDryMatterKg,
                         'kg',
                       ),
                     ],
                     invalidPaddockCount: areaOverview.invalidPaddockCount,
+                    ambiguousPaddockCount: areaOverview.ambiguousPaddockCount,
+                    measurementCoverage:
+                        'Matéria seca: ${areaOverview.dryMatterPaddockCount}/${areaOverview.validPaddockCount} piquetes válidos. '
+                        'Suporte: ${areaOverview.supportPaddockCount}/${areaOverview.validPaddockCount} piquetes válidos.'
+                        '${areaOverview.hasUncalculableValues ? ' Há valores fora do intervalo calculável; revise as medidas antes de usar os indicadores.' : ''}',
                     grazingBasis: grazingBasis,
                     canEditGrazingBasis: authorizedFarm != null,
                   ),
@@ -1174,6 +1183,8 @@ class _AtlasPastureManagementScreenState
   Widget _metrics(
     List<(String, double?, String)> values, {
     required int invalidPaddockCount,
+    required int ambiguousPaddockCount,
+    required String measurementCoverage,
     required AtlasPastureGrazingBasis? grazingBasis,
     required bool canEditGrazingBasis,
   }) {
@@ -1198,7 +1209,9 @@ class _AtlasPastureManagementScreenState
               'A soma dos piquetes não confirma a área efetiva de pastagem: '
               'pode haver sobreposição ou área fora de uso. A lotação por hectare '
               'de pasto só será calculada com uma base validada.'
-              '${invalidPaddockCount > 0 ? ' $invalidPaddockCount piquete(s) com área inválida ficaram fora da soma.' : ''}',
+              '${invalidPaddockCount > 0 ? ' $invalidPaddockCount piquete(s) com área inválida ficaram fora da soma.' : ''}'
+              '${ambiguousPaddockCount > 0 ? ' $ambiguousPaddockCount registro(s) com identificação ausente/repetida ficaram fora dos indicadores.' : ''} '
+              '$measurementCoverage',
             ),
           ),
         ),

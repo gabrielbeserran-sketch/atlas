@@ -57,4 +57,64 @@ void main() {
     expect(result.weightedSupportAuHa, isNull);
     expect(result.invalidPaddockCount, 3);
   });
+
+  test('IDs repetidos e vazios não duplicam área ou medidas', () {
+    final result = AtlasPastureAreaOverview.fromPaddocks([
+      paddock(id: 'a', area: 10),
+      paddock(id: 'a', area: 20),
+      paddock(id: '', area: 30),
+      paddock(id: 'b', area: 5),
+    ]);
+    expect(result.nominalAreaHa, 5);
+    expect(result.totalDryMatterKg, 5000);
+    expect(result.hasUncalculableValues, isFalse);
+    expect(result.validPaddockCount, 1);
+    expect(result.ambiguousPaddockCount, 3);
+  });
+
+  test('overflow de área e medidas não produz infinito ou NaN', () {
+    final result = AtlasPastureAreaOverview.fromPaddocks([
+      paddock(id: 'a', area: 1e308, dryMatter: 100, support: 100),
+      paddock(id: 'b', area: 1e308, dryMatter: 100, support: 100),
+    ]);
+    expect(result.nominalAreaHa, isNull);
+    expect(result.totalDryMatterKg, isNull);
+    expect(result.weightedSupportAuHa, isNull);
+    expect(result.hasUncalculableValues, isTrue);
+  });
+
+  test('base parcial usa apenas a área com medida e informa cobertura', () {
+    final result = AtlasPastureAreaOverview.fromPaddocks([
+      paddock(id: 'a', area: 10, dryMatter: 1000, support: 2),
+      paddock(id: 'b', area: 30, dryMatter: -1, support: double.nan),
+    ]);
+    expect(result.nominalAreaHa, 40);
+    expect(result.totalDryMatterKg, 10000);
+    expect(result.weightedSupportAuHa, 2);
+    expect(result.dryMatterPaddockCount, 1);
+    expect(result.supportPaddockCount, 1);
+    expect(result.hasPartialDryMatter, isTrue);
+    expect(result.hasPartialSupport, isTrue);
+  });
+
+  test('zero medido é válido e não significa ausência de medida', () {
+    final result = AtlasPastureAreaOverview.fromPaddocks([
+      paddock(id: 'a', area: 10, dryMatter: 0, support: 0),
+    ]);
+    expect(result.totalDryMatterKg, 0);
+    expect(result.weightedSupportAuHa, 0);
+    expect(result.dryMatterPaddockCount, 1);
+    expect(result.supportPaddockCount, 1);
+    expect(result.hasPartialDryMatter, isFalse);
+    expect(result.hasPartialSupport, isFalse);
+  });
+
+  test('produto fora do intervalo não afeta a soma nominal válida', () {
+    final result = AtlasPastureAreaOverview.fromPaddocks([
+      paddock(id: 'a', area: 2, dryMatter: 1e308, support: 1e308),
+    ]);
+    expect(result.nominalAreaHa, 2);
+    expect(result.totalDryMatterKg, isNull);
+    expect(result.weightedSupportAuHa, isNull);
+  });
 }

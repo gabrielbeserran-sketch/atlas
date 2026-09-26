@@ -10,6 +10,9 @@ class AtlasPastureAreaOverview {
     required this.weightedSupportAuHa,
     required this.validPaddockCount,
     required this.invalidPaddockCount,
+    this.ambiguousPaddockCount = 0,
+    this.dryMatterPaddockCount = 0,
+    this.supportPaddockCount = 0,
   });
 
   final double? nominalAreaHa;
@@ -17,6 +20,17 @@ class AtlasPastureAreaOverview {
   final double? weightedSupportAuHa;
   final int validPaddockCount;
   final int invalidPaddockCount;
+  final int ambiguousPaddockCount;
+  final int dryMatterPaddockCount;
+  final int supportPaddockCount;
+  bool get hasPartialDryMatter =>
+      dryMatterPaddockCount > 0 && dryMatterPaddockCount < validPaddockCount;
+  bool get hasPartialSupport =>
+      supportPaddockCount > 0 && supportPaddockCount < validPaddockCount;
+  bool get hasUncalculableValues =>
+      (validPaddockCount > 0 && nominalAreaHa == null) ||
+      (dryMatterPaddockCount > 0 && totalDryMatterKg == null) ||
+      (supportPaddockCount > 0 && weightedSupportAuHa == null);
 
   factory AtlasPastureAreaOverview.fromPaddocks(List<AtlasPaddock> paddocks) {
     var area = 0.0;
@@ -25,9 +39,19 @@ class AtlasPastureAreaOverview {
     var weightedSupport = 0.0;
     var valid = 0;
     var invalid = 0;
-    var hasDryMatter = false;
+    var dryCount = 0;
+    var supportCount = 0;
+    var ambiguous = 0;
+    final ids = <String, int>{};
+    for (final paddock in paddocks) {
+      ids.update(paddock.id, (count) => count + 1, ifAbsent: () => 1);
+    }
 
     for (final paddock in paddocks) {
+      if (paddock.id.trim().isEmpty || ids[paddock.id] != 1) {
+        ambiguous++;
+        continue;
+      }
       final hectares = paddock.areaHectares;
       if (!hectares.isFinite || hectares <= 0) {
         invalid++;
@@ -39,24 +63,29 @@ class AtlasPastureAreaOverview {
       final dry = paddock.dryMatterKgHa;
       if (dry.isFinite && dry >= 0) {
         dryMatter += dry * hectares;
-        hasDryMatter = true;
+        dryCount++;
       }
 
       final support = paddock.supportCapacityAuHa;
       if (support.isFinite && support >= 0) {
         weightedSupport += support * hectares;
         supportArea += hectares;
+        supportCount++;
       }
     }
 
     return AtlasPastureAreaOverview(
-      nominalAreaHa: valid == 0 ? null : area,
-      totalDryMatterKg: hasDryMatter ? dryMatter : null,
-      weightedSupportAuHa: supportArea == 0
+      nominalAreaHa: valid == 0 || !area.isFinite ? null : area,
+      totalDryMatterKg: dryCount == 0 || !dryMatter.isFinite ? null : dryMatter,
+      weightedSupportAuHa:
+          supportArea == 0 || !supportArea.isFinite || !weightedSupport.isFinite
           ? null
           : weightedSupport / supportArea,
       validPaddockCount: valid,
       invalidPaddockCount: invalid,
+      ambiguousPaddockCount: ambiguous,
+      dryMatterPaddockCount: dryCount,
+      supportPaddockCount: supportCount,
     );
   }
 }
