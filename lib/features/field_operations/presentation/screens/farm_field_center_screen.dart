@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_role_card.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
@@ -12,6 +12,10 @@ import 'package:projeto_atlas/features/field_operations/presentation/screens/atl
 import 'package:projeto_atlas/features/paddock/data/services/paddock_storage_service.dart';
 import 'package:projeto_atlas/features/paddock/domain/models/paddock_data.dart';
 import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_list_screen.dart';
+import 'package:projeto_atlas/features/paddock/data/services/paddock_panel_reader.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_scope.dart';
+import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
+import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
 
 class FarmFieldCenterScreen extends StatefulWidget {
   const FarmFieldCenterScreen({
@@ -34,8 +38,24 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
 
   List<PaddockData> paddocks = const [];
   List<AtlasFarmOperation> operations = const [];
-  bool loading = true;
+  bool loading = false;
   String? error;
+  bool paddocksKnown = false;
+  bool operationsKnown = false;
+  String paddockNotice = 'Consultando dados locais de piquetes...';
+  DateTime? paddocksAt;
+  int loadGeneration = 0;
+
+  Future<AtlasRemoteFarm?> resolveFarm() async {
+    final store = AtlasEnterpriseRemoteAuthStore.instance;
+    return AtlasPastureGrazingScope.resolve(
+      session: await store.loadSession(),
+      activeFarmId: await store.loadActiveFarm(),
+      portfolio: await store.loadFarmPortfolio(),
+      expectedFarmId: widget.farm.id ?? '',
+      expectedFarmName: widget.farm.name,
+    );
+  }
 
   int get activePaddocks => paddocks.where((item) {
     final status = item.status.trim().toLowerCase();
@@ -71,10 +91,7 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
         return operation.status != AtlasOperationStatus.completed &&
             operation.status != AtlasOperationStatus.cancelled;
       })
-      .expand((operation) => [
-            operation.responsible,
-            ...operation.team,
-          ])
+      .expand((operation) => [operation.responsible, ...operation.team])
       .where((value) => value.trim().isNotEmpty)
       .map((value) => value.trim())
       .toSet();
@@ -82,6 +99,9 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
   AtlasModuleAttentionLevel get moduleLevel {
     if (overdueOperations > 0 || criticalOperations > 0) {
       return AtlasModuleAttentionLevel.critical;
+    }
+    if (!paddocksKnown || !operationsKnown) {
+      return AtlasModuleAttentionLevel.attention;
     }
     if (openOperationsCount > 0) {
       return AtlasModuleAttentionLevel.attention;
@@ -93,6 +113,7 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
     if (moduleLevel == AtlasModuleAttentionLevel.critical) {
       return 'Campo exige ação';
     }
+    if (!paddocksKnown || !operationsKnown) return 'Campo com dados parciais';
     if (moduleLevel == AtlasModuleAttentionLevel.attention) {
       return 'Campo tem atividades em andamento';
     }
@@ -134,7 +155,7 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
         ),
       );
     }
-    if (paddocks.isEmpty) {
+    if (paddocksKnown && paddocks.isEmpty) {
       items.add(
         const AtlasModuleDecisionItem(
           title: 'Nenhum piquete cadastrado',
@@ -154,7 +175,8 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
     loadData();
   }
 
-  Future<void> loadData() async {
+  Future<void> loadData({bool refresh = false}) async {
+    final generation = ++loadGeneration;
     if (mounted) {
       setState(() {
         loading = true;
@@ -163,22 +185,73 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
     }
 
     try {
-      final results = await Future.wait<dynamic>([
-        paddockStorage.loadPaddocks(widget.farm.id ?? ''),
-        operationsRepository.load(farmId: widget.farm.id),
-      ]);
-
-      if (!mounted) return;
+      final startScope = await resolveFarm();
+      final reader = PaddockPanelReader(
+        resolveFarm: resolveFarm,
+        fetch: paddockStorage.loadPaddocks,
+      );
+      final read = await reader.read(refresh: refresh);
+      List<AtlasFarmOperation> localOperations = [];
+      var operationsAvailable = false;
+      String? localError;
+      try {
+        final scope = await resolveFarm();
+        if (scope != null) {
+          localOperations = await operationsRepository.loadReadOnly(
+            farmId: scope.id,
+          );
+          final current = await resolveFarm();
+          operationsAvailable =
+              current?.id == scope.id &&
+              current?.companyId == scope.companyId &&
+              current?.tenantId == scope.tenantId;
+          if (!operationsAvailable) localOperations = [];
+        }
+      } catch (_) {
+        localError = 'Operações locais não puderam ser conferidas.';
+      }
+      final endScope = await resolveFarm();
+      if (!mounted || generation != loadGeneration) return;
+      if (startScope == null ||
+          endScope?.id != startScope.id ||
+          endScope?.tenantId != startScope.tenantId ||
+          endScope?.companyId != startScope.companyId) {
+        setState(() {
+          paddocks = [];
+          operations = [];
+          paddocksKnown = false;
+          operationsKnown = false;
+          paddocksAt = null;
+          paddockNotice =
+              'Fazenda não autorizada ou contexto alterado; dados não exibidos.';
+        });
+        return;
+      }
       setState(() {
-        paddocks = results[0] as List<PaddockData>;
-        operations = results[1] as List<AtlasFarmOperation>;
+        error = localError;
+        paddocks = read.snapshot?.paddocks ?? [];
+        paddocksKnown = read.snapshot != null;
+        paddocksAt = read.snapshot?.loadedAt;
+        paddockNotice = read.notice;
+        operations = localOperations;
+        operationsKnown = operationsAvailable;
       });
     } catch (exception) {
-      if (mounted) {
-        setState(() => error = exception.toString());
+      if (mounted && generation == loadGeneration) {
+        setState(() {
+          error = 'Dados locais não puderam ser conferidos.';
+          paddocks = [];
+          operations = [];
+          paddocksKnown = false;
+          operationsKnown = false;
+          paddocksAt = null;
+          paddockNotice = 'Referência de piquetes indisponível nesta leitura.';
+        });
       }
     } finally {
-      if (mounted) setState(() => loading = false);
+      if (mounted && generation == loadGeneration) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -194,9 +267,7 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
   Future<void> openOperations() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => AtlasOperationsCenterScreen(
-          farmId: widget.farm.id,
-        ),
+        builder: (_) => AtlasOperationsCenterScreen(farmId: widget.farm.id),
       ),
     );
     await loadData();
@@ -213,174 +284,186 @@ class _FarmFieldCenterScreenState extends State<FarmFieldCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final body = loading
-        ? const Center(child: CircularProgressIndicator())
-        : RefreshIndicator(
-            onRefresh: loadData,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+    final body = RefreshIndicator(
+      onRefresh: () => loadData(refresh: true),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5E9),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
+                const CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Color(0xFF1B5E20),
+                  child: Icon(Icons.agriculture_outlined, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const CircleAvatar(
-                        radius: 28,
-                        backgroundColor: Color(0xFF1B5E20),
-                        child: Icon(
-                          Icons.agriculture_outlined,
-                          color: Colors.white,
+                      const Text(
+                        'Central de Campo',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Central de Campo',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${widget.farm.name} • piquetes, rotina, equipe e operações',
-                              style: const TextStyle(color: Colors.black54),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.farm.name} • piquetes, rotina, equipe e operações',
+                        style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                   ),
                 ),
-                if (error != null) ...[
-                  const SizedBox(height: 12),
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.warning_amber_outlined),
-                      title: const Text(
-                        'Parte dos dados de campo não pôde ser carregada',
-                      ),
-                      subtitle: Text(error!),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                AtlasOperationalActionBar(
-                  primaryLabel: 'Nova operação',
-                  primaryIcon: Icons.add_task_outlined,
-                  onPrimary: openOperations,
-                  secondaryLabel: 'Gerenciar piquetes',
-                  secondaryIcon: Icons.grass_outlined,
-                  onSecondary: openPaddocks,
-                  onRefresh: loadData,
-                  busy: loading,
-                ),
-                const SizedBox(height: 16),
-                AtlasModuleDecisionPanel(
-                  statusTitle: moduleStatusTitle,
-                  statusDescription:
-                      '${paddocks.length} piquetes • '
-                      '$openOperationsCount atividades abertas • '
-                      '${activeTeam.length} pessoas vinculadas',
-                  items: decisionItems,
-                  level: moduleLevel,
-                ),
-                const SizedBox(height: 16),
-                AtlasModuleWorkspaceGuide(
-                  moduleLabel: 'Campo',
-                  workflows:
-                      AtlasProductSurfacePolicy.moduleWorkflows['Campo'] ??
-                          const <String>[],
-                  specializedFamilies:
-                      AtlasProductSurfacePolicy
-                              .specializedCapabilityCountByOwner['Campo'] ??
-                          0,
-                ),
-                const SizedBox(height: 16),
-                AtlasModuleRoleCard(
-                  title: 'Campo é onde o trabalho acontece',
-                  responsibility:
-                      AtlasProductSurfacePolicy.moduleResponsibility['Campo']!,
-                  doesNotReplace:
-                      AtlasProductSurfacePolicy.moduleDoesNotReplace['Campo']!,
-                  icon: Icons.agriculture_outlined,
-                ),
-                const SizedBox(height: 18),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: [
-                    _FieldMetric(
-                      title: 'Piquetes',
-                      value: '${paddocks.length}',
-                      subtitle:
-                          '$activePaddocks em uso • $restingPaddocks em descanso',
-                      icon: Icons.grass_outlined,
-                    ),
-                    _FieldMetric(
-                      title: 'Animais nos piquetes',
-                      value: '$animalsInPaddocks',
-                      subtitle: 'Ocupação cadastrada',
-                      icon: Icons.groups_outlined,
-                    ),
-                    _FieldMetric(
-                      title: 'Operações abertas',
-                      value: '$openOperationsCount',
-                      subtitle: '$overdueOperations atrasada(s)',
-                      icon: Icons.assignment_outlined,
-                    ),
-                    _FieldMetric(
-                      title: 'Equipe vinculada',
-                      value: '${activeTeam.length}',
-                      subtitle: 'Responsáveis nas operações abertas',
-                      icon: Icons.groups_outlined,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                const Text(
-                  'Acessos de campo',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _FieldAccessCard(
-                      title: 'Piquetes e pastagens',
-                      subtitle:
-                          'Ocupação, descanso, área e animais por piquete.',
-                      icon: Icons.grass_outlined,
-                      onTap: openPaddocks,
-                    ),
-                    _FieldAccessCard(
-                      title: 'Operações e equipe',
-                      subtitle:
-                          'Atividades, responsáveis, equipe, equipamentos, custos e prazos.',
-                      icon: Icons.engineering_outlined,
-                      onTap: openOperations,
-                    ),
-                    _FieldAccessCard(
-                      title: 'Ferramentas de campo',
-                      subtitle:
-                          'Registros rápidos, capturas e fila offline para uso operacional.',
-                      icon: Icons.mobile_friendly_outlined,
-                      onTap: openFieldTools,
-                    ),
-                  ],
-                ),
               ],
             ),
-          );
+          ),
+          if (loading) const LinearProgressIndicator(),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.storage_outlined),
+              title: Text(paddockNotice),
+              subtitle: paddocksAt == null
+                  ? null
+                  : Text('Consulta de ${paddocksAt!.toLocal()}'),
+            ),
+          ),
+          if (error != null) ...[
+            const SizedBox(height: 12),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.warning_amber_outlined),
+                title: const Text(
+                  'Parte dos dados de campo não pôde ser carregada',
+                ),
+                subtitle: Text(error!),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          AtlasOperationalActionBar(
+            primaryLabel: 'Nova operação',
+            primaryIcon: Icons.add_task_outlined,
+            onPrimary: openOperations,
+            secondaryLabel: 'Gerenciar piquetes',
+            secondaryIcon: Icons.grass_outlined,
+            onSecondary: openPaddocks,
+            onRefresh: () => loadData(refresh: true),
+            busy: loading,
+          ),
+          const SizedBox(height: 16),
+          AtlasModuleDecisionPanel(
+            statusTitle: moduleStatusTitle,
+            statusDescription:
+                '${paddocksKnown ? '${paddocks.length} piquetes' : 'Piquetes não consultados'} • '
+                '${operationsKnown ? '$openOperationsCount atividades abertas • ${activeTeam.length} pessoas vinculadas' : 'Operações não conferidas'}',
+            items: decisionItems,
+            level: moduleLevel,
+          ),
+          const SizedBox(height: 16),
+          AtlasModuleWorkspaceGuide(
+            moduleLabel: 'Campo',
+            workflows:
+                AtlasProductSurfacePolicy.moduleWorkflows['Campo'] ??
+                const <String>[],
+            specializedFamilies:
+                AtlasProductSurfacePolicy
+                    .specializedCapabilityCountByOwner['Campo'] ??
+                0,
+          ),
+          const SizedBox(height: 16),
+          AtlasModuleRoleCard(
+            title: 'Campo é onde o trabalho acontece',
+            responsibility:
+                AtlasProductSurfacePolicy.moduleResponsibility['Campo']!,
+            doesNotReplace:
+                AtlasProductSurfacePolicy.moduleDoesNotReplace['Campo']!,
+            icon: Icons.agriculture_outlined,
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            children: [
+              _FieldMetric(
+                title: 'Piquetes',
+                value: paddocksKnown ? '${paddocks.length}' : 'Não consultado',
+                subtitle: paddocksKnown
+                    ? '$activePaddocks em uso • $restingPaddocks em descanso'
+                    : 'Atualize com conexão ou consulte a cópia local.',
+                icon: Icons.grass_outlined,
+              ),
+              _FieldMetric(
+                title: 'Animais nos piquetes',
+                value: paddocksKnown ? '$animalsInPaddocks' : 'Não consultado',
+                subtitle: paddocksKnown
+                    ? 'Ocupação cadastrada'
+                    : 'Sem base confirmada disponível',
+                icon: Icons.groups_outlined,
+              ),
+              _FieldMetric(
+                title: 'Operações abertas',
+                value: operationsKnown
+                    ? '$openOperationsCount'
+                    : 'Não conferido',
+                subtitle: operationsKnown
+                    ? '$overdueOperations atrasada(s)'
+                    : 'Dados locais indisponíveis',
+                icon: Icons.assignment_outlined,
+              ),
+              _FieldMetric(
+                title: 'Equipe vinculada',
+                value: operationsKnown
+                    ? '${activeTeam.length}'
+                    : 'Não conferido',
+                subtitle: 'Responsáveis nas operações abertas',
+                icon: Icons.groups_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'Acessos de campo',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _FieldAccessCard(
+                title: 'Piquetes e pastagens',
+                subtitle: 'Ocupação, descanso, área e animais por piquete.',
+                icon: Icons.grass_outlined,
+                onTap: openPaddocks,
+              ),
+              _FieldAccessCard(
+                title: 'Operações e equipe',
+                subtitle:
+                    'Atividades, responsáveis, equipe, equipamentos, custos e prazos.',
+                icon: Icons.engineering_outlined,
+                onTap: openOperations,
+              ),
+              _FieldAccessCard(
+                title: 'Ferramentas de campo',
+                subtitle:
+                    'Registros rápidos, capturas e fila offline para uso operacional.',
+                icon: Icons.mobile_friendly_outlined,
+                onTap: openFieldTools,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
     if (widget.embedded) return body;
     return Scaffold(
