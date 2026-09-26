@@ -51,7 +51,7 @@ class AtlasPastureGrazingBasis {
       operationId:
           map['operationId']?.toString() ??
           const Uuid().v5(
-            Uuid.NAMESPACE_URL,
+            Namespace.url.value,
             jsonEncode([
               map['tenantId'],
               map['companyId'],

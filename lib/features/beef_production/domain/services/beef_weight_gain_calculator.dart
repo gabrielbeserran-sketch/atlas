@@ -67,8 +67,9 @@ class BeefWeightGainCalculator {
       if (days <= 0) continue;
       gains.add((last.weightKg - first.weightKg) / days);
     }
-    if (gains.isEmpty)
+    if (gains.isEmpty) {
       return const BeefWeightGain(averageKgPerDay: null, animalCount: 0);
+    }
     return BeefWeightGain(
       averageKgPerDay: gains.reduce((a, b) => a + b) / gains.length,
       animalCount: gains.length,
