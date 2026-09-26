@@ -12,6 +12,8 @@ void main() {
     expect(source, contains('initialTabIndex: 2'));
     expect(source, contains("expectedFarmId: widget.farm.id ?? ''"));
     expect(source, contains('controller.dispose()'));
+    expect(source, contains('fieldPaddockSnapshot:'));
+    expect(source, contains('paddocksLoadedAt == null'));
     expect(source, contains('openPaddockForm'));
     expect(source, contains('editPaddock(paddock)'));
     expect(source, contains('deletePaddock(paddock)'));

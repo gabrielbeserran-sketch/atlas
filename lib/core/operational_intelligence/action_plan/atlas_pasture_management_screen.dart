@@ -9,6 +9,7 @@ import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pa
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_animals_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_stocking_calculator.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_setup_progress.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_field_paddock_snapshot.dart';
 import 'package:projeto_atlas/features/animal_weight/data/services/animal_weight_storage_service.dart';
 import 'package:projeto_atlas/features/animal_weight/domain/models/animal_weight_data.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_service.dart';
@@ -20,12 +21,14 @@ class AtlasPastureManagementScreen extends StatefulWidget {
     required this.actionController,
     this.initialTabIndex = 0,
     this.expectedFarmId,
+    this.fieldPaddockSnapshot,
     super.key,
   }) : assert(initialTabIndex >= 0 && initialTabIndex < 7);
 
   final AtlasCommandCenterActionController actionController;
   final int initialTabIndex;
   final String? expectedFarmId;
+  final AtlasFieldPaddockSnapshot? fieldPaddockSnapshot;
 
   @override
   State<AtlasPastureManagementScreen> createState() =>
@@ -1021,6 +1024,62 @@ class _AtlasPastureManagementScreenState
     ),
   );
 
+  Widget _fieldPaddocksCard() {
+    final snapshot = widget.fieldPaddockSnapshot;
+    if (snapshot == null ||
+        !snapshot.isAvailableFor(authorizedFarm?.id, DateTime.now())) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Referência do cadastro de Campo indisponível nesta abertura. Consulte Piquetes e pastagens e retorne pelo botão Suporte. Isso não indica que seus piquetes foram apagados.',
+          ),
+        ),
+      );
+    }
+    final area = snapshot.nominalAreaHa;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Piquetes do cadastro de Campo',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              '${snapshot.uniquePaddocks.length} piquete(s) identificados • soma nominal: ${area == null ? 'sem área válida' : '${area.toStringAsFixed(2)} ha'}',
+            ),
+            Text(
+              'Consulta de ${DateFormat('dd/MM/yyyy HH:mm').format(snapshot.loadedAt)}; retrato de leitura, não atualização automática.',
+            ),
+            if (snapshot.invalidAreaCount > 0 || snapshot.ambiguousCount > 0)
+              Text(
+                '${snapshot.invalidAreaCount} área(s) inválida(s) e ${snapshot.ambiguousCount} registro(s) sem identidade única ficaram fora da soma.',
+              ),
+            const Text(
+              'Não recadastre estes piquetes para informar a base efetiva. Altura, matéria seca e capacidade de suporte são registros técnicos separados; não são inferidos deste cadastro nem somados à referência de Campo.',
+            ),
+            ExpansionTile(
+              title: const Text('Conferir piquetes de Campo'),
+              children: snapshot.uniquePaddocks
+                  .map(
+                    (p) => ListTile(
+                      title: Text(p.name),
+                      subtitle: Text(
+                        '${p.area.isFinite && p.area > 0 ? '${p.area.toStringAsFixed(2)} ha' : 'Área inválida'} • ${p.status}',
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _setupCard(bool currentBasis, bool canEdit) {
     final now = DateTime.now();
     final selected = grazingSelection;
@@ -1131,6 +1190,7 @@ class _AtlasPastureManagementScreenState
       padding: const EdgeInsets.all(16),
       children: [
         _setupCard(currentBasis, canEditGrazingBasis),
+        _fieldPaddocksCard(),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),

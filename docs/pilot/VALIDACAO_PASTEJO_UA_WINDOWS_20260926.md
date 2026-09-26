@@ -18,6 +18,10 @@ Use uma fazenda autorizada e dados reais conferidos. Não use o banco de produç
 
 ## Proteções esperadas
 
+### Referência de piquetes de Campo (próxima atualização agrupada)
+
+Após consultar o cadastro oficial, abra Suporte pela lista de Piquetes e pastagens. O cartão Piquetes do cadastro de Campo apresenta retrato imutável e data da consulta, lista e soma nominal de áreas válidas; nunca inclui IDs duplicados/vazios nem soma esta fonte aos registros técnicos locais. Não é atualização automática ou área efetiva: confirme separadamente sobreposições/áreas fora de uso. Sem consulta prévia ou fazenda autorizada correspondente, aparece indisponibilidade da referência, não aviso de exclusão. Altura, matéria seca e capacidade agronômica continuam ausentes até registro técnico real; não precisam ser inventadas ou duplicadas para usar animais/ha e UA/ha.
+
 ### Fluxo guiado (próxima atualização agrupada)
 
 O cartão Configuração da lotação informa quantas das três etapas de dados foram concluídas, não o percentual de desenvolvimento do produto. Use Iniciar ou atualizar base de pastejo para salvar a área/quantidade e continuar à identificação. Cancelar não avança; uma base não salva ou substituída durante a releitura não abre a seleção. Na etapa de pesagens, Conferir dados disponíveis relê somente o cache local; consulte as pesagens no Rebanho quando precisar repovoar registros confirmados. Uma carteira antiga, seleção de outra base ou conflito impede marcar tudo como concluído.

@@ -6,6 +6,7 @@ import 'package:projeto_atlas/features/paddock/presentation/screens/paddock_form
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_command_center_action_controller.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_management_screen.dart';
+import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_field_paddock_snapshot.dart';
 
 class PaddockListScreen extends StatefulWidget {
   const PaddockListScreen({required this.farm, super.key});
@@ -21,6 +22,7 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
 
   List<PaddockData> paddocks = [];
   bool isLoading = true;
+  DateTime? paddocksLoadedAt;
 
   Future<void> openGrazingSupport() async {
     final controller = AtlasCommandCenterActionController(
@@ -33,6 +35,13 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
             actionController: controller,
             initialTabIndex: 2,
             expectedFarmId: widget.farm.id ?? '',
+            fieldPaddockSnapshot: paddocksLoadedAt == null
+                ? null
+                : AtlasFieldPaddockSnapshot(
+                    farmId: widget.farm.id ?? '',
+                    loadedAt: paddocksLoadedAt!,
+                    paddocks: paddocks,
+                  ),
           ),
         ),
       );
@@ -58,7 +67,10 @@ class _PaddockListScreenState extends State<PaddockListScreen> {
       if (!mounted) {
         return;
       }
-      setState(() => paddocks = savedPaddocks);
+      setState(() {
+        paddocks = savedPaddocks;
+        paddocksLoadedAt = DateTime.now();
+      });
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
