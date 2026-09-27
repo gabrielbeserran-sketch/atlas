@@ -20,6 +20,9 @@ class DairyReproductionIndicators {
     required this.activeFemaleCount,
     required this.reproductiveEventsWithoutValidDate,
     required this.reproductiveEventsInFuture,
+    this.excludedAmbiguousRecords = 0,
+    this.eventsBeforeBirth = 0,
+    this.conflictingDiagnoses = 0,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -27,6 +30,7 @@ class DairyReproductionIndicators {
   final int inseminationAttempts;
   final int confirmedPregnancies;
   final double? averageDryPeriodDays;
+
   /// Legado: intervalo parto–primeira inseminação, não parto–concepção.
   /// A definição real de período de serviço exige concepção vinculada.
   final double? averageServicePeriodDays;
@@ -42,6 +46,9 @@ class DairyReproductionIndicators {
   final int activeFemaleCount;
   final int reproductiveEventsWithoutValidDate;
   final int reproductiveEventsInFuture;
+  final int excludedAmbiguousRecords;
+  final int eventsBeforeBirth;
+  final int conflictingDiagnoses;
 
   int get dataCoveragePercent {
     if (activeFemaleCount == 0) return 0;
@@ -64,6 +71,27 @@ class DairyReproductionIndicators {
 
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
+    if (excludedAmbiguousRecords > 0) {
+      alerts.add(
+        '$excludedAmbiguousRecords cadastro(s)/evento(s) com ID ausente ou repetido ficaram fora dos indicadores reprodutivos.',
+      );
+    }
+    if (eventsBeforeBirth > 0) {
+      alerts.add(
+        '$eventsBeforeBirth evento(s) anteriores ao nascimento ficaram fora dos indicadores.',
+      );
+    }
+    if (conflictingDiagnoses > 0) {
+      alerts.add(
+        '$conflictingDiagnoses matriz(es) com último diagnóstico contraditório ou sem situação reconhecida ficaram fora da base de prenhez.',
+      );
+    }
+    if (inseminationAttempts > 0 &&
+        confirmedPregnancies > inseminationAttempts) {
+      alerts.add(
+        'Diagnósticos positivos excedem as inseminações; a razão histórica ficou indisponível. Confira os vínculos de concepção.',
+      );
+    }
     if (activeFemaleCount == 0) {
       alerts.add('Cadastre as matrizes ativas para iniciar os indicadores.');
       return alerts;
@@ -109,17 +137,56 @@ class DairyReproductionIndicatorCalculator {
     required List<AnimalReproductionData> records,
     DateTime? referenceDate,
   }) {
-    final today = referenceDate ?? DateTime.now();
-    final activeFemales = animals
+    final reference = referenceDate ?? DateTime.now();
+    final today = DateTime(reference.year, reference.month, reference.day);
+    final animalCounts = <String, int>{};
+    for (final animal in animals) {
+      animalCounts.update(animal.id, (count) => count + 1, ifAbsent: () => 1);
+    }
+    final validAnimals = animals
+        .where(
+          (animal) =>
+              animal.id.trim().isNotEmpty && animalCounts[animal.id] == 1,
+        )
+        .toList();
+    var excludedAmbiguousRecords = animals.length - validAnimals.length;
+    final activeFemales = validAnimals
         .where((animal) => animal.status == 'Ativo' && animal.sex == 'Fêmea')
         .map((animal) => animal.id)
         .toSet();
     final periodStart = DateTime(today.year - 1, today.month, today.day);
-    final femaleAnimals = animals.where((animal) => animal.sex == 'Fêmea');
+    final femaleAnimals = validAnimals.where((animal) => animal.sex == 'Fêmea');
     final femaleAnimalIds = femaleAnimals.map((animal) => animal.id).toSet();
-    final femaleRecords = records
+    final eligibleRecords = records
         .where((record) => femaleAnimalIds.contains(record.animalId))
         .toList(growable: false);
+    final eventCounts = <(String, String), int>{};
+    for (final record in eligibleRecords) {
+      eventCounts.update(
+        (record.animalId, record.id),
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    var eventsBeforeBirth = 0;
+    final femaleRecords = eligibleRecords.where((record) {
+      if (record.id.trim().isEmpty ||
+          eventCounts[(record.animalId, record.id)] != 1) {
+        excludedAmbiguousRecords++;
+        return false;
+      }
+      final birth = _date(
+        femaleAnimals
+            .firstWhere((animal) => animal.id == record.animalId)
+            .birthDate,
+      );
+      final date = _date(record.date);
+      if (birth != null && date != null && date.isBefore(birth)) {
+        eventsBeforeBirth++;
+        return false;
+      }
+      return true;
+    }).toList();
     final reproductiveEventsWithoutValidDate = femaleRecords
         .where((event) => _date(event.date) == null)
         .length;
@@ -162,7 +229,7 @@ class DairyReproductionIndicatorCalculator {
               .toList()
             ..sort();
       if (calvings.isEmpty) continue;
-      final animal = animals.firstWhere(
+      final animal = validAnimals.firstWhere(
         (item) => item.id == events.first.animalId,
       );
       final birth = _date(animal.birthDate);
@@ -228,12 +295,14 @@ class DairyReproductionIndicatorCalculator {
         .where(
           (event) =>
               activeFemales.contains(event.animalId) &&
-              event.isPositivePregnancyDiagnosis,
+              event.eventCode == 'pregnancy_diagnosis' &&
+              _diagnosisStatus(event.reproductiveStatus) == 'pregnant',
         )
         .where((event) => _inPeriod(_date(event.date), periodStart, today))
         .length;
     var diagnosedCows = 0;
     var currentlyPregnant = 0;
+    var conflictingDiagnoses = 0;
     final reproductiveCulls = femaleRecords
         .where(
           (event) =>
@@ -253,8 +322,18 @@ class DairyReproductionIndicatorCalculator {
               .toList()
             ..sort((a, b) => _date(a.date)!.compareTo(_date(b.date)!));
       if (diagnoses.isNotEmpty) {
+        final lastDate = _date(diagnoses.last.date)!;
+        final statuses = diagnoses
+            .where((event) => _date(event.date) == lastDate)
+            .map((event) => _diagnosisStatus(event.reproductiveStatus))
+            .toSet();
+        if (statuses.length != 1 ||
+            !{'pregnant', 'open'}.contains(statuses.single)) {
+          conflictingDiagnoses++;
+          continue;
+        }
         diagnosedCows++;
-        if (diagnoses.last.reproductiveStatus == 'pregnant') {
+        if (statuses.single == 'pregnant') {
           currentlyPregnant++;
         }
       }
@@ -264,7 +343,7 @@ class DairyReproductionIndicatorCalculator {
           ? null
           : del.reduce((a, b) => a + b) / del.length,
       lactatingCowsWithKnownCalving: del.length,
-      conceptionRate: inseminations == 0
+      conceptionRate: inseminations == 0 || pregnancies > inseminations
           ? null
           : pregnancies / inseminations * 100,
       inseminationAttempts: inseminations,
@@ -291,8 +370,18 @@ class DairyReproductionIndicatorCalculator {
       activeFemaleCount: activeFemales.length,
       reproductiveEventsWithoutValidDate: reproductiveEventsWithoutValidDate,
       reproductiveEventsInFuture: reproductiveEventsInFuture,
+      excludedAmbiguousRecords: excludedAmbiguousRecords,
+      eventsBeforeBirth: eventsBeforeBirth,
+      conflictingDiagnoses: conflictingDiagnoses,
     );
   }
+
+  String? _diagnosisStatus(String value) =>
+      switch (value.trim().toLowerCase()) {
+        'pregnant' || 'prenhe' => 'pregnant',
+        'open' || 'vazia' => 'open',
+        _ => null,
+      };
 
   DateTime? _date(String value) {
     final normalized = value.trim();

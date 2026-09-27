@@ -151,6 +151,7 @@ data/attachments/
 /release/windows/campo-precisao-20260926/
 /release/windows/leite-integridade-20260926/
 /release/windows/corte-integridade-20260926/
+/release/windows/reproducao-integridade-20260926/
 dist/
 *.apk
 *.aab

@@ -895,7 +895,7 @@ class _SummaryContent extends StatelessWidget {
                 '${summary.dairyReproduction.lactatingCowsWithKnownCalving}',
               ),
               (
-                'Taxa de concepção',
+                'Diagnósticos positivos / inseminações (histórico)',
                 summary.dairyReproduction.conceptionRate == null
                     ? 'Dados insuficientes'
                     : '${summary.dairyReproduction.conceptionRate!.toStringAsFixed(1)}%',
@@ -915,10 +915,14 @@ class _SummaryContent extends StatelessWidget {
                     : '${summary.dairyReproduction.averageDryPeriodDays!.toStringAsFixed(0)} dias',
               ),
               (
-                'Período de serviço',
+                'Parto → primeira inseminação',
                 summary.dairyReproduction.averageServicePeriodDays == null
                     ? 'Dados insuficientes'
                     : '${summary.dairyReproduction.averageServicePeriodDays!.toStringAsFixed(0)} dias',
+              ),
+              (
+                'Período de serviço (parto → concepção)',
+                'Concepção não vinculada',
               ),
               (
                 'Idade ao 1º parto',
