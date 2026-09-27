@@ -35,7 +35,14 @@ AnimalReproductionData resolve({
 );
 
 class FakeHttp extends AtlasHttpClient {
-  Map<String, dynamic>? saved;
+  Map<String, dynamic>? saved = {
+    ...record().toApi(),
+    'id': 'event',
+    'animal_id': 'cow',
+  };
+  bool hasContract = true;
+  bool stampAuthor = true;
+  int patches = 0;
   bool dropResolution = false;
   bool offline = false;
   @override
@@ -50,14 +57,25 @@ class FakeHttp extends AtlasHttpClient {
   }) async {
     if (offline) throw StateError('offline');
     if (method == 'PATCH') {
+      patches++;
       saved = {...body!, 'id': 'event', 'animal_id': 'cow'};
+      final metadata = Map<String, dynamic>.from(
+        saved!['metadata_json'] as Map,
+      );
+      if (stampAuthor && metadata['atlas_return_resolution'] is Map) {
+        metadata['atlas_return_resolution'] = {
+          ...metadata['atlas_return_resolution'] as Map,
+          'authenticated_user_id': 'server-user',
+        };
+      }
+      saved!['metadata_json'] = metadata;
     }
     final response = {...?saved};
     if (dropResolution) response['metadata_json'] = {};
     return AtlasHttpResponse(
       statusCode: 200,
       body: method == 'GET' ? [response] : response,
-      headers: {},
+      headers: hasContract ? {'X-Atlas-Reproduction-Returns': 'v1'} : {},
     );
   }
 }
@@ -211,7 +229,24 @@ void main() {
       final result = ReproductionReturnSchedule.calculate([
         resolve(),
       ], referenceDate: DateTime(2026, 9, 27));
-      expect(result.past, 0);
+      expect(result.past, 1);
+      final draft = resolve();
+      final confirmed = AnimalReproductionData.fromMap({
+        ...draft.toMap(),
+        'metadata': {
+          ...draft.metadata,
+          'atlas_return_resolution': {
+            ...draft.metadata['atlas_return_resolution'] as Map,
+            'authenticated_user_id': 'server-user',
+          },
+        },
+      });
+      expect(
+        ReproductionReturnSchedule.calculate([
+          confirmed,
+        ], referenceDate: DateTime(2026, 9, 27)).past,
+        0,
+      );
       expect(
         ReproductionReturnSchedule.calculate([
           record(),
@@ -250,5 +285,73 @@ void main() {
       ),
       throwsStateError,
     );
+  });
+  test('contrato antigo é recusado antes de enviar qualquer baixa', () async {
+    final http = FakeHttp()..hasContract = false;
+    await expectLater(
+      AnimalReproductionStorageService(httpClient: http).resolveReturn(
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+        record: record(),
+        status: 'completed',
+        responsible: 'Operador',
+      ),
+      throwsStateError,
+    );
+    expect(http.patches, 0);
+  });
+  test(
+    'baixa exige autoria do servidor e retry confirmado não reenvia',
+    () async {
+      final http = FakeHttp();
+      final storage = AnimalReproductionStorageService(httpClient: http);
+      final saved = await storage.resolveReturn(
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+        record: record(),
+        status: 'completed',
+        responsible: 'Operador',
+      );
+      expect(saved.hasConfirmedReturnResolution, isTrue);
+      await storage.resolveReturn(
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+        record: record(),
+        status: 'completed',
+        responsible: 'Outro',
+      );
+      expect(http.patches, 1);
+      final old = FakeHttp()..stampAuthor = false;
+      await expectLater(
+        AnimalReproductionStorageService(httpClient: old).resolveReturn(
+          farmName: 'Teste',
+          groupName: 'Grupo',
+          animalId: 'cow',
+          record: record(),
+          status: 'completed',
+          responsible: 'Operador',
+        ),
+        throwsStateError,
+      );
+    },
+  );
+  test('previsão alterada no servidor impede baixa obsoleta', () async {
+    final http = FakeHttp();
+    http.saved!['expected_date'] = '2026-09-04';
+    await expectLater(
+      AnimalReproductionStorageService(httpClient: http).resolveReturn(
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+        record: record(),
+        status: 'completed',
+        responsible: 'Operador',
+      ),
+      throwsStateError,
+    );
+    expect(http.patches, 0);
   });
 }

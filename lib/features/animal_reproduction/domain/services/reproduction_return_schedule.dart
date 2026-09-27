@@ -39,7 +39,7 @@ class ReproductionReturnSchedule {
         ambiguous++;
         continue;
       }
-      if (record.returnResolutionStatus != null) continue;
+      if (record.hasConfirmedReturnResolution) continue;
       final expected = ReproductionCalendar.parse(record.expectedDate);
       final occurred = ReproductionCalendar.parse(record.date);
       if (expected == null ||

@@ -2177,9 +2177,11 @@ def delete_reproduction_event(
 @router.get("/animals/{animal_id}/reproduction", response_model=list[ReproductionEventResponse])
 def reproduction_history(
     animal_id: str,
+    response: Response,
     principal: Principal = Depends(require_permission("reproduction.read")),
     db: Session = Depends(get_db),
 ) -> list[ReproductionEvent]:
+    response.headers["X-Atlas-Reproduction-Returns"] = "v1"
     _animal(db, principal, animal_id)
     return list(
         db.scalars(

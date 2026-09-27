@@ -5,6 +5,7 @@ import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/animal_reproduction_event_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_form_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction/presentation/widgets/reproduction_return_resolution_dialog.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
@@ -39,6 +40,56 @@ class _AnimalReproductionListScreenState
 
   List<AnimalReproductionData> records = [];
   bool isLoading = true;
+  bool isResolvingReturn = false;
+
+  Future<void> resolveReturn(
+    AnimalReproductionData record,
+    String status,
+  ) async {
+    if (isResolvingReturn) return;
+    setState(() => isResolvingReturn = true);
+    try {
+      final input = await showReturnResolutionDialog(
+        context,
+        cancel: status == 'cancelled',
+        responsible: record.responsible,
+      );
+      if (input == null || !mounted) return;
+      final saved = await storage.resolveReturn(
+        farmName: widget.farm.name,
+        groupName: widget.group.name,
+        animalId: widget.animal.id,
+        record: record,
+        status: status,
+        responsible: input.responsible,
+        reason: input.reason,
+      );
+      if (!mounted) return;
+      setState(() {
+        records.removeWhere((item) => item.id == saved.id);
+        records.add(saved);
+        sortRecords();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Baixa do retorno confirmada pelo servidor.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is StateError
+                ? error.message.toString()
+                : 'Não foi possível confirmar a baixa. O retorno permanece pendente; tente quando houver conexão.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => isResolvingReturn = false);
+    }
+  }
 
   @override
   void initState() {
@@ -94,7 +145,7 @@ class _AnimalReproductionListScreenState
     final now = DateTime.now();
     final limit = now.add(const Duration(days: 45));
     final result = records.where((record) {
-      if (record.expectedDate.isEmpty) {
+      if (record.expectedDate.isEmpty || record.hasConfirmedReturnResolution) {
         return false;
       }
       final date = parseDate(record.expectedDate);
@@ -161,6 +212,7 @@ class _AnimalReproductionListScreenState
   }
 
   Future<void> openReproductionForm() async {
+    if (isResolvingReturn) return;
     final newRecord = await Navigator.push<AnimalReproductionData>(
       context,
       MaterialPageRoute<AnimalReproductionData>(
@@ -207,6 +259,7 @@ class _AnimalReproductionListScreenState
   Future<void> editReproductionRecord(
     AnimalReproductionData reproductionRecord,
   ) async {
+    if (isResolvingReturn) return;
     final editedRecord = await Navigator.push<AnimalReproductionData>(
       context,
       MaterialPageRoute<AnimalReproductionData>(
@@ -255,10 +308,12 @@ class _AnimalReproductionListScreenState
   Future<void> deleteReproductionRecord(
     AnimalReproductionData reproductionRecord,
   ) async {
+    if (isResolvingReturn) return;
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir registro reprodutivo',
-      message: 'Deseja excluir ${reproductionRecord.type} de ${reproductionRecord.date}? Essa ação não pode ser desfeita.',
+      message:
+          'Deseja excluir ${reproductionRecord.type} de ${reproductionRecord.date}? Essa ação não pode ser desfeita.',
     );
 
     if (!shouldDelete) {
@@ -293,7 +348,7 @@ class _AnimalReproductionListScreenState
     return Scaffold(
       appBar: AppBar(title: const Text('Reprodução')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: isLoading ? null : openReproductionForm,
+        onPressed: isLoading || isResolvingReturn ? null : openReproductionForm,
         backgroundColor: const Color(0xFF1B5E20),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
@@ -446,6 +501,9 @@ class _AnimalReproductionListScreenState
                             padding: const EdgeInsets.only(bottom: 16),
                             child: ReproductionRecordCard(
                               record: record,
+                              enabled: !isResolvingReturn,
+                              onResolveReturn: (status) =>
+                                  resolveReturn(record, status),
                               onEdit: () {
                                 editReproductionRecord(record);
                               },
@@ -529,19 +587,23 @@ class ReproductionRecordCard extends StatelessWidget {
     required this.record,
     required this.onEdit,
     required this.onDelete,
+    this.onResolveReturn,
+    this.enabled = true,
     super.key,
   });
 
   final AnimalReproductionData record;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final ValueChanged<String>? onResolveReturn;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onEdit,
+        onTap: enabled ? onEdit : null,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
@@ -662,12 +724,26 @@ class ReproductionRecordCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(record.notes, style: const TextStyle(height: 1.4)),
                     ],
+                    if (record.returnResolutionStatus != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        record.hasConfirmedReturnResolution
+                            ? (record.returnResolutionStatus == 'completed'
+                                  ? 'Retorno concluído · confirmado pelo servidor'
+                                  : 'Retorno cancelado · confirmado pelo servidor')
+                            : 'Resolução aguardando confirmação do servidor',
+                      ),
+                    ],
                   ],
                 ),
               ),
               PopupMenuButton<String>(
+                enabled: enabled,
                 tooltip: 'Opções',
                 onSelected: (value) {
+                  if (value == 'completed' || value == 'cancelled') {
+                    onResolveReturn?.call(value);
+                  }
                   if (value == 'edit') {
                     onEdit();
                   }
@@ -677,14 +753,30 @@ class ReproductionRecordCard extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) {
-                  return const [
+                  return [
+                    if (onResolveReturn != null &&
+                        record.expectedDate.isNotEmpty &&
+                        !record.hasConfirmedReturnResolution) ...[
+                      if (record.returnResolutionStatus == null ||
+                          record.returnResolutionStatus == 'completed')
+                        const PopupMenuItem(
+                          value: 'completed',
+                          child: Text('Concluir retorno'),
+                        ),
+                      if (record.returnResolutionStatus == null ||
+                          record.returnResolutionStatus == 'cancelled')
+                        const PopupMenuItem(
+                          value: 'cancelled',
+                          child: Text('Cancelar retorno'),
+                        ),
+                    ],
                     PopupMenuItem<String>(
                       value: 'edit',
                       child: Row(
                         children: [
                           Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
                           SizedBox(width: 10),
-                          Text('Editar registro'),
+                          Expanded(child: Text('Editar registro')),
                         ],
                       ),
                     ),
@@ -694,7 +786,7 @@ class ReproductionRecordCard extends StatelessWidget {
                         children: [
                           Icon(Icons.delete_outline, color: Colors.red),
                           SizedBox(width: 10),
-                          Text('Excluir registro'),
+                          Expanded(child: Text('Excluir registro')),
                         ],
                       ),
                     ),

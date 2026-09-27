@@ -11,9 +11,9 @@ from types import SimpleNamespace
 from unittest.mock import patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from app.models import OperationalTask
-from app.routers.livestock import _sync_operational_task, update_reproduction_event, add_reproduction_event
+from app.routers.livestock import _sync_operational_task, update_reproduction_event, add_reproduction_event, reproduction_history
 from app.schemas.legacy import ReproductionEventUpdateRequest, ReproductionEventCreateRequest
 from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task, KEY
 
@@ -120,6 +120,14 @@ class TaskTests(unittest.TestCase):
             self.assertEqual(unrelated.status, "open")
 
 class RouteTests(unittest.TestCase):
+    def test_history_advertises_contract_without_changing_records(self):
+        response = Response()
+        db = SimpleNamespace(scalars=lambda query: SimpleNamespace(all=lambda: []))
+        with patch("app.routers.livestock._animal") as lookup:
+            self.assertEqual(reproduction_history("cow", response, None, db), [])
+        lookup.assert_called_once_with(db, None, "cow")
+        self.assertEqual(response.headers["X-Atlas-Reproduction-Returns"], "v1")
+
     def test_new_event_cannot_import_terminal_resolution(self):
         with patch("app.routers.livestock._animal") as lookup:
             with self.assertRaises(HTTPException) as raised:

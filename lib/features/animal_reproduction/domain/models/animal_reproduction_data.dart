@@ -40,6 +40,13 @@ class AnimalReproductionData {
   final bool synced;
   final String animalId;
   final Map<String, dynamic> metadata;
+  bool get hasConfirmedReturnResolution {
+    final raw = metadata['atlas_return_resolution'];
+    return returnResolutionStatus != null &&
+        raw is Map &&
+        raw['authenticated_user_id'] is String &&
+        (raw['authenticated_user_id'] as String).trim().isNotEmpty;
+  }
 
   /// Somente resolução explícita vinculada a este evento e previsão.
   String? get returnResolutionStatus {

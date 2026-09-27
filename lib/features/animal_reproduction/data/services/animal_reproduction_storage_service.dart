@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
+import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_resolution.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AnimalReproductionStorageService {
@@ -74,7 +75,8 @@ class AnimalReproductionStorageService {
     if (record.returnResolutionStatus != null) {
       final expected = record.metadata['atlas_return_resolution'] as Map;
       final actual = saved.metadata['atlas_return_resolution'];
-      if (saved.returnResolutionStatus != record.returnResolutionStatus ||
+      if (!saved.hasConfirmedReturnResolution ||
+          saved.returnResolutionStatus != record.returnResolutionStatus ||
           actual is! Map ||
           expected.entries.any((entry) => actual[entry.key] != entry.value)) {
         throw StateError(
@@ -83,6 +85,78 @@ class AnimalReproductionStorageService {
       }
     }
     return saved;
+  }
+
+  Future<AnimalReproductionData> resolveReturn({
+    required String farmName,
+    required String groupName,
+    required String animalId,
+    required AnimalReproductionData record,
+    required String status,
+    required String responsible,
+    String reason = '',
+  }) async {
+    final response = await _http.send(
+      'GET',
+      '/livestock/animals/$animalId/reproduction',
+    );
+    final contract = response.headers.entries.where(
+      (entry) => entry.key.toLowerCase() == 'x-atlas-reproduction-returns',
+    );
+    if (contract.isEmpty || contract.first.value != 'v1') {
+      throw StateError(
+        'O servidor precisa do contrato atualizado de retornos. Nenhuma baixa foi enviada.',
+      );
+    }
+    final matches = response
+        .asMapList()
+        .map(AnimalReproductionData.fromMap)
+        .where((item) => item.id == record.id)
+        .toList();
+    if (matches.length != 1) {
+      throw StateError('Identidade do retorno não foi confirmada.');
+    }
+    final current = matches.single.withAnimalId(animalId);
+    if (current.date != record.date ||
+        current.expectedDate != record.expectedDate) {
+      throw StateError(
+        'O retorno mudou no servidor. Atualize o histórico antes de confirmar.',
+      );
+    }
+    if (current.hasConfirmedReturnResolution) {
+      if (current.returnResolutionStatus != status) {
+        throw StateError('O retorno já possui outra resolução confirmada.');
+      }
+      await _saveLocal(
+        _key(farmName, groupName, animalId),
+        response
+            .asMapList()
+            .map(AnimalReproductionData.fromMap)
+            .map((item) => item.withAnimalId(animalId))
+            .toList(),
+      );
+      return current;
+    }
+    final candidate = current.returnResolutionStatus != null
+        ? current
+        : ReproductionReturnResolution.resolve(
+            current,
+            status: status,
+            responsible: responsible,
+            at: DateTime.now(),
+            reason: reason,
+          );
+    if (candidate.returnResolutionStatus != status) {
+      throw StateError(
+        'Existe uma resolução aguardando confirmação com outro estado.',
+      );
+    }
+    return updateRecord(
+      farmName: farmName,
+      groupName: groupName,
+      animalId: animalId,
+      record: candidate,
+    );
   }
 
   Future<void> deleteRecord({
