@@ -9,6 +9,7 @@ import 'package:projeto_atlas/features/animal/data/services/animal_storage_servi
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -22,12 +23,14 @@ class ReproductionOverviewScreen extends StatefulWidget {
     this.farm,
     this.autoOpenCreate = false,
     this.embedded = false,
+    this.contextLoader,
     super.key,
   });
 
   final FarmData? farm;
   final bool autoOpenCreate;
   final bool embedded;
+  final Future<List<ReproductionAnimalContext>> Function()? contextLoader;
 
   @override
   State<ReproductionOverviewScreen> createState() =>
@@ -47,6 +50,11 @@ class _ReproductionOverviewScreenState
   bool isLoading = true;
   String? loadError;
   String search = '';
+  DairyReproductionIndicators indicators =
+      const DairyReproductionIndicatorCalculator().calculate(
+        animals: [],
+        records: [],
+      );
 
   int get totalFemales => animals.length;
 
@@ -56,16 +64,12 @@ class _ReproductionOverviewScreenState
   int get totalRecords =>
       animals.fold(0, (total, context) => total + context.records.length);
 
-  int get pregnantAnimals => animals.where((context) {
-    return context.records.any((record) {
-      if (record.type != 'Diagnóstico de gestação') {
-        return false;
-      }
-
-      final result = record.result.toLowerCase();
-      return result.contains('prenhe') || result.contains('positivo');
-    });
-  }).length;
+  int get pregnantAnimals => indicators.pregnancyRateFromLatestDiagnosis == null
+      ? 0
+      : (indicators.pregnancyRateFromLatestDiagnosis! *
+                indicators.cowsWithPregnancyDiagnosis /
+                100)
+            .round();
 
   int get pregnancyDiagnoses => animals.fold(
     0,
@@ -82,11 +86,11 @@ class _ReproductionOverviewScreenState
         total + context.records.where((record) => record.isInsemination).length,
   );
 
-  double get pregnancyRate =>
-      totalFemales == 0 ? 0 : pregnantAnimals * 100 / totalFemales;
-
-  double get conceptionRate =>
-      pregnancyDiagnoses == 0 ? 0 : pregnantAnimals * 100 / pregnancyDiagnoses;
+  String _percentage(double? value) => value == null
+      ? 'Sem base válida'
+      : '${value.toStringAsFixed(1).replaceAll('.', ',')}%';
+  String get pregnancyRateLabel =>
+      _percentage(indicators.pregnancyRateFromLatestDiagnosis);
 
   DateTime? _parseDisplayDate(String value) {
     final trimmed = value.trim();
@@ -123,7 +127,9 @@ class _ReproductionOverviewScreenState
     if (overdueExpectedActions > 0) {
       return AtlasModuleAttentionLevel.critical;
     }
-    if (femalesWithoutHistory > 0 || pregnancyDiagnoses == 0) {
+    if (femalesWithoutHistory > 0 ||
+        indicators.cowsWithPregnancyDiagnosis == 0 ||
+        indicators.dataQualityAlerts.isNotEmpty) {
       return AtlasModuleAttentionLevel.attention;
     }
     return AtlasModuleAttentionLevel.normal;
@@ -135,8 +141,7 @@ class _ReproductionOverviewScreenState
       items.add(
         AtlasModuleDecisionItem(
           title: '$overdueExpectedActions ação(ões) reprodutiva(s) vencida(s)',
-          description:
-              'Há previsões ou retornos com data anterior a hoje.',
+          description: 'Há previsões ou retornos com data anterior a hoje.',
           icon: Icons.event_busy_outlined,
           level: AtlasModuleAttentionLevel.critical,
         ),
@@ -164,15 +169,13 @@ class _ReproductionOverviewScreenState
         ),
       );
     }
-    if (inseminations > 0 && pregnancyDiagnoses > 0) {
+    for (final alert in indicators.dataQualityAlerts) {
       items.add(
         AtlasModuleDecisionItem(
-          title:
-              'Concepção observada: ${conceptionRate.toStringAsFixed(1).replaceAll('.', ',')}%',
-          description:
-              '$pregnantAnimals diagnóstico(s) positivo(s) em '
-              '$pregnancyDiagnoses diagnóstico(s).',
-          icon: Icons.analytics_outlined,
+          title: 'Qualidade da base reprodutiva',
+          description: alert,
+          icon: Icons.fact_check_outlined,
+          level: AtlasModuleAttentionLevel.attention,
         ),
       );
     }
@@ -233,6 +236,11 @@ class _ReproductionOverviewScreenState
       });
     }
     try {
+      if (widget.contextLoader != null) {
+        final contexts = await widget.contextLoader!();
+        if (mounted) _applyContexts(contexts);
+        return;
+      }
       final farms = widget.farm == null
           ? await farmStorage.loadFarms()
           : <FarmData>[widget.farm!];
@@ -271,13 +279,32 @@ class _ReproductionOverviewScreenState
       });
 
       if (!mounted) return;
-      setState(() => animals = loadedAnimals);
+      _applyContexts(loadedAnimals);
     } catch (error) {
       if (!mounted) return;
       setState(() => loadError = error.toString());
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  void _applyContexts(List<ReproductionAnimalContext> contexts) {
+    final summary = const DairyReproductionIndicatorCalculator().calculate(
+      animals: contexts.map((context) => context.animal).toList(),
+      records: contexts
+          .expand(
+            (context) => context.records.map(
+              (record) => record.animalId.isEmpty
+                  ? record.withAnimalId(context.animal.id)
+                  : record,
+            ),
+          )
+          .toList(),
+    );
+    setState(() {
+      animals = contexts;
+      indicators = summary;
+    });
   }
 
   bool _isFemale(String sex) {
@@ -355,29 +382,31 @@ class _ReproductionOverviewScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: widget.embedded ? null : AppBar(
-        title: Text(
-          widget.farm == null
-              ? 'Reprodução'
-              : 'Reprodução — ${widget.farm!.name}',
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Atualizar dados',
-            onPressed: isLoading ? null : loadData,
-            icon: const Icon(Icons.refresh_outlined),
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: Text(
+                widget.farm == null
+                    ? 'Reprodução'
+                    : 'Reprodução — ${widget.farm!.name}',
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Atualizar dados',
+                  onPressed: isLoading ? null : loadData,
+                  icon: const Icon(Icons.refresh_outlined),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : loadError != null && animals.isEmpty
-                ? AtlasLoadErrorState(
-                    message: 'Verifique sua conexão e tente novamente.',
-                    onRetry: loadData,
-                  )
-                : RefreshIndicator(
+            ? AtlasLoadErrorState(
+                message: 'Verifique sua conexão e tente novamente.',
+                onRetry: loadData,
+              )
+            : RefreshIndicator(
                 onRefresh: loadData,
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -394,10 +423,10 @@ class _ReproductionOverviewScreenState
                             AtlasOperationalActionBar(
                               primaryLabel: 'Novo evento reprodutivo',
                               onPrimary: openNewEvent,
-                              secondaryLabel:
-                                  widget.farm == null ? null : 'Manejo coletivo',
-                              secondaryIcon:
-                                  Icons.playlist_add_check_outlined,
+                              secondaryLabel: widget.farm == null
+                                  ? null
+                                  : 'Manejo coletivo',
+                              secondaryIcon: Icons.playlist_add_check_outlined,
                               onSecondary: widget.farm == null
                                   ? null
                                   : () {
@@ -417,17 +446,19 @@ class _ReproductionOverviewScreenState
                               statusTitle: _moduleStatusTitle,
                               statusDescription:
                                   '$totalFemales fêmeas • '
-                                  '${pregnancyRate.toStringAsFixed(1).replaceAll('.', ',')}% prenhes • '
+                                  '$pregnancyRateLabel prenhes na base diagnosticada • '
                                   '$totalRecords eventos',
                               items: _decisionItems,
                               level: _moduleLevel,
                             ),
                             AtlasModuleWorkspaceGuide(
                               moduleLabel: 'Reprodução',
-                              workflows: AtlasProductSurfacePolicy
+                              workflows:
+                                  AtlasProductSurfacePolicy
                                       .moduleWorkflows['Reprodução'] ??
                                   const <String>[],
-                              specializedFamilies: AtlasProductSurfacePolicy
+                              specializedFamilies:
+                                  AtlasProductSurfacePolicy
                                       .specializedCapabilityCountByOwner['Reprodução'] ??
                                   0,
                             ),
@@ -457,24 +488,26 @@ class _ReproductionOverviewScreenState
                                 ),
                                 _IndicatorCard(
                                   title: 'Prenhes',
-                                  value: pregnantAnimals.toString(),
+                                  value:
+                                      indicators.cowsWithPregnancyDiagnosis == 0
+                                      ? 'Sem base válida'
+                                      : pregnantAnimals.toString(),
                                   subtitle:
-                                      'Diagnósticos positivos registrados',
+                                      'Últimos diagnósticos válidos de matrizes ativas',
                                   icon: Icons.favorite_outline,
                                 ),
                                 _IndicatorCard(
                                   title: 'Taxa de prenhez',
-                                  value:
-                                      '${pregnancyRate.toStringAsFixed(1).replaceAll('.', ',')}%',
-                                  subtitle: 'Prenhes sobre fêmeas acompanhadas',
+                                  value: pregnancyRateLabel,
+                                  subtitle:
+                                      'Prenhes sobre matrizes com diagnóstico atual válido',
                                   icon: Icons.percent_outlined,
                                 ),
                                 _IndicatorCard(
-                                  title: 'Taxa de concepção',
-                                  value:
-                                      '${conceptionRate.toStringAsFixed(1).replaceAll('.', ',')}%',
+                                  title: 'Razão histórica (12 meses)',
+                                  value: _percentage(indicators.conceptionRate),
                                   subtitle:
-                                      'Diagnósticos positivos sobre diagnósticos',
+                                      'Diagnósticos positivos / inseminações; não é concepção vinculada',
                                   icon: Icons.analytics_outlined,
                                 ),
                               ],
