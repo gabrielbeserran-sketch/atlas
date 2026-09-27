@@ -41,6 +41,36 @@ DairyReproductionIndicators calculate(
 );
 
 void main() {
+  test('parto invalida diagnóstico anterior ou do mesmo dia na base atual', () {
+    for (final date in ['14/09/2026', '15/09/2026']) {
+      final result = calculate([
+        event('p', date: date, code: 'pregnancy_diagnosis', status: 'Prenhe'),
+        event('parto', code: 'calving'),
+      ]);
+      expect(result.pregnancyRateFromLatestDiagnosis, isNull);
+      expect(result.cowsWithPregnancyDiagnosis, 0);
+      expect(result.diagnosesInvalidatedByCalving, 1);
+      expect(result.confirmedPregnancies, 1); // O histórico continua intacto.
+      expect(
+        result.dataQualityAlerts.join(' '),
+        contains('posterior ao último parto'),
+      );
+    }
+  });
+  test('diagnóstico posterior ao parto volta à base de prenhez atual', () {
+    final result = calculate([
+      event(
+        'p',
+        date: '16/09/2026',
+        code: 'pregnancy_diagnosis',
+        status: 'Vazia',
+      ),
+      event('parto', code: 'calving'),
+    ]);
+    expect(result.pregnancyRateFromLatestDiagnosis, 0);
+    expect(result.cowsWithPregnancyDiagnosis, 1);
+    expect(result.diagnosesInvalidatedByCalving, 0);
+  });
   test('situações do formulário em português equivalem às da API', () {
     final result = calculate([
       event('ai'),

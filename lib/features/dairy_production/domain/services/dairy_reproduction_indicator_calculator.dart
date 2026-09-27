@@ -23,6 +23,7 @@ class DairyReproductionIndicators {
     this.excludedAmbiguousRecords = 0,
     this.eventsBeforeBirth = 0,
     this.conflictingDiagnoses = 0,
+    this.diagnosesInvalidatedByCalving = 0,
   });
   final double? averageDaysInMilk;
   final int lactatingCowsWithKnownCalving;
@@ -49,6 +50,7 @@ class DairyReproductionIndicators {
   final int excludedAmbiguousRecords;
   final int eventsBeforeBirth;
   final int conflictingDiagnoses;
+  final int diagnosesInvalidatedByCalving;
 
   int get dataCoveragePercent {
     if (activeFemaleCount == 0) return 0;
@@ -71,6 +73,11 @@ class DairyReproductionIndicators {
 
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
+    if (diagnosesInvalidatedByCalving > 0) {
+      alerts.add(
+        '$diagnosesInvalidatedByCalving matriz(es) precisam de diagnóstico posterior ao último parto para compor a base de prenhez atual.',
+      );
+    }
     if (excludedAmbiguousRecords > 0) {
       alerts.add(
         '$excludedAmbiguousRecords cadastro(s)/evento(s) com ID ausente ou repetido ficaram fora dos indicadores reprodutivos.',
@@ -296,13 +303,14 @@ class DairyReproductionIndicatorCalculator {
           (event) =>
               activeFemales.contains(event.animalId) &&
               event.eventCode == 'pregnancy_diagnosis' &&
-              _diagnosisStatus(event.reproductiveStatus) == 'pregnant',
+              event.normalizedDiagnosisStatus == 'pregnant',
         )
         .where((event) => _inPeriod(_date(event.date), periodStart, today))
         .length;
     var diagnosedCows = 0;
     var currentlyPregnant = 0;
     var conflictingDiagnoses = 0;
+    var diagnosesInvalidatedByCalving = 0;
     final reproductiveCulls = femaleRecords
         .where(
           (event) =>
@@ -323,9 +331,18 @@ class DairyReproductionIndicatorCalculator {
             ..sort((a, b) => _date(a.date)!.compareTo(_date(b.date)!));
       if (diagnoses.isNotEmpty) {
         final lastDate = _date(diagnoses.last.date)!;
+        final hasLaterCalving = events.any(
+          (event) =>
+              event.eventCode == 'calving' &&
+              !_date(event.date)!.isBefore(lastDate),
+        );
+        if (hasLaterCalving) {
+          diagnosesInvalidatedByCalving++;
+          continue;
+        }
         final statuses = diagnoses
             .where((event) => _date(event.date) == lastDate)
-            .map((event) => _diagnosisStatus(event.reproductiveStatus))
+            .map((event) => event.normalizedDiagnosisStatus)
             .toSet();
         if (statuses.length != 1 ||
             !{'pregnant', 'open'}.contains(statuses.single)) {
@@ -373,15 +390,9 @@ class DairyReproductionIndicatorCalculator {
       excludedAmbiguousRecords: excludedAmbiguousRecords,
       eventsBeforeBirth: eventsBeforeBirth,
       conflictingDiagnoses: conflictingDiagnoses,
+      diagnosesInvalidatedByCalving: diagnosesInvalidatedByCalving,
     );
   }
-
-  String? _diagnosisStatus(String value) =>
-      switch (value.trim().toLowerCase()) {
-        'pregnant' || 'prenhe' => 'pregnant',
-        'open' || 'vazia' => 'open',
-        _ => null,
-      };
 
   DateTime? _date(String value) {
     final normalized = value.trim();

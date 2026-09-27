@@ -43,8 +43,17 @@ class AnimalReproductionData {
       eventCode == 'iatf' ||
       type == 'Inseminação artificial' ||
       type == 'IATF';
+
+  /// Interpretação somente para leitura; não altera o registro persistido.
+  String? get normalizedDiagnosisStatus =>
+      switch (reproductiveStatus.trim().toLowerCase()) {
+        'pregnant' || 'prenhe' => 'pregnant',
+        'open' || 'vazia' => 'open',
+        _ => null,
+      };
   bool get isPositivePregnancyDiagnosis =>
-      eventCode == 'pregnancy_diagnosis' && reproductiveStatus == 'pregnant';
+      eventCode == 'pregnancy_diagnosis' &&
+      normalizedDiagnosisStatus == 'pregnant';
   Map<String, dynamic> toMap() => {
     'id': id,
     'type': type,
