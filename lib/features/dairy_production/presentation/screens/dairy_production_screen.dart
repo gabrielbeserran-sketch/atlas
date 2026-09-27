@@ -23,6 +23,8 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   DairyHerdSnapshotData? _snapshot;
   List<DairyHerdSnapshotData> _snapshots = const [];
   bool _loading = true;
+  bool _productionReadFailed = false;
+  String? _readError;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -32,14 +34,30 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   }
 
   Future<void> _load() async {
-    final values = await _storage.load(_farmKey);
-    final snapshots = await _snapshotStorage.load(_farmKey);
+    List<DairyDailyProductionData> values = const [];
+    List<DairyHerdSnapshotData> snapshots = const [];
+    String? readError;
+    var productionReadFailed = false;
+    try {
+      values = await _storage.load(_farmKey, strict: true);
+    } catch (_) {
+      productionReadFailed = true;
+      readError =
+          'Não foi possível ler as ordenhas salvas. Nenhum registro foi apagado. Revise os dados antes de registrar nova produção.';
+    }
+    try {
+      snapshots = await _snapshotStorage.load(_farmKey);
+    } catch (_) {
+      readError ??= 'Não foi possível ler o estado do lote nesta consulta.';
+    }
     if (mounted) {
       setState(() {
         _records = values;
         _snapshot = snapshots.isEmpty ? null : snapshots.first;
         _snapshots = snapshots;
         _loading = false;
+        _productionReadFailed = productionReadFailed;
+        _readError = readError;
       });
     }
   }
@@ -64,7 +82,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openForm,
+        onPressed: _productionReadFailed ? null : _openForm,
         icon: const Icon(Icons.add),
         label: const Text('Registrar ordenha'),
       ),
@@ -73,6 +91,22 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                if (_readError != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_readError!),
+                          TextButton(
+                            onPressed: _load,
+                            child: const Text('Tentar leitura novamente'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 Text(
                   widget.farm.name,
                   style: Theme.of(context).textTheme.titleMedium,
@@ -216,7 +250,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 10),
-                if (_records.isEmpty)
+                if (_records.isEmpty && !_productionReadFailed)
                   const Card(
                     child: Padding(
                       padding: EdgeInsets.all(20),
@@ -239,8 +273,9 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         tooltip: 'Excluir registro',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () async {
-                          await _storage.delete(_farmKey, record.date);
-                          await _load();
+                          await _changeProduction(
+                            () => _storage.delete(_farmKey, record.date),
+                          );
                         },
                       ),
                     ),
@@ -255,9 +290,25 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       context: context,
       builder: (_) => const _DairyRecordDialog(),
     );
-    if (result == null) return;
-    await _storage.upsert(_farmKey, result);
-    await _load();
+    if (result == null || !mounted) return;
+    await _changeProduction(() => _storage.upsert(_farmKey, result));
+  }
+
+  Future<void> _changeProduction(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Não foi possível concluir a alteração. Confira os registros salvos antes de tentar novamente.',
+            ),
+          ),
+        );
+      }
+    }
+    if (mounted) await _load();
   }
 
   Future<void> _openSnapshotForm() async {

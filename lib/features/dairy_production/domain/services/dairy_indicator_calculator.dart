@@ -101,7 +101,9 @@ class DairyIndicatorCalculator {
     }
     final now = referenceDate ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final start = today.subtract(const Duration(days: 29));
+    final start = DateTime(today.year, today.month, today.day - 29);
+    DateTime dayOf(DairyDailyProductionData record) =>
+        DateTime(record.date.year, record.date.month, record.date.day);
     final dates = <DateTime, List<DairyDailyProductionData>>{};
     for (final record in records) {
       final day = DateTime(
@@ -115,7 +117,7 @@ class DairyIndicatorCalculator {
         .where((items) => items.length > 1)
         .length;
     final futureRecords = records
-        .where((item) => item.date.isAfter(today))
+        .where((item) => dayOf(item).isAfter(today))
         .length;
     final recordsWithoutMilkedCows = records
         .where((item) => item.cowsMilked <= 0)
@@ -139,7 +141,7 @@ class DairyIndicatorCalculator {
     }).toList();
     final window = valid
         .where(
-          (item) => !item.date.isBefore(start) && !item.date.isAfter(today),
+          (item) => !dayOf(item).isBefore(start) && !dayOf(item).isAfter(today),
         )
         .toList();
     final source = window;
@@ -173,22 +175,36 @@ class DairyIndicatorCalculator {
         coveragePercent: 0,
       );
     }
-    final total = source.fold<double>(0, (sum, item) => sum + item.totalLiters);
-    final totalMilkedCows = source.fold<int>(
+    final totalMilkedCows = source.fold<double>(
       0,
       (sum, item) => sum + item.cowsMilked,
     );
-    final average = total / source.length;
+    // Divide antes de somar para não transbordar uma média representável.
+    final average = source.fold<double>(
+      0,
+      (sum, item) => sum + item.totalLiters / source.length,
+    );
+    final perMilkedCow = totalMilkedCows <= 0
+        ? null
+        : source.fold<double>(
+            0,
+            (sum, item) => sum + item.totalLiters / totalMilkedCows,
+          );
     return DairyProductionSummary(
       latestLiters: latest?.totalLiters,
       latestRecordDate: latest?.date,
       daysSinceLatestRecord: daysSinceLatestRecord,
-      averageLitersPerDay: average,
-      averageLitersPerHectare: hectares > 0 ? average / hectares : null,
-      litersPerLactatingCow: lactatingCows == null || lactatingCows <= 0
+      averageLitersPerDay: average.isFinite ? average : null,
+      averageLitersPerHectare: hectares > 0 && average.isFinite
+          ? average / hectares
+          : null,
+      litersPerLactatingCow:
+          lactatingCows == null || lactatingCows <= 0 || !average.isFinite
           ? null
           : average / lactatingCows,
-      litersPerMilkedCow: totalMilkedCows == 0 ? null : total / totalMilkedCows,
+      litersPerMilkedCow: perMilkedCow != null && perMilkedCow.isFinite
+          ? perMilkedCow
+          : null,
       averageMilkedCows: totalMilkedCows / source.length,
       recordedDays: source.length,
       futureRecords: futureRecords,

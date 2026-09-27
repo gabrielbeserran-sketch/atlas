@@ -12,12 +12,14 @@ class DairyProductionStorageService {
   String _key(String farmId) =>
       'atlas_dairy_daily_production_${farmId.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_')}';
 
-  Future<List<DairyDailyProductionData>> load(String farmId) async {
+  Future<List<DairyDailyProductionData>> load(
+    String farmId, {
+    bool strict = false,
+  }) async {
     final raw = await _preferences.getString(_key(farmId));
-    if (raw == null || raw.isEmpty) return const [];
+    if (raw == null) return const [];
     try {
       final values = (jsonDecode(raw) as List<dynamic>)
-          .whereType<Map>()
           .map(
             (item) => DairyDailyProductionData.fromMap(
               Map<String, dynamic>.from(item),
@@ -27,12 +29,17 @@ class DairyProductionStorageService {
       values.sort((a, b) => b.date.compareTo(a.date));
       return values;
     } catch (_) {
+      if (strict) {
+        throw const FormatException(
+          'Ordenhas salvas não puderam ser lidas; nenhum registro foi substituído.',
+        );
+      }
       return const [];
     }
   }
 
   Future<void> upsert(String farmId, DairyDailyProductionData record) async {
-    final records = await load(farmId);
+    final records = await load(farmId, strict: true);
     final day = DateTime(record.date.year, record.date.month, record.date.day);
     final next = [
       ...records.where(
@@ -47,7 +54,7 @@ class DairyProductionStorageService {
   }
 
   Future<void> delete(String farmId, DateTime date) async {
-    final records = await load(farmId);
+    final records = await load(farmId, strict: true);
     await _save(
       farmId,
       records
