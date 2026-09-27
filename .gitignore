@@ -154,6 +154,7 @@ data/attachments/
 /release/windows/reproducao-integridade-20260926/
 /release/windows/reproducao-visao-geral-20260927/
 /release/windows/reproducao-calendario-20260927/
+/release/windows/reproducao-previsoes-20260927/
 dist/
 *.apk
 *.aab

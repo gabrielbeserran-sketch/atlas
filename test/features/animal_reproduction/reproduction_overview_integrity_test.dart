@@ -30,8 +30,9 @@ AnimalReproductionData event(
 
 Future<void> show(
   WidgetTester tester,
-  List<AnimalReproductionData> records,
-) async {
+  List<AnimalReproductionData> records, {
+  String animalStatus = 'Ativo',
+}) async {
   tester.view.resetPhysicalSize();
   tester.view.physicalSize = const Size(1800, 1800);
   tester.view.devicePixelRatio = 1;
@@ -63,7 +64,7 @@ Future<void> show(
               breed: 'G',
               birthDate: '01/01/2020',
               weight: 450,
-              status: 'Ativo',
+              status: animalStatus,
             ),
             records: records,
           ),
@@ -75,6 +76,31 @@ Future<void> show(
 }
 
 void main() {
+  testWidgets('previsão de animal vendido não entra na triagem ativa', (
+    tester,
+  ) async {
+    await show(tester, [
+      event('past', expectedDate: '02/09/2026'),
+    ], animalStatus: 'Vendido');
+    expect(find.text('1 previsão(ões) com data passada'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'previsão passada não é apresentada como tarefa crítica confirmada',
+    (tester) async {
+      await show(tester, [event('past', expectedDate: '02/09/2026')]);
+      expect(find.text('1 previsão(ões) com data passada'), findsOneWidget);
+      expect(
+        find.textContaining('não comprova tarefa pendente'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('ação(ões) reprodutiva(s) vencida(s)'),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();

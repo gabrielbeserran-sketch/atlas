@@ -10,6 +10,7 @@ import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_calendar.dart';
+import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_schedule.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
@@ -51,6 +52,8 @@ class _ReproductionOverviewScreenState
   bool isLoading = true;
   String? loadError;
   String search = '';
+  ReproductionReturnSchedule returnSchedule =
+      const ReproductionReturnSchedule();
   DairyReproductionIndicators indicators =
       const DairyReproductionIndicatorCalculator().calculate(
         animals: [],
@@ -93,45 +96,16 @@ class _ReproductionOverviewScreenState
   String get pregnancyRateLabel =>
       _percentage(indicators.pregnancyRateFromLatestDiagnosis);
 
-  DateTime? _parseDisplayDate(String value) {
-    return ReproductionCalendar.parse(value);
-  }
-
-  int get invalidExpectedDates => animals.fold(
-    0,
-    (total, context) =>
-        total +
-        context.records
-            .where(
-              (record) =>
-                  record.expectedDate.trim().isNotEmpty &&
-                  ReproductionCalendar.parse(record.expectedDate) == null,
-            )
-            .length,
-  );
-
-  DateTime get _today {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
-
-  int get overdueExpectedActions => animals.fold(
-    0,
-    (total, context) =>
-        total +
-        context.records.where((record) {
-          final date = _parseDisplayDate(record.expectedDate);
-          return date != null && date.isBefore(_today);
-        }).length,
-  );
+  int get invalidExpectedDates => returnSchedule.invalid;
+  int get overdueExpectedActions => returnSchedule.past;
 
   int get femalesWithoutHistory => totalFemales - animalsWithRecords;
 
   AtlasModuleAttentionLevel get _moduleLevel {
-    if (overdueExpectedActions > 0) {
-      return AtlasModuleAttentionLevel.critical;
-    }
     if (femalesWithoutHistory > 0 ||
+        overdueExpectedActions > 0 ||
+        returnSchedule.today > 0 ||
+        returnSchedule.ambiguous > 0 ||
         invalidExpectedDates > 0 ||
         indicators.cowsWithPregnancyDiagnosis == 0 ||
         indicators.dataQualityAlerts.isNotEmpty) {
@@ -147,7 +121,7 @@ class _ReproductionOverviewScreenState
         AtlasModuleDecisionItem(
           title: '$invalidExpectedDates retorno(s) com data inválida',
           description:
-              'Confira a data prevista. Esses registros não foram classificados como vencidos ou futuros.',
+              'Confira a data prevista e a data do evento de origem. Previsões ilegíveis ou cronologicamente impossíveis não foram classificadas.',
           icon: Icons.event_busy_outlined,
           level: AtlasModuleAttentionLevel.attention,
         ),
@@ -156,10 +130,44 @@ class _ReproductionOverviewScreenState
     if (overdueExpectedActions > 0) {
       items.add(
         AtlasModuleDecisionItem(
-          title: '$overdueExpectedActions ação(ões) reprodutiva(s) vencida(s)',
-          description: 'Há previsões ou retornos com data anterior a hoje.',
+          title: '$overdueExpectedActions previsão(ões) com data passada',
+          description:
+              'Confira se o retorno foi realizado. O histórico não registra conclusão ou cancelamento; previsão passada não comprova tarefa pendente.',
           icon: Icons.event_busy_outlined,
-          level: AtlasModuleAttentionLevel.critical,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (returnSchedule.today > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '${returnSchedule.today} previsão(ões) para hoje',
+          description:
+              'Confira o histórico de cada animal antes de planejar o atendimento.',
+          icon: Icons.today_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
+    if (returnSchedule.nextSevenDays > 0 || returnSchedule.later > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: 'Previsões futuras',
+          description:
+              '${returnSchedule.nextSevenDays} nos próximos 7 dias • ${returnSchedule.later} após esse período. Previsões não representam tarefas abertas confirmadas.',
+          icon: Icons.date_range_outlined,
+        ),
+      );
+    }
+    if (returnSchedule.ambiguous > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title:
+              '${returnSchedule.ambiguous} previsão(ões) com identidade ambígua',
+          description:
+              'Confira IDs ausentes/repetidos antes de contar os retornos.',
+          icon: Icons.fact_check_outlined,
+          level: AtlasModuleAttentionLevel.attention,
         ),
       );
     }
@@ -320,6 +328,18 @@ class _ReproductionOverviewScreenState
     setState(() {
       animals = contexts;
       indicators = summary;
+      returnSchedule = ReproductionReturnSchedule.calculate(
+        contexts
+            .where((context) => context.animal.status == 'Ativo')
+            .expand(
+              (context) => context.records.map(
+                (record) => record.animalId.isEmpty
+                    ? record.withAnimalId(context.animal.id)
+                    : record,
+              ),
+            )
+            .toList(),
+      );
     });
   }
 
