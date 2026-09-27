@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.services.concurrency import advisory_transaction_lock
+from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task
 
 from ..authz import Principal, get_principal, require_permission
 from ..database import get_db
@@ -2052,6 +2053,8 @@ def add_reproduction_event(
     principal: Principal = Depends(require_permission("reproduction.write")),
     db: Session = Depends(get_db),
 ) -> ReproductionEvent:
+    if "atlas_return_resolution" in (payload.metadata_json or {}):
+        raise HTTPException(status_code=409, detail="Cadastre o evento antes de resolver o retorno existente.")
     animal = _animal(db, principal, animal_id)
     occurred_at = payload.occurred_at or datetime.now(timezone.utc)
     status_value = _derive_reproductive_status(payload)
@@ -2099,16 +2102,26 @@ def update_reproduction_event(
             ReproductionEvent.id == event_id,
             ReproductionEvent.company_id == principal.company.id,
             ReproductionEvent.animal_id == animal.id,
-        )
+        ).with_for_update()
     )
     if item is None:
         raise HTTPException(status_code=404, detail="Evento reprodutivo não encontrado.")
     changes = payload.model_dump(exclude_unset=True)
+    try:
+        changes["metadata_json"] = validate_resolution(
+            changes.get("metadata_json", item.metadata_json), item.metadata_json,
+            event_id=item.id,
+            occurred_at=changes.get("occurred_at", item.occurred_at),
+            expected_at=changes.get("expected_date", item.expected_date),
+            user_id=principal.user.id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     for field, value in changes.items():
         setattr(item, field, value)
     if "event_type" in changes and "event_code" not in changes:
         item.event_code = REPRODUCTION_CODES.get(item.event_type, item.event_code or "observation")
-    if "reproductive_status" not in changes:
+    if "reproductive_status" not in changes and {"event_type", "event_code", "result", "pregnancy_days"}.intersection(changes):
         probe = ReproductionEventCreateRequest(
             event_type=item.event_type, event_code=item.event_code, result=item.result,
             reproductive_status="", pregnancy_days=item.pregnancy_days,
@@ -2116,7 +2129,7 @@ def update_reproduction_event(
         item.reproductive_status = _derive_reproductive_status(probe)
     db.flush()
     _refresh_animal_reproduction_state(db=db, animal=animal)
-    _sync_operational_task(
+    task = _sync_operational_task(
         db=db, principal=principal, farm_id=animal.farm_id,
         source_type="reproduction_event", source_id=item.id,
         title=f"{item.event_type} — {animal.name or animal.tag or animal.id}",
@@ -2124,6 +2137,7 @@ def update_reproduction_event(
         due_at=item.expected_date,
         priority="high" if item.event_code == "pregnancy_diagnosis" else "medium",
     )
+    apply_resolution_to_task(task, item.metadata_json)
     db.commit(); db.refresh(item)
     return item
 
