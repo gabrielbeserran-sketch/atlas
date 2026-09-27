@@ -1,4 +1,5 @@
 import '../models/animal_reproduction_data.dart';
+import 'reproduction_calendar.dart';
 
 class ReproductionMetrics {
   const ReproductionMetrics({
@@ -36,13 +37,13 @@ class ReproductionMetricsService {
     final now = referenceDate ?? DateTime.now();
     final upcoming =
         records.where((e) {
-          final date = _expectedDate(e.expectedDate);
+          final date = ReproductionCalendar.parse(e.expectedDate);
           return date != null &&
               !date.isBefore(DateTime(now.year, now.month, now.day));
         }).toList()..sort((a, b) {
-          final comparison = _expectedDate(
+          final comparison = ReproductionCalendar.parse(
             a.expectedDate,
-          )!.compareTo(_expectedDate(b.expectedDate)!);
+          )!.compareTo(ReproductionCalendar.parse(b.expectedDate)!);
           if (comparison != 0) return comparison;
           final animalComparison = a.animalId.compareTo(b.animalId);
           return animalComparison != 0
@@ -59,27 +60,5 @@ class ReproductionMetricsService {
       servicesPerConception: pregnancies == 0 ? 0 : services / pregnancies,
       upcoming: upcoming,
     );
-  }
-
-  DateTime? _expectedDate(String value) {
-    final normalized = value.trim();
-    final br = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(normalized);
-    final iso = RegExp(r'^(\d{4})-(\d{1,2})-(\d{1,2})$').firstMatch(normalized);
-    if (br == null && iso == null) return null;
-    final year = int.parse(br?.group(3) ?? iso!.group(1)!);
-    final month = int.parse(br?.group(2) ?? iso!.group(2)!);
-    final day = int.parse(br?.group(1) ?? iso!.group(3)!);
-    if (year < 1900 ||
-        year > 9999 ||
-        month < 1 ||
-        month > 12 ||
-        day < 1 ||
-        day > 31) {
-      return null;
-    }
-    final date = DateTime(year, month, day);
-    return date.year == year && date.month == month && date.day == day
-        ? date
-        : null;
   }
 }

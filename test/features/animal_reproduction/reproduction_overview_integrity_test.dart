@@ -14,6 +14,7 @@ AnimalReproductionData event(
   String result = '',
   String code = 'pregnancy_diagnosis',
   String date = '01/09/2026',
+  String expectedDate = '',
 }) => AnimalReproductionData(
   id: id,
   type: 'Diagnóstico de gestação',
@@ -24,6 +25,7 @@ AnimalReproductionData event(
   notes: '',
   eventCode: code,
   reproductiveStatus: status,
+  expectedDate: expectedDate,
 );
 
 Future<void> show(
@@ -77,6 +79,21 @@ void main() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
   });
+  testWidgets(
+    'retorno inválido tem aviso e evento ilegível não vira histórico realizado',
+    (tester) async {
+      await show(tester, [
+        event('invalid', date: '31/02/2026', expectedDate: '31/02/2026'),
+      ]);
+      expect(find.text('1 retorno(s) com data inválida'), findsOneWidget);
+      expect(find.text('Sem evento realizado com data válida'), findsOneWidget);
+      expect(
+        find.textContaining('ação(ões) reprodutiva(s) vencida(s)'),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('texto não prenhe não vira diagnóstico positivo', (tester) async {
     await show(tester, [event('p', result: 'não prenhe')]);
     expect(find.text('Sem base válida'), findsWidgets);

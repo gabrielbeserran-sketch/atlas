@@ -9,6 +9,7 @@ import 'package:projeto_atlas/features/animal/data/services/animal_storage_servi
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
+import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_calendar.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
 import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
@@ -93,18 +94,21 @@ class _ReproductionOverviewScreenState
       _percentage(indicators.pregnancyRateFromLatestDiagnosis);
 
   DateTime? _parseDisplayDate(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return null;
-    final direct = DateTime.tryParse(trimmed);
-    if (direct != null) return direct;
-    final parts = trimmed.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    if (day == null || month == null || year == null) return null;
-    return DateTime(year, month, day);
+    return ReproductionCalendar.parse(value);
   }
+
+  int get invalidExpectedDates => animals.fold(
+    0,
+    (total, context) =>
+        total +
+        context.records
+            .where(
+              (record) =>
+                  record.expectedDate.trim().isNotEmpty &&
+                  ReproductionCalendar.parse(record.expectedDate) == null,
+            )
+            .length,
+  );
 
   DateTime get _today {
     final now = DateTime.now();
@@ -128,6 +132,7 @@ class _ReproductionOverviewScreenState
       return AtlasModuleAttentionLevel.critical;
     }
     if (femalesWithoutHistory > 0 ||
+        invalidExpectedDates > 0 ||
         indicators.cowsWithPregnancyDiagnosis == 0 ||
         indicators.dataQualityAlerts.isNotEmpty) {
       return AtlasModuleAttentionLevel.attention;
@@ -137,6 +142,17 @@ class _ReproductionOverviewScreenState
 
   List<AtlasModuleDecisionItem> get _decisionItems {
     final items = <AtlasModuleDecisionItem>[];
+    if (invalidExpectedDates > 0) {
+      items.add(
+        AtlasModuleDecisionItem(
+          title: '$invalidExpectedDates retorno(s) com data inválida',
+          description:
+              'Confira a data prevista. Esses registros não foram classificados como vencidos ou futuros.',
+          icon: Icons.event_busy_outlined,
+          level: AtlasModuleAttentionLevel.attention,
+        ),
+      );
+    }
     if (overdueExpectedActions > 0) {
       items.add(
         AtlasModuleDecisionItem(
@@ -591,30 +607,7 @@ class ReproductionAnimalContext {
   final List<AnimalReproductionData> records;
 
   AnimalReproductionData? get latestRecord {
-    if (records.isEmpty) {
-      return null;
-    }
-
-    final sortedRecords = [...records]
-      ..sort(
-        (first, second) =>
-            _parseDate(second.date).compareTo(_parseDate(first.date)),
-      );
-
-    return sortedRecords.first;
-  }
-
-  static DateTime _parseDate(String value) {
-    final parts = value.split('/');
-    if (parts.length != 3) {
-      return DateTime(1900);
-    }
-
-    return DateTime(
-      int.tryParse(parts[2]) ?? 1900,
-      int.tryParse(parts[1]) ?? 1,
-      int.tryParse(parts[0]) ?? 1,
-    );
+    return ReproductionCalendar.latest(records);
   }
 }
 
@@ -762,7 +755,7 @@ class _AnimalCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       latestRecord == null
-                          ? 'Nenhum registro reprodutivo'
+                          ? 'Sem evento realizado com data válida'
                           : 'Último evento: ${latestRecord.type} em ${latestRecord.date}',
                       style: TextStyle(
                         color: latestRecord == null
