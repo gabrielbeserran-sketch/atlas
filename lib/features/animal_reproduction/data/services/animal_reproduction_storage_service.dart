@@ -65,12 +65,24 @@ class AnimalReproductionStorageService {
       '/livestock/animals/$animalId/reproduction/${record.id}',
       body: record.toApi(),
     );
-    return _verifyAndCache(
+    final saved = await _verifyAndCache(
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
       recordId: record.id,
     );
+    if (record.returnResolutionStatus != null) {
+      final expected = record.metadata['atlas_return_resolution'] as Map;
+      final actual = saved.metadata['atlas_return_resolution'];
+      if (saved.returnResolutionStatus != record.returnResolutionStatus ||
+          actual is! Map ||
+          expected.entries.any((entry) => actual[entry.key] != entry.value)) {
+        throw StateError(
+          'A resolução do retorno não foi confirmada na nova leitura do servidor.',
+        );
+      }
+    }
+    return saved;
   }
 
   Future<void> deleteRecord({

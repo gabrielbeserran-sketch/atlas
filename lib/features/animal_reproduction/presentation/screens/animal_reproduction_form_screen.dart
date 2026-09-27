@@ -154,6 +154,7 @@ class _AnimalReproductionFormScreenState
         calfId: calfIdController.text.trim(),
         calfSex: selectedCalfSex,
         birthType: selectedBirthType,
+        metadata: widget.reproductionRecord?.metadata ?? const {},
       ),
     );
   }

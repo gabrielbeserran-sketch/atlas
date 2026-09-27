@@ -19,6 +19,7 @@ class AnimalReproductionData {
     this.birthType = '',
     this.synced = false,
     this.animalId = '',
+    this.metadata = const {},
   });
   final String id,
       type,
@@ -38,6 +39,43 @@ class AnimalReproductionData {
   final int attemptNumber, pregnancyDays;
   final bool synced;
   final String animalId;
+  final Map<String, dynamic> metadata;
+
+  /// Somente resolução explícita vinculada a este evento e previsão.
+  String? get returnResolutionStatus {
+    final raw = metadata['atlas_return_resolution'];
+    if (raw is! Map || id.trim().isEmpty || expectedDate.trim().isEmpty) {
+      return null;
+    }
+    final status = raw['status'];
+    final at = raw['resolved_at'];
+    final actor = raw['responsible'];
+    if (!_validDisplayDate(date) || !_validDisplayDate(expectedDate)) {
+      return null;
+    }
+    if (!{'completed', 'cancelled'}.contains(status) ||
+        raw['event_id'] != id ||
+        raw['occurred_date'] != _display(date) ||
+        raw['expected_date'] != _display(expectedDate) ||
+        actor is! String ||
+        actor.trim().isEmpty ||
+        at is! String) {
+      return null;
+    }
+    final parsed = DateTime.tryParse(at);
+    if (parsed == null ||
+        parsed.toUtc().toIso8601String() != at ||
+        parsed.isAfter(DateTime.now())) {
+      return null;
+    }
+    if (status == 'cancelled' &&
+        (raw['reason'] is! String ||
+            (raw['reason'] as String).trim().isEmpty)) {
+      return null;
+    }
+    return status as String;
+  }
+
   bool get isInsemination =>
       eventCode == 'ai' ||
       eventCode == 'iatf' ||
@@ -74,6 +112,7 @@ class AnimalReproductionData {
     'birthType': birthType,
     'synced': synced,
     'animalId': animalId,
+    'metadata': metadata,
   };
   Map<String, dynamic> toApi() => {
     'event_type': type,
@@ -92,7 +131,7 @@ class AnimalReproductionData {
     'occurred_at': _toIso(date),
     'expected_date': expectedDate.isEmpty ? null : _toIso(expectedDate),
     'notes': notes,
-    'metadata_json': {},
+    'metadata_json': metadata,
   };
   factory AnimalReproductionData.fromMap(Map<String, dynamic> m) =>
       AnimalReproductionData(
@@ -118,6 +157,11 @@ class AnimalReproductionData {
         birthType: '${m['birthType'] ?? m['birth_type'] ?? ''}',
         synced: m['synced'] == true || m.containsKey('event_type'),
         animalId: '${m['animalId'] ?? m['animal_id'] ?? ''}',
+        metadata: Map<String, dynamic>.from(
+          (m['metadata'] ?? m['metadata_json']) is Map
+              ? (m['metadata'] ?? m['metadata_json']) as Map
+              : const {},
+        ),
       );
 
   AnimalReproductionData withAnimalId(String value) => AnimalReproductionData(
@@ -140,6 +184,7 @@ class AnimalReproductionData {
     birthType: birthType,
     synced: synced,
     animalId: value,
+    metadata: metadata,
   );
   static String eventCodeFor(String type, String current) {
     if (current != 'observation') return current;
@@ -159,6 +204,23 @@ class AnimalReproductionData {
   }
 
   static int _i(dynamic v) => v is int ? v : int.tryParse('$v') ?? 0;
+  static bool _validDisplayDate(String value) {
+    final match = RegExp(
+      r'^(\d{1,2})/(\d{1,2})/(\d{4})$',
+    ).firstMatch(_display(value));
+    if (match == null) {
+      return false;
+    }
+    final day = int.parse(match.group(1)!);
+    final month = int.parse(match.group(2)!);
+    final year = int.parse(match.group(3)!);
+    if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
+      return false;
+    }
+    final parsed = DateTime(year, month, day);
+    return parsed.year == year && parsed.month == month && parsed.day == day;
+  }
+
   static String _toIso(String v) {
     final p = v.split('/');
     if (p.length != 3) return v;
