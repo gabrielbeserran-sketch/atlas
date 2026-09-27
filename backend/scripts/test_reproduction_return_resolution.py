@@ -12,10 +12,11 @@ from unittest.mock import patch
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, Response
-from app.models import OperationalTask
+from app.models import OperationalTask, ReproductionEvent
+from app.routers.operations import update_task
 from app.routers.livestock import _sync_operational_task, update_reproduction_event, add_reproduction_event, reproduction_history
-from app.schemas.legacy import ReproductionEventUpdateRequest, ReproductionEventCreateRequest
-from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task, KEY
+from app.schemas.legacy import ReproductionEventUpdateRequest, ReproductionEventCreateRequest, OperationalTaskUpdateRequest
+from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task, ensure_task_resolution_compatible, KEY
 
 UTC = timezone.utc
 ORIGIN = datetime(2026, 9, 1, tzinfo=UTC)
@@ -119,6 +120,157 @@ class TaskTests(unittest.TestCase):
             self.assertEqual(foreign.status, "open")
             self.assertEqual(unrelated.status, "open")
 
+    def test_edit_does_not_reopen_legacy_cancelled_return(self):
+        with Session(self.engine) as db:
+            task = self.sync(db)
+            task.status = "cancelled"
+            db.commit()
+            self.assertEqual(self.sync(db).status, "cancelled")
+
+
+class AgendaTests(unittest.TestCase):
+    def setUp(self):
+        self.engine = create_engine("sqlite:///:memory:")
+        ReproductionEvent.__table__.create(self.engine)
+        OperationalTask.__table__.create(self.engine)
+        self.db = Session(self.engine)
+        self.principal = SimpleNamespace(user=SimpleNamespace(id="authenticated"),
+            company=SimpleNamespace(id="company"), membership=SimpleNamespace(role="owner"),
+            permissions={"herd.write", "reproduction.write"})
+        self.event = ReproductionEvent(id="event", tenant_id="tenant", company_id="company",
+            farm_id="farm", animal_id="cow", event_type="IATF", event_code="iatf",
+            occurred_at=ORIGIN, expected_date=EXPECTED, created_by="original",
+            metadata_json={"other": 1}, reproductive_status="awaiting_diagnosis")
+        self.task = OperationalTask(id="task", tenant_id="tenant", company_id="company",
+            farm_id="farm", source_type="reproduction_event", source_id="event",
+            title="Retorno", description="Original", due_at=EXPECTED, status="open", evidence="")
+        self.db.add_all([self.event, self.task]); self.db.commit()
+
+    def tearDown(self):
+        self.db.close(); self.engine.dispose()
+
+    def update(self, **changes):
+        return update_task("task", OperationalTaskUpdateRequest(**changes), self.principal, self.db)
+
+    def test_completion_persists_both_without_changing_clinical_result(self):
+        self.update(status="completed", evidence="Visita realizada")
+        task_id = self.task.id
+        self.db.close(); self.db = Session(self.engine)
+        event = self.db.get(ReproductionEvent, "event")
+        task = self.db.get(OperationalTask, task_id)
+        self.assertEqual(event.metadata_json[KEY]["status"], task.status)
+        self.assertEqual(event.metadata_json[KEY]["authenticated_user_id"], "authenticated")
+        self.assertEqual(event.metadata_json["other"], 1)
+        self.assertEqual(event.reproductive_status, "awaiting_diagnosis")
+        self.assertEqual(event.expected_date.date(), EXPECTED.date())
+        self.assertEqual(task.completed_at.date(), datetime.now(UTC).date())
+
+    def test_cancel_requires_reason_and_preserves_forecast(self):
+        with self.assertRaises(HTTPException) as raised:
+            self.update(status="cancelled")
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertEqual(self.task.status, "open")
+        self.assertNotIn(KEY, self.event.metadata_json)
+        self.update(status="cancelled", evidence="Exame reagendado pelo veterinário")
+        self.assertEqual(self.event.metadata_json[KEY]["status"], "cancelled")
+        self.assertIsNone(self.task.completed_at)
+        self.assertEqual(self.task.due_at.date(), EXPECTED.date())
+
+    def test_terminal_protects_state_date_evidence_and_retry_author(self):
+        self.update(status="completed")
+        original = deepcopy(self.event.metadata_json)
+        evidence = self.task.evidence
+        self.principal.user.id = "second-user"
+        # Banco SQLite retorna datetime sem timezone; eco UTC equivalente é válido.
+        self.update(status="completed", due_at=EXPECTED)
+        self.assertEqual(self.event.metadata_json, original)
+        self.assertEqual(self.task.evidence, evidence)
+        for change in [{"status": "open"}, {"status": "cancelled", "evidence": "Outro"},
+                {"due_at": None}, {"due_at": NOW}, {"evidence": "Substituir auditoria"}]:
+            with self.subTest(change=change), self.assertRaises(HTTPException) as raised:
+                self.update(**change)
+            self.assertEqual(raised.exception.status_code, 409)
+            self.db.rollback()
+            self.assertEqual(self.task.status, "completed")
+            self.assertEqual(self.event.metadata_json, original)
+
+    def test_identical_retry_preserves_evidence_and_audit(self):
+        for state in ["completed", "cancelled"]:
+            with self.subTest(state=state):
+                # Cada subcaso usa uma transação independente, sem arquivos.
+                self.task.status = "open"; self.task.evidence = ""
+                self.event.metadata_json = {"other": 1}; self.db.commit()
+                self.update(status=state, evidence="Visita realizada")
+                audit = deepcopy(self.event.metadata_json)
+                evidence = self.task.evidence
+                self.update(status=state, evidence="Visita realizada")
+                self.assertEqual(self.event.metadata_json, audit)
+                self.assertEqual(self.task.evidence, evidence)
+
+    def test_permission_required_to_change_return_not_title(self):
+        self.principal.permissions = {"herd.write"}
+        for change in [{"status": "completed"}, {"due_at": NOW}, {"evidence": "test"}]:
+            with self.assertRaises(HTTPException) as raised:
+                self.update(**change)
+            self.assertEqual(raised.exception.status_code, 403)
+        self.update(title="Título autorizado")
+        self.assertNotIn(KEY, self.event.metadata_json)
+        self.assertEqual(self.task.title, "Título autorizado")
+
+    def test_open_reschedule_updates_source_without_auto_resolution(self):
+        self.update(due_at=NOW)
+        self.assertEqual(self.event.expected_date.date(), NOW.date())
+        self.assertEqual(self.task.due_at.date(), NOW.date())
+        self.assertNotIn(KEY, self.event.metadata_json)
+        with self.assertRaises(HTTPException):
+            self.update(status="completed", due_at=EXPECTED)
+        self.assertEqual(self.task.status, "open")
+        with self.assertRaises(HTTPException):
+            self.update(due_at=datetime(2026, 8, 1, tzinfo=UTC))
+        self.assertEqual(self.event.expected_date.date(), NOW.date())
+
+    def test_missing_or_foreign_source_refused_without_mutation(self):
+        self.event.company_id = "foreign"; self.db.commit()
+        with self.assertRaises(HTTPException) as raised:
+            self.update(status="completed")
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertEqual(self.task.status, "open")
+        self.task.company_id = "foreign"; self.db.commit()
+        with self.assertRaises(HTTPException) as raised:
+            self.update(title="Intrusão")
+        self.assertEqual(raised.exception.status_code, 404)
+
+    def test_duplicate_cannot_close_source(self):
+        duplicate = OperationalTask(id="duplicate", tenant_id="tenant", company_id="company",
+            farm_id="farm", source_type="reproduction_event", source_id="event", title="Duplicada",
+            created_at=datetime(2030, 1, 1), status="cancelled")
+        self.db.add(duplicate); self.db.commit()
+        with self.assertRaises(HTTPException) as raised:
+            update_task("duplicate", OperationalTaskUpdateRequest(status="completed"), self.principal, self.db)
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertNotIn(KEY, self.event.metadata_json)
+
+    def test_legacy_closed_title_edit_does_not_invent_resolution(self):
+        self.task.status = "completed"; self.db.commit()
+        self.update(title="Conferir retorno antigo")
+        self.assertNotIn(KEY, self.event.metadata_json)
+        with self.assertRaises(HTTPException):
+            self.update(status="cancelled", evidence="Outro motivo")
+
+    def test_unlinked_manual_task_keeps_existing_behavior(self):
+        self.task.source_type = "manual"; self.task.source_id = ""; self.db.commit()
+        self.principal.permissions = {"herd.write"}
+        self.update(status="completed")
+        self.assertEqual(self.task.status, "completed")
+        self.assertNotIn(KEY, self.event.metadata_json)
+
+    def test_reproduction_refuses_conflicting_legacy_closure(self):
+        self.task.status = "cancelled"; self.db.commit()
+        with self.assertRaises(ValueError):
+            ensure_task_resolution_compatible([self.task], validate(metadata()))
+        ensure_task_resolution_compatible([self.task], validate(metadata("cancelled")))
+        self.assertEqual(self.task.status, "cancelled")
+
 class RouteTests(unittest.TestCase):
     def test_history_advertises_contract_without_changing_records(self):
         response = Response()
@@ -141,7 +293,7 @@ class RouteTests(unittest.TestCase):
             result="não prenhe", pregnancy_days=0)
         task = SimpleNamespace(status="open", completed_at=None, evidence="", due_at=EXPECTED)
         commits = []
-        db = SimpleNamespace(scalar=lambda query: item, flush=lambda: None,
+        db = SimpleNamespace(scalar=lambda query: item, scalars=lambda query: SimpleNamespace(all=lambda: []), flush=lambda: None,
             commit=lambda: commits.append((item.metadata_json[KEY]["status"], task.status)), refresh=lambda item: None)
         principal = SimpleNamespace(user=SimpleNamespace(id="user"), company=SimpleNamespace(id="company"))
         animal = SimpleNamespace(id="cow", farm_id="farm", name="Matriz", tag="1")
@@ -161,5 +313,19 @@ class RouteTests(unittest.TestCase):
                 update_reproduction_event("cow", "event", ReproductionEventUpdateRequest(metadata_json={}), principal, db)
         self.assertEqual(raised.exception.status_code, 409)
         self.assertEqual(item.metadata_json[KEY]["status"], "completed")
+
+    def test_conflicting_task_rejected_before_event_mutation(self):
+        item = SimpleNamespace(id="event", occurred_at=ORIGIN, expected_date=EXPECTED, metadata_json={})
+        task = SimpleNamespace(status="cancelled")
+        db = SimpleNamespace(scalar=lambda query: item,
+            scalars=lambda query: SimpleNamespace(all=lambda: [task]),
+            flush=lambda: self.fail("Não deveria gravar"))
+        principal = SimpleNamespace(user=SimpleNamespace(id="user"), company=SimpleNamespace(id="company"))
+        with patch("app.routers.livestock._animal", return_value=SimpleNamespace(id="cow", farm_id="farm")):
+            with self.assertRaises(HTTPException) as raised:
+                update_reproduction_event("cow", "event", ReproductionEventUpdateRequest(metadata_json=metadata()), principal, db)
+        self.assertEqual(raised.exception.status_code, 409)
+        self.assertEqual(item.metadata_json, {})
+        self.assertEqual(task.status, "cancelled")
 
 if __name__ == "__main__": unittest.main(verbosity=2)

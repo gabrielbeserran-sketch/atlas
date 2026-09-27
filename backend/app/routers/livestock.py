@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.services.concurrency import advisory_transaction_lock
-from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task
+from app.services.reproduction_return_resolution import validate_resolution, apply_resolution_to_task, ensure_task_resolution_compatible
 
 from ..authz import Principal, get_principal, require_permission
 from ..database import get_db
@@ -246,7 +246,8 @@ def _sync_operational_task(
                 OperationalTask.source_type == source_type,
                 OperationalTask.source_id == source_id,
             )
-            .order_by(OperationalTask.created_at.asc())
+            .order_by(OperationalTask.created_at.asc(), OperationalTask.id.asc())
+            .with_for_update()
         ).all()
     )
     task = tasks[0] if tasks else None
@@ -279,7 +280,7 @@ def _sync_operational_task(
     task.description = description
     task.priority = priority
     task.due_at = due_at
-    if task.status == "cancelled":
+    if task.status == "cancelled" and source_type != "reproduction_event":
         task.status = "open"
     return task
 
@@ -2115,6 +2116,14 @@ def update_reproduction_event(
             expected_at=changes.get("expected_date", item.expected_date),
             user_id=principal.user.id,
         )
+        if changes["metadata_json"].get("atlas_return_resolution"):
+            source_tasks = db.scalars(select(OperationalTask).where(
+                OperationalTask.company_id == principal.company.id,
+                OperationalTask.farm_id == animal.farm_id,
+                OperationalTask.source_type == "reproduction_event",
+                OperationalTask.source_id == item.id,
+            ).order_by(OperationalTask.created_at.asc(), OperationalTask.id.asc()).with_for_update()).all()
+            ensure_task_resolution_compatible(source_tasks[:1], changes["metadata_json"])
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     for field, value in changes.items():

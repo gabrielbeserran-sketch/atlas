@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from ..authz import Principal, require_permission
 from ..database import get_db
 from ..services.audit import record_audit
+from ..services.reproduction_return_resolution import resolution_from_task, apply_resolution_to_task
 from ..business_models import AtlasActionPlanItem
 from ..models import (
     AnimalMovement,
@@ -316,7 +317,42 @@ def update_task(
     if task is None or task.company_id != principal.company.id:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
     _farm_allowed(principal, task.farm_id)
+    reproduction_event = None
+    reproduction_metadata = None
+    if task.source_type == "reproduction_event" and task.source_id:
+        # Mesma ordem de locks da rota Reprodução: evento, depois tarefa.
+        reproduction_event = db.scalar(select(ReproductionEvent).where(
+            ReproductionEvent.id == task.source_id,
+            ReproductionEvent.company_id == principal.company.id,
+            ReproductionEvent.farm_id == task.farm_id,
+        ).with_for_update().execution_options(populate_existing=True))
+        if reproduction_event is None:
+            raise HTTPException(status_code=409, detail="Evento de origem não encontrado; nenhuma alteração foi salva.")
+        task = db.scalar(select(OperationalTask).where(
+            OperationalTask.id == task_id,
+            OperationalTask.company_id == principal.company.id,
+        ).with_for_update().execution_options(populate_existing=True))
+        if task is None or task.source_id != reproduction_event.id or task.farm_id != reproduction_event.farm_id:
+            raise HTTPException(status_code=409, detail="Vínculo da tarefa mudou; atualize a Agenda.")
+        primary_task = db.scalar(select(OperationalTask).where(
+            OperationalTask.company_id == principal.company.id,
+            OperationalTask.farm_id == task.farm_id,
+            OperationalTask.source_type == "reproduction_event",
+            OperationalTask.source_id == task.source_id,
+        ).order_by(OperationalTask.created_at.asc(), OperationalTask.id.asc()).limit(1))
+        if primary_task is None or primary_task.id != task.id:
+            raise HTTPException(status_code=409, detail="Tarefa duplicada histórica; use o retorno principal na Agenda.")
     changes = payload.model_dump(exclude_unset=True)
+    if reproduction_event is not None:
+        if {"status", "due_at", "evidence"}.intersection(changes) and "reproduction.write" not in principal.permissions:
+            raise HTTPException(status_code=403, detail="Alterar este retorno exige permissão de escrita em Reprodução.")
+        try:
+            reproduction_metadata = resolution_from_task(reproduction_event, task, changes, user_id=principal.user.id)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if (reproduction_event.metadata_json or {}).get("atlas_return_resolution") and "evidence" in changes:
+            # Retry com a evidência original não apaga o marcador auditável já salvo.
+            changes["evidence"] = task.evidence
     source_backed = bool(task.source_id) and task.source_type in {
         "reproduction_event", "health_event", "consultancy_action"
     }
@@ -340,6 +376,10 @@ def update_task(
         task.completed_at = datetime.now(timezone.utc)
     elif task.status != "completed":
         task.completed_at = None
+
+    if reproduction_event is not None:
+        reproduction_event.metadata_json = reproduction_metadata
+        apply_resolution_to_task(task, reproduction_metadata)
 
     if task.source_type == "consultancy_action" and task.source_id:
         action = db.scalar(
@@ -393,15 +433,7 @@ def update_task(
 
     if source_backed and due_at_changed:
         if task.source_type == "reproduction_event":
-            event = db.scalar(
-                select(ReproductionEvent).where(
-                    ReproductionEvent.id == task.source_id,
-                    ReproductionEvent.company_id == principal.company.id,
-                    ReproductionEvent.farm_id == task.farm_id,
-                )
-            )
-            if event is not None:
-                event.expected_date = task.due_at
+            reproduction_event.expected_date = task.due_at
         elif task.source_type == "health_event":
             event = db.scalar(
                 select(HealthEvent).where(
