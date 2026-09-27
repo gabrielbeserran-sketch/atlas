@@ -27,6 +27,8 @@ class DairyReproductionIndicators {
   final int inseminationAttempts;
   final int confirmedPregnancies;
   final double? averageDryPeriodDays;
+  /// Legado: intervalo parto–primeira inseminação, não parto–concepção.
+  /// A definição real de período de serviço exige concepção vinculada.
   final double? averageServicePeriodDays;
   final double? averageAgeAtFirstCalvingDays;
   final double? pregnancyRateFromLatestDiagnosis;
@@ -96,9 +98,9 @@ class DairyReproductionIndicators {
   }
 }
 
-/// Calcula somente métricas cuja origem pode ser comprovada por animal e data.
-/// A taxa de prenhez, vacas secas e período de serviço exigem estados de lote
-/// ainda não registrados pelo Atlas e permanecem indisponíveis até essa etapa.
+/// Calcula resumos históricos por animal e data, separando ciclos de parto.
+/// Diagnósticos/inseminações não possuem vínculo de concepção neste modelo;
+/// as razões históricas não substituem homologação dos índices zootécnicos.
 class DairyReproductionIndicatorCalculator {
   const DairyReproductionIndicatorCalculator();
 
@@ -167,29 +169,48 @@ class DairyReproductionIndicatorCalculator {
       if (birth != null) {
         firstCalvingAges.add(calvings.first.difference(birth).inDays);
       }
+      final dryStarts =
+          events
+              .where((event) => event.type == 'Início do período seco')
+              .map((event) => _date(event.date))
+              .whereType<DateTime>()
+              .toList()
+            ..sort();
       final days = today.difference(calvings.last).inDays;
-      if (days >= 0) del.add(days);
-      final dryStarts = events
-          .where((event) => event.type == 'Início do período seco')
-          .map((event) => _date(event.date))
-          .whereType<DateTime>()
-          .toList();
-      for (final calving in calvings) {
+      final hasCurrentDryStart = dryStarts.any(
+        (date) => !date.isBefore(calvings.last),
+      );
+      if (days >= 0 && !hasCurrentDryStart) del.add(days);
+      for (var index = 0; index < calvings.length; index++) {
+        final calving = calvings[index];
+        final previous = index == 0 ? null : calvings[index - 1];
         final matches = dryStarts
-            .where((date) => !date.isAfter(calving))
+            .where(
+              (date) =>
+                  date.isBefore(calving) &&
+                  (previous == null || date.isAfter(previous)),
+            )
             .toList();
         if (matches.isNotEmpty) {
           dryPeriods.add(calving.difference(matches.last).inDays);
         }
       }
-      final services = events
-          .where((event) => event.isInsemination)
-          .map((event) => _date(event.date))
-          .whereType<DateTime>()
-          .toList();
-      for (final calving in calvings) {
+      final services =
+          events
+              .where((event) => event.isInsemination)
+              .map((event) => _date(event.date))
+              .whereType<DateTime>()
+              .toList()
+            ..sort();
+      for (var index = 0; index < calvings.length; index++) {
+        final calving = calvings[index];
+        final next = index + 1 < calvings.length ? calvings[index + 1] : null;
         final candidates = services
-            .where((date) => !date.isBefore(calving))
+            .where(
+              (date) =>
+                  !date.isBefore(calving) &&
+                  (next == null || date.isBefore(next)),
+            )
             .toList();
         if (candidates.isNotEmpty) {
           servicePeriods.add(candidates.first.difference(calving).inDays);
