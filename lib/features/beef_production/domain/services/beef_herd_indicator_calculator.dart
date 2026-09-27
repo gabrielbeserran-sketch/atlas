@@ -21,6 +21,7 @@ class BeefHerdIndicators {
     required this.mortalitiesWithoutCause,
     required this.mortalityRate,
     required this.mortalityByCause,
+    this.ambiguousAnimalRecords = 0,
   });
 
   final int activeAnimals;
@@ -28,7 +29,10 @@ class BeefHerdIndicators {
 
   /// Saídas comerciais datadas / rebanho exposto (ativo + saídas), em 12 meses.
   final double? offtakeRate;
-  final double commercialRevenue;
+
+  /// Soma dos valores positivos/finitos; nulo se ausentes ou não calculáveis.
+  /// Zero é reservado à ausência de saídas comerciais datadas na janela.
+  final double? commercialRevenue;
   final double? averageSaleValue;
 
   /// Idade média aproximada nas vendas datadas, em meses gregorianos médios.
@@ -46,6 +50,14 @@ class BeefHerdIndicators {
   final int mortalitiesWithoutCause;
   final double? mortalityRate;
   final Map<String, int> mortalityByCause;
+  final int ambiguousAnimalRecords;
+  bool get commercialRevenueIsPartial =>
+      commercialExitsWithValue > 0 &&
+      commercialExitsWithValue < commercialExits;
+  bool get hasUncalculableCommercialValues =>
+      (commercialExitsWithValue > 0 && commercialRevenue == null) ||
+      (commercialExitsWithValue > 0 && averageSaleValue == null) ||
+      (salesWithWeightAndValue > 0 && averageSalePricePerKg == null);
 
   String? get primaryMortalityCause {
     if (mortalityByCause.isEmpty) return null;
@@ -56,6 +68,16 @@ class BeefHerdIndicators {
 
   List<String> get dataQualityAlerts {
     final alerts = <String>[];
+    if (ambiguousAnimalRecords > 0) {
+      alerts.add(
+        '$ambiguousAnimalRecords registro(s) de animais com identificação ausente/repetida ficaram fora dos indicadores.',
+      );
+    }
+    if (hasUncalculableCommercialValues) {
+      alerts.add(
+        'Há valores comerciais fora do intervalo calculável; revise valores e pesos antes de usar os indicadores indisponíveis.',
+      );
+    }
     if (commercialExitsWithoutDate > 0) {
       alerts.add(
         '$commercialExitsWithoutDate venda(s) não têm data válida e ficaram fora dos indicadores de 12 meses.',
@@ -63,12 +85,12 @@ class BeefHerdIndicators {
     }
     if (salesWithoutValue > 0) {
       alerts.add(
-        '$salesWithoutValue venda(s) datada(s) não têm valor de venda.',
+        '$salesWithoutValue venda(s) datada(s) não têm valor de venda válido.',
       );
     }
     if (salesWithoutWeight > 0) {
       alerts.add(
-        '$salesWithoutWeight venda(s) datada(s) não têm peso para calcular R\$/kg.',
+        '$salesWithoutWeight venda(s) datada(s) não têm peso válido para calcular R\$/kg.',
       );
     }
     if (salesWithoutKnownAge > 0) {
@@ -99,8 +121,17 @@ class BeefHerdIndicatorCalculator {
   }) {
     final now = referenceDate ?? DateTime.now();
     final start = DateTime(now.year - 1, now.month, now.day);
-    final active = animals.where((animal) => animal.status == 'Ativo').length;
-    final allSold = animals
+    final ids = <String, int>{};
+    for (final animal in animals) {
+      ids.update(animal.id, (count) => count + 1, ifAbsent: () => 1);
+    }
+    final uniqueAnimals = animals
+        .where((animal) => animal.id.trim().isNotEmpty && ids[animal.id] == 1)
+        .toList();
+    final active = uniqueAnimals
+        .where((animal) => animal.status == 'Ativo')
+        .length;
+    final allSold = uniqueAnimals
         .where((animal) => animal.status == 'Vendido')
         .toList();
     final sold = allSold.where((animal) {
@@ -109,7 +140,7 @@ class BeefHerdIndicatorCalculator {
     }).toList();
     final exits = sold.length;
     final exposed = active + exits;
-    final allDead = animals
+    final allDead = uniqueAnimals
         .where((animal) => animal.status == 'Morto')
         .toList();
     final deadAnimals = allDead.where((animal) {
@@ -125,24 +156,28 @@ class BeefHerdIndicatorCalculator {
       mortalityByCause[cause] = (mortalityByCause[cause] ?? 0) + 1;
     }
     final mortalityExposed = active + mortalities;
-    final revenue = sold.fold<double>(
-      0,
-      (sum, animal) => sum + animal.saleValue,
-    );
     final salesWithValue = sold
-        .where((animal) => animal.saleValue > 0)
+        .where((animal) => animal.saleValue.isFinite && animal.saleValue > 0)
         .toList();
     final salesWithWeightAndValue = salesWithValue
-        .where((animal) => animal.weight > 0)
+        .where((animal) => animal.weight.isFinite && animal.weight > 0)
         .toList();
-    final totalSaleValueWithWeight = salesWithWeightAndValue.fold<double>(
+    final revenue = salesWithValue.fold<double>(
       0,
       (sum, animal) => sum + animal.saleValue,
     );
-    final totalSaleWeight = salesWithWeightAndValue.fold<double>(
-      0,
-      (sum, animal) => sum + animal.weight,
+    final meanValueWithWeight = _finiteMean(
+      salesWithWeightAndValue.map((animal) => animal.saleValue),
     );
+    final meanSaleWeight = _finiteMean(
+      salesWithWeightAndValue.map((animal) => animal.weight),
+    );
+    final pricePerKg =
+        meanValueWithWeight == null ||
+            meanSaleWeight == null ||
+            meanSaleWeight <= 0
+        ? null
+        : meanValueWithWeight / meanSaleWeight;
     final saleAgesInDays = <int>[];
     for (final animal in sold) {
       final birthDate = _date(animal.birthDate);
@@ -160,14 +195,14 @@ class BeefHerdIndicatorCalculator {
       activeAnimals: active,
       commercialExits: exits,
       offtakeRate: exposed == 0 ? null : exits / exposed * 100,
-      commercialRevenue: revenue,
-      averageSaleValue: salesWithValue.isEmpty
+      commercialRevenue: exits == 0
+          ? 0
+          : salesWithValue.isEmpty || !revenue.isFinite
           ? null
-          : salesWithValue.fold<double>(
-                  0,
-                  (sum, animal) => sum + animal.saleValue,
-                ) /
-                salesWithValue.length,
+          : revenue,
+      averageSaleValue: _finiteMean(
+        salesWithValue.map((animal) => animal.saleValue),
+      ),
       averageSaleAgeMonths: saleAgesInDays.isEmpty
           ? null
           : saleAgesInDays.reduce((a, b) => a + b) /
@@ -180,11 +215,14 @@ class BeefHerdIndicatorCalculator {
       commercialExitsWithoutDate: allSold
           .where((animal) => _date(animal.saleDate) == null)
           .length,
-      salesWithoutValue: sold.where((animal) => animal.saleValue <= 0).length,
-      salesWithoutWeight: sold.where((animal) => animal.weight <= 0).length,
-      averageSalePricePerKg: totalSaleWeight == 0
-          ? null
-          : totalSaleValueWithWeight / totalSaleWeight,
+      salesWithoutValue: exits - salesWithValue.length,
+      salesWithoutWeight: sold
+          .where((animal) => !animal.weight.isFinite || animal.weight <= 0)
+          .length,
+      averageSalePricePerKg:
+          pricePerKg != null && pricePerKg.isFinite && pricePerKg > 0
+          ? pricePerKg
+          : null,
       mortalities: mortalities,
       mortalitiesWithoutDate: allDead
           .where((animal) => _date(animal.deathDate) == null)
@@ -196,7 +234,21 @@ class BeefHerdIndicatorCalculator {
           ? null
           : mortalities / mortalityExposed * 100,
       mortalityByCause: mortalityByCause,
+      ambiguousAnimalRecords: animals.length - uniqueAnimals.length,
     );
+  }
+
+  double? _finiteMean(Iterable<double> source) {
+    final values = source.toList();
+    if (values.isEmpty) return null;
+    final scale = values.reduce((a, b) => a > b ? a : b);
+    final mean =
+        scale *
+        values.fold<double>(
+          0,
+          (sum, value) => sum + (value / scale) / values.length,
+        );
+    return mean.isFinite && mean > 0 ? mean : null;
   }
 
   DateTime? _date(String value) {

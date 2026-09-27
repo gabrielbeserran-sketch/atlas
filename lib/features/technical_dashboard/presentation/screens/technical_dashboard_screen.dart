@@ -1045,8 +1045,14 @@ class _SummaryContent extends StatelessWidget {
                 '${summary.beefHerd.commercialExits}',
               ),
               (
-                'Receita bruta de vendas (12 meses)',
-                'R\$ ${summary.beefHerd.commercialRevenue.toStringAsFixed(2)}',
+                summary.beefHerd.commercialRevenueIsPartial
+                    ? 'Receita registrada de vendas (base parcial)'
+                    : 'Receita bruta de vendas (12 meses)',
+                summary.beefHerd.commercialRevenue == null
+                    ? summary.beefHerd.commercialExitsWithValue == 0
+                          ? 'Sem valores válidos'
+                          : 'Valores fora do intervalo calculável'
+                    : 'R\$ ${summary.beefHerd.commercialRevenue!.toStringAsFixed(2)}',
               ),
               (
                 'Valor médio por cabeça',
@@ -1065,17 +1071,23 @@ class _SummaryContent extends StatelessWidget {
                 '${summary.beefHerd.salesWithKnownAge}/${summary.beefHerd.commercialExits}',
               ),
               (
-                'Vendas com valor registrado',
+                'Vendas com valor válido',
                 '${summary.beefHerd.commercialExitsWithValue}/${summary.beefHerd.commercialExits}',
               ),
               (
-                'Preço médio realizado por kg',
+                summary.beefHerd.salesWithWeightAndValue > 0 &&
+                        summary.beefHerd.salesWithWeightAndValue <
+                            summary.beefHerd.commercialExits
+                    ? 'Preço médio por kg (base parcial)'
+                    : 'Preço médio realizado por kg',
                 summary.beefHerd.averageSalePricePerKg == null
-                    ? 'Informe peso e valor da venda'
+                    ? summary.beefHerd.salesWithWeightAndValue > 0
+                          ? 'Valores fora do intervalo calculável'
+                          : 'Informe peso e valor válidos da venda'
                     : 'R\$ ${summary.beefHerd.averageSalePricePerKg!.toStringAsFixed(2)}/kg',
               ),
               (
-                'Vendas com peso e valor',
+                'Vendas com peso e valor válidos',
                 '${summary.beefHerd.salesWithWeightAndValue}/${summary.beefHerd.commercialExits}',
               ),
               (
