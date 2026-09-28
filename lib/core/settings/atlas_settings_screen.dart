@@ -184,14 +184,18 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
                             Text(
                               plan.hasUnlimitedData
                                   ? 'Dados ilimitados'
-                                  : '${plan.limits['monthly_credits'] ?? 0} créditos/mês',
+                                  : plan.monthlyCredits != null
+                                  ? '${plan.monthlyCredits} créditos/mês'
+                                  : 'Limites não confirmados',
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          plan.consultancyIncluded
+                          plan.hasActiveConsultancy
                               ? 'Inclui consultoria e gestão de equipes com acessos por função.'
+                              : plan.consultancyIncluded
+                              ? 'Consultoria prevista no plano; ativação ainda não confirmada.'
                               : 'Os módulos liberados dependem deste plano e do perfil de cada colaborador.',
                         ),
                         if (plan.features.isNotEmpty) ...[

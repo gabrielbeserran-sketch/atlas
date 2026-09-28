@@ -1,0 +1,12 @@
+# Assinaturas e equipe — estado verificado e gates de ativação
+
+Auditoria local em 28/09/2026. Isto **não** é um aceite comercial nem altera permissões já usadas em produção.
+
+| Tema | Estado observado no código | Gate antes de anunciar como pronto |
+|---|---|---|
+| Três ofertas | `backend/app/routers/saas_growth.py` descreve Essencial (100 créditos/100 entradas), Profissional (dados ilimitados) e Consultoria (inclui consultoria/equipe). A cobrança é externa ao catálogo. | Definir contratação, cobrança, mudança/cancelamento, franquia/crédito e tratamento de planos legados; testar limite no servidor, não apenas na interface. |
+| Papéis | `backend/app/authz.py` concede tudo a dono/admin. Gestor possui amplas permissões pecuárias. Operador ainda tem leitura/escrita de rebanho, reprodução, sanidade e nutrição, além de sincronização; não é um perfil “peão mínimo” comprovado. | Definir com o responsável quais tarefas o peão executa; migrar permissões existentes sem retirar acesso operacional necessário; testar rotas e menu por papel. |
+| Consultoria | `AtlasHomeShell` mostra o módulo com `farms.read`; `backend/app/routers/consultancy.py` protege contato com `farms.read`/`farms.update`. Esses pontos **não** exigem assinatura Consultoria. O retorno de `/saas-growth/subscriptions/current` é exibido em Configurações, mas não governa essas rotas. | Exigir direito ao recurso no servidor, depois usar o mesmo direito confirmado/copiado no menu offline. Testar Essencial/Profissional/Consultoria × dono/gestor/operador e troca de empresa. |
+| Estado da assinatura | Sem linha de assinatura, o servidor pode recorrer a `company.subscription_plan` e responder `not_configured`. Um código desconhecido não comprova dados ilimitados. | Decidir regra para contas antigas e estados pendentes/inativos antes de aplicar bloqueios em produção. A interface agora mostra “Limites não confirmados” quando o contrato está incompleto. |
+
+Sequência segura: (1) decisão sobre catálogo e legado; (2) contrato de entitlement no backend e testes isolados/rollback; (3) limites e papéis por rota; (4) cópia de direitos por empresa para menu offline, sem bloquear dados já salvos por falha de rede; (5) ensaio autenticado com contas de cada plano e papel; (6) ativação comercial. Um módulo escondido no menu, sozinho, **não** protege a API. Alterar os papéis atuais sem migração também pode interromper operações de trabalhadores existentes.

@@ -11,6 +11,10 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 class _SubscriptionApi implements AtlasEnterpriseApiClient {
+  _SubscriptionApi([this.payload = const <String, dynamic>{}]);
+
+  final Map<String, dynamic> payload;
+
   @override
   Future<Map<String, dynamic>> request(
     String method,
@@ -18,7 +22,7 @@ class _SubscriptionApi implements AtlasEnterpriseApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
     bool authenticated = true,
-  }) async => const <String, dynamic>{};
+  }) async => payload;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -72,5 +76,34 @@ void main() {
     expect(controller.offlinePinConfigured, isTrue);
     expect(find.text('PIN offline configurado'), findsOneWidget);
     expect(find.text('PIN offline salvo neste dispositivo.'), findsOneWidget);
+  });
+
+  testWidgets('plano sem limites não anuncia franquia ou ilimitado', (
+    tester,
+  ) async {
+    final controller = AtlasSessionController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AtlasSessionScope(
+          controller: controller,
+          child: AtlasSettingsScreen(
+            subscriptionService: AtlasSubscriptionService(
+              api: _SubscriptionApi({
+                'code': 'trial',
+                'name': 'Plano a confirmar',
+                'status': 'not_configured',
+                'limits': <String, dynamic>{},
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Limites não confirmados'), findsOneWidget);
+    expect(find.text('Dados ilimitados'), findsNothing);
+    expect(find.text('0 créditos/mês'), findsNothing);
   });
 }

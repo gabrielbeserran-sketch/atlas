@@ -15,7 +15,21 @@ class AtlasSubscriptionProfile {
   final List<String> features;
   final bool consultancyIncluded;
 
-  bool get hasUnlimitedData => limits['data_entries'] == null;
+  bool get isActive => status == 'active';
+
+  bool get hasActiveConsultancy => isActive && consultancyIncluded;
+
+  bool get hasUnlimitedData =>
+      isActive &&
+      const {'professional', 'consultancy'}.contains(code) &&
+      limits.containsKey('data_entries') &&
+      limits['data_entries'] == null;
+
+  int? get monthlyCredits {
+    if (!isActive) return null;
+    final value = limits['monthly_credits'];
+    return value is int && value >= 0 ? value : null;
+  }
 
   factory AtlasSubscriptionProfile.fromMap(Map<String, dynamic> map) {
     final rawLimits = map['limits'];
