@@ -44,6 +44,7 @@ class _AnimalReproductionListScreenState
   List<AnimalReproductionData> records = [];
   bool isLoading = true;
   bool isRefreshing = false;
+  bool hasCachedSnapshot = false;
   String? loadError;
   int _viewRevision = 0;
   bool isResolvingReturn = false;
@@ -324,9 +325,9 @@ class _AnimalReproductionListScreenState
 
   Future<void> loadRecords() async {
     final farmId = widget.farm.id ?? '';
-    List<AnimalReproductionData> savedRecords;
+    ReproductionLocalSnapshot snapshot;
     try {
-      savedRecords = await storage.loadCachedRecords(
+      snapshot = await storage.loadCachedSnapshot(
         farmId: farmId,
         animalId: widget.animal.id,
       );
@@ -356,11 +357,13 @@ class _AnimalReproductionListScreenState
     }
 
     setState(() {
-      records = savedRecords;
+      records = snapshot.records;
+      hasCachedSnapshot = snapshot.available;
       pendingReturns = savedPending;
       sortRecords();
       isLoading = false;
       isRefreshing = true;
+      loadError = null;
     });
     final revision = _viewRevision;
     try {
@@ -371,14 +374,17 @@ class _AnimalReproductionListScreenState
       if (!mounted || revision != _viewRevision) return;
       setState(() {
         records = fresh;
+        hasCachedSnapshot = true;
         sortRecords();
         loadError = null;
       });
     } catch (_) {
       if (!mounted || revision != _viewRevision) return;
       setState(() {
-        loadError = savedRecords.isEmpty
+        loadError = !snapshot.available
             ? 'Sem conexão e sem histórico confirmado neste dispositivo.'
+            : snapshot.records.isEmpty
+            ? 'Sem conexão. A última leitura confirmou histórico vazio.'
             : 'Sem conexão. Exibindo a última cópia salva neste dispositivo.';
       });
     } finally {
@@ -596,7 +602,9 @@ class _AnimalReproductionListScreenState
                           child: Row(
                             children: [
                               Icon(
-                                loadError == null
+                                isRefreshing
+                                    ? Icons.cloud_sync_outlined
+                                    : loadError == null
                                     ? Icons.cloud_done_outlined
                                     : Icons.cloud_off_outlined,
                                 size: 20,
@@ -606,7 +614,9 @@ class _AnimalReproductionListScreenState
                                 child: Text(
                                   loadError ??
                                       (isRefreshing
-                                          ? 'Histórico local aberto. Atualizando em segundo plano…'
+                                          ? hasCachedSnapshot
+                                                ? 'Histórico local aberto. Atualizando em segundo plano…'
+                                                : 'Buscando histórico em segundo plano…'
                                           : 'Histórico atualizado com o servidor.'),
                                 ),
                               ),
@@ -790,7 +800,15 @@ class _AnimalReproductionListScreenState
                       ),
                       const SizedBox(height: 16),
                       if (records.isEmpty)
-                        const EmptyReproductionMessage()
+                        isRefreshing && !hasCachedSnapshot
+                            ? const Text(
+                                'Aguardando a primeira leitura confirmada.',
+                              )
+                            : !hasCachedSnapshot
+                            ? const Text(
+                                'Nenhuma cópia confirmada neste dispositivo.',
+                              )
+                            : const EmptyReproductionMessage()
                       else
                         ...records.map(
                           (record) => Padding(

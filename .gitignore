@@ -159,6 +159,7 @@ data/attachments/
 /release/windows/reproducao-retornos-offline-20260928/
 /release/windows/reproducao-cache-local-20260928/
 /release/windows/campo-reproducao-agrupado-20260928/
+/release/windows/reproducao-enterprise-local-20260928/
 dist/
 *.apk
 *.aab

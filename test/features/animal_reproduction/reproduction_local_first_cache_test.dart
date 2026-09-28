@@ -8,6 +8,7 @@ import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_
 import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_return_queue.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction_enterprise/presentation/screens/animal_reproduction_enterprise_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +19,16 @@ class _Http extends AtlasHttpClient {
   Completer<void>? gate;
   bool offline = false;
   int reads = 0;
+  List<Map<String, dynamic>> rows = [
+    {
+      'id': 'event-1',
+      'animal_id': 'animal-1',
+      'event_type': 'iatf',
+      'occurred_at': '2026-09-01',
+      'expected_at': '2026-10-01',
+      'metadata_json': <String, dynamic>{},
+    },
+  ];
 
   @override
   Future<AtlasHttpResponse> send(
@@ -32,20 +43,7 @@ class _Http extends AtlasHttpClient {
     reads++;
     if (offline) throw StateError('offline');
     await gate?.future;
-    return const AtlasHttpResponse(
-      statusCode: 200,
-      body: [
-        {
-          'id': 'event-1',
-          'animal_id': 'animal-1',
-          'event_type': 'iatf',
-          'occurred_at': '2026-09-01',
-          'expected_at': '2026-10-01',
-          'metadata_json': {},
-        },
-      ],
-      headers: {},
-    );
+    return AtlasHttpResponse(statusCode: 200, body: rows, headers: const {});
   }
 }
 
@@ -103,6 +101,31 @@ class _OutOfOrderHttp extends AtlasHttpClient {
     );
   }
 }
+
+const _farm = FarmData(
+  id: 'farm',
+  name: 'Fazenda',
+  city: 'Cidade',
+  state: 'GO',
+  animals: 1,
+  area: 10,
+);
+const _group = HerdGroupData(
+  name: 'Lote',
+  category: 'Vacas',
+  capacity: 10,
+  paddock: 'A',
+);
+const _animal = AnimalData(
+  id: 'animal-1',
+  tag: '001',
+  name: 'Aurora',
+  sex: 'Fêmea',
+  breed: 'Nelore',
+  birthDate: '01/01/2020',
+  weight: 400,
+  status: 'Ativo',
+);
 
 void main() {
   setUp(() {
@@ -366,5 +389,93 @@ void main() {
       )).single.notes,
       'segunda',
     );
+  });
+
+  test('snapshot ausente difere de leitura confirmada vazia', () async {
+    final http = _Http()..rows = [];
+    final storage = AnimalReproductionStorageService(
+      httpClient: http,
+      scopeProvider: (_) async =>
+          const ReturnQueueScope('tenant', 'company', 'farm', 'user'),
+    );
+    final missing = await storage.loadCachedSnapshot(
+      farmId: 'farm',
+      animalId: 'animal-1',
+    );
+    expect(missing.available, isFalse);
+    expect(missing.records, isEmpty);
+    await storage.refreshRecords(farmId: 'farm', animalId: 'animal-1');
+    http.offline = true;
+    final confirmedEmpty = await storage.loadCachedSnapshot(
+      farmId: 'farm',
+      animalId: 'animal-1',
+    );
+    expect(confirmedEmpty.available, isTrue);
+    expect(confirmedEmpty.records, isEmpty);
+  });
+
+  testWidgets('Enterprise abre cópia local antes da resposta remota', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1600, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final http = _Http();
+    final storage = AnimalReproductionStorageService(
+      httpClient: http,
+      scopeProvider: (_) async =>
+          const ReturnQueueScope('tenant', 'company', 'farm', 'user'),
+    );
+    await storage.refreshRecords(farmId: 'farm', animalId: 'animal-1');
+    http.gate = Completer<void>();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalReproductionEnterpriseScreen(
+          farm: _farm,
+          group: _group,
+          animal: _animal,
+          storage: storage,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(find.textContaining('Histórico local aberto'), findsOneWidget);
+    expect(find.text('Reprodução de Aurora'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('iatf'), 500);
+    expect(find.text('iatf'), findsOneWidget);
+    http.gate!.complete();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(find.textContaining('Histórico atualizado'), findsOneWidget);
+  });
+
+  testWidgets('Enterprise não inventa zeros sem cópia nem servidor', (
+    tester,
+  ) async {
+    final storage = AnimalReproductionStorageService(
+      httpClient: _Http()..offline = true,
+      scopeProvider: (_) async =>
+          const ReturnQueueScope('tenant', 'company', 'farm', 'user'),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalReproductionEnterpriseScreen(
+          farm: _farm,
+          group: _group,
+          animal: _animal,
+          storage: storage,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(find.textContaining('sem cópia confirmada'), findsOneWidget);
+    expect(
+      find.text('Sem base reprodutiva confirmada neste dispositivo.'),
+      findsOneWidget,
+    );
+    expect(find.text('Nenhum registro reprodutivo.'), findsNothing);
   });
 }

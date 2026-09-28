@@ -9,6 +9,16 @@ import 'package:projeto_atlas/features/animal_reproduction/data/services/reprodu
 import 'package:projeto_atlas/features/enterprise_platform/data/services/atlas_enterprise_remote_auth_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class ReproductionLocalSnapshot {
+  const ReproductionLocalSnapshot({
+    required this.records,
+    required this.available,
+  });
+
+  final List<AnimalReproductionData> records;
+  final bool available;
+}
+
 class AnimalReproductionStorageService {
   AnimalReproductionStorageService({
     AtlasHttpClient? httpClient,
@@ -296,7 +306,13 @@ class AnimalReproductionStorageService {
   Future<List<AnimalReproductionData>> loadCachedRecords({
     required String farmId,
     required String animalId,
-  }) async => _loadLocal(await _scopedKey(farmId, animalId));
+  }) async =>
+      (await loadCachedSnapshot(farmId: farmId, animalId: animalId)).records;
+
+  Future<ReproductionLocalSnapshot> loadCachedSnapshot({
+    required String farmId,
+    required String animalId,
+  }) async => _loadLocalSnapshot(await _scopedKey(farmId, animalId));
 
   Future<List<AnimalReproductionData>> refreshRecords({
     required String farmId,
@@ -587,19 +603,26 @@ class AnimalReproductionStorageService {
         .toList();
   }
 
-  Future<List<AnimalReproductionData>> _loadLocal(String key) async {
+  Future<List<AnimalReproductionData>> _loadLocal(String key) async =>
+      (await _loadLocalSnapshot(key)).records;
+
+  Future<ReproductionLocalSnapshot> _loadLocalSnapshot(String key) async {
     final raw = await _preferences.getString(key);
-    if (raw == null || raw.isEmpty) return <AnimalReproductionData>[];
+    if (raw == null || raw.isEmpty) {
+      return const ReproductionLocalSnapshot(records: [], available: false);
+    }
     try {
-      return (AtlasTextNormalizer.normalize(jsonDecode(raw)) as List<dynamic>)
-          .map(
-            (item) => AnimalReproductionData.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
-          .toList();
+      final records =
+          (AtlasTextNormalizer.normalize(jsonDecode(raw)) as List<dynamic>)
+              .map(
+                (item) => AnimalReproductionData.fromMap(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList();
+      return ReproductionLocalSnapshot(records: records, available: true);
     } catch (_) {
-      return <AnimalReproductionData>[];
+      return const ReproductionLocalSnapshot(records: [], available: false);
     }
   }
 
