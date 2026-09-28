@@ -65,6 +65,32 @@ class ReproductionOverviewSnapshot {
   final DateTime? confirmedAt;
 }
 
+enum ReproductionOverviewLoadPhase { farms, groups, animals, histories, saving }
+
+class ReproductionOverviewLoadProgress {
+  const ReproductionOverviewLoadProgress({
+    required this.phase,
+    required this.completed,
+    required this.total,
+  });
+
+  final ReproductionOverviewLoadPhase phase;
+  final int completed;
+  final int total;
+
+  String get label => switch (phase) {
+    ReproductionOverviewLoadPhase.farms => 'Consultando fazendas autorizadas…',
+    ReproductionOverviewLoadPhase.groups =>
+      'Consultando lotes: $completed/$total fazenda(s).',
+    ReproductionOverviewLoadPhase.animals =>
+      'Consultando animais: $completed/$total lote(s).',
+    ReproductionOverviewLoadPhase.histories =>
+      'Consultando históricos: $completed/$total fêmea(s).',
+    ReproductionOverviewLoadPhase.saving =>
+      'Conferindo e salvando a visão completa…',
+  };
+}
+
 /// Snapshot completo da visão geral, separado dos caches legados por nome.
 /// Uma falha em qualquer lote/animal/evento mantém a última cópia intacta.
 class ReproductionOverviewSnapshotService {
@@ -213,11 +239,21 @@ class ReproductionOverviewSnapshotService {
     }
   }
 
-  Future<ReproductionOverviewSnapshot> refresh({FarmData? selectedFarm}) async {
+  Future<ReproductionOverviewSnapshot> refresh({
+    FarmData? selectedFarm,
+    void Function(ReproductionOverviewLoadProgress progress)? onProgress,
+  }) async {
     final initial = await _session();
     final key = _key(initial);
     final revision = (_refreshRevisions[key] ?? 0) + 1;
     _refreshRevisions[key] = revision;
+    onProgress?.call(
+      const ReproductionOverviewLoadProgress(
+        phase: ReproductionOverviewLoadPhase.farms,
+        completed: 0,
+        total: 0,
+      ),
+    );
     final remoteFarms = await _farmsProvider();
     if (_refreshRevisions[key] != revision) {
       throw StateError('Atualização mais recente já iniciada.');
@@ -230,8 +266,16 @@ class ReproductionOverviewSnapshotService {
       throw StateError('Fazenda não autorizada nesta sessão.');
     }
 
-    final jobs = <({FarmData farm, HerdGroupData group, AnimalData animal})>[];
-    for (final farm in permitted) {
+    final farmGroups = <({FarmData farm, HerdGroupData group})>[];
+    onProgress?.call(
+      ReproductionOverviewLoadProgress(
+        phase: ReproductionOverviewLoadPhase.groups,
+        completed: 0,
+        total: permitted.length,
+      ),
+    );
+    for (var farmIndex = 0; farmIndex < permitted.length; farmIndex++) {
+      final farm = permitted[farmIndex];
       final farmId = farm.id!;
       final groups = await _groupsProvider(farmId);
       if (_refreshRevisions[key] != revision) {
@@ -241,25 +285,63 @@ class ReproductionOverviewSnapshotService {
         if (group.id.trim().isEmpty) {
           throw StateError('Lote sem identidade remota; cópia não atualizada.');
         }
-        final animals = await _animalsProvider(farmId, group.id);
-        if (_refreshRevisions[key] != revision) {
-          throw StateError('Atualização mais recente já iniciada.');
-        }
-        for (final animal in animals) {
-          final sex = animal.sex.trim().toLowerCase();
-          if (sex != 'fêmea' && sex != 'femea' && sex != 'female') continue;
-          if (animal.id.trim().isEmpty) {
-            throw StateError(
-              'Animal sem identidade remota; cópia não atualizada.',
-            );
-          }
-          jobs.add((farm: farm, group: group, animal: animal));
-        }
+        farmGroups.add((farm: farm, group: group));
       }
+      onProgress?.call(
+        ReproductionOverviewLoadProgress(
+          phase: ReproductionOverviewLoadPhase.groups,
+          completed: farmIndex + 1,
+          total: permitted.length,
+        ),
+      );
+    }
+
+    final jobs = <({FarmData farm, HerdGroupData group, AnimalData animal})>[];
+    onProgress?.call(
+      ReproductionOverviewLoadProgress(
+        phase: ReproductionOverviewLoadPhase.animals,
+        completed: 0,
+        total: farmGroups.length,
+      ),
+    );
+    for (var lotIndex = 0; lotIndex < farmGroups.length; lotIndex++) {
+      final pair = farmGroups[lotIndex];
+      final farm = pair.farm;
+      final group = pair.group;
+      final farmId = farm.id!;
+      final animals = await _animalsProvider(farmId, group.id);
+      if (_refreshRevisions[key] != revision) {
+        throw StateError('Atualização mais recente já iniciada.');
+      }
+      for (final animal in animals) {
+        final sex = animal.sex.trim().toLowerCase();
+        if (sex != 'fêmea' && sex != 'femea' && sex != 'female') continue;
+        if (animal.id.trim().isEmpty) {
+          throw StateError(
+            'Animal sem identidade remota; cópia não atualizada.',
+          );
+        }
+        jobs.add((farm: farm, group: group, animal: animal));
+      }
+      onProgress?.call(
+        ReproductionOverviewLoadProgress(
+          phase: ReproductionOverviewLoadPhase.animals,
+          completed: lotIndex + 1,
+          total: farmGroups.length,
+        ),
+      );
     }
 
     final results = List<ReproductionOverviewEntry?>.filled(jobs.length, null);
     var nextJob = 0;
+    var completedJobs = 0;
+    onProgress?.call(
+      ReproductionOverviewLoadProgress(
+        phase: ReproductionOverviewLoadPhase.histories,
+        completed: 0,
+        total: jobs.length,
+      ),
+    );
     Object? firstFailure;
     StackTrace? firstStack;
     Future<void> worker() async {
@@ -276,6 +358,19 @@ class ReproductionOverviewSnapshotService {
             animal: job.animal,
             records: records,
           );
+          completedJobs++;
+          if (_refreshRevisions[key] == revision &&
+              (completedJobs <= 4 ||
+                  completedJobs % 5 == 0 ||
+                  completedJobs == jobs.length)) {
+            onProgress?.call(
+              ReproductionOverviewLoadProgress(
+                phase: ReproductionOverviewLoadPhase.histories,
+                completed: completedJobs,
+                total: jobs.length,
+              ),
+            );
+          }
         } catch (error, stack) {
           firstFailure ??= error;
           firstStack ??= stack;
@@ -315,6 +410,13 @@ class ReproductionOverviewSnapshotService {
       throw StateError('Conta ou acesso à fazenda mudou durante a leitura.');
     }
     final confirmedAt = _now().toUtc();
+    onProgress?.call(
+      const ReproductionOverviewLoadProgress(
+        phase: ReproductionOverviewLoadPhase.saving,
+        completed: 0,
+        total: 1,
+      ),
+    );
     await _storeIfCurrent(
       key: key,
       revision: revision,

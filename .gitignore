@@ -162,6 +162,7 @@ data/attachments/
 /release/windows/reproducao-enterprise-local-20260928/
 /release/windows/reproducao-visao-offline-20260928/
 /release/windows/reproducao-visao-datada-20260928/
+/release/windows/reproducao-progresso-20260928/
 dist/
 *.apk
 *.aab

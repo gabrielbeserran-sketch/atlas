@@ -51,6 +51,7 @@ class _ReproductionOverviewScreenState
   bool isRefreshing = false;
   bool snapshotAvailable = false;
   DateTime? lastConfirmedAt;
+  ReproductionOverviewLoadProgress? loadProgress;
   String? loadError;
   int _loadRevision = 0;
   bool _createOpened = false;
@@ -263,6 +264,7 @@ class _ReproductionOverviewScreenState
         isLoading = !snapshotAvailable;
         isRefreshing = true;
         loadError = null;
+        loadProgress = null;
       });
     }
     try {
@@ -292,7 +294,14 @@ class _ReproductionOverviewScreenState
       setState(() {
         isLoading = false;
       });
-      final fresh = await overviewStorage.refresh(selectedFarm: widget.farm);
+      final fresh = await overviewStorage.refresh(
+        selectedFarm: widget.farm,
+        onProgress: (progress) {
+          if (mounted && revision == _loadRevision) {
+            setState(() => loadProgress = progress);
+          }
+        },
+      );
       if (!mounted || revision != _loadRevision) return;
       snapshotAvailable = true;
       lastConfirmedAt = fresh.confirmedAt;
@@ -309,6 +318,7 @@ class _ReproductionOverviewScreenState
         setState(() {
           isLoading = false;
           isRefreshing = false;
+          loadProgress = null;
         });
       }
     }
@@ -482,14 +492,15 @@ class _ReproductionOverviewScreenState
             ? const Center(child: CircularProgressIndicator())
             : !snapshotAvailable
             ? isRefreshing
-                  ? const Center(
+                  ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
                           Text(
-                            'Buscando a primeira visão reprodutiva completa…',
+                            loadProgress?.label ??
+                                'Buscando a primeira visão reprodutiva completa…',
                           ),
                         ],
                       ),
@@ -530,7 +541,15 @@ class _ReproductionOverviewScreenState
                                             ? 'Visão local aberta. Atualizando em segundo plano…'
                                             : 'Visão reprodutiva atualizada.'),
                                   ),
-                                  subtitle: Text(_snapshotDateLabel),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(_snapshotDateLabel),
+                                      if (isRefreshing && loadProgress != null)
+                                        Text(loadProgress!.label),
+                                    ],
+                                  ),
                                   trailing: isRefreshing
                                       ? const SizedBox(
                                           width: 18,

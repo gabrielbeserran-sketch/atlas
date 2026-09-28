@@ -217,6 +217,26 @@ void main() {
     expect(cached.confirmedAt, confirmed);
   });
 
+  test('progresso relata etapas reais sem publicar dados parciais', () async {
+    final fixture = _Fixture();
+    final updates = <ReproductionOverviewLoadProgress>[];
+    final snapshot = await fixture.create().refresh(onProgress: updates.add);
+    expect(snapshot.available, isTrue);
+    expect(updates.map((update) => update.phase).toList(), [
+      ReproductionOverviewLoadPhase.farms,
+      ReproductionOverviewLoadPhase.groups,
+      ReproductionOverviewLoadPhase.groups,
+      ReproductionOverviewLoadPhase.animals,
+      ReproductionOverviewLoadPhase.animals,
+      ReproductionOverviewLoadPhase.histories,
+      ReproductionOverviewLoadPhase.histories,
+      ReproductionOverviewLoadPhase.saving,
+    ]);
+    expect(updates[5].completed, 0);
+    expect(updates[6].completed, 1);
+    expect(updates[6].total, 1);
+  });
+
   test('cópia legada sem data continua legível sem inventar horário', () async {
     final fixture = _Fixture();
     final service = fixture.create();
@@ -260,7 +280,8 @@ void main() {
       },
       maxConcurrentRecordReads: 3,
     );
-    final pending = service.refresh();
+    final updates = <ReproductionOverviewLoadProgress>[];
+    final pending = service.refresh(onProgress: updates.add);
     await firstThreeStarted.future;
     expect(started, 3);
     expect(maximum, 3);
@@ -269,6 +290,13 @@ void main() {
     expect(snapshot.entries.length, 10);
     expect(started, 10);
     expect(maximum, 3);
+    final historyUpdates = updates
+        .where(
+          (update) => update.phase == ReproductionOverviewLoadPhase.histories,
+        )
+        .toList();
+    expect(historyUpdates.last.completed, 10);
+    expect(historyUpdates.length, lessThan(10));
     expect(snapshot.entries.map((entry) => entry.animal.id).toList(), [
       for (var index = 0; index < 10; index++) 'animal-$index',
     ]);
@@ -358,6 +386,7 @@ void main() {
       find.textContaining('Leitura completa confirmada em'),
       findsOneWidget,
     );
+    expect(find.text('Consultando fazendas autorizadas…'), findsOneWidget);
     fixture.gate!.complete();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 30));
@@ -398,5 +427,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 30));
     expect(find.textContaining('sem cópia completa'), findsOneWidget);
     expect(find.text('Fêmeas'), findsNothing);
+  });
+
+  testWidgets('primeira carga mostra etapa com GET ainda pendente', (
+    tester,
+  ) async {
+    final fixture = _Fixture()..gate = Completer<void>();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReproductionOverviewScreen(snapshotService: fixture.create()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(find.text('Consultando fazendas autorizadas…'), findsOneWidget);
+    expect(find.text('Fêmeas'), findsNothing);
+    fixture.gate!.complete();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
   });
 }
