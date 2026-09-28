@@ -157,6 +157,79 @@ void main() {
     expect(cached.entries.single.records.single.id, 'event-1');
   });
 
+  test('duplicidades na carteira não substituem a última cópia', () async {
+    final fixture = _Fixture();
+    final baseline = fixture.create();
+    await baseline.refresh();
+
+    for (final invalid in [
+      ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm, _farm],
+      ),
+      ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group, _group],
+      ),
+      ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group],
+        animalsProvider: (_, _) async => [_animal, _animal],
+      ),
+    ]) {
+      await expectLater(invalid.refresh(), throwsStateError);
+      final cached = await baseline.loadCached();
+      expect(cached.available, isTrue);
+      expect(cached.entries.length, 1);
+    }
+  });
+
+  test('lote ou evento inconsistente não publica índices duplos', () async {
+    final fixture = _Fixture();
+    final service = fixture.create();
+    await service.refresh();
+
+    for (final invalidAnimal in [
+      _animal.copyWith(lotId: 'outro-lote'),
+      _animal.copyWith(id: 'animal-2', lotId: 'outro-lote'),
+    ]) {
+      final invalid = ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group],
+        animalsProvider: (_, _) async => [invalidAnimal],
+      );
+      await expectLater(invalid.refresh(), throwsStateError);
+    }
+
+    for (final List<AnimalReproductionData> records in [
+      [_event(), _event()],
+      [_event().withAnimalId('outro-animal')],
+      [
+        AnimalReproductionData.fromMap({..._event().toMap(), 'id': ''}),
+      ],
+    ]) {
+      final invalid = ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group],
+        animalsProvider: (_, _) async => [_animal],
+        recordsProvider: (_, _) async => records,
+      );
+      await expectLater(invalid.refresh(), throwsStateError);
+    }
+    final cached = await service.loadCached();
+    expect(cached.available, isTrue);
+    expect(cached.entries.single.records.single.id, 'event-1');
+  });
+
   test('identidade, permissão e fazenda selecionada isolam a cópia', () async {
     final fixture = _Fixture();
     final service = fixture.create();

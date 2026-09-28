@@ -261,12 +261,19 @@ class ReproductionOverviewSnapshotService {
     final permitted = remoteFarms
         .where((farm) => _allowed(initial, farm.id ?? ''))
         .toList(growable: false);
+    final farmIds = <String>{};
+    for (final farm in permitted) {
+      if (!farmIds.add(farm.id!)) {
+        throw StateError('Fazenda duplicada; cópia não atualizada.');
+      }
+    }
     if (selectedFarm != null &&
         !permitted.any((farm) => farm.id == selectedFarm.id)) {
       throw StateError('Fazenda não autorizada nesta sessão.');
     }
 
     final farmGroups = <({FarmData farm, HerdGroupData group})>[];
+    final groupIds = <String>{};
     onProgress?.call(
       ReproductionOverviewLoadProgress(
         phase: ReproductionOverviewLoadPhase.groups,
@@ -285,6 +292,9 @@ class ReproductionOverviewSnapshotService {
         if (group.id.trim().isEmpty) {
           throw StateError('Lote sem identidade remota; cópia não atualizada.');
         }
+        if (!groupIds.add(group.id)) {
+          throw StateError('Lote duplicado; cópia não atualizada.');
+        }
         farmGroups.add((farm: farm, group: group));
       }
       onProgress?.call(
@@ -297,6 +307,7 @@ class ReproductionOverviewSnapshotService {
     }
 
     final jobs = <({FarmData farm, HerdGroupData group, AnimalData animal})>[];
+    final animalIds = <String>{};
     onProgress?.call(
       ReproductionOverviewLoadProgress(
         phase: ReproductionOverviewLoadPhase.animals,
@@ -320,6 +331,12 @@ class ReproductionOverviewSnapshotService {
           throw StateError(
             'Animal sem identidade remota; cópia não atualizada.',
           );
+        }
+        if (animal.lotId.trim().isNotEmpty && animal.lotId != group.id) {
+          throw StateError('Animal fora do lote; cópia não atualizada.');
+        }
+        if (!animalIds.add(animal.id)) {
+          throw StateError('Animal duplicado; cópia não atualizada.');
         }
         jobs.add((farm: farm, group: group, animal: animal));
       }
@@ -352,6 +369,16 @@ class ReproductionOverviewSnapshotService {
         final job = jobs[index];
         try {
           final records = await _recordsProvider(job.farm.id!, job.animal.id);
+          final recordIds = <String>{};
+          for (final record in records) {
+            if (record.animalId.isNotEmpty &&
+                record.animalId != job.animal.id) {
+              throw StateError('Evento de outro animal; cópia não atualizada.');
+            }
+            if (record.id.trim().isEmpty || !recordIds.add(record.id)) {
+              throw StateError('Evento sem ID único; cópia não atualizada.');
+            }
+          }
           results[index] = ReproductionOverviewEntry(
             farm: job.farm,
             group: job.group,
