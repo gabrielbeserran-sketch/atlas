@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/branding/atlas_branding.dart';
 import 'package:projeto_atlas/core/design_system/atlas_design_system.dart';
 import 'package:projeto_atlas/core/offline/presentation/atlas_offline_center_screen.dart';
 import 'package:projeto_atlas/core/navigation/atlas_route_definition.dart';
+import 'package:projeto_atlas/core/navigation/atlas_worker_menu_policy.dart';
 import 'package:projeto_atlas/core/session/atlas_session_scope.dart';
 import 'package:projeto_atlas/core/settings/atlas_settings_screen.dart';
 import 'package:projeto_atlas/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -12,6 +15,7 @@ import 'package:projeto_atlas/features/field_operations/presentation/screens/far
 import 'package:projeto_atlas/features/farm/presentation/screens/farm_list_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm/domain/models/atlas_remote_farm.dart';
+import 'package:projeto_atlas/features/enterprise_platform/domain/models/atlas_enterprise_remote_session.dart';
 import 'package:projeto_atlas/features/farm_handling/presentation/screens/farm_handling_screen.dart';
 import 'package:projeto_atlas/features/farm_agenda/presentation/screens/farm_agenda_list_screen.dart';
 import 'package:projeto_atlas/features/herd/presentation/screens/herd_overview_screen.dart';
@@ -37,6 +41,49 @@ class AtlasHomeShell extends StatefulWidget {
 class _AtlasHomeShellState extends State<AtlasHomeShell> {
   int selectedIndex = 0;
   bool _offlineAccessReminderDismissed = false;
+  final _workerMenuEntitlement = AtlasWorkerMenuEntitlement();
+  String? _workerMenuScope;
+  bool _consultancyMenuActive = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = AtlasSessionScope.of(context).session;
+    final scope = session == null
+        ? null
+        : '${_workerMenuEntitlement.scopeKey(session)}:${session.role}';
+    if (_workerMenuScope == scope) return;
+    _workerMenuScope = scope;
+    _consultancyMenuActive = false;
+    if (session != null &&
+        session.role == 'operator' &&
+        _workerMenuEntitlement.scopeKey(session) != null) {
+      unawaited(_loadWorkerMenu(session, scope!));
+    }
+  }
+
+  Future<void> _loadWorkerMenu(AtlasRemoteSession session, String scope) async {
+    try {
+      final cached = await _workerMenuEntitlement.loadCached(session);
+      if (mounted && _workerMenuScope == scope && cached != null) {
+        setState(() => _consultancyMenuActive = cached);
+      }
+    } catch (_) {
+      // Cache indisponível não impede consultar a assinatura confirmada.
+    }
+    try {
+      final current = await _workerMenuEntitlement.fetchConfirmed().timeout(
+        const Duration(seconds: 8),
+      );
+      if (!mounted || _workerMenuScope != scope) return;
+      await _workerMenuEntitlement.saveFor(session, current);
+      if (mounted && _workerMenuScope == scope) {
+        setState(() => _consultancyMenuActive = current);
+      }
+    } catch (_) {
+      // Sem rede ou plano confirmado, mantém o menu completo já autorizado.
+    }
+  }
 
   static final List<AtlasRouteDefinition> routes = [
     AtlasRouteDefinition(
@@ -206,6 +253,10 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
   Widget build(BuildContext context) {
     final controller = AtlasSessionScope.of(context);
     final session = controller.session!;
+    final compactWorkerMenu = AtlasWorkerMenuPolicy.compactFor(
+      role: session.role,
+      consultancy: _consultancyMenuActive,
+    );
     final activeFarm = controller.activeFarm;
     final visibleRoutes = routes
         .where(
@@ -245,6 +296,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
               children: [
                 _AtlasSidebar(
                   routes: visibleRoutes,
+                  compactWorkerMenu: compactWorkerMenu,
                   selectedIndex: selectedIndex,
                   userName: userName,
                   farmName: activeFarm?.name,
@@ -320,6 +372,7 @@ class _AtlasHomeShellState extends State<AtlasHomeShell> {
           drawer: Drawer(
             child: _AtlasSidebar(
               routes: visibleRoutes,
+              compactWorkerMenu: compactWorkerMenu,
               selectedIndex: selectedIndex,
               userName: userName,
               farmName: activeFarm?.name,
@@ -785,6 +838,7 @@ class _AtlasSidebar extends StatelessWidget {
     required this.userName,
     required this.onSelected,
     required this.onLogout,
+    this.compactWorkerMenu = false,
     this.farmName,
     this.compact = false,
   });
@@ -796,6 +850,7 @@ class _AtlasSidebar extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final Future<void> Function() onLogout;
   final bool compact;
+  final bool compactWorkerMenu;
 
   List<Widget> _routeTiles(
     BuildContext context,
@@ -899,20 +954,52 @@ class _AtlasSidebar extends StatelessWidget {
                 children: [
                   for (final group in AtlasNavigationGroup.values)
                     if (group != AtlasNavigationGroup.administration &&
-                        routes.any((route) => route.group == group)) ...[
+                        routes.any(
+                          (route) =>
+                              route.group == group &&
+                              (!compactWorkerMenu ||
+                                  AtlasWorkerMenuPolicy.isPrimary(route.label)),
+                        )) ...[
                       _AtlasSidebarSectionHeader(group: group),
                       ..._routeTiles(
                         context,
                         routes.asMap().entries.where(
-                          (entry) => entry.value.group == group,
+                          (entry) =>
+                              entry.value.group == group &&
+                              (!compactWorkerMenu ||
+                                  AtlasWorkerMenuPolicy.isPrimary(
+                                    entry.value.label,
+                                  )),
                         ),
                       ),
                       const SizedBox(height: 6),
                     ],
-                  if (routes.any(
-                    (route) =>
-                        route.group == AtlasNavigationGroup.administration,
-                  )) ...[
+                  if (compactWorkerMenu &&
+                      routes.any(
+                        (route) =>
+                            !AtlasWorkerMenuPolicy.isPrimary(route.label),
+                      ))
+                    ExpansionTile(
+                      key: const PageStorageKey('worker-more-tools'),
+                      initiallyExpanded: !AtlasWorkerMenuPolicy.isPrimary(
+                        routes[selectedIndex].label,
+                      ),
+                      leading: const Icon(Icons.apps_outlined, size: 20),
+                      title: const Text('Mais ferramentas'),
+                      children: _routeTiles(
+                        context,
+                        routes.asMap().entries.where(
+                          (entry) => !AtlasWorkerMenuPolicy.isPrimary(
+                            entry.value.label,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (!compactWorkerMenu &&
+                      routes.any(
+                        (route) =>
+                            route.group == AtlasNavigationGroup.administration,
+                      )) ...[
                     ExpansionTile(
                       tilePadding: const EdgeInsets.symmetric(horizontal: 12),
                       childrenPadding: EdgeInsets.zero,
