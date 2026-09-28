@@ -8,6 +8,7 @@ from ..authz import Principal, require_farm_scope, require_permission
 from ..database import get_db
 from ..models import ConsultancyContact, Farm, HerdLot, LivestockAnimal, OperationalTask
 from ..saas_growth_models import SaaSPlan,CompanySubscription,BillingInvoice,FeatureFlag,CommunicationTemplate,CommunicationDelivery,OnboardingProgress,DataImportJob,DataExportJob,AdminAuditAction
+from ..services.plan_entitlements import evaluate_plan_entitlements
 
 router=APIRouter(prefix='/saas-growth',tags=['SaaS Growth'])
 def read_dep(p=Depends(require_permission('platform.read'))): return p
@@ -72,6 +73,14 @@ def current_subscription(db:Session=Depends(get_db),p:Principal=Depends(read_dep
         'limits':limits,
         'features':features,
         'consultancy_included':'consultoria' in features,
+        'authorization':evaluate_plan_entitlements(
+            code=code,
+            status=subscription.status if subscription else 'not_configured',
+            subscription_present=subscription is not None,
+            plan_resolved=plan is not None,
+            features=features,
+            limits=limits,
+        ),
     }
 
 @router.post('/invoices')
