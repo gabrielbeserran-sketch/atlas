@@ -58,6 +58,7 @@ class _AnimalExecutivePanelScreenState
         animalId: widget.animal.id,
       ),
       AnimalReproductionStorageService().loadRecords(
+        farmId: widget.farm.id ?? '',
         farmName: widget.farm.name,
         groupName: widget.group.name,
         animalId: widget.animal.id,

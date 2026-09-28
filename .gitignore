@@ -157,6 +157,7 @@ data/attachments/
 /release/windows/reproducao-previsoes-20260927/
 /release/windows/reproducao-confirmacao-20260927/
 /release/windows/reproducao-retornos-offline-20260928/
+/release/windows/reproducao-cache-local-20260928/
 dist/
 *.apk
 *.aab

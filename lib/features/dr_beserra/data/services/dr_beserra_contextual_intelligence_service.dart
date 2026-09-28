@@ -351,6 +351,7 @@ class DrBeserraContextualIntelligenceService {
       final current = await Future.wait(
         batch.map(
           (animal) => _reproduction.loadRecords(
+            farmId: farm.id ?? '',
             farmName: farm.name,
             groupName: groupNameById[animal.lotId] ?? '',
             animalId: animal.id,

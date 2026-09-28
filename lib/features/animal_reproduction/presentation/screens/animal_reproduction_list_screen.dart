@@ -17,6 +17,7 @@ class AnimalReproductionListScreen extends StatefulWidget {
     required this.farm,
     required this.group,
     this.autoOpenCreate = false,
+    this.storage,
     super.key,
   });
 
@@ -24,6 +25,7 @@ class AnimalReproductionListScreen extends StatefulWidget {
   final FarmData farm;
   final HerdGroupData group;
   final bool autoOpenCreate;
+  final AnimalReproductionStorageService? storage;
 
   @override
   State<AnimalReproductionListScreen> createState() {
@@ -33,19 +35,23 @@ class AnimalReproductionListScreen extends StatefulWidget {
 
 class _AnimalReproductionListScreenState
     extends State<AnimalReproductionListScreen> {
-  final AnimalReproductionStorageService storage =
-      AnimalReproductionStorageService();
+  late final AnimalReproductionStorageService storage =
+      widget.storage ?? AnimalReproductionStorageService();
 
   final AnimalReproductionEventService eventService =
       const AnimalReproductionEventService();
 
   List<AnimalReproductionData> records = [];
   bool isLoading = true;
+  bool isRefreshing = false;
+  String? loadError;
+  int _viewRevision = 0;
   bool isResolvingReturn = false;
   List<PendingReturn> pendingReturns = [];
 
   Future<void> queueReturn(AnimalReproductionData record, String status) async {
     if (isResolvingReturn) return;
+    _viewRevision++;
     setState(() => isResolvingReturn = true);
     try {
       final input = await showReturnResolutionDialog(
@@ -94,6 +100,7 @@ class _AnimalReproductionListScreenState
 
   Future<void> syncPendingReturns() async {
     if (isResolvingReturn) return;
+    _viewRevision++;
     setState(() => isResolvingReturn = true);
     try {
       final count = await storage.syncQueuedReturns(
@@ -104,6 +111,7 @@ class _AnimalReproductionListScreenState
       );
       if (!mounted) return;
       final saved = await storage.loadRecords(
+        farmId: widget.farm.id ?? '',
         farmName: widget.farm.name,
         groupName: widget.group.name,
         animalId: widget.animal.id,
@@ -201,6 +209,7 @@ class _AnimalReproductionListScreenState
     String status,
   ) async {
     if (isResolvingReturn) return;
+    _viewRevision++;
     setState(() => isResolvingReturn = true);
     try {
       final input = await showReturnResolutionDialog(
@@ -210,6 +219,7 @@ class _AnimalReproductionListScreenState
       );
       if (input == null || !mounted) return;
       final saved = await storage.resolveReturn(
+        farmId: widget.farm.id ?? '',
         farmName: widget.farm.name,
         groupName: widget.group.name,
         animalId: widget.animal.id,
@@ -313,16 +323,27 @@ class _AnimalReproductionListScreenState
   }
 
   Future<void> loadRecords() async {
-    final savedRecords = await storage.loadRecords(
-      farmName: widget.farm.name,
-      groupName: widget.group.name,
-      animalId: widget.animal.id,
-    );
+    final farmId = widget.farm.id ?? '';
+    List<AnimalReproductionData> savedRecords;
+    try {
+      savedRecords = await storage.loadCachedRecords(
+        farmId: farmId,
+        animalId: widget.animal.id,
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          loadError = 'Sessão ou fazenda não autorizada para este histórico.';
+        });
+      }
+      return;
+    }
     List<PendingReturn> savedPending = [];
-    if (widget.farm.id?.isNotEmpty == true) {
+    if (farmId.isNotEmpty) {
       try {
         savedPending = await storage.pendingReturns(
-          farmId: widget.farm.id!,
+          farmId: farmId,
           animalId: widget.animal.id,
         );
       } catch (_) {
@@ -339,11 +360,36 @@ class _AnimalReproductionListScreenState
       pendingReturns = savedPending;
       sortRecords();
       isLoading = false;
+      isRefreshing = true;
     });
+    final revision = _viewRevision;
+    try {
+      final fresh = await storage.refreshRecords(
+        farmId: farmId,
+        animalId: widget.animal.id,
+      );
+      if (!mounted || revision != _viewRevision) return;
+      setState(() {
+        records = fresh;
+        sortRecords();
+        loadError = null;
+      });
+    } catch (_) {
+      if (!mounted || revision != _viewRevision) return;
+      setState(() {
+        loadError = savedRecords.isEmpty
+            ? 'Sem conexão e sem histórico confirmado neste dispositivo.'
+            : 'Sem conexão. Exibindo a última cópia salva neste dispositivo.';
+      });
+    } finally {
+      if (mounted) setState(() => isRefreshing = false);
+    }
   }
 
   Future<void> saveRecords() async {
+    _viewRevision++;
     final saved = await storage.saveRecords(
+      farmId: widget.farm.id ?? '',
       farmName: widget.farm.name,
       groupName: widget.group.name,
       animalId: widget.animal.id,
@@ -379,6 +425,7 @@ class _AnimalReproductionListScreenState
 
   Future<void> openReproductionForm() async {
     if (isResolvingReturn) return;
+    _viewRevision++;
     final newRecord = await Navigator.push<AnimalReproductionData>(
       context,
       MaterialPageRoute<AnimalReproductionData>(
@@ -393,6 +440,7 @@ class _AnimalReproductionListScreenState
     }
 
     final savedRecord = await storage.createRecord(
+      farmId: widget.farm.id ?? '',
       farmName: widget.farm.name,
       groupName: widget.group.name,
       animalId: widget.animal.id,
@@ -429,6 +477,7 @@ class _AnimalReproductionListScreenState
       return;
     }
     if (isResolvingReturn) return;
+    _viewRevision++;
     final editedRecord = await Navigator.push<AnimalReproductionData>(
       context,
       MaterialPageRoute<AnimalReproductionData>(
@@ -453,6 +502,7 @@ class _AnimalReproductionListScreenState
     }
 
     final savedRecord = await storage.updateRecord(
+      farmId: widget.farm.id ?? '',
       farmName: widget.farm.name,
       groupName: widget.group.name,
       animalId: widget.animal.id,
@@ -481,6 +531,7 @@ class _AnimalReproductionListScreenState
       return;
     }
     if (isResolvingReturn) return;
+    _viewRevision++;
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
       title: 'Excluir registro reprodutivo',
@@ -493,6 +544,7 @@ class _AnimalReproductionListScreenState
     }
 
     await storage.deleteRecord(
+      farmId: widget.farm.id ?? '',
       farmName: widget.farm.name,
       groupName: widget.group.name,
       animalId: widget.animal.id,
@@ -535,6 +587,48 @@ class _AnimalReproductionListScreenState
                 : ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                loadError == null
+                                    ? Icons.cloud_done_outlined
+                                    : Icons.cloud_off_outlined,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  loadError ??
+                                      (isRefreshing
+                                          ? 'Histórico local aberto. Atualizando em segundo plano…'
+                                          : 'Histórico atualizado com o servidor.'),
+                                ),
+                              ),
+                              if (isRefreshing)
+                                const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              else
+                                IconButton(
+                                  tooltip: 'Atualizar histórico',
+                                  onPressed: loadRecords,
+                                  icon: const Icon(Icons.refresh),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
                       Text(
                         widget.animal.displayName,
                         style: const TextStyle(

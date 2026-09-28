@@ -227,6 +227,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           warnings: warnings,
           fallback: reproductionRecords,
           loader: () => reproductionStorage.loadRecords(
+            farmId: farm.id ?? '',
             farmName: farm.name,
             groupName: group.name,
             animalId: animal.id,

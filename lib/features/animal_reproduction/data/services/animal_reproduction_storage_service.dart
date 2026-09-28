@@ -22,12 +22,15 @@ class AnimalReproductionStorageService {
   final ReproductionReturnQueue _returnQueue;
   final Future<ReturnQueueScope> Function(String farmId)? _scopeProvider;
 
-  Future<ReturnQueueScope> _scope(String farmId) async {
+  Future<ReturnQueueScope> _scope(
+    String farmId, {
+    String permission = 'reproduction.write',
+  }) async {
     if (_scopeProvider != null) return _scopeProvider(farmId);
     final session = await AtlasEnterpriseRemoteAuthStore.instance.loadSession();
     if (session == null ||
         farmId.trim().isEmpty ||
-        !session.allows('reproduction.write') ||
+        !session.allows(permission) ||
         (!session.hasUnrestrictedFarmAccess &&
             !session.farmIds.contains(farmId))) {
       throw StateError('Sessão ou fazenda não autorizada para baixa offline.');
@@ -119,7 +122,7 @@ class AnimalReproductionStorageService {
           if (_auditMatches(pending, current)) {
             await _returnQueue.remove(scope, pending);
             await _saveLocal(
-              _key(farmName, groupName, animalId),
+              await _cacheKey(farmName, groupName, animalId, farmId),
               response
                   .asMapList()
                   .map(AnimalReproductionData.fromMap)
@@ -154,6 +157,7 @@ class AnimalReproductionStorageService {
               );
             }
             final saved = await _sendResolutionMetadata(
+              farmId: farmId,
               farmName: farmName,
               groupName: groupName,
               animalId: animalId,
@@ -182,6 +186,7 @@ class AnimalReproductionStorageService {
       );
 
   Future<AnimalReproductionData> _sendResolutionMetadata({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -193,6 +198,7 @@ class AnimalReproductionStorageService {
       body: {'metadata_json': candidate.metadata},
     );
     final saved = await _verifyAndCache(
+      farmId: farmId,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -217,22 +223,76 @@ class AnimalReproductionStorageService {
       'atlas_animal_reproduction_${_normalize(farmName)}_'
       '${_normalize(groupName)}_${_normalize(animalId)}';
 
+  Future<String> _scopedKey(String farmId, String animalId) async {
+    final scope = await _scope(farmId, permission: 'reproduction.read');
+    if (!scope.isValid || animalId.trim().isEmpty) {
+      throw StateError('Contexto reprodutivo sem identidade verificável.');
+    }
+    final encoded = base64Url.encode(
+      utf8.encode(
+        jsonEncode([
+          scope.tenantId,
+          scope.companyId,
+          scope.farmId,
+          scope.userId,
+          animalId,
+        ]),
+      ),
+    );
+    return 'atlas_animal_reproduction_v2_$encoded';
+  }
+
+  Future<String> _cacheKey(
+    String farmName,
+    String groupName,
+    String animalId,
+    String? farmId,
+  ) => farmId == null
+      ? Future.value(_key(farmName, groupName, animalId))
+      : _scopedKey(farmId, animalId);
+
+  Future<List<AnimalReproductionData>> loadCachedRecords({
+    required String farmId,
+    required String animalId,
+  }) async => _loadLocal(await _scopedKey(farmId, animalId));
+
+  Future<List<AnimalReproductionData>> refreshRecords({
+    required String farmId,
+    required String animalId,
+  }) async {
+    final key = await _scopedKey(farmId, animalId);
+    final remote = await _fetchRemote(animalId);
+    if (key != await _scopedKey(farmId, animalId)) {
+      throw StateError('Conta ou fazenda mudou durante a atualização.');
+    }
+    await _saveLocal(key, remote);
+    return remote;
+  }
+
   Future<List<AnimalReproductionData>> loadRecords({
     required String farmName,
     required String groupName,
     required String animalId,
+    String? farmId,
   }) async {
-    final key = _key(farmName, groupName, animalId);
+    final key = await _cacheKey(farmName, groupName, animalId, farmId);
     try {
       final remote = await _fetchRemote(animalId);
+      if (farmId != null && key != await _scopedKey(farmId, animalId)) {
+        throw StateError('Conta ou fazenda mudou durante a atualização.');
+      }
       await _saveLocal(key, remote);
       return remote;
     } catch (_) {
+      if (farmId != null && key != await _scopedKey(farmId, animalId)) {
+        throw StateError('Conta ou fazenda mudou durante a atualização.');
+      }
       return _loadLocal(key);
     }
   }
 
   Future<AnimalReproductionData> createRecord({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -245,6 +305,7 @@ class AnimalReproductionStorageService {
     );
     final created = AnimalReproductionData.fromMap(response.asMap());
     return _verifyAndCache(
+      farmId: farmId,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -253,6 +314,7 @@ class AnimalReproductionStorageService {
   }
 
   Future<AnimalReproductionData> updateRecord({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -264,6 +326,7 @@ class AnimalReproductionStorageService {
       body: record.toApi(),
     );
     final saved = await _verifyAndCache(
+      farmId: farmId,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -285,6 +348,7 @@ class AnimalReproductionStorageService {
   }
 
   Future<AnimalReproductionData> resolveReturn({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -322,7 +386,7 @@ class AnimalReproductionStorageService {
         throw StateError('O retorno já possui outra resolução confirmada.');
       }
       await _saveLocal(
-        _key(farmName, groupName, animalId),
+        await _cacheKey(farmName, groupName, animalId, farmId),
         response
             .asMapList()
             .map(AnimalReproductionData.fromMap)
@@ -346,6 +410,7 @@ class AnimalReproductionStorageService {
       );
     }
     return _sendResolutionMetadata(
+      farmId: farmId,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -354,6 +419,7 @@ class AnimalReproductionStorageService {
   }
 
   Future<void> deleteRecord({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -369,10 +435,14 @@ class AnimalReproductionStorageService {
         'O registro reprodutivo ainda existe após a exclusão no servidor.',
       );
     }
-    await _saveLocal(_key(farmName, groupName, animalId), remote);
+    await _saveLocal(
+      await _cacheKey(farmName, groupName, animalId, farmId),
+      remote,
+    );
   }
 
   Future<List<AnimalReproductionData>> saveRecords({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -387,6 +457,7 @@ class AnimalReproductionStorageService {
       }
       created.add(
         await createRecord(
+          farmId: farmId,
           farmName: farmName,
           groupName: groupName,
           animalId: animalId,
@@ -395,16 +466,21 @@ class AnimalReproductionStorageService {
       );
     }
     final refreshed = created.isEmpty ? remote : await _fetchRemote(animalId);
-    await _saveLocal(_key(farmName, groupName, animalId), refreshed);
+    await _saveLocal(
+      await _cacheKey(farmName, groupName, animalId, farmId),
+      refreshed,
+    );
     return refreshed;
   }
 
   Future<AnimalReproductionData> _verifyAndCache({
+    String? farmId,
     required String farmName,
     required String groupName,
     required String animalId,
     required String recordId,
   }) async {
+    final key = await _cacheKey(farmName, groupName, animalId, farmId);
     final remote = await _fetchRemote(animalId);
     final saved = remote.firstWhere(
       (item) => item.id == recordId,
@@ -412,7 +488,10 @@ class AnimalReproductionStorageService {
         'O registro reprodutivo não foi confirmado após nova leitura do servidor.',
       ),
     );
-    await _saveLocal(_key(farmName, groupName, animalId), remote);
+    if (farmId != null && key != await _scopedKey(farmId, animalId)) {
+      throw StateError('Conta ou fazenda mudou durante a confirmação.');
+    }
+    await _saveLocal(key, remote);
     return saved;
   }
 

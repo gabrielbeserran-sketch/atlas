@@ -280,6 +280,7 @@ class _ReproductionOverviewScreenState
           for (final animal in groupAnimals) {
             if (!_isFemale(animal.sex)) continue;
             final records = await reproductionStorage.loadRecords(
+              farmId: farm.id ?? '',
               farmName: farm.name,
               groupName: group.name,
               animalId: animal.id,

@@ -115,6 +115,7 @@ class _AnimalIntelligence360ScreenState
         animalId: widget.animal.id,
       ),
       reproductionStorage.loadRecords(
+        farmId: widget.farm.id ?? '',
         farmName: widget.farm.name,
         groupName: widget.group.name,
         animalId: widget.animal.id,

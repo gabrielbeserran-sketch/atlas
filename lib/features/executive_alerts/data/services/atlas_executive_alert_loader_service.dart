@@ -118,6 +118,7 @@ class AtlasExecutiveAlertLoaderService {
         );
 
         final animalReproductionRecords = await reproductionStorage.loadRecords(
+          farmId: farm.id ?? '',
           farmName: farm.name,
           groupName: group.name,
           animalId: animal.id,

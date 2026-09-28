@@ -178,6 +178,7 @@ class _IndicatorsScreenState extends State<IndicatorsScreen> {
     final reproductionLists = await Future.wait(
       loadedAnimalContexts.map((context) {
         return reproductionStorage.loadRecords(
+          farmId: context.farm.id ?? '',
           farmName: context.farm.name,
           groupName: context.group.name,
           animalId: context.animal.id,

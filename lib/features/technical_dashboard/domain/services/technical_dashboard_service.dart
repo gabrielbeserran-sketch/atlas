@@ -99,6 +99,7 @@ class TechnicalDashboardService {
         );
         reproductionRecords.addAll(
           (await _reproductionStorage.loadRecords(
+            farmId: farm.id ?? '',
             farmName: farm.name,
             groupName: group.name,
             animalId: animal.id,

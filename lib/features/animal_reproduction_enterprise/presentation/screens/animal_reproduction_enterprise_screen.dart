@@ -44,6 +44,7 @@ class _AnimalReproductionEnterpriseScreenState
     }
 
     final loaded = await storage.loadRecords(
+      farmId: widget.farm.id ?? '',
       farmName: widget.farm.name,
       groupName: widget.group.name,
       animalId: widget.animal.id,
