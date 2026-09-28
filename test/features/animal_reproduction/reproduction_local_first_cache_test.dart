@@ -6,6 +6,7 @@ import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_return_queue.dart';
+import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
@@ -43,6 +44,61 @@ class _Http extends AtlasHttpClient {
           'metadata_json': {},
         },
       ],
+      headers: {},
+    );
+  }
+}
+
+class _OutOfOrderHttp extends AtlasHttpClient {
+  final firstStarted = Completer<void>();
+  final releaseFirst = Completer<void>();
+  int reads = 0;
+  Map<String, dynamic>? current = {
+    'id': 'event-1',
+    'animal_id': 'animal-1',
+    'event_type': 'IATF',
+    'occurred_at': '2026-09-01',
+    'notes': 'antigo',
+    'metadata_json': <String, dynamic>{},
+  };
+
+  @override
+  Future<AtlasHttpResponse> send(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+    bool retryOnUnauthorized = true,
+    int transientRetries = 2,
+  }) async {
+    if (method == 'GET') {
+      reads++;
+      if (reads == 1) {
+        final stale = {...?current};
+        firstStarted.complete();
+        await releaseFirst.future;
+        return AtlasHttpResponse(
+          statusCode: 200,
+          body: [stale],
+          headers: const {},
+        );
+      }
+      return AtlasHttpResponse(
+        statusCode: 200,
+        body: current == null
+            ? []
+            : [
+                {...?current},
+              ],
+        headers: const {},
+      );
+    }
+    if (method == 'PATCH') current = {...?current, ...?body};
+    if (method == 'DELETE') current = null;
+    return const AtlasHttpResponse(
+      statusCode: 200,
+      body: <String, dynamic>{},
       headers: {},
     );
   }
@@ -213,5 +269,102 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 30));
     expect(find.textContaining('Histórico atualizado'), findsOneWidget);
+  });
+
+  for (final operation in ['editar', 'excluir']) {
+    test(
+      'GET antigo não reverte cache após $operation em outra instância',
+      () async {
+        final http = _OutOfOrderHttp();
+        const scope = ReturnQueueScope('tenant', 'company', 'farm', 'user');
+        AnimalReproductionStorageService service() =>
+            AnimalReproductionStorageService(
+              httpClient: http,
+              scopeProvider: (_) async => scope,
+            );
+        final reader = service();
+        final writer = service();
+        final staleRefresh = reader.refreshRecords(
+          farmId: 'farm',
+          animalId: 'animal-1',
+        );
+        await http.firstStarted.future;
+        if (operation == 'editar') {
+          await writer.updateRecord(
+            farmId: 'farm',
+            farmName: 'Fazenda',
+            groupName: 'Lote',
+            animalId: 'animal-1',
+            record: const AnimalReproductionData(
+              id: 'event-1',
+              animalId: 'animal-1',
+              type: 'IATF',
+              date: '01/09/2026',
+              result: '',
+              bullOrSemen: '',
+              responsible: '',
+              notes: 'novo',
+            ),
+          );
+        } else {
+          await writer.deleteRecord(
+            farmId: 'farm',
+            farmName: 'Fazenda',
+            groupName: 'Lote',
+            animalId: 'animal-1',
+            recordId: 'event-1',
+          );
+        }
+        http.releaseFirst.complete();
+        await expectLater(staleRefresh, throwsStateError);
+        final cached = await reader.loadCachedRecords(
+          farmId: 'farm',
+          animalId: 'animal-1',
+        );
+        if (operation == 'editar') {
+          expect(cached.single.notes, 'novo');
+        } else {
+          expect(cached, isEmpty);
+        }
+      },
+    );
+  }
+
+  test('confirmação antiga não substitui edição mais recente', () async {
+    final http = _OutOfOrderHttp();
+    const scope = ReturnQueueScope('tenant', 'company', 'farm', 'user');
+    AnimalReproductionStorageService service() =>
+        AnimalReproductionStorageService(
+          httpClient: http,
+          scopeProvider: (_) async => scope,
+        );
+    Future<AnimalReproductionData> edit(String notes) => service().updateRecord(
+      farmId: 'farm',
+      farmName: 'Fazenda',
+      groupName: 'Lote',
+      animalId: 'animal-1',
+      record: AnimalReproductionData(
+        id: 'event-1',
+        animalId: 'animal-1',
+        type: 'IATF',
+        date: '01/09/2026',
+        result: '',
+        bullOrSemen: '',
+        responsible: '',
+        notes: notes,
+      ),
+    );
+    final older = edit('primeira');
+    await http.firstStarted.future;
+    expect((await edit('segunda')).notes, 'segunda');
+    http.releaseFirst.complete();
+    await expectLater(older, throwsStateError);
+    expect(
+      (await service().loadCachedRecords(
+        farmId: 'farm',
+        animalId: 'animal-1',
+      )).single.notes,
+      'segunda',
+    );
   });
 }

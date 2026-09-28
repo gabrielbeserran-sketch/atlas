@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
@@ -21,6 +22,26 @@ class AnimalReproductionStorageService {
   final AtlasHttpClient _http;
   final ReproductionReturnQueue _returnQueue;
   final Future<ReturnQueueScope> Function(String farmId)? _scopeProvider;
+  static final Map<String, int> _cacheRevisions = {};
+  static Future<void>? _lastCacheWrite;
+
+  int _revision(String key) => _cacheRevisions[key] ?? 0;
+
+  int _beginMutation(String key) {
+    final revision = _revision(key) + 1;
+    _cacheRevisions[key] = revision;
+    return revision;
+  }
+
+  Future<bool> _saveIfCurrent(
+    String key,
+    int revision,
+    List<AnimalReproductionData> records,
+  ) async {
+    if (_revision(key) != revision) return false;
+    await _saveLocal(key, records);
+    return true;
+  }
 
   Future<ReturnQueueScope> _scope(
     String farmId, {
@@ -82,6 +103,8 @@ class AnimalReproductionStorageService {
     required String animalId,
   }) async {
     final scope = await _scope(farmId);
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _beginMutation(cacheKey);
     final rows = (await _returnQueue.read(
       scope,
     )).where((item) => item.animalId == animalId).toList();
@@ -120,15 +143,18 @@ class AnimalReproductionStorageService {
           conflict = 'Previsão ou origem mudou no servidor.';
         } else if (current.hasConfirmedReturnResolution) {
           if (_auditMatches(pending, current)) {
-            await _returnQueue.remove(scope, pending);
-            await _saveLocal(
-              await _cacheKey(farmName, groupName, animalId, farmId),
+            if (!await _saveIfCurrent(
+              cacheKey,
+              cacheRevision,
               response
                   .asMapList()
                   .map(AnimalReproductionData.fromMap)
                   .map((item) => item.withAnimalId(animalId))
                   .toList(),
-            );
+            )) {
+              throw StateError('Outra operação atualizou este histórico.');
+            }
+            await _returnQueue.remove(scope, pending);
             confirmed++;
             continue;
           }
@@ -158,6 +184,8 @@ class AnimalReproductionStorageService {
             }
             final saved = await _sendResolutionMetadata(
               farmId: farmId,
+              expectedCacheKey: cacheKey,
+              expectedRevision: cacheRevision,
               farmName: farmName,
               groupName: groupName,
               animalId: animalId,
@@ -187,6 +215,8 @@ class AnimalReproductionStorageService {
 
   Future<AnimalReproductionData> _sendResolutionMetadata({
     String? farmId,
+    String? expectedCacheKey,
+    int? expectedRevision,
     required String farmName,
     required String groupName,
     required String animalId,
@@ -199,6 +229,8 @@ class AnimalReproductionStorageService {
     );
     final saved = await _verifyAndCache(
       farmId: farmId,
+      expectedCacheKey: expectedCacheKey,
+      expectedRevision: expectedRevision,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -251,6 +283,16 @@ class AnimalReproductionStorageService {
       ? Future.value(_key(farmName, groupName, animalId))
       : _scopedKey(farmId, animalId);
 
+  Future<void> _assertSameContext(
+    String? farmId,
+    String animalId,
+    String originalKey,
+  ) async {
+    if (farmId != null && originalKey != await _scopedKey(farmId, animalId)) {
+      throw StateError('Conta ou fazenda mudou durante a operação.');
+    }
+  }
+
   Future<List<AnimalReproductionData>> loadCachedRecords({
     required String farmId,
     required String animalId,
@@ -261,11 +303,14 @@ class AnimalReproductionStorageService {
     required String animalId,
   }) async {
     final key = await _scopedKey(farmId, animalId);
+    final revision = _revision(key);
     final remote = await _fetchRemote(animalId);
     if (key != await _scopedKey(farmId, animalId)) {
       throw StateError('Conta ou fazenda mudou durante a atualização.');
     }
-    await _saveLocal(key, remote);
+    if (!await _saveIfCurrent(key, revision, remote)) {
+      throw StateError('Histórico alterado durante a atualização.');
+    }
     return remote;
   }
 
@@ -276,12 +321,15 @@ class AnimalReproductionStorageService {
     String? farmId,
   }) async {
     final key = await _cacheKey(farmName, groupName, animalId, farmId);
+    final revision = _revision(key);
     try {
       final remote = await _fetchRemote(animalId);
       if (farmId != null && key != await _scopedKey(farmId, animalId)) {
         throw StateError('Conta ou fazenda mudou durante a atualização.');
       }
-      await _saveLocal(key, remote);
+      if (!await _saveIfCurrent(key, revision, remote)) {
+        return _loadLocal(key);
+      }
       return remote;
     } catch (_) {
       if (farmId != null && key != await _scopedKey(farmId, animalId)) {
@@ -298,6 +346,8 @@ class AnimalReproductionStorageService {
     required String animalId,
     required AnimalReproductionData record,
   }) async {
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _beginMutation(cacheKey);
     final response = await _http.send(
       'POST',
       '/livestock/animals/$animalId/reproduction',
@@ -306,6 +356,8 @@ class AnimalReproductionStorageService {
     final created = AnimalReproductionData.fromMap(response.asMap());
     return _verifyAndCache(
       farmId: farmId,
+      expectedCacheKey: cacheKey,
+      expectedRevision: cacheRevision,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -320,6 +372,8 @@ class AnimalReproductionStorageService {
     required String animalId,
     required AnimalReproductionData record,
   }) async {
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _beginMutation(cacheKey);
     await _http.send(
       'PATCH',
       '/livestock/animals/$animalId/reproduction/${record.id}',
@@ -327,6 +381,8 @@ class AnimalReproductionStorageService {
     );
     final saved = await _verifyAndCache(
       farmId: farmId,
+      expectedCacheKey: cacheKey,
+      expectedRevision: cacheRevision,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -357,6 +413,8 @@ class AnimalReproductionStorageService {
     required String responsible,
     String reason = '',
   }) async {
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _beginMutation(cacheKey);
     final response = await _http.send(
       'GET',
       '/livestock/animals/$animalId/reproduction',
@@ -385,14 +443,18 @@ class AnimalReproductionStorageService {
       if (current.returnResolutionStatus != status) {
         throw StateError('O retorno já possui outra resolução confirmada.');
       }
-      await _saveLocal(
-        await _cacheKey(farmName, groupName, animalId, farmId),
+      await _assertSameContext(farmId, animalId, cacheKey);
+      if (!await _saveIfCurrent(
+        cacheKey,
+        cacheRevision,
         response
             .asMapList()
             .map(AnimalReproductionData.fromMap)
             .map((item) => item.withAnimalId(animalId))
             .toList(),
-      );
+      )) {
+        throw StateError('Outra operação atualizou este histórico.');
+      }
       return current;
     }
     final candidate = current.returnResolutionStatus != null
@@ -411,6 +473,8 @@ class AnimalReproductionStorageService {
     }
     return _sendResolutionMetadata(
       farmId: farmId,
+      expectedCacheKey: cacheKey,
+      expectedRevision: cacheRevision,
       farmName: farmName,
       groupName: groupName,
       animalId: animalId,
@@ -425,6 +489,8 @@ class AnimalReproductionStorageService {
     required String animalId,
     required String recordId,
   }) async {
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _beginMutation(cacheKey);
     await _http.send(
       'DELETE',
       '/livestock/animals/$animalId/reproduction/$recordId',
@@ -435,10 +501,10 @@ class AnimalReproductionStorageService {
         'O registro reprodutivo ainda existe após a exclusão no servidor.',
       );
     }
-    await _saveLocal(
-      await _cacheKey(farmName, groupName, animalId, farmId),
-      remote,
-    );
+    await _assertSameContext(farmId, animalId, cacheKey);
+    if (!await _saveIfCurrent(cacheKey, cacheRevision, remote)) {
+      throw StateError('Outra operação atualizou este histórico.');
+    }
   }
 
   Future<List<AnimalReproductionData>> saveRecords({
@@ -448,6 +514,8 @@ class AnimalReproductionStorageService {
     required String animalId,
     required List<AnimalReproductionData> records,
   }) async {
+    final cacheKey = await _cacheKey(farmName, groupName, animalId, farmId);
+    final cacheRevision = _revision(cacheKey);
     final remote = await _fetchRemote(animalId);
     final remoteIds = remote.map((item) => item.id).toSet();
     final created = <AnimalReproductionData>[];
@@ -465,22 +533,30 @@ class AnimalReproductionStorageService {
         ),
       );
     }
+    final expectedRevision = created.isEmpty
+        ? cacheRevision
+        : _revision(cacheKey);
     final refreshed = created.isEmpty ? remote : await _fetchRemote(animalId);
-    await _saveLocal(
-      await _cacheKey(farmName, groupName, animalId, farmId),
-      refreshed,
-    );
+    await _assertSameContext(farmId, animalId, cacheKey);
+    if (!await _saveIfCurrent(cacheKey, expectedRevision, refreshed)) {
+      throw StateError('Outra operação atualizou este histórico.');
+    }
     return refreshed;
   }
 
   Future<AnimalReproductionData> _verifyAndCache({
     String? farmId,
+    String? expectedCacheKey,
+    int? expectedRevision,
     required String farmName,
     required String groupName,
     required String animalId,
     required String recordId,
   }) async {
     final key = await _cacheKey(farmName, groupName, animalId, farmId);
+    if (expectedCacheKey != null && key != expectedCacheKey) {
+      throw StateError('Conta ou fazenda mudou durante a confirmação.');
+    }
     final remote = await _fetchRemote(animalId);
     final saved = remote.firstWhere(
       (item) => item.id == recordId,
@@ -491,7 +567,11 @@ class AnimalReproductionStorageService {
     if (farmId != null && key != await _scopedKey(farmId, animalId)) {
       throw StateError('Conta ou fazenda mudou durante a confirmação.');
     }
-    await _saveLocal(key, remote);
+    if (expectedRevision == null) {
+      await _saveLocal(key, remote);
+    } else if (!await _saveIfCurrent(key, expectedRevision, remote)) {
+      throw StateError('Outra operação atualizou este histórico.');
+    }
     return saved;
   }
 
@@ -523,9 +603,23 @@ class AnimalReproductionStorageService {
     }
   }
 
-  Future<void> _saveLocal(String key, List<AnimalReproductionData> records) =>
-      _preferences.setString(
+  Future<void> _saveLocal(
+    String key,
+    List<AnimalReproductionData> records,
+  ) async {
+    final previous = _lastCacheWrite;
+    final completed = Completer<void>();
+    final current = completed.future;
+    _lastCacheWrite = current;
+    try {
+      if (previous != null) await previous;
+      await _preferences.setString(
         key,
         jsonEncode(records.map((record) => record.toMap()).toList()),
       );
+    } finally {
+      completed.complete();
+      if (identical(_lastCacheWrite, current)) _lastCacheWrite = null;
+    }
+  }
 }
