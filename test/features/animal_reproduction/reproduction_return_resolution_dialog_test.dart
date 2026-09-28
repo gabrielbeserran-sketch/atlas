@@ -2,9 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/widgets/reproduction_return_resolution_dialog.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
+import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_return_queue.dart';
 import 'reproduction_return_resolution_test.dart' as fixtures;
 
 void main() {
+  testWidgets(
+    'baixa local exibe pendência e não oferece nova baixa nem edição',
+    (tester) async {
+      String? action;
+      final draft = fixtures.resolve();
+      final pending = PendingReturn(
+        animalId: 'cow',
+        eventId: 'event',
+        occurredDate: '01/09/2026',
+        expectedDate: '02/09/2026',
+        audit: Map<String, dynamic>.from(
+          draft.metadata['atlas_return_resolution'] as Map,
+        ),
+        conflict: 'Previsão mudou no servidor.',
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReproductionRecordCard(
+              record: fixtures.record(),
+              pending: pending,
+              onEdit: () {},
+              onDelete: () {},
+              onResolveReturn: (value) => action = value,
+            ),
+          ),
+        ),
+      );
+      expect(find.textContaining('Conflito na baixa local'), findsOneWidget);
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      expect(find.text('Concluir retorno'), findsNothing);
+      expect(find.text('Editar registro'), findsNothing);
+      await tester.tap(find.text('Sincronizar baixa local'));
+      await tester.pumpAndSettle();
+      expect(action, 'sync_local');
+    },
+  );
   testWidgets(
     'menu oferece baixa apenas para retorno pendente e respeita bloqueio',
     (tester) async {

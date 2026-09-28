@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projeto_atlas/core/network/atlas_http_client.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
+import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_return_queue.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_resolution.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_schedule.dart';
@@ -45,6 +47,8 @@ class FakeHttp extends AtlasHttpClient {
   int patches = 0;
   bool dropResolution = false;
   bool offline = false;
+  bool losePatchResponse = false;
+  Future<void> Function()? afterGet;
   @override
   Future<AtlasHttpResponse> send(
     String method,
@@ -58,7 +62,7 @@ class FakeHttp extends AtlasHttpClient {
     if (offline) throw StateError('offline');
     if (method == 'PATCH') {
       patches++;
-      saved = {...body!, 'id': 'event', 'animal_id': 'cow'};
+      saved = {...?saved, ...body!, 'id': 'event', 'animal_id': 'cow'};
       final metadata = Map<String, dynamic>.from(
         saved!['metadata_json'] as Map,
       );
@@ -69,8 +73,12 @@ class FakeHttp extends AtlasHttpClient {
         };
       }
       saved!['metadata_json'] = metadata;
+      if (losePatchResponse) {
+        throw StateError('Resposta de confirmação perdida');
+      }
     }
     final response = {...?saved};
+    if (method == 'GET' && afterGet != null) await afterGet!();
     if (dropResolution) response['metadata_json'] = {};
     return AtlasHttpResponse(
       statusCode: 200,
@@ -353,5 +361,307 @@ void main() {
       throwsStateError,
     );
     expect(http.patches, 0);
+  });
+  const scope = ReturnQueueScope('tenant', 'company', 'farm', 'user');
+  AnimalReproductionStorageService queued(FakeHttp http) =>
+      AnimalReproductionStorageService(
+        httpClient: http,
+        scopeProvider: (_) async => scope,
+      );
+  AnimalReproductionData confirmedSource() => AnimalReproductionData.fromMap({
+    ...record().toMap(),
+    'synced': true,
+    'animalId': 'cow',
+  });
+
+  test('baixa offline persiste sem retirar previsão da triagem', () async {
+    final http = FakeHttp()..offline = true;
+    final storage = queued(http);
+    final first = await storage.queueReturn(
+      farmId: 'farm',
+      record: confirmedSource(),
+      status: 'completed',
+      responsible: ' Operador ',
+    );
+    final reopened = await queued(
+      http,
+    ).pendingReturns(farmId: 'farm', animalId: 'cow');
+    expect(reopened.single.audit, first.audit);
+    expect(first.conflict, isEmpty);
+    expect(
+      ReproductionReturnSchedule.calculate([
+        confirmedSource(),
+      ], referenceDate: DateTime(2026, 9, 27)).past,
+      1,
+    );
+    expect(http.patches, 0);
+  });
+  test(
+    'fila isola usuário/empresa/fazenda e mantém primeira intenção',
+    () async {
+      final http = FakeHttp();
+      final storage = queued(http);
+      final first = await storage.queueReturn(
+        farmId: 'farm',
+        record: confirmedSource(),
+        status: 'completed',
+        responsible: 'Operador',
+      );
+      final duplicate = await storage.queueReturn(
+        farmId: 'farm',
+        record: confirmedSource(),
+        status: 'completed',
+        responsible: 'Outro',
+      );
+      expect(duplicate.audit, first.audit);
+      await expectLater(
+        storage.queueReturn(
+          farmId: 'farm',
+          record: confirmedSource(),
+          status: 'cancelled',
+          responsible: 'Outro',
+          reason: 'Mudança',
+        ),
+        throwsStateError,
+      );
+      final queue = ReproductionReturnQueue();
+      for (final other in [
+        const ReturnQueueScope('tenant', 'company', 'farm', 'other-user'),
+        const ReturnQueueScope('tenant', 'other-company', 'farm', 'user'),
+        const ReturnQueueScope('tenant', 'company', 'other-farm', 'user'),
+      ]) {
+        expect(await queue.read(other), isEmpty);
+      }
+    },
+  );
+  test('reconexão confirma uma vez e limpa apenas fila da conta', () async {
+    final http = FakeHttp()..offline = true;
+    final storage = queued(http);
+    await storage.queueReturn(
+      farmId: 'farm',
+      record: confirmedSource(),
+      status: 'cancelled',
+      responsible: 'Operador',
+      reason: 'Nova data',
+    );
+    http.offline = false;
+    expect(
+      await storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      1,
+    );
+    expect(http.patches, 1);
+    expect(
+      (await queued(http).pendingReturns(farmId: 'farm', animalId: 'cow')),
+      isEmpty,
+    );
+    expect(
+      await storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      0,
+    );
+    expect(http.patches, 1);
+    expect(
+      (await storage.loadRecords(
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      )).single.hasConfirmedReturnResolution,
+      isTrue,
+    );
+  });
+  test(
+    'resposta perdida reconcilia pela mesma auditoria sem segundo PATCH',
+    () async {
+      final http = FakeHttp()..losePatchResponse = true;
+      final storage = queued(http);
+      final pending = await storage.queueReturn(
+        farmId: 'farm',
+        record: confirmedSource(),
+        status: 'completed',
+        responsible: 'Operador',
+      );
+      await expectLater(
+        storage.syncQueuedReturns(
+          farmId: 'farm',
+          farmName: 'Teste',
+          groupName: 'Grupo',
+          animalId: 'cow',
+        ),
+        throwsStateError,
+      );
+      expect(
+        (await storage.pendingReturns(
+          farmId: 'farm',
+          animalId: 'cow',
+        )).single.audit,
+        pending.audit,
+      );
+      http.losePatchResponse = false;
+      expect(
+        await storage.syncQueuedReturns(
+          farmId: 'farm',
+          farmName: 'Teste',
+          groupName: 'Grupo',
+          animalId: 'cow',
+        ),
+        1,
+      );
+      expect(http.patches, 1);
+    },
+  );
+  test('previsão divergente vira conflito persistente sem PATCH', () async {
+    final http = FakeHttp();
+    final storage = queued(http);
+    await storage.queueReturn(
+      farmId: 'farm',
+      record: confirmedSource(),
+      status: 'completed',
+      responsible: 'Operador',
+    );
+    http.saved!['expected_date'] = '2026-09-04';
+    expect(
+      await storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      0,
+    );
+    expect(http.patches, 0);
+    expect(
+      (await queued(
+        http,
+      ).pendingReturns(farmId: 'farm', animalId: 'cow')).single.conflict,
+      contains('mudou'),
+    );
+  });
+  test('servidor antigo e rede ausente preservam fila sem envio', () async {
+    final http = FakeHttp()..hasContract = false;
+    final storage = queued(http);
+    await storage.queueReturn(
+      farmId: 'farm',
+      record: confirmedSource(),
+      status: 'completed',
+      responsible: 'Operador',
+    );
+    await expectLater(
+      storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      throwsStateError,
+    );
+    http.hasContract = true;
+    http.offline = true;
+    await expectLater(
+      storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      throwsStateError,
+    );
+    expect(
+      (await storage.pendingReturns(farmId: 'farm', animalId: 'cow')).length,
+      1,
+    );
+    expect(http.patches, 0);
+  });
+  test('evento não confirmado não pode receber baixa local', () async {
+    await expectLater(
+      queued(FakeHttp()).queueReturn(
+        farmId: 'farm',
+        record: record(),
+        status: 'completed',
+        responsible: 'Operador',
+      ),
+      throwsStateError,
+    );
+  });
+  test('duas inclusões simultâneas não perdem nenhuma intenção', () async {
+    final storage = queued(FakeHttp());
+    final second = AnimalReproductionData.fromMap({
+      ...confirmedSource().toMap(),
+      'id': 'event-2',
+    });
+    await Future.wait([
+      storage.queueReturn(
+        farmId: 'farm',
+        record: confirmedSource(),
+        status: 'completed',
+        responsible: 'Operador',
+      ),
+      storage.queueReturn(
+        farmId: 'farm',
+        record: second,
+        status: 'cancelled',
+        responsible: 'Operador',
+        reason: 'Outra visita',
+      ),
+    ]);
+    expect(
+      (await storage.pendingReturns(farmId: 'farm', animalId: 'cow')).length,
+      2,
+    );
+  });
+  test('fila ilegível não é apagada silenciosamente', () async {
+    const key = 'atlas_reproduction_return_queue_v1_tenant_company_farm_user';
+    final prefs = SharedPreferencesAsync();
+    await prefs.setString(key, 'arquivo corrompido');
+    await expectLater(
+      ReproductionReturnQueue(preferences: prefs).read(scope),
+      throwsStateError,
+    );
+    expect(await prefs.getString(key), 'arquivo corrompido');
+  });
+  test('troca de conta após GET interrompe antes do PATCH', () async {
+    final http = FakeHttp();
+    var current = scope;
+    final storage = AnimalReproductionStorageService(
+      httpClient: http,
+      scopeProvider: (_) async => current,
+    );
+    await storage.queueReturn(
+      farmId: 'farm',
+      record: confirmedSource(),
+      status: 'completed',
+      responsible: 'Operador',
+    );
+    http.afterGet = () async {
+      current = const ReturnQueueScope(
+        'tenant',
+        'company',
+        'farm',
+        'other-user',
+      );
+    };
+    await expectLater(
+      storage.syncQueuedReturns(
+        farmId: 'farm',
+        farmName: 'Teste',
+        groupName: 'Grupo',
+        animalId: 'cow',
+      ),
+      throwsStateError,
+    );
+    expect(http.patches, 0);
+    current = scope;
+    expect(
+      (await storage.pendingReturns(farmId: 'farm', animalId: 'cow')).length,
+      1,
+    );
   });
 }

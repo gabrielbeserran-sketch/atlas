@@ -1,6 +1,6 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 27/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 28/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
 
 ## Caminho de fechamento da versão comercial atual
 
@@ -23,6 +23,7 @@ Próximo trabalho local: fechar pendências de Operações/Campo e preparar ensa
 Genética/ANCP, integração WhatsApp e demais expansões devem ter escopo e aceite próprios antes de entrar no fechamento comercial. A pesquisa/recomendação anterior não comprova implementação nem integração oficial; não apresentar essas expansões como funções prontas. OCR em nuvem também não será requisito oculto para uso offline: a disponibilidade/custo precisa de decisão explícita antes da oferta comercial.
 
 | Etapa | Situação | Progresso | Critério de aceite |
+| Fila de baixas reprodutivas offline (28/09/2026) | Validada localmente; checkpoint atlas-reproduction-returns-offline-20260928 | 100% deste pacote, sem aceite real | Intenção separada da baixa confirmada, isolamento por conta/fazenda/usuário, sincronização explícita idempotente por auditoria estável, conflito sem sobregravar e descarte confirmado. 100 testes Flutter, 10 novos; análise/diff e único build Windows profile (149,7 s) aprovados. Artefato separado não aberto/instalado. Próximo: contrato HTTP real/implantação autorizada, PostgreSQL/concorrência, dois dispositivos e avaliação funcional. |
 | Conciliação Agenda/Reprodução (27/09/2026) | Validada localmente; checkpoint atlas-reproduction-agenda-reconciliation-20260927 | 100% deste pacote, não do aceite real | Baixa pela tarefa principal grava auditoria/evento e tarefa na mesma transação; exige permissão reprodutiva, motivo para cancelamento e preservação terminal. Retry, vínculo, duplicidades históricas e tarefas manuais/antigas cobertos. 27 testes isolados, Ruff F focalizado, compilação Python/diff aprovados. Sem novo build/instalação Flutter. Próximo: escrita offline idempotente; HTTP/PostgreSQL/concorrência e dois dispositivos pendentes. |
 | Confirmação de retornos na interface (27/09/2026) | Validada localmente; checkpoint atlas-reproduction-return-confirmation-20260927 | 100% deste pacote, sem deploy/aceite real | Menu/diálogo com responsável e motivo, bloqueio concorrente, contrato v1 antes de escrita, autoria/releitura e retry sem PATCH duplicado. 89 testes Flutter, 14 Python isolados, análise/diff/compilação Python e único build Windows profile (194,0 s) aprovados. Artefato separado não aberto/instalado. Próximo: reconciliação de tarefas manuais; backend autorizado/HTTP/PostgreSQL, escrita offline e dois dispositivos ainda pendentes. |
 | Backend de resolução dos retornos (27/09/2026) | Validado localmente; checkpoint atlas-reproduction-return-backend-20260927 | 100% deste pacote, sem deploy | Treze testes isolados (memória/mocks), compilação Python/Ruff F/diff aprovados; validação/autoria/transições e tarefa operacional coerentes antes do commit. Banco real preservado. Próximo: interface e reconciliação de tarefas manuais; HTTP/PostgreSQL/deploy, escrita offline e aceite real pendentes. |

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/widgets/atlas_feedback.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
+import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_return_queue.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/animal_reproduction_event_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_form_screen.dart';
@@ -41,6 +42,159 @@ class _AnimalReproductionListScreenState
   List<AnimalReproductionData> records = [];
   bool isLoading = true;
   bool isResolvingReturn = false;
+  List<PendingReturn> pendingReturns = [];
+
+  Future<void> queueReturn(AnimalReproductionData record, String status) async {
+    if (isResolvingReturn) return;
+    setState(() => isResolvingReturn = true);
+    try {
+      final input = await showReturnResolutionDialog(
+        context,
+        cancel: status == 'cancelled',
+        responsible: record.responsible,
+      );
+      if (input == null || !mounted) return;
+      final pending = await storage.queueReturn(
+        farmId: widget.farm.id ?? '',
+        record: record,
+        status: status,
+        responsible: input.responsible,
+        reason: input.reason,
+      );
+      if (!mounted) return;
+      setState(
+        () => pendingReturns = [
+          ...pendingReturns.where((item) => item.eventId != pending.eventId),
+          pending,
+        ],
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Baixa salva neste dispositivo. Ainda não foi confirmada pelo servidor.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is StateError
+                  ? error.message.toString()
+                  : 'Não foi possível salvar a baixa local.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isResolvingReturn = false);
+    }
+  }
+
+  Future<void> syncPendingReturns() async {
+    if (isResolvingReturn) return;
+    setState(() => isResolvingReturn = true);
+    try {
+      final count = await storage.syncQueuedReturns(
+        farmId: widget.farm.id ?? '',
+        farmName: widget.farm.name,
+        groupName: widget.group.name,
+        animalId: widget.animal.id,
+      );
+      if (!mounted) return;
+      final saved = await storage.loadRecords(
+        farmName: widget.farm.name,
+        groupName: widget.group.name,
+        animalId: widget.animal.id,
+      );
+      final pending = await storage.pendingReturns(
+        farmId: widget.farm.id ?? '',
+        animalId: widget.animal.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        records = saved;
+        sortRecords();
+        pendingReturns = pending;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$count baixa(s) confirmada(s). ${pending.length} ainda pendente(s) ou em conflito.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is StateError
+                ? error.message.toString()
+                : 'Sem confirmação do servidor. As baixas locais foram preservadas.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => isResolvingReturn = false);
+    }
+  }
+
+  Future<void> discardPending(PendingReturn pending) async {
+    if (isResolvingReturn) return;
+    final approved = await AtlasFeedback.confirmDelete(
+      context,
+      title: 'Descartar baixa local',
+      message:
+          'Descartar a baixa ainda não confirmada deste retorno? Isto não altera o servidor.',
+    );
+    if (!approved || !mounted) return;
+    setState(() => isResolvingReturn = true);
+    try {
+      await storage.discardQueuedReturn(
+        farmId: widget.farm.id ?? '',
+        pending: pending,
+      );
+      if (mounted) {
+        setState(
+          () => pendingReturns = pendingReturns
+              .where((item) => item.eventId != pending.eventId)
+              .toList(),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível descartar a baixa local.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isResolvingReturn = false);
+    }
+  }
+
+  void handleReturnAction(
+    AnimalReproductionData record,
+    PendingReturn? pending,
+    String action,
+  ) {
+    if (action == 'sync_local') {
+      syncPendingReturns();
+      return;
+    }
+    if (action == 'discard_local' && pending != null) {
+      discardPending(pending);
+      return;
+    }
+    if (action.startsWith('queue_')) {
+      queueReturn(record, action.substring(6));
+      return;
+    }
+    resolveReturn(record, action);
+  }
 
   Future<void> resolveReturn(
     AnimalReproductionData record,
@@ -164,6 +318,17 @@ class _AnimalReproductionListScreenState
       groupName: widget.group.name,
       animalId: widget.animal.id,
     );
+    List<PendingReturn> savedPending = [];
+    if (widget.farm.id?.isNotEmpty == true) {
+      try {
+        savedPending = await storage.pendingReturns(
+          farmId: widget.farm.id!,
+          animalId: widget.animal.id,
+        );
+      } catch (_) {
+        // O histórico continua visível; nenhuma baixa local é considerada confirmada.
+      }
+    }
 
     if (!mounted) {
       return;
@@ -171,6 +336,7 @@ class _AnimalReproductionListScreenState
 
     setState(() {
       records = savedRecords;
+      pendingReturns = savedPending;
       sortRecords();
       isLoading = false;
     });
@@ -259,6 +425,9 @@ class _AnimalReproductionListScreenState
   Future<void> editReproductionRecord(
     AnimalReproductionData reproductionRecord,
   ) async {
+    if (pendingReturns.any((item) => item.eventId == reproductionRecord.id)) {
+      return;
+    }
     if (isResolvingReturn) return;
     final editedRecord = await Navigator.push<AnimalReproductionData>(
       context,
@@ -308,6 +477,9 @@ class _AnimalReproductionListScreenState
   Future<void> deleteReproductionRecord(
     AnimalReproductionData reproductionRecord,
   ) async {
+    if (pendingReturns.any((item) => item.eventId == reproductionRecord.id)) {
+      return;
+    }
     if (isResolvingReturn) return;
     final shouldDelete = await AtlasFeedback.confirmDelete(
       context,
@@ -480,6 +652,36 @@ class _AnimalReproductionListScreenState
                         ),
                       ],
                       const SizedBox(height: 32),
+                      if (pendingReturns.isNotEmpty) ...[
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${pendingReturns.length} baixa(s) somente neste dispositivo',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text(
+                                  'Ainda não alteraram o servidor nem retiraram o retorno da triagem.',
+                                ),
+                                const SizedBox(height: 8),
+                                OutlinedButton.icon(
+                                  onPressed: isResolvingReturn
+                                      ? null
+                                      : syncPendingReturns,
+                                  icon: const Icon(Icons.sync),
+                                  label: const Text('Sincronizar baixas'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       const Text(
                         'Histórico reprodutivo',
                         style: TextStyle(
@@ -501,9 +703,17 @@ class _AnimalReproductionListScreenState
                             padding: const EdgeInsets.only(bottom: 16),
                             child: ReproductionRecordCard(
                               record: record,
+                              pending: pendingReturns
+                                  .where((item) => item.eventId == record.id)
+                                  .firstOrNull,
                               enabled: !isResolvingReturn,
-                              onResolveReturn: (status) =>
-                                  resolveReturn(record, status),
+                              onResolveReturn: (action) => handleReturnAction(
+                                record,
+                                pendingReturns
+                                    .where((item) => item.eventId == record.id)
+                                    .firstOrNull,
+                                action,
+                              ),
                               onEdit: () {
                                 editReproductionRecord(record);
                               },
@@ -588,6 +798,7 @@ class ReproductionRecordCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onResolveReturn,
+    this.pending,
     this.enabled = true,
     super.key,
   });
@@ -596,6 +807,7 @@ class ReproductionRecordCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<String>? onResolveReturn;
+  final PendingReturn? pending;
   final bool enabled;
 
   @override
@@ -603,7 +815,7 @@ class ReproductionRecordCard extends StatelessWidget {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: enabled ? onEdit : null,
+        onTap: enabled && pending == null ? onEdit : null,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
@@ -734,6 +946,15 @@ class ReproductionRecordCard extends StatelessWidget {
                             : 'Resolução aguardando confirmação do servidor',
                       ),
                     ],
+                    if (pending != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        pending!.conflict.isEmpty
+                            ? 'Baixa local pendente de sincronização · não confirmada'
+                            : 'Conflito na baixa local: ${pending!.conflict}',
+                        style: const TextStyle(color: Color(0xFF8D6E00)),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -741,7 +962,10 @@ class ReproductionRecordCard extends StatelessWidget {
                 enabled: enabled,
                 tooltip: 'Opções',
                 onSelected: (value) {
-                  if (value == 'completed' || value == 'cancelled') {
+                  if (value == 'completed' ||
+                      value == 'cancelled' ||
+                      value.startsWith('queue_') ||
+                      value.endsWith('_local')) {
                     onResolveReturn?.call(value);
                   }
                   if (value == 'edit') {
@@ -754,7 +978,18 @@ class ReproductionRecordCard extends StatelessWidget {
                 },
                 itemBuilder: (context) {
                   return [
-                    if (onResolveReturn != null &&
+                    if (pending != null) ...[
+                      const PopupMenuItem(
+                        value: 'sync_local',
+                        child: Text('Sincronizar baixa local'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'discard_local',
+                        child: Text('Descartar baixa local'),
+                      ),
+                    ],
+                    if (pending == null &&
+                        onResolveReturn != null &&
                         record.expectedDate.isNotEmpty &&
                         !record.hasConfirmedReturnResolution) ...[
                       if (record.returnResolutionStatus == null ||
@@ -769,27 +1004,37 @@ class ReproductionRecordCard extends StatelessWidget {
                           value: 'cancelled',
                           child: Text('Cancelar retorno'),
                         ),
+                      const PopupMenuItem(
+                        value: 'queue_completed',
+                        child: Text('Concluir offline (pendente)'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'queue_cancelled',
+                        child: Text('Cancelar offline (pendente)'),
+                      ),
                     ],
-                    PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Editar registro')),
-                        ],
+                    if (pending == null)
+                      PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, color: Color(0xFF1B5E20)),
+                            SizedBox(width: 10),
+                            Expanded(child: Text('Editar registro')),
+                          ],
+                        ),
                       ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: Colors.red),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Excluir registro')),
-                        ],
+                    if (pending == null)
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, color: Colors.red),
+                            SizedBox(width: 10),
+                            Expanded(child: Text('Excluir registro')),
+                          ],
+                        ),
                       ),
-                    ),
                   ];
                 },
               ),
