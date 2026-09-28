@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:projeto_atlas/core/text/atlas_text_normalizer.dart';
@@ -77,7 +78,9 @@ class ReproductionOverviewSnapshotService {
       String animalId,
     )?
     recordsProvider,
-  }) : _preferences = preferences ?? SharedPreferencesAsync(),
+    this.maxConcurrentRecordReads = 4,
+  }) : assert(maxConcurrentRecordReads > 0 && maxConcurrentRecordReads <= 8),
+       _preferences = preferences ?? SharedPreferencesAsync(),
        _sessionProvider =
            sessionProvider ??
            AtlasEnterpriseRemoteAuthStore.instance.loadSession,
@@ -93,8 +96,11 @@ class ReproductionOverviewSnapshotService {
   final Future<List<AnimalData>> Function(String, String) _animalsProvider;
   final Future<List<AnimalReproductionData>> Function(String, String)
   _recordsProvider;
+  final int maxConcurrentRecordReads;
 
   static const _prefix = 'atlas_reproduction_overview_v1_';
+  static final Map<String, int> _refreshRevisions = {};
+  static final Map<String, Future<void>> _pendingWrites = {};
 
   static Future<List<FarmData>> _loadRemoteFarms() async {
     final rows = await AtlasEnterpriseApiClient.instance.requestList(
@@ -199,7 +205,13 @@ class ReproductionOverviewSnapshotService {
     FarmData? selectedFarm,
   }) async {
     final initial = await _session();
+    final key = _key(initial);
+    final revision = (_refreshRevisions[key] ?? 0) + 1;
+    _refreshRevisions[key] = revision;
     final remoteFarms = await _farmsProvider();
+    if (_refreshRevisions[key] != revision) {
+      throw StateError('Atualização mais recente já iniciada.');
+    }
     final permitted = remoteFarms
         .where((farm) => _allowed(initial, farm.id ?? ''))
         .toList(growable: false);
@@ -208,15 +220,21 @@ class ReproductionOverviewSnapshotService {
       throw StateError('Fazenda não autorizada nesta sessão.');
     }
 
-    final entries = <ReproductionOverviewEntry>[];
+    final jobs = <({FarmData farm, HerdGroupData group, AnimalData animal})>[];
     for (final farm in permitted) {
       final farmId = farm.id!;
       final groups = await _groupsProvider(farmId);
+      if (_refreshRevisions[key] != revision) {
+        throw StateError('Atualização mais recente já iniciada.');
+      }
       for (final group in groups) {
         if (group.id.trim().isEmpty) {
           throw StateError('Lote sem identidade remota; cópia não atualizada.');
         }
         final animals = await _animalsProvider(farmId, group.id);
+        if (_refreshRevisions[key] != revision) {
+          throw StateError('Atualização mais recente já iniciada.');
+        }
         for (final animal in animals) {
           final sex = animal.sex.trim().toLowerCase();
           if (sex != 'fêmea' && sex != 'femea' && sex != 'female') continue;
@@ -225,21 +243,55 @@ class ReproductionOverviewSnapshotService {
               'Animal sem identidade remota; cópia não atualizada.',
             );
           }
-          final records = await _recordsProvider(farmId, animal.id);
-          entries.add(
-            ReproductionOverviewEntry(
-              farm: farm,
-              group: group,
-              animal: animal,
-              records: records,
-            ),
-          );
+          jobs.add((farm: farm, group: group, animal: animal));
         }
       }
     }
 
+    final results = List<ReproductionOverviewEntry?>.filled(jobs.length, null);
+    var nextJob = 0;
+    Object? firstFailure;
+    StackTrace? firstStack;
+    Future<void> worker() async {
+      while (firstFailure == null &&
+          _refreshRevisions[key] == revision &&
+          nextJob < jobs.length) {
+        final index = nextJob++;
+        final job = jobs[index];
+        try {
+          final records = await _recordsProvider(job.farm.id!, job.animal.id);
+          results[index] = ReproductionOverviewEntry(
+            farm: job.farm,
+            group: job.group,
+            animal: job.animal,
+            records: records,
+          );
+        } catch (error, stack) {
+          firstFailure ??= error;
+          firstStack ??= stack;
+        }
+      }
+    }
+
+    await Future.wait(
+      List.generate(
+        jobs.length < maxConcurrentRecordReads
+            ? jobs.length
+            : maxConcurrentRecordReads,
+        (_) => worker(),
+      ),
+    );
+    if (firstFailure case final failure?) {
+      Error.throwWithStackTrace(failure, firstStack!);
+    }
+    if (_refreshRevisions[key] != revision) {
+      throw StateError('Atualização mais recente já iniciada.');
+    }
+    final entries = results.cast<ReproductionOverviewEntry>();
+
     final current = await _session();
-    if (_key(current) != _key(initial) ||
+    if (_refreshRevisions[key] != revision ||
+        _key(current) != key ||
         current.role != initial.role ||
         current.farmIds
             .toSet()
@@ -252,13 +304,49 @@ class ReproductionOverviewSnapshotService {
         permitted.any((farm) => !_allowed(current, farm.id ?? ''))) {
       throw StateError('Conta ou acesso à fazenda mudou durante a leitura.');
     }
-    await _preferences.setString(
-      _key(initial),
-      jsonEncode({
+    await _storeIfCurrent(
+      key: key,
+      revision: revision,
+      initial: initial,
+      farms: permitted,
+      value: jsonEncode({
         'farm_ids': permitted.map((farm) => farm.id).toList(),
         'entries': entries.map((entry) => entry.toMap()).toList(),
       }),
     );
     return _visible(current, entries, selectedFarm);
+  }
+
+  Future<void> _storeIfCurrent({
+    required String key,
+    required int revision,
+    required AtlasRemoteSession initial,
+    required List<FarmData> farms,
+    required String value,
+  }) async {
+    final previous = _pendingWrites[key];
+    final completed = Completer<void>();
+    final currentWrite = completed.future;
+    _pendingWrites[key] = currentWrite;
+    try {
+      if (previous != null) await previous;
+      final current = await _session();
+      if (_refreshRevisions[key] != revision ||
+          _key(current) != key ||
+          current.role != initial.role ||
+          current.farmIds.toSet().length != initial.farmIds.toSet().length ||
+          !current.farmIds.toSet().containsAll(initial.farmIds) ||
+          farms.any((farm) => !_allowed(current, farm.id ?? ''))) {
+        throw StateError(
+          'Leitura antiga ou acesso alterado; cópia preservada.',
+        );
+      }
+      await _preferences.setString(key, value);
+    } finally {
+      completed.complete();
+      if (identical(_pendingWrites[key], currentWrite)) {
+        _pendingWrites.remove(key);
+      }
+    }
   }
 }

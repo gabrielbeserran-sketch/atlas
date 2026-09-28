@@ -203,6 +203,111 @@ void main() {
     expect(cached.entries, isEmpty);
   });
 
+  test('leituras por animal respeitam limite e preservam ordem', () async {
+    final gate = Completer<void>();
+    final firstThreeStarted = Completer<void>();
+    var active = 0;
+    var maximum = 0;
+    var started = 0;
+    final service = ReproductionOverviewSnapshotService(
+      preferences: SharedPreferencesAsync(),
+      sessionProvider: () async => _session(),
+      farmsProvider: () async => [_farm],
+      groupsProvider: (_) async => [_group],
+      animalsProvider: (_, _) async => [
+        for (var index = 0; index < 10; index++)
+          _animal.copyWith(id: 'animal-$index', name: 'Vaca $index'),
+        _animal.copyWith(id: 'bull', sex: 'Macho'),
+      ],
+      recordsProvider: (_, _) async {
+        active++;
+        started++;
+        if (active > maximum) maximum = active;
+        if (started == 3) firstThreeStarted.complete();
+        await gate.future;
+        active--;
+        return [];
+      },
+      maxConcurrentRecordReads: 3,
+    );
+    final pending = service.refresh();
+    await firstThreeStarted.future;
+    expect(started, 3);
+    expect(maximum, 3);
+    gate.complete();
+    final entries = await pending;
+    expect(entries.length, 10);
+    expect(started, 10);
+    expect(maximum, 3);
+    expect(entries.map((entry) => entry.animal.id).toList(), [
+      for (var index = 0; index < 10; index++) 'animal-$index',
+    ]);
+  });
+
+  test('atualização antiga não substitui a mais recente', () async {
+    final firstStarted = Completer<void>();
+    final releaseFirst = Completer<void>();
+    var reads = 0;
+    ReproductionOverviewSnapshotService createService() =>
+        ReproductionOverviewSnapshotService(
+          preferences: SharedPreferencesAsync(),
+          sessionProvider: () async => _session(),
+          farmsProvider: () async {
+            reads++;
+            if (reads == 1) {
+              firstStarted.complete();
+              await releaseFirst.future;
+              return [_farm.copyWith(name: 'Antiga')];
+            }
+            return [_farm.copyWith(name: 'Atual')];
+          },
+          groupsProvider: (_) async => [_group],
+          animalsProvider: (_, _) async => [_animal],
+          recordsProvider: (_, _) async => [_event()],
+        );
+    final service = createService();
+    final oldRead = service.refresh();
+    await firstStarted.future;
+    final newest = await createService().refresh();
+    expect(newest.single.farm.name, 'Atual');
+    releaseFirst.complete();
+    await expectLater(oldRead, throwsStateError);
+    expect((await service.loadCached()).entries.single.farm.name, 'Atual');
+  });
+
+  test(
+    'erro de um animal não publica carteira parcialmente atualizada',
+    () async {
+      var failRecord = false;
+      final service = ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => _session(),
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group],
+        animalsProvider: (_, _) async => failRecord
+            ? [
+                _animal,
+                _animal.copyWith(id: 'animal-2', name: 'Bela'),
+                _animal.copyWith(id: 'animal-3', name: 'Clara'),
+              ]
+            : [_animal],
+        recordsProvider: (_, animalId) async {
+          if (failRecord && animalId == 'animal-2') {
+            throw StateError('Falha no histórico');
+          }
+          return [_event()];
+        },
+      );
+      await service.refresh();
+      failRecord = true;
+      await expectLater(service.refresh(), throwsStateError);
+      final cached = await service.loadCached();
+      expect(cached.available, isTrue);
+      expect(cached.entries.length, 1);
+      expect(cached.entries.single.animal.name, 'Aurora');
+    },
+  );
+
   testWidgets('tela mostra snapshot antes do GET pendente', (tester) async {
     tester.view.physicalSize = const Size(1600, 1200);
     tester.view.devicePixelRatio = 1;
