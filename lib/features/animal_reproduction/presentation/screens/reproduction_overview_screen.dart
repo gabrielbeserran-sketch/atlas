@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projeto_atlas/core/navigation/atlas_product_surface_policy.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_workspace_guide.dart';
@@ -5,18 +7,15 @@ import 'package:projeto_atlas/core/widgets/atlas_operational_action_bar.dart';
 import 'package:projeto_atlas/core/widgets/atlas_empty_state.dart';
 import 'package:projeto_atlas/core/widgets/atlas_operational_feedback.dart';
 import 'package:projeto_atlas/core/widgets/atlas_module_decision_panel.dart';
-import 'package:projeto_atlas/features/animal/data/services/animal_storage_service.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
-import 'package:projeto_atlas/features/animal_reproduction/data/services/animal_reproduction_storage_service.dart';
+import 'package:projeto_atlas/features/animal_reproduction/data/services/reproduction_overview_snapshot_service.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_calendar.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_schedule.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_reproduction_indicator_calculator.dart';
 import 'package:projeto_atlas/features/animal_reproduction/presentation/screens/animal_reproduction_list_screen.dart';
-import 'package:projeto_atlas/features/farm/data/services/farm_storage_service.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
 import 'package:projeto_atlas/features/farm_handling/presentation/screens/farm_handling_screen.dart';
-import 'package:projeto_atlas/features/herd/data/services/herd_storage_service.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
 import 'package:projeto_atlas/core/branding/atlas_livestock_icons.dart';
 
@@ -26,6 +25,7 @@ class ReproductionOverviewScreen extends StatefulWidget {
     this.autoOpenCreate = false,
     this.embedded = false,
     this.contextLoader,
+    this.snapshotService,
     super.key,
   });
 
@@ -33,6 +33,7 @@ class ReproductionOverviewScreen extends StatefulWidget {
   final bool autoOpenCreate;
   final bool embedded;
   final Future<List<ReproductionAnimalContext>> Function()? contextLoader;
+  final ReproductionOverviewSnapshotService? snapshotService;
 
   @override
   State<ReproductionOverviewScreen> createState() =>
@@ -42,15 +43,16 @@ class ReproductionOverviewScreen extends StatefulWidget {
 class _ReproductionOverviewScreenState
     extends State<ReproductionOverviewScreen> {
   final searchController = TextEditingController();
-  final FarmStorageService farmStorage = FarmStorageService();
-  final HerdStorageService herdStorage = HerdStorageService();
-  final AnimalStorageService animalStorage = AnimalStorageService();
-  final AnimalReproductionStorageService reproductionStorage =
-      AnimalReproductionStorageService();
+  late final ReproductionOverviewSnapshotService overviewStorage =
+      widget.snapshotService ?? ReproductionOverviewSnapshotService();
 
   List<ReproductionAnimalContext> animals = [];
   bool isLoading = true;
+  bool isRefreshing = false;
+  bool snapshotAvailable = false;
   String? loadError;
+  int _loadRevision = 0;
+  bool _createOpened = false;
   String search = '';
   ReproductionReturnSchedule returnSchedule =
       const ReproductionReturnSchedule();
@@ -247,70 +249,88 @@ class _ReproductionOverviewScreenState
 
   Future<void> _loadInitial() async {
     await loadData();
-    if (widget.autoOpenCreate && mounted) {
+    if (widget.autoOpenCreate && !_createOpened && mounted) {
+      _createOpened = true;
       await openNewEvent();
     }
   }
 
   Future<void> loadData() async {
+    final revision = ++_loadRevision;
     if (mounted) {
       setState(() {
-        isLoading = true;
+        isLoading = !snapshotAvailable;
+        isRefreshing = true;
         loadError = null;
       });
     }
     try {
       if (widget.contextLoader != null) {
         final contexts = await widget.contextLoader!();
-        if (mounted) _applyContexts(contexts);
+        if (mounted && revision == _loadRevision) {
+          snapshotAvailable = true;
+          _applyContexts(contexts);
+        }
         return;
       }
-      final farms = widget.farm == null
-          ? await farmStorage.loadFarms()
-          : <FarmData>[widget.farm!];
-      final loadedAnimals = <ReproductionAnimalContext>[];
-
-      for (final farm in farms) {
-        final groups = await herdStorage.loadGroups(farm.name);
-        for (final group in groups) {
-          final groupAnimals = await animalStorage.loadAnimals(
-            farmName: farm.name,
-            groupName: group.name,
-          );
-          for (final animal in groupAnimals) {
-            if (!_isFemale(animal.sex)) continue;
-            final records = await reproductionStorage.loadRecords(
-              farmId: farm.id ?? '',
-              farmName: farm.name,
-              groupName: group.name,
-              animalId: animal.id,
-            );
-            loadedAnimals.add(
-              ReproductionAnimalContext(
-                farm: farm,
-                group: group,
-                animal: animal,
-                records: records,
-              ),
-            );
-          }
+      final cached = await overviewStorage.loadCached(
+        selectedFarm: widget.farm,
+      );
+      if (!mounted || revision != _loadRevision) return;
+      snapshotAvailable = cached.available;
+      if (cached.available) {
+        _applyContexts(_contexts(cached.entries));
+        if (widget.autoOpenCreate && animals.isNotEmpty && !_createOpened) {
+          _createOpened = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) unawaited(openNewEvent());
+          });
         }
       }
-
-      loadedAnimals.sort((first, second) {
-        final farmComparison = first.farm.name.compareTo(second.farm.name);
-        if (farmComparison != 0) return farmComparison;
-        return first.animal.displayName.compareTo(second.animal.displayName);
+      setState(() {
+        isLoading = false;
       });
-
-      if (!mounted) return;
-      _applyContexts(loadedAnimals);
+      final fresh = await overviewStorage.refresh(selectedFarm: widget.farm);
+      if (!mounted || revision != _loadRevision) return;
+      snapshotAvailable = true;
+      _applyContexts(_contexts(fresh));
     } catch (error) {
-      if (!mounted) return;
-      setState(() => loadError = error.toString());
+      if (!mounted || revision != _loadRevision) return;
+      setState(
+        () => loadError = snapshotAvailable
+            ? 'Sem conexão. Exibindo a última visão confirmada neste dispositivo.'
+            : 'Sem conexão ou sem cópia completa da visão reprodutiva neste dispositivo.',
+      );
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted && revision == _loadRevision) {
+        setState(() {
+          isLoading = false;
+          isRefreshing = false;
+        });
+      }
     }
+  }
+
+  List<ReproductionAnimalContext> _contexts(
+    List<ReproductionOverviewEntry> entries,
+  ) {
+    final contexts = entries
+        .where((entry) => _isFemale(entry.animal.sex))
+        .map(
+          (entry) => ReproductionAnimalContext(
+            farm: entry.farm,
+            group: entry.group,
+            animal: entry.animal,
+            records: entry.records,
+          ),
+        )
+        .toList();
+    contexts.sort((first, second) {
+      final farmComparison = first.farm.name.compareTo(second.farm.name);
+      if (farmComparison != 0) return farmComparison;
+      return first.animal.displayName.compareTo(second.animal.displayName);
+    });
+    return contexts;
   }
 
   void _applyContexts(List<ReproductionAnimalContext> contexts) {
@@ -430,7 +450,7 @@ class _ReproductionOverviewScreenState
               actions: [
                 IconButton(
                   tooltip: 'Atualizar dados',
-                  onPressed: isLoading ? null : loadData,
+                  onPressed: isLoading || isRefreshing ? null : loadData,
                   icon: const Icon(Icons.refresh_outlined),
                 ),
               ],
@@ -438,11 +458,26 @@ class _ReproductionOverviewScreenState
       body: SafeArea(
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
-            : loadError != null && animals.isEmpty
-            ? AtlasLoadErrorState(
-                message: 'Verifique sua conexão e tente novamente.',
-                onRetry: loadData,
-              )
+            : !snapshotAvailable
+            ? isRefreshing
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Buscando a primeira visão reprodutiva completa…',
+                          ),
+                        ],
+                      ),
+                    )
+                  : AtlasLoadErrorState(
+                      message:
+                          loadError ??
+                          'Nenhuma cópia confirmada neste dispositivo.',
+                      onRetry: loadData,
+                    )
             : RefreshIndicator(
                 onRefresh: loadData,
                 child: ListView(
@@ -457,6 +492,35 @@ class _ReproductionOverviewScreenState
                           children: [
                             const _ReproductionHeader(),
                             const SizedBox(height: 12),
+                            if (widget.contextLoader == null) ...[
+                              Card(
+                                child: ListTile(
+                                  leading: Icon(
+                                    isRefreshing
+                                        ? Icons.cloud_sync_outlined
+                                        : loadError == null
+                                        ? Icons.cloud_done_outlined
+                                        : Icons.cloud_off_outlined,
+                                  ),
+                                  title: Text(
+                                    loadError ??
+                                        (isRefreshing
+                                            ? 'Visão local aberta. Atualizando em segundo plano…'
+                                            : 'Visão reprodutiva atualizada.'),
+                                  ),
+                                  trailing: isRefreshing
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
                             AtlasOperationalActionBar(
                               primaryLabel: 'Novo evento reprodutivo',
                               onPrimary: openNewEvent,
@@ -476,7 +540,7 @@ class _ReproductionOverviewScreenState
                                       );
                                     },
                               onRefresh: loadData,
-                              busy: isLoading,
+                              busy: isLoading || isRefreshing,
                             ),
                             const SizedBox(height: 16),
                             AtlasModuleDecisionPanel(
