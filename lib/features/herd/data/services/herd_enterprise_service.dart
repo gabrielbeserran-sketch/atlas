@@ -7,11 +7,17 @@ class HerdEnterpriseService {
 
   final AtlasEnterpriseApiClient _api;
 
-  Future<List<HerdGroupData>> listGroups(String farmId) async {
+  Future<List<HerdGroupData>> listGroups(
+    String farmId, {
+    bool activeOnly = true,
+  }) async {
     final response = await _api.requestList(
       'GET',
       '/livestock/lots',
-      queryParameters: {'farm_id': farmId, 'active_only': 'true'},
+      queryParameters: {
+        'farm_id': farmId,
+        'active_only': activeOnly ? 'true' : 'false',
+      },
     );
     return response.map(HerdGroupData.fromRemoteMap).toList(growable: false);
   }

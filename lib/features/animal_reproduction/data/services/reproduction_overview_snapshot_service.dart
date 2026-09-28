@@ -83,7 +83,7 @@ class ReproductionOverviewLoadProgress {
     ReproductionOverviewLoadPhase.groups =>
       'Consultando lotes: $completed/$total fazenda(s).',
     ReproductionOverviewLoadPhase.animals =>
-      'Consultando animais: $completed/$total lote(s).',
+      'Consultando animais: $completed/$total fazenda(s).',
     ReproductionOverviewLoadPhase.histories =>
       'Consultando históricos: $completed/$total fêmea(s).',
     ReproductionOverviewLoadPhase.saving =>
@@ -114,7 +114,7 @@ class ReproductionOverviewSnapshotService {
            sessionProvider ??
            AtlasEnterpriseRemoteAuthStore.instance.loadSession,
        _farmsProvider = farmsProvider ?? _loadRemoteFarms,
-       _groupsProvider = groupsProvider ?? HerdEnterpriseService().listGroups,
+       _groupsProvider = groupsProvider ?? _loadRemoteGroups,
        _animalsProvider = animalsProvider ?? _loadRemoteAnimals,
        _recordsProvider = recordsProvider ?? _loadRemoteRecords,
        _now = now ?? DateTime.now;
@@ -145,6 +145,9 @@ class ReproductionOverviewSnapshotService {
     String farmId,
     String lotId,
   ) => AnimalEnterpriseService().listAnimals(farmId: farmId, lotId: lotId);
+
+  static Future<List<HerdGroupData>> _loadRemoteGroups(String farmId) =>
+      HerdEnterpriseService().listGroups(farmId, activeOnly: false);
 
   static Future<List<AnimalReproductionData>> _loadRemoteRecords(
     String farmId,
@@ -272,7 +275,7 @@ class ReproductionOverviewSnapshotService {
       throw StateError('Fazenda não autorizada nesta sessão.');
     }
 
-    final farmGroups = <({FarmData farm, HerdGroupData group})>[];
+    final groupsByFarm = <String, Map<String, HerdGroupData>>{};
     final groupIds = <String>{};
     onProgress?.call(
       ReproductionOverviewLoadProgress(
@@ -288,6 +291,7 @@ class ReproductionOverviewSnapshotService {
       if (_refreshRevisions[key] != revision) {
         throw StateError('Atualização mais recente já iniciada.');
       }
+      final indexed = <String, HerdGroupData>{};
       for (final group in groups) {
         if (group.id.trim().isEmpty) {
           throw StateError('Lote sem identidade remota; cópia não atualizada.');
@@ -295,8 +299,9 @@ class ReproductionOverviewSnapshotService {
         if (!groupIds.add(group.id)) {
           throw StateError('Lote duplicado; cópia não atualizada.');
         }
-        farmGroups.add((farm: farm, group: group));
+        indexed[group.id] = group;
       }
+      groupsByFarm[farmId] = indexed;
       onProgress?.call(
         ReproductionOverviewLoadProgress(
           phase: ReproductionOverviewLoadPhase.groups,
@@ -312,15 +317,13 @@ class ReproductionOverviewSnapshotService {
       ReproductionOverviewLoadProgress(
         phase: ReproductionOverviewLoadPhase.animals,
         completed: 0,
-        total: farmGroups.length,
+        total: permitted.length,
       ),
     );
-    for (var lotIndex = 0; lotIndex < farmGroups.length; lotIndex++) {
-      final pair = farmGroups[lotIndex];
-      final farm = pair.farm;
-      final group = pair.group;
+    for (var farmIndex = 0; farmIndex < permitted.length; farmIndex++) {
+      final farm = permitted[farmIndex];
       final farmId = farm.id!;
-      final animals = await _animalsProvider(farmId, group.id);
+      final animals = await _animalsProvider(farmId, '');
       if (_refreshRevisions[key] != revision) {
         throw StateError('Atualização mais recente já iniciada.');
       }
@@ -332,19 +335,25 @@ class ReproductionOverviewSnapshotService {
             'Animal sem identidade remota; cópia não atualizada.',
           );
         }
-        if (animal.lotId.trim().isNotEmpty && animal.lotId != group.id) {
-          throw StateError('Animal fora do lote; cópia não atualizada.');
-        }
         if (!animalIds.add(animal.id)) {
           throw StateError('Animal duplicado; cópia não atualizada.');
         }
+        final group =
+            groupsByFarm[farmId]![animal.lotId] ??
+            HerdGroupData(
+              id: animal.lotId.isEmpty ? 'sem-lote-$farmId' : animal.lotId,
+              name: animal.lotId.isEmpty ? 'Sem lote' : 'Lote não listado',
+              category: 'Não informada',
+              capacity: 0,
+              paddock: '',
+            );
         jobs.add((farm: farm, group: group, animal: animal));
       }
       onProgress?.call(
         ReproductionOverviewLoadProgress(
           phase: ReproductionOverviewLoadPhase.animals,
-          completed: lotIndex + 1,
-          total: farmGroups.length,
+          completed: farmIndex + 1,
+          total: permitted.length,
         ),
       );
     }

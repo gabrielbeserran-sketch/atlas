@@ -189,24 +189,10 @@ void main() {
     }
   });
 
-  test('lote ou evento inconsistente não publica índices duplos', () async {
+  test('evento inconsistente não publica índices duplos', () async {
     final fixture = _Fixture();
     final service = fixture.create();
     await service.refresh();
-
-    for (final invalidAnimal in [
-      _animal.copyWith(lotId: 'outro-lote'),
-      _animal.copyWith(id: 'animal-2', lotId: 'outro-lote'),
-    ]) {
-      final invalid = ReproductionOverviewSnapshotService(
-        preferences: SharedPreferencesAsync(),
-        sessionProvider: () async => fixture.session,
-        farmsProvider: () async => [_farm],
-        groupsProvider: (_) async => [_group],
-        animalsProvider: (_, _) async => [invalidAnimal],
-      );
-      await expectLater(invalid.refresh(), throwsStateError);
-    }
 
     for (final List<AnimalReproductionData> records in [
       [_event(), _event()],
@@ -229,6 +215,57 @@ void main() {
     expect(cached.available, isTrue);
     expect(cached.entries.single.records.single.id, 'event-1');
   });
+
+  test('lê cada fazenda uma vez e inclui fêmeas sem lote ativo', () async {
+    final requested = <String>[];
+    final service = ReproductionOverviewSnapshotService(
+      preferences: SharedPreferencesAsync(),
+      sessionProvider: () async => _session(),
+      farmsProvider: () async => [_farm],
+      groupsProvider: (_) async => [
+        _group,
+        _group.copyWith(id: 'lot-2', name: 'Novilhas', status: 'inactive'),
+      ],
+      animalsProvider: (farmId, lotId) async {
+        requested.add('$farmId/$lotId');
+        return [
+          _animal,
+          _animal.copyWith(id: 'animal-2', lotId: 'lot-2'),
+          _animal.copyWith(id: 'animal-3', lotId: ''),
+          _animal.copyWith(id: 'animal-4', lotId: 'lot-missing'),
+        ];
+      },
+      recordsProvider: (_, _) async => [],
+    );
+    final snapshot = await service.refresh();
+    expect(requested, ['farm-1/']);
+    expect(snapshot.entries.length, 4);
+    expect(snapshot.entries[0].group.name, 'Matrizes');
+    expect(snapshot.entries[1].group.name, 'Novilhas');
+    expect(snapshot.entries[2].group.name, 'Sem lote');
+    expect(snapshot.entries[3].group.name, 'Lote não listado');
+    expect((await service.loadCached()).entries.length, 4);
+  });
+
+  test(
+    'falha ao listar animais da fazenda preserva a cópia anterior',
+    () async {
+      final fixture = _Fixture();
+      final previous = fixture.create();
+      await previous.refresh();
+      final failing = ReproductionOverviewSnapshotService(
+        preferences: SharedPreferencesAsync(),
+        sessionProvider: () async => fixture.session,
+        farmsProvider: () async => [_farm],
+        groupsProvider: (_) async => [_group],
+        animalsProvider: (_, _) async => throw StateError('Sem conexão'),
+      );
+      await expectLater(failing.refresh(), throwsStateError);
+      final cached = await previous.loadCached();
+      expect(cached.available, isTrue);
+      expect(cached.entries.single.animal.id, 'animal-1');
+    },
+  );
 
   test('identidade, permissão e fazenda selecionada isolam a cópia', () async {
     final fixture = _Fixture();
@@ -272,6 +309,7 @@ void main() {
       sessionProvider: () async => fixture.session,
       farmsProvider: () async => [_farm],
       groupsProvider: (_) async => [],
+      animalsProvider: (_, _) async => [],
     );
     await service.refresh();
     final cached = await service.loadCached(selectedFarm: _farm);
