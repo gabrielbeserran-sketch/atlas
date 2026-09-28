@@ -57,10 +57,12 @@ class ReproductionOverviewSnapshot {
   const ReproductionOverviewSnapshot({
     required this.entries,
     required this.available,
+    this.confirmedAt,
   });
 
   final List<ReproductionOverviewEntry> entries;
   final bool available;
+  final DateTime? confirmedAt;
 }
 
 /// Snapshot completo da visão geral, separado dos caches legados por nome.
@@ -79,6 +81,7 @@ class ReproductionOverviewSnapshotService {
     )?
     recordsProvider,
     this.maxConcurrentRecordReads = 4,
+    DateTime Function()? now,
   }) : assert(maxConcurrentRecordReads > 0 && maxConcurrentRecordReads <= 8),
        _preferences = preferences ?? SharedPreferencesAsync(),
        _sessionProvider =
@@ -87,7 +90,8 @@ class ReproductionOverviewSnapshotService {
        _farmsProvider = farmsProvider ?? _loadRemoteFarms,
        _groupsProvider = groupsProvider ?? HerdEnterpriseService().listGroups,
        _animalsProvider = animalsProvider ?? _loadRemoteAnimals,
-       _recordsProvider = recordsProvider ?? _loadRemoteRecords;
+       _recordsProvider = recordsProvider ?? _loadRemoteRecords,
+       _now = now ?? DateTime.now;
 
   final SharedPreferencesAsync _preferences;
   final Future<AtlasRemoteSession?> Function() _sessionProvider;
@@ -97,6 +101,7 @@ class ReproductionOverviewSnapshotService {
   final Future<List<AnimalReproductionData>> Function(String, String)
   _recordsProvider;
   final int maxConcurrentRecordReads;
+  final DateTime Function() _now;
 
   static const _prefix = 'atlas_reproduction_overview_v1_';
   static final Map<String, int> _refreshRevisions = {};
@@ -184,6 +189,12 @@ class ReproductionOverviewSnapshotService {
             ),
           )
           .toList(growable: false);
+      final timestamp = DateTime.tryParse('${decoded['confirmed_at'] ?? ''}');
+      final confirmedAt =
+          timestamp != null &&
+              !timestamp.isAfter(_now().add(const Duration(minutes: 5)))
+          ? timestamp
+          : null;
       if (selectedFarm != null &&
           (!_allowed(session, selectedFarm.id ?? '') ||
               !farmIds.contains(selectedFarm.id))) {
@@ -195,15 +206,14 @@ class ReproductionOverviewSnapshotService {
       return ReproductionOverviewSnapshot(
         entries: _visible(session, entries, selectedFarm),
         available: true,
+        confirmedAt: confirmedAt,
       );
     } catch (_) {
       return const ReproductionOverviewSnapshot(entries: [], available: false);
     }
   }
 
-  Future<List<ReproductionOverviewEntry>> refresh({
-    FarmData? selectedFarm,
-  }) async {
+  Future<ReproductionOverviewSnapshot> refresh({FarmData? selectedFarm}) async {
     final initial = await _session();
     final key = _key(initial);
     final revision = (_refreshRevisions[key] ?? 0) + 1;
@@ -304,6 +314,7 @@ class ReproductionOverviewSnapshotService {
         permitted.any((farm) => !_allowed(current, farm.id ?? ''))) {
       throw StateError('Conta ou acesso à fazenda mudou durante a leitura.');
     }
+    final confirmedAt = _now().toUtc();
     await _storeIfCurrent(
       key: key,
       revision: revision,
@@ -312,9 +323,14 @@ class ReproductionOverviewSnapshotService {
       value: jsonEncode({
         'farm_ids': permitted.map((farm) => farm.id).toList(),
         'entries': entries.map((entry) => entry.toMap()).toList(),
+        'confirmed_at': confirmedAt.toIso8601String(),
       }),
     );
-    return _visible(current, entries, selectedFarm);
+    return ReproductionOverviewSnapshot(
+      entries: _visible(current, entries, selectedFarm),
+      available: true,
+      confirmedAt: confirmedAt,
+    );
   }
 
   Future<void> _storeIfCurrent({

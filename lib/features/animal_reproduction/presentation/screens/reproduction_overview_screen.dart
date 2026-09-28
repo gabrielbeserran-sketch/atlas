@@ -50,6 +50,7 @@ class _ReproductionOverviewScreenState
   bool isLoading = true;
   bool isRefreshing = false;
   bool snapshotAvailable = false;
+  DateTime? lastConfirmedAt;
   String? loadError;
   int _loadRevision = 0;
   bool _createOpened = false;
@@ -278,6 +279,7 @@ class _ReproductionOverviewScreenState
       );
       if (!mounted || revision != _loadRevision) return;
       snapshotAvailable = cached.available;
+      lastConfirmedAt = cached.confirmedAt;
       if (cached.available) {
         _applyContexts(_contexts(cached.entries));
         if (widget.autoOpenCreate && animals.isNotEmpty && !_createOpened) {
@@ -293,7 +295,8 @@ class _ReproductionOverviewScreenState
       final fresh = await overviewStorage.refresh(selectedFarm: widget.farm);
       if (!mounted || revision != _loadRevision) return;
       snapshotAvailable = true;
-      _applyContexts(_contexts(fresh));
+      lastConfirmedAt = fresh.confirmedAt;
+      _applyContexts(_contexts(fresh.entries));
     } catch (error) {
       if (!mounted || revision != _loadRevision) return;
       setState(
@@ -309,6 +312,25 @@ class _ReproductionOverviewScreenState
         });
       }
     }
+  }
+
+  String get _snapshotDateLabel {
+    final confirmedAt = lastConfirmedAt;
+    if (confirmedAt == null) {
+      return 'Cópia sem data registrada. Atualize com conexão antes de decidir.';
+    }
+    final local = confirmedAt.toLocal();
+    String two(int value) => value.toString().padLeft(2, '0');
+    final stamp =
+        '${two(local.day)}/${two(local.month)}/${local.year} às ${two(local.hour)}:${two(local.minute)}';
+    final age = DateTime.now().difference(confirmedAt);
+    if (age.isNegative) {
+      return 'Leitura completa em $stamp. Confira o relógio do dispositivo.';
+    }
+    if (age > const Duration(hours: 24)) {
+      return 'Leitura completa em $stamp; cópia com mais de 24 horas. Confira antes de decidir.';
+    }
+    return 'Leitura completa confirmada em $stamp.';
   }
 
   List<ReproductionAnimalContext> _contexts(
@@ -508,6 +530,7 @@ class _ReproductionOverviewScreenState
                                             ? 'Visão local aberta. Atualizando em segundo plano…'
                                             : 'Visão reprodutiva atualizada.'),
                                   ),
+                                  subtitle: Text(_snapshotDateLabel),
                                   trailing: isRefreshing
                                       ? const SizedBox(
                                           width: 18,

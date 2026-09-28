@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,6 +75,7 @@ AnimalReproductionData _event() => const AnimalReproductionData(
 
 class _Fixture {
   AtlasRemoteSession session = _session();
+  DateTime Function()? now;
   bool failGroups = false;
   Completer<void>? gate;
   Completer<void>? farmStarted;
@@ -108,6 +110,7 @@ class _Fixture {
           recordCalls++;
           return records;
         },
+        now: now,
       );
 }
 
@@ -203,6 +206,33 @@ void main() {
     expect(cached.entries, isEmpty);
   });
 
+  test('data da leitura completa sobrevive à reabertura local', () async {
+    final confirmed = DateTime.utc(2026, 9, 28, 14, 35);
+    final fixture = _Fixture()..now = () => confirmed;
+    final service = fixture.create();
+    final fresh = await service.refresh();
+    expect(fresh.confirmedAt, confirmed);
+    final cached = await fixture.create().loadCached();
+    expect(cached.available, isTrue);
+    expect(cached.confirmedAt, confirmed);
+  });
+
+  test('cópia legada sem data continua legível sem inventar horário', () async {
+    final fixture = _Fixture();
+    final service = fixture.create();
+    await service.refresh();
+    const key = 'atlas_reproduction_overview_v1_tenant-1_company-1_user-1';
+    final preferences = SharedPreferencesAsync();
+    final raw = await preferences.getString(key);
+    final payload = Map<String, dynamic>.from(jsonDecode(raw!) as Map);
+    payload.remove('confirmed_at');
+    await preferences.setString(key, jsonEncode(payload));
+    final cached = await service.loadCached();
+    expect(cached.available, isTrue);
+    expect(cached.entries.single.animal.name, 'Aurora');
+    expect(cached.confirmedAt, isNull);
+  });
+
   test('leituras por animal respeitam limite e preservam ordem', () async {
     final gate = Completer<void>();
     final firstThreeStarted = Completer<void>();
@@ -235,11 +265,11 @@ void main() {
     expect(started, 3);
     expect(maximum, 3);
     gate.complete();
-    final entries = await pending;
-    expect(entries.length, 10);
+    final snapshot = await pending;
+    expect(snapshot.entries.length, 10);
     expect(started, 10);
     expect(maximum, 3);
-    expect(entries.map((entry) => entry.animal.id).toList(), [
+    expect(snapshot.entries.map((entry) => entry.animal.id).toList(), [
       for (var index = 0; index < 10; index++) 'animal-$index',
     ]);
   });
@@ -269,7 +299,7 @@ void main() {
     final oldRead = service.refresh();
     await firstStarted.future;
     final newest = await createService().refresh();
-    expect(newest.single.farm.name, 'Atual');
+    expect(newest.entries.single.farm.name, 'Atual');
     releaseFirst.complete();
     await expectLater(oldRead, throwsStateError);
     expect((await service.loadCached()).entries.single.farm.name, 'Atual');
@@ -324,10 +354,36 @@ void main() {
     await tester.pump(const Duration(milliseconds: 30));
     expect(find.textContaining('Visão local aberta'), findsOneWidget);
     expect(find.text('Aurora'), findsOneWidget);
+    expect(
+      find.textContaining('Leitura completa confirmada em'),
+      findsOneWidget,
+    );
     fixture.gate!.complete();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 30));
     expect(find.text('Visão reprodutiva atualizada.'), findsOneWidget);
+  });
+
+  testWidgets('cópia antiga é identificada antes da resposta remota', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1600, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final fixture = _Fixture()..now = () => DateTime.utc(2020, 1, 1, 12);
+    final service = fixture.create();
+    await service.refresh();
+    fixture.gate = Completer<void>();
+    await tester.pumpWidget(
+      MaterialApp(home: ReproductionOverviewScreen(snapshotService: service)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(find.textContaining('mais de 24 horas'), findsOneWidget);
+    fixture.gate!.complete();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 30));
   });
 
   testWidgets('sem snapshot offline não apresenta métricas como zero', (
