@@ -89,13 +89,18 @@ def test_chat_persists_session_messages_without_writing_legacy_conversation(ai_a
         assert db.get(AtlasAiSession, session_id).user_id == "one"
 
 
-def test_another_user_cannot_read_or_reuse_session_id(ai_api):
+def test_another_user_cannot_read_or_reuse_session_id(ai_api, monkeypatch):
     client, engine, headers = ai_api
     created = client.post(
         "/atlas-ai/chat", json={"farm_id": "farm-A", "message": "Privado"},
         headers=headers("one"),
     )
     session_id = created.json()["session_id"]
+    agent_calls = []
+    monkeypatch.setattr(
+        atlas_ai_enterprise, "ensure_default_agents",
+        lambda *_args, **_kwargs: agent_calls.append(True),
+    )
     assert client.get(
         f"/atlas-ai/sessions/{session_id}/messages", headers=headers("two"),
     ).status_code == 404
@@ -109,5 +114,6 @@ def test_another_user_cannot_read_or_reuse_session_id(ai_api):
         json={"session_id": session_id, "farm_id": "farm-B", "message": "Outra fazenda"},
         headers=headers("one"),
     ).status_code == 409
+    assert agent_calls == []
     with Session(engine) as db:
         assert db.query(AtlasAiSessionMessage).count() == 2

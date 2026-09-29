@@ -106,13 +106,6 @@ def chat(
     principal: Principal = Depends(require_permission("atlas_ai.use")),
     db: Session = Depends(get_db),
 ) -> AtlasAiChatResponse:
-    _farm_allowed(principal, payload.farm_id)
-    ensure_default_agents(
-        db,
-        tenant_id=principal.company.tenant_id,
-        company_id=principal.company.id,
-    )
-
     session = None
     if payload.session_id:
         session = db.get(AtlasAiSession, payload.session_id)
@@ -122,6 +115,15 @@ def chat(
         _farm_allowed(principal, session.farm_id)
         if payload.farm_id is not None and payload.farm_id != session.farm_id:
             raise HTTPException(status_code=409, detail="Fazenda diferente da sessão.")
+    else:
+        _farm_allowed(principal, payload.farm_id)
+
+    # Não criar agentes nem iniciar a análise para uma sessão negada.
+    ensure_default_agents(
+        db,
+        tenant_id=principal.company.tenant_id,
+        company_id=principal.company.id,
+    )
 
     if session is None:
         session = AtlasAiSession(
