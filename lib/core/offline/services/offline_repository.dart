@@ -59,6 +59,41 @@ class OfflineRepository {
     return rows.map(OfflineOperation.fromDatabase).toList(growable: false);
   }
 
+  Future<List<OfflineOperation>> failedOperations({
+    required String companyId,
+    String? farmId,
+    int limit = 50,
+  }) async {
+    return readFailedOperations(
+      await _database.database,
+      companyId: companyId,
+      farmId: farmId,
+      limit: limit,
+    );
+  }
+
+  static Future<List<OfflineOperation>> readFailedOperations(
+    Database db, {
+    required String companyId,
+    String? farmId,
+    int limit = 50,
+  }) async {
+    final where = StringBuffer('company_id = ? AND status = ?');
+    final args = <Object?>[companyId, 'failed'];
+    if (farmId != null && farmId.isNotEmpty) {
+      where.write(' AND (farm_id = ? OR farm_id IS NULL)');
+      args.add(farmId);
+    }
+    final rows = await db.query(
+      'operation_queue',
+      where: where.toString(),
+      whereArgs: args,
+      orderBy: 'created_at DESC',
+      limit: limit.clamp(1, 50).toInt(),
+    );
+    return rows.map(OfflineOperation.fromDatabase).toList(growable: false);
+  }
+
   Future<OfflineQueueStats> queueStats({
     required String companyId,
     String? farmId,

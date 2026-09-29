@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../session/atlas_session_scope.dart';
 import '../controllers/atlas_offline_controller.dart';
 import '../models/offline_sync_models.dart';
+import 'offline_failed_operations_section.dart';
 
 class AtlasOfflineCenterScreen extends StatefulWidget {
   const AtlasOfflineCenterScreen({super.key});
@@ -60,6 +61,11 @@ class _AtlasOfflineCenterScreenState extends State<AtlasOfflineCenterScreen> {
             const SizedBox(height: 16),
             _LastReportCard(report: current.lastReport),
             const SizedBox(height: 16),
+            OfflineFailedOperationsSection(
+              operations: current.failedOperations,
+              total: current.stats.failed,
+            ),
+            if (current.stats.failed > 0) const SizedBox(height: 16),
             Text(
               'Conflitos pendentes',
               style: Theme.of(context).textTheme.titleLarge,

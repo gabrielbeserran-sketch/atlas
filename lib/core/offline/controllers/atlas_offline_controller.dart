@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import '../../session/atlas_session_controller.dart';
+import '../models/offline_operation.dart';
 import '../models/offline_sync_models.dart';
 import '../services/offline_repository.dart';
 import '../services/offline_sync_coordinator.dart';
@@ -13,11 +14,21 @@ class AtlasOfflineController extends ChangeNotifier {
     OfflineRepository? repository,
     OfflineSyncCoordinator? coordinator,
   }) : _repository = repository ?? OfflineRepository(),
-       _coordinator = coordinator ?? OfflineSyncCoordinator();
+       _coordinator = coordinator ?? OfflineSyncCoordinator() {
+    _observedCompanyId = sessionController.session?.companyId;
+    _observedFarmId = sessionController.activeFarm?.id;
+    _observedUserId = sessionController.session?.userId;
+    sessionController.addListener(_onScopeChanged);
+  }
 
   final AtlasSessionController sessionController;
   final OfflineRepository _repository;
   final OfflineSyncCoordinator _coordinator;
+  String? _observedCompanyId;
+  String? _observedFarmId;
+  String? _observedUserId;
+  int _loadGeneration = 0;
+  bool _disposed = false;
 
   OfflineQueueStats _stats = const OfflineQueueStats(
     pending: 0,
@@ -28,6 +39,7 @@ class AtlasOfflineController extends ChangeNotifier {
   );
   OfflineServerStatus? _serverStatus;
   List<OfflineConflict> _conflicts = const <OfflineConflict>[];
+  List<OfflineOperation> _failedOperations = const <OfflineOperation>[];
   OfflineSyncReport? _lastReport;
   String _phase = '';
   String? _error;
@@ -39,6 +51,8 @@ class AtlasOfflineController extends ChangeNotifier {
   OfflineQueueStats get stats => _stats;
   OfflineServerStatus? get serverStatus => _serverStatus;
   List<OfflineConflict> get conflicts => List.unmodifiable(_conflicts);
+  List<OfflineOperation> get failedOperations =>
+      List.unmodifiable(_failedOperations);
   OfflineSyncReport? get lastReport => _lastReport;
   String get phase => _phase;
   String? get error => _error;
@@ -48,37 +62,107 @@ class AtlasOfflineController extends ChangeNotifier {
   double? get progress => _total <= 0 ? null : _completed / _total;
   bool get canManage => sessionController.allows('sync.manage');
 
+  void _onScopeChanged() {
+    final companyId = sessionController.session?.companyId;
+    final farmId = sessionController.activeFarm?.id;
+    final userId = sessionController.session?.userId;
+    if (companyId == _observedCompanyId &&
+        farmId == _observedFarmId &&
+        userId == _observedUserId) {
+      return;
+    }
+    _observedCompanyId = companyId;
+    _observedFarmId = farmId;
+    _observedUserId = userId;
+    _deviceId = null;
+    _lastReport = null;
+    unawaited(load());
+  }
+
+  bool _isCurrent(
+    int generation,
+    String companyId,
+    String? farmId,
+    String userId,
+  ) => generation == _loadGeneration && _sameScope(companyId, farmId, userId);
+
+  bool _sameScope(String companyId, String? farmId, String userId) =>
+      !_disposed &&
+      sessionController.session?.companyId == companyId &&
+      sessionController.activeFarm?.id == farmId &&
+      sessionController.session?.userId == userId;
+
   Future<void> load() async {
+    final generation = ++_loadGeneration;
     final session = sessionController.session;
-    if (session == null || session.companyId.isEmpty) return;
+    final farmId = sessionController.activeFarm?.id;
+    _stats = const OfflineQueueStats(
+      pending: 0,
+      retry: 0,
+      conflicts: 0,
+      failed: 0,
+      accepted: 0,
+    );
+    _conflicts = const <OfflineConflict>[];
+    _failedOperations = const <OfflineOperation>[];
+    _serverStatus = null;
+    if (session == null || session.companyId.isEmpty) {
+      _loading = false;
+      notifyListeners();
+      return;
+    }
     _loading = true;
     _error = null;
     notifyListeners();
     try {
-      _stats = await _repository.queueStats(
+      final stats = await _repository.queueStats(
         companyId: session.companyId,
-        farmId: sessionController.activeFarm?.id,
+        farmId: farmId,
       );
-      _conflicts = await _repository.conflicts(
+      final conflicts = await _repository.conflicts(
         companyId: session.companyId,
-        farmId: sessionController.activeFarm?.id,
+        farmId: farmId,
       );
+      final failedOperations = await _repository.failedOperations(
+        companyId: session.companyId,
+        farmId: farmId,
+      );
+      OfflineServerStatus? serverStatus;
       try {
-        _serverStatus = await _coordinator.serverStatus();
+        serverStatus = await _coordinator.serverStatus();
       } catch (_) {
-        _serverStatus = null;
+        serverStatus = null;
       }
+      if (!_isCurrent(generation, session.companyId, farmId, session.userId)) {
+        return;
+      }
+      _stats = stats;
+      _conflicts = conflicts;
+      _failedOperations = failedOperations;
+      _serverStatus = serverStatus;
     } catch (error) {
-      _error = error.toString();
+      if (_isCurrent(generation, session.companyId, farmId, session.userId)) {
+        _error = error.toString();
+      }
     } finally {
-      _loading = false;
-      notifyListeners();
+      if (_isCurrent(generation, session.companyId, farmId, session.userId)) {
+        _loading = false;
+        notifyListeners();
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    sessionController.removeListener(_onScopeChanged);
+    super.dispose();
   }
 
   Future<void> synchronize() async {
     final session = sessionController.session;
     if (session == null) return;
+    final farmId = sessionController.activeFarm?.id;
     _loading = true;
     _error = null;
     _phase = 'Preparando sincronização';
@@ -86,33 +170,51 @@ class AtlasOfflineController extends ChangeNotifier {
     _total = 1;
     notifyListeners();
     try {
-      _deviceId ??= await _coordinator.registerDevice(
-        deviceKey: _deviceKey(session.userId),
-      );
-      _lastReport = await _coordinator.synchronize(
+      var deviceId = _deviceId;
+      if (deviceId == null) {
+        final registered = await _coordinator.registerDevice(
+          deviceKey: _deviceKey(session.userId),
+        );
+        if (!_sameScope(session.companyId, farmId, session.userId)) return;
+        _deviceId = registered;
+        deviceId = registered;
+      }
+      final report = await _coordinator.synchronize(
         companyId: session.companyId,
         tenantId: session.tenantId,
-        farmId: sessionController.activeFarm?.id,
-        deviceId: _deviceId!,
+        farmId: farmId,
+        deviceId: deviceId,
         onProgress: (phase, completed, total) {
+          if (!_sameScope(session.companyId, farmId, session.userId)) return;
           _phase = phase;
           _completed = completed;
           _total = total;
           notifyListeners();
         },
       );
+      if (!_sameScope(session.companyId, farmId, session.userId)) return;
+      _lastReport = report;
       await load();
-      await _coordinator.sendDiagnostics(deviceId: _deviceId!, stats: _stats);
+      if (!_sameScope(session.companyId, farmId, session.userId)) return;
+      await _coordinator.sendDiagnostics(deviceId: deviceId, stats: _stats);
     } catch (error) {
-      _error = error.toString();
+      if (_sameScope(session.companyId, farmId, session.userId)) {
+        _error = error.toString();
+      }
     } finally {
-      _loading = false;
-      _phase = '';
-      notifyListeners();
+      if (_sameScope(session.companyId, farmId, session.userId)) {
+        _loading = false;
+        _phase = '';
+        notifyListeners();
+      }
     }
   }
 
   Future<void> resolve(OfflineConflict conflict, String resolution) async {
+    final companyId = sessionController.session?.companyId;
+    final farmId = sessionController.activeFarm?.id;
+    final userId = sessionController.session?.userId;
+    if (companyId == null || userId == null) return;
     _loading = true;
     _error = null;
     notifyListeners();
@@ -122,12 +224,15 @@ class AtlasOfflineController extends ChangeNotifier {
         resolution: resolution,
         note: 'Resolvido pelo aplicativo Atlas.',
       );
+      if (!_sameScope(companyId, farmId, userId)) return;
       await load();
     } catch (error) {
-      _error = error.toString();
+      if (_sameScope(companyId, farmId, userId)) _error = error.toString();
     } finally {
-      _loading = false;
-      notifyListeners();
+      if (_sameScope(companyId, farmId, userId)) {
+        _loading = false;
+        notifyListeners();
+      }
     }
   }
 
