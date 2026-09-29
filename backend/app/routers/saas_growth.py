@@ -41,8 +41,17 @@ class Payload(BaseModel):
 
 def now(): return datetime.now(timezone.utc)
 
+
+def _require_platform_subscription_operator(principal: Principal) -> None:
+    # A chave inicia desligada; no rollout comercial, ninguém pode atribuir a si
+    # próprio um plano ativo apenas por administrar a fazenda/empresa.
+    if (get_settings().atlas_consultancy_plan_gate_enabled
+            and principal.membership.role != 'superAdministrator'):
+        raise HTTPException(403, 'Alteração de planos exige administrador da plataforma.')
+
 @router.post('/plans')
 def create_plan(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):
+    _require_platform_subscription_operator(p)
     if not payload.code: raise HTTPException(422,'code obrigatório.')
     if db.scalar(select(SaaSPlan).where(SaaSPlan.code==payload.code)): raise HTTPException(409,'Plano já existe.')
     row=SaaSPlan(code=payload.code,name=payload.name or payload.code,price_monthly=payload.amount,limits_json=payload.data.get('limits',{}),features_json=payload.data.get('features',[]))
@@ -50,6 +59,7 @@ def create_plan(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(m
 
 @router.post('/subscriptions')
 def subscribe(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):
+    _require_platform_subscription_operator(p)
     plan=db.scalar(select(SaaSPlan).where(SaaSPlan.code==payload.code,SaaSPlan.active.is_(True)))
     if not plan: raise HTTPException(404,'Plano não encontrado.')
     row=db.scalar(select(CompanySubscription).where(CompanySubscription.company_id==p.company.id))
