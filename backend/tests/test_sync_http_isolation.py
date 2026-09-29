@@ -119,6 +119,7 @@ def test_batch_pull_and_conflicts_respect_farm_membership(api):
     )
     assert seeded.status_code == 200
     assert seeded.json()["accepted"] == 2
+    assert all(item["retryable"] is True for item in seeded.json()["results"])
 
     stale = client.post(
         "/api/v1/offline/push-batch",
@@ -132,6 +133,7 @@ def test_batch_pull_and_conflicts_respect_farm_membership(api):
     )
     assert stale.status_code == 200
     assert stale.json()["conflicts"] == 2
+    assert all(item["retryable"] is True for item in stale.json()["results"])
     conflict_b_id = next(
         item["id"] for item in client.get("/api/v1/offline/conflicts").json()
         if item["operation_id"] == "op-conflict-B"
@@ -152,3 +154,50 @@ def test_batch_pull_and_conflicts_respect_farm_membership(api):
         json={"resolution": "keep_local"},
     )
     assert denied.status_code == 404
+
+
+def test_rejected_batch_operation_is_marked_non_retryable_without_losing_it(api):
+    client, _current, engine = api
+    batch = client.post(
+        "/api/v1/offline/push-batch",
+        json={"operations": [
+            operation(),
+            operation(
+                farm_id="farm-B", entity_id="note-B",
+                operation_id="op-B", key="key-B",
+            ),
+        ]},
+    )
+
+    assert batch.status_code == 200
+    assert batch.json()["accepted"] == 1
+    assert batch.json()["rejected"] == 1
+    assert batch.json()["results"][0]["retryable"] is True
+    assert batch.json()["results"][1]["retryable"] is False
+    assert batch.json()["results"][1]["remote_payload"] == {}
+    with Session(engine) as db:
+        assert [item.farm_id for item in db.query(EntityState).all()] == ["farm-A"]
+
+
+def test_reused_batch_key_is_permanent_rejection_without_foreign_payload(api):
+    client, _current, engine = api
+    first = client.post(
+        "/api/v1/offline/push-batch",
+        json={"operations": [operation(payload={"private": "original"})]},
+    )
+    assert first.json()["accepted"] == 1
+
+    reused = client.post(
+        "/api/v1/offline/push-batch",
+        json={"operations": [operation(
+            entity_id="note-other", operation_id="op-other", key="key-A",
+            payload={"private": "other"},
+        )]},
+    )
+
+    assert reused.status_code == 200
+    assert reused.json()["rejected"] == 1
+    assert reused.json()["results"][0]["retryable"] is False
+    assert reused.json()["results"][0]["remote_payload"] == {}
+    with Session(engine) as db:
+        assert [item.entity_id for item in db.query(EntityState).all()] == ["note-A"]

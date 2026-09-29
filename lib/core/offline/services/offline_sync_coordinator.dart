@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../../network/atlas_http_client.dart';
+import '../models/offline_operation.dart';
 import '../models/offline_sync_models.dart';
 import 'offline_repository.dart';
 
@@ -16,6 +17,33 @@ class OfflineSyncCoordinator {
 
   final AtlasHttpClient _client;
   final OfflineRepository _repository;
+
+  static Map<String, Map<String, dynamic>> validatedBatchResults(
+    List<OfflineOperation> operations,
+    List<Map<String, dynamic>> results,
+  ) {
+    final expected = operations.map((item) => item.id).toSet();
+    if (expected.length != operations.length ||
+        results.length != expected.length) {
+      throw StateError(
+        'Resposta de sincronização incompleta; fila preservada.',
+      );
+    }
+    final byId = <String, Map<String, dynamic>>{};
+    for (final result in results) {
+      final id = result['operation_id']?.toString() ?? '';
+      if (!expected.contains(id) || byId.containsKey(id)) {
+        throw StateError(
+          'Resposta de sincronização inconsistente; fila preservada.',
+        );
+      }
+      byId[id] = result;
+    }
+    return byId;
+  }
+
+  static bool isPermanentRejection(Map<String, dynamic> result) =>
+      result['retryable'] == false;
 
   Future<String> registerDevice({required String deviceKey}) async {
     final response = await _client.send(
@@ -91,14 +119,11 @@ class OfflineSyncCoordinator {
           .whereType<Map>()
           .map((item) => Map<String, dynamic>.from(item))
           .toList(growable: false);
+      final resultsById = validatedBatchResults(operations, results);
 
-      for (var index = 0; index < results.length; index++) {
-        final item = results[index];
-        final operationId = item['operation_id']?.toString() ?? '';
-        final operation = operations.firstWhere(
-          (candidate) => candidate.id == operationId,
-          orElse: () => operations.first,
-        );
+      for (var index = 0; index < operations.length; index++) {
+        final operation = operations[index];
+        final item = resultsById[operation.id]!;
         if (item['accepted'] == true) {
           await _repository.markAccepted(operation.id);
           pushed++;
@@ -112,7 +137,7 @@ class OfflineSyncCoordinator {
           );
           conflicts++;
         } else {
-          final permanent = item['retryable'] == false;
+          final permanent = isPermanentRejection(item);
           await _repository.markFailed(
             operation.id,
             item['error']?.toString() ?? 'Falha de sincronização.',
@@ -121,7 +146,7 @@ class OfflineSyncCoordinator {
           );
           rejected++;
         }
-        onProgress?.call('Enviando alterações', index + 1, results.length);
+        onProgress?.call('Enviando alterações', index + 1, operations.length);
       }
     }
 

@@ -51,7 +51,10 @@ class ConflictResolutionRequest(BaseModel):
 def _process_operation(db: Session, principal: Principal, request: SyncPushRequest) -> SyncPushResponse:
     if request.company_id != principal.company.id or request.tenant_id != principal.company.tenant_id:
         return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error="Escopo da operação inválido.")
-    require_farm_scope(principal, request.farm_id)
+    try:
+        require_farm_scope(principal, request.farm_id)
+    except HTTPException:
+        return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error="Fazenda fora da carteira autorizada.")
     processed = db.get(ProcessedOperation, request.idempotency_key)
     state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == request.entity_type, EntityState.entity_id == request.entity_id))
     cross_farm = reject_cross_farm_state(state, request)
@@ -110,7 +113,7 @@ def push_batch(payload: BatchPushRequest, principal: Principal = Depends(require
     accepted = conflicts = rejected = 0
     for operation in payload.operations:
         result = _process_operation(db, principal, operation)
-        results.append({"operation_id": operation.operation_id, **result.model_dump()})
+        results.append({"operation_id": operation.operation_id, **result.model_dump(), "retryable": result.accepted or result.conflict})
         if result.accepted: accepted += 1
         elif result.conflict: conflicts += 1
         else: rejected += 1
