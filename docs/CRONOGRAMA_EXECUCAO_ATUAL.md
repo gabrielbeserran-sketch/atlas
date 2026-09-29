@@ -20,6 +20,8 @@ Demonstração separada adiada por solicitação do usuário. Não é requisito 
 
 Próximo marco: a versão Windows anterior continua aberta e responsiva. O build agrupado mais recente está pronto em `release/windows/plan-entitlements-20260929`, mas não foi aberto/instalado para não interromper a sessão. Após salvar e fechar a janela anterior, seguir `docs/pilot/ENSAIO_PLANOS_MENU_WINDOWS_20260929.md` para plano/menu e `docs/pilot/ENSAIO_REPRODUCAO_AGRUPADA_WINDOWS_20260928.md` para primeira carga conectada, PIN sem rede e reconexão. O preparo está concluído, mas a execução humana continua 0%; depois repetir no Android quando disponível. PostgreSQL e dois dispositivos são gates separados.
 
+Sincronização (29/09/2026): concluído o isolamento da chave de idempotência nos dois envios genéricos, com 11 testes focais/fundação, Ruff F e compilação aprovados; checkpoint `atlas-sync-idempotency-scope-20260929`. Uma chave já usada por outra empresa ou operação é recusada sem devolver seu payload. Isso não substitui o ensaio autenticado entre empresas, PostgreSQL e dois dispositivos dos pacotes 2/3, nem ativa a restrição de Consultoria.
+
 Genética/ANCP, integração WhatsApp e demais expansões devem ter escopo e aceite próprios antes de entrar no fechamento comercial. A pesquisa/recomendação anterior não comprova implementação nem integração oficial; não apresentar essas expansões como funções prontas. OCR em nuvem também não será requisito oculto para uso offline: a disponibilidade/custo precisa de decisão explícita antes da oferta comercial.
 
 | Etapa | Situação | Progresso | Critério de aceite |

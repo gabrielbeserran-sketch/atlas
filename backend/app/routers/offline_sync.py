@@ -14,6 +14,7 @@ from ..models import EntityState, ProcessedOperation, SyncChange, new_id
 from ..offline_models import OfflineDevice, OfflineDiagnostic, SyncConflict
 from ..schemas import SyncPushRequest, SyncPushResponse
 from ..services.audit import record_audit
+from ..services.sync_idempotency import replay_processed_operation
 
 router = APIRouter(prefix="/offline", tags=["offline-sync"])
 
@@ -51,8 +52,9 @@ def _process_operation(db: Session, principal: Principal, request: SyncPushReque
         return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error="Escopo da operação inválido.")
     require_farm_scope(principal, request.farm_id)
     processed = db.get(ProcessedOperation, request.idempotency_key)
-    if processed is not None:
-        return SyncPushResponse(**processed.result_payload)
+    replay = replay_processed_operation(processed, request)
+    if replay is not None:
+        return replay
     state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == request.entity_type, EntityState.entity_id == request.entity_id))
     current_version = state.version if state else 0
     if current_version != request.base_version:

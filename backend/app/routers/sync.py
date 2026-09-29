@@ -16,6 +16,7 @@ from ..schemas import (
     SyncPushResponse,
 )
 from ..services.audit import record_audit
+from ..services.sync_idempotency import replay_processed_operation
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -52,8 +53,9 @@ def push(
         ProcessedOperation,
         request.idempotency_key,
     )
-    if processed is not None:
-        return SyncPushResponse(**processed.result_payload)
+    replay = replay_processed_operation(processed, request)
+    if replay is not None:
+        return replay
 
     state = db.scalar(
         select(EntityState).where(
