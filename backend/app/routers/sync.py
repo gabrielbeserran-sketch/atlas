@@ -16,7 +16,8 @@ from ..schemas import (
     SyncPushResponse,
 )
 from ..services.audit import record_audit
-from ..services.sync_idempotency import replay_processed_operation
+from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
+from ..services.sync_idempotency import replay_processed_operation, stored_result
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -53,10 +54,6 @@ def push(
         ProcessedOperation,
         request.idempotency_key,
     )
-    replay = replay_processed_operation(processed, request)
-    if replay is not None:
-        return replay
-
     state = db.scalar(
         select(EntityState).where(
             EntityState.company_id == principal.company.id,
@@ -64,6 +61,12 @@ def push(
             EntityState.entity_id == request.entity_id,
         )
     )
+    cross_farm = reject_cross_farm_state(state, request)
+    if cross_farm is not None:
+        return cross_farm
+    replay = replay_processed_operation(processed, request, state)
+    if replay is not None:
+        return replay
 
     current_version = state.version if state else 0
 
@@ -83,7 +86,7 @@ def push(
                 idempotency_key=request.idempotency_key,
                 company_id=principal.company.id,
                 operation_id=request.operation_id,
-                result_payload=response.model_dump(),
+                result_payload=stored_result(request, response),
             )
         )
         record_audit(
@@ -152,7 +155,7 @@ def push(
             idempotency_key=request.idempotency_key,
             company_id=principal.company.id,
             operation_id=request.operation_id,
-            result_payload=response.model_dump(),
+            result_payload=stored_result(request, response),
         )
     )
 
@@ -181,28 +184,21 @@ def pull(
     ),
     db: Session = Depends(get_db),
 ) -> list[SyncChangeResponse]:
+    clauses = [
+        SyncChange.company_id == principal.company.id,
+        SyncChange.tenant_id == principal.company.tenant_id,
+        SyncChange.cursor > cursor,
+    ]
+    farm_clause = visible_farm_clause(principal, SyncChange.farm_id)
+    if farm_clause is not None:
+        clauses.append(farm_clause)
     query = (
         select(SyncChange)
-        .where(
-            SyncChange.company_id == principal.company.id,
-            SyncChange.tenant_id == principal.company.tenant_id,
-            SyncChange.cursor > cursor,
-        )
+        .where(*clauses)
         .order_by(SyncChange.cursor.asc())
         .limit(1000)
     )
     changes = db.scalars(query).all()
-
-    allowed = principal.membership.farm_ids or []
-    if (
-        principal.membership.role == "consultant"
-        and allowed
-    ):
-        changes = [
-            item
-            for item in changes
-            if item.farm_id is None or item.farm_id in allowed
-        ]
 
     return [
         SyncChangeResponse(

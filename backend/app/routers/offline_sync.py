@@ -14,7 +14,8 @@ from ..models import EntityState, ProcessedOperation, SyncChange, new_id
 from ..offline_models import OfflineDevice, OfflineDiagnostic, SyncConflict
 from ..schemas import SyncPushRequest, SyncPushResponse
 from ..services.audit import record_audit
-from ..services.sync_idempotency import replay_processed_operation
+from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
+from ..services.sync_idempotency import replay_processed_operation, stored_result
 
 router = APIRouter(prefix="/offline", tags=["offline-sync"])
 
@@ -52,17 +53,20 @@ def _process_operation(db: Session, principal: Principal, request: SyncPushReque
         return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error="Escopo da operação inválido.")
     require_farm_scope(principal, request.farm_id)
     processed = db.get(ProcessedOperation, request.idempotency_key)
-    replay = replay_processed_operation(processed, request)
+    state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == request.entity_type, EntityState.entity_id == request.entity_id))
+    cross_farm = reject_cross_farm_state(state, request)
+    if cross_farm is not None:
+        return cross_farm
+    replay = replay_processed_operation(processed, request, state)
     if replay is not None:
         return replay
-    state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == request.entity_type, EntityState.entity_id == request.entity_id))
     current_version = state.version if state else 0
     if current_version != request.base_version:
         response = SyncPushResponse(accepted=False, conflict=True, remote_version=current_version, remote_payload=state.payload if state else {}, error=f"baseVersion={request.base_version}; remoteVersion={current_version}")
         conflict = db.scalar(select(SyncConflict).where(SyncConflict.company_id == principal.company.id, SyncConflict.operation_id == request.operation_id))
         if conflict is None:
             db.add(SyncConflict(tenant_id=principal.company.tenant_id, company_id=principal.company.id, farm_id=request.farm_id, user_id=principal.user.id, device_id=request.device_id, operation_id=request.operation_id, entity_type=request.entity_type, entity_id=request.entity_id, local_version=request.base_version, remote_version=current_version, local_payload=request.payload, remote_payload=state.payload if state else {}))
-        db.add(ProcessedOperation(idempotency_key=request.idempotency_key, company_id=principal.company.id, operation_id=request.operation_id, result_payload=response.model_dump()))
+        db.add(ProcessedOperation(idempotency_key=request.idempotency_key, company_id=principal.company.id, operation_id=request.operation_id, result_payload=stored_result(request, response)))
         return response
     next_version = current_version + 1
     deleted = request.operation_type == "delete"
@@ -78,7 +82,7 @@ def _process_operation(db: Session, principal: Principal, request: SyncPushReque
     change = SyncChange(tenant_id=principal.company.tenant_id, company_id=principal.company.id, farm_id=request.farm_id, entity_type=request.entity_type, entity_id=request.entity_id, version=next_version, payload=request.payload, deleted=deleted)
     db.add(change)
     response = SyncPushResponse(accepted=True, conflict=False, remote_version=next_version, remote_payload=request.payload, error="")
-    db.add(ProcessedOperation(idempotency_key=request.idempotency_key, company_id=principal.company.id, operation_id=request.operation_id, result_payload=response.model_dump()))
+    db.add(ProcessedOperation(idempotency_key=request.idempotency_key, company_id=principal.company.id, operation_id=request.operation_id, result_payload=stored_result(request, response)))
     return response
 
 
@@ -121,6 +125,8 @@ def pull_page(cursor: int = Query(default=0, ge=0), limit: int = Query(default=2
     if farm_id is not None: require_farm_scope(principal, farm_id)
     clauses = [SyncChange.company_id == principal.company.id, SyncChange.tenant_id == principal.company.tenant_id, SyncChange.cursor > cursor]
     if farm_id is not None: clauses.append(SyncChange.farm_id == farm_id)
+    farm_clause = visible_farm_clause(principal, SyncChange.farm_id)
+    if farm_clause is not None: clauses.append(farm_clause)
     changes = db.scalars(select(SyncChange).where(*clauses).order_by(SyncChange.cursor.asc()).limit(limit + 1)).all()
     has_more = len(changes) > limit
     page = changes[:limit]
@@ -130,13 +136,19 @@ def pull_page(cursor: int = Query(default=0, ge=0), limit: int = Query(default=2
 
 @router.get("/conflicts")
 def list_conflicts(status: str = Query(default="open"), principal: Principal = Depends(require_permission("sync.read")), db: Session = Depends(get_db)) -> list[dict]:
-    items = db.scalars(select(SyncConflict).where(SyncConflict.company_id == principal.company.id, SyncConflict.status == status).order_by(SyncConflict.created_at.desc())).all()
+    clauses = [SyncConflict.company_id == principal.company.id, SyncConflict.status == status]
+    farm_clause = visible_farm_clause(principal, SyncConflict.farm_id)
+    if farm_clause is not None: clauses.append(farm_clause)
+    items = db.scalars(select(SyncConflict).where(*clauses).order_by(SyncConflict.created_at.desc())).all()
     return [{"id": item.id, "farm_id": item.farm_id, "operation_id": item.operation_id, "entity_type": item.entity_type, "entity_id": item.entity_id, "local_version": item.local_version, "remote_version": item.remote_version, "local_payload": item.local_payload, "remote_payload": item.remote_payload, "status": item.status, "created_at": item.created_at} for item in items]
 
 
 @router.post("/conflicts/{conflict_id}/resolve")
 def resolve_conflict(conflict_id: str, payload: ConflictResolutionRequest, principal: Principal = Depends(require_permission("sync.manage")), db: Session = Depends(get_db)) -> dict:
-    conflict = db.scalar(select(SyncConflict).where(SyncConflict.id == conflict_id, SyncConflict.company_id == principal.company.id))
+    clauses = [SyncConflict.id == conflict_id, SyncConflict.company_id == principal.company.id]
+    farm_clause = visible_farm_clause(principal, SyncConflict.farm_id)
+    if farm_clause is not None: clauses.append(farm_clause)
+    conflict = db.scalar(select(SyncConflict).where(*clauses))
     if conflict is None: raise HTTPException(status_code=404, detail="Conflito não encontrado.")
     if conflict.status != "open": raise HTTPException(status_code=409, detail="Conflito já resolvido.")
     if payload.resolution == "keep_local": resolved = conflict.local_payload
@@ -145,6 +157,8 @@ def resolve_conflict(conflict_id: str, payload: ConflictResolutionRequest, princ
         if not payload.merged_payload: raise HTTPException(status_code=422, detail="merged_payload é obrigatório para merge.")
         resolved = payload.merged_payload
     state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == conflict.entity_type, EntityState.entity_id == conflict.entity_id))
+    if state is not None and state.farm_id != conflict.farm_id:
+        raise HTTPException(status_code=409, detail="Entidade vinculada a outra fazenda.")
     next_version = (state.version if state else conflict.remote_version) + 1
     if state is None:
         state = EntityState(id=new_id("entity"), tenant_id=principal.company.tenant_id, company_id=principal.company.id, farm_id=conflict.farm_id, entity_type=conflict.entity_type, entity_id=conflict.entity_id, version=next_version, payload=resolved, deleted=False, updated_by=principal.user.id)
@@ -167,7 +181,13 @@ def save_diagnostic(payload: DiagnosticRequest, principal: Principal = Depends(r
 
 @router.get("/status")
 def offline_status(principal: Principal = Depends(require_permission("sync.read")), db: Session = Depends(get_db)) -> dict:
-    open_conflicts = db.scalar(select(func.count()).select_from(SyncConflict).where(SyncConflict.company_id == principal.company.id, SyncConflict.status == "open")) or 0
+    conflict_clauses = [SyncConflict.company_id == principal.company.id, SyncConflict.status == "open"]
+    farm_clause = visible_farm_clause(principal, SyncConflict.farm_id)
+    if farm_clause is not None: conflict_clauses.append(farm_clause)
+    open_conflicts = db.scalar(select(func.count()).select_from(SyncConflict).where(*conflict_clauses)) or 0
     devices = db.scalar(select(func.count()).select_from(OfflineDevice).where(OfflineDevice.company_id == principal.company.id, OfflineDevice.active.is_(True))) or 0
-    latest_cursor = db.scalar(select(func.max(SyncChange.cursor)).where(SyncChange.company_id == principal.company.id)) or 0
+    change_clauses = [SyncChange.company_id == principal.company.id, SyncChange.tenant_id == principal.company.tenant_id]
+    change_farm_clause = visible_farm_clause(principal, SyncChange.farm_id)
+    if change_farm_clause is not None: change_clauses.append(change_farm_clause)
+    latest_cursor = db.scalar(select(func.max(SyncChange.cursor)).where(*change_clauses)) or 0
     return {"status": "ready", "active_devices": devices, "open_conflicts": open_conflicts, "latest_cursor": latest_cursor, "max_batch_size": 200, "max_pull_page": 1000}
