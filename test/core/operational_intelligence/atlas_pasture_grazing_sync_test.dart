@@ -51,6 +51,11 @@ class FakeRemote implements AtlasGrazingRemote {
   int pages = 0;
   bool repeatFullPage = false;
   bool endlessDistinctPages = false;
+  bool insertOnEveryFirstPage = false;
+  bool insertBeforeVerification = false;
+  Map<String, dynamic>? insertAfterFirstPage;
+  int firstPageInsertions = 0;
+  int firstPageRequests = 0;
   Future<void> Function()? beforeHistoryReturn;
   List<Map<String, dynamic>> records = [];
   Map<String, dynamic>? badConfirmation;
@@ -75,9 +80,25 @@ class FakeRemote implements AtlasGrazingRemote {
       ];
     }
     if (repeatFullPage) {
-      return List<Map<String, dynamic>>.filled(limit, records.single);
+      return records.take(limit).toList();
     }
-    return records.skip(offset).take(limit).toList();
+    if (offset == 0) {
+      firstPageRequests++;
+      if (insertBeforeVerification && firstPageRequests == 2) {
+        records.insert(0, remoteMap(basis('server-before-verification')));
+      }
+    }
+    final page = records.skip(offset).take(limit).toList();
+    if (offset == 0 &&
+        (insertAfterFirstPage != null || insertOnEveryFirstPage)) {
+      records.insert(
+        0,
+        insertAfterFirstPage ??
+            remoteMap(basis('server-added-${firstPageInsertions++}')),
+      );
+      insertAfterFirstPage = null;
+    }
+    return page;
   }
 
   @override
@@ -136,7 +157,7 @@ void main() {
       await local.save(basis('remote-0'));
       await local.save(basis('operation-local'));
       final result = await run();
-      expect(remote.pages, 2);
+      expect(remote.pages, 3);
       expect(result.received, 2);
       expect(result.sent, 1);
       expect(await history(), hasLength(4));
@@ -151,10 +172,61 @@ void main() {
     ];
     await local.save(basis('operation-local'));
     final result = await run();
-    expect(remote.pages, 21);
+    expect(remote.pages, 22);
     expect(result.received, 41);
     expect(result.sent, 1);
     expect(await history(), hasLength(42));
+  });
+
+  test(
+    'inserção entre páginas reinicia leitura e inclui novo registro',
+    () async {
+      remote.records = [
+        for (var i = 0; i < 3; i++) remoteMap(basis('remote-$i')),
+      ];
+      remote.insertAfterFirstPage = remoteMap(basis('server-new'));
+      await local.save(basis('operation-local'));
+      final progress = <AtlasGrazingSyncProgress>[];
+      final result = await run(onProgress: progress.add);
+      expect(
+        progress.where(
+          (item) => item.phase == AtlasGrazingSyncPhase.restarting,
+        ),
+        hasLength(1),
+      );
+      expect(result.received, 4);
+      expect(result.sent, 1);
+      expect(await history(), hasLength(5));
+    },
+  );
+
+  test('histórico sempre mutável não importa nem envia dados', () async {
+    remote.records = [
+      for (var i = 0; i < 3; i++) remoteMap(basis('remote-$i')),
+    ];
+    remote.insertOnEveryFirstPage = true;
+    await local.save(basis('operation-local'));
+    final result = await run();
+    expect(result.received, 0);
+    expect(result.sent, 0);
+    expect(result.message, contains('Nenhum dado foi enviado ou importado'));
+    expect(remote.uploads, 0);
+    expect(await history(), hasLength(1));
+  });
+
+  test('mudança antes da conferência final força releitura', () async {
+    remote.records = [
+      for (var i = 0; i < 3; i++) remoteMap(basis('remote-$i')),
+    ];
+    remote.insertBeforeVerification = true;
+    final progress = <AtlasGrazingSyncProgress>[];
+    final result = await run(onProgress: progress.add);
+    expect(
+      progress.where((item) => item.phase == AtlasGrazingSyncPhase.restarting),
+      hasLength(1),
+    );
+    expect(result.received, 4);
+    expect(await history(), hasLength(4));
   });
 
   test('informa avanço validado e termina com resultado final', () async {
@@ -206,11 +278,14 @@ void main() {
   test(
     'páginas completas repetidas param sem upload nem perda local',
     () async {
-      remote.records = [remoteMap(basis('remote-repeated'))];
+      remote.records = [
+        remoteMap(basis('remote-repeated-1')),
+        remoteMap(basis('remote-repeated-2')),
+      ];
       remote.repeatFullPage = true;
       await local.save(basis('operation-local'));
       final result = await run();
-      expect(remote.pages, 2);
+      expect(remote.pages, 4);
       expect(result.sent, 0);
       expect(remote.uploads, 0);
       expect(await history(), hasLength(1));

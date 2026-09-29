@@ -77,6 +77,13 @@ class AtlasGrazingSyncProgress {
       sent = 0,
       totalToSend = 0;
 
+  const AtlasGrazingSyncProgress.restarting()
+    : phase = AtlasGrazingSyncPhase.restarting,
+      pagesRead = 0,
+      recordsRead = 0,
+      sent = 0,
+      totalToSend = 0;
+
   const AtlasGrazingSyncProgress.uploading({
     required this.sent,
     required this.totalToSend,
@@ -95,12 +102,16 @@ class AtlasGrazingSyncProgress {
       'Consultando histórico: $recordsRead registro(s) em $pagesRead página(s)…',
     AtlasGrazingSyncPhase.importing =>
       'Conferindo e salvando $recordsRead registro(s) neste dispositivo…',
+    AtlasGrazingSyncPhase.restarting =>
+      'O histórico mudou durante a leitura. Conferindo novamente…',
     AtlasGrazingSyncPhase.uploading =>
       'Enviando bases pendentes: $sent de $totalToSend…',
   };
 }
 
-enum AtlasGrazingSyncPhase { reading, importing, uploading }
+enum AtlasGrazingSyncPhase { reading, restarting, importing, uploading }
+
+class _UnstableGrazingHistory implements Exception {}
 
 /// Comando explícito: nunca condiciona abertura ou gravação local à rede.
 class AtlasPastureGrazingSync {
@@ -257,37 +268,73 @@ class AtlasPastureGrazingSync {
         );
       }
       final records = <String, AtlasPastureGrazingBasis>{};
-      var complete = false;
-      for (var page = 0; page < maxHistoryPages; page++) {
-        await guard();
-        final items = await remote.history(farmId, page * pageSize, pageSize);
-        await guard();
-        var newRecords = 0;
-        for (final item in items) {
-          final record = _decode(item, tenantId, companyId, farmId);
-          final duplicate = records[record.operationId];
-          if (duplicate != null && !duplicate.hasSameData(record)) {
-            throw StateError('Histórico remoto divergente.');
+      var stable = false;
+      for (var attempt = 0; attempt < 2; attempt++) {
+        records.clear();
+        var complete = false;
+        var overlap = false;
+        var pagesRead = 0;
+        var firstPage = <AtlasPastureGrazingBasis>[];
+        for (var page = 0; page < maxHistoryPages; page++) {
+          await guard();
+          final items = await remote.history(farmId, page * pageSize, pageSize);
+          await guard();
+          if (items.length > pageSize) {
+            throw StateError('Servidor excedeu o tamanho da página.');
           }
-          if (duplicate == null) newRecords++;
-          records[record.operationId] = record;
+          final decoded = items
+              .map((item) => _decode(item, tenantId, companyId, farmId))
+              .toList();
+          if (page == 0) firstPage = decoded;
+          for (final record in decoded) {
+            final duplicate = records[record.operationId];
+            if (duplicate != null && !duplicate.hasSameData(record)) {
+              throw StateError('Histórico remoto divergente.');
+            }
+            if (duplicate != null) overlap = true;
+            records[record.operationId] = record;
+          }
+          if (overlap) break;
+          pagesRead = page + 1;
+          onProgress?.call(
+            AtlasGrazingSyncProgress.reading(
+              pagesRead: pagesRead,
+              recordsRead: records.length,
+            ),
+          );
+          if (items.length < pageSize) {
+            complete = true;
+            break;
+          }
         }
-        if (items.isNotEmpty && newRecords == 0) {
-          throw StateError('Histórico remoto repetiu uma página inteira.');
+        if (!complete && !overlap) {
+          throw StateError('Histórico remoto exige revisão de paginação.');
         }
-        onProgress?.call(
-          AtlasGrazingSyncProgress.reading(
-            pagesRead: page + 1,
-            recordsRead: records.length,
-          ),
-        );
-        if (items.length < pageSize) {
-          complete = true;
-          break;
+        if (!overlap && pagesRead > 1) {
+          await guard();
+          final latest = await remote.history(farmId, 0, pageSize);
+          await guard();
+          stable = latest.length == firstPage.length;
+          if (stable) {
+            for (var i = 0; i < latest.length; i++) {
+              if (!firstPage[i].hasSameData(
+                _decode(latest[i], tenantId, companyId, farmId),
+              )) {
+                stable = false;
+                break;
+              }
+            }
+          }
+        } else if (!overlap) {
+          stable = true;
+        }
+        if (stable) break;
+        if (attempt == 0) {
+          onProgress?.call(const AtlasGrazingSyncProgress.restarting());
         }
       }
-      if (!complete) {
-        throw StateError('Histórico remoto exige revisão de paginação.');
+      if (!stable) {
+        throw _UnstableGrazingHistory();
       }
       // Releitura após a rede: uma gravação local feita durante a consulta
       // também precisa participar do confronto e da fila de envio.
@@ -363,6 +410,10 @@ class AtlasPastureGrazingSync {
         '${pending.length > sent ? ' ${pending.length - sent} aguardam próxima sincronização.' : ' Histórico conciliado.'}',
         sent: sent,
         received: received,
+      );
+    } on _UnstableGrazingHistory {
+      return const AtlasGrazingSyncResult(
+        'O histórico mudou durante a consulta. Nenhum dado foi enviado ou importado; tente sincronizar novamente em alguns instantes.',
       );
     } on AtlasEnterpriseApiException catch (error) {
       return AtlasGrazingSyncResult(
