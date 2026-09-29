@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Float,
+    Index,
     Integer,
     JSON,
     String,
@@ -132,6 +133,7 @@ class PastureGrazingBasis(Base):
     __tablename__ = "pasture_grazing_bases"
     __table_args__ = (
         UniqueConstraint("company_id", "client_operation_id", name="uq_grazing_company_operation"),
+        Index("ix_pasture_grazing_scope_created_id", "tenant_id", "company_id", "farm_id", "created_at", "id"),
     )
 
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
