@@ -94,13 +94,16 @@ void main() {
   late AtlasPastureGrazingBasisService local;
   late FakeRemote remote;
   late AtlasPastureGrazingSync sync;
-  Future<AtlasGrazingSyncResult> run({Future<bool> Function()? guard}) =>
-      sync.synchronize(
-        tenantId: 't',
-        companyId: 'c',
-        farmId: 'f',
-        isAuthorized: guard ?? () async => true,
-      );
+  Future<AtlasGrazingSyncResult> run({
+    Future<bool> Function()? guard,
+    void Function(AtlasGrazingSyncProgress)? onProgress,
+  }) => sync.synchronize(
+    tenantId: 't',
+    companyId: 'c',
+    farmId: 'f',
+    isAuthorized: guard ?? () async => true,
+    onProgress: onProgress,
+  );
   Future<List<AtlasPastureGrazingBasis>> history() =>
       local.loadHistory(tenantId: 't', companyId: 'c', farmId: 'f');
   setUp(() {
@@ -152,6 +155,52 @@ void main() {
     expect(result.received, 41);
     expect(result.sent, 1);
     expect(await history(), hasLength(42));
+  });
+
+  test('informa avanço validado e termina com resultado final', () async {
+    remote.records = [
+      for (var i = 0; i < 3; i++) remoteMap(basis('remote-$i')),
+    ];
+    final progress = <AtlasGrazingSyncProgress>[];
+    final result = await run(onProgress: progress.add);
+    expect(progress.map((item) => item.phase), [
+      AtlasGrazingSyncPhase.reading,
+      AtlasGrazingSyncPhase.reading,
+      AtlasGrazingSyncPhase.importing,
+    ]);
+    expect(progress.take(2).map((item) => item.pagesRead), [1, 2]);
+    expect(progress.take(2).map((item) => item.recordsRead), [2, 3]);
+    expect(progress.first.message, contains('2 registro(s)'));
+    expect(progress.last.message, contains('salvando 3 registro(s)'));
+    expect(result.received, 3);
+  });
+
+  test('mostra envio confirmado sem antecipar sucesso', () async {
+    await local.save(basis('operation-local'));
+    final progress = <AtlasGrazingSyncProgress>[];
+    final result = await run(onProgress: progress.add);
+    final upload = progress
+        .where((item) => item.phase == AtlasGrazingSyncPhase.uploading)
+        .toList();
+    expect(upload.map((item) => item.sent), [0, 1]);
+    expect(upload.last.totalToSend, 1);
+    expect(upload.last.message, contains('1 de 1'));
+    expect(result.sent, 1);
+  });
+
+  test('autorização revogada interrompe notificações de avanço', () async {
+    remote.records = [
+      for (var i = 0; i < 3; i++) remoteMap(basis('remote-$i')),
+    ];
+    var checks = 0;
+    final progress = <AtlasGrazingSyncProgress>[];
+    final result = await run(
+      guard: () async => ++checks < 4,
+      onProgress: progress.add,
+    );
+    expect(progress, hasLength(1));
+    expect(result.received, 0);
+    expect(await history(), isEmpty);
   });
 
   test(

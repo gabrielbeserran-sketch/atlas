@@ -63,6 +63,45 @@ class AtlasGrazingSyncResult {
   final int sent;
 }
 
+class AtlasGrazingSyncProgress {
+  const AtlasGrazingSyncProgress.reading({
+    required this.pagesRead,
+    required this.recordsRead,
+  }) : phase = AtlasGrazingSyncPhase.reading,
+       sent = 0,
+       totalToSend = 0;
+
+  const AtlasGrazingSyncProgress.importing({required this.recordsRead})
+    : phase = AtlasGrazingSyncPhase.importing,
+      pagesRead = 0,
+      sent = 0,
+      totalToSend = 0;
+
+  const AtlasGrazingSyncProgress.uploading({
+    required this.sent,
+    required this.totalToSend,
+  }) : phase = AtlasGrazingSyncPhase.uploading,
+       pagesRead = 0,
+       recordsRead = 0;
+
+  final AtlasGrazingSyncPhase phase;
+  final int pagesRead;
+  final int recordsRead;
+  final int sent;
+  final int totalToSend;
+
+  String get message => switch (phase) {
+    AtlasGrazingSyncPhase.reading =>
+      'Consultando histórico: $recordsRead registro(s) em $pagesRead página(s)…',
+    AtlasGrazingSyncPhase.importing =>
+      'Conferindo e salvando $recordsRead registro(s) neste dispositivo…',
+    AtlasGrazingSyncPhase.uploading =>
+      'Enviando bases pendentes: $sent de $totalToSend…',
+  };
+}
+
+enum AtlasGrazingSyncPhase { reading, importing, uploading }
+
 /// Comando explícito: nunca condiciona abertura ou gravação local à rede.
 class AtlasPastureGrazingSync {
   // O histórico é append-only. Um teto amplo permite fazendas antigas sem
@@ -192,6 +231,7 @@ class AtlasPastureGrazingSync {
     required String companyId,
     required String farmId,
     required Future<bool> Function() isAuthorized,
+    void Function(AtlasGrazingSyncProgress)? onProgress,
   }) async {
     if (_running) {
       return const AtlasGrazingSyncResult('Sincronização já em andamento.');
@@ -235,6 +275,12 @@ class AtlasPastureGrazingSync {
         if (items.isNotEmpty && newRecords == 0) {
           throw StateError('Histórico remoto repetiu uma página inteira.');
         }
+        onProgress?.call(
+          AtlasGrazingSyncProgress.reading(
+            pagesRead: page + 1,
+            recordsRead: records.length,
+          ),
+        );
         if (items.length < pageSize) {
           complete = true;
           break;
@@ -273,12 +319,24 @@ class AtlasPastureGrazingSync {
           '${conflictsFound.length} conflito(s). Envio suspenso; ambas as versões preservadas.',
         );
       }
+      onProgress?.call(
+        AtlasGrazingSyncProgress.importing(recordsRead: records.length),
+      );
       await guard();
       received = await local.saveAll(records.values);
       final pending = current
           .where((e) => !records.containsKey(e.operationId))
           .toList();
-      for (final record in pending.take(20)) {
+      final toSend = pending.take(20).toList();
+      if (toSend.isNotEmpty) {
+        onProgress?.call(
+          AtlasGrazingSyncProgress.uploading(
+            sent: 0,
+            totalToSend: toSend.length,
+          ),
+        );
+      }
+      for (final record in toSend) {
         await guard();
         final response = await remote.upload(record);
         await guard();
@@ -293,6 +351,12 @@ class AtlasPastureGrazingSync {
           throw StateError('Confirmação remota divergente.');
         }
         sent++;
+        onProgress?.call(
+          AtlasGrazingSyncProgress.uploading(
+            sent: sent,
+            totalToSend: toSend.length,
+          ),
+        );
       }
       return AtlasGrazingSyncResult(
         '$received recebido(s), $sent enviado(s).'

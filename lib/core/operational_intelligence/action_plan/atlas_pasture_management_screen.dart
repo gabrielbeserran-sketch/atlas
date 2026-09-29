@@ -208,7 +208,10 @@ class _AtlasPastureManagementScreenState
   Future<void> _syncGrazingBasis() async {
     final farm = authorizedFarm;
     if (farm == null || syncingBasis) return;
-    setState(() => syncingBasis = true);
+    setState(() {
+      syncingBasis = true;
+      syncMessage = 'Preparando consulta do histórico de pastejo…';
+    });
     final result = await grazingSync.synchronize(
       tenantId: farm.tenantId,
       companyId: farm.companyId,
@@ -219,13 +222,26 @@ class _AtlasPastureManagementScreenState
             current?.companyId == farm.companyId &&
             current?.tenantId == farm.tenantId;
       },
+      onProgress: (progress) {
+        if (!mounted ||
+            authorizedFarm?.id != farm.id ||
+            authorizedFarm?.companyId != farm.companyId ||
+            authorizedFarm?.tenantId != farm.tenantId) {
+          return;
+        }
+        setState(() => syncMessage = progress.message);
+      },
     );
     if (!mounted) return;
+    final sameFarm =
+        authorizedFarm?.id == farm.id &&
+        authorizedFarm?.companyId == farm.companyId &&
+        authorizedFarm?.tenantId == farm.tenantId;
     setState(() {
       syncingBasis = false;
-      syncMessage = result.message;
+      if (sameFarm) syncMessage = result.message;
     });
-    await _load();
+    if (sameFarm) await _load();
   }
 
   Future<void> _selectGrazingAnimals() async {
