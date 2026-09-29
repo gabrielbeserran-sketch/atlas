@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import sys
+from importlib import import_module
+from pathlib import Path
 
 import sqlalchemy as sa
 
 from app import models  # noqa: F401
 from app.database import Base, build_engine
+
+# O núcleo ``app.models`` não registra os módulos opcionais. Sem carregá-los,
+# o verificador trata tabelas válidas como extras e não vê colunas ausentes.
+for model_file in sorted(Path(__file__).resolve().parents[1].joinpath("app").glob("*_models.py")):
+    import_module(f"app.{model_file.stem}")
 
 
 def _normalized_type(value: sa.types.TypeEngine) -> str:

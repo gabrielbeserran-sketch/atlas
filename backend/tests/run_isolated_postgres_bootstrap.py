@@ -103,8 +103,10 @@ from sqlalchemy import create_engine, inspect, text
 import os
 engine = create_engine(os.environ['ATLAS_DATABASE_URL'])
 with engine.connect() as connection:
-    assert connection.execute(text('SELECT version_num FROM alembic_version')).scalar_one() == '20260926_0057'
+    assert connection.execute(text('SELECT version_num FROM alembic_version')).scalar_one() == '20260929_0058'
     inspector = inspect(connection)
+    assert 'atlas_ai_session_messages' in inspector.get_table_names()
+    assert {'amount_per_animal', 'animal_count'} <= {c['name'] for c in inspector.get_columns('nutrition_events')}
     assert 'client_operation_id' in {c['name'] for c in inspector.get_columns('weight_records')}
     for table, columns in [('weight_records', ['company_id', 'client_operation_id']),
                            ('pasture_grazing_bases', ['company_id', 'client_operation_id'])]:
@@ -119,7 +121,7 @@ engine.dispose()
         if description.get("Config", {}).get("Labels", {}).get(LABEL) != identity:
             raise RuntimeError("Identidade divergente na limpeza; ensaio não aprovado.")
         command(["docker", "stop", container])
-    print("PostgreSQL: upgrade até 0057, repetição e unicidades aprovados.")
+    print("PostgreSQL: upgrade até 0058, repetição e unicidades aprovados.")
 
 
 if __name__ == "__main__":

@@ -1214,9 +1214,6 @@ class IotGateway(Base):
     ip_address: Mapped[str] = mapped_column(String(80), default="")
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
-    reproductive_status: Mapped[str] = mapped_column(String(60), default="unknown", index=True)
-    last_reproduction_event_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    expected_calving_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

@@ -11,7 +11,7 @@ from ..authz import Principal, require_permission
 from ..database import get_db
 from ..models import (
     AtlasAiMemory,
-    AtlasAiMessage,
+    AtlasAiSessionMessage,
     AtlasAiPlan,
     AtlasAiRecommendation,
     AtlasAiSession,
@@ -22,7 +22,7 @@ from ..schemas import (
     AtlasAiChatRequest,
     AtlasAiChatResponse,
     AtlasAiMemoryCreateRequest,
-    AtlasAiMessageResponse,
+    AtlasAiSessionMessageResponse,
     AtlasAiPlanRequest,
     AtlasAiPlanResponse,
     AtlasAiRecommendationResponse,
@@ -116,8 +116,12 @@ def chat(
     session = None
     if payload.session_id:
         session = db.get(AtlasAiSession, payload.session_id)
-        if session is None or session.company_id != principal.company.id:
+        if (session is None or session.company_id != principal.company.id
+                or session.user_id != principal.user.id):
             raise HTTPException(status_code=404, detail="Sessão não encontrada.")
+        _farm_allowed(principal, session.farm_id)
+        if payload.farm_id is not None and payload.farm_id != session.farm_id:
+            raise HTTPException(status_code=409, detail="Fazenda diferente da sessão.")
 
     if session is None:
         session = AtlasAiSession(
@@ -133,7 +137,7 @@ def chat(
         db.add(session)
         db.flush()
 
-    user_message = AtlasAiMessage(
+    user_message = AtlasAiSessionMessage(
         id=new_id("ai_message"),
         session_id=session.id,
         company_id=principal.company.id,
@@ -156,7 +160,7 @@ def chat(
         requested_specialty=payload.requested_specialty,
     )
 
-    assistant_message = AtlasAiMessage(
+    assistant_message = AtlasAiSessionMessage(
         id=new_id("ai_message"),
         session_id=session.id,
         company_id=principal.company.id,
@@ -211,21 +215,23 @@ def chat(
     )
 
 
-@router.get("/sessions/{session_id}/messages", response_model=list[AtlasAiMessageResponse])
+@router.get("/sessions/{session_id}/messages", response_model=list[AtlasAiSessionMessageResponse])
 def messages(
     session_id: str,
     principal: Principal = Depends(require_permission("atlas_ai.read")),
     db: Session = Depends(get_db),
-) -> list[AtlasAiMessage]:
+) -> list[AtlasAiSessionMessage]:
     session = db.get(AtlasAiSession, session_id)
-    if session is None or session.company_id != principal.company.id:
+    if (session is None or session.company_id != principal.company.id
+            or session.user_id != principal.user.id):
         raise HTTPException(status_code=404, detail="Sessão não encontrada.")
+    _farm_allowed(principal, session.farm_id)
 
     return list(
         db.scalars(
-            select(AtlasAiMessage)
-            .where(AtlasAiMessage.session_id == session_id)
-            .order_by(AtlasAiMessage.created_at)
+            select(AtlasAiSessionMessage)
+            .where(AtlasAiSessionMessage.session_id == session_id)
+            .order_by(AtlasAiSessionMessage.created_at)
         ).all()
     )
 

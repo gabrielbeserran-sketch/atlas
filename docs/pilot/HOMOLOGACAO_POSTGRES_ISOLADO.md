@@ -15,7 +15,7 @@ Executor preparado e onze testes de salvaguardas aprovados em 26/09/2026. Tentat
 ```
 
 3. O executor usa exclusivamente o pipe local Docker Desktop Linux, independentemente de DOCKER_HOST/DOCKER_CONTEXT. Cria um contêiner postgres:16 novo, com banco de nome aleatório, porta aleatória ligada apenas a 127.0.0.1 e autenticação trust apenas para esse serviço descartável. Não oferece parâmetro de URL externa e não usa volumes existentes nem diretórios do host. A imagem pode precisar de download na primeira execução.
-4. Após a prontidão, executa upgrade até head duas vezes e verifica revisão 0057, coluna de operação e unicidades de pesagens/pastejo por empresa. Não faz chamadas à API nem comprova o deploy Render.
+4. Após a prontidão, executa upgrade até head duas vezes e verifica revisão 0058, coluna de operação, unicidades de pesagens/pastejo por empresa e esquema aditivo de mensagens/nutrição. Não faz chamadas à API nem comprova o deploy Render.
 5. O contêiner criado usa --rm e é encerrado pelo ID exclusivo após conferir o rótulo aleatório. A limpeza também é tentada quando a migração falha. Interrupção abrupta da máquina/processo pode deixar o contêiner temporário ativo; a identificação precisa ser conferida antes de encerrá-lo. Nunca limpar contêineres por prefixo amplo.
 
 Consultas info/inspect e prontidão pg_isready têm limite de dez segundos por comando; encerramento tem trinta. Migração/criação conservam limite de 180 segundos. Identidade divergente na limpeza não autoriza encerramento nem aprovação. Não usar reset de fábrica ou apagar arquivos internos do Docker automaticamente para resolver a falha de inicialização: isso pode afetar dados de outros projetos.
