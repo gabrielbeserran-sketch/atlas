@@ -106,4 +106,44 @@ void main() {
     expect(find.text('Dados ilimitados'), findsNothing);
     expect(find.text('0 créditos/mês'), findsNothing);
   });
+
+  testWidgets('catálogo ativo sem direito confirmado não promete Consultoria', (
+    tester,
+  ) async {
+    final controller = AtlasSessionController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AtlasSessionScope(
+          controller: controller,
+          child: AtlasSettingsScreen(
+            subscriptionService: AtlasSubscriptionService(
+              api: _SubscriptionApi({
+                'code': 'consultancy',
+                'name': 'Atlas Consultoria',
+                'status': 'active',
+                'limits': {'data_entries': null},
+                'features': ['consultoria'],
+                'consultancy_included': true,
+                'authorization': {
+                  'code': 'consultancy',
+                  'state': 'active',
+                  'consultancy_confirmed': false,
+                  'unlimited_data_confirmed': false,
+                },
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Limites não confirmados'), findsOneWidget);
+    expect(
+      find.text('Consultoria no catálogo; acesso não confirmado para esta assinatura.'),
+      findsOneWidget,
+    );
+    expect(find.text('Dados ilimitados'), findsNothing);
+  });
 }

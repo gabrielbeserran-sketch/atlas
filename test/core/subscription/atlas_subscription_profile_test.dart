@@ -86,4 +86,72 @@ void main() {
       expect(profile.hasActiveConsultancy, isFalse);
     },
   );
+
+  test('contrato novo não converte catálogo em direitos da assinatura', () {
+    final profile = AtlasSubscriptionProfile.fromMap({
+      'code': 'consultancy',
+      'status': 'active',
+      'limits': {'monthly_credits': null, 'data_entries': null},
+      'features': ['consultoria'],
+      'consultancy_included': true,
+      'authorization': {
+        'code': 'consultancy',
+        'state': 'active',
+        'consultancy_confirmed': false,
+        'unlimited_data_confirmed': false,
+        'monthly_credits_confirmed': null,
+      },
+    });
+
+    expect(profile.consultancyIncluded, isTrue);
+    expect(profile.hasActiveConsultancy, isFalse);
+    expect(profile.hasServerConfirmedConsultancy, isFalse);
+    expect(profile.hasUnlimitedData, isFalse);
+    expect(profile.monthlyCredits, isNull);
+  });
+
+  test('direitos confirmados do servidor habilitam recursos ativos', () {
+    final consultancy = AtlasSubscriptionProfile.fromMap({
+      'code': 'consultancy',
+      'status': 'active',
+      'authorization': {
+        'code': 'consultancy',
+        'state': 'active',
+        'consultancy_confirmed': true,
+        'unlimited_data_confirmed': true,
+      },
+    });
+    final basic = AtlasSubscriptionProfile.fromMap({
+      'code': 'basic',
+      'status': 'active',
+      'limits': {'monthly_credits': 100},
+      'authorization': {
+        'code': 'basic',
+        'state': 'active',
+        'monthly_credits_confirmed': 70,
+      },
+    });
+
+    expect(consultancy.hasActiveConsultancy, isTrue);
+    expect(consultancy.hasUnlimitedData, isTrue);
+    expect(basic.monthlyCredits, 70);
+  });
+
+  test('legado preserva acesso operacional sem confirmação de plano', () {
+    final profile = AtlasSubscriptionProfile.fromMap({
+      'code': 'consultancy',
+      'status': 'not_configured',
+      'consultancy_included': true,
+      'authorization': {
+        'code': 'consultancy',
+        'state': 'legacy_pending',
+        'legacy_access_preserved': true,
+        'consultancy_confirmed': false,
+      },
+    });
+
+    expect(profile.hasActiveConsultancy, isFalse);
+    expect(profile.hasServerConfirmedConsultancy, isFalse);
+    expect(profile.monthlyCredits, isNull);
+  });
 }

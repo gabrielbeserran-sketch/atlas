@@ -194,6 +194,10 @@ class _AtlasSettingsScreenState extends State<AtlasSettingsScreen> {
                         Text(
                           plan.hasActiveConsultancy
                               ? 'Inclui consultoria e gestão de equipes com acessos por função.'
+                              : plan.authorization != null &&
+                                    plan.isActive &&
+                                    plan.consultancyIncluded
+                              ? 'Consultoria no catálogo; acesso não confirmado para esta assinatura.'
                               : plan.consultancyIncluded
                               ? 'Consultoria prevista no plano; ativação ainda não confirmada.'
                               : 'Os módulos liberados dependem deste plano e do perfil de cada colaborador.',

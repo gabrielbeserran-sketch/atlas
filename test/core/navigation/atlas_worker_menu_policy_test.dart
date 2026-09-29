@@ -31,6 +31,11 @@ AtlasSubscriptionProfile _plan(String code, String status) =>
       'limits': const <String, dynamic>{},
       'features': code == 'consultancy' ? ['consultoria'] : <String>[],
       'consultancy_included': code == 'consultancy',
+      'authorization': {
+        'code': code,
+        'state': status == 'active' ? 'active' : 'legacy_pending',
+        'consultancy_confirmed': code == 'consultancy' && status == 'active',
+      },
     });
 
 void main() {
@@ -116,5 +121,39 @@ void main() {
     expect(await store.fetchConfirmed(), isTrue);
     expect(await store.loadCached(_session('company-1')), isNull);
     expect(await store.loadCached(_session('company-2')), isNull);
+  });
+
+  test('menu não reaproveita confirmação anterior ao contrato do servidor', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = AtlasWorkerMenuEntitlement(
+      preferences: preferences,
+      loadProfile: () async => AtlasSubscriptionProfile.fromMap({
+        'code': 'consultancy',
+        'status': 'active',
+        'consultancy_included': true,
+      }),
+    );
+    final key = store.scopeKey(_session('company-1'))!;
+    await preferences.setBool(key.replaceFirst('_v2_', '_v1_'), true);
+
+    expect(await store.loadCached(_session('company-1')), isNull);
+    expect(await store.fetchConfirmed(), isFalse);
+  });
+
+  test('catálogo ativo não simplifica menu quando servidor nega direito', () async {
+    final store = AtlasWorkerMenuEntitlement(
+      preferences: SharedPreferencesAsync(),
+      loadProfile: () async => AtlasSubscriptionProfile.fromMap({
+        'code': 'consultancy',
+        'status': 'active',
+        'consultancy_included': true,
+        'authorization': {
+          'code': 'consultancy',
+          'state': 'active',
+          'consultancy_confirmed': false,
+        },
+      }),
+    );
+    expect(await store.fetchConfirmed(), isFalse);
   });
 }

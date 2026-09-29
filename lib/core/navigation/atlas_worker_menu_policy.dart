@@ -41,7 +41,7 @@ class AtlasWorkerMenuEntitlement {
     final encoded = base64Url.encode(
       utf8.encode(jsonEncode([session.tenantId, session.companyId])),
     );
-    return 'atlas_worker_menu_consultancy_v1_$encoded';
+    return 'atlas_worker_menu_consultancy_v2_$encoded';
   }
 
   Future<bool?> loadCached(AtlasRemoteSession session) async {
@@ -51,7 +51,7 @@ class AtlasWorkerMenuEntitlement {
 
   Future<bool> fetchConfirmed() async {
     final profile = await _loadProfile();
-    return profile.hasActiveConsultancy;
+    return profile.hasServerConfirmedConsultancy;
   }
 
   Future<void> saveFor(AtlasRemoteSession session, bool enabled) async {

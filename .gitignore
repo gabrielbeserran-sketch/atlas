@@ -164,6 +164,7 @@ data/attachments/
 /release/windows/reproducao-visao-datada-20260928/
 /release/windows/reproducao-progresso-20260928/
 /release/windows/reproducao-integridade-cobertura-20260928/
+/release/windows/plan-entitlements-20260929/
 dist/
 *.apk
 *.aab
