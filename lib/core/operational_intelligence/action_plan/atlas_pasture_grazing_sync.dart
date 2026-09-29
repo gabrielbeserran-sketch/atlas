@@ -65,6 +65,10 @@ class AtlasGrazingSyncResult {
 
 /// Comando explícito: nunca condiciona abertura ou gravação local à rede.
 class AtlasPastureGrazingSync {
+  // O histórico é append-only. Um teto amplo permite fazendas antigas sem
+  // manter uma consulta infinita caso o servidor repita páginas completas.
+  static const int maxHistoryPages = 1000;
+
   AtlasPastureGrazingSync({
     AtlasGrazingRemote? remote,
     AtlasPastureGrazingBasisService? local,
@@ -201,7 +205,7 @@ class AtlasPastureGrazingSync {
 
     try {
       await guard();
-      final existing = await local.loadHistory(
+      await local.loadHistory(
         tenantId: tenantId,
         companyId: companyId,
         farmId: farmId,
@@ -214,17 +218,22 @@ class AtlasPastureGrazingSync {
       }
       final records = <String, AtlasPastureGrazingBasis>{};
       var complete = false;
-      for (var page = 0; page < 20; page++) {
+      for (var page = 0; page < maxHistoryPages; page++) {
         await guard();
         final items = await remote.history(farmId, page * pageSize, pageSize);
         await guard();
+        var newRecords = 0;
         for (final item in items) {
           final record = _decode(item, tenantId, companyId, farmId);
           final duplicate = records[record.operationId];
           if (duplicate != null && !duplicate.hasSameData(record)) {
             throw StateError('Histórico remoto divergente.');
           }
+          if (duplicate == null) newRecords++;
           records[record.operationId] = record;
+        }
+        if (items.isNotEmpty && newRecords == 0) {
+          throw StateError('Histórico remoto repetiu uma página inteira.');
         }
         if (items.length < pageSize) {
           complete = true;
@@ -234,8 +243,17 @@ class AtlasPastureGrazingSync {
       if (!complete) {
         throw StateError('Histórico remoto exige revisão de paginação.');
       }
+      // Releitura após a rede: uma gravação local feita durante a consulta
+      // também precisa participar do confronto e da fila de envio.
+      await guard();
+      final current = await local.loadHistory(
+        tenantId: tenantId,
+        companyId: companyId,
+        farmId: farmId,
+        strict: true,
+      );
       final conflictsFound = <Map<String, dynamic>>[];
-      for (final record in existing) {
+      for (final record in current) {
         final other = records[record.operationId];
         if (other != null && !record.hasSameData(other)) {
           conflictsFound.add({
@@ -255,14 +273,9 @@ class AtlasPastureGrazingSync {
           '${conflictsFound.length} conflito(s). Envio suspenso; ambas as versões preservadas.',
         );
       }
-      for (final record in records.values) {
-        await guard();
-        await local.save(record);
-        if (!existing.any((e) => e.operationId == record.operationId)) {
-          received++;
-        }
-      }
-      final pending = existing
+      await guard();
+      received = await local.saveAll(records.values);
+      final pending = current
           .where((e) => !records.containsKey(e.operationId))
           .toList();
       for (final record in pending.take(20)) {

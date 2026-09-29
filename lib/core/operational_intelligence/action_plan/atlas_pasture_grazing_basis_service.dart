@@ -189,29 +189,55 @@ class AtlasPastureGrazingBasisService {
     AtlasPastureGrazingBasis basis, {
     double? farmTotalAreaHa,
   }) async {
-    basis.validate(farmTotalAreaHa: farmTotalAreaHa);
-    final key = _key(basis.tenantId, basis.companyId, basis.farmId);
+    await saveAll([basis], farmTotalAreaHa: farmTotalAreaHa);
+  }
+
+  /// Importa um histórico em uma única escrita, sem sobrescrever inclusões
+  /// locais feitas enquanto a consulta remota estava em andamento.
+  Future<int> saveAll(
+    Iterable<AtlasPastureGrazingBasis> bases, {
+    double? farmTotalAreaHa,
+  }) async {
+    final incoming = bases.toList();
+    if (incoming.isEmpty) return 0;
+    final first = incoming.first;
+    final key = _key(first.tenantId, first.companyId, first.farmId);
+    for (final basis in incoming) {
+      basis.validate(farmTotalAreaHa: farmTotalAreaHa);
+      if (_key(basis.tenantId, basis.companyId, basis.farmId) != key) {
+        throw ArgumentError('Histórico contém outra fazenda.');
+      }
+    }
+    var added = 0;
     await _serialize(key, () async {
       final history = await loadHistory(
-        tenantId: basis.tenantId,
-        companyId: basis.companyId,
-        farmId: basis.farmId,
+        tenantId: first.tenantId,
+        companyId: first.companyId,
+        farmId: first.farmId,
         strict: true,
       );
-      final existing = history.where(
-        (item) => item.operationId == basis.operationId,
-      );
-      if (existing.isNotEmpty) {
-        if (!existing.first.hasSameData(basis)) {
+      final byId = {for (final item in history) item.operationId: item};
+      final additions = <AtlasPastureGrazingBasis>[];
+      for (final basis in incoming) {
+        final existing = byId[basis.operationId];
+        if (existing != null) {
+          if (existing.hasSameData(basis)) continue;
           throw StateError('A mesma operação contém dados diferentes.');
         }
-        return;
+        byId[basis.operationId] = basis;
+        additions.add(basis);
       }
+      if (additions.isEmpty) return;
       await _preferences.setString(
         key,
-        jsonEncode([basis.toMap(), ...history.map((item) => item.toMap())]),
+        jsonEncode([
+          ...additions.map((item) => item.toMap()),
+          ...history.map((item) => item.toMap()),
+        ]),
       );
+      added = additions.length;
     });
+    return added;
   }
 
   Future<List<Map<String, dynamic>>> reviewedHistory({

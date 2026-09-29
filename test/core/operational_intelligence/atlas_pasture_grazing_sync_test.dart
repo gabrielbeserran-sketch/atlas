@@ -49,6 +49,9 @@ class FakeRemote implements AtlasGrazingRemote {
   bool loseResponse = false;
   int uploads = 0;
   int pages = 0;
+  bool repeatFullPage = false;
+  bool endlessDistinctPages = false;
+  Future<void> Function()? beforeHistoryReturn;
   List<Map<String, dynamic>> records = [];
   Map<String, dynamic>? badConfirmation;
   @override
@@ -60,6 +63,20 @@ class FakeRemote implements AtlasGrazingRemote {
     int limit,
   ) async {
     pages++;
+    if (beforeHistoryReturn != null) {
+      final callback = beforeHistoryReturn!;
+      beforeHistoryReturn = null;
+      await callback();
+    }
+    if (endlessDistinctPages) {
+      return [
+        for (var i = offset; i < offset + limit; i++)
+          remoteMap(basis('infinite-$i')),
+      ];
+    }
+    if (repeatFullPage) {
+      return List<Map<String, dynamic>>.filled(limit, records.single);
+    }
     return records.skip(offset).take(limit).toList();
   }
 
@@ -125,6 +142,67 @@ void main() {
     },
   );
 
+  test('histórico acima de vinte páginas é conciliado integralmente', () async {
+    remote.records = [
+      for (var i = 0; i < 41; i++) remoteMap(basis('remote-$i')),
+    ];
+    await local.save(basis('operation-local'));
+    final result = await run();
+    expect(remote.pages, 21);
+    expect(result.received, 41);
+    expect(result.sent, 1);
+    expect(await history(), hasLength(42));
+  });
+
+  test(
+    'páginas completas repetidas param sem upload nem perda local',
+    () async {
+      remote.records = [remoteMap(basis('remote-repeated'))];
+      remote.repeatFullPage = true;
+      await local.save(basis('operation-local'));
+      final result = await run();
+      expect(remote.pages, 2);
+      expect(result.sent, 0);
+      expect(remote.uploads, 0);
+      expect(await history(), hasLength(1));
+    },
+  );
+
+  test(
+    'teto de páginas distintas exige revisão sem alterar histórico',
+    () async {
+      remote.endlessDistinctPages = true;
+      await local.save(basis('operation-local'));
+      final result = await run();
+      expect(remote.pages, AtlasPastureGrazingSync.maxHistoryPages);
+      expect(result.sent, 0);
+      expect(remote.uploads, 0);
+      expect(await history(), hasLength(1));
+    },
+  );
+
+  test(
+    'edição local durante consulta não é sobrescrita por lote remoto',
+    () async {
+      remote.records = [
+        remoteMap(basis('operation-race')),
+        remoteMap(basis('remote-extra')),
+      ];
+      remote.beforeHistoryReturn = () async {
+        await local.save(basis('operation-race', animals: 99));
+      };
+      final result = await run();
+      expect(result.sent, 0);
+      expect(remote.uploads, 0);
+      final current = await history();
+      expect(current, hasLength(1));
+      expect(current.single.grazingAnimals, 99);
+      final conflicts = await sync.conflicts('t', 'c', 'f');
+      expect(conflicts, hasLength(1));
+      expect((conflicts.single['remote'] as Map)['grazingAnimals'], 30);
+    },
+  );
+
   test('resposta perdida é conciliada sem repetir POST', () async {
     await local.save(basis('operation-local'));
     remote.loseResponse = true;
@@ -133,6 +211,16 @@ void main() {
     await run();
     expect(remote.uploads, 1);
     expect(remote.records, hasLength(1));
+  });
+
+  test('novo registro local durante consulta entra no envio', () async {
+    remote.beforeHistoryReturn = () async {
+      await local.save(basis('operation-during-fetch'));
+    };
+    final result = await run();
+    expect(result.sent, 1);
+    expect(remote.uploads, 1);
+    expect(await history(), hasLength(1));
   });
 
   test(

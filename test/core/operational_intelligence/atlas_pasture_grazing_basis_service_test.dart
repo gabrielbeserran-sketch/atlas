@@ -24,6 +24,16 @@ AtlasPastureGrazingBasis basis({
   recordedAt: at ?? DateTime.now(),
 );
 
+class CountingPreferences extends SharedPreferencesAsync {
+  final writes = <String>[];
+
+  @override
+  Future<void> setString(String key, String value) async {
+    writes.add(key);
+    await super.setString(key, value);
+  }
+}
+
 void main() {
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
@@ -169,6 +179,47 @@ void main() {
       ),
       hasLength(2),
     );
+  });
+
+  test('importação em lote grava uma vez e é idempotente', () async {
+    final preferences = CountingPreferences();
+    final service = AtlasPastureGrazingBasisService(preferences: preferences);
+    final records = List.generate(41, (i) => basis(animals: i + 1));
+    expect(await service.saveAll(records), 41);
+    expect(preferences.writes, hasLength(1));
+    expect(await service.saveAll(records), 0);
+    expect(preferences.writes, hasLength(1));
+    expect(
+      await service.loadHistory(
+        tenantId: 'tenant-a',
+        companyId: 'company-a',
+        farmId: 'farm-a',
+      ),
+      hasLength(41),
+    );
+  });
+
+  test('lote divergente ou de outra fazenda não grava parcialmente', () async {
+    final service = AtlasPastureGrazingBasisService();
+    final existing = basis();
+    await service.save(existing);
+    final changed = AtlasPastureGrazingBasis.fromMap({
+      ...existing.toMap(),
+      'grazingAnimals': 99,
+    });
+    final additional = basis(animals: 40);
+    await expectLater(service.saveAll([additional, changed]), throwsStateError);
+    await expectLater(
+      service.saveAll([additional, basis(farm: 'farm-b')]),
+      throwsArgumentError,
+    );
+    final history = await service.loadHistory(
+      tenantId: 'tenant-a',
+      companyId: 'company-a',
+      farmId: 'farm-a',
+    );
+    expect(history, hasLength(1));
+    expect(history.single.hasSameData(existing), isTrue);
   });
 
   test(
