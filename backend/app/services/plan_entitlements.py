@@ -19,6 +19,7 @@ def evaluate_plan_entitlements(
     features: Iterable[str],
     limits: Mapping[str, Any],
     plan_resolved: bool = True,
+    enforcement_enabled: bool = False,
 ) -> dict[str, Any]:
     """Retorna apenas direitos confirmados; não altera permissões legadas."""
     normalized_code = code.strip().lower()
@@ -44,9 +45,11 @@ def evaluate_plan_entitlements(
         else None
     )
     return {
+        'code': normalized_code,
         'state': state,
         'legacy_access_preserved': not subscription_present,
-        'enforcement_enabled': False,
+        'enforcement_enabled': enforcement_enabled,
+        'enforcement_scope': 'consultancy_contact' if enforcement_enabled else 'none',
         'consultancy_confirmed': (
             confirmed and normalized_code == 'consultancy' and 'consultoria' in feature_set
         ),
@@ -61,3 +64,20 @@ def evaluate_plan_entitlements(
         ),
         'monthly_credits_confirmed': basic_credits,
     }
+
+
+def consultancy_gate_decision(authorization: Mapping[str, Any]) -> str:
+    """Nega apenas plano não Consultoria ativo; os demais exigem revisão humana.
+
+    ``defer`` preserva o acesso atual enquanto contas antigas/inconclusivas são
+    migradas. O papel e o escopo da fazenda continuam verificados pela rota.
+    """
+    if authorization['state'] == 'legacy_pending':
+        return 'defer'
+    if authorization['state'] != 'active':
+        return 'defer'
+    if authorization['consultancy_confirmed']:
+        return 'allow'
+    if authorization['code'] in {'basic', 'professional'}:
+        return 'deny'
+    return 'defer'

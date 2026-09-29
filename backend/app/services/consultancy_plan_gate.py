@@ -1,0 +1,39 @@
+"""Gate opt-in da Consultoria, preservando contas não migradas."""
+
+from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from ..authz import Principal
+from ..saas_growth_models import CompanySubscription, SaaSPlan
+from .plan_entitlements import consultancy_gate_decision, evaluate_plan_entitlements
+
+
+def enforce_consultancy_plan_access(
+    *, principal: Principal, db: Session, enabled: bool,
+) -> None:
+    if not enabled:
+        return
+
+    subscription = db.scalar(
+        select(CompanySubscription).where(
+            CompanySubscription.company_id == principal.company.id,
+            CompanySubscription.tenant_id == principal.company.tenant_id,
+        )
+    )
+    plan = db.get(SaaSPlan, subscription.plan_id) if subscription else None
+    code = plan.code if plan else principal.company.subscription_plan or 'basic'
+    authorization = evaluate_plan_entitlements(
+        code=code,
+        status=subscription.status if subscription else 'not_configured',
+        subscription_present=subscription is not None,
+        plan_resolved=plan is not None,
+        features=(plan.features_json or []) if plan else [],
+        limits=(plan.limits_json or {}) if plan else {},
+        enforcement_enabled=True,
+    )
+    if consultancy_gate_decision(authorization) == 'deny':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='O plano ativo não inclui Consultoria.',
+        )

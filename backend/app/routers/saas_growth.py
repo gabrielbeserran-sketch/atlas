@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ..authz import Principal, require_farm_scope, require_permission
 from ..database import get_db
+from ..config import get_settings
 from ..models import ConsultancyContact, Farm, HerdLot, LivestockAnimal, OperationalTask
 from ..saas_growth_models import SaaSPlan,CompanySubscription,BillingInvoice,FeatureFlag,CommunicationTemplate,CommunicationDelivery,OnboardingProgress,DataImportJob,DataExportJob,AdminAuditAction
 from ..services.plan_entitlements import evaluate_plan_entitlements
@@ -78,8 +79,9 @@ def current_subscription(db:Session=Depends(get_db),p:Principal=Depends(read_dep
             status=subscription.status if subscription else 'not_configured',
             subscription_present=subscription is not None,
             plan_resolved=plan is not None,
-            features=features,
-            limits=limits,
+            features=(plan.features_json or []) if plan else [],
+            limits=(plan.limits_json or {}) if plan else {},
+            enforcement_enabled=get_settings().atlas_consultancy_plan_gate_enabled,
         ),
     }
 

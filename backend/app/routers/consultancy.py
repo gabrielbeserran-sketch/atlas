@@ -7,8 +7,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_farm_scope, require_permission
+from ..config import get_settings
 from ..database import get_db
 from ..models import ConsultancyContact, Farm, new_id
+from ..services.consultancy_plan_gate import enforce_consultancy_plan_access
 
 
 router = APIRouter(prefix="/consultancy", tags=["consultancy"])
@@ -101,6 +103,11 @@ def get_contact(
     principal: Principal = Depends(require_permission("farms.read")),
     db: Session = Depends(get_db),
 ) -> dict:
+    enforce_consultancy_plan_access(
+        principal=principal,
+        db=db,
+        enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+    )
     _farm_for_principal(db, principal, farm_id)
     contact = db.scalar(
         select(ConsultancyContact).where(
@@ -118,6 +125,11 @@ def update_contact(
     principal: Principal = Depends(require_permission("farms.update")),
     db: Session = Depends(get_db),
 ) -> dict:
+    enforce_consultancy_plan_access(
+        principal=principal,
+        db=db,
+        enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+    )
     farm = _farm_for_principal(db, principal, farm_id)
     whatsapp = _digits(request.whatsapp_number)
     if not 10 <= len(whatsapp) <= 15:

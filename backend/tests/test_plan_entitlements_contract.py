@@ -28,6 +28,7 @@ def test_active_catalog_entitlements(code, features, limits, expected):
     assert result['state'] == 'active'
     assert result['legacy_access_preserved'] is False
     assert result['enforcement_enabled'] is False
+    assert result['enforcement_scope'] == 'none'
     assert {key: result[key] for key in expected} == expected
 
 
@@ -101,3 +102,17 @@ def test_subscription_with_missing_plan_never_confirms_fallback_code():
     assert result['authorization']['state'] == 'unknown_plan'
     assert result['authorization']['legacy_access_preserved'] is False
     assert result['authorization']['consultancy_confirmed'] is False
+
+
+def test_display_catalog_does_not_confirm_missing_subscription_features():
+    subscription = SimpleNamespace(plan_id='plan-1', status='active')
+    plan = SimpleNamespace(
+        code='consultancy', name='Atlas Consultoria',
+        features_json=[], limits_json={},
+    )
+    db = SimpleNamespace(scalar=lambda _query: subscription, get=lambda _model, _id: plan)
+    principal = SimpleNamespace(company=SimpleNamespace(id='company-1', subscription_plan='basic'))
+    result = current_subscription(db=db, p=principal)
+    assert 'consultoria' in result['features']  # Exibição legada permanece intacta.
+    assert result['authorization']['consultancy_confirmed'] is False
+    assert result['authorization']['unlimited_data_confirmed'] is False

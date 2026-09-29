@@ -108,6 +108,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     atlas_financial_ocr_model: str = "gpt-5"
 
+    # Gate comercial opt-in: permanece desligado até migração e ensaio dos planos.
+    atlas_consultancy_plan_gate_enabled: bool = False
+
     # Forwarded headers are untrusted by default. They are only honored when
     # the direct peer belongs to one of the explicitly configured proxy CIDRs.
     atlas_trust_proxy_headers: bool = False
