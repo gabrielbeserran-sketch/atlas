@@ -4,14 +4,18 @@ import hashlib
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import tarfile
 import tempfile
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.exc import DatabaseError
 
 from ..config import get_settings
 
@@ -24,7 +28,7 @@ class BackupService:
 
     def run(self) -> Path:
         """Cria backup completo: banco + anexos + manifesto SHA-256."""
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         bundle = self.backup_dir / f"atlas_{timestamp}.atlasbackup"
 
         with tempfile.TemporaryDirectory(prefix="atlas_backup_") as tmp_raw:
@@ -46,7 +50,7 @@ class BackupService:
                 encoding="utf-8",
             )
 
-            with tarfile.open(bundle, "w:gz") as archive:
+            with tarfile.open(bundle, "x:gz") as archive:
                 archive.add(database_file, arcname=database_file.name)
                 archive.add(attachments_file, arcname=attachments_file.name)
                 archive.add(tmp / "manifest.json", arcname="manifest.json")
@@ -89,6 +93,9 @@ class BackupService:
             database_file = tmp / manifest["database_file"]
             attachments_file = tmp / manifest["attachments_file"]
 
+            if database_file.resolve().parent != tmp.resolve() or attachments_file.resolve().parent != tmp.resolve():
+                raise RuntimeError("Caminho inválido no manifesto do backup.")
+
             if self._sha256(database_file) != manifest["database_sha256"]:
                 raise RuntimeError("Checksum do backup do banco inválido.")
             if self._sha256(attachments_file) != manifest["attachments_sha256"]:
@@ -108,24 +115,56 @@ class BackupService:
             self._extract_bundle(bundle, tmp)
             manifest = self.verify_bundle(bundle)
             database_file = tmp / manifest["database_file"]
+            attachments_file = tmp / manifest["attachments_file"]
+            attachments = self._verify_attachments(attachments_file)
 
             if database_file.suffix == ".sqlite3":
                 restored = tmp / "restored.sqlite3"
                 shutil.copy2(database_file, restored)
                 engine = create_engine(f"sqlite:///{restored}")
                 try:
-                    with engine.connect() as connection:
-                        connection.execute(text("SELECT 1"))
+                    try:
+                        with engine.connect() as connection:
+                            integrity = connection.execute(text("PRAGMA integrity_check")).scalar()
+                    except DatabaseError as exc:
+                        raise RuntimeError("Banco restaurado ilegível.") from exc
+                    if integrity != "ok":
+                        raise RuntimeError("Integridade do banco restaurado inválida.")
                     tables = inspect(engine).get_table_names()
+                    if not tables:
+                        raise RuntimeError("Banco restaurado sem tabelas.")
                 finally:
                     engine.dispose()
                 return {
                     "engine": "sqlite",
                     "tables": len(tables),
+                    "attachments": attachments,
                     "verified": True,
                 }
 
-            return self._verify_postgres_restore(database_file)
+            result = self._verify_postgres_restore(database_file)
+            result["attachments"] = attachments
+            return result
+
+    def _verify_attachments(self, archive_path: Path) -> int:
+        count = 0
+        with tarfile.open(archive_path, "r:gz") as archive:
+            for member in archive:
+                path = PurePosixPath(member.name)
+                if path.is_absolute() or ".." in path.parts or "\\" in member.name:
+                    raise RuntimeError("Caminho de anexo inválido no backup.")
+                if not member.isfile():
+                    if member.isdir():
+                        continue
+                    raise RuntimeError("Anexo com tipo inválido no backup.")
+                handle = archive.extractfile(member)
+                if handle is None:
+                    raise RuntimeError("Anexo ilegível no backup.")
+                with handle:
+                    for _chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                        pass
+                count += 1
+        return count
 
     def _create_database_backup(
         self,
@@ -138,7 +177,10 @@ class BackupService:
             target = target_dir / f"atlas_{timestamp}.sqlite3"
             if not source.exists():
                 raise RuntimeError(f"Banco SQLite não encontrado: {source}")
-            shutil.copy2(source, target)
+            # A API online inclui páginas ainda no WAL sem interromper escritas.
+            with closing(sqlite3.connect(source.resolve().as_uri() + "?mode=ro", uri=True)) as origin:
+                with closing(sqlite3.connect(target)) as snapshot:
+                    origin.backup(snapshot)
             return target
 
         target = target_dir / f"atlas_{timestamp}.dump"
