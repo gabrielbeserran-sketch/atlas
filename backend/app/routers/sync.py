@@ -202,6 +202,8 @@ def pull(
 
     return [
         SyncChangeResponse(
+            tenant_id=item.tenant_id,
+            farm_id=item.farm_id,
             entity_type=item.entity_type,
             entity_id=item.entity_id,
             version=item.version,

@@ -131,7 +131,7 @@ def pull_page(cursor: int = Query(default=0, ge=0), limit: int = Query(default=2
     has_more = len(changes) > limit
     page = changes[:limit]
     next_cursor = page[-1].cursor if page else cursor
-    return {"cursor": cursor, "next_cursor": next_cursor, "has_more": has_more, "changes": [{"entity_type": item.entity_type, "entity_id": item.entity_id, "version": item.version, "payload": item.payload, "deleted": item.deleted, "cursor": item.cursor} for item in page]}
+    return {"cursor": cursor, "next_cursor": next_cursor, "has_more": has_more, "changes": [{"farm_id": item.farm_id, "entity_type": item.entity_type, "entity_id": item.entity_id, "version": item.version, "payload": item.payload, "deleted": item.deleted, "cursor": item.cursor} for item in page]}
 
 
 @router.get("/conflicts")

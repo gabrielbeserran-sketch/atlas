@@ -12,6 +12,18 @@ class OfflineRepository {
 
   final AtlasOfflineDatabase _database;
 
+  static String? farmIdForChange(
+    Map<String, dynamic> change,
+    String? requestedFarmId,
+  ) {
+    // A chave presente com valor nulo indica registro geral da empresa.
+    // Servidores antigos omitem a chave: nesse caso, conserva o filtro usado.
+    if (change.containsKey('farm_id')) {
+      return change['farm_id']?.toString();
+    }
+    return requestedFarmId;
+  }
+
   Future<void> enqueue(OfflineOperation operation) async {
     final db = await _database.database;
     await db.insert(
@@ -168,7 +180,7 @@ class OfflineRepository {
     await db.insert('entity_cache', <String, Object?>{
       'company_id': companyId,
       'tenant_id': tenantId,
-      'farm_id': farmId,
+      'farm_id': farmIdForChange(change, farmId),
       'entity_type': change['entity_type']?.toString() ?? '',
       'entity_id': change['entity_id']?.toString() ?? '',
       'version': (change['version'] as num?)?.toInt() ?? 0,

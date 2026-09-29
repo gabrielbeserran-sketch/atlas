@@ -55,6 +55,8 @@ class AtlasHttpSyncTransport implements AtlasEnterpriseSyncTransport {
     return values
         .map(
           (item) => AtlasRemoteEntityState(
+            tenantId: item['tenant_id']?.toString(),
+            farmId: item['farm_id']?.toString(),
             entityType: item['entity_type']?.toString() ?? '',
             entityId: item['entity_id']?.toString() ?? '',
             version: (item['version'] as num?)?.toInt() ?? 0,

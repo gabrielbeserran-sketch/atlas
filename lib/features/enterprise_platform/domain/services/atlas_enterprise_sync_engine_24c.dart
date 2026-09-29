@@ -1,4 +1,5 @@
 import '../../data/services/atlas_enterprise_sync_repository.dart';
+import 'package:uuid/uuid.dart';
 import '../models/atlas_enterprise_sync_data.dart';
 import '../models/atlas_enterprise_version_data.dart';
 import 'atlas_enterprise_audit_service.dart';
@@ -28,12 +29,11 @@ class AtlasEnterpriseSyncEngine24C {
     String deviceId = 'local_device',
   }) async {
     final now = DateTime.now();
-    final idempotencyKey =
-        '$tenantId|$entityType|$entityId|$baseVersion|'
-        '${operationType.name}|${payload.hashCode}';
+    final operationId = 'sync_${const Uuid().v4()}';
+    final idempotencyKey = const Uuid().v4();
 
     final operation = AtlasEnterpriseSyncOperation(
-      operationId: 'sync_${now.microsecondsSinceEpoch}',
+      operationId: operationId,
       tenantId: tenantId,
       companyId: companyId,
       farmId: farmId,
@@ -209,9 +209,9 @@ class AtlasEnterpriseSyncEngine24C {
       }
 
       await versions.commit(
-        tenantId: companyId,
+        tenantId: change.tenantId ?? companyId,
         companyId: companyId,
-        farmId: null,
+        farmId: change.farmId,
         entityType: change.entityType,
         entityId: change.entityId,
         payload: change.payload,

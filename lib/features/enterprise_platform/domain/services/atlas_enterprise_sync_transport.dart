@@ -2,6 +2,8 @@ import '../models/atlas_enterprise_sync_data.dart';
 
 class AtlasRemoteEntityState {
   const AtlasRemoteEntityState({
+    this.tenantId,
+    this.farmId,
     required this.entityType,
     required this.entityId,
     required this.version,
@@ -10,6 +12,8 @@ class AtlasRemoteEntityState {
     required this.cursor,
   });
 
+  final String? tenantId;
+  final String? farmId;
   final String entityType;
   final String entityId;
   final int version;
@@ -86,6 +90,8 @@ class AtlasLocalLoopbackSyncTransport implements AtlasEnterpriseSyncTransport {
     _cursor += 1;
     final nextVersion = currentVersion + 1;
     _remote[key] = AtlasRemoteEntityState(
+      tenantId: operation.tenantId,
+      farmId: operation.farmId,
       entityType: operation.entityType,
       entityId: operation.entityId,
       version: nextVersion,

@@ -128,6 +128,8 @@ class SyncPushResponse(BaseModel):
 
 
 class SyncChangeResponse(BaseModel):
+    tenant_id: str | None = None
+    farm_id: str | None = None
     entity_type: str
     entity_id: str
     version: int
