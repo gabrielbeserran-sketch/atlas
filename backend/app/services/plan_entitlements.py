@@ -49,7 +49,7 @@ def evaluate_plan_entitlements(
         'state': state,
         'legacy_access_preserved': not subscription_present,
         'enforcement_enabled': enforcement_enabled,
-        'enforcement_scope': 'consultancy_dedicated_routes' if enforcement_enabled else 'none',
+        'enforcement_scope': 'consultancy_routes_and_agenda_tasks' if enforcement_enabled else 'none',
         'consultancy_confirmed': (
             confirmed and normalized_code == 'consultancy' and 'consultoria' in feature_set
         ),

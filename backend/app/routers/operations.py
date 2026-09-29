@@ -11,7 +11,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..authz import Principal, require_permission
+from ..config import get_settings
 from ..database import get_db
+from ..services.consultancy_plan_gate import (
+    consultancy_plan_blocks_access,
+    enforce_consultancy_plan_access,
+)
 from ..services.audit import record_audit
 from ..services.reproduction_return_resolution import resolution_from_task, apply_resolution_to_task
 from ..business_models import AtlasActionPlanItem
@@ -277,6 +282,12 @@ def create_task(
     db: Session = Depends(get_db),
 ) -> OperationalTask:
     _farm_allowed(principal, payload.farm_id)
+    if payload.source_type.strip().lower() == "consultancy_action":
+        enforce_consultancy_plan_access(
+            principal=principal,
+            db=db,
+            enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+        )
     task = OperationalTask(
         id=new_id("task"),
         tenant_id=principal.company.tenant_id,
@@ -303,6 +314,12 @@ def list_tasks(
     )
     if farm_id:
         query = query.where(OperationalTask.farm_id == farm_id)
+    if consultancy_plan_blocks_access(
+        principal=principal,
+        db=db,
+        enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+    ):
+        query = query.where(OperationalTask.source_type != "consultancy_action")
     return list(db.scalars(query.order_by(OperationalTask.created_at.desc())).all())
 
 
@@ -317,6 +334,16 @@ def update_task(
     if task is None or task.company_id != principal.company.id:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
     _farm_allowed(principal, task.farm_id)
+    changes = payload.model_dump(exclude_unset=True)
+    if (
+        task.source_type == "consultancy_action"
+        or str(changes.get("source_type") or "").strip().lower() == "consultancy_action"
+    ):
+        enforce_consultancy_plan_access(
+            principal=principal,
+            db=db,
+            enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+        )
     reproduction_event = None
     reproduction_metadata = None
     if task.source_type == "reproduction_event" and task.source_id:
@@ -342,7 +369,6 @@ def update_task(
         ).order_by(OperationalTask.created_at.asc(), OperationalTask.id.asc()).limit(1))
         if primary_task is None or primary_task.id != task.id:
             raise HTTPException(status_code=409, detail="Tarefa duplicada histórica; use o retorno principal na Agenda.")
-    changes = payload.model_dump(exclude_unset=True)
     if reproduction_event is not None:
         if {"status", "due_at", "evidence"}.intersection(changes) and "reproduction.write" not in principal.permissions:
             raise HTTPException(status_code=403, detail="Alterar este retorno exige permissão de escrita em Reprodução.")

@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from ..authz import Principal, require_farm_scope, require_permission
 from ..database import get_db
+from ..services.consultancy_plan_gate import require_consultancy_plan_access
 from ..enterprise_operations_models import ConsultantVisit,FarmTeam,AssetUsage,PurchaseRequest,SalesOpportunity,CrmLead,SupportTicket,WorkflowDefinition,WorkflowInstance,EnterpriseDocument
 
 router=APIRouter(prefix='/enterprise-operations',tags=['Enterprise Operations'])
@@ -22,7 +23,7 @@ class Payload(BaseModel):
     items:list[dict]=Field(default_factory=list)
     tags:list[str]=Field(default_factory=list)
 
-@router.post('/consulting/visits')
+@router.post('/consulting/visits', dependencies=[Depends(require_consultancy_plan_access)])
 def create_visit(payload:Payload,db:Session=Depends(get_db),p:Principal=Depends(manage_dep)):
     if not payload.farm_id: raise HTTPException(422,'farm_id obrigatório.')
     require_farm_scope(p,payload.farm_id)

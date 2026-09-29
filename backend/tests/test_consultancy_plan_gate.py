@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.authz import get_principal
 from app.database import get_db
-from app.routers import business, saas_growth
+from app.routers import business, enterprise_operations, saas_growth
 from app.routers.consultancy import (
     ConsultancyContactUpdateRequest,
     get_contact,
@@ -106,7 +106,7 @@ def test_active_consultancy_without_feature_is_deferred_not_misreported():
         features=[], limits={}, enforcement_enabled=True,
     )
     assert authorization['consultancy_confirmed'] is False
-    assert authorization['enforcement_scope'] == 'consultancy_dedicated_routes'
+    assert authorization['enforcement_scope'] == 'consultancy_routes_and_agenda_tasks'
     assert consultancy_gate_decision(authorization) == 'defer'
 
 
@@ -165,9 +165,12 @@ def test_every_user_facing_consultancy_route_has_shared_gate():
         ('POST', '/business/consulting/actions/reconcile-outcomes'),
         ('GET', '/business/consulting/actions/outcomes'),
         ('GET', '/business/consulting/dashboard'),
+        ('POST', '/enterprise-operations/consulting/visits'),
     }
     routes = [
-        route for router in (business.router, saas_growth.router)
+        route for router in (
+            business.router, enterprise_operations.router, saas_growth.router,
+        )
         for route in router.routes if isinstance(route, APIRoute)
     ]
     user_facing = {
@@ -175,6 +178,7 @@ def test_every_user_facing_consultancy_route_has_shared_gate():
         for route in routes
         for method in route.methods or []
         if (route.path.startswith('/business/consulting/')
+            or route.path.startswith('/enterprise-operations/consulting/')
             or route.path == '/saas-growth/onboarding')
         and not route.path.endswith('/deployment-readiness')
     }

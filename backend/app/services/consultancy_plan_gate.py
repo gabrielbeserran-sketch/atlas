@@ -14,8 +14,19 @@ from .plan_entitlements import consultancy_gate_decision, evaluate_plan_entitlem
 def enforce_consultancy_plan_access(
     *, principal: Principal, db: Session, enabled: bool,
 ) -> None:
+    if consultancy_plan_blocks_access(principal=principal, db=db, enabled=enabled):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='O plano ativo não inclui Consultoria.',
+        )
+
+
+def consultancy_plan_blocks_access(
+    *, principal: Principal, db: Session, enabled: bool,
+) -> bool:
+    """Decisão compartilhada pelas rotas dedicadas e pela Agenda genérica."""
     if not enabled:
-        return
+        return False
 
     subscription = db.scalar(
         select(CompanySubscription).where(
@@ -34,11 +45,7 @@ def enforce_consultancy_plan_access(
         limits=(plan.limits_json or {}) if plan else {},
         enforcement_enabled=True,
     )
-    if consultancy_gate_decision(authorization) == 'deny':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='O plano ativo não inclui Consultoria.',
-        )
+    return consultancy_gate_decision(authorization) == 'deny'
 
 
 def require_consultancy_plan_access(
