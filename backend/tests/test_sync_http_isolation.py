@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi import FastAPI
@@ -9,9 +10,13 @@ from sqlalchemy.pool import StaticPool
 
 from app.authz import get_principal
 from app.database import Base, get_db
-from app.models import AuditLog, EntityState, ProcessedOperation, SyncChange
+from app.models import (
+    AuditLog, Company, EntityState, Membership, ProcessedOperation,
+    RefreshSession, SyncChange, User,
+)
 from app.offline_models import OfflineDevice, SyncConflict
 from app.routers import offline_sync, sync
+from app.security import create_access_token
 
 
 def principal(company_id="company-A", allowed=None):
@@ -49,6 +54,78 @@ def api():
     app.dependency_overrides[get_principal] = lambda: current["principal"]
     with TestClient(app) as client:
         yield client, current, engine
+    engine.dispose()
+
+
+@pytest.fixture
+def authenticated_api():
+    """JWT e vínculos reais; somente o armazenamento é descartável."""
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(
+        engine,
+        tables=[
+            Company.__table__, User.__table__, Membership.__table__,
+            RefreshSession.__table__, AuditLog.__table__, EntityState.__table__,
+            ProcessedOperation.__table__, SyncChange.__table__,
+            OfflineDevice.__table__, SyncConflict.__table__,
+        ],
+    )
+    with Session(engine) as db:
+        db.add_all([
+            Company(id="company-A", tenant_id="tenant-company-A", name="A"),
+            Company(id="company-B", tenant_id="tenant-company-B", name="B"),
+        ])
+        db.add_all([
+            User(id=f"user-{name}", name=name, email=f"{name}@test.invalid",
+                 password_hash="unused")
+            for name in ("a", "viewer", "b")
+        ])
+        db.add_all([
+            Membership(id=f"membership-{name}", user_id=f"user-{name}",
+                       company_id=company, role=role, farm_ids=farms)
+            for name, company, role, farms in (
+                ("a", "company-A", "operator", ["farm-A"]),
+                ("viewer", "company-A", "viewer", ["farm-A"]),
+                ("b", "company-B", "operator", ["farm-B"]),
+            )
+        ])
+        db.add_all([
+            RefreshSession(
+                id=f"session-{name}", user_id=f"user-{name}",
+                company_id=company, token_hash=f"unused-{name}",
+                expires_at=datetime.now(timezone.utc) + timedelta(days=1),
+            )
+            for name, company in (("a", "company-A"),
+                                  ("viewer", "company-A"),
+                                  ("b", "company-B"))
+        ])
+        db.commit()
+
+    app = FastAPI()
+    app.include_router(sync.router, prefix="/api/v1")
+    app.include_router(offline_sync.router, prefix="/api/v1")
+
+    def override_db():
+        with Session(engine) as db:
+            yield db
+
+    app.dependency_overrides[get_db] = override_db
+
+    def headers(name, *, tenant=None, role=None, session=None):
+        company = "company-B" if name == "b" else "company-A"
+        token = create_access_token(
+            user_id=f"user-{name}", company_id=company,
+            tenant_id=tenant or f"tenant-{company}",
+            role=role or ("viewer" if name == "viewer" else "operator"),
+            extra={"session_id": session or f"session-{name}"},
+        )
+        return {"Authorization": f"Bearer {token}"}
+
+    with TestClient(app) as client:
+        yield client, engine, headers
     engine.dispose()
 
 
@@ -201,3 +278,119 @@ def test_reused_batch_key_is_permanent_rejection_without_foreign_payload(api):
     assert reused.json()["results"][0]["remote_payload"] == {}
     with Session(engine) as db:
         assert [item.entity_id for item in db.query(EntityState).all()] == ["note-A"]
+
+
+def test_real_jwt_requires_live_session_and_manage_permission(authenticated_api):
+    client, engine, headers = authenticated_api
+    assert client.get("/api/v1/sync/pull").status_code in (401, 403)
+    assert client.get("/api/v1/sync/pull", headers=headers("a", session="missing")).status_code == 401
+    assert client.get("/api/v1/sync/pull", headers=headers("a", tenant="wrong")).status_code == 403
+    assert client.get("/api/v1/sync/pull", headers=headers("a", role="owner")).status_code == 401
+
+    viewer = headers("viewer")
+    assert client.get("/api/v1/sync/pull", headers=viewer).status_code == 200
+    assert client.post("/api/v1/sync/push", json=operation(), headers=viewer).status_code == 403
+    assert client.post(
+        "/api/v1/offline/push-batch", json={"operations": [operation()]},
+        headers=viewer,
+    ).status_code == 403
+    with Session(engine) as db:
+        db.get(RefreshSession, "session-a").revoked_at = datetime.now(timezone.utc)
+        db.commit()
+    assert client.get("/api/v1/sync/pull", headers=headers("a")).status_code == 401
+    with Session(engine) as db:
+        assert db.query(EntityState).count() == 0
+
+
+def test_real_jwt_scopes_push_pull_and_batch_to_company_and_farm(authenticated_api):
+    client, engine, headers = authenticated_api
+    account_a = headers("a")
+    account_b = headers("b")
+    assert client.post("/api/v1/sync/push", json=operation(), headers=account_a).json()["accepted"]
+    assert client.post(
+        "/api/v1/sync/push",
+        json=operation(farm_id="farm-B", entity_id="other", operation_id="op-other", key="key-other"),
+        headers=account_a,
+    ).status_code == 403
+    batch = client.post(
+        "/api/v1/offline/push-batch",
+        json={"operations": [
+            operation(farm_id="farm-B", entity_id="bad", operation_id="op-bad", key="key-bad"),
+            operation(entity_id="good", operation_id="op-good", key="key-good"),
+        ]},
+        headers=account_a,
+    )
+    assert batch.status_code == 200
+    assert (batch.json()["accepted"], batch.json()["rejected"]) == (1, 1)
+    assert batch.json()["results"][0]["retryable"] is False
+    assert batch.json()["results"][0]["remote_payload"] == {}
+
+    assert client.post(
+        "/api/v1/sync/push",
+        json=operation(company_id="company-B", farm_id="farm-B", entity_id="b",
+                       operation_id="op-b", key="key-b", payload={"private": "B"}),
+        headers=account_b,
+    ).json()["accepted"]
+    assert [item["entity_id"] for item in client.get(
+        "/api/v1/sync/pull", headers=account_a,
+    ).json()] == ["note-A", "good"]
+    assert [item["entity_id"] for item in client.get(
+        "/api/v1/offline/pull-page", headers=account_a,
+    ).json()["changes"]] == ["note-A", "good"]
+    assert [item["entity_id"] for item in client.get(
+        "/api/v1/sync/pull", headers=account_b,
+    ).json()] == ["b"]
+    assert client.get(
+        "/api/v1/offline/pull-page?farm_id=farm-B", headers=account_a,
+    ).status_code == 403
+    with Session(engine) as db:
+        assert db.query(EntityState).count() == 3
+
+
+def test_real_jwt_conflict_visibility_and_resolution(authenticated_api):
+    client, engine, headers = authenticated_api
+    account_a = headers("a")
+    assert client.post(
+        "/api/v1/sync/push", json=operation(), headers=account_a,
+    ).json()["accepted"]
+    conflict = client.post(
+        "/api/v1/offline/push-batch",
+        json={"operations": [operation(
+            operation_id="op-conflict", key="key-conflict", payload={"value": 2},
+        )]},
+        headers=account_a,
+    )
+    assert conflict.json()["conflicts"] == 1
+    conflict_id = client.get("/api/v1/offline/conflicts", headers=account_a).json()[0]["id"]
+    assert client.get("/api/v1/offline/conflicts", headers=headers("b")).json() == []
+    path = f"/api/v1/offline/conflicts/{conflict_id}/resolve"
+    assert client.post(path, json={"resolution": "keep_local"}, headers=headers("b")).status_code == 404
+    assert client.post(path, json={"resolution": "keep_local"}, headers=headers("viewer")).status_code == 403
+    resolved = client.post(path, json={"resolution": "keep_local"}, headers=account_a)
+    assert resolved.status_code == 200
+    assert resolved.json()["version"] == 2
+    with Session(engine) as db:
+        assert db.query(EntityState).one().payload == {"value": 2}
+
+
+def test_real_jwt_rechecks_membership_permissions_and_company_status(authenticated_api):
+    client, engine, headers = authenticated_api
+    account_a = headers("a")
+    assert client.get("/api/v1/offline/status", headers=account_a).status_code == 200
+    with Session(engine) as db:
+        db.get(Membership, "membership-a").permission_overrides = {"sync.manage": "deny"}
+        db.commit()
+    assert client.post(
+        "/api/v1/sync/push", json=operation(), headers=account_a,
+    ).status_code == 403
+    assert client.get("/api/v1/sync/pull", headers=account_a).status_code == 200
+    with Session(engine) as db:
+        db.get(Membership, "membership-a").active = False
+        db.commit()
+    assert client.get("/api/v1/sync/pull", headers=account_a).status_code == 401
+    with Session(engine) as db:
+        db.get(Membership, "membership-a").active = True
+        db.get(Company, "company-A").status = "inactive"
+        db.commit()
+    assert client.get("/api/v1/sync/pull", headers=account_a).status_code == 401
+    assert client.get("/api/v1/sync/pull", headers=headers("b")).status_code == 200
