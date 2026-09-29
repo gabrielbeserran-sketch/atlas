@@ -32,6 +32,12 @@ Map<String, dynamic> remoteMap(AtlasPastureGrazingBasis b) => {
   'recorded_at': b.recordedAt.toUtc().toIso8601String(),
 };
 
+Map<String, dynamic> cursorMap(AtlasPastureGrazingBasis b, int order) => {
+  ...remoteMap(b),
+  'id': 'server-$order',
+  'created_at': DateTime.utc(2026, 1, 1, 0, 0, order).toIso8601String(),
+};
+
 class FailingPreferences extends SharedPreferencesAsync {
   FailingPreferences(this.shouldFail);
   final bool Function() shouldFail;
@@ -46,6 +52,9 @@ class FailingPreferences extends SharedPreferencesAsync {
 
 class FakeRemote implements AtlasGrazingRemote {
   bool enabled = true;
+  bool cursorEnabled = false;
+  int cursorPages = 0;
+  Map<String, dynamic>? insertAfterCursorFirstPage;
   bool loseResponse = false;
   int uploads = 0;
   int pages = 0;
@@ -61,6 +70,34 @@ class FakeRemote implements AtlasGrazingRemote {
   Map<String, dynamic>? badConfirmation;
   @override
   Future<bool> supports(String farmId) async => enabled;
+
+  @override
+  Future<List<Map<String, dynamic>>?> historyCursor(
+    String farmId,
+    String? afterCreatedAt,
+    String? afterId,
+    int limit,
+  ) async {
+    if (!cursorEnabled) return null;
+    cursorPages++;
+    final filtered = records
+        .where((item) {
+          if (afterCreatedAt == null || afterId == null) return true;
+          final date = DateTime.parse(item['created_at'] as String);
+          final after = DateTime.parse(afterCreatedAt);
+          return date.isBefore(after) ||
+              (date.isAtSameMomentAs(after) &&
+                  (item['id'] as String).compareTo(afterId) < 0);
+        })
+        .take(limit)
+        .toList();
+    if (cursorPages == 1 && insertAfterCursorFirstPage != null) {
+      records.insert(0, insertAfterCursorFirstPage!);
+      insertAfterCursorFirstPage = null;
+    }
+    return filtered;
+  }
+
   @override
   Future<List<Map<String, dynamic>>> history(
     String farmId,
@@ -178,6 +215,36 @@ void main() {
     expect(await history(), hasLength(42));
   });
 
+  test('cursor preserva retrato inicial com inserção entre páginas', () async {
+    remote.cursorEnabled = true;
+    remote.records = [
+      for (var i = 3; i >= 1; i--) cursorMap(basis('remote-$i'), i),
+    ];
+    remote.insertAfterCursorFirstPage = cursorMap(basis('remote-4'), 4);
+    final first = await run();
+    expect(first.received, 3);
+    expect(remote.cursorPages, 2);
+    expect(remote.pages, 0);
+    expect(await history(), hasLength(3));
+    final second = await run();
+    expect(second.received, 1);
+    expect(await history(), hasLength(4));
+  });
+
+  test('cursor fora de ordem bloqueia importação e envio', () async {
+    remote.cursorEnabled = true;
+    remote.records = [
+      cursorMap(basis('remote-1'), 1),
+      cursorMap(basis('remote-2'), 2),
+    ];
+    await local.save(basis('operation-local'));
+    final result = await run();
+    expect(result.received, 0);
+    expect(result.sent, 0);
+    expect(remote.uploads, 0);
+    expect(await history(), hasLength(1));
+  });
+
   test(
     'inserção entre páginas reinicia leitura e inclui novo registro',
     () async {
@@ -267,7 +334,7 @@ void main() {
     var checks = 0;
     final progress = <AtlasGrazingSyncProgress>[];
     final result = await run(
-      guard: () async => ++checks < 4,
+      guard: () async => ++checks < 6,
       onProgress: progress.add,
     );
     expect(progress, hasLength(1));

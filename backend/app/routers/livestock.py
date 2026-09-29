@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import func, inspect, or_, select, text
+from sqlalchemy import and_, func, inspect, or_, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -134,6 +134,38 @@ def list_grazing_basis(
         PastureGrazingBasis.farm_id == farm_id,
     ).order_by(PastureGrazingBasis.recorded_at.desc(), PastureGrazingBasis.id.desc())
       .offset(offset).limit(limit)).all())
+
+
+@router.get("/farms/{farm_id}/grazing-basis/cursor", response_model=list[GrazingBasisResponse])
+def list_grazing_basis_cursor(
+    farm_id: str,
+    limit: int = Query(default=100, ge=1, le=500),
+    after_created_at: datetime | None = Query(default=None),
+    after_id: str | None = Query(default=None),
+    principal: Principal = Depends(require_permission("nutrition.read")),
+    db: Session = Depends(get_db),
+) -> list[PastureGrazingBasis]:
+    _farm_for_principal(db, principal, farm_id)
+    _require_grazing_storage(db)
+    if (after_created_at is None) != (after_id is None) or (
+        after_created_at is not None and after_created_at.tzinfo is None
+    ) or (after_id is not None and not after_id.strip()):
+        raise HTTPException(status_code=422, detail="Cursor de pastejo inválido.")
+    query = select(PastureGrazingBasis).where(
+        PastureGrazingBasis.company_id == principal.company.id,
+        PastureGrazingBasis.tenant_id == principal.company.tenant_id,
+        PastureGrazingBasis.farm_id == farm_id,
+    )
+    if after_created_at is not None and after_id is not None:
+        cursor_time = after_created_at.astimezone(timezone.utc)
+        query = query.where(or_(
+            PastureGrazingBasis.created_at < cursor_time,
+            and_(PastureGrazingBasis.created_at == cursor_time,
+                 PastureGrazingBasis.id < after_id),
+        ))
+    return list(db.scalars(query.order_by(
+        PastureGrazingBasis.created_at.desc(), PastureGrazingBasis.id.desc(),
+    ).limit(limit)).all())
 
 
 def _replayed_grazing_basis(

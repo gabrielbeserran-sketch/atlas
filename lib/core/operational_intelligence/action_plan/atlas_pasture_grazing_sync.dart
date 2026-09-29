@@ -6,6 +6,14 @@ import 'atlas_pasture_grazing_basis_service.dart';
 
 abstract class AtlasGrazingRemote {
   Future<bool> supports(String farmId);
+
+  /// `null` apenas quando o servidor antigo não oferece a rota de cursor.
+  Future<List<Map<String, dynamic>>?> historyCursor(
+    String farmId,
+    String? afterCreatedAt,
+    String? afterId,
+    int limit,
+  );
   Future<List<Map<String, dynamic>>> history(
     String farmId,
     int offset,
@@ -36,6 +44,29 @@ class AtlasGrazingApiRemote implements AtlasGrazingRemote {
     _path(farmId),
     queryParameters: {'offset': '$offset', 'limit': '$limit'},
   );
+
+  @override
+  Future<List<Map<String, dynamic>>?> historyCursor(
+    String farmId,
+    String? afterCreatedAt,
+    String? afterId,
+    int limit,
+  ) async {
+    try {
+      return await _api.requestList(
+        'GET',
+        '${_path(farmId)}/cursor',
+        queryParameters: {
+          'limit': '$limit',
+          if (afterCreatedAt != null) 'after_created_at': afterCreatedAt,
+          if (afterId != null) 'after_id': afterId,
+        },
+      );
+    } on AtlasEnterpriseApiException catch (error) {
+      if (error.statusCode == 404) return null;
+      rethrow;
+    }
+  }
 
   @override
   Future<Map<String, dynamic>> upload(AtlasPastureGrazingBasis basis) =>
@@ -182,6 +213,19 @@ class AtlasPastureGrazingSync {
     return basis;
   }
 
+  ({DateTime createdAt, String id}) _cursor(Map<String, dynamic> data) {
+    final date = data['created_at']?.toString() ?? '';
+    final id = data['id']?.toString() ?? '';
+    if (!RegExp(r'(Z|[+-]\d{2}:\d{2})$').hasMatch(date) || id.isEmpty) {
+      throw const FormatException('Cursor remoto incompleto.');
+    }
+    final createdAt = DateTime.tryParse(date);
+    if (createdAt == null) {
+      throw const FormatException('Data do cursor inválida.');
+    }
+    return (createdAt: createdAt.toUtc(), id: id);
+  }
+
   Future<void> acceptRemoteConflict({
     required AtlasPastureGrazingBasis expectedRemote,
     required String reviewedBy,
@@ -268,37 +312,40 @@ class AtlasPastureGrazingSync {
         );
       }
       final records = <String, AtlasPastureGrazingBasis>{};
-      var stable = false;
-      for (var attempt = 0; attempt < 2; attempt++) {
-        records.clear();
+      await guard();
+      final cursorProbe = await remote.historyCursor(
+        farmId,
+        null,
+        null,
+        pageSize,
+      );
+      await guard();
+      if (cursorProbe != null) {
         var complete = false;
-        var overlap = false;
-        var pagesRead = 0;
-        var firstPage = <AtlasPastureGrazingBasis>[];
+        ({DateTime createdAt, String id})? previous;
+        var items = cursorProbe;
         for (var page = 0; page < maxHistoryPages; page++) {
-          await guard();
-          final items = await remote.history(farmId, page * pageSize, pageSize);
-          await guard();
           if (items.length > pageSize) {
             throw StateError('Servidor excedeu o tamanho da página.');
           }
-          final decoded = items
-              .map((item) => _decode(item, tenantId, companyId, farmId))
-              .toList();
-          if (page == 0) firstPage = decoded;
-          for (final record in decoded) {
-            final duplicate = records[record.operationId];
-            if (duplicate != null && !duplicate.hasSameData(record)) {
-              throw StateError('Histórico remoto divergente.');
+          for (final item in items) {
+            final cursor = _cursor(item);
+            if (previous != null &&
+                !cursor.createdAt.isBefore(previous.createdAt) &&
+                !(cursor.createdAt.isAtSameMomentAs(previous.createdAt) &&
+                    cursor.id.compareTo(previous.id) < 0)) {
+              throw StateError('Cursor remoto fora de ordem.');
             }
-            if (duplicate != null) overlap = true;
+            final record = _decode(item, tenantId, companyId, farmId);
+            if (records.containsKey(record.operationId)) {
+              throw StateError('Operação repetida no histórico remoto.');
+            }
             records[record.operationId] = record;
+            previous = cursor;
           }
-          if (overlap) break;
-          pagesRead = page + 1;
           onProgress?.call(
             AtlasGrazingSyncProgress.reading(
-              pagesRead: pagesRead,
+              pagesRead: page + 1,
               recordsRead: records.length,
             ),
           );
@@ -306,35 +353,93 @@ class AtlasPastureGrazingSync {
             complete = true;
             break;
           }
+          await guard();
+          items =
+              await remote.historyCursor(
+                farmId,
+                previous!.createdAt.toIso8601String(),
+                previous.id,
+                pageSize,
+              ) ??
+              (throw StateError('Servidor perdeu suporte a cursor.'));
+          await guard();
         }
-        if (!complete && !overlap) {
+        if (!complete) {
           throw StateError('Histórico remoto exige revisão de paginação.');
         }
-        if (!overlap && pagesRead > 1) {
-          await guard();
-          final latest = await remote.history(farmId, 0, pageSize);
-          await guard();
-          stable = latest.length == firstPage.length;
-          if (stable) {
-            for (var i = 0; i < latest.length; i++) {
-              if (!firstPage[i].hasSameData(
-                _decode(latest[i], tenantId, companyId, farmId),
-              )) {
-                stable = false;
-                break;
+      } else {
+        var stable = false;
+        for (var attempt = 0; attempt < 2; attempt++) {
+          records.clear();
+          var complete = false;
+          var overlap = false;
+          var pagesRead = 0;
+          var firstPage = <AtlasPastureGrazingBasis>[];
+          for (var page = 0; page < maxHistoryPages; page++) {
+            await guard();
+            final items = await remote.history(
+              farmId,
+              page * pageSize,
+              pageSize,
+            );
+            await guard();
+            if (items.length > pageSize) {
+              throw StateError('Servidor excedeu o tamanho da página.');
+            }
+            final decoded = items
+                .map((item) => _decode(item, tenantId, companyId, farmId))
+                .toList();
+            if (page == 0) firstPage = decoded;
+            for (final record in decoded) {
+              final duplicate = records[record.operationId];
+              if (duplicate != null && !duplicate.hasSameData(record)) {
+                throw StateError('Histórico remoto divergente.');
               }
+              if (duplicate != null) overlap = true;
+              records[record.operationId] = record;
+            }
+            if (overlap) break;
+            pagesRead = page + 1;
+            onProgress?.call(
+              AtlasGrazingSyncProgress.reading(
+                pagesRead: pagesRead,
+                recordsRead: records.length,
+              ),
+            );
+            if (items.length < pageSize) {
+              complete = true;
+              break;
             }
           }
-        } else if (!overlap) {
-          stable = true;
+          if (!complete && !overlap) {
+            throw StateError('Histórico remoto exige revisão de paginação.');
+          }
+          if (!overlap && pagesRead > 1) {
+            await guard();
+            final latest = await remote.history(farmId, 0, pageSize);
+            await guard();
+            stable = latest.length == firstPage.length;
+            if (stable) {
+              for (var i = 0; i < latest.length; i++) {
+                if (!firstPage[i].hasSameData(
+                  _decode(latest[i], tenantId, companyId, farmId),
+                )) {
+                  stable = false;
+                  break;
+                }
+              }
+            }
+          } else if (!overlap) {
+            stable = true;
+          }
+          if (stable) break;
+          if (attempt == 0) {
+            onProgress?.call(const AtlasGrazingSyncProgress.restarting());
+          }
         }
-        if (stable) break;
-        if (attempt == 0) {
-          onProgress?.call(const AtlasGrazingSyncProgress.restarting());
+        if (!stable) {
+          throw _UnstableGrazingHistory();
         }
-      }
-      if (!stable) {
-        throw _UnstableGrazingHistory();
       }
       // Releitura após a rede: uma gravação local feita durante a consulta
       // também precisa participar do confronto e da fila de envio.
