@@ -14,8 +14,10 @@ from ..authz import Principal, require_permission
 from ..config import get_settings
 from ..database import get_db
 from ..services.consultancy_plan_gate import (
+    consultancy_action_source_clause,
     consultancy_plan_blocks_access,
     enforce_consultancy_plan_access,
+    is_consultancy_action_source,
 )
 from ..services.audit import record_audit
 from ..services.reproduction_return_resolution import resolution_from_task, apply_resolution_to_task
@@ -282,17 +284,19 @@ def create_task(
     db: Session = Depends(get_db),
 ) -> OperationalTask:
     _farm_allowed(principal, payload.farm_id)
-    if payload.source_type.strip().lower() == "consultancy_action":
+    values = payload.model_dump()
+    if is_consultancy_action_source(payload.source_type):
         enforce_consultancy_plan_access(
             principal=principal,
             db=db,
             enabled=get_settings().atlas_consultancy_plan_gate_enabled,
         )
+        values["source_type"] = "consultancy_action"
     task = OperationalTask(
         id=new_id("task"),
         tenant_id=principal.company.tenant_id,
         company_id=principal.company.id,
-        **payload.model_dump(),
+        **values,
     )
     db.add(task)
     db.commit()
@@ -319,7 +323,7 @@ def list_tasks(
         db=db,
         enabled=get_settings().atlas_consultancy_plan_gate_enabled,
     ):
-        query = query.where(OperationalTask.source_type != "consultancy_action")
+        query = query.where(~consultancy_action_source_clause(OperationalTask.source_type))
     return list(db.scalars(query.order_by(OperationalTask.created_at.desc())).all())
 
 
@@ -336,8 +340,8 @@ def update_task(
     _farm_allowed(principal, task.farm_id)
     changes = payload.model_dump(exclude_unset=True)
     if (
-        task.source_type == "consultancy_action"
-        or str(changes.get("source_type") or "").strip().lower() == "consultancy_action"
+        is_consultancy_action_source(task.source_type)
+        or is_consultancy_action_source(changes.get("source_type"))
     ):
         enforce_consultancy_plan_access(
             principal=principal,
@@ -379,16 +383,19 @@ def update_task(
         if (reproduction_event.metadata_json or {}).get("atlas_return_resolution") and "evidence" in changes:
             # Retry com a evidência original não apaga o marcador auditável já salvo.
             changes["evidence"] = task.evidence
-    source_backed = bool(task.source_id) and task.source_type in {
-        "reproduction_event", "health_event", "consultancy_action"
-    }
+    source_backed = bool(task.source_id) and (
+        task.source_type in {"reproduction_event", "health_event"}
+        or is_consultancy_action_source(task.source_type)
+    )
     if source_backed:
         changes.pop("source_type", None)
+    elif is_consultancy_action_source(changes.get("source_type")):
+        changes["source_type"] = "consultancy_action"
     due_at_changed = "due_at" in changes
     requested_status = changes.get("status", task.status)
     requested_evidence = str(changes.get("evidence", task.evidence) or "").strip()
     if (
-        task.source_type == "consultancy_action"
+        is_consultancy_action_source(task.source_type)
         and requested_status == "completed"
         and len(requested_evidence) < 3
     ):
@@ -407,7 +414,7 @@ def update_task(
         reproduction_event.metadata_json = reproduction_metadata
         apply_resolution_to_task(task, reproduction_metadata)
 
-    if task.source_type == "consultancy_action" and task.source_id:
+    if is_consultancy_action_source(task.source_type) and task.source_id:
         action = db.scalar(
             select(AtlasActionPlanItem).where(
                 AtlasActionPlanItem.id == task.source_id,

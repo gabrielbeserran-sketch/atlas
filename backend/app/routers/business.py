@@ -19,7 +19,10 @@ from ..business_models import (
     AtlasWorkflowInstance,
 )
 from ..database import get_db
-from ..services.consultancy_plan_gate import require_consultancy_plan_access
+from ..services.consultancy_plan_gate import (
+    consultancy_action_source_clause,
+    require_consultancy_plan_access,
+)
 from ..services.audit import record_audit
 from ..models import (
     Farm, FinancialEntry, HealthEvent, InventoryProduct, LivestockAnimal, NutritionEvent,
@@ -316,7 +319,7 @@ def list_actions(
             select(OperationalTask).where(
                 OperationalTask.company_id == principal.company.id,
                 OperationalTask.farm_id == farm_id,
-                OperationalTask.source_type == "consultancy_action",
+                consultancy_action_source_clause(OperationalTask.source_type),
             )
         ).all()
     )
@@ -367,7 +370,7 @@ def _action_task(
     return db.scalar(
         select(OperationalTask).where(
             OperationalTask.company_id == principal.company.id,
-            OperationalTask.source_type == "consultancy_action",
+            consultancy_action_source_clause(OperationalTask.source_type),
             OperationalTask.source_id == action_id,
         )
     )
@@ -587,7 +590,7 @@ def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
     )
     db.scalar(
         select(func.count()).select_from(OperationalTask).where(
-            OperationalTask.source_type == "consultancy_action"
+            consultancy_action_source_clause(OperationalTask.source_type)
         )
     )
     db.scalar(

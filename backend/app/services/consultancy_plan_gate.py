@@ -1,7 +1,7 @@
 """Gate opt-in da Consultoria, preservando contas não migradas."""
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..authz import Principal, get_principal
@@ -9,6 +9,15 @@ from ..config import get_settings
 from ..database import get_db
 from ..saas_growth_models import CompanySubscription, SaaSPlan
 from .plan_entitlements import consultancy_gate_decision, evaluate_plan_entitlements
+
+
+def is_consultancy_action_source(source_type: str | None) -> bool:
+    return (source_type or '').strip().lower() == 'consultancy_action'
+
+
+def consultancy_action_source_clause(column):
+    """Reconhece também grafias legadas sem reescrever tarefas existentes."""
+    return func.lower(func.trim(column)) == 'consultancy_action'
 
 
 def enforce_consultancy_plan_access(
