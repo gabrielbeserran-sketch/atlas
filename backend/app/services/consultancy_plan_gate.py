@@ -1,10 +1,12 @@
 """Gate opt-in da Consultoria, preservando contas não migradas."""
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..authz import Principal
+from ..authz import Principal, get_principal
+from ..config import get_settings
+from ..database import get_db
 from ..saas_growth_models import CompanySubscription, SaaSPlan
 from .plan_entitlements import consultancy_gate_decision, evaluate_plan_entitlements
 
@@ -37,3 +39,19 @@ def enforce_consultancy_plan_access(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='O plano ativo não inclui Consultoria.',
         )
+
+
+def require_consultancy_plan_access(
+    principal: Principal = Depends(get_principal),
+    db: Session = Depends(get_db),
+) -> None:
+    """Dependência compartilhada para fluxos exclusivos do módulo Consultoria.
+
+    As permissões específicas de cada rota continuam obrigatórias; esta guarda
+    acrescenta a regra comercial somente após ativação controlada da chave.
+    """
+    enforce_consultancy_plan_access(
+        principal=principal,
+        db=db,
+        enabled=get_settings().atlas_consultancy_plan_gate_enabled,
+    )

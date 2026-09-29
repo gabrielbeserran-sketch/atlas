@@ -10,6 +10,7 @@ from ..config import get_settings
 from ..models import ConsultancyContact, Farm, HerdLot, LivestockAnimal, OperationalTask
 from ..saas_growth_models import SaaSPlan,CompanySubscription,BillingInvoice,FeatureFlag,CommunicationTemplate,CommunicationDelivery,OnboardingProgress,DataImportJob,DataExportJob,AdminAuditAction
 from ..services.plan_entitlements import evaluate_plan_entitlements
+from ..services.consultancy_plan_gate import require_consultancy_plan_access
 
 router=APIRouter(prefix='/saas-growth',tags=['SaaS Growth'])
 def read_dep(p=Depends(require_permission('platform.read'))): return p
@@ -278,7 +279,7 @@ def _onboarding_payload(
     }
 
 
-@router.get('/onboarding')
+@router.get('/onboarding', dependencies=[Depends(require_consultancy_plan_access)])
 def get_onboarding(
     farm_id: str = Query(min_length=1),
     db: Session = Depends(get_db),
@@ -290,7 +291,7 @@ def get_onboarding(
     return _onboarding_payload(row, farm_id=farm.id, steps=steps, evidence=evidence)
 
 
-@router.post('/onboarding')
+@router.post('/onboarding', dependencies=[Depends(require_consultancy_plan_access)])
 def onboarding(
     payload: Payload,
     farm_id: str = Query(min_length=1),

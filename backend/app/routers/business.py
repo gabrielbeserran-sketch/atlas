@@ -19,6 +19,7 @@ from ..business_models import (
     AtlasWorkflowInstance,
 )
 from ..database import get_db
+from ..services.consultancy_plan_gate import require_consultancy_plan_access
 from ..services.audit import record_audit
 from ..models import (
     Farm, FinancialEntry, HealthEvent, InventoryProduct, LivestockAnimal, NutritionEvent,
@@ -279,21 +280,21 @@ def commercial_dashboard(farm_id: str | None = None, db: Session = Depends(get_d
 
 
 # Bloco 7 — Consultoria
-@router.post("/consulting/visits")
+@router.post("/consulting/visits", dependencies=[Depends(require_consultancy_plan_access)])
 def create_visit(payload: VisitPayload, db: Session = Depends(get_db), principal: Principal = Depends(require_permission("operations.manage"))):
     farm = farm_or_404(db, principal, payload.farm_id)
     row = AtlasConsultingVisit(company_id=principal.company.id, tenant_id=farm.tenant_id, consultant_user_id=principal.user.id, **payload.model_dump())
     db.add(row); db.commit(); db.refresh(row); return {"id": row.id, "status": row.status, "scheduled_at": row.scheduled_at}
 
 
-@router.get("/consulting/visits")
+@router.get("/consulting/visits", dependencies=[Depends(require_consultancy_plan_access)])
 def list_visits(farm_id: str, db: Session = Depends(get_db), principal: Principal = Depends(require_permission("operations.read"))):
     farm_or_404(db, principal, farm_id)
     rows = db.scalars(select(AtlasConsultingVisit).where(AtlasConsultingVisit.company_id == principal.company.id, AtlasConsultingVisit.farm_id == farm_id).order_by(AtlasConsultingVisit.scheduled_at.desc())).all()
     return [{"id": x.id, "title": x.title, "status": x.status, "scheduled_at": x.scheduled_at, "completed_at": x.completed_at, "checklist": x.checklist_json, "photos": x.photos_json, "findings": x.findings_json, "report": x.report_text, "opinion": x.opinion_text, "signature": x.signature_json, "previous_visit_id": x.previous_visit_id} for x in rows]
 
 
-@router.get("/consulting/actions")
+@router.get("/consulting/actions", dependencies=[Depends(require_consultancy_plan_access)])
 def list_actions(
     farm_id: str,
     db: Session = Depends(get_db),
@@ -372,7 +373,7 @@ def _action_task(
     )
 
 
-@router.post("/consulting/actions")
+@router.post("/consulting/actions", dependencies=[Depends(require_consultancy_plan_access)])
 def create_action(
     payload: ActionPayload,
     db: Session = Depends(get_db),
@@ -447,7 +448,7 @@ def create_action(
     return _action_payload(row, task)
 
 
-@router.patch("/consulting/actions/{action_id}/complete")
+@router.patch("/consulting/actions/{action_id}/complete", dependencies=[Depends(require_consultancy_plan_access)])
 def complete_action(
     action_id: str,
     payload: ActionCompletionPayload | None = None,
@@ -524,7 +525,7 @@ def complete_action(
     return _action_payload(row, task)
 
 
-@router.post("/consulting/actions/reconcile-outcomes")
+@router.post("/consulting/actions/reconcile-outcomes", dependencies=[Depends(require_consultancy_plan_access)])
 def reconcile_consulting_action_outcomes(
     farm_id: str,
     db: Session = Depends(get_db),
@@ -546,7 +547,7 @@ def reconcile_consulting_action_outcomes(
     return {"farm_id": farm_id, "reconciled": len(rows)}
 
 
-@router.get("/consulting/actions/outcomes")
+@router.get("/consulting/actions/outcomes", dependencies=[Depends(require_consultancy_plan_access)])
 def consulting_action_outcomes(
     farm_id: str,
     db: Session = Depends(get_db),
@@ -618,7 +619,7 @@ def consulting_actions_deployment_readiness(db: Session = Depends(get_db)):
     }
 
 
-@router.get("/consulting/dashboard")
+@router.get("/consulting/dashboard", dependencies=[Depends(require_consultancy_plan_access)])
 def consulting_dashboard(farm_id: str, db: Session = Depends(get_db), principal: Principal = Depends(require_permission("operations.read"))):
     farm_or_404(db, principal, farm_id)
     visits = list(db.scalars(select(AtlasConsultingVisit).where(AtlasConsultingVisit.company_id == principal.company.id, AtlasConsultingVisit.farm_id == farm_id)).all())
