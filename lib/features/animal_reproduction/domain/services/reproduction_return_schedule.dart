@@ -12,7 +12,7 @@ class ReproductionReturnSchedule {
   });
   final int past, today, nextSevenDays, later, invalid, ambiguous;
 
-  /// Previsões, não tarefas abertas: o modelo não registra baixa/cancelamento.
+  /// Previsões ainda abertas; baixa confirmada não entra na triagem.
   static ReproductionReturnSchedule calculate(
     List<AnimalReproductionData> records, {
     DateTime? referenceDate,
@@ -26,7 +26,7 @@ class ReproductionReturnSchedule {
     final identities = <(String, String), int>{};
     for (final record in planned) {
       identities.update(
-        (record.animalId, record.id),
+        (record.animalId.trim(), record.id.trim()),
         (count) => count + 1,
         ifAbsent: () => 1,
       );
@@ -35,7 +35,7 @@ class ReproductionReturnSchedule {
     for (final record in planned) {
       if (record.animalId.trim().isEmpty ||
           record.id.trim().isEmpty ||
-          identities[(record.animalId, record.id)] != 1) {
+          identities[(record.animalId.trim(), record.id.trim())] != 1) {
         ambiguous++;
         continue;
       }

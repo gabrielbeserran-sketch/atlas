@@ -72,4 +72,13 @@ void main() {
     );
     expect(records.first.toMap(), before);
   });
+  test('espaços nos IDs não tornam retornos repetidos em duas tarefas', () {
+    final result = ReproductionReturnSchedule.calculate([
+      event('retorno', '27/09/2026'),
+      event(' retorno ', '27/09/2026', animal: ' cow '),
+      event('outro', '27/09/2026'),
+    ], referenceDate: DateTime(2026, 9, 27));
+    expect(result.ambiguous, 2);
+    expect(result.today, 1);
+  });
 }

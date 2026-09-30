@@ -1,6 +1,7 @@
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/animal_health/domain/models/animal_health_data.dart';
 import 'package:projeto_atlas/features/animal_reproduction/domain/models/animal_reproduction_data.dart';
+import 'package:projeto_atlas/features/animal_reproduction/domain/services/reproduction_return_schedule.dart';
 import 'package:projeto_atlas/features/farm_finance/domain/models/farm_finance_data.dart';
 import 'package:projeto_atlas/features/farm_inventory/domain/models/farm_inventory_data.dart';
 import 'package:projeto_atlas/features/herd/domain/models/herd_group_data.dart';
@@ -244,6 +245,10 @@ class TechnicalFarmSummary {
       animals: animals,
       referenceDate: today,
     );
+    final returnSchedule = ReproductionReturnSchedule.calculate(
+      reproductionRecords,
+      referenceDate: today,
+    );
 
     return TechnicalFarmSummary(
       groupCount: groups.length,
@@ -258,12 +263,11 @@ class TechnicalFarmSummary {
       positivePregnancies: periodReproductionRecords
           .where((record) => record.isPositivePregnancyDiagnosis)
           .length,
-      pendingReproductionEvents: reproductionRecords
-          .where((record) => isFutureOrToday(record.expectedDate))
-          .length,
-      overdueReproductionEvents: reproductionRecords
-          .where((record) => isPast(record.expectedDate))
-          .length,
+      pendingReproductionEvents:
+          returnSchedule.today +
+          returnSchedule.nextSevenDays +
+          returnSchedule.later,
+      overdueReproductionEvents: returnSchedule.past,
       healthRecords: periodHealthRecords.length,
       overdueHealthReturns: healthRecords
           .where((record) => isPast(record.nextDate))
@@ -325,23 +329,31 @@ DateTime? _parseDate(String value) {
   if (trimmed.isEmpty) {
     return null;
   }
-
-  final iso = DateTime.tryParse(trimmed);
-  if (iso != null) {
-    return DateTime(iso.year, iso.month, iso.day);
+  final iso = RegExp(
+    r'^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ].+)?$',
+  ).firstMatch(trimmed);
+  if (iso != null && DateTime.tryParse(trimmed) != null) {
+    return _strictDate(
+      int.parse(iso.group(1)!),
+      int.parse(iso.group(2)!),
+      int.parse(iso.group(3)!),
+    );
   }
+  final br = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(trimmed);
+  if (br == null) return null;
+  return _strictDate(
+    int.parse(br.group(3)!),
+    int.parse(br.group(2)!),
+    int.parse(br.group(1)!),
+  );
+}
 
-  final parts = trimmed.split('/');
-  if (parts.length != 3) {
+DateTime? _strictDate(int year, int month, int day) {
+  if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
     return null;
   }
-
-  final day = int.tryParse(parts[0]);
-  final month = int.tryParse(parts[1]);
-  final year = int.tryParse(parts[2]);
-  if (day == null || month == null || year == null) {
-    return null;
-  }
-
-  return DateTime(year, month, day);
+  final date = DateTime(year, month, day);
+  return date.year == year && date.month == month && date.day == day
+      ? date
+      : null;
 }
