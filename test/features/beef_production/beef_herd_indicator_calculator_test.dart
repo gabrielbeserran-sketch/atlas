@@ -248,4 +248,43 @@ void main() {
     expect(result.salesWithKnownAge, 0);
     expect(result.salesWithoutKnownAge, 1);
   });
+
+  test('IDs iguais com espaços não duplicam rebanho, vendas nem óbitos', () {
+    AnimalData entry(String id, String status, {double saleValue = 0}) =>
+        AnimalData(
+          id: id,
+          tag: id,
+          name: '',
+          sex: 'Fêmea',
+          breed: '',
+          birthDate: '',
+          weight: 400,
+          status: status,
+          saleDate: status == 'Vendido' ? '2026-09-10' : '',
+          saleValue: saleValue,
+          deathDate: status == 'Morto' ? '2026-09-10' : '',
+        );
+    final result = const BeefHerdIndicatorCalculator().calculate(
+      referenceDate: DateTime(2026, 9, 16),
+      animals: [
+        entry('ativo', 'Ativo'),
+        entry(' ativo ', 'Ativo'),
+        entry('venda', 'Vendido', saleValue: 5000),
+        entry(' venda ', 'Vendido', saleValue: 5000),
+        entry('obito', 'Morto'),
+        entry(' obito ', 'Morto'),
+        entry('  ', 'Ativo'),
+        entry('regular', 'Ativo'),
+        entry('venda-regular', 'Vendido', saleValue: 1000),
+      ],
+    );
+
+    expect(result.ambiguousAnimalRecords, 7);
+    expect(result.activeAnimals, 1);
+    expect(result.commercialExits, 1);
+    expect(result.offtakeRate, 50);
+    expect(result.commercialRevenue, 1000);
+    expect(result.mortalities, 0);
+    expect(result.dataQualityAlerts.first, contains('7 registro(s)'));
+  });
 }

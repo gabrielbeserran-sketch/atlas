@@ -123,11 +123,13 @@ class BeefHerdIndicatorCalculator {
     final start = DateTime(now.year - 1, now.month, now.day);
     final ids = <String, int>{};
     for (final animal in animals) {
-      ids.update(animal.id, (count) => count + 1, ifAbsent: () => 1);
+      final id = animal.id.trim();
+      ids.update(id, (count) => count + 1, ifAbsent: () => 1);
     }
-    final uniqueAnimals = animals
-        .where((animal) => animal.id.trim().isNotEmpty && ids[animal.id] == 1)
-        .toList();
+    final uniqueAnimals = animals.where((animal) {
+      final id = animal.id.trim();
+      return id.isNotEmpty && ids[id] == 1;
+    }).toList();
     final active = uniqueAnimals
         .where((animal) => animal.status == 'Ativo')
         .length;
