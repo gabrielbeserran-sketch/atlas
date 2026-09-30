@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from scripts.quality.check_postgres_ci_contract import validate_ci_target
@@ -97,7 +98,12 @@ def main() -> None:
                     expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
                 ),
             ])
-            db.commit()
+            try:
+                db.commit()
+            except IntegrityError as exc:
+                constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+                print(f"::error title=PostgreSQL sync fixture::constraint={constraint or 'unknown'}")
+                raise
 
         app = FastAPI()
         app.include_router(sync.router, prefix="/api/v1")
