@@ -17,6 +17,7 @@ class AtlasOfflineController extends ChangeNotifier {
   }) : _repository = repository ?? OfflineRepository(),
        _coordinator = coordinator ?? OfflineSyncCoordinator() {
     _observedCompanyId = sessionController.session?.companyId;
+    _observedTenantId = sessionController.session?.tenantId;
     _observedFarmId = sessionController.activeFarm?.id;
     _observedUserId = sessionController.session?.userId;
     sessionController.addListener(_onScopeChanged);
@@ -26,9 +27,11 @@ class AtlasOfflineController extends ChangeNotifier {
   final OfflineRepository _repository;
   final OfflineSyncCoordinator _coordinator;
   String? _observedCompanyId;
+  String? _observedTenantId;
   String? _observedFarmId;
   String? _observedUserId;
   int _loadGeneration = 0;
+  int _scopeGeneration = 0;
   bool _disposed = false;
 
   OfflineQueueStats _stats = const OfflineQueueStats(
@@ -65,16 +68,20 @@ class AtlasOfflineController extends ChangeNotifier {
 
   void _onScopeChanged() {
     final companyId = sessionController.session?.companyId;
+    final tenantId = sessionController.session?.tenantId;
     final farmId = sessionController.activeFarm?.id;
     final userId = sessionController.session?.userId;
     if (companyId == _observedCompanyId &&
+        tenantId == _observedTenantId &&
         farmId == _observedFarmId &&
         userId == _observedUserId) {
       return;
     }
     _observedCompanyId = companyId;
+    _observedTenantId = tenantId;
     _observedFarmId = farmId;
     _observedUserId = userId;
+    _scopeGeneration++;
     _deviceId = null;
     _lastReport = null;
     unawaited(load());
@@ -164,6 +171,11 @@ class AtlasOfflineController extends ChangeNotifier {
     final session = sessionController.session;
     if (session == null) return;
     final farmId = sessionController.activeFarm?.id;
+    final scopeGeneration = _scopeGeneration;
+    bool isScopeCurrent() =>
+        scopeGeneration == _scopeGeneration &&
+        sessionController.session?.tenantId == session.tenantId &&
+        _sameScope(session.companyId, farmId, session.userId);
     _loading = true;
     _error = null;
     _phase = 'Preparando sincronização';
@@ -176,7 +188,7 @@ class AtlasOfflineController extends ChangeNotifier {
         final registered = await _coordinator.registerDevice(
           deviceKey: _deviceKey(session.userId),
         );
-        if (!_sameScope(session.companyId, farmId, session.userId)) return;
+        if (!isScopeCurrent()) return;
         _deviceId = registered;
         deviceId = registered;
       }
@@ -185,25 +197,26 @@ class AtlasOfflineController extends ChangeNotifier {
         tenantId: session.tenantId,
         farmId: farmId,
         deviceId: deviceId,
+        isScopeCurrent: isScopeCurrent,
         onProgress: (phase, completed, total) {
-          if (!_sameScope(session.companyId, farmId, session.userId)) return;
+          if (!isScopeCurrent()) return;
           _phase = phase;
           _completed = completed;
           _total = total;
           notifyListeners();
         },
       );
-      if (!_sameScope(session.companyId, farmId, session.userId)) return;
+      if (!isScopeCurrent()) return;
       _lastReport = report;
       await load();
-      if (!_sameScope(session.companyId, farmId, session.userId)) return;
+      if (!isScopeCurrent()) return;
       await _coordinator.sendDiagnostics(deviceId: deviceId, stats: _stats);
     } catch (error) {
-      if (_sameScope(session.companyId, farmId, session.userId)) {
+      if (isScopeCurrent()) {
         _error = error.toString();
       }
     } finally {
-      if (_sameScope(session.companyId, farmId, session.userId)) {
+      if (isScopeCurrent()) {
         _loading = false;
         _phase = '';
         notifyListeners();

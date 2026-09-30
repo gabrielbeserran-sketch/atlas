@@ -182,6 +182,40 @@ class _Coordinator extends OfflineSyncCoordinator {
   );
 }
 
+class _DelayedSyncCoordinator extends _Coordinator {
+  final Completer<void> entered = Completer<void>();
+  final Completer<void> release = Completer<void>();
+  bool Function()? currentScope;
+
+  @override
+  Future<String> registerDevice({required String deviceKey}) async =>
+      'device-test';
+
+  @override
+  Future<OfflineSyncReport> synchronize({
+    required String companyId,
+    required String tenantId,
+    required String deviceId,
+    required bool Function() isScopeCurrent,
+    String? farmId,
+    OfflineSyncProgress? onProgress,
+  }) async {
+    currentScope = isScopeCurrent;
+    entered.complete();
+    await release.future;
+    if (!isScopeCurrent()) throw StateError('Contexto mudou.');
+    return OfflineSyncReport(
+      pushed: 0,
+      conflicts: 0,
+      rejected: 0,
+      pulled: 0,
+      nextCursor: 0,
+      startedAt: DateTime.utc(2026, 9, 30),
+      finishedAt: DateTime.utc(2026, 9, 30),
+    );
+  }
+}
+
 void main() {
   setUpAll(() {
     SharedPreferencesAsyncPlatform.instance =
@@ -264,4 +298,27 @@ void main() {
       }
     },
   );
+
+  test('troca A→B→A invalida resposta de sincronização antiga', () async {
+    final session = _Session();
+    final coordinator = _DelayedSyncCoordinator();
+    final controller = AtlasOfflineController(
+      sessionController: session,
+      repository: _Repository(),
+      coordinator: coordinator,
+    );
+    try {
+      final work = controller.synchronize();
+      await coordinator.entered.future;
+      session.switchTo('company-b');
+      session.switchTo('company-a');
+      expect(coordinator.currentScope!(), isFalse);
+      coordinator.release.complete();
+      await work;
+      expect(controller.lastReport, isNull);
+    } finally {
+      controller.dispose();
+      session.dispose();
+    }
+  });
 }

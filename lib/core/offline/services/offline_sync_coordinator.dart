@@ -77,6 +77,7 @@ class OfflineSyncCoordinator {
     required String companyId,
     required String tenantId,
     required String deviceId,
+    required bool Function() isScopeCurrent,
     String? farmId,
     OfflineSyncProgress? onProgress,
   }) async {
@@ -91,21 +92,42 @@ class OfflineSyncCoordinator {
       );
     }
 
+    void ensureScope() {
+      if (!isScopeCurrent()) {
+        throw StateError(
+          'A conta ou fazenda mudou durante a sincronização; '
+          'a fila permanece disponível para nova tentativa.',
+        );
+      }
+    }
+
     final startedAt = DateTime.now();
     var pushed = 0;
     var conflicts = 0;
     var rejected = 0;
     var pulled = 0;
 
+    ensureScope();
     onProgress?.call('Preparando fila', 0, 1);
     final operations = await _repository.pending(
       companyId: companyId,
       farmId: farmId,
       limit: 200,
     );
+    ensureScope();
+    if (operations.any(
+      (item) =>
+          item.companyId != companyId ||
+          item.tenantId != tenantId ||
+          (farmId != null && item.farmId != null && item.farmId != farmId),
+    )) {
+      throw StateError('Fila de sincronização com escopo inconsistente.');
+    }
 
     if (operations.isNotEmpty) {
+      ensureScope();
       onProgress?.call('Enviando alterações', 0, operations.length);
+      ensureScope();
       final response = await _client.send(
         'POST',
         '/offline/push-batch',
@@ -114,6 +136,7 @@ class OfflineSyncCoordinator {
           'stop_on_conflict': false,
         },
       );
+      ensureScope();
       final data = response.asMap();
       final results = (data['results'] as List<dynamic>? ?? const <dynamic>[])
           .whereType<Map>()
@@ -122,6 +145,7 @@ class OfflineSyncCoordinator {
       final resultsById = validatedBatchResults(operations, results);
 
       for (var index = 0; index < operations.length; index++) {
+        ensureScope();
         final operation = operations[index];
         final item = resultsById[operation.id]!;
         if (item['accepted'] == true) {
@@ -154,9 +178,12 @@ class OfflineSyncCoordinator {
       companyId: companyId,
       farmId: farmId,
     );
+    ensureScope();
     var hasMore = false;
     do {
+      ensureScope();
       onProgress?.call('Recebendo atualizações', pulled, pulled + 1);
+      ensureScope();
       final response = await _client.send(
         'GET',
         '/offline/pull-page',
@@ -166,12 +193,14 @@ class OfflineSyncCoordinator {
           if (farmId != null && farmId.isNotEmpty) 'farm_id': farmId,
         },
       );
+      ensureScope();
       final data = response.asMap();
       final changes = (data['changes'] as List<dynamic>? ?? const <dynamic>[])
           .whereType<Map>()
           .map((item) => Map<String, dynamic>.from(item))
           .toList(growable: false);
       for (final change in changes) {
+        ensureScope();
         await _repository.applyChange(
           companyId: companyId,
           tenantId: tenantId,
@@ -181,6 +210,7 @@ class OfflineSyncCoordinator {
         pulled++;
       }
       cursor = (data['next_cursor'] as num?)?.toInt() ?? cursor;
+      ensureScope();
       await _repository.setCursor(
         companyId: companyId,
         farmId: farmId,
@@ -189,12 +219,15 @@ class OfflineSyncCoordinator {
       hasMore = data['has_more'] == true;
     } while (hasMore);
 
+    ensureScope();
     final remoteConflicts = await fetchRemoteConflicts();
+    ensureScope();
     await _repository.importRemoteConflicts(
       companyId: companyId,
       tenantId: tenantId,
       conflicts: remoteConflicts,
     );
+    ensureScope();
     await _repository.purgeAccepted();
 
     return OfflineSyncReport(
