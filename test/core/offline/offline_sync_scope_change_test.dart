@@ -24,13 +24,19 @@ OfflineOperation _operation({String company = 'company-a'}) => OfflineOperation(
 );
 
 class _Repository extends OfflineRepository {
-  _Repository({this.operations = const <OfflineOperation>[]});
+  _Repository({
+    this.operations = const <OfflineOperation>[],
+    this.hasServerConflict = true,
+  });
 
   List<OfflineOperation> operations;
+  final bool hasServerConflict;
   int accepted = 0;
   int applied = 0;
   int cursorWrites = 0;
   int conflictImports = 0;
+  int resolvedReconciliations = 0;
+  List<Map<String, dynamic>> lastResolved = const <Map<String, dynamic>>[];
   int purges = 0;
 
   @override
@@ -67,6 +73,23 @@ class _Repository extends OfflineRepository {
     required String tenantId,
     required List<Map<String, dynamic>> conflicts,
   }) async => conflictImports++;
+
+  @override
+  Future<bool> hasOpenServerConflicts({
+    required String companyId,
+    required String tenantId,
+  }) async => hasServerConflict;
+
+  @override
+  Future<int> reconcileResolvedRemoteConflicts({
+    required String companyId,
+    required String tenantId,
+    required List<Map<String, dynamic>> conflicts,
+  }) async {
+    resolvedReconciliations++;
+    lastResolved = conflicts;
+    return 0;
+  }
 
   @override
   Future<void> purgeAccepted({
@@ -119,6 +142,16 @@ class _Http extends AtlasHttpClient {
     int transientRetries = 2,
   }) async {
     calls.add(path);
+    if (path == '/offline/conflicts' &&
+        queryParameters?['status'] == 'resolved') {
+      return const AtlasHttpResponse(
+        statusCode: 200,
+        headers: <String, String>{},
+        body: <Map<String, dynamic>>[
+          <String, dynamic>{'id': 'server-confirmed', 'status': 'resolved'},
+        ],
+      );
+    }
     if (path == gatePath) return gate.future;
     return response(path);
   }
@@ -219,6 +252,16 @@ void main() {
     expect(repository.applied, 1);
     expect(repository.cursorWrites, 1);
     expect(repository.conflictImports, 1);
+    expect(repository.resolvedReconciliations, 1);
+    expect(repository.lastResolved.single['id'], 'server-confirmed');
     expect(repository.purges, 1);
+  });
+
+  test('sem conflito local não consulta resolvidos', () async {
+    final repository = _Repository(hasServerConflict: false);
+    final http = _Http();
+    await _run(repository, http, () => true);
+    expect(repository.resolvedReconciliations, 0);
+    expect(http.calls.where((path) => path == '/offline/conflicts').length, 1);
   });
 }

@@ -120,7 +120,7 @@ class OfflineRepository {
       retry: values['retry'] ?? 0,
       conflicts: values['conflict'] ?? 0,
       failed: values['failed'] ?? 0,
-      accepted: values['accepted'] ?? 0,
+      accepted: (values['accepted'] ?? 0) + (values['resolved'] ?? 0),
     );
   }
 
@@ -173,8 +173,8 @@ class OfflineRepository {
     final cutoff = DateTime.now().toUtc().subtract(olderThan).toIso8601String();
     await db.delete(
       'operation_queue',
-      where: 'status = ? AND created_at < ?',
-      whereArgs: <Object?>['accepted', cutoff],
+      where: 'status IN (?, ?) AND created_at < ?',
+      whereArgs: <Object?>['accepted', 'resolved', cutoff],
     );
   }
 
@@ -333,6 +333,104 @@ class OfflineRepository {
         'resolved_at': null,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
+  }
+
+  Future<int> reconcileResolvedRemoteConflicts({
+    required String companyId,
+    required String tenantId,
+    required List<Map<String, dynamic>> conflicts,
+  }) async => reconcileResolvedRemoteConflictsInDatabase(
+    await _database.database,
+    companyId: companyId,
+    tenantId: tenantId,
+    conflicts: conflicts,
+  );
+
+  Future<bool> hasOpenServerConflicts({
+    required String companyId,
+    required String tenantId,
+  }) async => hasOpenServerConflictsInDatabase(
+    await _database.database,
+    companyId: companyId,
+    tenantId: tenantId,
+  );
+
+  static Future<bool> hasOpenServerConflictsInDatabase(
+    Database db, {
+    required String companyId,
+    required String tenantId,
+  }) async {
+    final rows = await db.rawQuery(
+      'SELECT 1 FROM local_conflicts WHERE company_id = ? AND tenant_id = ? '
+      'AND status = ? AND server_conflict_id IS NOT NULL '
+      'AND server_conflict_id <> ? LIMIT 1',
+      <Object?>[companyId, tenantId, 'open', ''],
+    );
+    return rows.isNotEmpty;
+  }
+
+  static Future<int> reconcileResolvedRemoteConflictsInDatabase(
+    Database db, {
+    required String companyId,
+    required String tenantId,
+    required List<Map<String, dynamic>> conflicts,
+  }) async {
+    final confirmedIds = conflicts
+        .where((item) => item['status'] == 'resolved')
+        .map((item) => item['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    if (confirmedIds.isEmpty) return 0;
+
+    return db.transaction((txn) async {
+      var reconciled = 0;
+      final resolvedAt = DateTime.now().toUtc().toIso8601String();
+      for (final serverId in confirmedIds) {
+        final rows = await txn.query(
+          'local_conflicts',
+          columns: const <String>['id', 'operation_id'],
+          where:
+              'server_conflict_id = ? AND company_id = ? '
+              'AND tenant_id = ? AND status = ?',
+          whereArgs: <Object?>[serverId, companyId, tenantId, 'open'],
+        );
+        for (final row in rows) {
+          final localId = row['id']?.toString() ?? '';
+          final operationId = row['operation_id']?.toString() ?? '';
+          if (localId.isEmpty) continue;
+          reconciled += await txn.update(
+            'local_conflicts',
+            <String, Object?>{
+              'status': 'resolved',
+              'resolution': 'server_confirmed',
+              'resolved_at': resolvedAt,
+            },
+            where: 'id = ? AND company_id = ? AND tenant_id = ? AND status = ?',
+            whereArgs: <Object?>[localId, companyId, tenantId, 'open'],
+          );
+          if (operationId.isNotEmpty) {
+            await txn.update(
+              'operation_queue',
+              <String, Object?>{
+                'status': 'resolved',
+                'last_error': '',
+                'next_attempt_at': null,
+              },
+              where:
+                  'id = ? AND company_id = ? AND tenant_id = ? '
+                  'AND status = ?',
+              whereArgs: <Object?>[
+                operationId,
+                companyId,
+                tenantId,
+                'conflict',
+              ],
+            );
+          }
+        }
+      }
+      return reconciled;
+    });
   }
 
   Future<List<OfflineConflict>> conflicts({

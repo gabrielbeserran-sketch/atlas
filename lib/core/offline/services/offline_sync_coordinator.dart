@@ -73,6 +73,15 @@ class OfflineSyncCoordinator {
     return response.asMapList();
   }
 
+  Future<List<Map<String, dynamic>>> fetchResolvedRemoteConflicts() async {
+    final response = await _client.send(
+      'GET',
+      '/offline/conflicts',
+      queryParameters: const <String, String>{'status': 'resolved'},
+    );
+    return response.asMapList();
+  }
+
   Future<OfflineSyncReport> synchronize({
     required String companyId,
     required String tenantId,
@@ -228,6 +237,20 @@ class OfflineSyncCoordinator {
       conflicts: remoteConflicts,
     );
     ensureScope();
+    if (await _repository.hasOpenServerConflicts(
+      companyId: companyId,
+      tenantId: tenantId,
+    )) {
+      ensureScope();
+      final resolvedConflicts = await fetchResolvedRemoteConflicts();
+      ensureScope();
+      await _repository.reconcileResolvedRemoteConflicts(
+        companyId: companyId,
+        tenantId: tenantId,
+        conflicts: resolvedConflicts,
+      );
+      ensureScope();
+    }
     await _repository.purgeAccepted();
 
     return OfflineSyncReport(
