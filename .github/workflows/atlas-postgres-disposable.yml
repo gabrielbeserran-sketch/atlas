@@ -1,0 +1,47 @@
+name: Atlas PostgreSQL descartavel
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  migrate-fresh-postgres:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: atlas_ci_probe
+          POSTGRES_PASSWORD: atlas-ci-probe-ephemeral-password-2026
+          POSTGRES_DB: atlas_ci_probe
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U atlas_ci_probe -d atlas_ci_probe"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ATLAS_ENV: test
+      ATLAS_DATABASE_URL: postgresql+psycopg://atlas_ci_probe:atlas-ci-probe-ephemeral-password-2026@127.0.0.1:5432/atlas_ci_probe
+      ATLAS_JWT_SECRET: atlas-ci-only-secret-with-at-least-32-characters
+      ATLAS_BOOTSTRAP_ENABLED: "false"
+      ATLAS_AUTO_CREATE_SCHEMA: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -p test_postgres_ci_contract_guard.py
+      - run: python -m alembic upgrade head
+      - run: python -m alembic upgrade head
+      - run: python -m scripts.render_post_migration_check
+      - run: python -m scripts.render_schema_contract_check
+      - run: python -m scripts.quality.check_postgres_ci_contract
