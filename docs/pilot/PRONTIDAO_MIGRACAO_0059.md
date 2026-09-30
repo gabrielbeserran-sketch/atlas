@@ -2,6 +2,8 @@
 
 O ensaio em PostgreSQL 16 descartável passou no [CI](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36694902931), inclusive com 1.000 bases existentes em 0058. Isso não prova o tempo nem o impacto da criação do índice na base real.
 
+O [ensaio de recuperação descartável](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36711246874) também passou: o bundle Atlas com anexo sintético foi restaurado em PostgreSQL 16 e os dados/esquema 0059 foram conferidos em banco temporário. Essa prova do procedimento não substitui um backup recente **da base real** restaurado e verificado em ambiente separado pelo operador autorizado.
+
 ## Antes de qualquer comando na base real
 
 1. O responsável pela operação confirma ambiente/instância, versão atual, janela de manutenção, volume da tabela, tráfego de escrita e plano de comunicação.
