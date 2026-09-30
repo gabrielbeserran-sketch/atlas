@@ -18,6 +18,7 @@ from ..schemas import (
 from ..services.audit import record_audit
 from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
 from ..services.sync_idempotency import replay_processed_operation, stored_result
+from ..services.sync_transaction_lock import lock_sync_requests
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -49,6 +50,8 @@ def push(
         )
 
     require_farm_scope(principal, request.farm_id)
+
+    lock_sync_requests(db, [request])
 
     processed = db.get(
         ProcessedOperation,

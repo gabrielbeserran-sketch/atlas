@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from threading import Barrier
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -200,13 +202,53 @@ def main() -> None:
                 "/api/v1/offline/pull-page", headers=a,
             ).json()["changes"])
 
+            _stage("two-device-version-race")
+            barrier = Barrier(3)
+            first_race = _operation(
+                operation="ci-sync-race-1", key="ci-sync-race-key-1",
+                payload={"device": "one"}, base_version=2,
+            )
+            second_race = _operation(
+                operation="ci-sync-race-2", key="ci-sync-race-key-2",
+                payload={"device": "two"}, base_version=2,
+            )
+
+            def online_push():
+                barrier.wait(timeout=10)
+                return client.post("/api/v1/sync/push", headers=a, json=first_race)
+
+            def offline_push():
+                barrier.wait(timeout=10)
+                return client.post(
+                    "/api/v1/offline/push-batch", headers=a,
+                    json={"operations": [second_race]},
+                )
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                online_future = pool.submit(online_push)
+                offline_future = pool.submit(offline_push)
+                barrier.wait(timeout=10)
+                online = online_future.result(timeout=20)
+                offline = offline_future.result(timeout=20)
+            assert online.status_code == offline.status_code == 200
+            outcomes = [online.json(), offline.json()["results"][0]]
+            assert sorted(result["accepted"] for result in outcomes) == [False, True]
+            accepted = next(result for result in outcomes if result["accepted"])
+            rejected = next(result for result in outcomes if not result["accepted"])
+            assert accepted["remote_version"] == rejected["remote_version"] == 3
+            assert rejected["conflict"] is True
+            assert rejected["remote_payload"] == accepted["remote_payload"]
+            assert accepted["remote_payload"] in (
+                {"device": "one"}, {"device": "two"},
+            )
+
             _stage("durability-and-revocation")
             with Session(engine) as db:
                 assert db.scalar(select(func.count()).select_from(EntityState)) == 2
-                assert db.scalar(select(func.count()).select_from(SyncChange)) == 3
+                assert db.scalar(select(func.count()).select_from(SyncChange)) == 4
                 assert db.scalar(select(EntityState).where(
                     EntityState.entity_id == "ci-note-a",
-                )).payload == {"value": 2}
+                )).payload == accepted["remote_payload"]
                 db.get(Membership, "ci-sync-member-a").active = False
                 db.commit()
             assert client.get("/api/v1/offline/status", headers=a).status_code == 401

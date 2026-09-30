@@ -16,6 +16,7 @@ from ..schemas import SyncPushRequest, SyncPushResponse
 from ..services.audit import record_audit
 from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
 from ..services.sync_idempotency import replay_processed_operation, stored_result
+from ..services.sync_transaction_lock import lock_sync_requests
 
 router = APIRouter(prefix="/offline", tags=["offline-sync"])
 
@@ -109,6 +110,7 @@ def register_device(payload: DeviceRegistration, principal: Principal = Depends(
 
 @router.post("/push-batch")
 def push_batch(payload: BatchPushRequest, principal: Principal = Depends(require_permission("sync.manage")), db: Session = Depends(get_db)) -> dict:
+    lock_sync_requests(db, payload.operations)
     results: list[dict] = []
     accepted = conflicts = rejected = 0
     for operation in payload.operations:
