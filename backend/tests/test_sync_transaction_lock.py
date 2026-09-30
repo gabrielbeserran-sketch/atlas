@@ -7,7 +7,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.schemas import SyncPushRequest
-from app.services.sync_transaction_lock import _lock_id, lock_sync_requests
+from app.services.sync_transaction_lock import (
+    _lock_id, lock_sync_entity, lock_sync_requests,
+)
 
 
 def request(entity: str, key: str) -> SyncPushRequest:
@@ -53,5 +55,26 @@ def test_batch_locks_key_and_entity_in_one_stable_order():
             })
             assert actual == expected
             assert all(-(2**63) <= key < 2**63 for key in actual)
+    finally:
+        engine.dispose()
+
+
+def test_resolution_uses_the_same_entity_lock_as_push():
+    engine = create_engine("sqlite://")
+    try:
+        with Session(engine) as db:
+            with (
+                patch.object(
+                    db, "get_bind",
+                    return_value=SimpleNamespace(
+                        dialect=SimpleNamespace(name="postgresql")
+                    ),
+                ),
+                patch.object(db, "execute") as execute,
+            ):
+                lock_sync_entity(db, "company-a", "farm_note", "note-a")
+            assert execute.call_count == 1
+            key = next(iter(execute.call_args.args[0].compile().params.values()))
+            assert key == _lock_id("sync-entity:company-a:farm_note:note-a")
     finally:
         engine.dispose()

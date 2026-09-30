@@ -242,13 +242,67 @@ def main() -> None:
                 {"device": "one"}, {"device": "two"},
             )
 
+            _stage("stale-conflict-refresh-and-double-resolution")
+            stale_batch = client.post(
+                "/api/v1/offline/push-batch", headers=a,
+                json={"operations": [_operation(
+                    operation="ci-sync-manual-conflict",
+                    key="ci-sync-manual-conflict-key",
+                    payload={"device": "manual"}, base_version=2,
+                )]},
+            )
+            assert stale_batch.status_code == 200
+            assert stale_batch.json()["conflicts"] == 1
+            pending = client.get("/api/v1/offline/conflicts", headers=a).json()
+            manual_id = next(item["id"] for item in pending if (
+                item["operation_id"] == "ci-sync-manual-conflict"
+            ))
+            newer = client.post(
+                "/api/v1/sync/push", headers=a,
+                json=_operation(
+                    operation="ci-sync-newer", key="ci-sync-newer-key",
+                    payload={"device": "newer"}, base_version=3,
+                ),
+            )
+            assert newer.status_code == 200 and newer.json()["accepted"]
+            manual_path = f"/api/v1/offline/conflicts/{manual_id}/resolve"
+            stale = client.post(
+                manual_path, headers=a, json={"resolution": "keep_local"},
+            )
+            assert stale.status_code == 409
+            refreshed = next(item for item in client.get(
+                "/api/v1/offline/conflicts", headers=a,
+            ).json() if item["id"] == manual_id)
+            assert refreshed["remote_version"] == 4
+            assert refreshed["remote_payload"] == {"device": "newer"}
+            resolution_barrier = Barrier(3)
+
+            def resolve_again():
+                resolution_barrier.wait(timeout=10)
+                return client.post(
+                    manual_path, headers=a, json={"resolution": "keep_local"},
+                )
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first_resolution = pool.submit(resolve_again)
+                second_resolution = pool.submit(resolve_again)
+                resolution_barrier.wait(timeout=10)
+                resolution_results = [
+                    first_resolution.result(timeout=20),
+                    second_resolution.result(timeout=20),
+                ]
+            assert sorted(item.status_code for item in resolution_results) == [200, 409]
+            completed = next(item for item in resolution_results if item.status_code == 200)
+            assert completed.json()["version"] == 5
+            assert completed.json()["payload"] == {"device": "manual"}
+
             _stage("durability-and-revocation")
             with Session(engine) as db:
                 assert db.scalar(select(func.count()).select_from(EntityState)) == 2
-                assert db.scalar(select(func.count()).select_from(SyncChange)) == 4
+                assert db.scalar(select(func.count()).select_from(SyncChange)) == 6
                 assert db.scalar(select(EntityState).where(
                     EntityState.entity_id == "ci-note-a",
-                )).payload == accepted["remote_payload"]
+                )).payload == {"device": "manual"}
                 db.get(Membership, "ci-sync-member-a").active = False
                 db.commit()
             assert client.get("/api/v1/offline/status", headers=a).status_code == 401

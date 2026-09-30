@@ -373,6 +373,46 @@ def test_real_jwt_conflict_visibility_and_resolution(authenticated_api):
         assert db.query(EntityState).one().payload == {"value": 2}
 
 
+def test_stale_conflict_refreshes_remote_snapshot_before_resolution(authenticated_api):
+    client, engine, headers = authenticated_api
+    account = headers("a")
+    assert client.post(
+        "/api/v1/sync/push", json=operation(), headers=account,
+    ).json()["accepted"]
+    conflict = client.post(
+        "/api/v1/offline/push-batch", headers=account,
+        json={"operations": [operation(
+            operation_id="op-stale", key="key-stale", payload={"local": 2},
+        )]},
+    )
+    assert conflict.json()["conflicts"] == 1
+    conflict_id = client.get("/api/v1/offline/conflicts", headers=account).json()[0]["id"]
+    assert client.post(
+        "/api/v1/sync/push", headers=account,
+        json=operation(
+            operation_id="op-newer", key="key-newer", base_version=1,
+            payload={"remote": 3},
+        ),
+    ).json()["accepted"]
+
+    path = f"/api/v1/offline/conflicts/{conflict_id}/resolve"
+    stale = client.post(path, json={"resolution": "keep_local"}, headers=account)
+    assert stale.status_code == 409
+    assert "revise" in stale.json()["detail"]
+    pending = client.get("/api/v1/offline/conflicts", headers=account).json()[0]
+    assert pending["status"] == "open"
+    assert pending["remote_version"] == 2
+    assert pending["remote_payload"] == {"remote": 3}
+    with Session(engine) as db:
+        assert db.query(EntityState).one().payload == {"remote": 3}
+        assert db.query(SyncChange).count() == 2
+
+    confirmed = client.post(path, json={"resolution": "keep_local"}, headers=account)
+    assert confirmed.status_code == 200
+    assert confirmed.json()["version"] == 3
+    assert confirmed.json()["payload"] == {"local": 2}
+
+
 def test_real_jwt_rechecks_membership_permissions_and_company_status(authenticated_api):
     client, engine, headers = authenticated_api
     account_a = headers("a")

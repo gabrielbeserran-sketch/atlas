@@ -23,15 +23,30 @@ def _lock_id(value: str) -> int:
     )
 
 
-def lock_sync_requests(db: Session, requests: Iterable[SyncPushRequest]) -> None:
-    """Acquire all locks in one order, including across multi-item batches."""
+def _entity_lock_id(company_id: str, entity_type: str, entity_id: str) -> int:
+    return _lock_id(f"sync-entity:{company_id}:{entity_type}:{entity_id}")
+
+
+def _acquire(db: Session, keys: set[int]) -> None:
     if not isinstance(db, Session) or db.get_bind().dialect.name != "postgresql":
         return
+    for key in sorted(keys):
+        db.execute(select(func.pg_advisory_xact_lock(key)))
+
+
+def lock_sync_requests(db: Session, requests: Iterable[SyncPushRequest]) -> None:
+    """Acquire all locks in one order, including across multi-item batches."""
     keys: set[int] = set()
     for request in requests:
         keys.add(_lock_id(f"sync-key:{request.idempotency_key}"))
-        keys.add(_lock_id(
-            f"sync-entity:{request.company_id}:{request.entity_type}:{request.entity_id}"
+        keys.add(_entity_lock_id(
+            request.company_id, request.entity_type, request.entity_id,
         ))
-    for key in sorted(keys):
-        db.execute(select(func.pg_advisory_xact_lock(key)))
+    _acquire(db, keys)
+
+
+def lock_sync_entity(
+    db: Session, company_id: str, entity_type: str, entity_id: str,
+) -> None:
+    """Use the same entity lock when a human resolves a sync conflict."""
+    _acquire(db, {_entity_lock_id(company_id, entity_type, entity_id)})
