@@ -106,12 +106,15 @@ def main() -> None:
             assert capabilities.json() == {
                 "client_operation_id_idempotency": True, "append_only": True,
             }
-            for hidden in ("ci-hidden-farm", "ci-other-farm"):
+            for hidden, expected_status in (
+                ("ci-hidden-farm", 403),
+                ("ci-other-farm", 404),
+            ):
                 response = client.get(
                     f"/api/v1/livestock/farms/{hidden}/grazing-basis/cursor",
                     headers=headers,
                 )
-                assert response.status_code == 404, response.text
+                assert response.status_code == expected_status, response.text
 
             _stage("first-cursor-page")
             first = client.get(
