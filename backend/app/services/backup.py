@@ -12,9 +12,9 @@ from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from pathlib import PurePosixPath
-from urllib.parse import urlparse
 
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DatabaseError
 
 from ..config import get_settings
@@ -216,7 +216,7 @@ class BackupService:
 
         env = self._pg_env(parsed)
         common = [
-            "--host", parsed.hostname or "localhost",
+            "--host", parsed.host or "localhost",
             "--port", str(parsed.port or 5432),
             "--username", parsed.username or "postgres",
         ]
@@ -246,12 +246,9 @@ class BackupService:
                 text=True,
             )
 
-            verify_url = (
-                f"postgresql+psycopg://{parsed.username}:"
-                f"{parsed.password or ''}@{parsed.hostname or 'localhost'}:"
-                f"{parsed.port or 5432}/{temp_database}"
+            engine = create_engine(
+                parsed.set(database=temp_database), pool_pre_ping=True,
             )
-            engine = create_engine(verify_url, pool_pre_ping=True)
             try:
                 with engine.connect() as connection:
                     connection.execute(text("SELECT 1"))
@@ -270,24 +267,33 @@ class BackupService:
                 "verified": True,
             }
         finally:
-            subprocess.run(
-                ["dropdb", *common, "--if-exists", temp_database],
-                check=False,
-                env=env,
-                capture_output=True,
-                text=True,
-            )
+            try:
+                subprocess.run(
+                    ["dropdb", *common, "--if-exists", temp_database],
+                    check=True,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                )
+            except (subprocess.CalledProcessError, OSError) as exc:
+                raise RuntimeError(
+                    "Não foi possível confirmar a remoção do banco temporário "
+                    f"{temp_database}; revisão operacional necessária."
+                ) from exc
 
     def _sqlite_path(self, url: str) -> Path:
         return Path(url.removeprefix("sqlite:///"))
 
     def _postgres_url(self, database_url: str):
-        return urlparse(
-            database_url.replace(
-                "postgresql+psycopg://",
-                "postgresql://",
-            )
-        )
+        parsed = make_url(database_url)
+        if (
+            parsed.drivername != "postgresql+psycopg"
+            or not parsed.host
+            or not parsed.username
+            or not parsed.database
+        ):
+            raise RuntimeError("Destino PostgreSQL do backup incompleto.")
+        return parsed
 
     def _pg_env(self, parsed) -> dict[str, str]:
         env = os.environ.copy()
@@ -306,12 +312,12 @@ class BackupService:
                 "--file",
                 str(target),
                 "--host",
-                parsed.hostname or "localhost",
+                parsed.host or "localhost",
                 "--port",
                 str(parsed.port or 5432),
                 "--username",
                 parsed.username or "postgres",
-                parsed.path.lstrip("/"),
+                parsed.database,
             ],
             check=True,
             env=env,

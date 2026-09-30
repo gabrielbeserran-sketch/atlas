@@ -43,6 +43,7 @@ jobs:
       - run: python -m unittest discover -s tests -p test_postgres_ci_contract_guard.py
       - run: python -m unittest discover -s tests -p test_postgres_migration_readiness_guard.py
       - run: python -m unittest discover -s tests -p test_postgres_backup_restore_ci_guard.py
+      - run: python -m pytest tests/test_backup_postgres_cleanup.py -q
       - run: python -m alembic upgrade 20260929_0058
       - run: python -m scripts.quality.check_postgres_ci_contract seed
       - run: python -m scripts.quality.report_postgres_migration_readiness --readonly --expect-revision 20260929_0058
