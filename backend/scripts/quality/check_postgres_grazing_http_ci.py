@@ -17,7 +17,16 @@ from sqlalchemy.orm import Session
 from scripts.quality.check_postgres_ci_contract import SEEDED_ROWS, validate_ci_target
 
 
+_STAGE = "guard"
+
+
+def _stage(name: str) -> None:
+    global _STAGE
+    _STAGE = name
+
+
 def main() -> None:
+    _stage("guard")
     validate_ci_target(
         os.environ.get("ATLAS_DATABASE_URL", ""),
         actions=os.environ.get("GITHUB_ACTIONS", ""),
@@ -33,6 +42,7 @@ def main() -> None:
 
     engine = build_engine(for_migrations=True)
     try:
+        _stage("synthetic-membership-and-hidden-farms")
         with Session(engine) as db:
             assert db.scalar(text("SELECT version_num FROM alembic_version")) == "20260929_0059"
             assert db.scalar(select(func.count()).select_from(PastureGrazingBasis)) == SEEDED_ROWS
@@ -89,6 +99,7 @@ def main() -> None:
         headers = {"Authorization": f"Bearer {token}"}
         base = "/api/v1/livestock/farms/ci-farm/grazing-basis"
         with TestClient(app) as client:
+            _stage("authentication-capabilities-and-farm-scope")
             assert client.get(f"{base}/cursor").status_code == 403
             capabilities = client.get(f"{base}/capabilities", headers=headers)
             assert capabilities.status_code == 200, capabilities.text
@@ -102,6 +113,7 @@ def main() -> None:
                 )
                 assert response.status_code == 404, response.text
 
+            _stage("first-cursor-page")
             first = client.get(
                 f"{base}/cursor", params={"limit": 250}, headers=headers,
             )
@@ -110,6 +122,7 @@ def main() -> None:
             assert len(first_page) == 250
             assert first_page[0]["id"] == "ci-grazing-0999"
 
+            _stage("idempotent-write-and-conflict")
             payload = {
                 "client_operation_id": "ci-http-operation-1",
                 "effective_area_ha": 20.5,
@@ -127,6 +140,7 @@ def main() -> None:
             )
             assert conflict.status_code == 409, conflict.text
 
+            _stage("stable-cursor-after-concurrent-write")
             seen = [item["id"] for item in first_page]
             page = first_page
             while page:
@@ -152,6 +166,7 @@ def main() -> None:
             assert fresh.json()[0]["id"] == created.json()["id"]
             assert client.get(base, params={"limit": 1}, headers=headers).status_code == 200
 
+            _stage("membership-revocation")
             with Session(engine) as db:
                 assert db.scalar(select(func.count()).select_from(PastureGrazingBasis)) == (
                     SEEDED_ROWS + 3
@@ -168,4 +183,15 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        last = exc.__traceback__
+        while last is not None and last.tb_next is not None:
+            last = last.tb_next
+        line = last.tb_lineno if last is not None else 0
+        print(
+            f"::error title=PostgreSQL grazing HTTP CI::"
+            f"stage={_STAGE}; type={type(exc).__name__}; line={line}"
+        )
+        raise
