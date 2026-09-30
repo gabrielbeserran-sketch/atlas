@@ -218,7 +218,7 @@ class TechnicalFarmSummary {
     );
     final dairyProduction = DairyIndicatorCalculator().summarize(
       dairyRecords,
-      hectares: validArea?.round() ?? 0,
+      hectares: validArea ?? 0,
       lactatingCows: dairySnapshots.isEmpty
           ? null
           : dairySnapshots.first.lactatingCows,

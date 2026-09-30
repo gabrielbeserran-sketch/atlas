@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/animal/domain/models/animal_data.dart';
 import 'package:projeto_atlas/features/technical_dashboard/domain/models/technical_farm_summary.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
 
 void main() {
   AnimalData animal(String id, String status, double weight) => AnimalData(
@@ -91,5 +92,36 @@ void main() {
     expect(result.activeAnimals, 0);
     expect(result.activeAnimalsWithValidWeight, 0);
     expect(result.liveWeightPerHectare, isNull);
+  });
+
+  test('painel preserva área decimal para produção por hectare', () {
+    TechnicalFarmSummary dairy(double? area) => TechnicalFarmSummary.fromData(
+      groups: const [],
+      animals: [animal('A', 'Ativo', 400)],
+      healthRecords: const [],
+      reproductionRecords: const [],
+      nutritionPlans: const [],
+      finances: const [],
+      inventory: const [],
+      farmArea: area,
+      dairyRecords: [
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 23),
+          morningLiters: 80,
+          afternoonLiters: 40,
+          cowsMilked: 10,
+        ),
+      ],
+      referenceDate: DateTime(2026, 9, 23),
+    );
+    final largerArea = dairy(1.6);
+    final smallerArea = dairy(0.4);
+    final missingArea = dairy(null);
+    expect(largerArea.dairyProduction.averageLitersPerHectare, 75);
+    expect(largerArea.stockingRate, closeTo(1 / 1.6, 0.000001));
+    expect(smallerArea.dairyProduction.averageLitersPerHectare, 300);
+    expect(smallerArea.stockingRate, 2.5);
+    expect(missingArea.dairyProduction.averageLitersPerHectare, isNull);
+    expect(missingArea.stockingRate, isNull);
   });
 }

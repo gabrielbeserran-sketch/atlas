@@ -75,7 +75,7 @@ class DairyIndicatorCalculator {
 
   DairyProductionSummary summarize(
     List<DairyDailyProductionData> records, {
-    required int hectares,
+    required double hectares,
     int? lactatingCows,
     DateTime? referenceDate,
   }) {
@@ -150,9 +150,13 @@ class DairyIndicatorCalculator {
         : (valid..sort((a, b) => b.date.compareTo(a.date))).first;
     final daysSinceLatestRecord = latest == null
         ? null
-        : today
+        : DateTime.utc(today.year, today.month, today.day)
               .difference(
-                DateTime(latest.date.year, latest.date.month, latest.date.day),
+                DateTime.utc(
+                  latest.date.year,
+                  latest.date.month,
+                  latest.date.day,
+                ),
               )
               .inDays;
     if (source.isEmpty) {
@@ -190,13 +194,16 @@ class DairyIndicatorCalculator {
             0,
             (sum, item) => sum + item.totalLiters / totalMilkedCows,
           );
+    final perHectare = hectares.isFinite && hectares > 0 && average.isFinite
+        ? average / hectares
+        : null;
     return DairyProductionSummary(
       latestLiters: latest?.totalLiters,
       latestRecordDate: latest?.date,
       daysSinceLatestRecord: daysSinceLatestRecord,
       averageLitersPerDay: average.isFinite ? average : null,
-      averageLitersPerHectare: hectares > 0 && average.isFinite
-          ? average / hectares
+      averageLitersPerHectare: perHectare != null && perHectare.isFinite
+          ? perHectare
           : null,
       litersPerLactatingCow:
           lactatingCows == null || lactatingCows <= 0 || !average.isFinite

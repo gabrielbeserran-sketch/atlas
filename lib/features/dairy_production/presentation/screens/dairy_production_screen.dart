@@ -66,7 +66,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   Widget build(BuildContext context) {
     final summary = _calculator.summarize(
       _records,
-      hectares: widget.farm.area,
+      hectares: widget.farm.area.toDouble(),
       lactatingCows: _snapshot?.lactatingCows,
     );
     final currency = NumberFormat.decimalPattern('pt_BR');

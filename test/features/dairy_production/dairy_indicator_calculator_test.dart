@@ -115,4 +115,43 @@ void main() {
     expect(summary.latestRecordIsStale, isTrue);
     expect(summary.dataQualityAlerts.join(' '), contains('há 7 dias'));
   });
+
+  test('área fracionária usa hectares exatos e rejeita base inválida', () {
+    final records = [
+      DairyDailyProductionData(
+        date: DateTime(2026, 9, 15),
+        morningLiters: 80,
+        afternoonLiters: 40,
+        cowsMilked: 10,
+      ),
+    ];
+    DairyProductionSummary summary(double area) =>
+        const DairyIndicatorCalculator().summarize(
+          records,
+          hectares: area,
+          referenceDate: DateTime(2026, 9, 15),
+        );
+    expect(summary(1.6).averageLitersPerHectare, closeTo(75, 0.001));
+    expect(summary(0.4).averageLitersPerHectare, closeTo(300, 0.001));
+    for (final invalid in [0.0, -1.0, 1e-320, double.nan, double.infinity]) {
+      expect(summary(invalid).averageLitersPerHectare, isNull);
+    }
+  });
+
+  test('idade da ordenha usa dias civis inclusive na virada do mês', () {
+    final summary = const DairyIndicatorCalculator().summarize(
+      [
+        DairyDailyProductionData(
+          date: DateTime(2026, 8, 31, 23),
+          morningLiters: 120,
+          afternoonLiters: 0,
+          cowsMilked: 10,
+        ),
+      ],
+      hectares: 1.6,
+      referenceDate: DateTime(2026, 9, 4, 1),
+    );
+    expect(summary.daysSinceLatestRecord, 4);
+    expect(summary.latestRecordIsStale, isTrue);
+  });
 }
