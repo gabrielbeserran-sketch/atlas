@@ -4,6 +4,8 @@ O ensaio em PostgreSQL 16 descartável passou no [CI](https://github.com/gabriel
 
 O [ensaio de recuperação descartável](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36711246874) também passou: o bundle Atlas com anexo sintético foi restaurado em PostgreSQL 16 e os dados/esquema 0059 foram conferidos em banco temporário. Essa prova do procedimento não substitui um backup recente **da base real** restaurado e verificado em ambiente separado pelo operador autorizado.
 
+Na [execução de 30/09/2026](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36750541817), o CI repetiu 0058→0059, backup/restauração e contratos HTTP em PostgreSQL descartável. Também substituiu o índice 0059 temporariamente por outro com as colunas fora da ordem e comprovou que o relatório recusa o desvio; a transação foi revertida e o índice correto voltou a ser aceito. Isto valida o detector, não mede bloqueios nem custo da migração na base real.
+
 ## Antes de qualquer comando na base real
 
 1. O responsável pela operação confirma ambiente/instância, versão atual, janela de manutenção, volume da tabela, tráfego de escrita e plano de comunicação.
