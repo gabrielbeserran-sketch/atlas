@@ -16,11 +16,16 @@ void main() {
       'backend/app/routers/operations.py',
     ).readAsStringSync();
     expect(
-      operations.contains('task.source_type == "consultancy_action"'),
+      operations.contains(
+        'is_consultancy_action_source(task.source_type) and task.source_id',
+      ),
       isTrue,
     );
     expect(operations.contains('action.status = task.status'), isTrue);
-    expect(operations.contains('action.completed_at = task.completed_at'), isTrue);
+    expect(
+      operations.contains('action.completed_at = task.completed_at'),
+      isTrue,
+    );
   });
 
   test('Central da Consultoria consome plano persistente', () {
@@ -40,6 +45,9 @@ void main() {
     ).readAsStringSync();
     expect(migration.contains('revision = "20260824_0047"'), isTrue);
     expect(migration.contains('down_revision = "20260824_0046"'), isTrue);
-    expect(migration.contains('uq_atlas_action_company_farm_idempotency'), isTrue);
+    expect(
+      migration.contains('uq_atlas_action_company_farm_idempotency'),
+      isTrue,
+    );
   });
 }
