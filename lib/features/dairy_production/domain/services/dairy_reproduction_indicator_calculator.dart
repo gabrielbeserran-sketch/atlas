@@ -148,29 +148,33 @@ class DairyReproductionIndicatorCalculator {
     final today = DateTime(reference.year, reference.month, reference.day);
     final animalCounts = <String, int>{};
     for (final animal in animals) {
-      animalCounts.update(animal.id, (count) => count + 1, ifAbsent: () => 1);
+      final id = animal.id.trim();
+      animalCounts.update(id, (count) => count + 1, ifAbsent: () => 1);
     }
-    final validAnimals = animals
-        .where(
-          (animal) =>
-              animal.id.trim().isNotEmpty && animalCounts[animal.id] == 1,
-        )
-        .toList();
+    final validAnimals = animals.where((animal) {
+      final id = animal.id.trim();
+      return id.isNotEmpty && animalCounts[id] == 1;
+    }).toList();
+    final animalsById = {
+      for (final animal in validAnimals) animal.id.trim(): animal,
+    };
     var excludedAmbiguousRecords = animals.length - validAnimals.length;
     final activeFemales = validAnimals
         .where((animal) => animal.status == 'Ativo' && animal.sex == 'Fêmea')
-        .map((animal) => animal.id)
+        .map((animal) => animal.id.trim())
         .toSet();
     final periodStart = DateTime(today.year - 1, today.month, today.day);
     final femaleAnimals = validAnimals.where((animal) => animal.sex == 'Fêmea');
-    final femaleAnimalIds = femaleAnimals.map((animal) => animal.id).toSet();
+    final femaleAnimalIds = femaleAnimals
+        .map((animal) => animal.id.trim())
+        .toSet();
     final eligibleRecords = records
-        .where((record) => femaleAnimalIds.contains(record.animalId))
+        .where((record) => femaleAnimalIds.contains(record.animalId.trim()))
         .toList(growable: false);
     final eventCounts = <(String, String), int>{};
     for (final record in eligibleRecords) {
       eventCounts.update(
-        (record.animalId, record.id),
+        (record.animalId.trim(), record.id.trim()),
         (count) => count + 1,
         ifAbsent: () => 1,
       );
@@ -178,15 +182,11 @@ class DairyReproductionIndicatorCalculator {
     var eventsBeforeBirth = 0;
     final femaleRecords = eligibleRecords.where((record) {
       if (record.id.trim().isEmpty ||
-          eventCounts[(record.animalId, record.id)] != 1) {
+          eventCounts[(record.animalId.trim(), record.id.trim())] != 1) {
         excludedAmbiguousRecords++;
         return false;
       }
-      final birth = _date(
-        femaleAnimals
-            .firstWhere((animal) => animal.id == record.animalId)
-            .birthDate,
-      );
+      final birth = _date(animalsById[record.animalId.trim()]!.birthDate);
       final date = _date(record.date);
       if (birth != null && date != null && date.isBefore(birth)) {
         eventsBeforeBirth++;
@@ -214,13 +214,14 @@ class DairyReproductionIndicatorCalculator {
     final recordsByAnimal = <String, List<AnimalReproductionData>>{};
     for (final record in femaleRecords) {
       final date = _date(record.date);
-      if (record.animalId.isEmpty ||
-          !activeFemales.contains(record.animalId) ||
+      final animalId = record.animalId.trim();
+      if (animalId.isEmpty ||
+          !activeFemales.contains(animalId) ||
           date == null ||
           date.isAfter(today)) {
         continue;
       }
-      (recordsByAnimal[record.animalId] ??= []).add(record);
+      (recordsByAnimal[animalId] ??= []).add(record);
     }
     final del = <int>[];
     final dryPeriods = <int>[];
@@ -236,9 +237,7 @@ class DairyReproductionIndicatorCalculator {
               .toList()
             ..sort();
       if (calvings.isEmpty) continue;
-      final animal = validAnimals.firstWhere(
-        (item) => item.id == events.first.animalId,
-      );
+      final animal = animalsById[events.first.animalId.trim()]!;
       final birth = _date(animal.birthDate);
       if (birth != null) {
         firstCalvingAges.add(calvings.first.difference(birth).inDays);
@@ -294,14 +293,15 @@ class DairyReproductionIndicatorCalculator {
     final inseminations = femaleRecords
         .where(
           (event) =>
-              activeFemales.contains(event.animalId) && event.isInsemination,
+              activeFemales.contains(event.animalId.trim()) &&
+              event.isInsemination,
         )
         .where((event) => _inPeriod(_date(event.date), periodStart, today))
         .length;
     final pregnancies = femaleRecords
         .where(
           (event) =>
-              activeFemales.contains(event.animalId) &&
+              activeFemales.contains(event.animalId.trim()) &&
               event.eventCode == 'pregnancy_diagnosis' &&
               event.normalizedDiagnosisStatus == 'pregnant',
         )
@@ -314,11 +314,11 @@ class DairyReproductionIndicatorCalculator {
     final reproductiveCulls = femaleRecords
         .where(
           (event) =>
-              activeFemales.contains(event.animalId) &&
+              activeFemales.contains(event.animalId.trim()) &&
               event.eventCode == 'reproductive_cull' &&
               _inPeriod(_date(event.date), periodStart, today),
         )
-        .map((event) => event.animalId)
+        .map((event) => event.animalId.trim())
         .toSet()
         .length;
     final totalExits = femaleExits + reproductiveCulls;

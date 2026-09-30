@@ -116,6 +116,45 @@ void main() {
       contains('ID ausente ou repetido'),
     );
   });
+  test('espaços laterais não separam eventos válidos da mesma matriz', () {
+    final result = calculate([
+      event('parto', animal: ' cow ', date: '01/09/2026', code: 'calving'),
+      event('ai', animal: ' cow ', code: 'iatf'),
+      event(
+        'diagnostico',
+        animal: ' cow ',
+        code: 'pregnancy_diagnosis',
+        status: 'pregnant',
+      ),
+      event('descarte', animal: ' cow ', code: 'reproductive_cull'),
+      event('descarte-2', animal: 'cow', code: 'reproductive_cull'),
+    ]);
+    expect(result.activeFemaleCount, 1);
+    expect(result.averageDaysInMilk, 25);
+    expect(result.inseminationAttempts, 1);
+    expect(result.confirmedPregnancies, 1);
+    expect(result.pregnancyRateFromLatestDiagnosis, 100);
+    expect(result.reproductiveCulls, 1);
+    expect(result.excludedAmbiguousRecords, 0);
+  });
+  test('matrizes com mesmo ID após trim não inflam a base reprodutiva', () {
+    final result = calculate(
+      [event('ai')],
+      animals: [cow('cow'), cow(' cow '), cow('regular')],
+    );
+    expect(result.activeFemaleCount, 1);
+    expect(result.inseminationAttempts, 0);
+    expect(result.excludedAmbiguousRecords, 2);
+    expect(
+      result.dataQualityAlerts.join(' '),
+      contains('ID ausente ou repetido'),
+    );
+  });
+  test('eventos com mesmo ID após trim excluem ambas as cópias', () {
+    final result = calculate([event('ai'), event(' ai '), event('valido')]);
+    expect(result.inseminationAttempts, 1);
+    expect(result.excludedAmbiguousRecords, 2);
+  });
   test('parto anterior ao nascimento não gera idade negativa nem DEL', () {
     final result = calculate([
       event('parto', date: '01/01/2019', code: 'calving'),

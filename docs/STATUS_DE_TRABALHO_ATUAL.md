@@ -1,8 +1,14 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 29/09/2026.
+Atualizado em 30/09/2026.
 
 ## Estado
+
+- Leite/reprodução: vínculo e identidade normalizados localmente, 100% deste pacote (30/09/2026). O calculador compara IDs de matrizes, eventos e vínculos após remover espaços laterais apenas em memória; duas matrizes/eventos com a mesma chave normalizada são excluídos com aviso, enquanto eventos válidos permanecem associados à matriz correta e descartes não duplicam a contagem. Nenhum cadastro foi reescrito. Cinquenta e dois testes de Leite/painel e análise Dart focal passaram; diff/hash conferidos e `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-dairy-reproduction-identity-20260930`. Próximo: revisar cronologia/denominadores com dados autorizados e responsável técnico; PostgreSQL, dois dispositivos e release agrupado continuam pendentes.
+
+- Leite/reprodução: identidade de matrizes e eventos, 70% (30/09/2026): IDs de matrizes e eventos agora são comparados sem espaços laterais apenas nos cálculos, associando eventos válidos à matriz e excluindo ambas as cópias ambíguas com aviso; descartes são contados uma vez por matriz. Três cenários novos e regressão de reprodução/painel passaram (22 testes). Restam suíte ampliada de Leite, análise estática, diff/hash, cronograma e checkpoint.
+
+- Leite/reprodução: identidade de matrizes e eventos, 0% (30/09/2026): o calculador ainda compara IDs literalmente; espaços laterais podem fazer duas matrizes com o mesmo ID parecerem diferentes, duplicar registros ou perder eventos válidos. Componentes previstos: chave normalizada em memória para animal/evento, vínculo seguro evento→matriz, deduplicação por matriz e testes de IDs ambíguos, vínculo com espaços e eventos iguais com espaços. Validações planejadas: regressão reprodutiva/técnica, análise Dart, diff/hash e checkpoint. Próximo marco: indicadores reprodutivos não inflados nem silenciosamente perdidos por espaços, sem mudar cadastro; aceite zootécnico com dados reais continua separado.
 
 - Corte: identificação ambígua nos indicadores concluída localmente, 100% deste pacote (30/09/2026). O calculador de rebanho compara IDs após remover espaços laterais em memória, descarta todas as ocorrências ambíguas do cálculo de ativos, saídas/receita e óbitos e conserva o alerta de qualidade; os cadastros não são reescritos. Trinta e sete testes de Corte/painel e análise Dart focal passaram; diff/hash conferidos, `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-beef-ambiguous-ids-20260930`. Próximo: validar a qualidade dos identificadores e fórmulas com dados reais autorizados; ensaio PostgreSQL/dois dispositivos e release agrupado permanecem pendentes.
 
