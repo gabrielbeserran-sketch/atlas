@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import '../../network/atlas_http_client.dart';
 import '../../session/atlas_session_controller.dart';
 import '../models/offline_operation.dart';
 import '../models/offline_sync_models.dart';
@@ -211,10 +212,11 @@ class AtlasOfflineController extends ChangeNotifier {
   }
 
   Future<void> resolve(OfflineConflict conflict, String resolution) async {
-    final companyId = sessionController.session?.companyId;
+    final session = sessionController.session;
+    final companyId = session?.companyId;
     final farmId = sessionController.activeFarm?.id;
-    final userId = sessionController.session?.userId;
-    if (companyId == null || userId == null) return;
+    final userId = session?.userId;
+    if (session == null || companyId == null || userId == null) return;
     _loading = true;
     _error = null;
     notifyListeners();
@@ -226,6 +228,23 @@ class AtlasOfflineController extends ChangeNotifier {
       );
       if (!_sameScope(companyId, farmId, userId)) return;
       await load();
+    } on AtlasHttpException catch (error) {
+      if (error.statusCode == 409 &&
+          await _refreshChangedConflict(
+            conflict,
+            companyId: companyId,
+            tenantId: session.tenantId,
+            farmId: farmId,
+            userId: userId,
+          )) {
+        if (_sameScope(companyId, farmId, userId)) {
+          _error =
+              'O registro mudou no servidor. Compare os dados atualizados '
+              'antes de escolher novamente.';
+        }
+      } else if (_sameScope(companyId, farmId, userId)) {
+        _error = error.toString();
+      }
     } catch (error) {
       if (_sameScope(companyId, farmId, userId)) _error = error.toString();
     } finally {
@@ -233,6 +252,38 @@ class AtlasOfflineController extends ChangeNotifier {
         _loading = false;
         notifyListeners();
       }
+    }
+  }
+
+  Future<bool> _refreshChangedConflict(
+    OfflineConflict conflict, {
+    required String companyId,
+    required String tenantId,
+    required String? farmId,
+    required String userId,
+  }) async {
+    final serverId = conflict.serverConflictId;
+    if (serverId == null || serverId.isEmpty) return false;
+    try {
+      final remote = await _coordinator.fetchRemoteConflicts();
+      if (!_sameScope(companyId, farmId, userId)) return false;
+      final updated = remote.where(
+        (item) => item['id']?.toString() == serverId,
+      );
+      if (updated.isEmpty) return false;
+      final item = updated.first;
+      final version = (item['remote_version'] as num?)?.toInt();
+      if (version == null || version == conflict.remoteVersion) return false;
+      await _repository.importRemoteConflicts(
+        companyId: companyId,
+        tenantId: tenantId,
+        conflicts: <Map<String, dynamic>>[item],
+      );
+      if (!_sameScope(companyId, farmId, userId)) return false;
+      await load();
+      return _sameScope(companyId, farmId, userId);
+    } catch (_) {
+      return false;
     }
   }
 
