@@ -57,12 +57,16 @@ def main() -> None:
         with Session(engine) as db:
             assert db.scalar(text("SELECT version_num FROM alembic_version")) == "20260929_0059"
             db.add_all([
+                User(
+                    id="ci-sync-user-a", name="Operador de sincronização",
+                    email="ci-sync-a@atlas.invalid", password_hash="unused",
+                ),
                 Membership(
-                    id="ci-sync-member-a", user_id="ci-user",
+                    id="ci-sync-member-a", user_id="ci-sync-user-a",
                     company_id="ci-company", role="operator", farm_ids=["ci-farm"],
                 ),
                 RefreshSession(
-                    id="ci-sync-session-a", user_id="ci-user",
+                    id="ci-sync-session-a", user_id="ci-sync-user-a",
                     company_id="ci-company", token_hash="ci-sync-unused-a",
                     expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
                 ),
@@ -105,7 +109,7 @@ def main() -> None:
 
         app.dependency_overrides[get_db] = override_db
         a = {"Authorization": "Bearer " + create_access_token(
-            user_id="ci-user", company_id="ci-company", tenant_id="ci-tenant",
+            user_id="ci-sync-user-a", company_id="ci-company", tenant_id="ci-tenant",
             role="operator", extra={"session_id": "ci-sync-session-a"},
         )}
         b = {"Authorization": "Bearer " + create_access_token(
