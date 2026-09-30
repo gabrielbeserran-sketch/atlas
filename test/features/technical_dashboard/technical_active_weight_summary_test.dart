@@ -4,7 +4,12 @@ import 'package:projeto_atlas/features/technical_dashboard/domain/models/technic
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
 
 void main() {
-  AnimalData animal(String id, String status, double weight) => AnimalData(
+  AnimalData animal(
+    String id,
+    String status,
+    double weight, {
+    String saleDate = '',
+  }) => AnimalData(
     id: id,
     tag: id,
     name: id,
@@ -13,6 +18,7 @@ void main() {
     birthDate: '2024-01-01',
     weight: weight,
     status: status,
+    saleDate: saleDate,
   );
 
   TechnicalFarmSummary summary(List<AnimalData> animals, {double? area = 10}) {
@@ -123,5 +129,47 @@ void main() {
     expect(smallerArea.stockingRate, 2.5);
     expect(missingArea.dairyProduction.averageLitersPerHectare, isNull);
     expect(missingArea.stockingRate, isNull);
+  });
+
+  test(
+    'IDs ambíguos não inflam ativos, vendas, média nem índices por área',
+    () {
+      final result = summary([
+        animal('A', 'Ativo', 900),
+        animal(' A ', 'Vendido', 900, saleDate: '2026-09-10'),
+        animal('  ', 'Ativo', 900),
+        animal('B', 'Ativo', 400),
+        animal('C', 'Vendido', 500, saleDate: '2026-09-10'),
+      ]);
+
+      expect(result.totalAnimals, 5); // Cadastros preservados para revisão.
+      expect(result.beefHerd.ambiguousAnimalRecords, 3);
+      expect(result.activeAnimals, result.beefHerd.activeAnimals);
+      expect(result.activeAnimals, 1);
+      expect(result.soldAnimals, result.beefHerd.commercialExits);
+      expect(result.soldAnimals, 1);
+      expect(result.activeAnimalsWithValidWeight, 1);
+      expect(result.averageWeight, 400);
+      expect(result.stockingRate, 0.1);
+      expect(result.liveWeightPerHectare, 40);
+      expect(result.dairyReproduction.activeFemaleCount, 1);
+      expect(
+        result.beefHerd.dataQualityAlerts.first,
+        contains('3 registro(s)'),
+      );
+    },
+  );
+
+  test('razões impossíveis não aparecem e médias finitas não transbordam', () {
+    final tinyArea = summary([animal('A', 'Ativo', 400)], area: 1e-320);
+    expect(tinyArea.stockingRate, isNull);
+    expect(tinyArea.liveWeightPerHectare, isNull);
+
+    final largeWeights = summary([
+      animal('A', 'Ativo', 1e308),
+      animal('B', 'Ativo', 1e308),
+    ]);
+    expect(largeWeights.averageWeight, 1e308);
+    expect(largeWeights.liveWeightPerHectare, 2e307);
   });
 }

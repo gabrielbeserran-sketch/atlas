@@ -174,7 +174,16 @@ class TechnicalFarmSummary {
     final periodFinances = finances
         .where((record) => isInsidePeriod(record.date))
         .toList();
-    final activeAnimals = animals
+    final animalCounts = <String, int>{};
+    for (final animal in animals) {
+      final id = animal.id.trim();
+      animalCounts.update(id, (count) => count + 1, ifAbsent: () => 1);
+    }
+    final identifiedAnimals = animals.where((animal) {
+      final id = animal.id.trim();
+      return id.isNotEmpty && animalCounts[id] == 1;
+    }).toList();
+    final activeAnimals = identifiedAnimals
         .where((animal) => animal.status == 'Ativo')
         .toList();
     final weightedAnimals = activeAnimals
@@ -183,17 +192,24 @@ class TechnicalFarmSummary {
     final averageWeight = weightedAnimals.isEmpty
         ? 0.0
         : weightedAnimals.fold<double>(
-                0,
-                (sum, animal) => sum + animal.weight,
-              ) /
-              weightedAnimals.length;
-    final activeWeight = weightedAnimals.fold<double>(
-      0,
-      (sum, animal) => sum + animal.weight,
-    );
+            0,
+            (sum, animal) => sum + animal.weight / weightedAnimals.length,
+          );
     final validArea = farmArea != null && farmArea.isFinite && farmArea > 0
         ? farmArea
         : null;
+    final animalsPerHectare = validArea == null
+        ? null
+        : activeAnimals.length / validArea;
+    final weightPerHectare =
+        validArea == null ||
+            activeAnimals.isEmpty ||
+            weightedAnimals.length != activeAnimals.length
+        ? null
+        : weightedAnimals.fold<double>(
+            0,
+            (sum, animal) => sum + animal.weight / validArea,
+          );
 
     bool isPast(String value) {
       final date = _parseDate(value);
@@ -234,7 +250,9 @@ class TechnicalFarmSummary {
       totalAnimals: animals.length,
       activeAnimals: activeAnimals.length,
       activeAnimalsWithValidWeight: weightedAnimals.length,
-      soldAnimals: animals.where((animal) => animal.status == 'Vendido').length,
+      soldAnimals: identifiedAnimals
+          .where((animal) => animal.status == 'Vendido')
+          .length,
       averageWeight: averageWeight,
       reproductionRecords: periodReproductionRecords.length,
       positivePregnancies: periodReproductionRecords
@@ -289,13 +307,12 @@ class TechnicalFarmSummary {
       ),
       dairyReproduction: dairyReproduction,
       areaHectares: validArea,
-      stockingRate: validArea == null ? null : activeAnimals.length / validArea,
-      liveWeightPerHectare:
-          validArea == null ||
-              activeAnimals.isEmpty ||
-              weightedAnimals.length != activeAnimals.length
-          ? null
-          : activeWeight / validArea,
+      stockingRate: animalsPerHectare?.isFinite == true
+          ? animalsPerHectare
+          : null,
+      liveWeightPerHectare: weightPerHectare?.isFinite == true
+          ? weightPerHectare
+          : null,
       dairyProduction: dairyProduction,
       beefHerd: beefHerd,
       latestDairySnapshot: dairySnapshots.isEmpty ? null : dairySnapshots.first,
