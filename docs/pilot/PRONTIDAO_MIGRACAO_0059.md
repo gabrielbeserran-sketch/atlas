@@ -20,7 +20,7 @@ No ambiente **já configurado** do backend, apenas após identificar a base e co
 python -m scripts.quality.report_postgres_migration_readiness --readonly --expect-revision 20260929_0058
 ```
 
-O relatório abre uma transação PostgreSQL `READ ONLY`, limita duração da consulta/espera por bloqueio e falha se a revisão ou o índice não corresponderem ao estado esperado. `estimated_rows` pode ser nulo ou aproximado; `table_bytes` é tamanho observado, não previsão de duração. Se qualquer campo divergir, **parar** e revisar o esquema; não forçar o Alembic nem apagar índices manualmente.
+O relatório abre uma transação PostgreSQL `READ ONLY`, limita duração da consulta/espera por bloqueio e falha se a revisão ou o índice não corresponderem ao estado esperado. Após 0059, exige índice válido/pronto da tabela `public.pasture_grazing_bases`, B-tree, sem expressão ou predicado, com as cinco colunas na ordem contratada. `estimated_rows` pode ser nulo ou aproximado; `table_bytes` é tamanho observado, não previsão de duração. Se qualquer campo divergir, **parar** e revisar o esquema; não forçar o Alembic nem apagar índices manualmente.
 
 ## Decisão e execução, somente com autorização separada
 

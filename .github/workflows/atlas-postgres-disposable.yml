@@ -58,3 +58,4 @@ jobs:
       - run: python -m scripts.quality.check_postgres_backup_restore_ci
       - run: python -m scripts.quality.check_postgres_grazing_http_ci
       - run: python -m scripts.quality.check_postgres_sync_http_ci
+      - run: python -m scripts.quality.check_postgres_readiness_drift_ci

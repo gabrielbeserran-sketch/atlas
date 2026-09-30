@@ -4,6 +4,10 @@ Atualizado em 30/09/2026.
 
 ## Estado
 
+- Revisão local do gate de migração/recuperação 0059, 65% (30/09/2026): relatório somente leitura agora exige índice da tabela pública com método, colunas e ordem exatos; teste negativo de drift em transação reversível foi acrescentado ao PostgreSQL descartável do CI. Cinco testes focais, Ruff e compilação Python passaram. Restam CI PostgreSQL real descartável, revisão de diff/hash, documentação final e checkpoint; produção não foi acessada.
+
+- Revisão local do gate de migração/recuperação 0059, 0% (30/09/2026): auditar índice e contrato de Alembic, ensaiar upgrade/backup/restauração somente em PostgreSQL descartável quando disponível, reforçar testes/roteiro caso haja lacuna e publicar checkpoint. Componentes previstos: `backend/alembic/versions/20260929_0059_grazing_cursor_index.py`, testes de migração/backup e `docs/pilot/PRONTIDAO_MIGRACAO_0059.md`. Validações: testes focais, lint/compilação, diff e hash do banco local. Próximo marco: gate técnico de homologação documentado; produção permanece intocada até backup/janela/autorização.
+
 - Candidato agrupado pós-sincronização concluído localmente, 100% deste pacote (30/09/2026): `flutter analyze --no-pub` sem problemas, 685 testes aprovados, builds release Windows/Android produzidos uma vez cada. Cópia Windows de 23 arquivos conferida por caminho/hash e APK copiado idêntico, assinado v2 e verificado; manifesto em `docs/pilot/CANDIDATO_OFFLINE_AGRUPADO_20260930.md`. `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-offline-grouped-candidate-20260930`. Próximo: revisão de migração/backup e ensaio em dois aparelhos após autorização de deploy; nada instalado nem alterado em produção.
 
 - Candidato agrupado pós-sincronização, 80% (30/09/2026): análise Flutter sem apontamentos, 685 testes aprovados e releases Windows/Android gerados uma vez cada. Restam cópias versionadas do candidato, hashes, assinatura APK, diff/hash do banco, documentação e checkpoint publicado. Nenhuma instalação ou migração foi feita.

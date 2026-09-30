@@ -18,7 +18,6 @@ from sqlalchemy import text
 
 REVISION_BEFORE = "20260929_0058"
 REVISION_AFTER = "20260929_0059"
-INDEX_NAME = "ix_pasture_grazing_scope_created_id"
 
 
 @dataclass(frozen=True)
@@ -28,6 +27,7 @@ class ReadinessReport:
     estimated_rows: int | None
     index_exists: bool
     index_valid: bool
+    index_matches_contract: bool
 
 
 def validate_expected_state(report: ReadinessReport, expected: str) -> None:
@@ -39,6 +39,8 @@ def validate_expected_state(report: ReadinessReport, expected: str) -> None:
         raise ValueError("Presença do índice não corresponde à revisão.")
     if report.index_exists and not report.index_valid:
         raise ValueError("Índice 0059 ainda não está válido/pronto.")
+    if report.index_exists and not report.index_matches_contract:
+        raise ValueError("Definição do índice 0059 difere do contrato esperado.")
 
 
 def read_report(connection) -> ReadinessReport:
@@ -50,19 +52,29 @@ def read_report(connection) -> ReadinessReport:
         WHERE c.oid = to_regclass('public.pasture_grazing_bases')
     """)).one()
     index_state = connection.execute(text("""
-        SELECT i.indisvalid, i.indisready
+        SELECT i.indisvalid, i.indisready,
+               i.indnkeyatts = 5 AND i.indnatts = 5
+               AND i.indexprs IS NULL AND i.indpred IS NULL
+               AND NOT i.indisunique AND am.amname = 'btree'
+               AND (
+                   SELECT array_agg(att.attname::text ORDER BY keys.ordinality)
+                   FROM unnest(i.indkey) WITH ORDINALITY AS keys(attnum, ordinality)
+                   JOIN pg_attribute att
+                     ON att.attrelid = i.indrelid AND att.attnum = keys.attnum
+               ) = ARRAY['tenant_id', 'company_id', 'farm_id', 'created_at', 'id']::text[]
         FROM pg_index i
         JOIN pg_class idx ON idx.oid = i.indexrelid
-        JOIN pg_class tbl ON tbl.oid = i.indrelid
-        WHERE tbl.relname = 'pasture_grazing_bases'
-          AND idx.relname = :index_name
-    """), {"index_name": INDEX_NAME}).one_or_none()
+        JOIN pg_am am ON am.oid = idx.relam
+        WHERE i.indrelid = to_regclass('public.pasture_grazing_bases')
+          AND i.indexrelid = to_regclass('public.ix_pasture_grazing_scope_created_id')
+    """)).one_or_none()
     return ReadinessReport(
         revision=revision,
         table_bytes=table_bytes,
         estimated_rows=estimated_rows if estimated_rows is not None and estimated_rows >= 0 else None,
         index_exists=index_state is not None,
         index_valid=bool(index_state[0] and index_state[1]) if index_state else False,
+        index_matches_contract=bool(index_state[2]) if index_state else False,
     )
 
 
