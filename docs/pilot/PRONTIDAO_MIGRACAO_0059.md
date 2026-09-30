@@ -8,6 +8,7 @@ O [ensaio de recuperação descartável](https://github.com/gabrielbeserran-sket
 
 1. O responsável pela operação confirma ambiente/instância, versão atual, janela de manutenção, volume da tabela, tráfego de escrita e plano de comunicação.
 2. Existe backup recente, **restauração testada em ambiente separado** e responsáveis capazes de executar a recuperação. Um backup sem prova de restauração não libera a migração.
+   Se a verificação retornar que não foi possível confirmar a remoção de `atlas_restore_verify_*`, tratar a cópia temporária como possivelmente existente: restringir acesso, inspecionar e remover somente após identificar o alvo exato. Não prosseguir à migração até resolver a limpeza; o erro não contém senha.
 3. O operador registra o SHA do backend, a revisão Alembic e o estado da API anterior; o aplicativo antigo ainda usa a rota por offset e não deve perder acesso por troca antecipada de contrato.
 4. Não copiar URL, senha, token ou saída de exceção de driver para o chat, logs públicos ou documentos. O script abaixo imprime somente revisão, tamanho aproximado, estimativa de linhas e estado do índice.
 
