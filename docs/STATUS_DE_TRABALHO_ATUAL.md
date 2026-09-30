@@ -4,6 +4,8 @@ Atualizado em 30/09/2026.
 
 ## Estado
 
+- PostgreSQL descartável no CI, 80% (30/09/2026): o run `36694184215` passou no PostgreSQL 16 efêmero até 0059, upgrade repetido, contrato de esquema, índice e unicidades; nenhum banco externo foi tocado. Para fortalecer a prova antes de fechar, o workflow será ampliado com linhas pré-existentes em 0058 e verificação de preservação/indexação após 0059. Ainda faltam essa execução, cronograma final e checkpoint; produção e dois aparelhos continuam gates separados.
+
 - PostgreSQL descartável no CI, 70% (30/09/2026): workflow novo sobe PostgreSQL 16 efêmero com usuário/banco de prova, executa o Alembic até o head 0059 duas vezes e confere esquema, índice do cursor e unicidades. Verificador recusa host/porta/banco/usuário externos, query de conexão e execução fora do CI/teste; dois testes da guarda, Ruff, compilação Python e parsing YAML passaram localmente. Falta publicar e observar a execução remota; ainda não equivale a ensaio em produção nem a deploy.
 
 - PostgreSQL descartável no CI, 0% (30/09/2026): o ensaio local está impedido pelo daemon Docker e os workflows atuais rodam principalmente SQLite; há um caminho novo com serviço PostgreSQL efêmero no GitHub Actions sem URL externa. Componentes previstos: workflow dedicado ao head 0059, verificador read-only com guarda de host/usuário/banco de CI e checagem de índices/unicidades, testes da guarda. Validações planejadas: testes Python/estática local e execução do job remoto se disponível; registrar claramente CI aprovado ou ainda não homologado. Próximo marco: prova PostgreSQL descartável, sem acessar produção nem `backend/atlas_test.db`.
