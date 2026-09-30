@@ -62,6 +62,17 @@ def main() -> None:
                     id="ci-sync-user-a", name="Operador de sincronização",
                     email="ci-sync-a@atlas.invalid", password_hash="unused",
                 ),
+                Company(
+                    id="ci-sync-company-b", tenant_id="ci-sync-tenant-b",
+                    name="Outra empresa de teste",
+                ),
+                User(
+                    id="ci-sync-user-b", name="Outro operador",
+                    email="ci-sync-b@atlas.invalid", password_hash="unused",
+                ),
+            ])
+            db.commit()
+            db.add_all([
                 Membership(
                     id="ci-sync-member-a", user_id="ci-sync-user-a",
                     company_id="ci-company", role="operator", farm_ids=["ci-farm"],
@@ -74,14 +85,6 @@ def main() -> None:
                 Farm(
                     id="ci-sync-hidden-farm", tenant_id="ci-tenant",
                     company_id="ci-company", name="Fazenda fora da carteira",
-                ),
-                Company(
-                    id="ci-sync-company-b", tenant_id="ci-sync-tenant-b",
-                    name="Outra empresa de teste",
-                ),
-                User(
-                    id="ci-sync-user-b", name="Outro operador",
-                    email="ci-sync-b@atlas.invalid", password_hash="unused",
                 ),
                 Farm(
                     id="ci-sync-farm-b", tenant_id="ci-sync-tenant-b",
