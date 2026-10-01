@@ -39,6 +39,7 @@ class DairyProductionStorageService {
   }
 
   Future<void> upsert(String farmId, DairyDailyProductionData record) async {
+    record.validateForSave();
     final records = await load(farmId, strict: true);
     final day = DateTime(record.date.year, record.date.month, record.date.day);
     final next = [

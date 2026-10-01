@@ -552,7 +552,9 @@ class _DairyRecordDialogState extends State<_DairyRecordDialog> {
     decoration: InputDecoration(labelText: label),
     validator: (value) {
       final n = double.tryParse((value ?? '').replaceAll(',', '.'));
-      if (n == null || n < 0) return 'Informe um valor válido';
+      if (n == null || !n.isFinite || n < 0) {
+        return 'Informe um valor finito e não negativo';
+      }
       if (positiveInteger && (n <= 0 || n != n.roundToDouble())) {
         return 'Informe ao menos uma vaca ordenhada';
       }
@@ -563,6 +565,12 @@ class _DairyRecordDialogState extends State<_DairyRecordDialog> {
     if (!_form.currentState!.validate()) return;
     double n(TextEditingController c) =>
         double.parse(c.text.replaceAll(',', '.'));
+    if (!(n(_morning) + n(_afternoon)).isFinite) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A soma das ordenhas é inválida.')),
+      );
+      return;
+    }
     Navigator.pop(
       context,
       DairyDailyProductionData(

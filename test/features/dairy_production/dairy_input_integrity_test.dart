@@ -116,6 +116,82 @@ void main() {
   });
 
   test(
+    'gravação recusa produção inválida sem substituir ordenha existente',
+    () async {
+      const key = 'atlas_dairy_daily_production_f';
+      final prefs = SharedPreferencesAsync();
+      final service = DairyProductionStorageService(preferences: prefs);
+      await service.upsert('f', record(DateTime(2026, 9, 26)));
+      final original = await prefs.getString(key);
+      final now = DateTime.now();
+      final invalid = <DairyDailyProductionData>[
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 26),
+          morningLiters: double.nan,
+          afternoonLiters: 0,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 26),
+          morningLiters: double.infinity,
+          afternoonLiters: 0,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 26),
+          morningLiters: -1,
+          afternoonLiters: 0,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 26),
+          morningLiters: 1e308,
+          afternoonLiters: 1e308,
+          cowsMilked: 10,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 26),
+          morningLiters: 10,
+          afternoonLiters: 0,
+          cowsMilked: 0,
+        ),
+        DairyDailyProductionData(
+          date: DateTime(now.year, now.month, now.day + 1),
+          morningLiters: 10,
+          afternoonLiters: 0,
+          cowsMilked: 10,
+        ),
+      ];
+      for (final value in invalid) {
+        await expectLater(service.upsert('f', value), throwsFormatException);
+        expect(await prefs.getString(key), original);
+      }
+    },
+  );
+
+  test(
+    'ordenha antiga sem vacas permanece para revisão, mas não entra na média',
+    () async {
+      final prefs = SharedPreferencesAsync();
+      await prefs.setString(
+        'atlas_dairy_daily_production_f',
+        jsonEncode([stored('2026-09-26')..['cows_milked'] = 0]),
+      );
+      final values = await DairyProductionStorageService(
+        preferences: prefs,
+      ).load('f', strict: true);
+      expect(values.single.cowsMilked, 0);
+      final summary = const DairyIndicatorCalculator().summarize(
+        values,
+        hectares: 10,
+        referenceDate: DateTime(2026, 9, 26),
+      );
+      expect(summary.recordedDays, 0);
+      expect(summary.recordsWithoutMilkedCows, 1);
+    },
+  );
+
+  test(
     'estado do lote ilegível não é sobrescrito ao salvar ou excluir',
     () async {
       const key = 'atlas_dairy_herd_snapshot_f';
@@ -294,4 +370,45 @@ void main() {
       );
     },
   );
+
+  testWidgets('formulário recusa infinito antes de gravar ordenha', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: DairyProductionScreen(
+          farm: FarmData(
+            id: 'f',
+            name: 'Teste',
+            city: '',
+            state: '',
+            animals: 10,
+            area: 20,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Registrar ordenha'));
+    await tester.pumpAndSettle();
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Infinity');
+    await tester.enterText(fields.at(1), '10');
+    await tester.enterText(fields.at(2), '1');
+    await tester.tap(find.text('Salvar produção'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('valor finito'), findsOneWidget);
+    expect(find.text('Salvar produção'), findsOneWidget);
+    await tester.enterText(fields.at(0), '1e308');
+    await tester.enterText(fields.at(1), '1e308');
+    await tester.tap(find.text('Salvar produção'));
+    await tester.pump();
+    expect(find.text('A soma das ordenhas é inválida.'), findsOneWidget);
+    expect(
+      await SharedPreferencesAsync().getString(
+        'atlas_dairy_daily_production_f',
+      ),
+      isNull,
+    );
+  });
 }

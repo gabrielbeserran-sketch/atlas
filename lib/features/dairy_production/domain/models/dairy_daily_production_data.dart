@@ -16,6 +16,25 @@ class DairyDailyProductionData {
   double get totalLiters => morningLiters + afternoonLiters;
   double? get litersPerCow => cowsMilked > 0 ? totalLiters / cowsMilked : null;
 
+  /// Valida novas gravações sem tornar ilegíveis registros legados que ainda
+  /// precisam ser exibidos e revisados pelo produtor.
+  void validateForSave() {
+    final day = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    if (day.year < 1900 ||
+        day.isAfter(DateTime(now.year, now.month, now.day))) {
+      throw const FormatException('Data da ordenha inválida.');
+    }
+    if (!morningLiters.isFinite ||
+        !afternoonLiters.isFinite ||
+        morningLiters < 0 ||
+        afternoonLiters < 0 ||
+        !totalLiters.isFinite ||
+        cowsMilked <= 0) {
+      throw const FormatException('Produção ou vacas ordenhadas inválidas.');
+    }
+  }
+
   Map<String, dynamic> toMap() => {
     'date': DateTime(date.year, date.month, date.day).toIso8601String(),
     'morning_liters': morningLiters,
