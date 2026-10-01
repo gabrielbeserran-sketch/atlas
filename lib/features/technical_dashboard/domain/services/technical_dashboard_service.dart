@@ -124,6 +124,7 @@ class TechnicalDashboardService {
     final inventory = await _inventoryStorage.loadItems(farm.name);
     final dairyRecords = await _dairyProductionStorage.load(
       farm.id ?? farm.name,
+      strict: true,
     );
     final dairySnapshots = await _dairySnapshotStorage.load(
       farm.id ?? farm.name,
