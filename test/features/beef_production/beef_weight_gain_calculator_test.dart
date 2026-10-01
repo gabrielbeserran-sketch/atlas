@@ -39,6 +39,7 @@ void main() {
         referenceDate: DateTime(2026, 1, 12),
       );
       expect(result.animalCount, 2);
+      expect(result.excludedAmbiguousAnimals, 0);
       expect(result.averageKgPerDay, 1.5);
     },
   );
@@ -93,4 +94,64 @@ void main() {
     expect(result.animalCount, 0);
     expect(result.averageKgPerDay, isNull);
   });
+
+  test(
+    'pesos divergentes no dia inicial ou final não geram GMD arbitrário',
+    () {
+      final result = calculator.calculate(
+        measurements: [
+          BeefWeightMeasurement(
+            animalId: 'a',
+            date: DateTime(2026, 1, 1),
+            weightKg: 300,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'a',
+            date: DateTime(2026, 1, 1, 16),
+            weightKg: 310,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'a',
+            date: DateTime(2026, 1, 11),
+            weightKg: 320,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'b',
+            date: DateTime(2026, 1, 1),
+            weightKg: 400,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'b',
+            date: DateTime(2026, 1, 11),
+            weightKg: 410,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'b',
+            date: DateTime(2026, 1, 11, 16),
+            weightKg: 420,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'c',
+            date: DateTime(2026, 1, 1),
+            weightKg: 500,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'c',
+            date: DateTime(2026, 1, 1, 16),
+            weightKg: 500,
+          ),
+          BeefWeightMeasurement(
+            animalId: 'c',
+            date: DateTime(2026, 1, 11),
+            weightKg: 520,
+          ),
+        ],
+        activeAnimalIds: {'a', 'b', 'c'},
+        referenceDate: DateTime(2026, 1, 12),
+      );
+      expect(result.animalCount, 1);
+      expect(result.excludedAmbiguousAnimals, 2);
+      expect(result.averageKgPerDay, 2);
+    },
+  );
 }

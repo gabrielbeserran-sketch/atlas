@@ -131,6 +131,12 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
     if (!mounted) return;
     setState(() {
       farms = loadedFarms;
+      if (selectedFarm?.id != nextFarm?.id ||
+          selectedFarm?.name != nextFarm?.name) {
+        analysis = null;
+        grazingBasis = null;
+        grazingFarmTotalAreaHa = null;
+      }
       selectedFarm = nextFarm;
     });
     await loadSummary();
@@ -184,7 +190,12 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
         return;
       }
 
-      setState(() => isLoading = false);
+      setState(() {
+        analysis = null;
+        grazingBasis = null;
+        grazingFarmTotalAreaHa = null;
+        isLoading = false;
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Não foi possível carregar o painel: $error')),
@@ -283,7 +294,12 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                         onChanged: isLoading
                             ? null
                             : (farm) async {
-                                setState(() => selectedFarm = farm);
+                                setState(() {
+                                  selectedFarm = farm;
+                                  analysis = null;
+                                  grazingBasis = null;
+                                  grazingFarmTotalAreaHa = null;
+                                });
                                 await loadSummary();
                               },
                       ),
@@ -293,7 +309,12 @@ class _TechnicalDashboardScreenState extends State<TechnicalDashboardScreen> {
                         enabled: !isLoading,
                         onSelected: (period) async {
                           if (period == selectedPeriod) return;
-                          setState(() => selectedPeriod = period);
+                          setState(() {
+                            selectedPeriod = period;
+                            analysis = null;
+                            grazingBasis = null;
+                            grazingFarmTotalAreaHa = null;
+                          });
                           await loadSummary();
                         },
                       ),
@@ -696,6 +717,11 @@ class _SummaryContent extends StatelessWidget {
 
   List<String> get _beefOperationalDataAlerts {
     final alerts = [...summary.beefHerd.dataQualityAlerts];
+    if (analysis.beefWeightGain.excludedAmbiguousAnimals > 0) {
+      alerts.add(
+        '${analysis.beefWeightGain.excludedAmbiguousAnimals} animal(is) têm pesos diferentes na primeira ou última data usada para o GMD; ficaram fora até a revisão das pesagens.',
+      );
+    }
     if (summary.areaHectares == null) {
       alerts.add(
         'Cadastre a área total da fazenda para calcular animais/ha e peso vivo/ha. Esses índices não substituem a lotação da área de pastagem.',

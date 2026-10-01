@@ -46,7 +46,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           'Não foi possível ler as ordenhas salvas. Nenhum registro foi apagado. Revise os dados antes de registrar nova produção.';
     }
     try {
-      snapshots = await _snapshotStorage.load(_farmKey);
+      snapshots = await _snapshotStorage.load(_farmKey, strict: true);
     } catch (_) {
       readError ??= 'Não foi possível ler o estado do lote nesta consulta.';
     }
@@ -145,6 +145,14 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           : '${currency.format(summary.litersPerMilkedCow)} L/vaca/dia',
                     ),
                     _Metric(
+                      label: 'Litros por vaca em lactação',
+                      value: summary.litersPerLactatingCow == null
+                          ? summary.milkedCowsExceedLactatingSnapshot
+                                ? 'Confira o lote em lactação'
+                                : 'Informe o lote em lactação'
+                          : '${currency.format(summary.litersPerLactatingCow)} L/vaca/dia',
+                    ),
+                    _Metric(
                       label: 'Média de vacas ordenhadas',
                       value: summary.averageMilkedCows == null
                           ? 'Sem ordenhas válidas'
@@ -235,11 +243,12 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         tooltip: 'Excluir estado do lote',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () async {
-                          await _snapshotStorage.delete(
-                            _farmKey,
-                            snapshot.date,
+                          await _changeProduction(
+                            () => _snapshotStorage.delete(
+                              _farmKey,
+                              snapshot.date,
+                            ),
                           );
-                          await _load();
                         },
                       ),
                     ),
@@ -317,8 +326,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       builder: (_) => const _HerdSnapshotDialog(),
     );
     if (result == null) return;
-    await _snapshotStorage.upsert(_farmKey, result);
-    await _load();
+    await _changeProduction(() => _snapshotStorage.upsert(_farmKey, result));
   }
 }
 
@@ -423,8 +431,10 @@ class _HerdSnapshotDialogState extends State<_HerdSnapshotDialog> {
     controller: c,
     keyboardType: TextInputType.number,
     decoration: InputDecoration(labelText: label),
-    validator: (v) =>
-        int.tryParse(v ?? '') == null ? 'Informe um número' : null,
+    validator: (v) {
+      final parsed = int.tryParse(v ?? '');
+      return parsed == null || parsed < 0 ? 'Informe zero ou mais' : null;
+    },
   );
   void _save() {
     if (!_form.currentState!.validate()) return;

@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
+import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
 import 'package:projeto_atlas/features/dairy_production/presentation/screens/dairy_production_screen.dart';
 import 'package:projeto_atlas/features/farm/domain/models/farm_data.dart';
@@ -112,6 +114,34 @@ void main() {
       expect(await prefs.getString(key), raw);
     }
   });
+
+  test(
+    'estado do lote ilegível não é sobrescrito ao salvar ou excluir',
+    () async {
+      const key = 'atlas_dairy_herd_snapshot_f';
+      final prefs = SharedPreferencesAsync();
+      final service = DairyHerdSnapshotStorageService(preferences: prefs);
+      final snapshot = DairyHerdSnapshotData(
+        date: DateTime(2026, 9, 26),
+        eligibleCows: 10,
+        lactatingCows: 6,
+        dryCows: 3,
+      );
+      for (final raw in ['corrompido', '[42]', '[{"date":"2026-02-30"}]']) {
+        await prefs.setString(key, raw);
+        await expectLater(
+          service.load('f', strict: true),
+          throwsFormatException,
+        );
+        await expectLater(service.upsert('f', snapshot), throwsFormatException);
+        await expectLater(
+          service.delete('f', snapshot.date),
+          throwsFormatException,
+        );
+        expect(await prefs.getString(key), raw);
+      }
+    },
+  );
 
   test(
     'leitura de data ilegível não cria registro nem altera conteúdo',
@@ -230,6 +260,38 @@ void main() {
         isNotNull,
       );
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'tela expõe litros por vaca em lactação e falha de leitura do lote',
+    (tester) async {
+      final prefs = SharedPreferencesAsync();
+      await prefs.setString('atlas_dairy_herd_snapshot_f', 'corrompido');
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DairyProductionScreen(
+            farm: FarmData(
+              id: 'f',
+              name: 'Teste',
+              city: '',
+              state: '',
+              animals: 10,
+              area: 20,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Litros por vaca em lactação'), findsOneWidget);
+      expect(
+        find.textContaining('Não foi possível ler o estado do lote'),
+        findsOneWidget,
+      );
+      expect(
+        await prefs.getString('atlas_dairy_herd_snapshot_f'),
+        'corrompido',
+      );
     },
   );
 }

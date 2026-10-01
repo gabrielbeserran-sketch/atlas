@@ -14,10 +14,12 @@ class BeefWeightGain {
   const BeefWeightGain({
     required this.averageKgPerDay,
     required this.animalCount,
+    required this.excludedAmbiguousAnimals,
   });
 
   final double? averageKgPerDay;
   final int animalCount;
+  final int excludedAmbiguousAnimals;
 }
 
 class BeefWeightGainCalculator {
@@ -54,25 +56,63 @@ class BeefWeightGainCalculator {
     }
 
     final gains = <double>[];
+    var excludedAmbiguousAnimals = 0;
     for (final records in byAnimal.values) {
       records.sort((a, b) => a.date.compareTo(b.date));
       if (records.length < 2) continue;
       final first = records.first;
       final last = records.last;
-      final days = DateTime(last.date.year, last.date.month, last.date.day)
-          .difference(
-            DateTime(first.date.year, first.date.month, first.date.day),
-          )
-          .inDays;
+      final firstDay = DateTime.utc(
+        first.date.year,
+        first.date.month,
+        first.date.day,
+      );
+      final lastDay = DateTime.utc(
+        last.date.year,
+        last.date.month,
+        last.date.day,
+      );
+      final days = lastDay.difference(firstDay).inDays;
       if (days <= 0) continue;
-      gains.add((last.weightKg - first.weightKg) / days);
+      final firstWeights = records
+          .where(
+            (item) =>
+                item.date.year == first.date.year &&
+                item.date.month == first.date.month &&
+                item.date.day == first.date.day,
+          )
+          .map((item) => item.weightKg)
+          .toSet();
+      final lastWeights = records
+          .where(
+            (item) =>
+                item.date.year == last.date.year &&
+                item.date.month == last.date.month &&
+                item.date.day == last.date.day,
+          )
+          .map((item) => item.weightKg)
+          .toSet();
+      if (firstWeights.length != 1 || lastWeights.length != 1) {
+        excludedAmbiguousAnimals++;
+        continue;
+      }
+      final gain = (lastWeights.single - firstWeights.single) / days;
+      if (gain.isFinite) gains.add(gain);
     }
     if (gains.isEmpty) {
-      return const BeefWeightGain(averageKgPerDay: null, animalCount: 0);
+      return BeefWeightGain(
+        averageKgPerDay: null,
+        animalCount: 0,
+        excludedAmbiguousAnimals: excludedAmbiguousAnimals,
+      );
     }
     return BeefWeightGain(
-      averageKgPerDay: gains.reduce((a, b) => a + b) / gains.length,
+      averageKgPerDay: gains.fold<double>(
+        0,
+        (sum, gain) => sum + gain / gains.length,
+      ),
       animalCount: gains.length,
+      excludedAmbiguousAnimals: excludedAmbiguousAnimals,
     );
   }
 }

@@ -18,6 +18,7 @@ class DairyProductionSummary {
     required this.windowDays,
     required this.missingDays,
     required this.coveragePercent,
+    required this.milkedCowsExceedLactatingSnapshot,
   });
   final double? latestLiters;
   final DateTime? latestRecordDate;
@@ -35,6 +36,7 @@ class DairyProductionSummary {
   final int windowDays;
   final int missingDays;
   final double coveragePercent;
+  final bool milkedCowsExceedLactatingSnapshot;
 
   bool get hasRepresentativeSample => recordedDays >= 20;
   bool get latestRecordIsStale => (daysSinceLatestRecord ?? 0) > 3;
@@ -64,6 +66,11 @@ class DairyProductionSummary {
     if (invalidProductionRecords > 0) {
       alerts.add(
         '$invalidProductionRecords ordenha(s) têm produção inválida e ficaram fora dos indicadores.',
+      );
+    }
+    if (milkedCowsExceedLactatingSnapshot) {
+      alerts.add(
+        'A ordenha recente informa mais vacas ordenhadas que vacas em lactação no lote atual; confira as datas e o lote antes de usar litros por vaca em lactação.',
       );
     }
     return alerts;
@@ -97,6 +104,7 @@ class DairyIndicatorCalculator {
         windowDays: 30,
         missingDays: 30,
         coveragePercent: 0,
+        milkedCowsExceedLactatingSnapshot: false,
       );
     }
     final now = referenceDate ?? DateTime.now();
@@ -177,6 +185,7 @@ class DairyIndicatorCalculator {
         windowDays: 30,
         missingDays: 30,
         coveragePercent: 0,
+        milkedCowsExceedLactatingSnapshot: false,
       );
     }
     final totalMilkedCows = source.fold<double>(
@@ -197,6 +206,12 @@ class DairyIndicatorCalculator {
     final perHectare = hectares.isFinite && hectares > 0 && average.isFinite
         ? average / hectares
         : null;
+    final milkedCowsExceedLactatingSnapshot =
+        lactatingCows != null &&
+        latest != null &&
+        daysSinceLatestRecord != null &&
+        daysSinceLatestRecord <= 3 &&
+        latest.cowsMilked > lactatingCows;
     return DairyProductionSummary(
       latestLiters: latest?.totalLiters,
       latestRecordDate: latest?.date,
@@ -206,7 +221,10 @@ class DairyIndicatorCalculator {
           ? perHectare
           : null,
       litersPerLactatingCow:
-          lactatingCows == null || lactatingCows <= 0 || !average.isFinite
+          lactatingCows == null ||
+              lactatingCows <= 0 ||
+              !average.isFinite ||
+              milkedCowsExceedLactatingSnapshot
           ? null
           : average / lactatingCows,
       litersPerMilkedCow: perMilkedCow != null && perMilkedCow.isFinite
@@ -221,6 +239,7 @@ class DairyIndicatorCalculator {
       windowDays: 30,
       missingDays: 30 - source.length,
       coveragePercent: source.length / 30 * 100,
+      milkedCowsExceedLactatingSnapshot: milkedCowsExceedLactatingSnapshot,
     );
   }
 }

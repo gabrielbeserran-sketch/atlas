@@ -127,6 +127,7 @@ class TechnicalDashboardService {
     );
     final dairySnapshots = await _dairySnapshotStorage.load(
       farm.id ?? farm.name,
+      strict: true,
     );
 
     TechnicalFarmSummary buildSummary(DateTime? start, DateTime? end) {

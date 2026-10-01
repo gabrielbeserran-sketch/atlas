@@ -23,7 +23,7 @@ void main() {
           ),
         ],
         hectares: 20,
-        lactatingCows: 10,
+        lactatingCows: 12,
         referenceDate: DateTime(2026, 9, 15),
       );
       expect(summary.latestLiters, 160);
@@ -36,7 +36,7 @@ void main() {
       expect(summary.missingDays, 28);
       expect(summary.coveragePercent, closeTo(6.67, 0.01));
       expect(summary.hasRepresentativeSample, isFalse);
-      expect(summary.litersPerLactatingCow, 14);
+      expect(summary.litersPerLactatingCow, closeTo(140 / 12, 0.001));
       expect(summary.litersPerMilkedCow, closeTo(280 / 22, 0.001));
       expect(summary.averageMilkedCows, 11);
     },
@@ -94,6 +94,30 @@ void main() {
     expect(summary.dataQualityAlerts, hasLength(3));
     expect(summary.missingDays, 29);
     expect(summary.coveragePercent, closeTo(3.33, 0.01));
+  });
+
+  test('lote atual incompatível não vira litros por vaca em lactação', () {
+    final summary = const DairyIndicatorCalculator().summarize(
+      [
+        DairyDailyProductionData(
+          date: DateTime(2026, 9, 15),
+          morningLiters: 100,
+          afternoonLiters: 50,
+          cowsMilked: 12,
+        ),
+      ],
+      hectares: 10,
+      lactatingCows: 10,
+      referenceDate: DateTime(2026, 9, 15),
+    );
+    expect(summary.averageLitersPerDay, 150);
+    expect(summary.litersPerMilkedCow, 12.5);
+    expect(summary.litersPerLactatingCow, isNull);
+    expect(summary.milkedCowsExceedLactatingSnapshot, isTrue);
+    expect(
+      summary.dataQualityAlerts.join(' '),
+      contains('mais vacas ordenhadas'),
+    );
   });
 
   test('sinaliza quando a última ordenha válida está desatualizada', () {

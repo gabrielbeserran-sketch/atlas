@@ -29,4 +29,30 @@ void main() {
 
     expect(snapshot.pregnancyLossPercent, isNull);
   });
+
+  test('data e contagens inválidas não viram retrato atual do lote', () {
+    final valid = DairyHerdSnapshotData(
+      date: DateTime(2026, 9, 16),
+      eligibleCows: 10,
+      lactatingCows: 6,
+      dryCows: 3,
+    ).toMap();
+    for (final invalid in ['', '2026-02-30', '2026-13-01']) {
+      expect(
+        () => DairyHerdSnapshotData.fromMap({...valid, 'date': invalid}),
+        throwsFormatException,
+      );
+    }
+    for (final change in [
+      {'eligible_cows': 'dez'},
+      {'lactating_cows': -1},
+      {'lactating_cows': 11},
+      {'pregnancy_losses': 1},
+    ]) {
+      expect(
+        () => DairyHerdSnapshotData.fromMap({...valid, ...change}),
+        throwsFormatException,
+      );
+    }
+  });
 }
