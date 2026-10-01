@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
+import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/services/dairy_indicator_calculator.dart';
@@ -18,6 +20,7 @@ class DairyProductionScreen extends StatefulWidget {
 class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _storage = DairyProductionStorageService();
   final _snapshotStorage = DairyHerdSnapshotStorageService();
+  final _offlineStage = DairyOfflineStageService();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
@@ -25,6 +28,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   bool _loading = true;
   bool _productionReadFailed = false;
   String? _readError;
+  String? _stageNotice;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -50,6 +54,37 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
     } catch (_) {
       readError ??= 'Não foi possível ler o estado do lote nesta consulta.';
     }
+    String? stageNotice;
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (readError == null &&
+        farmId != null &&
+        farmId.isNotEmpty &&
+        active.farmId == farmId &&
+        session != null &&
+        session.companyId.isNotEmpty &&
+        session.tenantId.isNotEmpty &&
+        (session.hasUnrestrictedFarmAccess ||
+            session.farmIds.contains(farmId))) {
+      try {
+        final report = await _offlineStage.stage(
+          companyId: session.companyId,
+          tenantId: session.tenantId,
+          farmId: farmId,
+        );
+        if (report.needsReview > 0) {
+          stageNotice =
+              '${report.needsReview} registro(s) de Leite precisam '
+              'de revisão antes de uma futura sincronização. Os dados '
+              'neste aparelho não foram alterados.';
+        }
+      } catch (_) {
+        stageNotice =
+            'Não foi possível preparar a cópia de segurança '
+            'para sincronização. Os registros neste aparelho permanecem disponíveis.';
+      }
+    }
     if (mounted) {
       setState(() {
         _records = values;
@@ -58,6 +93,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         _loading = false;
         _productionReadFailed = productionReadFailed;
         _readError = readError;
+        _stageNotice = stageNotice;
       });
     }
   }
@@ -105,6 +141,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                if (_stageNotice != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(_stageNotice!),
                     ),
                   ),
                 Text(

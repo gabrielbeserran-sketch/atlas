@@ -7,7 +7,7 @@ class AtlasOfflineDatabase {
   AtlasOfflineDatabase._();
 
   static final AtlasOfflineDatabase instance = AtlasOfflineDatabase._();
-  static const int schemaVersion = 2;
+  static const int schemaVersion = 3;
 
   Database? _database;
 
@@ -32,6 +32,9 @@ class AtlasOfflineDatabase {
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
             await guardLegacyUpgrade(oldVersion);
+          }
+          if (oldVersion < 3) {
+            await upgradeToVersion3(db);
           }
         },
       ),
@@ -197,6 +200,23 @@ class AtlasOfflineDatabase {
       'form_type TEXT NOT NULL, '
       'payload_json TEXT NOT NULL, '
       'updated_at TEXT NOT NULL'
+      ')',
+    );
+    await upgradeToVersion3(db);
+  }
+
+  /// Preparation only: staged dairy records never enter the send queue.
+  static Future<void> upgradeToVersion3(Database db) async {
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS dairy_sync_stage ('
+      'company_id TEXT NOT NULL, '
+      'tenant_id TEXT NOT NULL, '
+      'farm_id TEXT NOT NULL, '
+      'entity_type TEXT NOT NULL, '
+      'entity_id TEXT NOT NULL, '
+      'payload_json TEXT NOT NULL, '
+      'staged_at TEXT NOT NULL, '
+      'PRIMARY KEY(company_id, tenant_id, farm_id, entity_type, entity_id)'
       ')',
     );
   }
