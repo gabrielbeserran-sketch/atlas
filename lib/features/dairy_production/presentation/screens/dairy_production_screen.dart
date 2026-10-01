@@ -21,6 +21,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _storage = DairyProductionStorageService();
   final _snapshotStorage = DairyHerdSnapshotStorageService();
   final _offlineStage = DairyOfflineStageService();
+  final _offlineReview = DairyOfflineReviewService();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
@@ -73,11 +74,26 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           tenantId: session.tenantId,
           farmId: farmId,
         );
-        if (report.needsReview > 0) {
+        final review = await _offlineReview.review(
+          companyId: session.companyId,
+          tenantId: session.tenantId,
+          farmId: farmId,
+        );
+        final decisions = report.needsReview + review.needingDecision;
+        if (decisions > 0) {
           stageNotice =
-              '${report.needsReview} registro(s) de Leite precisam '
-              'de revisão antes de uma futura sincronização. Os dados '
-              'neste aparelho não foram alterados.';
+              '$decisions registro(s) de Leite exigem revisão '
+              'antes de uma futura sincronização. Nada foi enviado ou apagado.';
+        } else if (review.waiting > 0) {
+          stageNotice =
+              '${review.waiting} registro(s) de Leite preparados '
+              'neste aparelho; ainda não há cópia remota recebida para '
+              'comparar. Nada foi enviado.';
+        } else if (review.matchingCache > 0) {
+          stageNotice =
+              '${review.matchingCache} registro(s) de Leite '
+              'coincidem com a última cópia remota recebida. Isso não '
+              'confirma o estado atual do servidor.';
         }
       } catch (_) {
         stageNotice =
