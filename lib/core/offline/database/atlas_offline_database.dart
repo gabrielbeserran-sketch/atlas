@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class AtlasOfflineDatabase {
@@ -30,7 +31,7 @@ class AtlasOfflineDatabase {
         onCreate: (db, version) => _createSchema(db),
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
-            await _upgradeToVersion2(db);
+            await guardLegacyUpgrade(oldVersion);
           }
         },
       ),
@@ -38,17 +39,81 @@ class AtlasOfflineDatabase {
   }
 
   Future<Directory> databaseDirectory() async {
-    final baseDirectory =
+    final legacyBaseDirectory =
         Platform.environment['APPDATA'] ??
         Platform.environment['HOME'] ??
         Directory.systemTemp.path;
-    final directory = Directory(
-      '$baseDirectory${Platform.pathSeparator}ProjetoAtlas',
+    final legacyDirectory = Directory(
+      '$legacyBaseDirectory${Platform.pathSeparator}ProjetoAtlas',
     );
+    final directory = Platform.isAndroid || Platform.isIOS
+        ? Directory(
+            '${(await getApplicationSupportDirectory()).path}'
+            '${Platform.pathSeparator}ProjetoAtlas',
+          )
+        : legacyDirectory;
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
+    if (directory.path != legacyDirectory.path) {
+      await migrateLegacyDatabase(
+        legacyDirectory: legacyDirectory,
+        durableDirectory: directory,
+      );
+    }
     return directory;
+  }
+
+  /// Creates a consistent copy including committed WAL transactions. The
+  /// previous database is left intact so an interrupted migration is retryable.
+  static Future<bool> migrateLegacyDatabase({
+    required Directory legacyDirectory,
+    required Directory durableDirectory,
+  }) async {
+    const databaseName = 'atlas_offline_v2.db';
+    final sourcePath =
+        '${legacyDirectory.path}${Platform.pathSeparator}$databaseName';
+    final targetPath =
+        '${durableDirectory.path}${Platform.pathSeparator}$databaseName';
+    if (sourcePath == targetPath ||
+        File(targetPath).existsSync() ||
+        !File(sourcePath).existsSync()) {
+      return false;
+    }
+    await durableDirectory.create(recursive: true);
+    sqfliteFfiInit();
+    final staging = File(
+      '$targetPath.${DateTime.now().microsecondsSinceEpoch}.migrating',
+    );
+    try {
+      final source = await databaseFactoryFfi.openDatabase(
+        sourcePath,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      try {
+        final quoted = staging.path.replaceAll("'", "''");
+        await source.execute("VACUUM INTO '$quoted'");
+      } finally {
+        await source.close();
+      }
+      final snapshot = await databaseFactoryFfi.openDatabase(
+        staging.path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      try {
+        final result = await snapshot.rawQuery('PRAGMA integrity_check');
+        if (result.length != 1 || result.single.values.single != 'ok') {
+          throw StateError('Cópia do banco offline não passou na integridade.');
+        }
+      } finally {
+        await snapshot.close();
+      }
+      if (File(targetPath).existsSync()) return false;
+      await staging.rename(targetPath);
+      return true;
+    } finally {
+      if (await staging.exists()) await staging.delete();
+    }
   }
 
   Future<void> _createSchema(Database db) async {
@@ -136,13 +201,12 @@ class AtlasOfflineDatabase {
     );
   }
 
-  Future<void> _upgradeToVersion2(Database db) async {
-    await db.execute('DROP TABLE IF EXISTS entity_cache');
-    await db.execute('DROP TABLE IF EXISTS operation_queue');
-    await db.execute('DROP TABLE IF EXISTS sync_metadata');
-    await db.execute('DROP TABLE IF EXISTS local_conflicts');
-    await db.execute('DROP TABLE IF EXISTS draft_forms');
-    await _createSchema(db);
+  /// A v1 schema has no verified lossless mapping yet. Never erase its queue.
+  static Future<void> guardLegacyUpgrade(int oldVersion) async {
+    throw StateError(
+      'Banco offline v$oldVersion preservado: migração do esquema precisa '
+      'ser revisada antes de abrir esta versão.',
+    );
   }
 
   Future<int> fileSizeBytes() async {
