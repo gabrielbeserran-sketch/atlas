@@ -411,4 +411,136 @@ void main() {
       isNull,
     );
   });
+
+  testWidgets('ordenha do mesmo dia e exclusão exigem confirmação', (
+    tester,
+  ) async {
+    final day = DateTime.now();
+    final storage = DairyProductionStorageService();
+    await storage.upsert('f', record(day));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: DairyProductionScreen(
+          farm: FarmData(
+            id: 'f',
+            name: 'Teste',
+            city: '',
+            state: '',
+            animals: 10,
+            area: 20,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Future<void> offerReplacement() async {
+      await tester.tap(find.text('Registrar ordenha'));
+      await tester.pumpAndSettle();
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), '200');
+      await tester.enterText(fields.at(1), '0');
+      await tester.enterText(fields.at(2), '10');
+      await tester.tap(find.text('Salvar produção'));
+      await tester.pumpAndSettle();
+      expect(find.text('Substituir ordenha existente?'), findsOneWidget);
+    }
+
+    await offerReplacement();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect((await storage.load('f', strict: true)).single.totalLiters, 120);
+
+    await offerReplacement();
+    await tester.tap(find.text('Substituir'));
+    await tester.pumpAndSettle();
+    expect((await storage.load('f', strict: true)).single.totalLiters, 200);
+
+    await tester.scrollUntilVisible(find.byTooltip('Excluir registro'), 300);
+    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Excluir registro'));
+    await tester.pumpAndSettle();
+    expect(find.text('Excluir ordenha?'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(await storage.load('f', strict: true), hasLength(1));
+
+    await tester.tap(find.byTooltip('Excluir registro'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    expect(await storage.load('f', strict: true), isEmpty);
+  });
+
+  testWidgets(
+    'estado do lote também exige confirmação ao substituir e excluir',
+    (tester) async {
+      final day = DateTime.now();
+      final storage = DairyHerdSnapshotStorageService();
+      await storage.upsert(
+        'f',
+        DairyHerdSnapshotData(
+          date: day,
+          eligibleCows: 10,
+          lactatingCows: 6,
+          dryCows: 3,
+        ),
+      );
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DairyProductionScreen(
+            farm: FarmData(
+              id: 'f',
+              name: 'Teste',
+              city: '',
+              state: '',
+              animals: 10,
+              area: 20,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      Future<void> offerReplacement() async {
+        await tester.tap(find.byTooltip('Estado do lote'));
+        await tester.pumpAndSettle();
+        final fields = find.byType(TextFormField);
+        await tester.enterText(fields.at(0), '12');
+        await tester.enterText(fields.at(1), '7');
+        await tester.enterText(fields.at(2), '3');
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+        expect(find.text('Substituir estado do lote?'), findsOneWidget);
+      }
+
+      await offerReplacement();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect((await storage.load('f', strict: true)).single.eligibleCows, 10);
+
+      await offerReplacement();
+      await tester.tap(find.text('Substituir'));
+      await tester.pumpAndSettle();
+      expect((await storage.load('f', strict: true)).single.eligibleCows, 12);
+
+      await tester.scrollUntilVisible(
+        find.byTooltip('Excluir estado do lote'),
+        300,
+      );
+      await tester.tap(find.byTooltip('Excluir estado do lote'));
+      await tester.pumpAndSettle();
+      expect(find.text('Excluir estado do lote?'), findsOneWidget);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(await storage.load('f', strict: true), hasLength(1));
+
+      await tester.tap(find.byTooltip('Excluir estado do lote'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Excluir'));
+      await tester.pumpAndSettle();
+      expect(await storage.load('f', strict: true), isEmpty);
+    },
+  );
 }

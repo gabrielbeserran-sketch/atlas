@@ -89,7 +89,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
               children: [
                 if (_readError != null)
                   Card(
@@ -243,6 +243,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         tooltip: 'Excluir estado do lote',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () async {
+                          final confirmed = await _confirmChange(
+                            title: 'Excluir estado do lote?',
+                            description:
+                                'O registro de ${DateFormat('dd/MM/yyyy').format(snapshot.date)} será removido deste dispositivo.',
+                            confirmLabel: 'Excluir',
+                          );
+                          if (!confirmed) return;
                           await _changeProduction(
                             () => _snapshotStorage.delete(
                               _farmKey,
@@ -282,6 +289,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                         tooltip: 'Excluir registro',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () async {
+                          final confirmed = await _confirmChange(
+                            title: 'Excluir ordenha?',
+                            description:
+                                'A ordenha de ${DateFormat('dd/MM/yyyy').format(record.date)} será removida deste dispositivo.',
+                            confirmLabel: 'Excluir',
+                          );
+                          if (!confirmed) return;
                           await _changeProduction(
                             () => _storage.delete(_farmKey, record.date),
                           );
@@ -300,7 +314,46 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       builder: (_) => const _DairyRecordDialog(),
     );
     if (result == null || !mounted) return;
+    final existing = _records.any((item) => _sameDay(item.date, result.date));
+    if (existing) {
+      final confirmed = await _confirmChange(
+        title: 'Substituir ordenha existente?',
+        description:
+            'Já existe uma ordenha em ${DateFormat('dd/MM/yyyy').format(result.date)}. Os valores salvos para esse dia serão substituídos.',
+        confirmLabel: 'Substituir',
+      );
+      if (!confirmed) return;
+    }
     await _changeProduction(() => _storage.upsert(_farmKey, result));
+  }
+
+  bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Future<bool> _confirmChange({
+    required String title,
+    required String description,
+    required String confirmLabel,
+  }) async {
+    if (!mounted) return false;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: Text(description),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+    return mounted && confirmed == true;
   }
 
   Future<void> _changeProduction(Future<void> Function() action) async {
@@ -325,7 +378,17 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       context: context,
       builder: (_) => const _HerdSnapshotDialog(),
     );
-    if (result == null) return;
+    if (result == null || !mounted) return;
+    final existing = _snapshots.any((item) => _sameDay(item.date, result.date));
+    if (existing) {
+      final confirmed = await _confirmChange(
+        title: 'Substituir estado do lote?',
+        description:
+            'Já existe um estado do lote em ${DateFormat('dd/MM/yyyy').format(result.date)}. As contagens salvas para esse dia serão substituídas.',
+        confirmLabel: 'Substituir',
+      );
+      if (!confirmed) return;
+    }
     await _changeProduction(() => _snapshotStorage.upsert(_farmKey, result));
   }
 }
