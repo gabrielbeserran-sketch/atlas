@@ -14,6 +14,7 @@ from ..models import EntityState, ProcessedOperation, SyncChange, new_id
 from ..offline_models import OfflineDevice, OfflineDiagnostic, SyncConflict
 from ..schemas import SyncPushRequest, SyncPushResponse
 from ..services.audit import record_audit
+from ..services.sync_dairy_contract import validate_dairy_entity, validate_dairy_push
 from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
 from ..services.sync_idempotency import replay_processed_operation, stored_result
 from ..services.sync_transaction_lock import lock_sync_entity, lock_sync_requests
@@ -56,6 +57,9 @@ def _process_operation(db: Session, principal: Principal, request: SyncPushReque
         require_farm_scope(principal, request.farm_id)
     except HTTPException:
         return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error="Fazenda fora da carteira autorizada.")
+    dairy_error = validate_dairy_push(request)
+    if dairy_error is not None:
+        return SyncPushResponse(accepted=False, conflict=False, remote_version=0, remote_payload={}, error=dairy_error)
     processed = db.get(ProcessedOperation, request.idempotency_key)
     state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == request.entity_type, EntityState.entity_id == request.entity_id))
     cross_farm = reject_cross_farm_state(state, request)
@@ -163,6 +167,12 @@ def resolve_conflict(conflict_id: str, payload: ConflictResolutionRequest, princ
     else:
         if not payload.merged_payload: raise HTTPException(status_code=422, detail="merged_payload é obrigatório para merge.")
         resolved = payload.merged_payload
+    dairy_error = validate_dairy_entity(
+        entity_type=conflict.entity_type, entity_id=conflict.entity_id,
+        farm_id=conflict.farm_id, operation_type="update", payload=resolved,
+    )
+    if dairy_error is not None:
+        raise HTTPException(status_code=422, detail=dairy_error)
     state = db.scalar(select(EntityState).where(EntityState.company_id == principal.company.id, EntityState.entity_type == conflict.entity_type, EntityState.entity_id == conflict.entity_id))
     if state is not None and state.farm_id != conflict.farm_id:
         raise HTTPException(status_code=409, detail="Entidade vinculada a outra fazenda.")

@@ -16,6 +16,7 @@ from ..schemas import (
     SyncPushResponse,
 )
 from ..services.audit import record_audit
+from ..services.sync_dairy_contract import validate_dairy_push
 from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
 from ..services.sync_idempotency import replay_processed_operation, stored_result
 from ..services.sync_transaction_lock import lock_sync_requests
@@ -50,6 +51,13 @@ def push(
         )
 
     require_farm_scope(principal, request.farm_id)
+
+    dairy_error = validate_dairy_push(request)
+    if dairy_error is not None:
+        return SyncPushResponse(
+            accepted=False, conflict=False, remote_version=0,
+            remote_payload={}, error=dairy_error,
+        )
 
     lock_sync_requests(db, [request])
 
