@@ -374,7 +374,9 @@ def test_batch_pull_and_conflicts_respect_farm_membership(api):
     assert [item["entity_id"] for item in client.get("/api/v1/sync/pull").json()] == ["note-A"]
     conflicts = client.get("/api/v1/offline/conflicts").json()
     assert [item["operation_id"] for item in conflicts] == ["op-conflict-A"]
-    assert client.get("/api/v1/offline/status").json()["open_conflicts"] == 1
+    status = client.get("/api/v1/offline/status").json()
+    assert status["open_conflicts"] == 1
+    assert status["capabilities"]["dairy_lookup"] is True
 
     denied = client.post(
         f"/api/v1/offline/conflicts/{conflict_b_id}/resolve",

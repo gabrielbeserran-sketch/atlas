@@ -43,6 +43,27 @@ class DairyRemoteLookupService {
 
   final AtlasHttpClient _client;
 
+  /// An older deployment must not be treated as supporting the lookup route.
+  Future<bool> supportsLookup({required bool Function() isScopeCurrent}) async {
+    if (!isScopeCurrent()) {
+      throw StateError(
+        'A sessão ou fazenda mudou durante a consulta de Leite.',
+      );
+    }
+    final response = await _client.send(
+      'GET',
+      '/offline/status',
+      transientRetries: 0,
+    );
+    if (!isScopeCurrent()) {
+      throw StateError(
+        'A sessão ou fazenda mudou durante a consulta de Leite.',
+      );
+    }
+    final capabilities = response.asMap()['capabilities'];
+    return capabilities is Map && capabilities['dairy_lookup'] == true;
+  }
+
   Future<List<DairyRemoteState>> lookup({
     required String farmId,
     required List<DairyLookupKey> keys,

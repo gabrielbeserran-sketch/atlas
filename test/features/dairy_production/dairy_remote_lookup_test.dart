@@ -28,6 +28,31 @@ class _FakeClient extends AtlasHttpClient {
   }
 }
 
+class _CapabilityClient extends AtlasHttpClient {
+  _CapabilityClient(this.body, {this.onRequest});
+
+  final Map<String, dynamic> body;
+  final void Function()? onRequest;
+
+  @override
+  Future<AtlasHttpResponse> send(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+    bool retryOnUnauthorized = true,
+    int transientRetries = 2,
+  }) async {
+    expect(method, 'GET');
+    expect(path, '/offline/status');
+    expect(authenticated, isTrue);
+    expect(transientRetries, 0);
+    onRequest?.call();
+    return _response(this.body);
+  }
+}
+
 AtlasHttpResponse _response(Map<String, dynamic> body) => AtlasHttpResponse(
   statusCode: 200,
   body: body,
@@ -90,6 +115,35 @@ void main() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
   });
+
+  test('capacidade ausente em backend antigo não ativa consulta', () async {
+    final service = DairyRemoteLookupService(
+      client: _CapabilityClient(<String, dynamic>{'status': 'ready'}),
+    );
+    expect(await service.supportsLookup(isScopeCurrent: () => true), isFalse);
+  });
+
+  test(
+    'capacidade explícita habilita consulta, mas troca de escopo invalida',
+    () async {
+      final service = DairyRemoteLookupService(
+        client: _CapabilityClient(<String, dynamic>{
+          'capabilities': <String, dynamic>{'dairy_lookup': true},
+        }),
+      );
+      expect(await service.supportsLookup(isScopeCurrent: () => true), isTrue);
+      var current = true;
+      final switched = DairyRemoteLookupService(
+        client: _CapabilityClient(<String, dynamic>{
+          'capabilities': <String, dynamic>{'dairy_lookup': true},
+        }, onRequest: () => current = false),
+      );
+      await expectLater(
+        switched.supportsLookup(isScopeCurrent: () => current),
+        throwsStateError,
+      );
+    },
+  );
 
   test(
     'confere identidade e devolve ordem pedida, mesmo fora de ordem',

@@ -280,4 +280,4 @@ def offline_status(principal: Principal = Depends(require_permission("sync.read"
     change_farm_clause = visible_farm_clause(principal, SyncChange.farm_id)
     if change_farm_clause is not None: change_clauses.append(change_farm_clause)
     latest_cursor = db.scalar(select(func.max(SyncChange.cursor)).where(*change_clauses)) or 0
-    return {"status": "ready", "active_devices": devices, "open_conflicts": open_conflicts, "latest_cursor": latest_cursor, "max_batch_size": 200, "max_pull_page": 1000}
+    return {"status": "ready", "active_devices": devices, "open_conflicts": open_conflicts, "latest_cursor": latest_cursor, "max_batch_size": 200, "max_pull_page": 1000, "capabilities": {"dairy_lookup": True}}

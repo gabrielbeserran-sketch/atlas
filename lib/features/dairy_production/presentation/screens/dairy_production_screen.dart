@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
@@ -22,6 +24,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _snapshotStorage = DairyHerdSnapshotStorageService();
   final _offlineStage = DairyOfflineStageService();
   final _offlineReview = DairyOfflineReviewService();
+  final _remoteLookup = DairyRemoteLookupService();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
@@ -30,6 +33,8 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   bool _productionReadFailed = false;
   String? _readError;
   String? _stageNotice;
+  bool _hasScopedStage = false;
+  bool _checkingServer = false;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -56,6 +61,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       readError ??= 'Não foi possível ler o estado do lote nesta consulta.';
     }
     String? stageNotice;
+    var hasScopedStage = false;
     final active = AtlasActiveContext.instance;
     final session = active.session;
     final farmId = widget.farm.id;
@@ -79,6 +85,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           tenantId: session.tenantId,
           farmId: farmId,
         );
+        hasScopedStage = review.items.isNotEmpty;
         final decisions = report.needsReview + review.needingDecision;
         if (decisions > 0) {
           stageNotice =
@@ -110,7 +117,107 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         _productionReadFailed = productionReadFailed;
         _readError = readError;
         _stageNotice = stageNotice;
+        _hasScopedStage = hasScopedStage;
       });
+    }
+  }
+
+  Future<void> _checkServer() async {
+    if (_checkingServer) return;
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null || farmId == null || active.farmId != farmId) return;
+    final userId = session.userId;
+    final companyId = session.companyId;
+    final tenantId = session.tenantId;
+    bool scopeCurrent() {
+      final current = active.session;
+      return mounted &&
+          active.farmId == farmId &&
+          current?.userId == userId &&
+          current?.companyId == companyId &&
+          current?.tenantId == tenantId;
+    }
+
+    setState(() => _checkingServer = true);
+    try {
+      final before = await _offlineReview.review(
+        companyId: companyId,
+        tenantId: tenantId,
+        farmId: farmId,
+      );
+      if (!scopeCurrent() || before.items.isEmpty) return;
+      final supported = await _remoteLookup.supportsLookup(
+        isScopeCurrent: scopeCurrent,
+      );
+      if (!mounted || !scopeCurrent()) return;
+      if (!supported) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Este servidor ainda não oferece a conferência de Leite. Os dados locais continuam disponíveis.',
+            ),
+          ),
+        );
+        return;
+      }
+      final remote = await _remoteLookup.lookup(
+        farmId: farmId,
+        keys: [
+          for (final item in before.items)
+            DairyLookupKey(
+              entityType: item.entityType,
+              entityId: item.entityId,
+            ),
+        ],
+        isScopeCurrent: scopeCurrent,
+      );
+      if (!scopeCurrent()) return;
+      final after = await _offlineReview.review(
+        companyId: companyId,
+        tenantId: tenantId,
+        farmId: farmId,
+      );
+      if (!scopeCurrent()) return;
+      final report = DairyRemoteReconciliation.compare(
+        before: before,
+        after: after,
+        remote: remote,
+      );
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Conferência de Leite no servidor'),
+          content: Text(
+            'Iguais: ${report.count(DairyRemoteReviewStatus.sameOnServer)}\n'
+            'Ainda ausentes: ${report.count(DairyRemoteReviewStatus.absentOnServer)}\n'
+            'Divergentes: ${report.count(DairyRemoteReviewStatus.differsOnServer)}\n'
+            'Excluídos no servidor: ${report.count(DairyRemoteReviewStatus.deletedOnServer)}\n'
+            'Revisar dados locais: ${report.count(DairyRemoteReviewStatus.localReview)}\n\n'
+            'Leitura pontual; nenhum registro foi enviado, alterado ou aprovado para sincronização.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Fechar'),
+            ),
+          ],
+        ),
+      );
+    } catch (_) {
+      if (mounted && scopeCurrent()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Não foi possível conferir o servidor agora. Os dados locais permanecem disponíveis; tente mais tarde.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _checkingServer = false);
     }
   }
 
@@ -163,7 +270,28 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(_stageNotice!),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_stageNotice!),
+                          if (_hasScopedStage) ...[
+                            const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                              onPressed: _checkingServer ? null : _checkServer,
+                              icon: _checkingServer
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.fact_check_outlined),
+                              label: const Text('Conferir no servidor'),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 Text(

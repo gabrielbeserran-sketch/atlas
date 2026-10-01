@@ -159,10 +159,16 @@ enum DairyReviewStatus {
 }
 
 class DairyReviewItem {
-  const DairyReviewItem(this.entityType, this.entityId, this.status);
+  const DairyReviewItem(
+    this.entityType,
+    this.entityId,
+    this.status, {
+    this.stagedPayload,
+  });
   final String entityType;
   final String entityId;
   final DairyReviewStatus status;
+  final Map<String, dynamic>? stagedPayload;
 
   bool get needsDecision => !const {
     DairyReviewStatus.waitingForCache,
@@ -299,7 +305,7 @@ class DairyOfflineReviewService {
           }
         }
       }
-      items.add(DairyReviewItem(type, id, status));
+      items.add(DairyReviewItem(type, id, status, stagedPayload: payload));
     }
     return DairyReviewReport(List.unmodifiable(items));
   }
