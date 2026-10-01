@@ -145,7 +145,9 @@ class DairyReproductionIndicatorCalculator {
     DateTime? referenceDate,
   }) {
     final reference = referenceDate ?? DateTime.now();
-    final today = DateTime(reference.year, reference.month, reference.day);
+    // Datas clínicas são dias civis, não intervalos de 24 h no fuso local.
+    // UTC preserva o número de dias quando o horário de verão muda.
+    final today = DateTime.utc(reference.year, reference.month, reference.day);
     final animalCounts = <String, int>{};
     for (final animal in animals) {
       final id = animal.id.trim();
@@ -163,7 +165,7 @@ class DairyReproductionIndicatorCalculator {
         .where((animal) => animal.status == 'Ativo' && animal.sex == 'Fêmea')
         .map((animal) => animal.id.trim())
         .toSet();
-    final periodStart = DateTime(today.year - 1, today.month, today.day);
+    final periodStart = DateTime.utc(today.year - 1, today.month, today.day);
     final femaleAnimals = validAnimals.where((animal) => animal.sex == 'Fêmea');
     final femaleAnimalIds = femaleAnimals
         .map((animal) => animal.id.trim())
@@ -419,7 +421,7 @@ class DairyReproductionIndicatorCalculator {
     if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
       return null;
     }
-    final date = DateTime(year, month, day);
+    final date = DateTime.utc(year, month, day);
     return date.year == year && date.month == month && date.day == day
         ? date
         : null;

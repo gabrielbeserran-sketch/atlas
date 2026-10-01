@@ -4,6 +4,8 @@ Atualizado em 01/10/2026. Este arquivo é a fonte visível de acompanhamento dos
 
 ## Caminho de fechamento da versão comercial atual
 
+Dias civis da reprodução leiteira (01/10/2026): checkpoint `atlas-dairy-civil-day-20261001`, 100% deste ajuste local do pacote 4; DEL, secagem, parto→primeira inseminação e idade ao primeiro parto deixaram de depender da duração de 23/25 horas na virada do horário de verão. Sessenta e dois testes Flutter, análise Dart focal, diff e hash do banco aprovados. O aceite zootécnico com dados reais ainda depende de responsável técnico; correção entra no próximo release agrupado, sem instalação nesta etapa.
+
 Integridade dos indicadores Corte/Leite (01/10/2026): checkpoint `atlas-beef-dairy-indicator-guard-20261001`, 100% desta correção local do pacote 4 e 0% do aceite técnico com dados reais. GMD descarta extremos do mesmo dia com pesos divergentes e comunica quantos animais ficaram de fora; Leite não calcula litros/vaca em lactação quando a ordenha recente excede o lote informado. Estado do lote ilegível/incoerente é preservado para revisão e não gera análise aparentemente válida no painel técnico. Oitenta e quatro testes Flutter, análise Dart focal e diff passaram; banco local preservado. Faltam revisão zootécnica com responsável e registros autorizados, ensaio em Windows/Android e release agrupado; sem build/instalação nesta entrega.
 
 Demonstração separada adiada por solicitação do usuário. Não é requisito para concluir a versão operacional. Não existe percentual global confiável: os percentuais abaixo da tabela medem entregas específicas, não o aplicativo inteiro.
