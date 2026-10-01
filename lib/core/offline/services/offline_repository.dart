@@ -212,17 +212,114 @@ class OfflineRepository {
     required Map<String, dynamic> change,
   }) async {
     final db = await _database.database;
-    await db.insert('entity_cache', <String, Object?>{
-      'company_id': companyId,
-      'tenant_id': tenantId,
-      'farm_id': farmIdForChange(change, farmId),
-      'entity_type': change['entity_type']?.toString() ?? '',
-      'entity_id': change['entity_id']?.toString() ?? '',
-      'version': (change['version'] as num?)?.toInt() ?? 0,
-      'payload_json': jsonEncode(change['payload'] ?? const {}),
-      'deleted': change['deleted'] == true ? 1 : 0,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await applyChangeInDatabase(
+      db,
+      companyId: companyId,
+      tenantId: tenantId,
+      farmId: farmId,
+      change: change,
+    );
+  }
+
+  /// The pull cursor is saved only after this returns. Replayed pages must
+  /// never roll the local cache back or silently replace another farm's row.
+  static Future<void> applyChangeInDatabase(
+    Database db, {
+    required String companyId,
+    required String tenantId,
+    String? farmId,
+    required Map<String, dynamic> change,
+  }) async {
+    final entityType = change['entity_type']?.toString() ?? '';
+    final entityId = change['entity_id']?.toString() ?? '';
+    final rawVersion = change['version'];
+    final payload = change['payload'];
+    final rawDeleted = change['deleted'];
+    final receivedFarmId = farmIdForChange(change, farmId);
+    if (companyId.trim().isEmpty ||
+        tenantId.trim().isEmpty ||
+        entityType.trim().isEmpty ||
+        entityId.trim().isEmpty ||
+        rawVersion is! int ||
+        rawVersion <= 0 ||
+        payload is! Map ||
+        (rawDeleted != true && rawDeleted != false) ||
+        (farmId != null &&
+            farmId.isNotEmpty &&
+            receivedFarmId != null &&
+            receivedFarmId != farmId)) {
+      throw StateError('Mudança remota inválida; cursor não foi avançado.');
+    }
+    final payloadJson = jsonEncode(payload);
+    final deleted = rawDeleted == true ? 1 : 0;
+    await db.transaction((txn) async {
+      final existing = await txn.query(
+        'entity_cache',
+        where: 'company_id = ? AND entity_type = ? AND entity_id = ?',
+        whereArgs: <Object?>[companyId, entityType, entityId],
+        limit: 1,
+      );
+      if (existing.isNotEmpty) {
+        final current = existing.first;
+        if (current['tenant_id'] != tenantId ||
+            current['farm_id'] != receivedFarmId) {
+          throw StateError(
+            'Mudança remota pertence a outro escopo; cursor preservado.',
+          );
+        }
+        final currentVersion = (current['version'] as num).toInt();
+        if (rawVersion < currentVersion) return;
+        if (rawVersion == currentVersion) {
+          if (current['deleted'] != deleted ||
+              !_samePayload(current['payload_json']?.toString(), payload)) {
+            throw StateError(
+              'Versão remota duplicada com dados divergentes; cursor preservado.',
+            );
+          }
+          return;
+        }
+      }
+      await txn.insert('entity_cache', <String, Object?>{
+        'company_id': companyId,
+        'tenant_id': tenantId,
+        'farm_id': receivedFarmId,
+        'entity_type': entityType,
+        'entity_id': entityId,
+        'version': rawVersion,
+        'payload_json': payloadJson,
+        'deleted': deleted,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+    });
+  }
+
+  static bool _samePayload(String? raw, Map payload) {
+    if (raw == null) return false;
+    try {
+      return _deepEquals(jsonDecode(raw), payload);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static bool _deepEquals(Object? left, Object? right) {
+    if (left is Map && right is Map) {
+      if (left.length != right.length) return false;
+      for (final key in left.keys) {
+        if (!right.containsKey(key) || !_deepEquals(left[key], right[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (left is List && right is List) {
+      if (left.length != right.length) return false;
+      for (var index = 0; index < left.length; index++) {
+        if (!_deepEquals(left[index], right[index])) return false;
+      }
+      return true;
+    }
+    return left == right;
   }
 
   Future<List<OfflineCachedEntity>> cachedEntities({
