@@ -150,6 +150,7 @@ class _AtlasPastureManagementScreenState
           farmId: basis.farmId,
         );
         final latestSelection = await grazingAnimalsService.loadCurrent(basis);
+        final latestRoster = await grazingAnimalsService.loadRoster(basis);
         final selectionUnchanged = selection == null
             ? latestSelection == null
             : latestSelection != null &&
@@ -166,6 +167,9 @@ class _AtlasPastureManagementScreenState
             active?.companyId == basis.companyId &&
             active?.tenantId == basis.tenantId &&
             latestBasis?.hasSameData(basis) == true &&
+            (roster == null
+                ? latestRoster == null
+                : roster.hasSameData(latestRoster)) &&
             selectionUnchanged) {
           stockingRoster = roster;
           stockingResult = const AtlasGrazingStockingCalculator().calculate(
@@ -399,6 +403,7 @@ class _AtlasPastureManagementScreenState
                             basis,
                             selected.toList(),
                             authorized,
+                            expectedRosterAt: roster?.recordedAt,
                           );
                           if (dialogContext.mounted) {
                             Navigator.pop(dialogContext, true);
@@ -408,7 +413,7 @@ class _AtlasPastureManagementScreenState
                             update(() {
                               busy = false;
                               error =
-                                  'Confira a base, a quantidade e os animais ativos antes de salvar.';
+                                  'Confira a base e atualize a carteira antes de selecionar os animais ativos.';
                             });
                           }
                         }

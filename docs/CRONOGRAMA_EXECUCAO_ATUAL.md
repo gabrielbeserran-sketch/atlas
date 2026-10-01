@@ -1,6 +1,6 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 30/09/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 01/10/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
 
 ## Caminho de fechamento da versão comercial atual
 
@@ -17,6 +17,8 @@ Demonstração separada adiada por solicitação do usuário. Não é requisito 
 | 7 | Segurança e recuperação | Testar isolamento entre clientes, permissões na API, backup/restauração em base descartável e ausência de segredos nos artefatos | Ambiente de homologação; backup existente não equivale a restauração testada |
 | 8 | Release e piloto | Regressão integrada, compilação agrupada Windows/Android, instalação preservando dados, piloto real e resolução de falhas críticas | Pacotes anteriores aprovados; produzir uma versão agrupada, não compilar a cada ajuste |
 | 9 | Entrega comercial | Roteiro de uso, suporte, política de atualização, termos/privacidade e aceite final registrados | Decisões comerciais/legais do responsável; não presumir aprovação |
+
+Campo/pastejo sob consultas concorrentes (01/10/2026): checkpoint `atlas-grazing-roster-consistency-20261001`. Uma consulta antiga não substitui a carteira mais recente; seleção de animais e atualização de carteira são serializadas e a tela exige a carteira exibida para vincular ou calcular UA/ha. Regressão do núcleo operacional: 78 testes Flutter aprovados, análise Dart focal sem problemas. 100% desta proteção local do pacote 1/3; ainda faltam ensaio humano Windows/Android, sincronização dos vínculos individuais entre dispositivos e validação com dados autorizados. Nenhum build/instalação neste pacote.
 
 Gate de migração 0059 reforçado (30/09/2026): checkpoint `atlas-migration-0059-drift-gate-20260930`; [CI 36750541817](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36750541817) aprovou upgrade, restauração descartável, HTTP e recusa de índice com ordem incorreta. 100% da revisão local do detector de drift, **não** da migração real. No pacote 2 restam relatório read-only com acesso autorizado à base real, backup real restaurado em ambiente separado, decisão de janela/monitoramento e deploy; no pacote 3, teste de reconexão e conflito com dois aparelhos depois do deploy. Não houve acesso nem escrita em produção.
 

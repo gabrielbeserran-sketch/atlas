@@ -1,8 +1,14 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 30/09/2026.
+Atualizado em 01/10/2026.
 
 ## Estado
+
+- Campo/pastejo: consistência da carteira e seleção concluída localmente, 100% deste pacote (01/10/2026). Consultas antigas não substituem carteira nova; gravações de carteira/vínculo são serializadas, o formulário recusa carteira substituída e UA/ha não usa retrato trocado durante leitura dos pesos. Dez testes focais e 78 testes do núcleo operacional passaram; análise Dart focal e diff sem problemas. `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-grazing-roster-consistency-20261001`. Próximo: ensaio humano com dados autorizados e vínculo entre dispositivos após implantação; sem build/instalação neste pacote.
+
+- Campo/pastejo: consistência da carteira e seleção, 70% (01/10/2026). Atualizações de carteira compartilham a fila de gravação com seleções e consultas antigas não sobrescrevem a mais recente; a tela recusa seleção/cálculo com carteira trocada. Dez testes focais passaram e análise Dart focal sem problemas. Restam regressão ampliada, diff/hash, documentação e checkpoint; nenhuma sincronização de vínculos entre dispositivos foi alegada.
+
+- Campo/pastejo: consistência da carteira e seleção durante leituras simultâneas, 0% (01/10/2026). Componentes previstos: serviço local de carteira/vínculos, conferência de UA/ha na tela de Pastagens e testes de concorrência/reabertura. Validações planejadas: testes Flutter focais, análise Dart, diff/hash do banco local e checkpoint Git publicado. Próximo marco: impedir que carteira substituída por uma consulta mais antiga ou trocada durante o cálculo produza uma seleção/UA por hectare enganosa; vínculos ainda não serão declarados sincronizados entre dispositivos.
 
 - Gate de prontidão da migração 0059 reforçado, 100% deste pacote local (30/09/2026): o relatório read-only exige índice B-tree válido/pronto em `public.pasture_grazing_bases`, com as cinco colunas na ordem correta, sem expressão/predicado. O [CI PostgreSQL 16 descartável 36750541817](https://github.com/gabrielbeserran-sketch/atlas/actions/runs/36750541817) passou por 0058→0059, backup/restauração, contratos HTTP e teste negativo de índice divergente revertido na mesma transação. Cinco testes locais, Ruff, compilação Python e diff passaram; `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-migration-0059-drift-gate-20260930`. Próximo: relatório na base real apenas com acesso autorizado, backup real restaurado em separado e janela para migração/deploy; depois ensaio de dois aparelhos. Produção e instalações não foram tocadas.
 

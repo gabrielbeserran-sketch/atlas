@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_grazing_animals_service.dart';
 import 'package:projeto_atlas/core/operational_intelligence/action_plan/atlas_pasture_grazing_basis_service.dart';
@@ -175,5 +177,66 @@ void main() {
       ),
     );
     expect(await service.loadHistory(current), hasLength(10));
+  });
+
+  test('consulta antiga não substitui carteira mais recente', () async {
+    final current = basis();
+    final first = Completer<List<AnimalData>>();
+    final second = Completer<List<AnimalData>>();
+    var requests = 0;
+    final concurrent = AtlasGrazingAnimalsService(
+      fetchAnimals: (_) => ++requests == 1 ? first.future : second.future,
+    );
+    final older = concurrent.refreshRoster(current, () async => true);
+    await Future<void>.delayed(Duration.zero);
+    final newer = concurrent.refreshRoster(current, () async => true);
+    await Future<void>.delayed(Duration.zero);
+    second.complete([animal('new')]);
+    expect((await newer).animals.single.id, 'new');
+    first.complete([animal('old')]);
+    await expectLater(older, throwsStateError);
+    expect((await concurrent.loadRoster(current))!.animals.single.id, 'new');
+  });
+
+  test('seleção exige a carteira exibida quando há nova consulta', () async {
+    final current = basis();
+    final first = await service.refreshRoster(current, () async => true);
+    await Future<void>.delayed(const Duration(milliseconds: 2));
+    final second = await service.refreshRoster(current, () async => true);
+    expect(first.hasSameData(second), isFalse);
+    await expectLater(
+      service.saveSelection(
+        current,
+        ['a', 'b'],
+        () async => true,
+        expectedRosterAt: first.recordedAt,
+      ),
+      throwsStateError,
+    );
+    expect(await service.loadHistory(current), isEmpty);
+    await service.saveSelection(
+      current,
+      ['a', 'b'],
+      () async => true,
+      expectedRosterAt: second.recordedAt,
+    );
+    expect((await service.loadCurrent(current))?.rosterAt, second.recordedAt);
+  });
+
+  test('comparação de carteira detecta mudança de estado sem mudar IDs', () {
+    final at = DateTime.utc(2026, 10, 1);
+    final original = AtlasGrazingRoster([
+      const AtlasGrazingCandidate('a', 'A', 'Animal A', true),
+    ], at);
+    expect(original.hasSameData(original), isTrue);
+    expect(original.hasSameData(null), isFalse);
+    expect(
+      original.hasSameData(
+        AtlasGrazingRoster([
+          const AtlasGrazingCandidate('a', 'A', 'Animal A', false),
+        ], at),
+      ),
+      isFalse,
+    );
   });
 }

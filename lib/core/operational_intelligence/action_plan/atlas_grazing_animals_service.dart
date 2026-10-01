@@ -33,6 +33,25 @@ class AtlasGrazingRoster {
   bool isCurrent(DateTime now) =>
       !now.isBefore(recordedAt) &&
       now.difference(recordedAt) <= const Duration(days: 7);
+
+  bool hasSameData(AtlasGrazingRoster? other) {
+    if (other == null ||
+        !recordedAt.isAtSameMomentAs(other.recordedAt) ||
+        animals.length != other.animals.length) {
+      return false;
+    }
+    for (var i = 0; i < animals.length; i++) {
+      final current = animals[i];
+      final previous = other.animals[i];
+      if (current.id != previous.id ||
+          current.tag != previous.tag ||
+          current.name != previous.name ||
+          current.active != previous.active) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
 class AtlasGrazingSelection {
@@ -78,6 +97,7 @@ class AtlasGrazingAnimalsService {
   final SharedPreferencesAsync preferences;
   final Future<List<AnimalData>> Function(String farmId) fetchAnimals;
   static final Map<String, Future<void>> _writes = {};
+  static final Map<String, int> _refreshSequence = {};
 
   String _key(AtlasPastureGrazingBasis basis) {
     basis.validate();
@@ -116,8 +136,10 @@ class AtlasGrazingAnimalsService {
   ) async {
     final key = _key(basis);
     if (!await isAuthorized()) throw StateError('Fazenda não autorizada.');
+    final sequence = (_refreshSequence[key] ?? 0) + 1;
+    _refreshSequence[key] = sequence;
     final records = await fetchAnimals(basis.farmId);
-    if (!await isAuthorized()) {
+    if (_refreshSequence[key] != sequence || !await isAuthorized()) {
       throw StateError('Contexto mudou durante a consulta.');
     }
     final animals = records
@@ -136,16 +158,21 @@ class AtlasGrazingAnimalsService {
       throw const FormatException('Identificação dos animais inconsistente.');
     }
     final roster = AtlasGrazingRoster(animals, DateTime.now().toUtc());
-    await preferences.setString(
-      '${key}_roster',
-      jsonEncode({
-        'tenantId': basis.tenantId,
-        'companyId': basis.companyId,
-        'farmId': basis.farmId,
-        'recordedAt': roster.recordedAt.toIso8601String(),
-        'animals': animals.map((e) => e.toMap()).toList(),
-      }),
-    );
+    await _serialize(key, () async {
+      if (_refreshSequence[key] != sequence || !await isAuthorized()) {
+        throw StateError('Carteira substituída por consulta mais recente.');
+      }
+      await preferences.setString(
+        '${key}_roster',
+        jsonEncode({
+          'tenantId': basis.tenantId,
+          'companyId': basis.companyId,
+          'farmId': basis.farmId,
+          'recordedAt': roster.recordedAt.toIso8601String(),
+          'animals': animals.map((e) => e.toMap()).toList(),
+        }),
+      );
+    });
     return roster;
   }
 
@@ -188,18 +215,22 @@ class AtlasGrazingAnimalsService {
   Future<void> saveSelection(
     AtlasPastureGrazingBasis basis,
     List<String> animalIds,
-    Future<bool> Function() isAuthorized,
-  ) async {
+    Future<bool> Function() isAuthorized, {
+    DateTime? expectedRosterAt,
+  }) async {
     final key = _key(basis);
     final selectedIds = List<String>.from(animalIds)..sort();
-    final previous = _writes[key] ?? Future<void>.value();
-    final write = previous.then((_) async {
+    await _serialize(key, () async {
       if (!await isAuthorized() || !basis.isCurrentAt(DateTime.now())) {
         throw StateError('Atualize a base de pastejo autorizada.');
       }
       final roster = await loadRoster(basis);
       if (roster == null || !roster.isCurrent(DateTime.now())) {
         throw StateError('Atualize a carteira de animais.');
+      }
+      if (expectedRosterAt != null &&
+          !roster.recordedAt.isAtSameMomentAs(expectedRosterAt)) {
+        throw StateError('A carteira mudou; revise os animais selecionados.');
       }
       final eligible = roster.animals
           .where((e) => e.active)
@@ -225,13 +256,18 @@ class AtlasGrazingAnimalsService {
         jsonEncode([...history.map((e) => e.toMap()), selection.toMap()]),
       );
     });
+  }
+
+  Future<T> _serialize<T>(String key, Future<T> Function() action) async {
+    final previous = _writes[key] ?? Future<void>.value();
+    final write = previous.then((_) => action());
     final tail = write.then<void>(
       (_) {},
       onError: (Object _, StackTrace __) {},
     );
     _writes[key] = tail;
     try {
-      await write;
+      return await write;
     } finally {
       if (identical(_writes[key], tail)) _writes.remove(key);
     }
