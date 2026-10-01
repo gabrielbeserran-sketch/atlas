@@ -425,6 +425,60 @@ void main() {
     expect(api.createCalls, 0);
   });
 
+  testWidgets('pesagem legada com data impossível fica para revisão sem POST', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final api = _FakeWeightsApi()..online = true;
+    final outbox = AnimalWeightOutboxService();
+    await outbox.upsert(
+      companyId: 'company-a',
+      farmId: 'farm-1',
+      animalId: 'animal-1',
+      entry: const PendingAnimalWeight(
+        record: AnimalWeightData(
+          id: 'legacy-invalid-date',
+          date: '31/02/2026',
+          weight: 440,
+          notes: '',
+          clientOperationId: 'legacy-invalid-date-operation',
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AnimalWeightListScreen(
+          animal: animal,
+          farm: farm,
+          group: group,
+          companyId: 'company-a',
+          weightEnterprise: api,
+          weightOutbox: outbox,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(api.createCalls, 0);
+    final pending = await outbox.load(
+      companyId: 'company-a',
+      farmId: 'farm-1',
+      animalId: 'animal-1',
+    );
+    expect(pending, hasLength(1));
+    expect(pending.single.record.date, '31/02/2026');
+    expect(pending.single.needsReview, isTrue);
+    expect(find.textContaining('data ou valor inválido'), findsOneWidget);
+    final summaries = {
+      for (final card in tester.widgetList<WeightSummaryCard>(
+        find.byType(WeightSummaryCard),
+      ))
+        card.title: card.value,
+    };
+    expect(summaries['Peso atual'], '400 kg');
+  });
+
   testWidgets('conflito bloqueia reenvio automático e mantém registro', (
     tester,
   ) async {

@@ -54,27 +54,32 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
     super.dispose();
   }
 
-  String? requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Este campo é obrigatório.';
-    }
-    return null;
-  }
-
   String? weightValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Este campo é obrigatório.';
     }
     final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
-    if (parsed == null || parsed <= 0) return 'Digite um peso válido.';
+    if (parsed == null || !parsed.isFinite || parsed <= 0) {
+      return 'Digite um peso válido.';
+    }
     return null;
   }
 
   String? bodyScoreValidator(String? value) {
     if (value == null || value.trim().isEmpty) return null;
     final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
-    if (parsed == null || parsed < 0 || parsed > 5) {
+    if (parsed == null || !parsed.isFinite || parsed < 0 || parsed > 5) {
       return 'Informe um escore entre 0 e 5.';
+    }
+    return null;
+  }
+
+  String? dateValidator(String? value) {
+    final parsed = parseDate(value ?? '');
+    final now = DateTime.now();
+    if (parsed == null ||
+        parsed.isAfter(DateTime(now.year, now.month, now.day))) {
+      return 'Informe uma data válida até hoje.';
     }
     return null;
   }
@@ -124,13 +129,7 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
       '${date.month.toString().padLeft(2, '0')}/${date.year}';
 
   static DateTime? parseDate(String value) {
-    final parts = value.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    if (day == null || month == null || year == null) return null;
-    return DateTime(year, month, day);
+    return AnimalWeightData.tryParseLocalDate(value);
   }
 
   static String formatNumber(double value) {
@@ -172,7 +171,7 @@ class _AnimalWeightFormScreenState extends State<AnimalWeightFormScreen> {
                     const SizedBox(height: 28),
                     TextFormField(
                       controller: dateController,
-                      validator: requiredValidator,
+                      validator: dateValidator,
                       readOnly: true,
                       onTap: selectDate,
                       decoration: const InputDecoration(

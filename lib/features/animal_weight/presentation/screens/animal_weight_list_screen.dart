@@ -93,9 +93,10 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
     return weights
         .where(
           (record) =>
-              record.isRemote ||
-              record.clientOperationId.isEmpty ||
-              !remoteOperationIds.contains(record.clientOperationId),
+              record.isValidForIndicators(DateTime.now()) &&
+              (record.isRemote ||
+                  record.clientOperationId.isEmpty ||
+                  !remoteOperationIds.contains(record.clientOperationId)),
         )
         .toList();
   }
@@ -195,6 +196,8 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
               }
               if (item.needsReview) continue;
               try {
+                // Valida dados locais antes do POST, inclusive registros legados.
+                item.record.toRemoteBody();
                 final created = await enterprise.createWeight(
                   animalId: animalId,
                   weight: item.record,
@@ -218,6 +221,18 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
                     ),
                   );
                 }
+              } on FormatException {
+                await outbox.upsert(
+                  companyId: companyId,
+                  farmId: farmId,
+                  animalId: animalId,
+                  entry: PendingAnimalWeight(
+                    record: item.record,
+                    needsReview: true,
+                  ),
+                );
+                nextNotice =
+                    'Uma pesagem local contém data ou valor inválido; confira antes de registrar novamente.';
               } on AtlasEnterpriseApiException catch (error) {
                 if (error.statusCode == 409 ||
                     (error.statusCode != null &&
@@ -331,17 +346,7 @@ class _AnimalWeightListScreenState extends State<AnimalWeightListScreen> {
   }
 
   DateTime parseDate(String value) {
-    final parts = value.split('/');
-
-    if (parts.length != 3) {
-      return DateTime(1900);
-    }
-
-    final day = int.tryParse(parts[0]) ?? 1;
-    final month = int.tryParse(parts[1]) ?? 1;
-    final year = int.tryParse(parts[2]) ?? 1900;
-
-    return DateTime(year, month, day);
+    return AnimalWeightData.tryParseLocalDate(value) ?? DateTime(1900);
   }
 
   Future<void> openWeightForm() async {
