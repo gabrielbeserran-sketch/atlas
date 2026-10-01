@@ -14,7 +14,9 @@ from ..models import EntityState, ProcessedOperation, SyncChange, new_id
 from ..offline_models import OfflineDevice, OfflineDiagnostic, SyncConflict
 from ..schemas import SyncPushRequest, SyncPushResponse
 from ..services.audit import record_audit
-from ..services.sync_dairy_contract import validate_dairy_entity, validate_dairy_push
+from ..services.sync_dairy_contract import (
+    DAILY_PRODUCTION, HERD_SNAPSHOT, validate_dairy_entity, validate_dairy_push,
+)
 from ..services.sync_farm_scope import reject_cross_farm_state, visible_farm_clause
 from ..services.sync_idempotency import replay_processed_operation, stored_result
 from ..services.sync_transaction_lock import lock_sync_entity, lock_sync_requests
@@ -42,6 +44,16 @@ class DiagnosticRequest(BaseModel):
 class BatchPushRequest(BaseModel):
     operations: list[SyncPushRequest] = Field(min_length=1, max_length=200)
     stop_on_conflict: bool = False
+
+
+class DairyLookupKey(BaseModel):
+    entity_type: Literal["dairy_daily_production", "dairy_herd_snapshot"]
+    entity_id: str = Field(min_length=1, max_length=120)
+
+
+class DairyLookupRequest(BaseModel):
+    farm_id: str = Field(min_length=1, max_length=80)
+    items: list[DairyLookupKey] = Field(min_length=1, max_length=200)
 
 
 class ConflictResolutionRequest(BaseModel):
@@ -127,6 +139,58 @@ def push_batch(payload: BatchPushRequest, principal: Principal = Depends(require
     record_audit(db, principal=principal, action="offline_push_batch", module="sync", entity_type="sync_batch", entity_id=new_id("batch"), description="Lote offline processado.", after={"accepted": accepted, "conflicts": conflicts, "rejected": rejected})
     db.commit()
     return {"accepted": accepted, "conflicts": conflicts, "rejected": rejected, "results": results}
+
+
+@router.post("/dairy/lookup")
+def lookup_dairy_entities(
+    payload: DairyLookupRequest,
+    principal: Principal = Depends(require_permission("sync.read")),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Read exact dairy versions; an incremental cache miss proves nothing."""
+    require_farm_scope(principal, payload.farm_id)
+    keys: set[tuple[str, str]] = set()
+    for item in payload.items:
+        key = (item.entity_type, item.entity_id)
+        if key in keys:
+            raise HTTPException(status_code=422, detail="ID de Leite duplicado na consulta.")
+        keys.add(key)
+        error = validate_dairy_entity(
+            entity_type=item.entity_type,
+            entity_id=item.entity_id,
+            farm_id=payload.farm_id,
+            operation_type="delete",
+            payload={},
+        )
+        if error is not None:
+            raise HTTPException(status_code=422, detail=error)
+
+    states = db.scalars(
+        select(EntityState).where(
+            EntityState.company_id == principal.company.id,
+            EntityState.tenant_id == principal.company.tenant_id,
+            EntityState.farm_id == payload.farm_id,
+            EntityState.entity_type.in_((DAILY_PRODUCTION, HERD_SNAPSHOT)),
+            EntityState.entity_id.in_(item.entity_id for item in payload.items),
+        )
+    ).all()
+    by_key = {(state.entity_type, state.entity_id): state for state in states}
+    results = []
+    for item in payload.items:
+        state = by_key.get((item.entity_type, item.entity_id))
+        results.append({
+            "entity_type": item.entity_type,
+            "entity_id": item.entity_id,
+            "found": state is not None,
+            "version": state.version if state is not None else 0,
+            "deleted": state.deleted if state is not None else False,
+            "payload": state.payload if state is not None else {},
+        })
+    return {
+        "farm_id": payload.farm_id,
+        "read_at": datetime.now(timezone.utc).isoformat(),
+        "items": results,
+    }
 
 
 @router.get("/pull-page")

@@ -148,6 +148,156 @@ def operation(
     }
 
 
+def dairy_lookup(*entity_ids, farm_id="farm-A", entity_type="dairy_daily_production"):
+    return {
+        "farm_id": farm_id,
+        "items": [
+            {"entity_type": entity_type, "entity_id": entity_id}
+            for entity_id in entity_ids
+        ],
+    }
+
+
+def test_dairy_lookup_reads_exact_versions_and_tombstones(authenticated_api):
+    client, engine, headers = authenticated_api
+    account = headers("a")
+    entity_id = "farm-A:2026-09-30"
+    payload = {
+        "farm_id": "farm-A", "date": "2026-09-30T00:00:00.000",
+        "morning_liters": 120, "afternoon_liters": 90,
+        "cows_milked": 30,
+    }
+    first = {
+        **operation(entity_id=entity_id, payload=payload),
+        "entity_type": "dairy_daily_production",
+    }
+    assert client.post("/api/v1/sync/push", json=first, headers=account).json()["accepted"]
+
+    request = dairy_lookup(entity_id, "farm-A:2026-09-29")
+    found = client.post(
+        "/api/v1/offline/dairy/lookup", json=request, headers=account,
+    )
+    assert found.status_code == 200
+    assert found.json()["farm_id"] == "farm-A"
+    assert found.json()["read_at"]
+    assert found.json()["items"] == [
+        {
+            "entity_type": "dairy_daily_production", "entity_id": entity_id,
+            "found": True, "version": 1, "deleted": False,
+            "payload": payload,
+        },
+        {
+            "entity_type": "dairy_daily_production",
+            "entity_id": "farm-A:2026-09-29", "found": False,
+            "version": 0, "deleted": False, "payload": {},
+        },
+    ]
+    assert client.post(
+        "/api/v1/offline/dairy/lookup", json=request, headers=headers("viewer"),
+    ).status_code == 200
+
+    deletion = {
+        **first, "operation_id": "op-delete", "idempotency_key": "key-delete",
+        "operation_type": "delete", "base_version": 1, "payload": {},
+    }
+    assert client.post("/api/v1/sync/push", json=deletion, headers=account).json()["accepted"]
+    tombstone = client.post(
+        "/api/v1/offline/dairy/lookup", json=dairy_lookup(entity_id),
+        headers=account,
+    ).json()["items"][0]
+    assert (tombstone["found"], tombstone["version"], tombstone["deleted"]) == (True, 2, True)
+    with Session(engine) as db:
+        assert db.query(EntityState).count() == 1
+        assert db.query(SyncChange).count() == 2
+
+
+def test_dairy_lookup_rejects_foreign_scope_and_malformed_batch(authenticated_api):
+    client, engine, headers = authenticated_api
+    route = "/api/v1/offline/dairy/lookup"
+    valid = dairy_lookup("farm-A:2026-09-30")
+    assert client.post(route, json=valid).status_code in (401, 403)
+    assert client.post(route, json=valid, headers=headers("a", session="missing")).status_code == 401
+    assert client.post(route, json=valid, headers=headers("a", tenant="wrong")).status_code == 403
+    assert client.post(route, json=valid, headers=headers("b")).status_code == 403
+    assert client.post(
+        route, json=dairy_lookup("farm-A:2026-09-30", farm_id="farm-B"),
+        headers=headers("b"),
+    ).status_code == 422
+    for invalid in (
+        dairy_lookup("farm-A:2026-02-30"),
+        dairy_lookup("farm-B:2026-09-30"),
+        dairy_lookup("farm-A:2026-09-30", "farm-A:2026-09-30"),
+        dairy_lookup("farm-A:2026-09-30", entity_type="farm_note"),
+        dairy_lookup(),
+        {"farm_id": "farm-A", "items": [valid["items"][0]] * 201},
+    ):
+        assert client.post(route, json=invalid, headers=headers("a")).status_code == 422
+    with Session(engine) as db:
+        assert db.query(EntityState).count() == 0
+        assert db.query(AuditLog).count() == 0
+
+
+def test_dairy_lookup_isolates_company_farm_and_entity_type(authenticated_api):
+    client, engine, headers = authenticated_api
+    key = "farm-A:2026-09-30"
+    with Session(engine) as db:
+        db.add_all([
+            EntityState(
+                id="entity-other-company", tenant_id="tenant-company-B",
+                company_id="company-B", farm_id="farm-A",
+                entity_type="dairy_daily_production", entity_id=key,
+                version=7, payload={"secret": "company-B"}, deleted=False,
+                updated_by="user-b",
+            ),
+            EntityState(
+                id="entity-other-farm", tenant_id="tenant-company-A",
+                company_id="company-A", farm_id="farm-B",
+                entity_type="dairy_daily_production", entity_id=key,
+                version=8, payload={"secret": "farm-B"}, deleted=False,
+                updated_by="user-a",
+            ),
+            EntityState(
+                id="entity-herd", tenant_id="tenant-company-A",
+                company_id="company-A", farm_id="farm-A",
+                entity_type="dairy_herd_snapshot", entity_id=key,
+                version=3, payload={"eligible_cows": 50}, deleted=False,
+                updated_by="user-a",
+            ),
+        ])
+        db.commit()
+    response = client.post(
+        "/api/v1/offline/dairy/lookup",
+        json={"farm_id": "farm-A", "items": [
+            {"entity_type": "dairy_daily_production", "entity_id": key},
+            {"entity_type": "dairy_herd_snapshot", "entity_id": key},
+        ]},
+        headers=headers("a"),
+    )
+    assert response.status_code == 200
+    daily, herd = response.json()["items"]
+    assert daily == {
+        "entity_type": "dairy_daily_production", "entity_id": key,
+        "found": False, "version": 0, "deleted": False, "payload": {},
+    }
+    assert herd["found"] is True and herd["version"] == 3
+    assert herd["payload"] == {"eligible_cows": 50}
+    assert "secret" not in response.text
+
+
+def test_dairy_lookup_accepts_full_bounded_batch(authenticated_api):
+    client, _engine, headers = authenticated_api
+    first = datetime(2026, 1, 1)
+    ids = [f"farm-A:{(first + timedelta(days=index)).date().isoformat()}"
+           for index in range(200)]
+    response = client.post(
+        "/api/v1/offline/dairy/lookup", json=dairy_lookup(*ids),
+        headers=headers("a"),
+    )
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 200
+    assert all(not item["found"] for item in response.json()["items"])
+
+
 def test_two_companies_cannot_replay_or_pull_each_others_changes(api):
     client, current, _engine = api
     first = client.post("/api/v1/sync/push", json=operation())
