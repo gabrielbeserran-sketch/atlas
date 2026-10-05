@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import '../../network/atlas_http_client.dart';
@@ -8,6 +7,7 @@ import '../models/offline_operation.dart';
 import '../models/offline_sync_models.dart';
 import '../services/offline_repository.dart';
 import '../services/offline_sync_coordinator.dart';
+import '../services/offline_device_identity.dart';
 
 class AtlasOfflineController extends ChangeNotifier {
   AtlasOfflineController({
@@ -186,7 +186,7 @@ class AtlasOfflineController extends ChangeNotifier {
       var deviceId = _deviceId;
       if (deviceId == null) {
         final registered = await _coordinator.registerDevice(
-          deviceKey: _deviceKey(session.userId),
+          deviceKey: OfflineDeviceIdentity.key(session.userId),
         );
         if (!isScopeCurrent()) return;
         _deviceId = registered;
@@ -298,11 +298,5 @@ class AtlasOfflineController extends ChangeNotifier {
     } catch (_) {
       return false;
     }
-  }
-
-  String _deviceKey(String userId) {
-    final seed =
-        '${Platform.localHostname}:${Platform.operatingSystem}:$userId';
-    return '${Platform.operatingSystem}-${seed.hashCode.abs()}-$userId';
   }
 }

@@ -32,6 +32,7 @@ void main() {
     );
     await AtlasOfflineDatabase.upgradeToVersion3(db);
     await AtlasOfflineDatabase.upgradeToVersion4(db);
+    await AtlasOfflineDatabase.upgradeToVersion5(db);
     production = DairyProductionStorageService();
     review = DairyOfflineReviewService(
       database: db,
@@ -117,6 +118,7 @@ void main() {
           'staged_at': '2026-10-05T00:00:00Z',
         });
         await AtlasOfflineDatabase.upgradeToVersion4(older);
+        await AtlasOfflineDatabase.upgradeToVersion5(older);
         expect(
           (await older.query('operation_queue')).single['id'],
           'existing-op',

@@ -211,4 +211,49 @@ void main() {
     expect(find.textContaining('exige nova conferência'), findsOneWidget);
     expect(find.text('Retirar preferência'), findsOneWidget);
   });
+
+  testWidgets(
+    'aprovação só aparece antes de promoção; retirada não finge cancelar fila',
+    (tester) async {
+      const local = DairyReviewItem(
+        'dairy_daily_production',
+        'farm-a:2026-09-30',
+        DairyReviewStatus.waitingForCache,
+        stagedPayload: {'morning_liters': 10},
+        localPayload: {'morning_liters': 10},
+      );
+      DairySavedDecision saved(String? operationId) => DairySavedDecision(
+        entityType: local.entityType,
+        entityId: local.entityId,
+        choice: DairyDecisionChoice.preferLocal,
+        stagedPayload: const {'morning_liters': 10},
+        remoteVersion: 0,
+        remoteDeleted: false,
+        remotePayload: const {},
+        decidedAt: DateTime.utc(2026, 10, 5),
+        promotedOperationId: operationId,
+      );
+      var approved = 0;
+      Widget screen(String? operationId) => MaterialApp(
+        home: Scaffold(
+          body: DairyReviewDetails(
+            local: local,
+            decision: saved(operationId),
+            onApproveSend: () => approved++,
+            onRemoveDecision: () {},
+          ),
+        ),
+      );
+      await tester.pumpWidget(screen(null));
+      await tester.tap(find.text('Ordenha · 30/09/2026'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aprovar entrada na fila'));
+      expect(approved, 1);
+      await tester.pumpWidget(screen('op-1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Aprovar entrada na fila'), findsNothing);
+      expect(find.text('Retirar preferência'), findsNothing);
+      expect(find.textContaining('não cancela a operação'), findsOneWidget);
+    },
+  );
 }

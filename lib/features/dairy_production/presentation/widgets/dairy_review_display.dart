@@ -112,6 +112,7 @@ class DairyReviewDetails extends StatelessWidget {
     this.onPreferLocal,
     this.onKeepServer,
     this.onRemoveDecision,
+    this.onApproveSend,
     super.key,
   });
 
@@ -121,6 +122,7 @@ class DairyReviewDetails extends StatelessWidget {
   final VoidCallback? onPreferLocal;
   final VoidCallback? onKeepServer;
   final VoidCallback? onRemoveDecision;
+  final VoidCallback? onApproveSend;
 
   @override
   Widget build(BuildContext context) {
@@ -187,17 +189,29 @@ class DairyReviewDetails extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
-              decision!.matchesLocal(local)
+              decision!.isPromoted
+                  ? 'Operação preparada na fila. Acompanhe o envio na Central offline; retirar a preferência não cancela a operação.'
+                  : decision!.matchesLocal(local)
                   ? 'Não enviado. O servidor será conferido novamente antes de qualquer envio.'
                   : 'Dados locais mudaram: esta preferência exige nova conferência.',
             ),
-            if (onRemoveDecision != null)
+            if (onApproveSend != null &&
+                !decision!.isPromoted &&
+                decision!.choice == DairyDecisionChoice.preferLocal &&
+                decision!.matchesLocal(local))
+              FilledButton.icon(
+                onPressed: onApproveSend,
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: const Text('Aprovar entrada na fila'),
+              ),
+            if (onRemoveDecision != null && !decision!.isPromoted)
               TextButton(
                 onPressed: onRemoveDecision,
                 child: const Text('Retirar preferência'),
               ),
           ],
           if (remote != null &&
+              decision?.isPromoted != true &&
               const {
                 DairyRemoteReviewStatus.absentOnServer,
                 DairyRemoteReviewStatus.differsOnServer,

@@ -17,6 +17,8 @@ class DairySavedDecision {
     required this.remoteDeleted,
     required this.remotePayload,
     required this.decidedAt,
+    this.promotedOperationId,
+    this.promotedAt,
   });
 
   final String entityType;
@@ -27,6 +29,10 @@ class DairySavedDecision {
   final bool remoteDeleted;
   final Map<String, dynamic> remotePayload;
   final DateTime decidedAt;
+  final String? promotedOperationId;
+  final DateTime? promotedAt;
+
+  bool get isPromoted => promotedOperationId != null;
 
   String get key => '$entityType:$entityId';
 
@@ -158,21 +164,18 @@ class DairySyncDecisionService {
         'operation_queue',
         columns: ['id'],
         where:
-            'company_id = ? AND tenant_id = ? AND farm_id = ? AND entity_type = ? AND entity_id = ? AND status IN (?, ?, ?)',
+            'company_id = ? AND tenant_id = ? AND farm_id = ? AND entity_type = ? AND entity_id = ?',
         whereArgs: [
           companyId,
           tenantId,
           farmId,
           entry.local.entityType,
           entry.local.entityId,
-          'pending',
-          'retry',
-          'conflict',
         ],
         limit: 1,
       );
       if (queued.isNotEmpty) {
-        throw StateError('Este registro já tem uma operação pendente na fila.');
+        throw StateError('Este registro já possui uma operação na fila.');
       }
       final previous = await txn.query(
         'dairy_sync_decision',
@@ -186,6 +189,12 @@ class DairySyncDecisionService {
           entry.local.entityId,
         ],
       );
+      if (previous.isNotEmpty &&
+          previous.single['promoted_operation_id'] != null) {
+        throw StateError(
+          'Esta preferência já gerou uma operação. Acompanhe a Central offline.',
+        );
+      }
       if (previous.isNotEmpty &&
           previous.single['choice'] == choiceValue &&
           _sameJsonText(
@@ -253,6 +262,8 @@ class DairySyncDecisionService {
           remoteDeleted: row['remote_deleted'] == 1,
           remotePayload: _map(row['remote_payload_json']),
           decidedAt: DateTime.parse(row['decided_at'].toString()),
+          promotedOperationId: row['promoted_operation_id']?.toString(),
+          promotedAt: DateTime.tryParse(row['promoted_at']?.toString() ?? ''),
         ),
       ),
     );
@@ -266,12 +277,22 @@ class DairySyncDecisionService {
     required String entityId,
   }) async {
     final db = _database ?? await AtlasOfflineDatabase.instance.database;
-    await db.delete(
-      'dairy_sync_decision',
-      where:
-          'company_id = ? AND tenant_id = ? AND farm_id = ? AND entity_type = ? AND entity_id = ?',
-      whereArgs: [companyId, tenantId, farmId, entityType, entityId],
-    );
+    await db.transaction((txn) async {
+      final where =
+          'company_id = ? AND tenant_id = ? AND farm_id = ? AND entity_type = ? AND entity_id = ?';
+      final args = [companyId, tenantId, farmId, entityType, entityId];
+      final rows = await txn.query(
+        'dairy_sync_decision',
+        where: where,
+        whereArgs: args,
+      );
+      if (rows.isNotEmpty && rows.single['promoted_operation_id'] != null) {
+        throw StateError(
+          'Esta preferência já gerou uma operação e não pode ser retirada.',
+        );
+      }
+      await txn.delete('dairy_sync_decision', where: where, whereArgs: args);
+    });
   }
 
   static Map<String, dynamic> _map(Object? json) =>

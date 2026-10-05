@@ -8,6 +8,9 @@ import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offl
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_promotion_service.dart';
+import 'package:projeto_atlas/core/offline/services/offline_sync_coordinator.dart';
+import 'package:projeto_atlas/core/offline/services/offline_device_identity.dart';
 import 'package:projeto_atlas/features/dairy_production/presentation/widgets/dairy_review_display.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
@@ -30,6 +33,8 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _offlineReview = DairyOfflineReviewService();
   final _remoteLookup = DairyRemoteLookupService();
   final _decisions = DairySyncDecisionService();
+  final _promotion = DairySyncPromotionService();
+  final _syncCoordinator = OfflineSyncCoordinator();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
@@ -41,6 +46,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   bool _hasScopedStage = false;
   bool _checkingServer = false;
   bool _savingDecision = false;
+  bool _approvingSend = false;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -276,6 +282,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   savedByKey.containsKey('${item.entityType}:${item.entityId}')
                   ? () => _removeDecision(item)
                   : null,
+              onApproveSend:
+                  session.allows('sync.manage') &&
+                      savedByKey.containsKey(
+                        '${item.entityType}:${item.entityId}',
+                      )
+                  ? () => _approveSend(item)
+                  : null,
             ),
         ],
       );
@@ -288,6 +301,89 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           ),
         ),
       );
+    }
+  }
+
+  Future<void> _approveSend(DairyReviewItem item) async {
+    if (_approvingSend) return;
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null ||
+        farmId == null ||
+        active.farmId != farmId ||
+        !session.allows('sync.manage')) {
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Aprovar envio deste registro?'),
+        content: const Text(
+          'O Atlas consultará novamente o servidor e os dados deste aparelho. '
+          'Se nada mudou, criará uma operação na fila offline, que poderá ser enviada '
+          'automaticamente quando houver conexão. Depois disso, retirar a preferência '
+          'não cancela o envio.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Aprovar entrada na fila'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    bool scopeCurrent() {
+      final current = active.session;
+      return mounted &&
+          active.farmId == farmId &&
+          current?.userId == session.userId &&
+          current?.companyId == session.companyId &&
+          current?.tenantId == session.tenantId &&
+          current?.allows('sync.manage') == true;
+    }
+
+    if (!scopeCurrent()) return;
+    setState(() => _approvingSend = true);
+    try {
+      final result = await _promotion.approve(
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+        entityType: item.entityType,
+        entityId: item.entityId,
+        isScopeCurrent: scopeCurrent,
+        resolveDeviceId: () => _syncCoordinator.registerDevice(
+          deviceKey: OfflineDeviceIdentity.key(session.userId),
+        ),
+      );
+      if (!scopeCurrent()) return;
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.alreadyQueued
+                ? 'Este registro já estava na fila. Acompanhe pela Central offline.'
+                : 'Registro incluído na fila. Acompanhe o envio pela Central offline.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted || !scopeCurrent()) return;
+      final reason = error is StateError
+          ? error.message.toString()
+          : 'Confira a conexão e tente novamente.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nada foi enfileirado. $reason')));
+    } finally {
+      if (mounted) setState(() => _approvingSend = false);
     }
   }
 

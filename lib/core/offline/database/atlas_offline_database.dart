@@ -7,7 +7,7 @@ class AtlasOfflineDatabase {
   AtlasOfflineDatabase._();
 
   static final AtlasOfflineDatabase instance = AtlasOfflineDatabase._();
-  static const int schemaVersion = 4;
+  static const int schemaVersion = 5;
 
   Database? _database;
 
@@ -38,6 +38,9 @@ class AtlasOfflineDatabase {
           }
           if (oldVersion < 4) {
             await upgradeToVersion4(db);
+          }
+          if (oldVersion < 5) {
+            await upgradeToVersion5(db);
           }
         },
       ),
@@ -207,6 +210,7 @@ class AtlasOfflineDatabase {
     );
     await upgradeToVersion3(db);
     await upgradeToVersion4(db);
+    await upgradeToVersion5(db);
   }
 
   /// Preparation only: staged dairy records never enter the send queue.
@@ -244,6 +248,24 @@ class AtlasOfflineDatabase {
       'PRIMARY KEY(company_id, tenant_id, farm_id, entity_type, entity_id)'
       ')',
     );
+  }
+
+  /// Retains proof that a decision has already produced one queue operation.
+  static Future<void> upgradeToVersion5(Database db) async {
+    final columns = (await db.rawQuery(
+      'PRAGMA table_info(dairy_sync_decision)',
+    )).map((row) => row['name']?.toString()).toSet();
+    if (!columns.contains('promoted_operation_id')) {
+      await db.execute(
+        'ALTER TABLE dairy_sync_decision '
+        'ADD COLUMN promoted_operation_id TEXT',
+      );
+    }
+    if (!columns.contains('promoted_at')) {
+      await db.execute(
+        'ALTER TABLE dairy_sync_decision ADD COLUMN promoted_at TEXT',
+      );
+    }
   }
 
   /// A v1 schema has no verified lossless mapping yet. Never erase its queue.
