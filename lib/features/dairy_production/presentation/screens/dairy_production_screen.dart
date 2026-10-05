@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
@@ -5,6 +7,7 @@ import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
+import 'package:projeto_atlas/features/dairy_production/presentation/widgets/dairy_review_display.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_daily_production_data.dart';
@@ -186,25 +189,19 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         remote: remote,
       );
       if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Conferência de Leite no servidor'),
-          content: Text(
-            'Iguais: ${report.count(DairyRemoteReviewStatus.sameOnServer)}\n'
-            'Ainda ausentes: ${report.count(DairyRemoteReviewStatus.absentOnServer)}\n'
-            'Divergentes: ${report.count(DairyRemoteReviewStatus.differsOnServer)}\n'
-            'Excluídos no servidor: ${report.count(DairyRemoteReviewStatus.deletedOnServer)}\n'
-            'Revisar dados locais: ${report.count(DairyRemoteReviewStatus.localReview)}\n\n'
-            'Leitura pontual; nenhum registro foi enviado, alterado ou aprovado para sincronização.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Fechar'),
-            ),
-          ],
-        ),
+      await _showReviewDialog(
+        title: 'Conferência de Leite no servidor',
+        summary:
+            'Iguais: ${report.count(DairyRemoteReviewStatus.sameOnServer)} · '
+            'Ausentes: ${report.count(DairyRemoteReviewStatus.absentOnServer)} · '
+            'Divergentes: ${report.count(DairyRemoteReviewStatus.differsOnServer)} · '
+            'Excluídos: ${report.count(DairyRemoteReviewStatus.deletedOnServer)} · '
+            'Revisão local: ${report.count(DairyRemoteReviewStatus.localReview)}. '
+            'Toque em cada registro para comparar. Nada foi enviado ou aprovado.',
+        details: [
+          for (final entry in report.entries)
+            DairyReviewDetails(local: entry.local, remote: entry),
+        ],
       );
     } catch (_) {
       if (mounted && scopeCurrent()) {
@@ -219,6 +216,73 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
     } finally {
       if (mounted) setState(() => _checkingServer = false);
     }
+  }
+
+  Future<void> _showLocalReview() async {
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null || farmId == null || active.farmId != farmId) return;
+    try {
+      final report = await _offlineReview.review(
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+      );
+      if (!mounted ||
+          active.farmId != farmId ||
+          active.session?.userId != session.userId ||
+          active.session?.companyId != session.companyId ||
+          active.session?.tenantId != session.tenantId) {
+        return;
+      }
+      await _showReviewDialog(
+        title: 'Registros preparados de Leite',
+        summary:
+            'Nesta fazenda: ${report.items.length} registro(s). '
+            'A comparação com a última cópia recebida não confirma o estado atual do servidor. '
+            'Nada foi enviado.',
+        details: [
+          for (final item in report.items) DairyReviewDetails(local: item),
+        ],
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível revisar os registros preparados. Os dados originais permanecem disponíveis.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showReviewDialog({
+    required String title,
+    required String summary,
+    required List<Widget> details,
+  }) {
+    final size = MediaQuery.sizeOf(context);
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: SizedBox(
+          width: math.min(640, math.max(240, size.width - 80)),
+          height: math.min(520, math.max(220, size.height - 240)),
+          child: ListView(
+            children: [Text(summary), const SizedBox(height: 12), ...details],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -276,6 +340,11 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                           Text(_stageNotice!),
                           if (_hasScopedStage) ...[
                             const SizedBox(height: 8),
+                            OutlinedButton.icon(
+                              onPressed: _showLocalReview,
+                              icon: const Icon(Icons.list_alt_outlined),
+                              label: const Text('Ver registros preparados'),
+                            ),
                             OutlinedButton.icon(
                               onPressed: _checkingServer ? null : _checkServer,
                               icon: _checkingServer

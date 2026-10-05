@@ -58,6 +58,9 @@ void main() {
         remote: [remote],
       );
       expect(report.count(expected), 1);
+      expect(report.entries.single.local.entityId, _key.entityId);
+      expect(report.entries.single.remote.version, remote.version);
+      expect(report.entries.single.status, expected);
     }
   });
 

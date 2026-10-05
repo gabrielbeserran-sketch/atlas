@@ -268,15 +268,15 @@ void main() {
     );
 
     await saveCache(payload: {...original, 'morning_liters': 99});
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.differsFromCached,
-    );
+    final divergent = (await inspect()).items.single;
+    expect(divergent.status, DairyReviewStatus.differsFromCached);
+    expect(divergent.cachedVersion, 1);
+    expect(divergent.cachedPayload!['morning_liters'], 99);
     await saveCache(payload: {}, deleted: true);
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.deletedInCache,
-    );
+    final deleted = (await inspect()).items.single;
+    expect(deleted.status, DairyReviewStatus.deletedInCache);
+    expect(deleted.cachedDeleted, isTrue);
+    expect(deleted.cachedPayload, isNull);
     expect(await db.query('operation_queue'), isEmpty);
   });
 
@@ -300,15 +300,15 @@ void main() {
         cowsMilked: 5,
       ),
     );
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.localChanged,
-    );
+    final changed = (await inspect()).items.single;
+    expect(changed.status, DairyReviewStatus.localChanged);
+    expect(changed.stagedPayload!['morning_liters'], 30);
+    expect(changed.localPayload!['morning_liters'], 40);
     await production.delete(farm, day);
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.localMissing,
-    );
+    final missing = (await inspect()).items.single;
+    expect(missing.status, DairyReviewStatus.localMissing);
+    expect(missing.stagedPayload!['morning_liters'], 30);
+    expect(missing.localPayload, isNull);
     expect((await db.query('dairy_sync_stage')).length, 1);
   });
 
@@ -328,24 +328,22 @@ void main() {
       jsonDecode(staged['payload_json']! as String) as Map,
     );
     await saveCache(payload: original, tenant: 'tenant-b');
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.scopeConflict,
-    );
+    final outside = (await inspect()).items.single;
+    expect(outside.status, DairyReviewStatus.scopeConflict);
+    expect(outside.cachedPayload, isNull);
+    expect(outside.cachedVersion, isNull);
     await saveCache(payload: original);
     await db.update('entity_cache', {'payload_json': 'broken'});
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.invalidCache,
-    );
+    final broken = (await inspect()).items.single;
+    expect(broken.status, DairyReviewStatus.invalidCache);
+    expect(broken.cachedPayload, isNull);
     await db.update('entity_cache', {
       'payload_json': jsonEncode(original),
       'version': 0,
     });
-    expect(
-      (await inspect()).items.single.status,
-      DairyReviewStatus.invalidCache,
-    );
+    final unversioned = (await inspect()).items.single;
+    expect(unversioned.status, DairyReviewStatus.invalidCache);
+    expect(unversioned.cachedVersion, isNull);
     await db.update('dairy_sync_stage', {'payload_json': '{'});
     expect(
       (await inspect()).items.single.status,

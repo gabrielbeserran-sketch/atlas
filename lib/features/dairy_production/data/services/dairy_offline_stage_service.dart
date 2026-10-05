@@ -164,11 +164,19 @@ class DairyReviewItem {
     this.entityId,
     this.status, {
     this.stagedPayload,
+    this.localPayload,
+    this.cachedPayload,
+    this.cachedVersion,
+    this.cachedDeleted = false,
   });
   final String entityType;
   final String entityId;
   final DairyReviewStatus status;
   final Map<String, dynamic>? stagedPayload;
+  final Map<String, dynamic>? localPayload;
+  final Map<String, dynamic>? cachedPayload;
+  final int? cachedVersion;
+  final bool cachedDeleted;
 
   bool get needsDecision => !const {
     DairyReviewStatus.waitingForCache,
@@ -305,7 +313,39 @@ class DairyOfflineReviewService {
           }
         }
       }
-      items.add(DairyReviewItem(type, id, status, stagedPayload: payload));
+      final cachedRow = cacheByKey['$type:$id'];
+      final cachedInScope =
+          cachedRow != null &&
+          cachedRow['tenant_id'] == tenantId &&
+          cachedRow['farm_id'] == farmId;
+      final cachedVersion = cachedInScope
+          ? (cachedRow['version'] as num?)?.toInt()
+          : null;
+      final cachedValid =
+          cachedInScope &&
+          cachedVersion != null &&
+          cachedVersion > 0 &&
+          (cachedRow['deleted'] == 0 || cachedRow['deleted'] == 1);
+      final cachedDeleted = cachedValid && cachedRow['deleted'] == 1;
+      final cachedPayload = cachedValid && !cachedDeleted
+          ? _decodeMap(cachedRow['payload_json'])
+          : null;
+      items.add(
+        DairyReviewItem(
+          type,
+          id,
+          status,
+          stagedPayload: payload == null ? null : Map.unmodifiable(payload),
+          localPayload: local['$type:$id'] == null
+              ? null
+              : Map.unmodifiable(local['$type:$id']!),
+          cachedPayload: cachedPayload == null
+              ? null
+              : Map.unmodifiable(cachedPayload),
+          cachedVersion: cachedValid ? cachedVersion : null,
+          cachedDeleted: cachedDeleted,
+        ),
+      );
     }
     return DairyReviewReport(List.unmodifiable(items));
   }

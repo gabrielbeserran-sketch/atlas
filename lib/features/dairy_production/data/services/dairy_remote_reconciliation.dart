@@ -10,12 +10,27 @@ enum DairyRemoteReviewStatus {
 }
 
 class DairyRemoteReviewReport {
-  const DairyRemoteReviewReport(this.statuses);
+  const DairyRemoteReviewReport(this.entries);
 
-  final List<DairyRemoteReviewStatus> statuses;
+  final List<DairyRemoteReviewEntry> entries;
+
+  List<DairyRemoteReviewStatus> get statuses =>
+      entries.map((entry) => entry.status).toList(growable: false);
 
   int count(DairyRemoteReviewStatus status) =>
       statuses.where((value) => value == status).length;
+}
+
+class DairyRemoteReviewEntry {
+  const DairyRemoteReviewEntry({
+    required this.local,
+    required this.remote,
+    required this.status,
+  });
+
+  final DairyReviewItem local;
+  final DairyRemoteState remote;
+  final DairyRemoteReviewStatus status;
 }
 
 /// A read-only comparison of one exact lookup with an unchanged local stage.
@@ -41,7 +56,7 @@ class DairyRemoteReconciliation {
         results.length != remote.length) {
       throw StateError('A consulta de Leite contém registros duplicados.');
     }
-    final statuses = <DairyRemoteReviewStatus>[];
+    final entries = <DairyRemoteReviewEntry>[];
     for (final item in after.items) {
       final key = '${item.entityType}:${item.entityId}';
       final previous = prior[key];
@@ -51,6 +66,7 @@ class DairyRemoteReconciliation {
           !_same(previous.stagedPayload, item.stagedPayload)) {
         throw StateError('Os registros de Leite mudaram durante a consulta.');
       }
+      DairyRemoteReviewStatus status;
       if (const {
             DairyReviewStatus.localChanged,
             DairyReviewStatus.localMissing,
@@ -58,18 +74,21 @@ class DairyRemoteReconciliation {
             DairyReviewStatus.scopeConflict,
           }.contains(item.status) ||
           item.stagedPayload == null) {
-        statuses.add(DairyRemoteReviewStatus.localReview);
+        status = DairyRemoteReviewStatus.localReview;
       } else if (!result.found) {
-        statuses.add(DairyRemoteReviewStatus.absentOnServer);
+        status = DairyRemoteReviewStatus.absentOnServer;
       } else if (result.deleted) {
-        statuses.add(DairyRemoteReviewStatus.deletedOnServer);
+        status = DairyRemoteReviewStatus.deletedOnServer;
       } else if (_same(item.stagedPayload, result.payload)) {
-        statuses.add(DairyRemoteReviewStatus.sameOnServer);
+        status = DairyRemoteReviewStatus.sameOnServer;
       } else {
-        statuses.add(DairyRemoteReviewStatus.differsOnServer);
+        status = DairyRemoteReviewStatus.differsOnServer;
       }
+      entries.add(
+        DairyRemoteReviewEntry(local: item, remote: result, status: status),
+      );
     }
-    return DairyRemoteReviewReport(List.unmodifiable(statuses));
+    return DairyRemoteReviewReport(List.unmodifiable(entries));
   }
 
   static bool _same(Object? left, Object? right) {
