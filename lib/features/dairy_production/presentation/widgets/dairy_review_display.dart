@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
 
 class DairyReviewField {
   const DairyReviewField(this.label, this.value);
@@ -104,10 +105,22 @@ class DairyReviewDisplay {
 }
 
 class DairyReviewDetails extends StatelessWidget {
-  const DairyReviewDetails({required this.local, this.remote, super.key});
+  const DairyReviewDetails({
+    required this.local,
+    this.remote,
+    this.decision,
+    this.onPreferLocal,
+    this.onKeepServer,
+    this.onRemoveDecision,
+    super.key,
+  });
 
   final DairyReviewItem local;
   final DairyRemoteReviewEntry? remote;
+  final DairySavedDecision? decision;
+  final VoidCallback? onPreferLocal;
+  final VoidCallback? onKeepServer;
+  final VoidCallback? onRemoveDecision;
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +176,55 @@ class DairyReviewDetails extends StatelessWidget {
               'Consulta em ${DateFormat('dd/MM/yyyy HH:mm').format(remote!.remote.readAt.toLocal())}. '
               'O servidor pode mudar após esse horário.',
               style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+          if (decision != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              decision!.choice == DairyDecisionChoice.preferLocal
+                  ? 'Preferência salva: dados deste aparelho'
+                  : 'Preferência salva: não enviar registro local',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Text(
+              decision!.matchesLocal(local)
+                  ? 'Não enviado. O servidor será conferido novamente antes de qualquer envio.'
+                  : 'Dados locais mudaram: esta preferência exige nova conferência.',
+            ),
+            if (onRemoveDecision != null)
+              TextButton(
+                onPressed: onRemoveDecision,
+                child: const Text('Retirar preferência'),
+              ),
+          ],
+          if (remote != null &&
+              const {
+                DairyRemoteReviewStatus.absentOnServer,
+                DairyRemoteReviewStatus.differsOnServer,
+                DairyRemoteReviewStatus.deletedOnServer,
+              }.contains(remote!.status) &&
+              onPreferLocal != null &&
+              onKeepServer != null) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'Escolha uma preferência para esta divergência. Ela será salva apenas neste aparelho e não inicia o envio.',
+            ),
+            Wrap(
+              spacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: onPreferLocal,
+                  child: const Text('Preferir este aparelho'),
+                ),
+                OutlinedButton(
+                  onPressed: onKeepServer,
+                  child: Text(
+                    remote!.status == DairyRemoteReviewStatus.absentOnServer
+                        ? 'Não enviar este registro'
+                        : 'Manter no servidor',
+                  ),
+                ),
+              ],
             ),
           ],
         ],

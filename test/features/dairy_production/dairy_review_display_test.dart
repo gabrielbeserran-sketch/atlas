@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
 import 'package:projeto_atlas/features/dairy_production/presentation/widgets/dairy_review_display.dart';
 
 void main() {
@@ -128,4 +129,86 @@ void main() {
       expect(find.text('Esta cópia pode estar desatualizada.'), findsOneWidget);
     },
   );
+  testWidgets('preferência só aparece para divergência e não inicia envio', (
+    tester,
+  ) async {
+    const local = DairyReviewItem(
+      'dairy_daily_production',
+      'farm-a:2026-09-30',
+      DairyReviewStatus.waitingForCache,
+      stagedPayload: {'morning_liters': 10},
+      localPayload: {'morning_liters': 10},
+    );
+    final remoteState = DairyRemoteState(
+      key: const DairyLookupKey(
+        entityType: 'dairy_daily_production',
+        entityId: 'farm-a:2026-09-30',
+      ),
+      found: false,
+      version: 0,
+      deleted: false,
+      payload: const {},
+      readAt: DateTime.utc(2026, 10, 5),
+    );
+    var selected = 0;
+    Widget screen(DairyRemoteReviewStatus status) => MaterialApp(
+      home: Scaffold(
+        body: DairyReviewDetails(
+          local: local,
+          remote: DairyRemoteReviewEntry(
+            local: local,
+            remote: remoteState,
+            status: status,
+          ),
+          onPreferLocal: () => selected++,
+          onKeepServer: () => selected--,
+        ),
+      ),
+    );
+    await tester.pumpWidget(screen(DairyRemoteReviewStatus.absentOnServer));
+    await tester.tap(find.text('Ordenha · 30/09/2026'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('não inicia o envio'), findsOneWidget);
+    await tester.tap(find.text('Preferir este aparelho'));
+    expect(selected, 1);
+    await tester.pumpWidget(screen(DairyRemoteReviewStatus.sameOnServer));
+    await tester.tap(find.text('Ordenha · 30/09/2026'));
+    await tester.pumpAndSettle();
+    expect(find.text('Preferir este aparelho'), findsNothing);
+  });
+
+  testWidgets('preferência antiga sinaliza mudança local', (tester) async {
+    const local = DairyReviewItem(
+      'dairy_daily_production',
+      'farm-a:2026-09-30',
+      DairyReviewStatus.localChanged,
+      stagedPayload: {'morning_liters': 10},
+      localPayload: {'morning_liters': 12},
+    );
+    final saved = DairySavedDecision(
+      entityType: local.entityType,
+      entityId: local.entityId,
+      choice: DairyDecisionChoice.preferLocal,
+      stagedPayload: const {'morning_liters': 10},
+      remoteVersion: 1,
+      remoteDeleted: false,
+      remotePayload: const {},
+      decidedAt: DateTime.utc(2026, 10, 5),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: DairyReviewDetails(
+            local: local,
+            decision: saved,
+            onRemoveDecision: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Ordenha · 30/09/2026'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('exige nova conferência'), findsOneWidget);
+    expect(find.text('Retirar preferência'), findsOneWidget);
+  });
 }

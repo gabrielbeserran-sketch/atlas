@@ -7,6 +7,7 @@ import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
 import 'package:projeto_atlas/features/dairy_production/presentation/widgets/dairy_review_display.dart';
 import 'package:projeto_atlas/core/auth/atlas_active_context.dart';
 import 'package:projeto_atlas/features/dairy_production/domain/models/dairy_herd_snapshot_data.dart';
@@ -28,6 +29,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _offlineStage = DairyOfflineStageService();
   final _offlineReview = DairyOfflineReviewService();
   final _remoteLookup = DairyRemoteLookupService();
+  final _decisions = DairySyncDecisionService();
   final _calculator = const DairyIndicatorCalculator();
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
@@ -38,6 +40,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   String? _stageNotice;
   bool _hasScopedStage = false;
   bool _checkingServer = false;
+  bool _savingDecision = false;
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -188,6 +191,13 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         after: after,
         remote: remote,
       );
+      final saved = await _decisions.list(
+        companyId: companyId,
+        tenantId: tenantId,
+        farmId: farmId,
+      );
+      if (!scopeCurrent()) return;
+      final savedByKey = {for (final item in saved) item.key: item};
       if (!mounted) return;
       await _showReviewDialog(
         title: 'Conferência de Leite no servidor',
@@ -200,7 +210,16 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
             'Toque em cada registro para comparar. Nada foi enviado ou aprovado.',
         details: [
           for (final entry in report.entries)
-            DairyReviewDetails(local: entry.local, remote: entry),
+            DairyReviewDetails(
+              local: entry.local,
+              remote: entry,
+              decision:
+                  savedByKey['${entry.local.entityType}:${entry.local.entityId}'],
+              onPreferLocal: () =>
+                  _saveDecision(entry, DairyDecisionChoice.preferLocal),
+              onKeepServer: () =>
+                  _saveDecision(entry, DairyDecisionChoice.keepServer),
+            ),
         ],
       );
     } catch (_) {
@@ -229,6 +248,12 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         tenantId: session.tenantId,
         farmId: farmId,
       );
+      final saved = await _decisions.list(
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+      );
+      final savedByKey = {for (final item in saved) item.key: item};
       if (!mounted ||
           active.farmId != farmId ||
           active.session?.userId != session.userId ||
@@ -243,7 +268,15 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
             'A comparação com a última cópia recebida não confirma o estado atual do servidor. '
             'Nada foi enviado.',
         details: [
-          for (final item in report.items) DairyReviewDetails(local: item),
+          for (final item in report.items)
+            DairyReviewDetails(
+              local: item,
+              decision: savedByKey['${item.entityType}:${item.entityId}'],
+              onRemoveDecision:
+                  savedByKey.containsKey('${item.entityType}:${item.entityId}')
+                  ? () => _removeDecision(item)
+                  : null,
+            ),
         ],
       );
     } catch (_) {
@@ -253,6 +286,139 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           content: Text(
             'Não foi possível revisar os registros preparados. Os dados originais permanecem disponíveis.',
           ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveDecision(
+    DairyRemoteReviewEntry entry,
+    DairyDecisionChoice choice,
+  ) async {
+    if (_savingDecision) return;
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null || farmId == null || active.farmId != farmId) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Salvar preferência para este registro?'),
+        content: const Text(
+          'A escolha ficará apenas neste aparelho. Nada será enviado agora; '
+          'o registro e o servidor precisarão de nova conferência antes de sincronizar.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Salvar preferência'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    bool scopeCurrent() {
+      final current = active.session;
+      return mounted &&
+          active.farmId == farmId &&
+          current?.userId == session.userId &&
+          current?.companyId == session.companyId &&
+          current?.tenantId == session.tenantId;
+    }
+
+    setState(() => _savingDecision = true);
+    try {
+      await _decisions.save(
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+        userId: session.userId,
+        entry: entry,
+        choice: choice,
+        isScopeCurrent: scopeCurrent,
+      );
+      if (!scopeCurrent()) return;
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Preferência salva neste aparelho. Nenhum dado foi enviado.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted || !scopeCurrent()) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'A preferência não foi salva. Revise o registro e confira o servidor novamente.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _savingDecision = false);
+    }
+  }
+
+  Future<void> _removeDecision(DairyReviewItem item) async {
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null || farmId == null || active.farmId != farmId) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Retirar preferência?'),
+        content: const Text(
+          'O registro original e a cópia preparada serão preservados.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Retirar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted ||
+        confirmed != true ||
+        active.farmId != farmId ||
+        active.session?.userId != session.userId ||
+        active.session?.companyId != session.companyId ||
+        active.session?.tenantId != session.tenantId) {
+      return;
+    }
+    try {
+      await _decisions.remove(
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+        entityType: item.entityType,
+        entityId: item.entityId,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Preferência retirada. Os dados de Leite foram preservados.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível retirar a preferência agora.'),
         ),
       );
     }

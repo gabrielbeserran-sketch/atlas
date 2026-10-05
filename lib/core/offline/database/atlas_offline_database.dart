@@ -7,7 +7,7 @@ class AtlasOfflineDatabase {
   AtlasOfflineDatabase._();
 
   static final AtlasOfflineDatabase instance = AtlasOfflineDatabase._();
-  static const int schemaVersion = 3;
+  static const int schemaVersion = 4;
 
   Database? _database;
 
@@ -35,6 +35,9 @@ class AtlasOfflineDatabase {
           }
           if (oldVersion < 3) {
             await upgradeToVersion3(db);
+          }
+          if (oldVersion < 4) {
+            await upgradeToVersion4(db);
           }
         },
       ),
@@ -203,6 +206,7 @@ class AtlasOfflineDatabase {
       ')',
     );
     await upgradeToVersion3(db);
+    await upgradeToVersion4(db);
   }
 
   /// Preparation only: staged dairy records never enter the send queue.
@@ -216,6 +220,27 @@ class AtlasOfflineDatabase {
       'entity_id TEXT NOT NULL, '
       'payload_json TEXT NOT NULL, '
       'staged_at TEXT NOT NULL, '
+      'PRIMARY KEY(company_id, tenant_id, farm_id, entity_type, entity_id)'
+      ')',
+    );
+  }
+
+  /// Local intention only. Entries are not operations and never sync by themselves.
+  static Future<void> upgradeToVersion4(Database db) async {
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS dairy_sync_decision ('
+      'company_id TEXT NOT NULL, '
+      'tenant_id TEXT NOT NULL, '
+      'farm_id TEXT NOT NULL, '
+      'entity_type TEXT NOT NULL, '
+      'entity_id TEXT NOT NULL, '
+      "choice TEXT NOT NULL CHECK(choice IN ('prefer_local', 'keep_server')), "
+      'stage_payload_json TEXT NOT NULL, '
+      'remote_version INTEGER NOT NULL, '
+      'remote_deleted INTEGER NOT NULL, '
+      'remote_payload_json TEXT NOT NULL, '
+      'decided_at TEXT NOT NULL, '
+      'decided_by TEXT NOT NULL, '
       'PRIMARY KEY(company_id, tenant_id, farm_id, entity_type, entity_id)'
       ')',
     );

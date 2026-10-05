@@ -1,8 +1,10 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 01/10/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 05/10/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
 
 ## Caminho de fechamento da versão comercial atual
+
+Preferências individuais de Leite antes do envio (05/10/2026): checkpoint `atlas-dairy-inert-decisions-20261005`, 100% desta etapa local do pacote 3. SQLite v4 preserva fila/cache/staging e guarda, por registro e escopo, a escolha confirmada do produtor e as evidências da leitura remota. A preferência é visível offline, reversível e sinaliza alteração local; não constitui autorização de envio nem gera operação na fila. 116 testes Leite/offline, análise Dart e diff passaram; banco preexistente preservado. Próximo gate: reconsultar servidor e fonte local no ato de aprovar envio, promover atomicamente uma única operação, cobrir concorrência/conflito, depois deploy autorizado, release agrupado e prova em dois aparelhos. A API nova ainda não está implantada e o app instalado não contém este pacote.
 
 Revisão granular de Leite antes da decisão (01/10/2026): checkpoint `atlas-dairy-granular-review-20261001`, 100% desta etapa local do pacote 3. O produtor pode ver por ordenha/data ou estado do lote os valores preparados e atuais mesmo offline; após conferência manual, vê também os valores/versionamento/horário do servidor. Cópia recebida no aparelho não é apresentada como estado remoto atual; conteúdo de outro escopo ou cache inválido não é exibido como dado confiável. Dezessete testes focais, 108 regressões Leite/offline e análise Dart passaram; banco local preexistente preservado. Próximo gate: aprovação individual e auditável, revalidação de escopo/versão/fonte antes de colocar operação idempotente na fila, deploy autorizado, release agrupado e ensaio em dois aparelhos. Ainda não houve envio nem instalação.
 

@@ -36,6 +36,8 @@ class DairyRemoteReviewEntry {
 /// A read-only comparison of one exact lookup with an unchanged local stage.
 /// This never authorizes promotion into the sync queue.
 class DairyRemoteReconciliation {
+  static bool samePayload(Object? left, Object? right) => _same(left, right);
+
   static DairyRemoteReviewReport compare({
     required DairyReviewReport before,
     required DairyReviewReport after,
