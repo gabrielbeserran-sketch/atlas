@@ -6,6 +6,7 @@ import 'package:projeto_atlas/features/dairy_production/data/services/dairy_prod
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_received_cache_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_received_import_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
@@ -33,6 +34,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _offlineStage = DairyOfflineStageService();
   final _offlineReview = DairyOfflineReviewService();
   final _receivedCache = DairyReceivedCacheService();
+  final _receivedImport = DairyReceivedImportService();
   final _remoteLookup = DairyRemoteLookupService();
   final _decisions = DairySyncDecisionService();
   final _promotion = DairySyncPromotionService();
@@ -50,6 +52,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   bool _checkingServer = false;
   bool _savingDecision = false;
   bool _approvingSend = false;
+  final Set<String> _importingCacheKeys = <String>{};
 
   String get _farmKey => widget.farm.id ?? widget.farm.name;
   @override
@@ -579,12 +582,14 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           IconButton(
             tooltip: 'Estado do lote',
             icon: const Icon(Icons.groups_outlined),
-            onPressed: _openSnapshotForm,
+            onPressed: _importingCacheKeys.isEmpty ? _openSnapshotForm : null,
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _productionReadFailed ? null : _openForm,
+        onPressed: _productionReadFailed || _importingCacheKeys.isNotEmpty
+            ? null
+            : _openForm,
         icon: const Icon(Icons.add),
         label: const Text('Registrar ordenha'),
       ),
@@ -851,22 +856,61 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                   const SizedBox(height: 10),
                   for (final received in _receivedRecords)
                     Card(
-                      child: ListTile(
-                        leading: Icon(
-                          received.production == null
-                              ? Icons.groups_outlined
-                              : Icons.water_drop_outlined,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                received.production == null
+                                    ? Icons.groups_outlined
+                                    : Icons.water_drop_outlined,
+                              ),
+                              title: Text(
+                                received.production != null
+                                    ? '${DateFormat('dd/MM/yyyy').format(received.date)} · ${currency.format(received.production!.totalLiters)} L'
+                                    : '${DateFormat('dd/MM/yyyy').format(received.date)} · Estado do lote',
+                              ),
+                              subtitle: Text(
+                                '${_receivedDescription(received)}\n'
+                                'Versão ${received.version} · recebida em ${DateFormat('dd/MM HH:mm').format(received.receivedAt.toLocal())}',
+                              ),
+                              isThreeLine: true,
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: TextButton.icon(
+                                onPressed:
+                                    _importingCacheKeys.contains(
+                                      '${received.entityType}:${received.entityId}',
+                                    )
+                                    ? null
+                                    : () => _addReceivedRecord(received),
+                                icon:
+                                    _importingCacheKeys.contains(
+                                      '${received.entityType}:${received.entityId}',
+                                    )
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.download_outlined),
+                                label: Text(
+                                  _importingCacheKeys.contains(
+                                        '${received.entityType}:${received.entityId}',
+                                      )
+                                      ? 'Adicionando'
+                                      : 'Usar neste aparelho',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        title: Text(
-                          received.production != null
-                              ? '${DateFormat('dd/MM/yyyy').format(received.date)} · ${currency.format(received.production!.totalLiters)} L'
-                              : '${DateFormat('dd/MM/yyyy').format(received.date)} · Estado do lote',
-                        ),
-                        subtitle: Text(
-                          '${_receivedDescription(received)}\n'
-                          'Versão ${received.version} · recebida em ${DateFormat('dd/MM HH:mm').format(received.receivedAt.toLocal())}',
-                        ),
-                        isThreeLine: true,
                       ),
                     ),
                 ],
@@ -876,6 +920,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   }
 
   Future<void> _openForm() async {
+    if (_importingCacheKeys.isNotEmpty) return;
     final result = await showDialog<DairyDailyProductionData>(
       context: context,
       builder: (_) => const _DairyRecordDialog(),
@@ -937,6 +982,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   }
 
   Future<void> _changeProduction(Future<void> Function() action) async {
+    if (_importingCacheKeys.isNotEmpty) return;
     try {
       await action();
     } catch (_) {
@@ -954,6 +1000,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   }
 
   Future<void> _openSnapshotForm() async {
+    if (_importingCacheKeys.isNotEmpty) return;
     final result = await showDialog<DairyHerdSnapshotData>(
       context: context,
       builder: (_) => const _HerdSnapshotDialog(),
@@ -970,6 +1017,70 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
       if (!confirmed) return;
     }
     await _changeProduction(() => _snapshotStorage.upsert(_farmKey, result));
+  }
+
+  Future<void> _addReceivedRecord(DairyReceivedCacheRecord selected) async {
+    final key = '${selected.entityType}:${selected.entityId}';
+    if (_importingCacheKeys.contains(key)) return;
+    final active = AtlasActiveContext.instance;
+    final session = active.session;
+    final farmId = widget.farm.id;
+    if (session == null || farmId == null || active.farmId != farmId) return;
+    bool scopeCurrent() {
+      final current = active.session;
+      return mounted &&
+          active.farmId == farmId &&
+          current?.userId == session.userId &&
+          current?.companyId == session.companyId &&
+          current?.tenantId == session.tenantId;
+    }
+
+    setState(() => _importingCacheKeys.add(key));
+    try {
+      final isProduction = selected.production != null;
+      final confirmed = await _confirmChange(
+        title: 'Adicionar cópia recebida a este aparelho?',
+        description: isProduction
+            ? 'A ordenha de ${DateFormat('dd/MM/yyyy').format(selected.date)} será adicionada ao histórico local e passará a compor os indicadores deste aparelho. Nada será enviado ao servidor.'
+            : 'O estado do lote de ${DateFormat('dd/MM/yyyy').format(selected.date)} será adicionado ao histórico local deste aparelho. Nada será enviado ao servidor.',
+        confirmLabel: 'Adicionar ao histórico local',
+      );
+      if (!confirmed || !scopeCurrent()) return;
+
+      await _receivedImport.add(
+        selected: selected,
+        companyId: session.companyId,
+        tenantId: session.tenantId,
+        farmId: farmId,
+        isScopeCurrent: scopeCurrent,
+      );
+      if (!scopeCurrent()) return;
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Cópia adicionada ao histórico deste aparelho. Nenhum dado foi enviado.',
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      if (!scopeCurrent()) return;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is StateError
+                ? error.message.toString()
+                : 'Não foi possível adicionar a cópia. Os registros salvos foram preservados.',
+          ),
+        ),
+      );
+      await _load();
+    } finally {
+      if (mounted) setState(() => _importingCacheKeys.remove(key));
+    }
   }
 }
 
