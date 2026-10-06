@@ -1,8 +1,10 @@
 # Cronograma de execução — Atlas
 
-Atualizado em 05/10/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
+Atualizado em 06/10/2026. Este arquivo é a fonte visível de acompanhamento dos pacotes em execução.
 
 ## Caminho de fechamento da versão comercial atual
+
+Leite: mostrar cópias recebidas sem sobrescrever dados locais (06/10/2026): concluído localmente, 100%. A tela exibe, separadas do histórico, ordenhas e estados do lote válidos recebidos via Central offline; tenant/empresa/fazenda, versão, exclusão e consistência payload/data/ID são conferidos. Conteúdo recebido não alimenta indicadores nem é importado automaticamente. Quatro testes novos e regressão Leite/offline (130), análise Dart, diff e build Windows release aprovados. Checkpoint Git: `atlas-dairy-received-cache-20261006`. Build não instalado. Próximo gate: deploy coordenado/autorizado do contrato de Leite e ensaio de envio, recebimento e conflito em dois aparelhos; depois release agrupado para piloto.
 
 Leite: aprovação explícita e promoção atômica à fila (05/10/2026): checkpoint `atlas-dairy-approved-promotion-20261005`, 100% desta etapa local do pacote 3. Uma preferência “preferir este aparelho” pode virar uma única operação após nova consulta autenticada do servidor e nova leitura local; versão/tombstone, escopo, capacidade, dispositivo e fila são validados antes da gravação atômica. A interface explica que a operação poderá ser enviada quando houver conexão e não pode ser cancelada retirando a preferência. Nove cenários novos de promoção e a regressão total de 126 testes Leite/offline passaram; análise Dart e diff aprovados, banco local preservado. Próximos gates: deploy coordenado e autorizado da API, sincronizar e reconciliar em dois aparelhos, resolver conflitos e produzir release agrupado para piloto. O backend não foi implantado e o app instalado não foi atualizado.
 
@@ -270,6 +272,7 @@ Genética/ANCP, integração WhatsApp e demais expansões devem ter escopo e ace
 6. **Ensaio offline→online de pesagem:** criar pesagem sem rede, reconectar, verificar sincronização única por `client_operation_id` e revisar conflito sem perda de versões. Depois agrupar e validar releases Windows/Android; não reinstalar o celular a cada pacote local.
 7. **OCR local financeiro:** testar no aparelho uma nota real ou amostra não sensível, conferir campos extraídos, revisão humana e baixa/anexo. O código local está em 98%, mas o teste com documento real ainda falta.
 8. **OCR em nuvem:** após renovação ou ampliação da cota do provedor, testar leitura com custo e tratamento de limite controlados. Esta etapa é externa e não bloqueia o lançamento manual nem o OCR local.
+9. **Leite entre aparelhos:** após publicar a API coordenadamente, aprovar o envio de uma ordenha/estado em um aparelho, recebê-lo no outro pela Central offline, conferir a seção “Recebidos de outros aparelhos” e ensaiar divergência/tombstone sem substituição silenciosa. Depois agrupar a release Windows/Android para piloto. Esta etapa depende do ambiente de produção e de dois dispositivos disponíveis; o código local já compila, mas ainda não foi publicado nem instalado.
 
 As etapas 1, 2, 6 e 7 exigem ensaio na operação/aparelho; as etapas 4, 5 e 8 dependem de ambiente ou serviço externo. A etapa 3 pode continuar localmente. Itens marcados 100% na tabela estão concluídos em seu escopo de implementação; a homologação geral ainda depende das integrações e ensaios acima.
 

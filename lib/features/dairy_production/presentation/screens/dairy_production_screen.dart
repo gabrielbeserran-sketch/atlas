@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_production_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_herd_snapshot_storage_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_offline_stage_service.dart';
+import 'package:projeto_atlas/features/dairy_production/data/services/dairy_received_cache_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_lookup_service.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_remote_reconciliation.dart';
 import 'package:projeto_atlas/features/dairy_production/data/services/dairy_sync_decision_service.dart';
@@ -31,6 +32,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   final _snapshotStorage = DairyHerdSnapshotStorageService();
   final _offlineStage = DairyOfflineStageService();
   final _offlineReview = DairyOfflineReviewService();
+  final _receivedCache = DairyReceivedCacheService();
   final _remoteLookup = DairyRemoteLookupService();
   final _decisions = DairySyncDecisionService();
   final _promotion = DairySyncPromotionService();
@@ -39,6 +41,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
   List<DairyDailyProductionData> _records = const [];
   DairyHerdSnapshotData? _snapshot;
   List<DairyHerdSnapshotData> _snapshots = const [];
+  List<DairyReceivedCacheRecord> _receivedRecords = const [];
   bool _loading = true;
   bool _productionReadFailed = false;
   String? _readError;
@@ -74,6 +77,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
     }
     String? stageNotice;
     var hasScopedStage = false;
+    var receivedRecords = const <DairyReceivedCacheRecord>[];
     final active = AtlasActiveContext.instance;
     final session = active.session;
     final farmId = widget.farm.id;
@@ -98,6 +102,18 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
           farmId: farmId,
         );
         hasScopedStage = review.items.isNotEmpty;
+        final localKeys = <String>{
+          for (final record in values)
+            'dairy_daily_production:${DairyOfflineStageService.entityId(farmId, record.date)}',
+          for (final snapshot in snapshots)
+            'dairy_herd_snapshot:${DairyOfflineStageService.entityId(farmId, snapshot.date)}',
+        };
+        receivedRecords = await _receivedCache.load(
+          companyId: session.companyId,
+          tenantId: session.tenantId,
+          farmId: farmId,
+          locallyPresentKeys: localKeys,
+        );
         final decisions = report.needsReview + review.needingDecision;
         if (decisions > 0) {
           stageNotice =
@@ -130,6 +146,7 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
         _readError = readError;
         _stageNotice = stageNotice;
         _hasScopedStage = hasScopedStage;
+        _receivedRecords = receivedRecords;
       });
     }
   }
@@ -821,6 +838,38 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
                       ),
                     ),
                   ),
+                if (_receivedRecords.isNotEmpty) ...[
+                  const SizedBox(height: 28),
+                  Text(
+                    'Recebidos de outros aparelhos',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Cópias da fazenda recebidas pela sincronização. São somente leitura: não substituem o histórico local e não entram nos indicadores.',
+                  ),
+                  const SizedBox(height: 10),
+                  for (final received in _receivedRecords)
+                    Card(
+                      child: ListTile(
+                        leading: Icon(
+                          received.production == null
+                              ? Icons.groups_outlined
+                              : Icons.water_drop_outlined,
+                        ),
+                        title: Text(
+                          received.production != null
+                              ? '${DateFormat('dd/MM/yyyy').format(received.date)} · ${currency.format(received.production!.totalLiters)} L'
+                              : '${DateFormat('dd/MM/yyyy').format(received.date)} · Estado do lote',
+                        ),
+                        subtitle: Text(
+                          '${_receivedDescription(received)}\n'
+                          'Versão ${received.version} · recebida em ${DateFormat('dd/MM HH:mm').format(received.receivedAt.toLocal())}',
+                        ),
+                        isThreeLine: true,
+                      ),
+                    ),
+                ],
               ],
             ),
     );
@@ -847,6 +896,19 @@ class _DairyProductionScreenState extends State<DairyProductionScreen> {
 
   bool _sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _receivedDescription(DairyReceivedCacheRecord received) {
+    final numberFormat = NumberFormat.decimalPattern('pt_BR');
+    final production = received.production;
+    if (production != null) {
+      return 'Manhã ${numberFormat.format(production.morningLiters)} L · '
+          'Tarde ${numberFormat.format(production.afternoonLiters)} L · '
+          '${production.cowsMilked} vacas ordenhadas';
+    }
+    final snapshot = received.snapshot!;
+    return '${snapshot.lactatingCows} em lactação · ${snapshot.dryCows} secas · '
+        '${snapshot.eligibleCows} elegíveis · ${snapshot.pregnancyLosses} perdas';
+  }
 
   Future<bool> _confirmChange({
     required String title,

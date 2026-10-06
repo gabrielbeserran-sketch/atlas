@@ -1,8 +1,10 @@
 # Status de trabalho atual — Atlas
 
-Atualizado em 05/10/2026.
+Atualizado em 06/10/2026.
 
 ## Estado
+
+- Leite: visibilidade segura de dados recebidos, concluída localmente, 100% (06/10/2026). O módulo mostra em seção separada cópias de ordenhas e estados do lote recebidas para a fazenda ativa; conteúdo validado por tenant, versão, tombstone, payload e data/ID. Cópias remotas não sobrescrevem histórico local nem entram nos indicadores. Quatro testes novos, regressão combinada Leite/Central offline (130 testes), análise Dart e build Windows release passaram; hash de `backend/atlas_test.db` preservado: `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint: `atlas-dairy-received-cache-20261006`. Release compilado, ainda não aberto/instalado. Próximo: publicar API sob autorização, ensaiar recebimento real e conflito em dois aparelhos, então agrupar release de piloto.
 
 - Leite: aprovação confirmada e promoção segura à fila concluídas localmente, 100% deste pacote (05/10/2026). O produtor pode aprovar separadamente uma preferência “preferir este aparelho”; antes de criar a operação o app consulta novamente o estado remoto, confere versão/tombstone, relê os dados fonte depois do cadastro do dispositivo e valida escopo/permissão. Operação idempotente e marca de promoção são gravadas numa transação SQLite v5. Preferência já promovida não pode ser retirada como se cancelasse o envio. Servidor sem capacidade, remoto alterado, fonte/staging alterados, escopo trocado, escolha “não enviar”, dispositivo inválido e qualquer operação existente (inclusive aceita) bloqueiam inclusão. Duas aprovações concorrentes geram uma operação. Migração v4→v5, 126 testes Leite/offline, análise Dart sem problemas, diff e hash aprovados; `backend/atlas_test.db` preservado com SHA-256 `7763CD50F8650291CBDCB7388904E14A3C4EA4FAC3F5FB498FC18B6631C6061A`. Checkpoint Git: `atlas-dairy-approved-promotion-20261005`. Próximo: sincronizar/puxar Leite em dois aparelhos e ensaiar conflito após deploy coordenado e autorizado da API; gerar release agrupado depois do ensaio. Nada foi implantado ou instalado nesta etapa.
 
